@@ -1,8 +1,7 @@
-package io.milvus.client.params;
+package io.milvus.client;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class SearchParam {
@@ -12,6 +11,7 @@ public class SearchParam {
     private final List<DateRange> queryRanges;
     private final long topK;
     private final long nProbe;
+    private final long timeout;
 
     public static class Builder {
         // Required parameters
@@ -22,6 +22,7 @@ public class SearchParam {
         private List<DateRange> queryRanges = new ArrayList<>();
         private long topK = 1;
         private long nProbe = 10;
+        private long timeout = 10;
 
         public Builder(String tableName, List<List<Float>> queryVectors) {
             this.tableName = tableName;
@@ -43,6 +44,11 @@ public class SearchParam {
             return this;
         }
 
+        public Builder withTimeout(long timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
         public SearchParam build() {
             return new SearchParam(this);
         }
@@ -54,6 +60,7 @@ public class SearchParam {
         this.queryRanges = builder.queryRanges;
         this.nProbe = builder.nProbe;
         this.topK = builder.topK;
+        this.timeout = builder.timeout;
     }
 
     public String getTableName() {
@@ -74,5 +81,9 @@ public class SearchParam {
 
     public long getNProbe() {
         return nProbe;
+    }
+
+    public long getTimeout() {
+        return timeout;
     }
 }

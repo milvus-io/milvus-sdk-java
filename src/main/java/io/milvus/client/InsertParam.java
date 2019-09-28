@@ -1,4 +1,4 @@
-package io.milvus.client.params;
+package io.milvus.client;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -8,6 +8,7 @@ public class InsertParam {
     private final String tableName;
     private final List<List<Float>> vectors;
     private final List<Long> vectorIds;
+    private final long timeout;
 
     public static class Builder {
         // Required parameters
@@ -16,6 +17,7 @@ public class InsertParam {
 
         // Optional parameters - initialized to default values
         private List<Long> vectorIds = new ArrayList<>();
+        private long timeout = 10;
 
         public Builder(String tableName, List<List<Float>> vectors) {
             this.tableName = tableName;
@@ -24,6 +26,11 @@ public class InsertParam {
 
         public Builder withVectorIds(List<Long> vectorIds) {
             this.vectorIds = vectorIds;
+            return this;
+        }
+
+        public Builder withTimeout(long timeout) {
+            this.timeout = timeout;
             return this;
         }
 
@@ -36,6 +43,7 @@ public class InsertParam {
         this.tableName = builder.tableName;
         this.vectors = builder.vectors;
         this.vectorIds = builder.vectorIds;
+        this.timeout = builder.timeout;
     }
 
     public String getTableName() {
@@ -48,5 +56,9 @@ public class InsertParam {
 
     public List<Long> getVectorIds() {
         return vectorIds;
+    }
+
+    public long getTimeout() {
+        return timeout;
     }
 }

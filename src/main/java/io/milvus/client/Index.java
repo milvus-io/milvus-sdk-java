@@ -1,4 +1,4 @@
-package io.milvus.client.params;
+package io.milvus.client;
 
 import javax.annotation.Nonnull;
 

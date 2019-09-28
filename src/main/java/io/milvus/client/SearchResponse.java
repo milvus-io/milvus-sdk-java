@@ -1,9 +1,10 @@
-package io.milvus.client.response;
+package io.milvus.client;
 
 import java.util.List;
-import java.util.Optional;
 
-public class SearchResponse extends Response {
+public class SearchResponse {
+
+    private final Response response;
 
     public static class QueryResult {
         private final long vectorId;
@@ -25,13 +26,8 @@ public class SearchResponse extends Response {
 
     private final List<List<QueryResult>> queryResultsList;
 
-    public SearchResponse(Status status, String message, List<List<QueryResult>> queryResultsList) {
-        super(status, message);
-        this.queryResultsList = queryResultsList;
-    }
-
-    public SearchResponse(Status status, List<List<QueryResult>> queryResultsList) {
-        super(status);
+    public SearchResponse(Response response, List<List<QueryResult>> queryResultsList) {
+        this.response = response;
         this.queryResultsList = queryResultsList;
     }
 
@@ -43,7 +39,7 @@ public class SearchResponse extends Response {
 
     @Override
     public String toString() {
-        return String.format("SearchResponse {code = %s, message = %s, returned results for %d queries}",
-                this.getStatus().name(), this.getMessage(), this.queryResultsList.size());
+        return String.format("SearchResponse {%s, returned results for %d queries}",
+                              response.toString(), this.queryResultsList.size());
     }
 }

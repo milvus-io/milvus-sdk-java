@@ -1,4 +1,4 @@
-package io.milvus.client.response;
+package io.milvus.client;
 
 import java.util.Arrays;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package io.milvus.client.params;
+package io.milvus.client;
 
 import javax.annotation.Nonnull;
 
@@ -6,6 +6,7 @@ public class IndexParam {
 
     private final String tableName;
     private final Index index;
+    private final long timeout;
 
     public static class Builder {
         // Required parameters
@@ -13,6 +14,7 @@ public class IndexParam {
 
         // Optional parameters - initialized to default values
         private Index index;
+        private long timeout = 10;
 
         public Builder(String tableName) {
             this.tableName = tableName;
@@ -20,6 +22,11 @@ public class IndexParam {
 
         public Builder withIndex(Index index) {
             this.index = index;
+            return this;
+        }
+
+        public Builder withTimeout(long timeout) {
+            this.timeout = timeout;
             return this;
         }
 
@@ -31,6 +38,7 @@ public class IndexParam {
     private IndexParam(@Nonnull Builder builder) {
         this.tableName = builder.tableName;
         this.index = builder.index;
+        this.timeout = builder.timeout;
     }
 
     public String getTableName() {
@@ -41,9 +49,13 @@ public class IndexParam {
         return index;
     }
 
+    public long getTimeout() {
+        return timeout;
+    }
+
     @Override
     public String toString() {
-        return String.format("IndexParam = {tableName = %s, index = {indexType = %s, nList = %d}",
-                                tableName, index.getIndexType().name(), index.getNList());
+        return String.format("IndexParam = {tableName = %s, index = {indexType = %s, nList = %d}, timeout = %d}",
+                                tableName, index.getIndexType().name(), index.getNList(), timeout);
     }
 }
