@@ -1,16 +1,28 @@
 package io.milvus.client.params;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum MetricType {
     L2(1),
-    IP(2);
+    IP(2),
 
-    private final int metricType;
+    UNKNOWN(-1);
 
-    MetricType(int metricType) {
-        this.metricType = metricType;
+    private final int val;
+
+    MetricType(int val) {
+        this.val = val;
     }
 
     public int getVal() {
-        return metricType;
+        return val;
+    }
+
+    public static MetricType valueOf(int val) {
+        Optional<MetricType> search = Arrays.stream(values())
+                                     .filter(metricType -> metricType.val == val)
+                                     .findFirst();
+        return search.orElse(UNKNOWN);
     }
 }

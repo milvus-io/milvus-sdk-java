@@ -1,5 +1,7 @@
 package io.milvus.client.params;
 
+import javax.annotation.Nonnull;
+
 public class IndexParam {
 
     private final String tableName;
@@ -16,8 +18,8 @@ public class IndexParam {
             this.tableName = tableName;
         }
 
-        public Builder setIndex(Index indexToSet) {
-            index = indexToSet;
+        public Builder withIndex(Index index) {
+            this.index = index;
             return this;
         }
 
@@ -26,7 +28,7 @@ public class IndexParam {
         }
     }
 
-    private IndexParam(Builder builder) {
+    private IndexParam(@Nonnull Builder builder) {
         this.tableName = builder.tableName;
         this.index = builder.index;
     }
@@ -41,7 +43,7 @@ public class IndexParam {
 
     @Override
     public String toString() {
-        return String.format("IndexParam {tableName = %s, index = {indexType = %s, nList = %d}",
-                                tableName, index.getIndexType().name(), index.getnNList());
+        return String.format("IndexParam = {tableName = %s, index = {indexType = %s, nList = %d}",
+                                tableName, index.getIndexType().name(), index.getNList());
     }
 }

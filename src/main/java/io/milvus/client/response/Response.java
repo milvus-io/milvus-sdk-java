@@ -1,4 +1,4 @@
-package io.milvus.client;
+package io.milvus.client.response;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -57,12 +57,12 @@ public class Response {
     private final Status status;
     private final String message;
 
-    Response(Status status, String message) {
+    public Response(Status status, String message) {
         this.status = status;
         this.message = message;
     }
 
-    Response(Status status) {
+    public Response(Status status) {
         this.status = status;
         this.message = "Success!";
     }
@@ -81,6 +81,6 @@ public class Response {
 
     @Override
     public String toString() {
-        return String.format("{code = %s, message = %s}", status.name(), this.message);
+        return String.format("Response {code = %s, message = %s}", status.name(), this.message);
     }
 }

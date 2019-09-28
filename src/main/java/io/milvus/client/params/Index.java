@@ -1,5 +1,7 @@
 package io.milvus.client.params;
 
+import javax.annotation.Nonnull;
+
 public class Index {
     private final IndexType indexType;
     private final int nList;
@@ -9,13 +11,13 @@ public class Index {
         private IndexType indexType = IndexType.FLAT;
         private int nList = 16384;
 
-        public Builder setIndexType(IndexType val) {
-            indexType = val;
+        public Builder withIndexType(IndexType indexType) {
+            this.indexType = indexType;
             return this;
         }
 
-        public Builder setNList(int val) {
-            nList = val;
+        public Builder withNList(int nList) {
+            this.nList = nList;
             return this;
         }
 
@@ -24,7 +26,7 @@ public class Index {
         }
     }
 
-    private Index(Builder builder) {
+    private Index(@Nonnull Builder builder) {
         this.indexType = builder.indexType;
         this.nList = builder.nList;
     }
@@ -33,7 +35,7 @@ public class Index {
         return indexType;
     }
 
-    public int getnNList() {
+    public int getNList() {
         return nList;
     }
 }

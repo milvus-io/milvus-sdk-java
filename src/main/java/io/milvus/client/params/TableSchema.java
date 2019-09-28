@@ -23,12 +23,12 @@ public class TableSchema {
             this.dimension = dimension;
         }
 
-        public Builder setIndexFileSize(long val) {
-            indexFileSize = val;
+        public Builder withIndexFileSize(long indexFileSize) {
+            this.indexFileSize = indexFileSize;
             return this;
         }
-        public Builder setMetricType(MetricType val) {
-            metricType = val;
+        public Builder withMetricType(MetricType metricType) {
+            this.metricType = metricType;
             return this;
         }
 
@@ -62,7 +62,7 @@ public class TableSchema {
 
     @Override
     public String toString() {
-        return String.format("TableSchema {tableName = %s, dimension = %d, indexFileSize = %d, metricType = %s}",
+        return String.format("TableSchema = {tableName = %s, dimension = %d, indexFileSize = %d, metricType = %s}",
                              tableName, dimension, indexFileSize, metricType.name());
     }
 }

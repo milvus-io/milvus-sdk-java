@@ -1,5 +1,6 @@
 package io.milvus.client.params;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +22,8 @@ public class InsertParam {
             this.vectors = vectors;
         }
 
-        public Builder setVectorIds(List<Long> val) {
-            vectorIds = val;
+        public Builder withVectorIds(List<Long> vectorIds) {
+            this.vectorIds = vectorIds;
             return this;
         }
 
@@ -31,7 +32,7 @@ public class InsertParam {
         }
     }
 
-    private InsertParam(Builder builder) {
+    private InsertParam(@Nonnull Builder builder) {
         this.tableName = builder.tableName;
         this.vectors = builder.vectors;
         this.vectorIds = builder.vectorIds;
