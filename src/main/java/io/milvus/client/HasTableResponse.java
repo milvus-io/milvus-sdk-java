@@ -13,6 +13,10 @@ public class HasTableResponse {
         return hasTable;
     }
 
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("HasTableResponse {%s, has table = %s}",

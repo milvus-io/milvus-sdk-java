@@ -17,6 +17,11 @@ public class InsertResponse {
 
     //TODO: iterator
 
+
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("InsertResponse {%s, returned %d vector ids}",

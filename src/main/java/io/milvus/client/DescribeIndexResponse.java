@@ -16,6 +16,10 @@ public class DescribeIndexResponse {
         return Optional.ofNullable(indexParam);
     }
 
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("DescribeIndexResponse {%s, %s}", response.toString(),

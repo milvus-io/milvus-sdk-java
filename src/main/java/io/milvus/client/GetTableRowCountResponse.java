@@ -13,6 +13,10 @@ public class GetTableRowCountResponse {
         return tableRowCount;
     }
 
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("CountTableResponse {%s, table row count = %d}",

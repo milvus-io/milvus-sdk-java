@@ -37,6 +37,11 @@ public class SearchResponse {
 
     //TODO: iterator
 
+
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("SearchResponse {%s, returned results for %d queries}",

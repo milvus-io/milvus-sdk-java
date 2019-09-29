@@ -15,6 +15,10 @@ public class ShowTablesResponse {
         return tableNames;
     }
 
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("ShowTablesResponse {%s, table names = %s}",

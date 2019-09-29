@@ -16,19 +16,14 @@ public class MilvusGrpcClient implements MilvusClient {
     private ManagedChannel channel = null;
     private io.milvus.client.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
-//    public MilvusGrpcClient(String host, int port) {
+//    private MilvusGrpcClient(String host, int port) {
 //        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
 //    }
 //
-//    public MilvusGrpcClient(ManagedChannelBuilder<?> channelBuilder) {
+//    private MilvusGrpcClient(ManagedChannelBuilder<?> channelBuilder) {
 //        channel = channelBuilder.build();
 //        blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
 //    }
-
-    public void shutdown() throws InterruptedException {
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
-        logInfo("Shut down complete");
-    }
 
     ///////////////////////Client Calls///////////////////////
 
@@ -55,12 +50,17 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public Response disconnect() {
+    public Response disconnect() throws InterruptedException {
         if (!connected()) {
             logWarning("You are not connected");
         }
         else {
-            channel.shutdown();
+            if (channel.shutdown().awaitTermination(60, TimeUnit.SECONDS)) {
+                logInfo("Channel terminated");
+            } else {
+                logSevere("Encountered error when terminating channel");
+                return new Response(Response.Status.RPC_ERROR);
+            }
         }
         return new Response(Response.Status.SUCCESS);
     }
@@ -90,7 +90,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logWarning("Table `{0}` already exists", tableSchema.getTableName());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             } else {
-                logSevere("Create table failed\n{0}", tableSchema.toString());
+                logSevere("Create table failed\n{0}\n{1}", tableSchema.toString(), response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
@@ -146,7 +146,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logInfo("Dropped table `{0}` successfully!", tableName);
                 return new Response(Response.Status.SUCCESS);
             } else {
-                logSevere("Drop table `{0}` failed", tableName);
+                logSevere("Drop table `{0}` failed:\n{1}", tableName, response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
@@ -179,7 +179,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logInfo("Created index successfully!\n{0}", indexParam.toString());
                 return new Response(Response.Status.SUCCESS);
             } else {
-                logSevere("Create index failed\n{0}", indexParam.toString());
+                logSevere("Create index failed\n{0}\n{1}", indexParam.toString(), response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
@@ -213,11 +213,11 @@ public class MilvusGrpcClient implements MilvusClient {
                        .insert(request);
 
             if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
-                logInfo("Inserted vectors successfully!");
                 Optional<List<Long>> resultVectorIds = Optional.ofNullable(response.getVectorIdArrayList());
+                logInfo("Inserted {0} vectors to table `{1} successfully!", resultVectorIds.map(List::size).orElse(0), insertParam.getTableName());
                 return new InsertResponse(new Response(Response.Status.SUCCESS), resultVectorIds.orElse(new ArrayList<>()));
             } else {
-                logSevere("Insert vectors failed");
+                logSevere("Insert vectors failed:\n{0}", response.toString());
                 return new InsertResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                        response.getStatus().getReason()),
                                           new ArrayList<>());
@@ -252,12 +252,11 @@ public class MilvusGrpcClient implements MilvusClient {
                        .search(request);
 
             if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
-                logInfo("Search completed successfully!");
-
                 List<List<SearchResponse.QueryResult>> queryResultsList = getQueryResultsList(response);
+                logInfo("Search completed successfully! Returned results for {0} queries", queryResultsList.size());
                 return new SearchResponse(new Response(Response.Status.SUCCESS), queryResultsList);
             } else {
-                logSevere("Search failed");
+                logSevere("Search failed:\n{0}", response.toString());
                 return new SearchResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                        response.getStatus().getReason()),
                                           new ArrayList<>());
@@ -305,7 +304,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 List<List<SearchResponse.QueryResult>> queryResultsList = getQueryResultsList(response);
                 return new SearchResponse(new Response(Response.Status.SUCCESS), queryResultsList);
             } else {
-                logSevere("Search in files {0} failed", searchInFilesParam.getFileIds());
+                logSevere("Search in files {0} failed:\n{1}", searchInFilesParam.getFileIds(), response.toString());
                 return new SearchResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                        response.getStatus().getReason()),
                                           new ArrayList<>());
@@ -367,7 +366,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logInfo("Current tables: {0}", tableNames.toString());
                 return new ShowTablesResponse(new Response(Response.Status.SUCCESS), tableNames);
             } else {
-                logSevere("Show tables failed:\n{1}", response.toString());
+                logSevere("Show tables failed:\n{0}", response.toString());
                 return new ShowTablesResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                            response.getStatus().getReason()),
                                               new ArrayList<>());
@@ -397,7 +396,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logInfo("Table `{0}` has {1} rows", tableName, tableRowCount);
                 return new GetTableRowCountResponse(new Response(Response.Status.SUCCESS), tableRowCount);
             } else {
-                logSevere("Count Table `{0}` failed:\n{1}", tableName, response.toString());
+                logSevere("Get table `{0}` row count failed:\n{1}", tableName, response.toString());
                 return new GetTableRowCountResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                                  response.getStatus().getReason()),
                                         0);
@@ -516,7 +515,7 @@ public class MilvusGrpcClient implements MilvusClient {
                 logInfo("Dropped index for table `{0}` successfully!", tableName);
                 return new Response(Response.Status.SUCCESS);
             } else {
-                logSevere("Drop index for table `{0}` failed", tableName);
+                logSevere("Drop index for table `{0}` failed:\n{1}", tableName, response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
@@ -615,102 +614,5 @@ public class MilvusGrpcClient implements MilvusClient {
 
     private void logSevere(String msg, Object... params) {
         logger.log(Level.SEVERE, ANSI_BRIGHT_PURPLE + msg + ANSI_RESET, params);
-    }
-
-    //////////////////////////Main///////////////////////////
-    public static void main(String[] args) throws InterruptedException {
-        MilvusClient client = new MilvusGrpcClient();
-        ConnectParam connectParam = new ConnectParam.Builder().withHost("192.168.1.188").withPort("19530").build();
-        client.connect(connectParam);
-
-        try {
-            String tableName = "test_zhiru";
-            TableParam tableParam = new TableParam.Builder(tableName).withTimeout(20).build();
-            long dimension = 128;
-            TableSchema tableSchema = new TableSchema.Builder(tableName, dimension)
-                                                               .withIndexFileSize(1024)
-                                                               .withMetricType(MetricType.L2)
-                                                               .build();
-            TableSchemaParam tableSchemaParam = new TableSchemaParam.Builder(tableSchema).withTimeout(20).build();
-            Response createTableResponse = client.createTable(tableSchemaParam);
-            System.out.println(createTableResponse);
-
-            HasTableResponse hasTableResponse = client.hasTable(tableParam);
-            System.out.println(hasTableResponse);
-
-            Random random = new Random();
-            List<List<Float>> vectors = new ArrayList<>();
-            int size = 100;
-            for (int i = 0; i < size; ++i) {
-                List<Float> vector = new ArrayList<>();
-                for (int j = 0; j < dimension; ++j) {
-                    vector.add(random.nextFloat());
-                }
-                vectors.add(vector);
-            }
-            InsertParam insertParam = new InsertParam.Builder(tableName, vectors).build();
-            InsertResponse insertResponse = client.insert(insertParam);
-            System.out.println(insertResponse);
-
-            Index index = new Index.Builder()
-                                   .withIndexType(IndexType.IVF_SQ8)
-                                   .withNList(16384)
-                                   .build();
-            IndexParam indexParam = new IndexParam.Builder(tableName)
-                                                  .withIndex(index)
-                                                  .build();
-            Response createIndexResponse = client.createIndex(indexParam);
-            System.out.println(createIndexResponse);
-
-            List<List<Float>> vectorsToSearch = new ArrayList<>();
-            vectorsToSearch.add(vectors.get(0));
-            List<DateRange> queryRanges = new ArrayList<>();
-            Date startDate = new Calendar.Builder().setDate(2019, 8, 27).build().getTime();
-            Date endDate = new Calendar.Builder().setDate(2019, 8, 29).build().getTime();
-            queryRanges.add(new DateRange(startDate, endDate));
-            SearchParam searchParam = new SearchParam
-                                         .Builder(tableName, vectorsToSearch)
-                                         .withTopK(100)
-                                         .withNProbe(20)
-                                         .withDateRanges(queryRanges)
-                                         .build();
-            SearchResponse searchResponse = client.search(searchParam);
-            System.out.println(searchResponse);
-
-            List<String> fileIds = new ArrayList<>();
-            fileIds.add("0");
-            SearchInFilesParam searchInFilesParam = new SearchInFilesParam.Builder(fileIds, searchParam).build();
-            searchResponse = client.searchInFiles(searchInFilesParam);
-            System.out.println(searchResponse);
-
-            DescribeTableResponse describeTableResponse = client.describeTable(tableParam);
-            describeTableResponse.getTableSchema().ifPresent(System.out::println);
-
-            GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(tableParam);
-            System.out.println(getTableRowCountResponse);
-
-            ShowTablesResponse showTablesResponse = client.showTables();
-            System.out.println(showTablesResponse);
-
-            DeleteByRangeParam deleteByRangeParam = new DeleteByRangeParam.Builder(
-                                                        new DateRange(startDate, endDate), tableName).build();
-            Response deleteByRangeResponse = client.deleteByRange(deleteByRangeParam);
-            System.out.println(deleteByRangeResponse);
-
-            Response preloadTableResponse = client.preloadTable(tableParam);
-            System.out.println(preloadTableResponse);
-
-            DescribeIndexResponse describeIndexResponse = client.describeIndex(tableParam);
-            describeIndexResponse.getIndexParam().ifPresent(System.out::println);
-
-            Response dropIndexResponse = client.dropIndex(tableParam);
-            System.out.println(dropIndexResponse);
-
-            Response dropTableResponse = client.dropTable(tableParam);
-            System.out.println(dropTableResponse);
-
-        } finally {
-            client.disconnect();
-        }
     }
 }

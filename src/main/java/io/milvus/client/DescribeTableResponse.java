@@ -16,6 +16,10 @@ public class DescribeTableResponse {
         return Optional.ofNullable(tableSchema);
     }
 
+    public Response getResponse() {
+        return response;
+    }
+
     @Override
     public String toString() {
         return String.format("DescribeTableResponse {%s, %s}", response.toString(),

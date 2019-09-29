@@ -11,7 +11,7 @@ public interface MilvusClient {
 
     boolean connected();
 
-    Response disconnect();
+    Response disconnect() throws InterruptedException;
 
     Response createTable(TableSchemaParam tableSchemaParam);
 
