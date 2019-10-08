@@ -6,6 +6,7 @@ import java.util.Optional;
 public class Response {
 
     public enum Status {
+        //Server side error
         SUCCESS(0),
         UNEXPECTED_ERROR(1),
         CONNECT_FAILED(2),
@@ -32,8 +33,10 @@ public class Response {
         ILLEGAL_METRIC_TYPE(23),
         OUT_OF_MEMORY(24),
 
+        //Client side error
         RPC_ERROR(-1),
-        UNKNOWN(-2);
+        CLIENT_NOT_CONNECTED(-2),
+        UNKNOWN(-3);
 
         private final int code;
 
@@ -64,7 +67,11 @@ public class Response {
 
     public Response(Status status) {
         this.status = status;
-        this.message = "Success!";
+        if (status == Status.CLIENT_NOT_CONNECTED) {
+            this.message = "You are not connected to Milvus server";
+        } else {
+            this.message = "Success!";
+        }
     }
 
     public Status getStatus() {

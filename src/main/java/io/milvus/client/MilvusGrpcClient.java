@@ -42,7 +42,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
             blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
         } catch (Exception e) {
-            logSevere("Connect failed!", e.getMessage());
+            logSevere("Connect failed!", e.toString());
             return new Response(Response.Status.CONNECT_FAILED);
         }
 
@@ -58,7 +58,8 @@ public class MilvusGrpcClient implements MilvusClient {
     @Override
     public Response disconnect() throws InterruptedException {
         if (!connected()) {
-            logWarning("You are not connected");
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
         }
         else {
             if (channel.shutdown().awaitTermination(60, TimeUnit.SECONDS)) {
@@ -73,6 +74,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public Response createTable(@Nonnull TableSchemaParam tableSchemaParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         TableSchema tableSchema = tableSchemaParam.getTableSchema();
         io.milvus.client.grpc.TableSchema request = io.milvus.client.grpc.TableSchema
                                                     .newBuilder()
@@ -107,6 +114,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public HasTableResponse hasTable(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new HasTableResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                                                   .newBuilder()
@@ -136,6 +149,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public Response dropTable(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                                                   .newBuilder()
@@ -163,6 +182,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public Response createIndex(@Nonnull IndexParam indexParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         io.milvus.client.grpc.Index index = io.milvus.client.grpc.Index
                                             .newBuilder()
                                             .setIndexType(indexParam.getIndex().getIndexType().getVal())
@@ -196,6 +221,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public InsertResponse insert(@Nonnull InsertParam insertParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new InsertResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
+        }
+
         List<io.milvus.client.grpc.RowRecord> rowRecordList = new ArrayList<>();
         for (List<Float> vectors : insertParam.getVectors()) {
             io.milvus.client.grpc.RowRecord rowRecord = io.milvus.client.grpc.RowRecord
@@ -237,6 +268,11 @@ public class MilvusGrpcClient implements MilvusClient {
     @Override
     public SearchResponse search(@Nonnull SearchParam searchParam) {
 
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new SearchResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
+        }
+
         List<io.milvus.client.grpc.RowRecord> queryRowRecordList = getQueryRowRecordList(searchParam);
 
         List<io.milvus.client.grpc.Range> queryRangeList = getQueryRangeList(searchParam);
@@ -275,6 +311,11 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public SearchResponse searchInFiles(@Nonnull SearchInFilesParam searchInFilesParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new SearchResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
+        }
 
         SearchParam searchParam = searchInFilesParam.getSearchParam();
 
@@ -323,6 +364,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public DescribeTableResponse describeTable(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new DescribeTableResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                                                   .newBuilder()
@@ -356,6 +403,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public ShowTablesResponse showTables() {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new ShowTablesResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
+        }
+
         io.milvus.client.grpc.Command request = io.milvus.client.grpc.Command
                                                 .newBuilder()
                                                 .setCmd("")
@@ -385,6 +438,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public GetTableRowCountResponse getTableRowCount(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new GetTableRowCountResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                                                   .newBuilder()
@@ -416,6 +475,12 @@ public class MilvusGrpcClient implements MilvusClient {
     //Cmd(Command) not implemented
 
     public Response deleteByRange(@Nonnull DeleteByRangeParam deleteByRangeParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         io.milvus.client.grpc.DeleteByRangeParam request = io.milvus.client.grpc.DeleteByRangeParam
                                                            .newBuilder()
                                                            .setRange(getRange(deleteByRangeParam.getDateRange()))
@@ -444,6 +509,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public Response preloadTable(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                 .newBuilder()
@@ -471,6 +542,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public DescribeIndexResponse describeIndex(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new DescribeIndexResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                                                   .newBuilder()
@@ -507,6 +584,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public Response dropIndex(@Nonnull TableParam tableParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
         String tableName = tableParam.getTableName();
         io.milvus.client.grpc.TableName request = io.milvus.client.grpc.TableName
                 .newBuilder()
