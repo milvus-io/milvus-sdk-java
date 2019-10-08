@@ -41,7 +41,7 @@ class MilvusGrpcClientTest {
 
         client = new MilvusGrpcClient();
         ConnectParam connectParam = new ConnectParam.Builder()
-                                        .withHost("localhost")
+                                        .withHost("192.168.1.149")
                                         .withPort("19530")
                                         .build();
         client.connect(connectParam);
@@ -195,6 +195,18 @@ class MilvusGrpcClientTest {
     void showTables() {
         ShowTablesResponse showTablesResponse = client.showTables();
         assertTrue(showTablesResponse.getResponse().ok());
+    }
+
+    @org.junit.jupiter.api.Test
+    void serverStatus() {
+        Response serverStatusResponse = client.serverStatus();
+        assertTrue(serverStatusResponse.ok());
+    }
+
+    @org.junit.jupiter.api.Test
+    void serverVersion() {
+        Response serverVersionResponse = client.serverVersion();
+        assertTrue(serverVersionResponse.ok());
     }
 
     @org.junit.jupiter.api.Test

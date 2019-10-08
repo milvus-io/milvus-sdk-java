@@ -41,7 +41,7 @@ public class ConnectParam {
 
     @Override
     public String toString() {
-        return "ConnectParam{" +
+        return "ConnectParam {" +
                 "host='" + host + '\'' +
                 ", port='" + port + '\'' +
                 '}';

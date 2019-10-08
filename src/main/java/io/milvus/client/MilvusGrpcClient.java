@@ -1,6 +1,7 @@
 package io.milvus.client;
 
 import io.grpc.*;
+import io.milvus.client.grpc.Command;
 
 import javax.annotation.Nonnull;
 import java.text.SimpleDateFormat;
@@ -40,7 +41,11 @@ public class MilvusGrpcClient implements MilvusClient {
                     .usePlaintext()
                     .build();
 
+            ConnectivityState connectivityState = channel.getState(true);
+            connectivityState = channel.getState(false);
+
             blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
+
         } catch (Exception e) {
             logSevere("Connect failed!", e.toString());
             return new Response(Response.Status.CONNECT_FAILED);
@@ -472,7 +477,50 @@ public class MilvusGrpcClient implements MilvusClient {
         }
     }
 
-    //Cmd(Command) not implemented
+    @Override
+    public Response serverStatus() {
+        CommandParam commandParam = new CommandParam.Builder("OK").build();
+        return command(commandParam);
+    }
+
+    @Override
+    public Response serverVersion() {
+        CommandParam commandParam = new CommandParam.Builder("version").build();
+        return command(commandParam);
+    }
+
+    private Response command(@Nonnull CommandParam commandParam) {
+
+        if (!connected()) {
+            logWarning("You are not connected to Milvus server");
+            return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+        }
+
+        String command = commandParam.getCommand();
+        io.milvus.client.grpc.Command request = io.milvus.client.grpc.Command
+                                                .newBuilder()
+                                                .setCmd(command)
+                                                .build();
+        io.milvus.client.grpc.StringReply response;
+
+        try {
+            response = blockingStub
+                       .withDeadlineAfter(commandParam.getTimeout(), TimeUnit.SECONDS)
+                       .cmd(request);
+
+            if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+                logInfo("Command `{0}`: {1}", command, response.getStringReply());
+                return new Response(Response.Status.SUCCESS, response.getStringReply());
+            } else {
+                logSevere("Command `{0}` failed:\n{1}", command, response.toString());
+                return new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
+                                    response.getStatus().getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logSevere("Command RPC failed:\n{0}", e.getStatus().toString());
+            return new Response(Response.Status.RPC_ERROR, e.toString());
+        }
+    }
 
     public Response deleteByRange(@Nonnull DeleteByRangeParam deleteByRangeParam) {
 
