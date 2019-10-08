@@ -32,14 +32,20 @@ public class MilvusGrpcClient implements MilvusClient {
         if (channel != null) {
             logWarning("You have already connected!");
             return new Response(Response.Status.CONNECT_FAILED, "You have already connected!");
-        } else {
-            channel = ManagedChannelBuilder
-                      .forAddress(connectParam.getHost(), Integer.parseInt(connectParam.getPort()))
-                      .usePlaintext()
-                      .build();
         }
 
-        blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
+        try {
+            channel = ManagedChannelBuilder
+                    .forAddress(connectParam.getHost(), Integer.parseInt(connectParam.getPort()))
+                    .usePlaintext()
+                    .build();
+
+            blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
+        } catch (Exception e) {
+            logSevere("Connect failed!", e.getMessage());
+            return new Response(Response.Status.CONNECT_FAILED);
+        }
+
         logInfo("Connected successfully!\n{0}", connectParam.toString());
         return new Response(Response.Status.SUCCESS);
     }

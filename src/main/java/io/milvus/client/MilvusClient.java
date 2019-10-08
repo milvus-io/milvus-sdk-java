@@ -33,14 +33,6 @@ public interface MilvusClient {
 
     GetTableRowCountResponse getTableRowCount(TableParam tableParam);
 
-//    ClientResponse serverVersion() {
-//
-//    }
-//
-//    ClientResponse serverStatus() {
-//
-//    }
-
     //Cmd(Command) not implemented
 
     Response deleteByRange(DeleteByRangeParam deleteByRangeParam);

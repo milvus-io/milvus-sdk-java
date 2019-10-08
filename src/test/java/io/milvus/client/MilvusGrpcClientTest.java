@@ -21,13 +21,12 @@ class MilvusGrpcClientTest {
 
     private MilvusGrpcClient client;
 
-    RandomStringGenerator generator;
+    private RandomStringGenerator generator;
 
     private String randomTableName;
     private long size;
     private long dimension;
     private TableParam tableParam;
-    private TableSchemaParam tableSchemaParam;
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() throws Exception {
@@ -57,7 +56,7 @@ class MilvusGrpcClientTest {
                                                     .withIndexFileSize(1024)
                                                     .withMetricType(MetricType.L2)
                                                     .build();
-        tableSchemaParam = new TableSchemaParam.Builder(tableSchema).build();
+        TableSchemaParam tableSchemaParam = new TableSchemaParam.Builder(tableSchema).build();
 
         assertTrue(client.createTable(tableSchemaParam).ok());
     }
