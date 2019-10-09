@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>milvus-sdk-java</name>
-    <description>Java SDK for Milvus distributed high-performance vector search engine. </description>
+    <description>Java SDK for Milvus distributed high-performance vector search engine.</description>
     <url>https://github.com/milvus-io/milvus-sdk-java</url>
 
     <licenses>
@@ -28,8 +28,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <grpc.version>1.24.0</grpc.version><!-- CURRENT_GRPC_VERSION -->
-        <protobuf.version>3.10.0</protobuf.version>
-        <protoc.version>3.10.0</protoc.version>
+        <protobuf.version>3.9.0</protobuf.version>
+        <protoc.version>3.9.0</protoc.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
