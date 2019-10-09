@@ -1,7 +1,6 @@
 package io.milvus.client;
 
 import io.grpc.*;
-import io.milvus.client.grpc.Command;
 
 import javax.annotation.Nonnull;
 import java.text.SimpleDateFormat;
@@ -41,8 +40,17 @@ public class MilvusGrpcClient implements MilvusClient {
                     .usePlaintext()
                     .build();
 
-            ConnectivityState connectivityState = channel.getState(true);
+            ConnectivityState connectivityState;
+            connectivityState = channel.getState(true);
+
+            logInfo("Waiting to connect...");
+            TimeUnit.MILLISECONDS.sleep(500);
+
             connectivityState = channel.getState(false);
+            if (connectivityState != ConnectivityState.READY) {
+                logSevere("Connect failed! {0}", connectParam.toString());
+                return new Response(Response.Status.CONNECT_FAILED);
+            }
 
             blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
 
