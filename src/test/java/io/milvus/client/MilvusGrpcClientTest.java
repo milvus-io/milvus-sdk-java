@@ -14,11 +14,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MilvusGrpcClientTest {
 
-    @Rule
-//    public final GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
-//
-//    private final MutableHandlerRegistry serviceRegistry = new MutableHandlerRegistry();
-
     private MilvusGrpcClient client;
 
     private RandomStringGenerator generator;
@@ -30,14 +25,6 @@ class MilvusGrpcClientTest {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() throws Exception {
-//TODO: dummy service
-
-//        // Generate a unique in-process server name.
-//        String serverName = InProcessServerBuilder.generateName();
-//        // Use a mutable service registry for later registering the service impl for each test case.
-//        grpcCleanup.register(InProcessServerBuilder.forName(serverName)
-//                .fallbackHandlerRegistry(serviceRegistry).directExecutor().build().start());
-//        client = new MilvusGrpcClient(InProcessChannelBuilder.forName(serverName).directExecutor());
 
         client = new MilvusGrpcClient();
         ConnectParam connectParam = new ConnectParam.Builder()
