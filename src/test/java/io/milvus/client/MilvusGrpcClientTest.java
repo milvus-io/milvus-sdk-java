@@ -28,7 +28,7 @@ class MilvusGrpcClientTest {
 
         client = new MilvusGrpcClient();
         ConnectParam connectParam = new ConnectParam.Builder()
-                                        .withHost("localhost")
+                                        .withHost("192.168.1.149")
                                         .withPort("19530")
                                         .build();
         client.connect(connectParam);
@@ -138,16 +138,15 @@ class MilvusGrpcClientTest {
         TimeUnit.SECONDS.sleep(1);
 
         List<DateRange> queryRanges = new ArrayList<>();
-        Calendar rightNow = Calendar.getInstance();
-        Date startDate = new Calendar.Builder()
-                                     .setDate(rightNow.get(Calendar.YEAR), rightNow.get(Calendar.MONTH) , rightNow.get(Calendar.DAY_OF_MONTH) - 1)
-                                     .build()
-                                     .getTime();
-        Date endDate = new Calendar.Builder()
-                                   .setDate(rightNow.get(Calendar.YEAR), rightNow.get(Calendar.MONTH), rightNow.get(Calendar.DAY_OF_MONTH) + 1)
-                                   .build()
-                                   .getTime();
-        queryRanges.add(new DateRange(startDate, endDate));
+        Date today = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(today);
+        c.add(Calendar.DAY_OF_MONTH, -1);
+        Date yesterday = c.getTime();
+        c.setTime(today);
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        Date tomorrow = c.getTime();
+        queryRanges.add(new DateRange(yesterday, tomorrow));
         System.out.println(queryRanges);
         SearchParam searchParam = new SearchParam
                                         .Builder(randomTableName, vectorsToSearch)
@@ -208,17 +207,17 @@ class MilvusGrpcClientTest {
 
     @org.junit.jupiter.api.Test
     void deleteByRange() {
-        Calendar rightNow = Calendar.getInstance();
-        Date startDate = new Calendar.Builder()
-                .setDate(rightNow.get(Calendar.YEAR), rightNow.get(Calendar.MONTH) , rightNow.get(Calendar.DAY_OF_MONTH) - 1)
-                .build()
-                .getTime();
-        Date endDate = new Calendar.Builder()
-                .setDate(rightNow.get(Calendar.YEAR), rightNow.get(Calendar.MONTH), rightNow.get(Calendar.DAY_OF_MONTH) + 1)
-                .build()
-                .getTime();
+        Date today = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(today);
+        c.add(Calendar.DAY_OF_MONTH, -1);
+        Date yesterday = c.getTime();
+        c.setTime(today);
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        Date tomorrow = c.getTime();
+
         DeleteByRangeParam deleteByRangeParam = new DeleteByRangeParam.Builder(
-                new DateRange(startDate, endDate), randomTableName).build();
+                new DateRange(yesterday, tomorrow), randomTableName).build();
         Response deleteByRangeResponse = client.deleteByRange(deleteByRangeParam);
         assertTrue(deleteByRangeResponse.ok());
     }
