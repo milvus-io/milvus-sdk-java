@@ -554,7 +554,9 @@ public class MilvusGrpcClient implements MilvusClient {
                              deleteByRangeParam.getTableName(), deleteByRangeParam.getDateRange().toString());
                 return new Response(Response.Status.SUCCESS);
             } else {
-                logSevere("Deleted vectors from table `{0}` in range {1} failed:\n{1}", response.toString());
+                logSevere("Deleted vectors from table `{0}` in range {1} failed:\n{2}",
+                          deleteByRangeParam.getTableName(), deleteByRangeParam.getDateRange().toString(),
+                          response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
