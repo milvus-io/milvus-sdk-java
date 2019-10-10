@@ -13,7 +13,7 @@ public class CommandParam {
         // Optional parameters - initialized to default values
         private long timeout = 86400;
 
-        public Builder(String command) {
+        public Builder(@Nonnull String command) {
             this.command = command;
         }
 

@@ -11,7 +11,7 @@ public class Index {
         private IndexType indexType = IndexType.FLAT;
         private int nList = 16384;
 
-        public Builder withIndexType(IndexType indexType) {
+        public Builder withIndexType(@Nonnull IndexType indexType) {
             this.indexType = indexType;
             return this;
         }

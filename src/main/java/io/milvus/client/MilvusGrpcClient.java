@@ -26,9 +26,16 @@ public class MilvusGrpcClient implements MilvusClient {
         }
 
         try {
+            int port = Integer.parseInt(connectParam.getPort());
+            if (port < 0 || port > 0xFFFF) {
+                logSevere("Connect failed! Port {0} out of range", connectParam.getPort());
+                return new Response(Response.Status.CONNECT_FAILED);
+            }
+
             channel = ManagedChannelBuilder
-                    .forAddress(connectParam.getHost(), Integer.parseInt(connectParam.getPort()))
+                    .forAddress(connectParam.getHost(), port)
                     .usePlaintext()
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
                     .build();
 
             ConnectivityState connectivityState;
@@ -46,7 +53,7 @@ public class MilvusGrpcClient implements MilvusClient {
             blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
 
         } catch (Exception e) {
-            logSevere("Connect failed!", e.toString());
+            logSevere("Connect failed! {0}\n{1}", connectParam.toString(), e.toString());
             return new Response(Response.Status.CONNECT_FAILED);
         }
 
@@ -56,7 +63,11 @@ public class MilvusGrpcClient implements MilvusClient {
 
     @Override
     public boolean connected() {
-        return channel != null && !channel.isShutdown() && !channel.isTerminated();
+        if (channel == null) {
+            return false;
+        }
+        ConnectivityState connectivityState = channel.getState(false);
+        return connectivityState == ConnectivityState.READY;
     }
 
     @Override
