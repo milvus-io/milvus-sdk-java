@@ -1,5 +1,6 @@
 package io.milvus.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SearchResponse {
@@ -35,8 +36,29 @@ public class SearchResponse {
         return queryResultsList;
     }
 
-    //TODO: iterator
+    public List<List<Long>> getResultIdsList() {
+        List<List<Long>> resultIdsList = new ArrayList<>();
+        for (List<QueryResult> queryResults : queryResultsList) {
+            List<Long> resultIds = new ArrayList<>();
+            for (QueryResult queryResult : queryResults) {
+                resultIds.add(queryResult.vectorId);
+            }
+            resultIdsList.add(resultIds);
+        }
+        return resultIdsList;
+    }
 
+    public List<List<Double>> getResultDistancesList() {
+        List<List<Double>> resultDistancesList = new ArrayList<>();
+        for (List<QueryResult> queryResults : queryResultsList) {
+            List<Double> resultDistances = new ArrayList<>();
+            for (QueryResult queryResult : queryResults) {
+                resultDistances.add(queryResult.distance);
+            }
+            resultDistancesList.add(resultDistances);
+        }
+        return resultDistancesList;
+    }
 
     public Response getResponse() {
         return response;

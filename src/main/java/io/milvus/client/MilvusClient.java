@@ -7,10 +7,6 @@ public interface MilvusClient {
         return clientVersion;
     }
 
-    /**
-     * @param connectParam
-     * @return <code>Response</code>
-     */
     Response connect(ConnectParam connectParam);
 
     boolean connected();
