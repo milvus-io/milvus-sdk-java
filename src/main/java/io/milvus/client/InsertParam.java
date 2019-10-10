@@ -19,12 +19,12 @@ public class InsertParam {
         private List<Long> vectorIds = new ArrayList<>();
         private long timeout = 86400;
 
-        public Builder(String tableName, List<List<Float>> vectors) {
+        public Builder(@Nonnull String tableName, @Nonnull List<List<Float>> vectors) {
             this.tableName = tableName;
             this.vectors = vectors;
         }
 
-        public Builder withVectorIds(List<Long> vectorIds) {
+        public Builder withVectorIds(@Nonnull List<Long> vectorIds) {
             this.vectorIds = vectorIds;
             return this;
         }

@@ -18,7 +18,7 @@ public class TableSchema {
         private long indexFileSize = 1024;
         private MetricType metricType = MetricType.L2;
 
-        public Builder(String tableName, long dimension) {
+        public Builder(@Nonnull String tableName, long dimension) {
             this.tableName = tableName;
             this.dimension = dimension;
         }
@@ -27,7 +27,7 @@ public class TableSchema {
             this.indexFileSize = indexFileSize;
             return this;
         }
-        public Builder withMetricType(MetricType metricType) {
+        public Builder withMetricType(@Nonnull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }

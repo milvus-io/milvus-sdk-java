@@ -11,12 +11,12 @@ public class ConnectParam {
         private String host = "127.0.0.1";
         private String port = "19530";
 
-        public Builder withHost(String host) {
+        public Builder withHost(@Nonnull String host) {
             this.host = host;
             return this;
         }
 
-        public Builder withPort(String port) {
+        public Builder withPort(@Nonnull String port) {
             this.port = port;
             return this;
         }

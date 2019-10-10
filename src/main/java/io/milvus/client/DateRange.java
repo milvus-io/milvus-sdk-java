@@ -1,21 +1,22 @@
 package io.milvus.client;
 
+import javax.annotation.Nonnull;
 import java.util.Date;
 
 public class DateRange {
     private Date startDate;
     private Date endDate;
 
-    public DateRange(Date startDate, Date endDate) {
+    public DateRange(@Nonnull Date startDate, @Nonnull Date endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    public void setStartDate(Date startDate) {
+    public void setStartDate(@Nonnull Date startDate) {
         this.startDate = startDate;
     }
 
-    public void setEndDate(Date endDate) {
+    public void setEndDate(@Nonnull Date endDate) {
         this.endDate = endDate;
     }
 

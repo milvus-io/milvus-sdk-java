@@ -16,7 +16,7 @@ public class IndexParam {
         private Index index;
         private long timeout = 86400;
 
-        public Builder(String tableName) {
+        public Builder(@Nonnull String tableName) {
             this.tableName = tableName;
         }
 

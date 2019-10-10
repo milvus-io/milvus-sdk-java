@@ -24,12 +24,12 @@ public class SearchParam {
         private long nProbe = 10;
         private long timeout = 86400;
 
-        public Builder(String tableName, List<List<Float>> queryVectors) {
+        public Builder(@Nonnull String tableName, @Nonnull List<List<Float>> queryVectors) {
             this.tableName = tableName;
             this.queryVectors = queryVectors;
         }
 
-        public Builder withDateRanges(List<DateRange> queryRanges) {
+        public Builder withDateRanges(@Nonnull List<DateRange> queryRanges) {
             this.queryRanges = queryRanges;
             return this;
         }
