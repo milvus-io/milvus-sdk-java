@@ -3,13 +3,28 @@ package io.milvus.client;
 public interface MilvusClient {
 
     String clientVersion = "0.1.0";
+
+    /**
+     * @return the current Milvus client version
+     */
     default String clientVersion() {
         return clientVersion;
     }
 
     /**
-     * @param connectParam
+     * Connects to Milvus server
+     * @param connectParam the <code>ConnectParam</code> object
+     *                     <pre>
+     *                     example usage:
+     *                     <code>
+     *                         ConnectParam connectParam = new ConnectParam.Builder()
+     *                                                                     .withHost("localhost")
+     *                                                                     .withPort("19530")
+     *                                                                     .build();
+     *                     </code>
+     *                     </pre>
      * @return <code>Response</code>
+     * @see ConnectParam
      */
     Response connect(ConnectParam connectParam);
 
