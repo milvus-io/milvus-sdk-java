@@ -11,7 +11,7 @@ public class TableParam {
         private final String tableName;
 
         // Optional parameters - initialized to default values
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(String tableName) {
             this.tableName = tableName;

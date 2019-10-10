@@ -14,7 +14,7 @@ public class SearchInFilesParam {
         private final SearchParam searchParam;
 
         // Optional parameters - initialized to default values
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(List<String> fileIds, SearchParam searchParam) {
             this.fileIds = fileIds;

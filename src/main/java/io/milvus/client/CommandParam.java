@@ -11,7 +11,7 @@ public class CommandParam {
         private final String command;
 
         // Optional parameters - initialized to default values
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(String command) {
             this.command = command;
