@@ -11,6 +11,7 @@
     
 ### New Feature
 ---
+- \#16: add IVF_SQ8_H index type
 
 ### Task
 ---

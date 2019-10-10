@@ -48,7 +48,6 @@ public class Response {
             return code;
         }
 
-        //TODO: Potential performance issue?
         public static Status valueOf(int val) {
             Optional<Status> search = Arrays.stream(values())
                                             .filter(status -> status.code == val)

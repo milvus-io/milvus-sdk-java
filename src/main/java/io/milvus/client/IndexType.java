@@ -10,6 +10,7 @@ public enum IndexType {
     IVFLAT(2),
     IVF_SQ8(3),
     MIX_NSG(4),
+    IVF_SQ8_H(5),
 
     UNKNOWN(-1);
 
