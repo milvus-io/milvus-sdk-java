@@ -17,7 +17,7 @@ public class InsertParam {
 
         // Optional parameters - initialized to default values
         private List<Long> vectorIds = new ArrayList<>();
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(String tableName, List<List<Float>> vectors) {
             this.tableName = tableName;

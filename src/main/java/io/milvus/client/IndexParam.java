@@ -14,7 +14,7 @@ public class IndexParam {
 
         // Optional parameters - initialized to default values
         private Index index;
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(String tableName) {
             this.tableName = tableName;

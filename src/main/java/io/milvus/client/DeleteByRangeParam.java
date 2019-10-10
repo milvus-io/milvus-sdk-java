@@ -13,7 +13,7 @@ public class DeleteByRangeParam {
         private final String tableName;
 
         // Optional parameters - initialized to default values
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(DateRange dateRange, String tableName) {
             this.dateRange = dateRange;

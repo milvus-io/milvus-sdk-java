@@ -11,7 +11,7 @@ public class TableSchemaParam {
         private final TableSchema tableSchema;
 
         // Optional parameters - initialized to default values
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(TableSchema tableSchema) {
             this.tableSchema = tableSchema;

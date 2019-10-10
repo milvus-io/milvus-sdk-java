@@ -22,7 +22,7 @@ public class SearchParam {
         private List<DateRange> queryRanges = new ArrayList<>();
         private long topK = 1;
         private long nProbe = 10;
-        private long timeout = 10;
+        private long timeout = 86400;
 
         public Builder(String tableName, List<List<Float>> queryVectors) {
             this.tableName = tableName;

@@ -16,15 +16,6 @@ public class MilvusGrpcClient implements MilvusClient {
     private ManagedChannel channel = null;
     private io.milvus.client.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
-//    private MilvusGrpcClient(String host, int port) {
-//        this(ManagedChannelBuilder.forAddress(host, port).usePlaintext());
-//    }
-//
-//    private MilvusGrpcClient(ManagedChannelBuilder<?> channelBuilder) {
-//        channel = channelBuilder.build();
-//        blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
-//    }
-
     ///////////////////////Client Calls///////////////////////
 
     @Override
@@ -429,9 +420,7 @@ public class MilvusGrpcClient implements MilvusClient {
         io.milvus.client.grpc.TableNameList response;
 
         try {
-            response = blockingStub
-                       .withDeadlineAfter(10, TimeUnit.SECONDS)
-                       .showTables(request);
+            response = blockingStub.showTables(request);
 
             if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
                 List<String> tableNames = response.getTableNamesList();
@@ -656,7 +645,9 @@ public class MilvusGrpcClient implements MilvusClient {
         io.milvus.client.grpc.Status response;
 
         try {
-            response = blockingStub.dropIndex(request);
+            response = blockingStub
+                       .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
+                       .dropIndex(request);
 
             if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
                 logInfo("Dropped index for table `{0}` successfully!", tableName);
