@@ -33,8 +33,9 @@ public class MilvusGrpcClient implements MilvusClient {
             }
 
             channel = ManagedChannelBuilder
-                    .forAddress(connectParam.getHost(), Integer.parseInt(connectParam.getPort()))
+                    .forAddress(connectParam.getHost(), port)
                     .usePlaintext()
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
                     .build();
 
             ConnectivityState connectivityState;
