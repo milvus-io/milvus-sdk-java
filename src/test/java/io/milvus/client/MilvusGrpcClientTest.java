@@ -31,7 +31,7 @@ class MilvusGrpcClientTest {
 
         client = new MilvusGrpcClient();
         ConnectParam connectParam = new ConnectParam.Builder()
-                                        .withHost("192.168.1.149")
+                                        .withHost("localhost")
                                         .withPort("19530")
                                         .build();
         client.connect(connectParam);
