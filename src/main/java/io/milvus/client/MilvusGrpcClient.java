@@ -9,6 +9,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Actual implementation of interface <code>MilvusClient</code>
+ */
 public class MilvusGrpcClient implements MilvusClient {
 
     private static final Logger logger = Logger.getLogger(MilvusGrpcClient.class.getName());
@@ -196,7 +199,7 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public Response createIndex(@Nonnull IndexParam indexParam) {
+    public Response createIndex(@Nonnull CreateIndexParam createIndexParam) {
 
         if (!connected()) {
             logWarning("You are not connected to Milvus server");
@@ -205,12 +208,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
         io.milvus.client.grpc.Index index = io.milvus.client.grpc.Index
                                             .newBuilder()
-                                            .setIndexType(indexParam.getIndex().getIndexType().getVal())
-                                            .setNlist(indexParam.getIndex().getNList())
+                                            .setIndexType(createIndexParam.getIndex().getIndexType().getVal())
+                                            .setNlist(createIndexParam.getIndex().getNList())
                                             .build();
         io.milvus.client.grpc.IndexParam request = io.milvus.client.grpc.IndexParam
                                            .newBuilder()
-                                           .setTableName(indexParam.getTableName())
+                                           .setTableName(createIndexParam.getTableName())
                                            .setIndex(index)
                                            .build();
 
@@ -218,14 +221,14 @@ public class MilvusGrpcClient implements MilvusClient {
 
         try {
             response = blockingStub
-                       .withDeadlineAfter(indexParam.getTimeout(), TimeUnit.SECONDS)
+                       .withDeadlineAfter(createIndexParam.getTimeout(), TimeUnit.SECONDS)
                        .createIndex(request);
 
             if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
-                logInfo("Created index successfully!\n{0}", indexParam.toString());
+                logInfo("Created index successfully!\n{0}", createIndexParam.toString());
                 return new Response(Response.Status.SUCCESS);
             } else {
-                logSevere("Create index failed\n{0}\n{1}", indexParam.toString(), response.toString());
+                logSevere("Create index failed\n{0}\n{1}", createIndexParam.toString(), response.toString());
                 return new Response(Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
             }
         } catch (StatusRuntimeException e) {

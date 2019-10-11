@@ -1,5 +1,8 @@
 package io.milvus.client;
 
+/**
+ * Contains the returned <code>response</code> and <code>tableRowCount</code> for <code>getTableRowCount</code>
+ */
 public class GetTableRowCountResponse {
     private final Response response;
     private final long tableRowCount;

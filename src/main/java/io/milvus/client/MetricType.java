@@ -3,6 +3,9 @@ package io.milvus.client;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Represents available metric types
+ */
 public enum MetricType {
     L2(1),
     IP(2),

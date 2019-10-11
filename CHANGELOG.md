@@ -17,3 +17,4 @@
 ### Task
 ---
 - \#1: First implementation
+- \#21: Add javadoc

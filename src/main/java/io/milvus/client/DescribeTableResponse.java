@@ -3,6 +3,9 @@ package io.milvus.client;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
+/**
+ * Contains the returned <code>response</code> and <code>tableSchema</code> for <code>describeTable</code>
+ */
 public class DescribeTableResponse {
     private final Response response;
     private final TableSchema tableSchema;
@@ -12,6 +15,10 @@ public class DescribeTableResponse {
         this.tableSchema = tableSchema;
     }
 
+    /**
+     * @return an <code>Optional</code> object which may or may not contain a <code>TableSchema</code> object
+     * @see Optional
+     */
     public Optional<TableSchema> getTableSchema() {
         return Optional.ofNullable(tableSchema);
     }

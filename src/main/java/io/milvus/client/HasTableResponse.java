@@ -1,5 +1,8 @@
 package io.milvus.client;
 
+/**
+ * Contains the returned <code>response</code> and <code>hasTable</code> for <code>hasTable</code>
+ */
 public class HasTableResponse {
     private final Response response;
     private final boolean hasTable;
