@@ -245,7 +245,7 @@ class MilvusGrpcClientTest {
     void describeIndex() {
         DescribeIndexResponse describeIndexResponse = client.describeIndex(tableParam);
         assertTrue(describeIndexResponse.getResponse().ok());
-        assertTrue(describeIndexResponse.getIndexParam().isPresent());
+        assertTrue(describeIndexResponse.getIndex().isPresent());
     }
 
     @org.junit.jupiter.api.Test

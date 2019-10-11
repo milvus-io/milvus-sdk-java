@@ -5,15 +5,15 @@ import java.util.Optional;
 
 public class DescribeIndexResponse {
     private final Response response;
-    private final IndexParam indexParam;
+    private final Index index;
 
-    public DescribeIndexResponse(Response response, @Nullable IndexParam indexParam) {
+    public DescribeIndexResponse(Response response, @Nullable Index index) {
         this.response = response;
-        this.indexParam = indexParam;
+        this.index = index;
     }
 
-    public Optional<IndexParam> getIndexParam() {
-        return Optional.ofNullable(indexParam);
+    public Optional<Index> getIndex() {
+        return Optional.ofNullable(index);
     }
 
     public Response getResponse() {
@@ -23,6 +23,6 @@ public class DescribeIndexResponse {
     @Override
     public String toString() {
         return String.format("DescribeIndexResponse {%s, %s}", response.toString(),
-                              indexParam == null ? "Index param = None" : indexParam.toString());
+                             index == null ? "Index = Null" : index.toString());
     }
 }
