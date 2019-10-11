@@ -38,4 +38,12 @@ public class Index {
     public int getNList() {
         return nList;
     }
+
+    @Override
+    public String toString() {
+        return "Index {" +
+                "indexType=" + indexType +
+                ", nList=" + nList +
+                '}';
+    }
 }

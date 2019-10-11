@@ -623,16 +623,13 @@ public class MilvusGrpcClient implements MilvusClient {
                         .withIndexType(IndexType.valueOf(response.getIndex().getIndexType()))
                         .withNList(response.getIndex().getNlist())
                         .build();
-                IndexParam indexParam = new IndexParam.Builder(response.getTableName())
-                        .withIndex(index)
-                        .build();
-                logInfo("Describe index for table `{0}` returned:\n{1}", tableName, indexParam);
-                return new DescribeIndexResponse(new Response(Response.Status.SUCCESS), indexParam);
+                logInfo("Describe index for table `{0}` returned:\n{1}", tableName, index.toString());
+                return new DescribeIndexResponse(new Response(Response.Status.SUCCESS), index);
             } else {
                 logSevere("Describe index for table `{0}` failed:\n{1}", tableName, response.toString());
                 return new DescribeIndexResponse(new Response(Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                                                               response.getStatus().getReason()),
-                                       null);
+                                            null);
             }
         } catch (StatusRuntimeException e) {
             logSevere("describeIndex RPC failed:\n{0}", e.getStatus().toString());

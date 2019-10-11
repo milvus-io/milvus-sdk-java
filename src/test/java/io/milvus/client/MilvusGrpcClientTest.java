@@ -31,7 +31,7 @@ class MilvusGrpcClientTest {
 
         client = new MilvusGrpcClient();
         ConnectParam connectParam = new ConnectParam.Builder()
-                                        .withHost("localhost")
+                                        .withHost("192.168.1.149")
                                         .withPort("19530")
                                         .build();
         client.connect(connectParam);
@@ -245,7 +245,7 @@ class MilvusGrpcClientTest {
     void describeIndex() {
         DescribeIndexResponse describeIndexResponse = client.describeIndex(tableParam);
         assertTrue(describeIndexResponse.getResponse().ok());
-        assertTrue(describeIndexResponse.getIndexParam().isPresent());
+        assertTrue(describeIndexResponse.getIndex().isPresent());
     }
 
     @org.junit.jupiter.api.Test
