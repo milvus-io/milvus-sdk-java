@@ -3,6 +3,9 @@ package io.milvus.client;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Represents available index types
+ */
 public enum IndexType {
 
     INVALID(0),

@@ -3,8 +3,14 @@ package io.milvus.client;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Represents response of a client call. Contains a <code>status</code> and a <code>message</code>
+ */
 public class Response {
 
+    /**
+     * Represents server and client side status code
+     */
     public enum Status {
         //Server side error
         SUCCESS(0),
@@ -81,6 +87,9 @@ public class Response {
         return message;
     }
 
+    /**
+     * @return <code>true</code> if status equals SUCCESS
+     */
     public boolean ok() {
         return status == Status.SUCCESS;
     }

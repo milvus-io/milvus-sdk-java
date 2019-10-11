@@ -2,12 +2,18 @@ package io.milvus.client;
 
 import javax.annotation.Nonnull;
 
-public class IndexParam {
+/**
+ * Contains parameters for <code>createIndex</code>
+ */
+public class CreateIndexParam {
 
     private final String tableName;
     private final Index index;
     private final long timeout;
 
+    /**
+     * Builder for <code>CreateIndexParam</code>
+     */
     public static class Builder {
         // Required parameters
         private final String tableName;
@@ -16,26 +22,41 @@ public class IndexParam {
         private Index index;
         private long timeout = 86400;
 
+        /**
+         * @param tableName table to create index on
+         */
         public Builder(@Nonnull String tableName) {
             this.tableName = tableName;
         }
 
+        /**
+         * Optional. Default to Index{indexType = IndexType.FLAT, nList = 16384}
+         * @param index a <code>Index</code> object
+         * @return <code>Builder</code>
+         * @see Index
+         */
         public Builder withIndex(Index index) {
             this.index = index;
             return this;
         }
 
+         /**
+          * Optional. Sets the deadline from when the client RPC is set to when the response is picked up by the client.
+          * Default to 86400s (1 day).
+          * @param timeout in seconds
+          * @return <code>Builder</code>
+          */
         public Builder withTimeout(long timeout) {
             this.timeout = timeout;
             return this;
         }
 
-        public IndexParam build() {
-            return new IndexParam(this);
+        public CreateIndexParam build() {
+            return new CreateIndexParam(this);
         }
     }
 
-    private IndexParam(@Nonnull Builder builder) {
+    private CreateIndexParam(@Nonnull Builder builder) {
         this.tableName = builder.tableName;
         this.index = builder.index;
         this.timeout = builder.timeout;

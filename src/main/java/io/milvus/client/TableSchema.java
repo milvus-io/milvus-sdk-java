@@ -2,6 +2,9 @@ package io.milvus.client;
 
 import javax.annotation.*;
 
+/**
+ * Represents a table schema
+ */
 // Builder Pattern
 public class TableSchema {
     private final String tableName;
@@ -9,6 +12,9 @@ public class TableSchema {
     private final long indexFileSize;
     private final MetricType metricType;
 
+    /**
+     * Builder for <code>TableSchema</code>
+     */
     public static class Builder {
         // Required parameters
         private final String tableName;
@@ -18,15 +24,31 @@ public class TableSchema {
         private long indexFileSize = 1024;
         private MetricType metricType = MetricType.L2;
 
+        /**
+         * @param tableName table name
+         * @param dimension vector dimension
+         */
         public Builder(@Nonnull String tableName, long dimension) {
             this.tableName = tableName;
             this.dimension = dimension;
         }
 
+        /**
+         * Optional. Default to 1024 MB.
+         * @param indexFileSize in megabytes.
+         * @return <code>Builder</code>
+         */
         public Builder withIndexFileSize(long indexFileSize) {
             this.indexFileSize = indexFileSize;
             return this;
         }
+
+        /**
+         * Optional. Default to MetricType.L2
+         * @param metricType a <code>MetricType</code> value
+         * @return <code>Builder</code>
+         * @see MetricType
+         */
         public Builder withMetricType(@Nonnull MetricType metricType) {
             this.metricType = metricType;
             return this;
