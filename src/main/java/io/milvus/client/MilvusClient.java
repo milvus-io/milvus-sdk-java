@@ -135,9 +135,9 @@ public interface MilvusClient {
    *                        .withNList(16384)
    *                        .build();
    * CreateIndexParam createIndexParam = new CreateIndexParam.Builder(tableName)
-   *                                                   .withIndex(index)
-   *                                                   .withTimeout(timeout)
-   *                                                   .build();
+   *                                                         .withIndex(index)
+   *                                                         .withTimeout(timeout)
+   *                                                         .build();
    * </code>
    * </pre>
    *
