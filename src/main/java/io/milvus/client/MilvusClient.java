@@ -20,7 +20,7 @@ package io.milvus.client;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.1.0";
+  String clientVersion = "0.1.1";
 
   /** @return the current Milvus client version */
   default String clientVersion() {
