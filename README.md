@@ -22,16 +22,16 @@ Gradle/Grails
 
 `compile 'io.milvus:milvus-sdk-java:0.1.0'`
 
-###Examples
+### Examples
 
 Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder
 
-###Documentation
+### Documentation
 
 - [Javadoc](https://milvus-io.github.io/milvus-sdk-java/javadoc/index.html)
 - [Milvus doc](https://milvus.io/docs/en/userguide/install_milvus/)
 
-###Additional information
+### Additional information
 
 - The Java source code is formatted using [google-java-format](https://github.com/google/google-java-format).
 
