@@ -24,6 +24,4 @@ hs_err_pid*
 
 .idea/
 target/
-index-files/
-io/
-javadoc/
+
