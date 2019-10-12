@@ -25,8 +25,9 @@ import java.util.Optional;
  */
 public class Response {
 
-    private final Status status;
-    private final String message;
+  private final Status status;
+  private final String message;
+
   public Response(Status status, String message) {
     this.status = status;
     this.message = message;
@@ -56,10 +57,10 @@ public class Response {
 
   @Override
   public String toString() {
-    return String.format("Response {code = %s, message = %s}", status.name(), this.message);
+    return String.format("Response {code = %s, message = \"%s\"}", status.name(), this.message);
   }
 
-/** Represents server and client side status code */
+  /** Represents server and client side status code */
   public enum Status {
     // Server side error
     SUCCESS(0),

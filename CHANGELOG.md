@@ -9,6 +9,7 @@
 - \#9: Add more getters in SearchResponse & add normalize method in unittest
 - \#10: fix connected() & add port range check & add @nonnull annotation & set maxInboundMessageSize
 - \#17: change IndexParam in DescribeIndexResponse to Index
+- \#27: change proto package to io.milvus.grpc
     
 ### New Feature
 ---
