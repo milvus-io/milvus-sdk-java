@@ -41,7 +41,7 @@ public class MilvusGrpcClient implements MilvusClient {
   private static final String ANSI_BRIGHT_PURPLE = "\u001B[95m";
 
   private ManagedChannel channel = null;
-  private io.milvus.client.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+  private io.milvus.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
   /////////////////////// Client Calls///////////////////////
 
@@ -56,7 +56,7 @@ public class MilvusGrpcClient implements MilvusClient {
       int port = Integer.parseInt(connectParam.getPort());
       if (port < 0 || port > 0xFFFF) {
         logSevere("Connect failed! Port {0} out of range", connectParam.getPort());
-        return new Response(Response.Status.CONNECT_FAILED);
+        return new Response(Response.Status.CONNECT_FAILED, "Port " + port + " out of range");
       }
 
       channel =
@@ -74,14 +74,15 @@ public class MilvusGrpcClient implements MilvusClient {
       connectivityState = channel.getState(false);
       if (connectivityState != ConnectivityState.READY) {
         logSevere("Connect failed! {0}", connectParam.toString());
-        return new Response(Response.Status.CONNECT_FAILED);
+        return new Response(
+            Response.Status.CONNECT_FAILED, "connectivity state = " + connectivityState);
       }
 
-      blockingStub = io.milvus.client.grpc.MilvusServiceGrpc.newBlockingStub(channel);
+      blockingStub = io.milvus.grpc.MilvusServiceGrpc.newBlockingStub(channel);
 
     } catch (Exception e) {
       logSevere("Connect failed! {0}\n{1}", connectParam.toString(), e.toString());
-      return new Response(Response.Status.CONNECT_FAILED);
+      return new Response(Response.Status.CONNECT_FAILED, e.toString());
     }
 
     logInfo("Connected successfully!\n{0}", connectParam.toString());
@@ -122,15 +123,15 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     TableSchema tableSchema = tableSchemaParam.getTableSchema();
-    io.milvus.client.grpc.TableSchema request =
-        io.milvus.client.grpc.TableSchema.newBuilder()
+    io.milvus.grpc.TableSchema request =
+        io.milvus.grpc.TableSchema.newBuilder()
             .setTableName(tableSchema.getTableName())
             .setDimension(tableSchema.getDimension())
             .setIndexFileSize(tableSchema.getIndexFileSize())
             .setMetricType(tableSchema.getMetricType().getVal())
             .build();
 
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -138,7 +139,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableSchemaParam.getTimeout(), TimeUnit.SECONDS)
               .createTable(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Created table successfully!\n{0}", tableSchema.toString());
         return new Response(Response.Status.SUCCESS);
       } else if (response.getReason().contentEquals("Table already exists")) {
@@ -165,9 +166,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.BoolReply response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.BoolReply response;
 
     try {
       response =
@@ -175,7 +176,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .hasTable(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("hasTable `{0}` = {1}", tableName, response.getBoolReply());
         return new HasTableResponse(new Response(Response.Status.SUCCESS), response.getBoolReply());
       } else {
@@ -201,9 +202,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -211,7 +212,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .dropTable(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Dropped table `{0}` successfully!", tableName);
         return new Response(Response.Status.SUCCESS);
       } else {
@@ -233,18 +234,18 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    io.milvus.client.grpc.Index index =
-        io.milvus.client.grpc.Index.newBuilder()
+    io.milvus.grpc.Index index =
+        io.milvus.grpc.Index.newBuilder()
             .setIndexType(createIndexParam.getIndex().getIndexType().getVal())
             .setNlist(createIndexParam.getIndex().getNList())
             .build();
-    io.milvus.client.grpc.IndexParam request =
-        io.milvus.client.grpc.IndexParam.newBuilder()
+    io.milvus.grpc.IndexParam request =
+        io.milvus.grpc.IndexParam.newBuilder()
             .setTableName(createIndexParam.getTableName())
             .setIndex(index)
             .build();
 
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -252,7 +253,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(createIndexParam.getTimeout(), TimeUnit.SECONDS)
               .createIndex(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Created index successfully!\n{0}", createIndexParam.toString());
         return new Response(Response.Status.SUCCESS);
       } else {
@@ -276,20 +277,20 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
-    List<io.milvus.client.grpc.RowRecord> rowRecordList = new ArrayList<>();
+    List<io.milvus.grpc.RowRecord> rowRecordList = new ArrayList<>();
     for (List<Float> vectors : insertParam.getVectors()) {
-      io.milvus.client.grpc.RowRecord rowRecord =
-          io.milvus.client.grpc.RowRecord.newBuilder().addAllVectorData(vectors).build();
+      io.milvus.grpc.RowRecord rowRecord =
+          io.milvus.grpc.RowRecord.newBuilder().addAllVectorData(vectors).build();
       rowRecordList.add(rowRecord);
     }
 
-    io.milvus.client.grpc.InsertParam request =
-        io.milvus.client.grpc.InsertParam.newBuilder()
+    io.milvus.grpc.InsertParam request =
+        io.milvus.grpc.InsertParam.newBuilder()
             .setTableName(insertParam.getTableName())
             .addAllRowRecordArray(rowRecordList)
             .addAllRowIdArray(insertParam.getVectorIds())
             .build();
-    io.milvus.client.grpc.VectorIds response;
+    io.milvus.grpc.VectorIds response;
 
     try {
       response =
@@ -297,10 +298,10 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(insertParam.getTimeout(), TimeUnit.SECONDS)
               .insert(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         Optional<List<Long>> resultVectorIds = Optional.ofNullable(response.getVectorIdArrayList());
         logInfo(
-            "Inserted {0} vectors to table `{1} successfully!",
+            "Inserted {0} vectors to table `{1}` successfully!",
             resultVectorIds.map(List::size).orElse(0), insertParam.getTableName());
         return new InsertResponse(
             new Response(Response.Status.SUCCESS), resultVectorIds.orElse(new ArrayList<>()));
@@ -328,12 +329,12 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
-    List<io.milvus.client.grpc.RowRecord> queryRowRecordList = getQueryRowRecordList(searchParam);
+    List<io.milvus.grpc.RowRecord> queryRowRecordList = getQueryRowRecordList(searchParam);
 
-    List<io.milvus.client.grpc.Range> queryRangeList = getQueryRangeList(searchParam);
+    List<io.milvus.grpc.Range> queryRangeList = getQueryRangeList(searchParam);
 
-    io.milvus.client.grpc.SearchParam request =
-        io.milvus.client.grpc.SearchParam.newBuilder()
+    io.milvus.grpc.SearchParam request =
+        io.milvus.grpc.SearchParam.newBuilder()
             .setTableName(searchParam.getTableName())
             .addAllQueryRecordArray(queryRowRecordList)
             .addAllQueryRangeArray(queryRangeList)
@@ -341,7 +342,7 @@ public class MilvusGrpcClient implements MilvusClient {
             .setNprobe(searchParam.getNProbe())
             .build();
 
-    io.milvus.client.grpc.TopKQueryResultList response;
+    io.milvus.grpc.TopKQueryResultList response;
 
     try {
       response =
@@ -349,7 +350,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(searchParam.getTimeout(), TimeUnit.SECONDS)
               .search(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         List<List<SearchResponse.QueryResult>> queryResultsList = getQueryResultsList(response);
         logInfo(
             "Search completed successfully! Returned results for {0} queries",
@@ -381,12 +382,12 @@ public class MilvusGrpcClient implements MilvusClient {
 
     SearchParam searchParam = searchInFilesParam.getSearchParam();
 
-    List<io.milvus.client.grpc.RowRecord> queryRowRecordList = getQueryRowRecordList(searchParam);
+    List<io.milvus.grpc.RowRecord> queryRowRecordList = getQueryRowRecordList(searchParam);
 
-    List<io.milvus.client.grpc.Range> queryRangeList = getQueryRangeList(searchParam);
+    List<io.milvus.grpc.Range> queryRangeList = getQueryRangeList(searchParam);
 
-    io.milvus.client.grpc.SearchParam searchParamToSet =
-        io.milvus.client.grpc.SearchParam.newBuilder()
+    io.milvus.grpc.SearchParam searchParamToSet =
+        io.milvus.grpc.SearchParam.newBuilder()
             .setTableName(searchParam.getTableName())
             .addAllQueryRecordArray(queryRowRecordList)
             .addAllQueryRangeArray(queryRangeList)
@@ -394,13 +395,13 @@ public class MilvusGrpcClient implements MilvusClient {
             .setNprobe(searchParam.getNProbe())
             .build();
 
-    io.milvus.client.grpc.SearchInFilesParam request =
-        io.milvus.client.grpc.SearchInFilesParam.newBuilder()
+    io.milvus.grpc.SearchInFilesParam request =
+        io.milvus.grpc.SearchInFilesParam.newBuilder()
             .addAllFileIdArray(searchInFilesParam.getFileIds())
             .setSearchParam(searchParamToSet)
             .build();
 
-    io.milvus.client.grpc.TopKQueryResultList response;
+    io.milvus.grpc.TopKQueryResultList response;
 
     try {
       response =
@@ -408,7 +409,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(searchInFilesParam.getTimeout(), TimeUnit.SECONDS)
               .searchInFiles(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Search in files {0} completed successfully!", searchInFilesParam.getFileIds());
 
         List<List<SearchResponse.QueryResult>> queryResultsList = getQueryResultsList(response);
@@ -439,9 +440,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.TableSchema response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.TableSchema response;
 
     try {
       response =
@@ -449,7 +450,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .describeTable(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         TableSchema tableSchema =
             new TableSchema.Builder(response.getTableName(), response.getDimension())
                 .withIndexFileSize(response.getIndexFileSize())
@@ -480,14 +481,13 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
-    io.milvus.client.grpc.Command request =
-        io.milvus.client.grpc.Command.newBuilder().setCmd("").build();
-    io.milvus.client.grpc.TableNameList response;
+    io.milvus.grpc.Command request = io.milvus.grpc.Command.newBuilder().setCmd("").build();
+    io.milvus.grpc.TableNameList response;
 
     try {
       response = blockingStub.showTables(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         List<String> tableNames = response.getTableNamesList();
         logInfo("Current tables: {0}", tableNames.toString());
         return new ShowTablesResponse(new Response(Response.Status.SUCCESS), tableNames);
@@ -515,9 +515,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.TableRowCount response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.TableRowCount response;
 
     try {
       response =
@@ -525,7 +525,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .countTable(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         long tableRowCount = response.getTableRowCount();
         logInfo("Table `{0}` has {1} rows", tableName, tableRowCount);
         return new GetTableRowCountResponse(new Response(Response.Status.SUCCESS), tableRowCount);
@@ -563,15 +563,14 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String command = commandParam.getCommand();
-    io.milvus.client.grpc.Command request =
-        io.milvus.client.grpc.Command.newBuilder().setCmd(command).build();
-    io.milvus.client.grpc.StringReply response;
+    io.milvus.grpc.Command request = io.milvus.grpc.Command.newBuilder().setCmd(command).build();
+    io.milvus.grpc.StringReply response;
 
     try {
       response =
           blockingStub.withDeadlineAfter(commandParam.getTimeout(), TimeUnit.SECONDS).cmd(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Command `{0}`: {1}", command, response.getStringReply());
         return new Response(Response.Status.SUCCESS, response.getStringReply());
       } else {
@@ -593,12 +592,12 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    io.milvus.client.grpc.DeleteByRangeParam request =
-        io.milvus.client.grpc.DeleteByRangeParam.newBuilder()
+    io.milvus.grpc.DeleteByRangeParam request =
+        io.milvus.grpc.DeleteByRangeParam.newBuilder()
             .setRange(getRange(deleteByRangeParam.getDateRange()))
             .setTableName(deleteByRangeParam.getTableName())
             .build();
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -606,7 +605,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(deleteByRangeParam.getTimeout(), TimeUnit.SECONDS)
               .deleteByRange(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo(
             "Deleted vectors from table `{0}` in range {1} successfully!",
             deleteByRangeParam.getTableName(), deleteByRangeParam.getDateRange().toString());
@@ -635,9 +634,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -645,7 +644,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .preloadTable(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Preloaded table `{0}` successfully!", tableName);
         return new Response(Response.Status.SUCCESS);
       } else {
@@ -668,9 +667,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.IndexParam response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.IndexParam response;
 
     try {
       response =
@@ -678,7 +677,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .describeIndex(request);
 
-      if (response.getStatus().getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         Index index =
             new Index.Builder()
                 .withIndexType(IndexType.valueOf(response.getIndex().getIndexType()))
@@ -709,9 +708,9 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     String tableName = tableParam.getTableName();
-    io.milvus.client.grpc.TableName request =
-        io.milvus.client.grpc.TableName.newBuilder().setTableName(tableName).build();
-    io.milvus.client.grpc.Status response;
+    io.milvus.grpc.TableName request =
+        io.milvus.grpc.TableName.newBuilder().setTableName(tableName).build();
+    io.milvus.grpc.Status response;
 
     try {
       response =
@@ -719,7 +718,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .withDeadlineAfter(tableParam.getTimeout(), TimeUnit.SECONDS)
               .dropIndex(request);
 
-      if (response.getErrorCode() == io.milvus.client.grpc.ErrorCode.SUCCESS) {
+      if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
         logInfo("Dropped index for table `{0}` successfully!", tableName);
         return new Response(Response.Status.SUCCESS);
       } else {
@@ -734,24 +733,23 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   ///////////////////// Util Functions/////////////////////
-  private List<io.milvus.client.grpc.RowRecord> getQueryRowRecordList(
-      @Nonnull SearchParam searchParam) {
-    List<io.milvus.client.grpc.RowRecord> queryRowRecordList = new ArrayList<>();
+  private List<io.milvus.grpc.RowRecord> getQueryRowRecordList(@Nonnull SearchParam searchParam) {
+    List<io.milvus.grpc.RowRecord> queryRowRecordList = new ArrayList<>();
     for (List<Float> vectors : searchParam.getQueryVectors()) {
-      io.milvus.client.grpc.RowRecord rowRecord =
-          io.milvus.client.grpc.RowRecord.newBuilder().addAllVectorData(vectors).build();
+      io.milvus.grpc.RowRecord rowRecord =
+          io.milvus.grpc.RowRecord.newBuilder().addAllVectorData(vectors).build();
       queryRowRecordList.add(rowRecord);
     }
     return queryRowRecordList;
   }
 
-  private List<io.milvus.client.grpc.Range> getQueryRangeList(@Nonnull SearchParam searchParam) {
-    List<io.milvus.client.grpc.Range> queryRangeList = new ArrayList<>();
+  private List<io.milvus.grpc.Range> getQueryRangeList(@Nonnull SearchParam searchParam) {
+    List<io.milvus.grpc.Range> queryRangeList = new ArrayList<>();
     String datePattern = "yyyy-MM-dd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
     for (DateRange queryRange : searchParam.getdateRanges()) {
-      io.milvus.client.grpc.Range dateRange =
-          io.milvus.client.grpc.Range.newBuilder()
+      io.milvus.grpc.Range dateRange =
+          io.milvus.grpc.Range.newBuilder()
               .setStartValue(simpleDateFormat.format(queryRange.getStartDate()))
               .setEndValue(simpleDateFormat.format(queryRange.getEndDate()))
               .build();
@@ -760,27 +758,26 @@ public class MilvusGrpcClient implements MilvusClient {
     return queryRangeList;
   }
 
-  private io.milvus.client.grpc.Range getRange(@Nonnull DateRange dateRange) {
+  private io.milvus.grpc.Range getRange(@Nonnull DateRange dateRange) {
     String datePattern = "yyyy-MM-dd";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(datePattern);
-    return io.milvus.client.grpc.Range.newBuilder()
+    return io.milvus.grpc.Range.newBuilder()
         .setStartValue(simpleDateFormat.format(dateRange.getStartDate()))
         .setEndValue(simpleDateFormat.format(dateRange.getEndDate()))
         .build();
   }
 
   private List<List<SearchResponse.QueryResult>> getQueryResultsList(
-      io.milvus.client.grpc.TopKQueryResultList searchResponse) {
+      io.milvus.grpc.TopKQueryResultList searchResponse) {
     // TODO: refactor
     List<List<SearchResponse.QueryResult>> queryResultsList = new ArrayList<>();
-    Optional<List<io.milvus.client.grpc.TopKQueryResult>> topKQueryResultList =
+    Optional<List<io.milvus.grpc.TopKQueryResult>> topKQueryResultList =
         Optional.ofNullable(searchResponse.getTopkQueryResultList());
     if (topKQueryResultList.isPresent()) {
-      for (io.milvus.client.grpc.TopKQueryResult topKQueryResult : topKQueryResultList.get()) {
+      for (io.milvus.grpc.TopKQueryResult topKQueryResult : topKQueryResultList.get()) {
         List<SearchResponse.QueryResult> responseQueryResults = new ArrayList<>();
-        List<io.milvus.client.grpc.QueryResult> queryResults =
-            topKQueryResult.getQueryResultArraysList();
-        for (io.milvus.client.grpc.QueryResult queryResult : queryResults) {
+        List<io.milvus.grpc.QueryResult> queryResults = topKQueryResult.getQueryResultArraysList();
+        for (io.milvus.grpc.QueryResult queryResult : queryResults) {
           SearchResponse.QueryResult responseQueryResult =
               new SearchResponse.QueryResult(queryResult.getId(), queryResult.getDistance());
           responseQueryResults.add(responseQueryResult);

@@ -126,7 +126,7 @@ public interface MilvusClient {
   /**
    * Creates index specified by <code>indexParam</code>
    *
-   * @param createIndexParam the <code>IndexParam</code> object
+   * @param createIndexParam the <code>CreateIndexParam</code> object
    *     <pre>
    * example usage:
    * <code>
@@ -134,10 +134,10 @@ public interface MilvusClient {
    *                        .withIndexType(IndexType.IVF_SQ8)
    *                        .withNList(16384)
    *                        .build();
-   * IndexParam indexParam = new IndexParam.Builder(tableName)
-   *                                       .withIndex(index)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
+   * CreateIndexParam createIndexParam = new CreateIndexParam.Builder(tableName)
+   *                                                   .withIndex(index)
+   *                                                   .withTimeout(timeout)
+   *                                                   .build();
    * </code>
    * </pre>
    *
