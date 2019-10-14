@@ -50,7 +50,7 @@ public class MilvusClientExample {
 
   public static void main(String[] args) throws InterruptedException {
 
-    final String host = "192.168.1.149";
+    final String host = "localhost";
     final String port = "19530";
 
     // Create Milvus client
