@@ -12,6 +12,7 @@
 - \#27: change proto package to io.milvus.grpc
 - \#32: fix README format
 - \#35: Fix client version in readme and src code
+- \#38: Update examples
     
 ### New Feature
 ---
