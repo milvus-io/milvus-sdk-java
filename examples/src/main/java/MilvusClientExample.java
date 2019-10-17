@@ -27,7 +27,7 @@ import java.util.stream.DoubleStream;
 public class MilvusClientExample {
 
   // Helper function that generates random vectors
-  static List<List<Float>> generateRandomVectors(long vectorCount, long dimension) {
+  static List<List<Float>> generateVectors(long vectorCount, long dimension) {
     SplittableRandom splittableRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>();
     for (int i = 0; i < vectorCount; ++i) {
@@ -41,15 +41,16 @@ public class MilvusClientExample {
 
   // Helper function that normalizes a vector if you are using IP (Inner product) as your metric
   // type
-  static List<Float> normalize(List<Float> vector) {
+  static List<Float> normalizeVector(List<Float> vector) {
     float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
     final float norm = (float) Math.sqrt(squareSum);
     vector = vector.stream().map(x -> x / norm).collect(Collectors.toList());
     return vector;
   }
 
-  public static void main(String[] args) throws InterruptedException {
+  public static void main(String[] args) throws InterruptedException, ConnectFailedException {
 
+    // You may need to change the following to the host and port of your Milvus server
     final String host = "localhost";
     final String port = "19530";
 
@@ -58,18 +59,22 @@ public class MilvusClientExample {
 
     // Connect to Milvus server
     ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();
-    Response connectResponse = client.connect(connectParam);
-    System.out.println(connectResponse);
+    try {
+      Response connectResponse = client.connect(connectParam);
+    } catch (ConnectFailedException e) {
+      System.out.println(e.toString());
+      throw e;
+    }
 
     // Check whether we are connected
-    boolean connected = client.connected();
+    boolean connected = client.isConnected();
     System.out.println("Connected = " + connected);
 
     // Create a table with the following table schema
-    final String tableName = "example";
-    final long dimension = 128;
-    final long indexFileSize = 1024;
-    final MetricType metricType = MetricType.IP;
+    final String tableName = "example"; // table name
+    final long dimension = 128; // dimension of each vector
+    final long indexFileSize = 1024; // maximum size (in MB) of each index file
+    final MetricType metricType = MetricType.IP; // we choose IP (Inner project) as our metric type
     TableSchema tableSchema =
         new TableSchema.Builder(tableName, dimension)
             .withIndexFileSize(indexFileSize)
@@ -92,8 +97,8 @@ public class MilvusClientExample {
 
     // Insert randomly generated vectors to table
     final int vectorCount = 100000;
-    List<List<Float>> vectors = generateRandomVectors(vectorCount, dimension);
-    vectors.forEach(MilvusClientExample::normalize);
+    List<List<Float>> vectors = generateVectors(vectorCount, dimension);
+    vectors.forEach(MilvusClientExample::normalizeVector);
     InsertParam insertParam = new InsertParam.Builder(tableName, vectors).withTimeout(10).build();
     InsertResponse insertResponse = client.insert(insertParam);
     System.out.println(insertResponse);
@@ -101,7 +106,8 @@ public class MilvusClientExample {
     // yourself) to reference the vectors you just inserted
     List<Long> vectorIds = insertResponse.getVectorIds();
 
-    // Sleep for 1 second
+    // The data we just inserted won't be serialized and written to meta until the next second
+    // wait 1 second here
     TimeUnit.SECONDS.sleep(1);
 
     // Get current row count of table
@@ -111,7 +117,11 @@ public class MilvusClientExample {
     System.out.println(getTableRowCountResponse);
 
     // Create index for the table
-    final IndexType indexType = IndexType.IVF_SQ8;
+    // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
+    // complete explanation of different index types
+    final IndexType indexType =
+        IndexType
+            .IVF_SQ8;
     Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).build();
     CreateIndexParam createIndexParam =
         new CreateIndexParam.Builder(tableName).withIndex(index).withTimeout(10).build();
@@ -124,24 +134,27 @@ public class MilvusClientExample {
     System.out.println(describeIndexResponse);
 
     // Search vectors
-    final int searchSize = 5;
     // Searching the first 5 vectors of the vectors we just inserted
-    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
+    final int searchBatchSize = 5;
+    List<List<Float>> vectorsToSearch = vectors.subList(0, searchBatchSize);
     final long topK = 10;
     SearchParam searchParam =
         new SearchParam.Builder(tableName, vectorsToSearch).withTopK(topK).withTimeout(10).build();
     SearchResponse searchResponse = client.search(searchParam);
     System.out.println(searchResponse);
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    final double epsilon = 0.001;
-    for (int i = 0; i < searchSize; i++) {
-      // Since we are searching for vector that is already present in the table,
-      // the first result vector should be itself and the distance (inner product) should be
-      // very close to 1 (some precision is lost during the process)
-      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
-      if (firstQueryResult.getVectorId() != vectorIds.get(i)
-          || firstQueryResult.getDistance() <= (1 - epsilon)) {
-        throw new AssertionError();
+    if (searchResponse.getResponse().ok()) {
+      List<List<SearchResponse.QueryResult>> queryResultsList =
+          searchResponse.getQueryResultsList();
+      final double epsilon = 0.001;
+      for (int i = 0; i < searchBatchSize; i++) {
+        // Since we are searching for vector that is already present in the table,
+        // the first result vector should be itself and the distance (inner product) should be
+        // very close to 1 (some precision is lost during the process)
+        SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+        if (firstQueryResult.getVectorId() != vectorIds.get(i)
+            || firstQueryResult.getDistance() <= (1 - epsilon)) {
+          throw new AssertionError("Wrong results!");
+        }
       }
     }
 
@@ -156,7 +169,13 @@ public class MilvusClientExample {
     System.out.println(dropTableResponse);
 
     // Disconnect from Milvus server
-    Response disconnectResponse = client.disconnect();
-    System.out.println(disconnectResponse);
+    try {
+      Response disconnectResponse = client.disconnect();
+    } catch (InterruptedException e) {
+      System.out.println("Failed to disconnect: " + e.toString());
+      throw e;
+    }
+
+    return;
   }
 }

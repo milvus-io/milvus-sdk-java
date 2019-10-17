@@ -46,17 +46,17 @@ public class MilvusGrpcClient implements MilvusClient {
   /////////////////////// Client Calls///////////////////////
 
   @Override
-  public Response connect(ConnectParam connectParam) {
-    if (channel != null) {
-      logWarning("You have already connected!");
-      return new Response(Response.Status.CONNECT_FAILED, "You have already connected!");
+  public Response connect(ConnectParam connectParam) throws ConnectFailedException {
+    if (channel != null && !(channel.isShutdown() || channel.isTerminated())) {
+      logWarning("Channel is not shutdown or terminated");
+      throw new ConnectFailedException("Channel is not shutdown or terminated");
     }
 
     try {
       int port = Integer.parseInt(connectParam.getPort());
       if (port < 0 || port > 0xFFFF) {
         logSevere("Connect failed! Port {0} out of range", connectParam.getPort());
-        return new Response(Response.Status.CONNECT_FAILED, "Port " + port + " out of range");
+        throw new ConnectFailedException("Port " + port + " out of range");
       }
 
       channel =
@@ -73,16 +73,17 @@ public class MilvusGrpcClient implements MilvusClient {
 
       connectivityState = channel.getState(false);
       if (connectivityState != ConnectivityState.READY) {
-        logSevere("Connect failed! {0}", connectParam.toString());
-        return new Response(
-            Response.Status.CONNECT_FAILED, "connectivity state = " + connectivityState);
+        logSevere(
+            "Connect failed! {0}\nConnectivity state = {1}",
+            connectParam.toString(), connectivityState);
+        throw new ConnectFailedException("Connectivity state = " + connectivityState);
       }
 
       blockingStub = io.milvus.grpc.MilvusServiceGrpc.newBlockingStub(channel);
 
     } catch (Exception e) {
       logSevere("Connect failed! {0}\n{1}", connectParam.toString(), e.toString());
-      return new Response(Response.Status.CONNECT_FAILED, e.toString());
+      throw new ConnectFailedException("Exception occurred: " + e.toString());
     }
 
     logInfo("Connected successfully!\n{0}", connectParam.toString());
@@ -90,7 +91,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public boolean connected() {
+  public boolean isConnected() {
     if (channel == null) {
       return false;
     }
@@ -100,15 +101,20 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response disconnect() throws InterruptedException {
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     } else {
-      if (channel.shutdown().awaitTermination(60, TimeUnit.SECONDS)) {
-        logInfo("Channel terminated");
-      } else {
-        logSevere("Encountered error when terminating channel");
-        return new Response(Response.Status.RPC_ERROR);
+      try {
+        if (channel.shutdown().awaitTermination(60, TimeUnit.SECONDS)) {
+          logInfo("Channel terminated");
+        } else {
+          logSevere("Encountered error when terminating channel");
+          return new Response(Response.Status.RPC_ERROR);
+        }
+      } catch (InterruptedException e) {
+        logSevere("Exception thrown when terminating channel: {0}", e.toString());
+        throw e;
       }
     }
     return new Response(Response.Status.SUCCESS);
@@ -117,7 +123,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response createTable(@Nonnull TableSchemaParam tableSchemaParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -160,7 +166,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public HasTableResponse hasTable(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new HasTableResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
     }
@@ -196,7 +202,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response dropTable(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -229,7 +235,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response createIndex(@Nonnull CreateIndexParam createIndexParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -271,7 +277,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public InsertResponse insert(@Nonnull InsertParam insertParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new InsertResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
@@ -323,7 +329,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public SearchResponse search(@Nonnull SearchParam searchParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new SearchResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
@@ -374,7 +380,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public SearchResponse searchInFiles(@Nonnull SearchInFilesParam searchInFilesParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new SearchResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
@@ -434,7 +440,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public DescribeTableResponse describeTable(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new DescribeTableResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
@@ -475,7 +481,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ShowTablesResponse showTables() {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new ShowTablesResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
@@ -509,7 +515,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public GetTableRowCountResponse getTableRowCount(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new GetTableRowCountResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
     }
@@ -544,20 +550,20 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response serverStatus() {
+  public Response getServerStatus() {
     CommandParam commandParam = new CommandParam.Builder("OK").build();
     return command(commandParam);
   }
 
   @Override
-  public Response serverVersion() {
+  public Response getServerVersion() {
     CommandParam commandParam = new CommandParam.Builder("version").build();
     return command(commandParam);
   }
 
   private Response command(@Nonnull CommandParam commandParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -587,7 +593,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   public Response deleteByRange(@Nonnull DeleteByRangeParam deleteByRangeParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -628,7 +634,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response preloadTable(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -661,7 +667,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public DescribeIndexResponse describeIndex(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new DescribeIndexResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
@@ -702,7 +708,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response dropIndex(@Nonnull TableParam tableParam) {
 
-    if (!connected()) {
+    if (!isConnected()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }

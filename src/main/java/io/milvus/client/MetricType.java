@@ -22,7 +22,9 @@ import java.util.Optional;
 
 /** Represents available metric types */
 public enum MetricType {
+  /** Euclidean distance */
   L2(1),
+  /** Inner product */
   IP(2),
 
   UNKNOWN(-1);

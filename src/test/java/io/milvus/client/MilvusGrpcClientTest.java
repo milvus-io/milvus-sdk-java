@@ -22,6 +22,7 @@ import org.apache.commons.text.RandomStringGenerator;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,7 +36,28 @@ class MilvusGrpcClientTest {
   private long size;
   private long dimension;
   private TableParam tableParam;
-  private TableSchema tableSchema;
+
+  // Helper function that generates random vectors
+  static List<List<Float>> generateVectors(long vectorCount, long dimension) {
+    SplittableRandom splittableRandom = new SplittableRandom();
+    List<List<Float>> vectors = new ArrayList<>();
+    for (int i = 0; i < vectorCount; ++i) {
+      DoubleStream doubleStream = splittableRandom.doubles(dimension);
+      List<Float> vector =
+          doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
+      vectors.add(vector);
+    }
+    return vectors;
+  }
+
+  // Helper function that normalizes a vector if you are using IP (Inner product) as your metric
+  // type
+  static List<Float> normalizeVector(List<Float> vector) {
+    float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
+    final float norm = (float) Math.sqrt(squareSum);
+    vector = vector.stream().map(x -> x / norm).collect(Collectors.toList());
+    return vector;
+  }
 
   @org.junit.jupiter.api.BeforeEach
   void setUp() throws Exception {
@@ -47,11 +69,10 @@ class MilvusGrpcClientTest {
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     randomTableName = generator.generate(10);
-    size = 100;
+    size = 100000;
     dimension = 128;
     tableParam = new TableParam.Builder(randomTableName).build();
-    tableSchema =
-        new TableSchema.Builder(randomTableName, dimension)
+    TableSchema tableSchema = new TableSchema.Builder(randomTableName, dimension)
             .withIndexFileSize(1024)
             .withMetricType(MetricType.IP)
             .build();
@@ -67,8 +88,8 @@ class MilvusGrpcClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void connected() {
-    assertTrue(client.connected());
+  void isConnected() {
+    assertTrue(client.isConnected());
   }
 
   @org.junit.jupiter.api.Test
@@ -108,53 +129,27 @@ class MilvusGrpcClientTest {
 
   @org.junit.jupiter.api.Test
   void insert() {
-    Random random = new Random();
-    List<List<Float>> vectors = new ArrayList<>();
-    for (int i = 0; i < size; ++i) {
-      List<Float> vector = new ArrayList<>();
-      for (int j = 0; j < dimension; ++j) {
-        vector.add(random.nextFloat());
-      }
-      vectors.add(vector);
-    }
+    List<List<Float>> vectors = generateVectors(size, dimension);
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.getResponse().ok());
     assertEquals(size, insertResponse.getVectorIds().size());
-  }
-
-  List<Float> normalize(List<Float> vector) {
-    float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
-    final float norm = (float) Math.sqrt(squareSum);
-    vector = vector.stream().map(x -> x / norm).collect(Collectors.toList());
-    return vector;
   }
 
   @org.junit.jupiter.api.Test
   void search() throws InterruptedException {
-    Random random = new Random();
-    List<List<Float>> vectors = new ArrayList<>();
-    List<List<Float>> vectorsToSearch = new ArrayList<>();
-    int searchSize = 5;
-    for (int i = 0; i < size; ++i) {
-      List<Float> vector = new ArrayList<>();
-      for (int j = 0; j < dimension; ++j) {
-        vector.add(random.nextFloat());
-      }
-      if (tableSchema.getMetricType() == MetricType.IP) {
-        vector = normalize(vector);
-      }
-      vectors.add(vector);
-      if (i < searchSize) {
-        vectorsToSearch.add(vector);
-      }
-    }
+    List<List<Float>> vectors = generateVectors(size, dimension);
+    vectors.forEach(MilvusGrpcClientTest::normalizeVector);
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.getResponse().ok());
-    assertEquals(size, insertResponse.getVectorIds().size());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
 
     TimeUnit.SECONDS.sleep(1);
+
+    final int searchSize = 5;
+    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
 
     List<DateRange> queryRanges = new ArrayList<>();
     Date today = new Date();
@@ -167,16 +162,24 @@ class MilvusGrpcClientTest {
     Date tomorrow = c.getTime();
     queryRanges.add(new DateRange(yesterday, tomorrow));
     System.out.println(queryRanges);
+    final long topK = 1000;
     SearchParam searchParam =
         new SearchParam.Builder(randomTableName, vectorsToSearch)
-            .withTopK(1)
+            .withTopK(topK)
             .withNProbe(20)
             .withDateRanges(queryRanges)
             .build();
     SearchResponse searchResponse = client.search(searchParam);
     assertTrue(searchResponse.getResponse().ok());
     System.out.println(searchResponse);
-    assertEquals(searchSize, searchResponse.getQueryResultsList().size());
+    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    assertEquals(searchSize, queryResultsList.size());
+    final double epsilon = 0.001;
+    for (int i = 0; i < searchSize; i++) {
+      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+      assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
+      assertTrue(firstQueryResult.getDistance() > (1 - epsilon));
+    }
   }
 
   //    @org.junit.jupiter.api.Test
@@ -204,13 +207,13 @@ class MilvusGrpcClientTest {
 
   @org.junit.jupiter.api.Test
   void serverStatus() {
-    Response serverStatusResponse = client.serverStatus();
+    Response serverStatusResponse = client.getServerStatus();
     assertTrue(serverStatusResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
   void serverVersion() {
-    Response serverVersionResponse = client.serverVersion();
+    Response serverVersionResponse = client.getServerVersion();
     assertTrue(serverVersionResponse.ok());
   }
 

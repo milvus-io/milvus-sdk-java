@@ -20,10 +20,10 @@ package io.milvus.client;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.1.1";
+  String clientVersion = "0.1.2";
 
   /** @return the current Milvus client version */
-  default String clientVersion() {
+  default String getClientVersion() {
     return clientVersion;
   }
 
@@ -42,13 +42,15 @@ public interface MilvusClient {
    * </pre>
    *
    * @return <code>Response</code>
+   * @throws ConnectFailedException if client failed to connect
    * @see ConnectParam
    * @see Response
+   * @see ConnectFailedException
    */
-  Response connect(ConnectParam connectParam);
+  Response connect(ConnectParam connectParam) throws ConnectFailedException;
 
   /** @return <code>true</code> if the client is connected to Milvus server */
-  boolean connected();
+  boolean isConnected();
 
   /**
    * Disconnects from Milvus server
@@ -277,7 +279,7 @@ public interface MilvusClient {
    * @return <code>Response</code>
    * @see Response
    */
-  Response serverStatus();
+  Response getServerStatus();
 
   /**
    * Prints server version
@@ -285,7 +287,7 @@ public interface MilvusClient {
    * @return <code>Response</code>
    * @see Response
    */
-  Response serverVersion();
+  Response getServerVersion();
 
   /**
    * Deletes vectors by date range, specified by <code>deleteByRangeParam</code>
