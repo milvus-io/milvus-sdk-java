@@ -3,7 +3,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/io.milvus/milvus-sdk-java.svg)](https://search.maven.org/artifact/io.milvus/milvus-sdk-java/)
 
 Java SDK for Milvus distributed high-performance vector search engine. 
-If you want to contribute to this repo, please read our [contribution guidelines]().
+If you want to contribute to this repo, please read our [contribution guidelines](https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md).
 
 ## Getting started
 
@@ -14,13 +14,13 @@ Apache Maven
 <dependency>
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
 </dependency>
 ```
 
 Gradle/Grails 
 
-`compile 'io.milvus:milvus-sdk-java:0.1.1'`
+`compile 'io.milvus:milvus-sdk-java:0.2.0'`
 
 ### Examples
 

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package io.milvus.client;
@@ -20,7 +22,7 @@ package io.milvus.client;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.1.2";
+  String clientVersion = "0.2.0";
 
   /** @return the current Milvus client version */
   default String getClientVersion() {
@@ -31,7 +33,7 @@ public interface MilvusClient {
    * Connects to Milvus server
    *
    * @param connectParam the <code>ConnectParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * ConnectParam connectParam = new ConnectParam.Builder()
@@ -64,72 +66,48 @@ public interface MilvusClient {
   /**
    * Creates table specified by <code>tableSchemaParam</code>
    *
-   * @param tableSchemaParam the <code>TableSchemaParam</code> object
-   *     <pre>
+   * @param tableSchema the <code>TableSchema</code> object
+   * <pre>
    * example usage:
    * <code>
    * TableSchema tableSchema = new TableSchema.Builder(tableName, dimension)
    *                                          .withIndexFileSize(1024)
    *                                          .withMetricType(MetricType.IP)
    *                                          .build();
-   * TableSchemaParam tableSchemaParam = new TableSchemaParam.Builder(tableSchema)
-   *                                                         .withTimeout(timeout)
-   *                                                         .build();
    * </code>
    * </pre>
    *
    * @return <code>Response</code>
    * @see TableSchema
-   * @see TableSchemaParam
    * @see MetricType
    * @see Response
    */
-  Response createTable(TableSchemaParam tableSchemaParam);
+  Response createTable(TableSchema tableSchema);
 
   /**
-   * Check whether the table specified by <code>tableParam</code> exists
+   * Check whether table exists
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
+   * @param tableName table to check
    * @return <code>HasTableResponse</code>
-   * @see TableParam
    * @see HasTableResponse
    * @see Response
    */
-  HasTableResponse hasTable(TableParam tableParam);
+  HasTableResponse hasTable(String tableName);
 
   /**
-   * Drops the table specified by <code>tableParam</code>
+   * Drops table
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
+   * @param tableName table to drop
    * @return <code>Response</code>
-   * @see TableParam
    * @see Response
    */
-  Response dropTable(TableParam tableParam);
+  Response dropTable(String tableName);
 
   /**
    * Creates index specified by <code>indexParam</code>
    *
    * @param createIndexParam the <code>CreateIndexParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * Index index = new Index.Builder()
@@ -138,7 +116,6 @@ public interface MilvusClient {
    *                        .build();
    * CreateIndexParam createIndexParam = new CreateIndexParam.Builder(tableName)
    *                                                         .withIndex(index)
-   *                                                         .withTimeout(timeout)
    *                                                         .build();
    * </code>
    * </pre>
@@ -155,12 +132,11 @@ public interface MilvusClient {
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(tableName, vectors)
    *                                          .withVectorIds(vectorIds)
-   *                                          .withTimeout(timeout)
    *                                          .build();
    * </code>
    * </pre>
@@ -176,14 +152,13 @@ public interface MilvusClient {
    * Searches vectors specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)
    *                                          .withTopK(topK)
    *                                          .withNProbe(nProbe)
    *                                          .withDateRanges(dateRanges)
-   *                                          .withTimeout(timeout)
    *                                          .build();
    * </code>
    * </pre>
@@ -201,7 +176,7 @@ public interface MilvusClient {
    * Searches vectors in specific files specified by <code>searchInFilesParam</code>
    *
    * @param searchInFilesParam the <code>SearchInFilesParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)
@@ -210,7 +185,6 @@ public interface MilvusClient {
    *                                          .withDateRanges(dateRanges)
    *                                          .build();
    * SearchInFilesParam searchInFilesParam = new SearchInFilesParam.Builder(fileIds, searchParam)
-   *                                                               .withTimeout(timeout)
    *                                                               .build();
    * </code>
    * </pre>
@@ -226,24 +200,13 @@ public interface MilvusClient {
   SearchResponse searchInFiles(SearchInFilesParam searchInFilesParam);
 
   /**
-   * Describes table specified by <code>tableParam</code>
+   * Describes table
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>DescribeTableResponse</code>
-   * @see TableParam
+   * @param tableName table to describe
    * @see DescribeTableResponse
    * @see Response
    */
-  DescribeTableResponse describeTable(TableParam tableParam);
+  DescribeTableResponse describeTable(String tableName);
 
   /**
    * Shows current tables
@@ -255,23 +218,14 @@ public interface MilvusClient {
   ShowTablesResponse showTables();
 
   /**
-   * Gets current row count of table specified by <code>tableParam</code>
+   * Gets current row count of table
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
+   * @param tableName table to count
    * @return <code>GetTableRowCountResponse</code>
    * @see GetTableRowCountResponse
    * @see Response
    */
-  GetTableRowCountResponse getTableRowCount(TableParam tableParam);
+  GetTableRowCountResponse getTableRowCount(String tableName);
 
   /**
    * Prints server status
@@ -290,81 +244,29 @@ public interface MilvusClient {
   Response getServerVersion();
 
   /**
-   * Deletes vectors by date range, specified by <code>deleteByRangeParam</code>
-   *
-   * @param deleteByRangeParam the <code>DeleteByRangeParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * DeleteByRangeParam deleteByRangeParam = new DeleteByRangeParam.Builder(dateRange, tableName)
-   *                                                               .withTimeout(timeout)
-   *                                                               .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>Response</code>
-   * @see DeleteByRangeParam
-   * @see DateRange
-   * @see Response
-   */
-  Response deleteByRange(DeleteByRangeParam deleteByRangeParam);
-
-  /**
    * Pre-loads table to memory
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
+   * @param tableName table to preload
    * @return <code>Response</code>
-   * @see TableParam
    * @see Response
    */
-  Response preloadTable(TableParam tableParam);
+  Response preloadTable(String tableName);
 
   /**
-   * Describes table index specified by <code>tableParam</code>
+   * Describes table index
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>DescribeIndexResponse</code>
-   * @see TableParam
+   * @param tableName table to describe index of
    * @see DescribeIndexResponse
    * @see Index
    * @see Response
    */
-  DescribeIndexResponse describeIndex(TableParam tableParam);
+  DescribeIndexResponse describeIndex(String tableName);
 
   /**
-   * Drops table index specified by <code>tableParam</code>
+   * Drops table index
    *
-   * @param tableParam the <code>TableParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * TableParam tableParam = new TableParam.Builder(tableName)
-   *                                       .withTimeout(timeout)
-   *                                       .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>dropIndex</code>
-   * @see TableParam
+   * @param tableName table to drop index of
    * @see Response
    */
-  Response dropIndex(TableParam tableParam);
+  Response dropIndex(String tableName);
 }

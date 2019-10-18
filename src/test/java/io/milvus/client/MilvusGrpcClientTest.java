@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package io.milvus.client;
@@ -26,22 +28,22 @@ import java.util.stream.DoubleStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MilvusGrpcClientTest {
+class MilvusClientTest {
 
-  private MilvusGrpcClient client;
+  private MilvusClient client;
 
   private RandomStringGenerator generator;
 
   private String randomTableName;
   private long size;
   private long dimension;
-  private TableParam tableParam;
 
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(long vectorCount, long dimension) {
     SplittableRandom splittableRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>();
     for (int i = 0; i < vectorCount; ++i) {
+      splittableRandom = splittableRandom.split();
       DoubleStream doubleStream = splittableRandom.doubles(dimension);
       List<Float> vector =
           doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
@@ -71,20 +73,34 @@ class MilvusGrpcClientTest {
     randomTableName = generator.generate(10);
     size = 100000;
     dimension = 128;
-    tableParam = new TableParam.Builder(randomTableName).build();
-    TableSchema tableSchema = new TableSchema.Builder(randomTableName, dimension)
+    TableSchema tableSchema =
+        new TableSchema.Builder(randomTableName, dimension)
             .withIndexFileSize(1024)
             .withMetricType(MetricType.IP)
             .build();
-    TableSchemaParam tableSchemaParam = new TableSchemaParam.Builder(tableSchema).build();
 
-    assertTrue(client.createTable(tableSchemaParam).ok());
+    assertTrue(client.createTable(tableSchema).ok());
   }
 
   @org.junit.jupiter.api.AfterEach
   void tearDown() throws InterruptedException {
-    assertTrue(client.dropTable(tableParam).ok());
+    assertTrue(client.dropTable(randomTableName).ok());
     client.disconnect();
+  }
+
+  @org.junit.jupiter.api.Test
+  void connectInvalidPort() {
+    MilvusClient client = new MilvusGrpcClient();
+    ConnectParam connectParam =
+        new ConnectParam.Builder().withHost("localhost").withPort("66666").build();
+    assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
+  }
+
+  @org.junit.jupiter.api.Test
+  void connectUnreachableHost() {
+    MilvusClient client = new MilvusGrpcClient();
+    ConnectParam connectParam = new ConnectParam.Builder().withHost("250.250.250.250").build();
+    assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
   }
 
   @org.junit.jupiter.api.Test
@@ -93,27 +109,24 @@ class MilvusGrpcClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void createTable() {
+  void createInvalidTable() {
     String invalidTableName = "╯°□°）╯";
     TableSchema invalidTableSchema = new TableSchema.Builder(invalidTableName, dimension).build();
-    TableSchemaParam invalidTableSchemaParam =
-        new TableSchemaParam.Builder(invalidTableSchema).withTimeout(20).build();
-    Response createTableResponse = client.createTable(invalidTableSchemaParam);
+    Response createTableResponse = client.createTable(invalidTableSchema);
     assertFalse(createTableResponse.ok());
     assertEquals(Response.Status.ILLEGAL_TABLE_NAME, createTableResponse.getStatus());
   }
 
   @org.junit.jupiter.api.Test
   void hasTable() {
-    HasTableResponse hasTableResponse = client.hasTable(tableParam);
+    HasTableResponse hasTableResponse = client.hasTable(randomTableName);
     assertTrue(hasTableResponse.getResponse().ok());
   }
 
   @org.junit.jupiter.api.Test
   void dropTable() {
     String nonExistingTableName = generator.generate(10);
-    TableParam tableParam = new TableParam.Builder(nonExistingTableName).build();
-    Response dropTableResponse = client.dropTable(tableParam);
+    Response dropTableResponse = client.dropTable(nonExistingTableName);
     assertFalse(dropTableResponse.ok());
     assertEquals(Response.Status.TABLE_NOT_EXISTS, dropTableResponse.getStatus());
   }
@@ -139,7 +152,7 @@ class MilvusGrpcClientTest {
   @org.junit.jupiter.api.Test
   void search() throws InterruptedException {
     List<List<Float>> vectors = generateVectors(size, dimension);
-    vectors.forEach(MilvusGrpcClientTest::normalizeVector);
+    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.getResponse().ok());
@@ -161,7 +174,6 @@ class MilvusGrpcClientTest {
     c.add(Calendar.DAY_OF_MONTH, 1);
     Date tomorrow = c.getTime();
     queryRanges.add(new DateRange(yesterday, tomorrow));
-    System.out.println(queryRanges);
     final long topK = 1000;
     SearchParam searchParam =
         new SearchParam.Builder(randomTableName, vectorsToSearch)
@@ -178,7 +190,7 @@ class MilvusGrpcClientTest {
     for (int i = 0; i < searchSize; i++) {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
-      assertTrue(firstQueryResult.getDistance() > (1 - epsilon));
+      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < (1 - epsilon));
     }
   }
 
@@ -188,13 +200,12 @@ class MilvusGrpcClientTest {
 
   @org.junit.jupiter.api.Test
   void describeTable() {
-    DescribeTableResponse describeTableResponse = client.describeTable(tableParam);
+    DescribeTableResponse describeTableResponse = client.describeTable(randomTableName);
     assertTrue(describeTableResponse.getResponse().ok());
     assertTrue(describeTableResponse.getTableSchema().isPresent());
 
     String nonExistingTableName = generator.generate(10);
-    TableParam tableParam = new TableParam.Builder(nonExistingTableName).build();
-    describeTableResponse = client.describeTable(tableParam);
+    describeTableResponse = client.describeTable(nonExistingTableName);
     assertFalse(describeTableResponse.getResponse().ok());
     assertFalse(describeTableResponse.getTableSchema().isPresent());
   }
@@ -222,44 +233,27 @@ class MilvusGrpcClientTest {
     insert();
     TimeUnit.SECONDS.sleep(1);
 
-    GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(tableParam);
+    GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(randomTableName);
     assertTrue(getTableRowCountResponse.getResponse().ok());
     assertEquals(size, getTableRowCountResponse.getTableRowCount());
   }
 
   @org.junit.jupiter.api.Test
-  void deleteByRange() {
-    Date today = new Date();
-    Calendar c = Calendar.getInstance();
-    c.setTime(today);
-    c.add(Calendar.DAY_OF_MONTH, -1);
-    Date yesterday = c.getTime();
-    c.setTime(today);
-    c.add(Calendar.DAY_OF_MONTH, 1);
-    Date tomorrow = c.getTime();
-
-    DeleteByRangeParam deleteByRangeParam =
-        new DeleteByRangeParam.Builder(new DateRange(yesterday, tomorrow), randomTableName).build();
-    Response deleteByRangeResponse = client.deleteByRange(deleteByRangeParam);
-    assertTrue(deleteByRangeResponse.ok());
-  }
-
-  @org.junit.jupiter.api.Test
   void preloadTable() {
-    Response preloadTableResponse = client.preloadTable(tableParam);
+    Response preloadTableResponse = client.preloadTable(randomTableName);
     assertTrue(preloadTableResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
   void describeIndex() {
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(tableParam);
+    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomTableName);
     assertTrue(describeIndexResponse.getResponse().ok());
     assertTrue(describeIndexResponse.getIndex().isPresent());
   }
 
   @org.junit.jupiter.api.Test
   void dropIndex() {
-    Response dropIndexResponse = client.dropIndex(tableParam);
+    Response dropIndexResponse = client.dropIndex(randomTableName);
     assertTrue(dropIndexResponse.ok());
   }
 }

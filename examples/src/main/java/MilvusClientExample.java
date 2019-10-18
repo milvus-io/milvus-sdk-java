@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 import io.milvus.client.*;
@@ -31,6 +33,7 @@ public class MilvusClientExample {
     SplittableRandom splittableRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>();
     for (int i = 0; i < vectorCount; ++i) {
+      splittableRandom = splittableRandom.split();
       DoubleStream doubleStream = splittableRandom.doubles(dimension);
       List<Float> vector =
           doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
@@ -80,26 +83,23 @@ public class MilvusClientExample {
             .withIndexFileSize(indexFileSize)
             .withMetricType(metricType)
             .build();
-    TableSchemaParam tableSchemaParam =
-        new TableSchemaParam.Builder(tableSchema).withTimeout(10).build();
-    Response createTableResponse = client.createTable(tableSchemaParam);
+    Response createTableResponse = client.createTable(tableSchema);
     System.out.println(createTableResponse);
 
     // Check whether the table exists
-    TableParam hasTableParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    HasTableResponse hasTableResponse = client.hasTable(hasTableParam);
+    HasTableResponse hasTableResponse = client.hasTable(tableName);
     System.out.println(hasTableResponse);
 
     // Describe the table
-    TableParam describeTableParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    DescribeTableResponse describeTableResponse = client.describeTable(describeTableParam);
+    DescribeTableResponse describeTableResponse = client.describeTable(tableName);
     System.out.println(describeTableResponse);
 
     // Insert randomly generated vectors to table
     final int vectorCount = 100000;
     List<List<Float>> vectors = generateVectors(vectorCount, dimension);
-    vectors.forEach(MilvusClientExample::normalizeVector);
-    InsertParam insertParam = new InsertParam.Builder(tableName, vectors).withTimeout(10).build();
+    vectors =
+        vectors.stream().map(MilvusClientExample::normalizeVector).collect(Collectors.toList());
+    InsertParam insertParam = new InsertParam.Builder(tableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     System.out.println(insertResponse);
     // Insert returns a list of vector ids that you will be using (if you did not supply them
@@ -111,26 +111,21 @@ public class MilvusClientExample {
     TimeUnit.SECONDS.sleep(1);
 
     // Get current row count of table
-    TableParam getTableRowCountParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    GetTableRowCountResponse getTableRowCountResponse =
-        client.getTableRowCount(getTableRowCountParam);
+    GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(tableName);
     System.out.println(getTableRowCountResponse);
 
     // Create index for the table
     // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
     // complete explanation of different index types
-    final IndexType indexType =
-        IndexType
-            .IVF_SQ8;
+    final IndexType indexType = IndexType.IVF_SQ8;
     Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).build();
     CreateIndexParam createIndexParam =
-        new CreateIndexParam.Builder(tableName).withIndex(index).withTimeout(10).build();
+        new CreateIndexParam.Builder(tableName).withIndex(index).build();
     Response createIndexResponse = client.createIndex(createIndexParam);
     System.out.println(createIndexResponse);
 
     // Describe the index for your table
-    TableParam describeIndexParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(describeIndexParam);
+    DescribeIndexResponse describeIndexResponse = client.describeIndex(tableName);
     System.out.println(describeIndexResponse);
 
     // Search vectors
@@ -139,7 +134,7 @@ public class MilvusClientExample {
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchBatchSize);
     final long topK = 10;
     SearchParam searchParam =
-        new SearchParam.Builder(tableName, vectorsToSearch).withTopK(topK).withTimeout(10).build();
+        new SearchParam.Builder(tableName, vectorsToSearch).withTopK(topK).build();
     SearchResponse searchResponse = client.search(searchParam);
     System.out.println(searchResponse);
     if (searchResponse.getResponse().ok()) {
@@ -152,20 +147,18 @@ public class MilvusClientExample {
         // very close to 1 (some precision is lost during the process)
         SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
         if (firstQueryResult.getVectorId() != vectorIds.get(i)
-            || firstQueryResult.getDistance() <= (1 - epsilon)) {
+            || Math.abs(1 - firstQueryResult.getDistance()) > (1 - epsilon)) {
           throw new AssertionError("Wrong results!");
         }
       }
     }
 
     // Drop index for the table
-    TableParam dropIndexParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    Response dropIndexResponse = client.dropIndex(dropIndexParam);
+    Response dropIndexResponse = client.dropIndex(tableName);
     System.out.println(dropIndexResponse);
 
     // Drop table
-    TableParam dropTableParam = new TableParam.Builder(tableName).withTimeout(1).build();
-    Response dropTableResponse = client.dropTable(dropTableParam);
+    Response dropTableResponse = client.dropTable(tableName);
     System.out.println(dropTableResponse);
 
     // Disconnect from Milvus server
