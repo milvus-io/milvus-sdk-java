@@ -190,7 +190,7 @@ class MilvusClientTest {
     for (int i = 0; i < searchSize; i++) {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
-      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < (1 - epsilon));
+      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
     }
   }
 

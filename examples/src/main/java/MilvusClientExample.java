@@ -147,7 +147,7 @@ public class MilvusClientExample {
         // very close to 1 (some precision is lost during the process)
         SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
         if (firstQueryResult.getVectorId() != vectorIds.get(i)
-            || Math.abs(1 - firstQueryResult.getDistance()) > (1 - epsilon)) {
+            || Math.abs(1 - firstQueryResult.getDistance()) > epsilon) {
           throw new AssertionError("Wrong results!");
         }
       }
