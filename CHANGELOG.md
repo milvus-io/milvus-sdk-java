@@ -1,3 +1,9 @@
+### Releases
+---
+- \#40: Release v0.2.0
+    - Remove timeout parameter
+    - Several API changes
+
 ### Bug
 ---
     
