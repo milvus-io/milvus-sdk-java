@@ -6,6 +6,7 @@
 
 ### Bug
 ---
+- \#42: fix search result validation
     
 ### Improvement
 ---
