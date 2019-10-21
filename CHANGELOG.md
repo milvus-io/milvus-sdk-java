@@ -1,5 +1,12 @@
 # Changelog     
 
+## milvus-sdk-java 0.3.0 (TBD)
+
+### Bug
+### Improvement
+### New Feature
+### Task
+
 ## milvus-sdk-java 0.2.0 (2019-10-21)
 
 ### Bug
