@@ -1,10 +1,12 @@
 # Changelog     
 
-## Bug
+## milvus-sdk-java 0.2.0 (2019-10-21)
+
+### Bug
 ---
 - \#42 - fix search result validation
     
-## Improvement
+### Improvement
 ---
 - \#3 - Force channel to request connection in connect()  and some code cleanup
 - \#6 - Update pom & fix deleteByRange error message & update unittest
@@ -18,11 +20,11 @@
 - \#38 - Update examples
 - \#40 - Remove timeout parameter & Several API changes    
 
-## New Feature
+### New Feature
 ---
 - \#16 - add IVF_SQ8_H index type
 
-## Task
+### Task
 ---
 - \#1 - First implementation
 - \#21 - Add javadoc
