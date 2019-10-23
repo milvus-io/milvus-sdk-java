@@ -25,10 +25,12 @@ import javax.annotation.Nonnull;
 public class ConnectParam {
   private final String host;
   private final String port;
+  private final long waitTime;
 
   private ConnectParam(@Nonnull Builder builder) {
     this.host = builder.host;
     this.port = builder.port;
+    this.waitTime = builder.waitTime;
   }
 
   public String getHost() {
@@ -37,6 +39,10 @@ public class ConnectParam {
 
   public String getPort() {
     return port;
+  }
+
+  public long getWaitTime() {
+    return waitTime;
   }
 
   @Override
@@ -49,6 +55,7 @@ public class ConnectParam {
     // Optional parameters - initialized to default values
     private String host = "127.0.0.1";
     private String port = "19530";
+    private long waitTime = 500; // ms
 
     /**
      * Optional. Default to "127.0.0.1".
@@ -69,6 +76,18 @@ public class ConnectParam {
      */
     public Builder withPort(@Nonnull String port) {
       this.port = port;
+      return this;
+    }
+
+    /**
+     * Optional. Default to 500 ms
+     *
+     * @param waitTime Wait time (in ms) for channel to establish a connection. BEWARE: this is not
+     *     timeout, so the program will essentially sleep for the entire duration
+     * @return <code>Builder</code>
+     */
+    public Builder withWaitTime(long waitTime) {
+      this.waitTime = waitTime;
       return this;
     }
 
