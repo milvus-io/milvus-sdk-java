@@ -54,7 +54,7 @@ public class MilvusClientExample {
   public static void main(String[] args) throws InterruptedException, ConnectFailedException {
 
     // You may need to change the following to the host and port of your Milvus server
-    final String host = "192.168.1.149";
+    final String host = "localhost";
     final String port = "19530";
 
     // Create Milvus client
