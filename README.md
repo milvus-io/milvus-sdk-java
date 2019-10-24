@@ -14,13 +14,13 @@ Apache Maven
 <dependency>
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.1</version>
 </dependency>
 ```
 
 Gradle/Grails 
 
-`compile 'io.milvus:milvus-sdk-java:0.2.0'`
+`compile 'io.milvus:milvus-sdk-java:0.2.1'`
 
 ### Examples
 

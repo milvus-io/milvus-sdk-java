@@ -70,8 +70,9 @@ public class MilvusGrpcClient implements MilvusClient {
       ConnectivityState connectivityState;
       connectivityState = channel.getState(true);
 
-      logInfo("Waiting to connect...");
-      TimeUnit.MILLISECONDS.sleep(500);
+      logInfo(
+          "Waiting for {0} ms for channel to establish connection...", connectParam.getWaitTime());
+      TimeUnit.MILLISECONDS.sleep(connectParam.getWaitTime());
 
       connectivityState = channel.getState(false);
       if (connectivityState != ConnectivityState.READY) {

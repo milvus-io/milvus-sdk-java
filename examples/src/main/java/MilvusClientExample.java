@@ -42,7 +42,7 @@ public class MilvusClientExample {
     return vectors;
   }
 
-  // Helper function that normalizes a vector if you are using IP (Inner product) as your metric
+  // Helper function that normalizes a vector if you are using IP (Inner Product) as your metric
   // type
   static List<Float> normalizeVector(List<Float> vector) {
     float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
@@ -61,7 +61,9 @@ public class MilvusClientExample {
     MilvusClient client = new MilvusGrpcClient();
 
     // Connect to Milvus server
-    ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();
+    final long waitTime = 1000; // Wait 1000 ms for client to establish a connection
+    ConnectParam connectParam =
+        new ConnectParam.Builder().withHost(host).withPort(port).withWaitTime(waitTime).build();
     try {
       Response connectResponse = client.connect(connectParam);
     } catch (ConnectFailedException e) {
@@ -77,7 +79,7 @@ public class MilvusClientExample {
     final String tableName = "example"; // table name
     final long dimension = 128; // dimension of each vector
     final long indexFileSize = 1024; // maximum size (in MB) of each index file
-    final MetricType metricType = MetricType.IP; // we choose IP (Inner project) as our metric type
+    final MetricType metricType = MetricType.IP; // we choose IP (Inner Product) as our metric type
     TableSchema tableSchema =
         new TableSchema.Builder(tableName, dimension)
             .withIndexFileSize(indexFileSize)

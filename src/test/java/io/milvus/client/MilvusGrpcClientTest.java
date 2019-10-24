@@ -52,7 +52,7 @@ class MilvusClientTest {
     return vectors;
   }
 
-  // Helper function that normalizes a vector if you are using IP (Inner product) as your metric
+  // Helper function that normalizes a vector if you are using IP (Inner Product) as your metric
   // type
   static List<Float> normalizeVector(List<Float> vector) {
     float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);

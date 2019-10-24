@@ -1,11 +1,19 @@
 # Changelog     
 
-## milvus-sdk-java 0.3.0 (TBD)
+## milvus-sdk-java 0.2.1 (TBD)
 
 ### Bug
+---
+
 ### Improvement
-### New Feature
+---
+- \#49 - Add waitTime option in ConnectParam
+
+### Feature
+---
+
 ### Task
+---
 
 ## milvus-sdk-java 0.2.0 (2019-10-21)
 
