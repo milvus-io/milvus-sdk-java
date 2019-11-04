@@ -7,6 +7,15 @@ If you want to contribute to this repo, please read our [contribution guidelines
 
 ## Getting started
 
+You will need Java 8 or higher.
+
+Milvus version compatibility
+
+|Milvus version| Recommended SDK version|
+|:-----:|:-----:|
+| 0.5.0 | 0.2.1 | 
+| 0.5.1 | 0.2.1 | 
+
 ### Dependency 
 
 Apache Maven

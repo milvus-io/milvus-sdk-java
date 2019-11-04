@@ -70,16 +70,17 @@ public class MilvusGrpcClient implements MilvusClient {
       ConnectivityState connectivityState;
       connectivityState = channel.getState(true);
 
-      logInfo(
-          "Waiting for {0} ms for channel to establish connection...", connectParam.getWaitTime());
-      TimeUnit.MILLISECONDS.sleep(connectParam.getWaitTime());
+      long timeout = connectParam.getTimeout();
+      logInfo("Trying to connect...Timeout in {0} ms", timeout);
 
-      connectivityState = channel.getState(false);
-      if (connectivityState != ConnectivityState.READY) {
-        logSevere(
-            "Connect failed! {0}\nConnectivity state = {1}",
-            connectParam.toString(), connectivityState);
-        throw new ConnectFailedException("Connectivity state = " + connectivityState);
+      final long checkFrequency = 100; // ms
+      while (channel.getState(false) != ConnectivityState.READY) {
+        if (timeout <= 0) {
+          logSevere("Connect timeout! {0}", connectParam.toString());
+          throw new ConnectFailedException("Connect timeout");
+        }
+        TimeUnit.MILLISECONDS.sleep(checkFrequency);
+        timeout -= checkFrequency;
       }
 
       blockingStub = io.milvus.grpc.MilvusServiceGrpc.newBlockingStub(channel);

@@ -61,9 +61,7 @@ public class MilvusClientExample {
     MilvusClient client = new MilvusGrpcClient();
 
     // Connect to Milvus server
-    final long waitTime = 1000; // Wait 1000 ms for client to establish a connection
-    ConnectParam connectParam =
-        new ConnectParam.Builder().withHost(host).withPort(port).withWaitTime(waitTime).build();
+    ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();
     try {
       Response connectResponse = client.connect(connectParam);
     } catch (ConnectFailedException e) {
@@ -120,7 +118,7 @@ public class MilvusClientExample {
     // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
     // complete explanation of different index types
     final IndexType indexType = IndexType.IVF_SQ8;
-    Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).build();
+    Index index = new Index.Builder().withIndexType(indexType).build();
     CreateIndexParam createIndexParam =
         new CreateIndexParam.Builder(tableName).withIndex(index).build();
     Response createIndexResponse = client.createIndex(createIndexParam);
@@ -170,7 +168,5 @@ public class MilvusClientExample {
       System.out.println("Failed to disconnect: " + e.toString());
       throw e;
     }
-
-    return;
   }
 }
