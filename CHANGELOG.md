@@ -1,6 +1,6 @@
 # Changelog     
 
-## milvus-sdk-java 0.2.1 (TBD)
+## milvus-sdk-java 0.2.1 (2018-11-4)
 
 ### Bug
 ---
@@ -8,6 +8,8 @@
 ### Improvement
 ---
 - \#49 - Add waitTime option in ConnectParam
+- \#51 - Change connect waitTime to timeout
+- \#52 - Add IVF_PQ IndexType
 
 ### Feature
 ---
