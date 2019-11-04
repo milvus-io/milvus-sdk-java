@@ -25,10 +25,12 @@ import javax.annotation.Nonnull;
 public class ConnectParam {
   private final String host;
   private final String port;
+  private final long timeout;
 
   private ConnectParam(@Nonnull Builder builder) {
     this.host = builder.host;
     this.port = builder.port;
+    this.timeout = builder.timeout;
   }
 
   public String getHost() {
@@ -37,6 +39,10 @@ public class ConnectParam {
 
   public String getPort() {
     return port;
+  }
+
+  public long getTimeout() {
+    return timeout;
   }
 
   @Override
@@ -49,6 +55,7 @@ public class ConnectParam {
     // Optional parameters - initialized to default values
     private String host = "127.0.0.1";
     private String port = "19530";
+    private long timeout = 10000; // ms
 
     /**
      * Optional. Default to "127.0.0.1".
@@ -69,6 +76,17 @@ public class ConnectParam {
      */
     public Builder withPort(@Nonnull String port) {
       this.port = port;
+      return this;
+    }
+
+    /**
+     * Optional. Default to 10000 ms
+     *
+     * @param timeout Timeout in ms for client to establish a connection to server
+     * @return <code>Builder</code>
+     */
+    public Builder withTimeout(long timeout) {
+      this.timeout = timeout;
       return this;
     }
 

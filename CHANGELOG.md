@@ -1,5 +1,22 @@
 # Changelog     
 
+## milvus-sdk-java 0.2.2 (2018-11-4)
+
+### Bug
+---
+
+### Improvement
+---
+- \#49 - Add waitTime option in ConnectParam
+- \#51 - Change connect waitTime to timeout
+- \#52 - Change IVF_SQ8H to IVF_SQ8_H
+
+### Feature
+---
+
+### Task
+---
+
 ## milvus-sdk-java 0.2.0 (2019-10-21)
 
 ### Bug
