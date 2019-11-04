@@ -9,7 +9,7 @@
 ---
 - \#49 - Add waitTime option in ConnectParam
 - \#51 - Change connect waitTime to timeout
-- \#52 - Add IVF_PQ IndexType
+- \#52 - Add IVF_PQ IndexType and change IVF_SQ8H to IVF_SQ8_H
 
 ### Feature
 ---
