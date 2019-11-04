@@ -40,9 +40,13 @@ import java.util.Optional;
  * search performance at high precision, and needs much less memory. Compared to non-graph-based
  * algorithms, it is faster to achieve the same search precision.
  *
- * 5. IVF_SQ8H - An enhanced index algorithm of IVF_SQ8. It supports hybrid computation on both CPU and GPU,
+ * 5. IVF_SQ8_H - An enhanced index algorithm of IVF_SQ8. It supports hybrid computation on both CPU and GPU,
  * which significantly improves the search performance. To use this index type, make sure both cpu and gpu are added as
  * resources for search usage in the Milvus configuration file.
+ *
+ * 6. IVF_PQ - Indexing method built based on product quantization. The input vectors are split into distinct
+ * sub-vectors which are then quantized separately. Vector size can be reduced to 1/8 or 1/16 of the original size.
+ * If you choose this index, note that there is an inevitable trade-off between memory and search accuracy.
  * </pre>
  */
 public enum IndexType {
@@ -51,7 +55,8 @@ public enum IndexType {
   IVFLAT(2),
   IVF_SQ8(3),
   NSG(4),
-  IVF_SQ8H(5),
+  IVF_SQ8_H(5),
+  IVF_PQ(6),
 
   UNKNOWN(-1);
 

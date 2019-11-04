@@ -39,7 +39,7 @@ public interface MilvusClient {
    * ConnectParam connectParam = new ConnectParam.Builder()
    *                                             .withHost("localhost")
    *                                             .withPort("19530")
-   *                                             .withWaitTime(500)
+   *                                             .withTimeout(10000)
    *                                             .build();
    * </code>
    * </pre>
