@@ -9,12 +9,12 @@ If you want to contribute to this repo, please read our [contribution guidelines
 
 You will need Java 8 or higher.
 
-Milvus version compatibility
+Milvus version compatibility:
 
-|Milvus version| Recommended SDK version|
+|Milvus version| SDK version|
 |:-----:|:-----:|
-| 0.5.0 | 0.2.1 | 
-| 0.5.1 | 0.2.1 | 
+| 0.5.0 | 0.2.2 | 
+| 0.5.1 | 0.2.2 | 
 
 ### Dependency 
 
@@ -23,13 +23,13 @@ Apache Maven
 <dependency>
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.2</version>
 </dependency>
 ```
 
 Gradle/Grails 
 
-`compile 'io.milvus:milvus-sdk-java:0.2.1'`
+`compile 'io.milvus:milvus-sdk-java:0.2.2'`
 
 ### Examples
 
