@@ -64,7 +64,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .keepAliveTime(
                   connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
               .keepAliveTimeout(
-                  connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.SECONDS)
+                  connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
               .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
               .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
               .build();
