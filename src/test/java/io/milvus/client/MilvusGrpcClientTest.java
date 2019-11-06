@@ -92,13 +92,49 @@ class MilvusClientTest {
   void idleTest() throws InterruptedException, ConnectFailedException {
     MilvusClient client = new MilvusGrpcClient();
     ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withIdleTimeout(1, TimeUnit.SECONDS).build();
+        new ConnectParam.Builder()
+            .withHost("localhost")
+            .withIdleTimeout(1, TimeUnit.SECONDS)
+            .build();
     client.connect(connectParam);
     TimeUnit.SECONDS.sleep(2);
-    //Channel should be idle
+    // Channel should be idle
     assertFalse(client.isConnected());
-    //A new RPC would take the channel out of idle mode
+    // A new RPC would take the channel out of idle mode
     assertTrue(client.showTables().ok());
+  }
+
+  @org.junit.jupiter.api.Test
+  void setInvalidConnectParam() {
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          ConnectParam connectParam = new ConnectParam.Builder().withPort("66666").build();
+        });
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          ConnectParam connectParam =
+              new ConnectParam.Builder().withConnectTimeout(-1, TimeUnit.MILLISECONDS).build();
+        });
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          ConnectParam connectParam =
+              new ConnectParam.Builder().withKeepAliveTime(-1, TimeUnit.MILLISECONDS).build();
+        });
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          ConnectParam connectParam =
+              new ConnectParam.Builder().withKeepAliveTimeout(-1, TimeUnit.MILLISECONDS).build();
+        });
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> {
+          ConnectParam connectParam =
+              new ConnectParam.Builder().withIdleTimeout(-1, TimeUnit.MILLISECONDS).build();
+        });
   }
 
   @org.junit.jupiter.api.Test
