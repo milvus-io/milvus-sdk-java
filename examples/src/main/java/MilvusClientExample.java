@@ -54,7 +54,7 @@ public class MilvusClientExample {
   public static void main(String[] args) throws InterruptedException, ConnectFailedException {
 
     // You may need to change the following to the host and port of your Milvus server
-    final String host = "localhost";
+    final String host = "192.168.1.149";
     final String port = "19530";
 
     // Create Milvus client
@@ -137,7 +137,7 @@ public class MilvusClientExample {
         new SearchParam.Builder(tableName, vectorsToSearch).withTopK(topK).build();
     SearchResponse searchResponse = client.search(searchParam);
     System.out.println(searchResponse);
-    if (searchResponse.getResponse().ok()) {
+    if (searchResponse.ok()) {
       List<List<SearchResponse.QueryResult>> queryResultsList =
           searchResponse.getQueryResultsList();
       final double epsilon = 0.001;
