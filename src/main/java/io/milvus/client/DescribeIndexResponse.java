@@ -47,6 +47,10 @@ public class DescribeIndexResponse {
     return response;
   }
 
+  public boolean ok() {
+    return response.ok();
+  }
+
   @Override
   public String toString() {
     return String.format(

@@ -1,5 +1,21 @@
 # Changelog     
 
+## milvus-sdk-java 0.3.0 (TBD)
+
+### Bug
+---
+
+### Improvement
+---
+- \#56 - Add keepalive and idleTimeout settings
+- \#57 - add ok() in other types of Response
+
+### Feature
+---
+
+### Task
+---
+
 ## milvus-sdk-java 0.2.2 (2018-11-4)
 
 ### Bug

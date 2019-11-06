@@ -39,6 +39,10 @@ public class HasTableResponse {
     return response;
   }
 
+  public boolean ok() {
+    return response.ok();
+  }
+
   @Override
   public String toString() {
     return String.format("HasTableResponse {%s, has table = %s}", response.toString(), hasTable);

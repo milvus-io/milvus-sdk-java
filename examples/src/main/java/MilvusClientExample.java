@@ -137,7 +137,7 @@ public class MilvusClientExample {
         new SearchParam.Builder(tableName, vectorsToSearch).withTopK(topK).build();
     SearchResponse searchResponse = client.search(searchParam);
     System.out.println(searchResponse);
-    if (searchResponse.getResponse().ok()) {
+    if (searchResponse.ok()) {
       List<List<SearchResponse.QueryResult>> queryResultsList =
           searchResponse.getQueryResultsList();
       final double epsilon = 0.001;
