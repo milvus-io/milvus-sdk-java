@@ -297,18 +297,4 @@ class MilvusClientTest {
     Response dropIndexResponse = client.dropIndex(randomTableName);
     assertTrue(dropIndexResponse.ok());
   }
-
-  @org.junit.jupiter.api.Test
-  void issue58() {
-    Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).withNList(16384).build();
-    CreateIndexParam createIndexParam =
-        new CreateIndexParam.Builder(randomTableName).withIndex(index).build();
-    Response createIndexResponse = client.createIndex(createIndexParam);
-
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomTableName);
-
-    Response dropIndexResponse = client.dropIndex(randomTableName);
-
-    describeIndexResponse = client.describeIndex(randomTableName);
-  }
 }
