@@ -22,7 +22,7 @@ package io.milvus.client;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.2.2";
+  String clientVersion = "0.3.0";
 
   /** @return the current Milvus client version */
   default String getClientVersion() {
@@ -39,7 +39,11 @@ public interface MilvusClient {
    * ConnectParam connectParam = new ConnectParam.Builder()
    *                                             .withHost("localhost")
    *                                             .withPort("19530")
-   *                                             .withTimeout(10000)
+   *                                             .withConnectTimeout(10, TimeUnit.SECONDS)
+   *                                             .withKeepAliveTime(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+   *                                             .withKeepAliveTimeout(20, TimeUnit.SECONDS)
+   *                                             .keepAliveWithoutCalls(false)
+   *                                             .withIdleTimeout(24, TimeUnit.HOURS)
    *                                             .build();
    * </code>
    * </pre>

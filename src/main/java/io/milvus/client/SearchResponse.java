@@ -80,6 +80,10 @@ public class SearchResponse {
     return response;
   }
 
+  public boolean ok() {
+    return response.ok();
+  }
+
   @Override
   public String toString() {
     return String.format(

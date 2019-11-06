@@ -89,11 +89,16 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void connectInvalidPort() {
+  void idleTest() throws InterruptedException, ConnectFailedException {
     MilvusClient client = new MilvusGrpcClient();
     ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withPort("66666").build();
-    assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
+        new ConnectParam.Builder().withHost("localhost").withIdleTimeout(1, TimeUnit.SECONDS).build();
+    client.connect(connectParam);
+    TimeUnit.SECONDS.sleep(2);
+    //Channel should be idle
+    assertFalse(client.isConnected());
+    //A new RPC would take the channel out of idle mode
+    assertTrue(client.showTables().ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -120,7 +125,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void hasTable() {
     HasTableResponse hasTableResponse = client.hasTable(randomTableName);
-    assertTrue(hasTableResponse.getResponse().ok());
+    assertTrue(hasTableResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -145,7 +150,7 @@ class MilvusClientTest {
     List<List<Float>> vectors = generateVectors(size, dimension);
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.getResponse().ok());
+    assertTrue(insertResponse.ok());
     assertEquals(size, insertResponse.getVectorIds().size());
   }
 
@@ -155,7 +160,7 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.getResponse().ok());
+    assertTrue(insertResponse.ok());
     List<Long> vectorIds = insertResponse.getVectorIds();
     assertEquals(size, vectorIds.size());
 
@@ -182,7 +187,7 @@ class MilvusClientTest {
             .withDateRanges(queryRanges)
             .build();
     SearchResponse searchResponse = client.search(searchParam);
-    assertTrue(searchResponse.getResponse().ok());
+    assertTrue(searchResponse.ok());
     System.out.println(searchResponse);
     List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
     assertEquals(searchSize, queryResultsList.size());
@@ -201,19 +206,19 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void describeTable() {
     DescribeTableResponse describeTableResponse = client.describeTable(randomTableName);
-    assertTrue(describeTableResponse.getResponse().ok());
+    assertTrue(describeTableResponse.ok());
     assertTrue(describeTableResponse.getTableSchema().isPresent());
 
     String nonExistingTableName = generator.generate(10);
     describeTableResponse = client.describeTable(nonExistingTableName);
-    assertFalse(describeTableResponse.getResponse().ok());
+    assertFalse(describeTableResponse.ok());
     assertFalse(describeTableResponse.getTableSchema().isPresent());
   }
 
   @org.junit.jupiter.api.Test
   void showTables() {
     ShowTablesResponse showTablesResponse = client.showTables();
-    assertTrue(showTablesResponse.getResponse().ok());
+    assertTrue(showTablesResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -234,7 +239,7 @@ class MilvusClientTest {
     TimeUnit.SECONDS.sleep(1);
 
     GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(randomTableName);
-    assertTrue(getTableRowCountResponse.getResponse().ok());
+    assertTrue(getTableRowCountResponse.ok());
     assertEquals(size, getTableRowCountResponse.getTableRowCount());
   }
 
@@ -247,7 +252,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void describeIndex() {
     DescribeIndexResponse describeIndexResponse = client.describeIndex(randomTableName);
-    assertTrue(describeIndexResponse.getResponse().ok());
+    assertTrue(describeIndexResponse.ok());
     assertTrue(describeIndexResponse.getIndex().isPresent());
   }
 
@@ -255,5 +260,19 @@ class MilvusClientTest {
   void dropIndex() {
     Response dropIndexResponse = client.dropIndex(randomTableName);
     assertTrue(dropIndexResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
+  void issue58() {
+    Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).withNList(16384).build();
+    CreateIndexParam createIndexParam =
+        new CreateIndexParam.Builder(randomTableName).withIndex(index).build();
+    Response createIndexResponse = client.createIndex(createIndexParam);
+
+    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomTableName);
+
+    Response dropIndexResponse = client.dropIndex(randomTableName);
+
+    describeIndexResponse = client.describeIndex(randomTableName);
   }
 }
