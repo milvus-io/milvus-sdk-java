@@ -9,6 +9,8 @@
 ---
 - \#56 - Add keepalive and idleTimeout settings
 - \#57 - add ok() in other types of Response
+- \#62 - Change GRPC proto (and related code) to increase search result's transmission speed
+- \#63 - Make some functions and constructors package-private if necessary
 
 ### Feature
 ---
