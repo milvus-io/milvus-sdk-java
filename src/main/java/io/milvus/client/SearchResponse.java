@@ -120,7 +120,7 @@ public class SearchResponse {
     private final long vectorId;
     private final float distance;
 
-    public QueryResult(long vectorId, float distance) {
+    QueryResult(long vectorId, float distance) {
       this.vectorId = vectorId;
       this.distance = distance;
     }

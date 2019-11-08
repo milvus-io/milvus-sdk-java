@@ -29,7 +29,7 @@ public class DescribeIndexResponse {
   private final Response response;
   private final Index index;
 
-  public DescribeIndexResponse(Response response, @Nullable Index index) {
+  DescribeIndexResponse(Response response, @Nullable Index index) {
     this.response = response;
     this.index = index;
   }
