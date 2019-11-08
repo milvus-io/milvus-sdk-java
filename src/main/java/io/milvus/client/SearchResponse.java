@@ -19,8 +19,10 @@
 
 package io.milvus.client;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 /**
  * Contains the returned <code>response</code> and <code>queryResultsList</code> for <code>search
@@ -28,12 +30,26 @@ import java.util.List;
  */
 public class SearchResponse {
 
-  private final Response response;
-  private final List<List<QueryResult>> queryResultsList;
+  private Response response;
+  private int numQueries;
+  private long topK;
+  private List<List<Long>> resultIdsList;
+  private List<List<Float>> resultDistancesList;
 
-  public SearchResponse(Response response, List<List<QueryResult>> queryResultsList) {
-    this.response = response;
-    this.queryResultsList = queryResultsList;
+  public int getNumQueries() {
+    return numQueries;
+  }
+
+  void setNumQueries(int numQueries) {
+    this.numQueries = numQueries;
+  }
+
+  public long getTopK() {
+    return topK;
+  }
+
+  void setTopK(long topK) {
+    this.topK = topK;
   }
 
   /**
@@ -41,7 +57,17 @@ public class SearchResponse {
    *     the query result of a vector.
    */
   public List<List<QueryResult>> getQueryResultsList() {
-    return queryResultsList;
+    return IntStream.range(0, numQueries)
+        .mapToObj(
+            i ->
+                LongStream.range(0, topK)
+                    .mapToObj(
+                        j ->
+                            new QueryResult(
+                                resultIdsList.get(i).get((int) j),
+                                resultDistancesList.get(i).get((int) j)))
+                    .collect(Collectors.toList()))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -49,35 +75,31 @@ public class SearchResponse {
    *     of a vector.
    */
   public List<List<Long>> getResultIdsList() {
-    List<List<Long>> resultIdsList = new ArrayList<>();
-    for (List<QueryResult> queryResults : queryResultsList) {
-      List<Long> resultIds = new ArrayList<>();
-      for (QueryResult queryResult : queryResults) {
-        resultIds.add(queryResult.vectorId);
-      }
-      resultIdsList.add(resultIds);
-    }
     return resultIdsList;
+  }
+
+  void setResultIdsList(List<List<Long>> resultIdsList) {
+    this.resultIdsList = resultIdsList;
   }
 
   /**
    * @return @return a <code>List</code> of result distances. Each inner <code>List</code> contains
    *     the result distances of a vector.
    */
-  public List<List<Double>> getResultDistancesList() {
-    List<List<Double>> resultDistancesList = new ArrayList<>();
-    for (List<QueryResult> queryResults : queryResultsList) {
-      List<Double> resultDistances = new ArrayList<>();
-      for (QueryResult queryResult : queryResults) {
-        resultDistances.add(queryResult.distance);
-      }
-      resultDistancesList.add(resultDistances);
-    }
+  public List<List<Float>> getResultDistancesList() {
     return resultDistancesList;
+  }
+
+  void setResultDistancesList(List<List<Float>> resultDistancesList) {
+    this.resultDistancesList = resultDistancesList;
   }
 
   public Response getResponse() {
     return response;
+  }
+
+  void setResponse(Response response) {
+    this.response = response;
   }
 
   public boolean ok() {
@@ -87,8 +109,7 @@ public class SearchResponse {
   @Override
   public String toString() {
     return String.format(
-        "SearchResponse {%s, returned results for %d queries}",
-        response.toString(), this.queryResultsList.size());
+        "SearchResponse {%s, returned results for %d queries}", response.toString(), numQueries);
   }
 
   /**
@@ -97,9 +118,9 @@ public class SearchResponse {
    */
   public static class QueryResult {
     private final long vectorId;
-    private final double distance;
+    private final float distance;
 
-    public QueryResult(long vectorId, double distance) {
+    public QueryResult(long vectorId, float distance) {
       this.vectorId = vectorId;
       this.distance = distance;
     }
@@ -108,7 +129,7 @@ public class SearchResponse {
       return vectorId;
     }
 
-    public double getDistance() {
+    public float getDistance() {
       return distance;
     }
   }

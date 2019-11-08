@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import org.apache.commons.text.RandomStringGenerator;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -66,7 +67,7 @@ class MilvusClientTest {
 
     client = new MilvusGrpcClient();
     ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withPort("19530").build();
+        new ConnectParam.Builder().withHost("192.168.1.113").withPort("19530").build();
     client.connect(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
@@ -191,7 +192,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void search() throws InterruptedException {
+  void search() throws InterruptedException, IOException {
     List<List<Float>> vectors = generateVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
@@ -215,7 +216,7 @@ class MilvusClientTest {
     c.add(Calendar.DAY_OF_MONTH, 1);
     Date tomorrow = c.getTime();
     queryRanges.add(new DateRange(yesterday, tomorrow));
-    final long topK = 1000;
+    final long topK = 10;
     SearchParam searchParam =
         new SearchParam.Builder(randomTableName, vectorsToSearch)
             .withTopK(topK)
@@ -224,14 +225,19 @@ class MilvusClientTest {
             .build();
     SearchResponse searchResponse = client.search(searchParam);
     assertTrue(searchResponse.ok());
-    System.out.println(searchResponse);
+    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+    assertEquals(searchSize, resultIdsList.size());
+    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+    assertEquals(searchSize, resultDistancesList.size());
     List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
     assertEquals(searchSize, queryResultsList.size());
     final double epsilon = 0.001;
     for (int i = 0; i < searchSize; i++) {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
+      assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
       assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
+      assertTrue(Math.abs(1 - resultDistancesList.get(i).get(0)) < epsilon);
     }
   }
 

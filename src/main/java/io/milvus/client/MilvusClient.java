@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import java.io.IOException;
+
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
@@ -175,7 +177,7 @@ public interface MilvusClient {
    * @see SearchResponse.QueryResult
    * @see Response
    */
-  SearchResponse search(SearchParam searchParam);
+  SearchResponse search(SearchParam searchParam) throws IOException;
 
   /**
    * Searches vectors in specific files specified by <code>searchInFilesParam</code>
@@ -202,7 +204,7 @@ public interface MilvusClient {
    * @see SearchResponse.QueryResult
    * @see Response
    */
-  SearchResponse searchInFiles(SearchInFilesParam searchInFilesParam);
+  SearchResponse searchInFiles(SearchInFilesParam searchInFilesParam) throws IOException;
 
   /**
    * Describes table
