@@ -741,11 +741,17 @@ public class MilvusGrpcClient implements MilvusClient {
 
     final int numQueries = (int) topKQueryResult.getRowNum();
     final int topK =
-        topKQueryResult.getIdsCount() / numQueries; // Guaranteed to be disable from server side
+        numQueries == 0
+            ? 0
+            : topKQueryResult.getIdsCount()
+                / numQueries; // Guaranteed to be divisible from server side
 
-    List<List<Long>> resultIdsList = ListUtils.partition(topKQueryResult.getIdsList(), topK);
-    List<List<Float>> resultDistancesList =
-        ListUtils.partition(topKQueryResult.getDistancesList(), topK);
+    List<List<Long>> resultIdsList = new ArrayList<>();
+    List<List<Float>> resultDistancesList = new ArrayList<>();
+    if (topK > 0) {
+      resultIdsList = ListUtils.partition(topKQueryResult.getIdsList(), topK);
+      resultDistancesList = ListUtils.partition(topKQueryResult.getDistancesList(), topK);
+    }
 
     SearchResponse searchResponse = new SearchResponse();
     searchResponse.setNumQueries(numQueries);
