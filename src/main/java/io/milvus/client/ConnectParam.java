@@ -202,8 +202,8 @@ public class ConnectParam {
     }
 
     /**
-     * Optional. Set the duration without ongoing RPCs before going to idle mode. Defaults to 24
-     * hour.
+     * Optional. Set the duration without ongoing RPCs before going to idle mode.
+     * A new RPC would take the channel out of idle mode. Defaults to 24 hour.
      *
      * @see <a
      *     href="https://grpc.github.io/grpc-java/javadoc/io/grpc/ManagedChannelBuilder.html#idleTimeout-long-java.util.concurrent.TimeUnit-">
