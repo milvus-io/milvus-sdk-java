@@ -21,7 +21,6 @@ package io.milvus.client;
 
 import org.apache.commons.text.RandomStringGenerator;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -192,7 +191,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void search() throws InterruptedException, IOException {
+  void search() throws InterruptedException {
     List<List<Float>> vectors = generateVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
