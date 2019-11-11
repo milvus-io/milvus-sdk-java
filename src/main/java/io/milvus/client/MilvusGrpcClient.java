@@ -70,8 +70,7 @@ public class MilvusGrpcClient implements MilvusClient {
               .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
               .build();
 
-      ConnectivityState connectivityState;
-      connectivityState = channel.getState(true);
+      channel.getState(true);
 
       long timeout = connectParam.getConnectTimeout(TimeUnit.MILLISECONDS);
       logInfo("Trying to connect...Timeout in {0} ms", timeout);
@@ -95,7 +94,9 @@ public class MilvusGrpcClient implements MilvusClient {
       throw new ConnectFailedException("Exception occurred: " + e.toString());
     }
 
-    logInfo("Connected successfully!\n{0}", connectParam.toString());
+    logInfo(
+        "Connection established successfully to host={0}, port={1}",
+        connectParam.getHost(), connectParam.getPort());
     return new Response(Response.Status.SUCCESS);
   }
 
