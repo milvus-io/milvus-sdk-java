@@ -4,6 +4,7 @@
 
 ### Bug
 ---
+- \#64 - Search failed with exception if search result is empty
 
 ### Improvement
 ---
