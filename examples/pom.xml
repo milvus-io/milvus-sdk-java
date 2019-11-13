@@ -45,6 +45,7 @@
     </properties>
 
     <!--  For development use  -->
+    <!--  Include this if you want to try the latest SNAPSHOT version  -->
     <repositories>
         <repository>
             <id>oss.sonatype.org-snapshot</id>
@@ -62,7 +63,7 @@
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>0.3.0</version>
         </dependency>
     </dependencies>
 

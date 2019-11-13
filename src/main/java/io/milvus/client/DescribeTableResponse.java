@@ -30,7 +30,7 @@ public class DescribeTableResponse {
   private final Response response;
   private final TableSchema tableSchema;
 
-  public DescribeTableResponse(Response response, @Nullable TableSchema tableSchema) {
+  DescribeTableResponse(Response response, @Nullable TableSchema tableSchema) {
     this.response = response;
     this.tableSchema = tableSchema;
   }
