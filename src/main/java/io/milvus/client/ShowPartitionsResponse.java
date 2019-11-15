@@ -22,24 +22,23 @@ package io.milvus.client;
 import java.util.List;
 
 public class ShowPartitionsResponse {
-    private final Response response;
-    private final List<Partition> partitionList;
+  private final Response response;
+  private final List<Partition> partitionList;
 
-    ShowPartitionsResponse(Response response, List<Partition> partitionList) {
-        this.response = response;
-        this.partitionList = partitionList;
-    }
+  ShowPartitionsResponse(Response response, List<Partition> partitionList) {
+    this.response = response;
+    this.partitionList = partitionList;
+  }
 
-    public List<Partition> getPartitionList() {
-        return partitionList;
-    }
+  public List<Partition> getPartitionList() {
+    return partitionList;
+  }
 
-    public Response getResponse() {
-        return response;
-    }
+  public Response getResponse() {
+    return response;
+  }
 
-    public boolean ok() {
-        return response.ok();
-    }
-
+  public boolean ok() {
+    return response.ok();
+  }
 }

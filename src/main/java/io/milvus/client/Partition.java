@@ -22,52 +22,58 @@ package io.milvus.client;
 import javax.annotation.Nonnull;
 
 public class Partition {
+  private final String tableName;
+  private final String partitionName;
+  private final String tag;
+
+  private Partition(@Nonnull Builder builder) {
+    this.tableName = builder.tableName;
+    this.partitionName = builder.partitionName;
+    this.tag = builder.tag;
+  }
+
+  public String getTableName() {
+    return tableName;
+  }
+
+  public String getPartitionName() {
+    return partitionName;
+  }
+
+  public String getTag() {
+    return tag;
+  }
+
+  @Override
+  public String toString() {
+    return "PartitionParam {"
+        + "tableName='"
+        + tableName
+        + '\''
+        + ", partitionName='"
+        + partitionName
+        + '\''
+        + ", tag='"
+        + tag
+        + '\''
+        + '}';
+  }
+
+  /** Builder for <code>Partition</code> */
+  public static class Builder {
+    // Required parameters
     private final String tableName;
     private final String partitionName;
     private final String tag;
 
-    private Partition(@Nonnull Builder builder) {
-        this.tableName = builder.tableName;
-        this.partitionName = builder.partitionName;
-        this.tag = builder.tag;
+    public Builder(@Nonnull String tableName, @Nonnull String partitionName, @Nonnull String tag) {
+      this.tableName = tableName;
+      this.partitionName = partitionName;
+      this.tag = tag;
     }
 
-    public String getTableName() {
-        return tableName;
+    public Partition build() {
+      return new Partition(this);
     }
-
-    public String getPartitionName() {
-        return partitionName;
-    }
-
-    public String getTag() {
-        return tag;
-    }
-
-    @Override
-    public String toString() {
-        return "PartitionParam {" +
-                "tableName='" + tableName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", tag='" + tag + '\'' +
-                '}';
-    }
-
-    /** Builder for <code>Partition</code> */
-    public static class Builder {
-        // Required parameters
-        private final String tableName;
-        private final String partitionName;
-        private final String tag;
-
-        public Builder(@Nonnull String tableName, @Nonnull String partitionName, @Nonnull String tag) {
-            this.tableName = tableName;
-            this.partitionName = partitionName;
-            this.tag = tag;
-        }
-
-        public Partition build() {
-            return new Partition(this);
-        }
-    }
+  }
 }

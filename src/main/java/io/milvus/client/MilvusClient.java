@@ -33,7 +33,7 @@ public interface MilvusClient {
    * Connects to Milvus server
    *
    * @param connectParam the <code>ConnectParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * ConnectParam connectParam = new ConnectParam.Builder()
@@ -56,8 +56,10 @@ public interface MilvusClient {
    */
   Response connect(ConnectParam connectParam) throws ConnectFailedException;
 
-  /** @return <code>true</code> if the client is connected to Milvus server.
-   * The channel's connectivity state is READY.*/
+  /**
+   * @return <code>true</code> if the client is connected to Milvus server. The channel's
+   *     connectivity state is READY.
+   */
   boolean isConnected();
 
   /**
@@ -73,7 +75,7 @@ public interface MilvusClient {
    * Creates table specified by <code>tableSchemaParam</code>
    *
    * @param tableSchema the <code>TableSchema</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * TableSchema tableSchema = new TableSchema.Builder(tableName, dimension)
@@ -113,7 +115,7 @@ public interface MilvusClient {
    * Creates index specified by <code>indexParam</code>
    *
    * @param createIndexParam the <code>CreateIndexParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * Index index = new Index.Builder()
@@ -138,7 +140,7 @@ public interface MilvusClient {
    * Creates a partition specified by <code>PartitionParam</code>
    *
    * @param partition the <code>PartitionParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * Partition partition = new Partition.Builder(tableName, partitionName, tag).build();
@@ -163,11 +165,11 @@ public interface MilvusClient {
 
   /**
    * Drops partition specified by <code>partitionName</code>
+   *
    * @param partitionName partition name
    * @see Response
    */
   Response dropPartition(String partitionName);
-
 
   /**
    * Drops partition specified by <code>tableName</code> and <code>tag</code>
@@ -182,7 +184,7 @@ public interface MilvusClient {
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(tableName, vectors)
@@ -203,7 +205,7 @@ public interface MilvusClient {
    * Searches vectors specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)
@@ -227,7 +229,7 @@ public interface MilvusClient {
    * Searches vectors in specific files specified by <code>searchInFilesParam</code>
    *
    * @param searchInFilesParam the <code>SearchInFilesParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)

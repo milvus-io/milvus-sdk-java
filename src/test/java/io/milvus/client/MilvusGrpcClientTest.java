@@ -182,7 +182,8 @@ class MilvusClientTest {
     assertTrue(createPartitionResponse.ok());
 
     List<List<Float>> vectors = generateVectors(size, dimension);
-    InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).withPartitionTag(tag).build();
+    InsertParam insertParam =
+        new InsertParam.Builder(randomTableName, vectors).withPartitionTag(tag).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
 
@@ -195,11 +196,11 @@ class MilvusClientTest {
     partitionTags.add(tag);
     final long topK = 10;
     SearchParam searchParam =
-            new SearchParam.Builder(randomTableName, vectorsToSearch)
-                    .withTopK(topK)
-                    .withNProbe(20)
-                    .withPartitionTags(partitionTags)
-                    .build();
+        new SearchParam.Builder(randomTableName, vectorsToSearch)
+            .withTopK(topK)
+            .withNProbe(20)
+            .withPartitionTags(partitionTags)
+            .build();
     SearchResponse searchResponse = client.search(searchParam);
     assertTrue(searchResponse.ok());
     List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
@@ -225,7 +226,6 @@ class MilvusClientTest {
 
     dropPartitionResponse = client.dropPartition(randomTableName, tag2);
     assertTrue(dropPartitionResponse.ok());
-
   }
 
   @org.junit.jupiter.api.Test

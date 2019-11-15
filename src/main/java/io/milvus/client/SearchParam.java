@@ -124,7 +124,8 @@ public class SearchParam {
     }
 
     /**
-     * Optional. Search vectors with corresponding <code>partitionTags</code>. Default to an empty <code>List</code>
+     * Optional. Search vectors with corresponding <code>partitionTags</code>. Default to an empty
+     * <code>List</code>
      *
      * @param partitionTags a <code>List</code> of partition tags
      * @return <code>Builder</code>
