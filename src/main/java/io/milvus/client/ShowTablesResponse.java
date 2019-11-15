@@ -29,7 +29,7 @@ public class ShowTablesResponse {
   private final Response response;
   private final List<String> tableNames;
 
-  public ShowTablesResponse(Response response, List<String> tableNames) {
+  ShowTablesResponse(Response response, List<String> tableNames) {
     this.response = response;
     this.tableNames = tableNames;
   }
@@ -40,6 +40,10 @@ public class ShowTablesResponse {
 
   public Response getResponse() {
     return response;
+  }
+
+  public boolean ok() {
+    return response.ok();
   }
 
   @Override

@@ -27,7 +27,7 @@ public class GetTableRowCountResponse {
   private final Response response;
   private final long tableRowCount;
 
-  public GetTableRowCountResponse(Response response, long tableRowCount) {
+  GetTableRowCountResponse(Response response, long tableRowCount) {
     this.response = response;
     this.tableRowCount = tableRowCount;
   }
@@ -38,6 +38,10 @@ public class GetTableRowCountResponse {
 
   public Response getResponse() {
     return response;
+  }
+
+  public boolean ok() {
+    return response.ok();
   }
 
   @Override

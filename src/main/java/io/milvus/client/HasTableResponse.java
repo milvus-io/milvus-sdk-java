@@ -26,7 +26,7 @@ public class HasTableResponse {
   private final Response response;
   private final boolean hasTable;
 
-  public HasTableResponse(Response response, boolean hasTable) {
+  HasTableResponse(Response response, boolean hasTable) {
     this.response = response;
     this.hasTable = hasTable;
   }
@@ -37,6 +37,10 @@ public class HasTableResponse {
 
   public Response getResponse() {
     return response;
+  }
+
+  public boolean ok() {
+    return response.ok();
   }
 
   @Override

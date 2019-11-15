@@ -1,6 +1,25 @@
 # Changelog     
 
-## milvus-sdk-java 0.2.2 (2018-11-4)
+## milvus-sdk-java 0.3.0 (2019-11-13)
+
+### Bug
+---
+- \#64 - Search failed with exception if search result is empty
+
+### Improvement
+---
+- \#56 - Add keepalive and idleTimeout settings
+- \#57 - add ok() in other types of Response
+- \#62 - Change GRPC proto (and related code) to increase search result's transmission speed
+- \#63 - Make some functions and constructors package-private if necessary
+
+### Feature
+---
+
+### Task
+---
+
+## milvus-sdk-java 0.2.2 (2019-11-4)
 
 ### Bug
 ---
