@@ -46,7 +46,7 @@ public class Partition {
 
   @Override
   public String toString() {
-    return "PartitionParam {"
+    return "Partition{"
         + "tableName='"
         + tableName
         + '\''
