@@ -1,5 +1,20 @@
 # Changelog     
 
+## milvus-sdk-java 0.4.0 (TBD)
+
+### Bug
+---
+
+### Improvement
+---
+- \#61 - Add partition
+
+### Feature
+---
+
+### Task
+---
+
 ## milvus-sdk-java 0.3.0 (2019-11-13)
 
 ### Bug
