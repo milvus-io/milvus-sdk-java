@@ -135,6 +135,50 @@ public interface MilvusClient {
   Response createIndex(CreateIndexParam createIndexParam);
 
   /**
+   * Creates a partition specified by <code>PartitionParam</code>
+   *
+   * @param partition the <code>PartitionParam</code> object
+   * <pre>
+   * example usage:
+   * <code>
+   * Partition partition = new Partition.Builder(tableName, partitionName, tag).build();
+   * </code>
+   * </pre>
+   *
+   * @return <code>Response</code>
+   * @see Partition
+   * @see Response
+   */
+  Response createPartition(Partition partition);
+
+  /**
+   * Shows current partitions of a table
+   *
+   * @param tableName table name
+   * @return <code>ShowPartitionsResponse</code>
+   * @see ShowPartitionsResponse
+   * @see Response
+   */
+  ShowPartitionsResponse showPartitions(String tableName);
+
+  /**
+   * Drops partition specified by <code>partitionName</code>
+   * @param partitionName partition name
+   * @see Response
+   */
+  Response dropPartition(String partitionName);
+
+
+  /**
+   * Drops partition specified by <code>tableName</code> and <code>tag</code>
+   *
+   * @param tableName table name
+   * @param tag partition tag
+   * @see Response
+   */
+  Response dropPartition(String tableName, String tag);
+
+  /**
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
@@ -143,6 +187,7 @@ public interface MilvusClient {
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(tableName, vectors)
    *                                          .withVectorIds(vectorIds)
+   *                                          .withPartitionTag(tag)
    *                                          .build();
    * </code>
    * </pre>

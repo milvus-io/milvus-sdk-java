@@ -22,6 +22,16 @@ message TableName {
 
 /**
 
+ * @brief Partition name
+
+ */
+
+message PartitionName {
+    string partition_name = 1;
+}
+
+/**
+
  * @brief Table Name List
 
  */
@@ -82,6 +92,29 @@ message RowRecord {
 
 /**
 
+ * @brief Partition param
+
+ */
+
+message PartitionParam {
+    string table_name = 1;
+    string partition_name = 2;
+    string tag = 3;
+}
+
+/**
+
+ * @brief Partition list
+
+ */
+
+message PartitionList {
+    Status status = 1;
+    repeated PartitionParam partition_array = 2;
+}
+
+/**
+
  * @brief params to be inserted
 
  */
@@ -93,6 +126,8 @@ message InsertParam {
     repeated RowRecord row_record_array = 2;
 
     repeated int64 row_id_array = 3; //optional
+
+    string partition_tag = 4; // default empty
 
 }
 
@@ -127,6 +162,8 @@ message SearchParam {
     int64 topk = 4;
 
     int64 nprobe = 5;
+
+    repeated string partition_tag_array = 6; // default empty
 
 }
 
@@ -340,6 +377,15 @@ service MilvusService {
      */
 
     rpc CreateIndex (IndexParam) returns (Status) {
+    }
+
+    rpc CreatePartition (PartitionParam) returns (Status) {
+    }
+
+    rpc ShowPartitions (TableName) returns (PartitionList) {
+    }
+
+    rpc DropPartition (PartitionParam) returns (Status) {
     }
 
     /**
