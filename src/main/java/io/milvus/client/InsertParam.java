@@ -28,13 +28,11 @@ public class InsertParam {
   private final String tableName;
   private final List<List<Float>> vectors;
   private final List<Long> vectorIds;
-  private final String partitionTag;
 
   private InsertParam(@Nonnull Builder builder) {
     this.tableName = builder.tableName;
     this.vectors = builder.vectors;
     this.vectorIds = builder.vectorIds;
-    this.partitionTag = builder.partitionTag;
   }
 
   public String getTableName() {
@@ -49,10 +47,6 @@ public class InsertParam {
     return vectorIds;
   }
 
-  public String getPartitionTag() {
-    return partitionTag;
-  }
-
   /** Builder for <code>InsertParam</code> */
   public static class Builder {
     // Required parameters
@@ -61,7 +55,6 @@ public class InsertParam {
 
     // Optional parameters - initialized to default values
     private List<Long> vectorIds = new ArrayList<>();
-    private String partitionTag = "";
 
     /**
      * @param tableName table to insert vectors to
@@ -81,17 +74,6 @@ public class InsertParam {
      */
     public Builder withVectorIds(@Nonnull List<Long> vectorIds) {
       this.vectorIds = vectorIds;
-      return this;
-    }
-
-    /**
-     * Optional. Default to an empty <code>String</code>
-     *
-     * @param partitionTag partition tag
-     * @return <code>Builder</code>
-     */
-    public Builder withPartitionTag(@Nonnull String partitionTag) {
-      this.partitionTag = partitionTag;
       return this;
     }
 

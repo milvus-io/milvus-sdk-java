@@ -31,7 +31,6 @@ public class SearchParam {
   private final List<DateRange> dateRanges;
   private final long topK;
   private final long nProbe;
-  private final List<String> partitionTags;
 
   private SearchParam(@Nonnull Builder builder) {
     this.tableName = builder.tableName;
@@ -39,7 +38,6 @@ public class SearchParam {
     this.dateRanges = builder.dateRanges;
     this.nProbe = builder.nProbe;
     this.topK = builder.topK;
-    this.partitionTags = builder.partitionTags;
   }
 
   public String getTableName() {
@@ -62,10 +60,6 @@ public class SearchParam {
     return nProbe;
   }
 
-  public List<String> getPartitionTags() {
-    return partitionTags;
-  }
-
   /** Builder for <code>SearchParam</code> */
   public static class Builder {
     // Required parameters
@@ -76,7 +70,6 @@ public class SearchParam {
     private List<DateRange> dateRanges = new ArrayList<>();
     private long topK = 1024;
     private long nProbe = 20;
-    private List<String> partitionTags = new ArrayList<>();
 
     /**
      * @param tableName table to search from
@@ -120,18 +113,6 @@ public class SearchParam {
      */
     public Builder withNProbe(long nProbe) {
       this.nProbe = nProbe;
-      return this;
-    }
-
-    /**
-     * Optional. Search vectors with corresponding <code>partitionTags</code>. Default to an empty
-     * <code>List</code>
-     *
-     * @param partitionTags a <code>List</code> of partition tags
-     * @return <code>Builder</code>
-     */
-    public Builder withPartitionTags(List<String> partitionTags) {
-      this.partitionTags = partitionTags;
       return this;
     }
 
