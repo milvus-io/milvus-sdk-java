@@ -173,62 +173,6 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void partitionTest() throws InterruptedException {
-    final String partitionName = "partition";
-    final String tag = "tag";
-
-    Partition partition = new Partition.Builder(randomTableName, partitionName, tag).build();
-    Response createPartitionResponse = client.createPartition(partition);
-    assertTrue(createPartitionResponse.ok());
-
-    List<List<Float>> vectors = generateVectors(size, dimension);
-    InsertParam insertParam =
-        new InsertParam.Builder(randomTableName, vectors).withPartitionTag(tag).build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-
-    TimeUnit.SECONDS.sleep(1);
-
-    final int searchSize = 5;
-    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
-
-    List<String> partitionTags = new ArrayList<>();
-    partitionTags.add(tag);
-    final long topK = 10;
-    SearchParam searchParam =
-        new SearchParam.Builder(randomTableName, vectorsToSearch)
-            .withTopK(topK)
-            .withNProbe(20)
-            .withPartitionTags(partitionTags)
-            .build();
-    SearchResponse searchResponse = client.search(searchParam);
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
-    assertEquals(searchSize, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
-    assertEquals(searchSize, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    assertEquals(searchSize, queryResultsList.size());
-
-    final String partitionName2 = "partition2";
-    final String tag2 = "tag2";
-
-    Partition partition2 = new Partition.Builder(randomTableName, partitionName2, tag2).build();
-    createPartitionResponse = client.createPartition(partition2);
-    assertTrue(createPartitionResponse.ok());
-
-    ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomTableName);
-    assertTrue(showPartitionsResponse.ok());
-    assertEquals(2, showPartitionsResponse.getPartitionList().size());
-
-    Response dropPartitionResponse = client.dropPartition(partitionName);
-    assertTrue(dropPartitionResponse.ok());
-
-    dropPartitionResponse = client.dropPartition(randomTableName, tag2);
-    assertTrue(dropPartitionResponse.ok());
-  }
-
-  @org.junit.jupiter.api.Test
   void createIndex() {
     Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).withNList(16384).build();
     CreateIndexParam createIndexParam =
