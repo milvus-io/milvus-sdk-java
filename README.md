@@ -17,6 +17,7 @@ Milvus version compatibility:
 | 0.5.1 | 0.2.2 | 
 | 0.5.2 | 0.2.2 | 
 | 0.5.3 | 0.3.0 | 
+| 0.6.0 | 0.4.0 | 
 
 ### Dependency 
 

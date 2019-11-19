@@ -8,6 +8,7 @@
 ### Improvement
 ---
 - \#61 - Add partition
+- \#70 - Add IndexType IVF_PQ
 
 ### Feature
 ---
