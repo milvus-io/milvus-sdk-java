@@ -429,6 +429,7 @@ public class MilvusGrpcClient implements MilvusClient {
             .setTableName(insertParam.getTableName())
             .addAllRowRecordArray(rowRecordList)
             .addAllRowIdArray(insertParam.getVectorIds())
+            .setPartitionTag(insertParam.getPartitionTag())
             .build();
     io.milvus.grpc.VectorIds response;
 

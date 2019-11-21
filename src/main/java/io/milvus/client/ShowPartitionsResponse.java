@@ -19,6 +19,7 @@
 
 package io.milvus.client;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShowPartitionsResponse {
@@ -32,6 +33,30 @@ public class ShowPartitionsResponse {
 
   public List<Partition> getPartitionList() {
     return partitionList;
+  }
+
+  public List<String> getTableNameList() {
+    List<String> tableNameList = new ArrayList<>();
+    for (Partition partition : partitionList) {
+      tableNameList.add(partition.getTableName());
+    }
+    return tableNameList;
+  }
+
+  public List<String> getPartitionNameList() {
+    List<String> partitionNameList = new ArrayList<>();
+    for (Partition partition : partitionList) {
+      partitionNameList.add(partition.getPartitionName());
+    }
+    return partitionNameList;
+  }
+
+  public List<String> getPartitionTagList() {
+    List<String> partitionTagList = new ArrayList<>();
+    for (Partition partition : partitionList) {
+      partitionTagList.add(partition.getTag());
+    }
+    return partitionTagList;
   }
 
   public Response getResponse() {
