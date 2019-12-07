@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import javax.annotation.Nonnull;
 
+/** Represents a partition containing <code>tableName</code>, <code>partitionName</code> and <code>tag</code> */
 public class Partition {
   private final String tableName;
   private final String partitionName;

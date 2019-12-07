@@ -22,6 +22,10 @@ package io.milvus.client;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Contains the returned <code>response</code> and <code>partitionList</code> for <code>showPartitions
+ * </code>
+ */
 public class ShowPartitionsResponse {
   private final Response response;
   private final List<Partition> partitionList;
@@ -31,10 +35,16 @@ public class ShowPartitionsResponse {
     this.partitionList = partitionList;
   }
 
+  /**
+   * @return a <code>List</code> of <code>Partition</code>s.
+   */
   public List<Partition> getPartitionList() {
     return partitionList;
   }
 
+  /**
+   * @return a <code>List</code> of table names of each partition.
+   */
   public List<String> getTableNameList() {
     List<String> tableNameList = new ArrayList<>();
     for (Partition partition : partitionList) {
@@ -43,6 +53,9 @@ public class ShowPartitionsResponse {
     return tableNameList;
   }
 
+  /**
+   * @return a <code>List</code> of partition names.
+   */
   public List<String> getPartitionNameList() {
     List<String> partitionNameList = new ArrayList<>();
     for (Partition partition : partitionList) {
@@ -51,6 +64,9 @@ public class ShowPartitionsResponse {
     return partitionNameList;
   }
 
+  /**
+   * @return a <code>List</code> of partition tags.
+   */
   public List<String> getPartitionTagList() {
     List<String> partitionTagList = new ArrayList<>();
     for (Partition partition : partitionList) {
