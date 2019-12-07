@@ -50,6 +50,7 @@ public class SearchParam {
     return queryVectors;
   }
 
+  @Deprecated
   public List<DateRange> getDateRanges() {
     return dateRanges;
   }
@@ -89,13 +90,15 @@ public class SearchParam {
     }
 
     /**
-     * Optional. Searches vectors in their corresponding date range. Default to an empty <code>
+     * Deprecated. Optional. Searches vectors in their corresponding date range. Default to an empty
+     * <code>
      * ArrayList</code>
      *
      * @param dateRanges a <code>List</code> of <code>DateRange</code> objects
      * @return <code>Builder</code>
      * @see DateRange
      */
+    @Deprecated
     public Builder withDateRanges(@Nonnull List<DateRange> dateRanges) {
       this.dateRanges = dateRanges;
       return this;

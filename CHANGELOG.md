@@ -1,14 +1,17 @@
 # Changelog     
 
-## milvus-sdk-java 0.4.0 (TBD)
+## milvus-sdk-java 0.4.0 (2019-12-7)
 
 ### Bug
 ---
+- \#74 - Partition tag not working when inserting
 
 ### Improvement
 ---
 - \#61 - Add partition
 - \#70 - Add IndexType IVF_PQ
+- \#72 - Add more getters in ShowPartitionResponse
+- \#73 - Add @Deprecated for DateRanges in SearchParam
 
 ### Feature
 ---
