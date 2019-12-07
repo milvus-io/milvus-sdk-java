@@ -32,7 +32,7 @@ Apache Maven
 
 Gradle/Grails 
 
-`compile 'io.milvus:milvus-sdk-java:0.3.0'`
+`compile 'io.milvus:milvus-sdk-java:0.4.0'`
 
 ### Examples
 
