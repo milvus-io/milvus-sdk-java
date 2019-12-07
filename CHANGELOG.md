@@ -1,6 +1,6 @@
 # Changelog     
 
-## milvus-sdk-java 0.4.0 (TBD)
+## milvus-sdk-java 0.4.0 (2019-12-7)
 
 ### Bug
 ---
