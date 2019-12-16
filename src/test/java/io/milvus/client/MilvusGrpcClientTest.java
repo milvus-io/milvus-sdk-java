@@ -232,8 +232,6 @@ class MilvusClientTest {
     assertTrue(searchResponse1.ok());
     List<List<Long>> resultIdsList1 = searchResponse1.getResultIdsList();
     assertEquals(searchSize, resultIdsList1.size());
-    System.out.println(resultIdsList1);
-    System.out.println(vectorIds1);
     assertTrue(vectorIds1.containsAll(resultIdsList1.get(0)));
 
     List<List<Float>> vectorsToSearch2 = vectors2.subList(0, searchSize);
