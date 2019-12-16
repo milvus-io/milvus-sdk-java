@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -66,7 +67,7 @@ class MilvusClientTest {
 
     client = new MilvusGrpcClient();
     ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withPort("19530").build();
+        new ConnectParam.Builder().withHost("192.168.1.149").withPort("19530").build();
     client.connect(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
@@ -174,41 +175,12 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void partitionTest() throws InterruptedException {
-    final String partitionName = "partition";
-    final String tag = "tag";
+    final String partitionName1 = "partition1";
+    final String tag1 = "tag1";
 
-    Partition partition = new Partition.Builder(randomTableName, partitionName, tag).build();
+    Partition partition = new Partition.Builder(randomTableName, partitionName1, tag1).build();
     Response createPartitionResponse = client.createPartition(partition);
     assertTrue(createPartitionResponse.ok());
-
-    List<List<Float>> vectors = generateVectors(size, dimension);
-    InsertParam insertParam =
-        new InsertParam.Builder(randomTableName, vectors).withPartitionTag(tag).build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-
-    TimeUnit.SECONDS.sleep(1);
-
-    final int searchSize = 5;
-    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
-
-    List<String> partitionTags = new ArrayList<>();
-    partitionTags.add(tag);
-    final long topK = 10;
-    SearchParam searchParam =
-        new SearchParam.Builder(randomTableName, vectorsToSearch)
-            .withTopK(topK)
-            .withNProbe(20)
-            .withPartitionTags(partitionTags)
-            .build();
-    SearchResponse searchResponse = client.search(searchParam);
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
-    assertEquals(searchSize, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
-    assertEquals(searchSize, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    assertEquals(searchSize, queryResultsList.size());
 
     final String partitionName2 = "partition2";
     final String tag2 = "tag2";
@@ -221,7 +193,67 @@ class MilvusClientTest {
     assertTrue(showPartitionsResponse.ok());
     assertEquals(2, showPartitionsResponse.getPartitionList().size());
 
-    Response dropPartitionResponse = client.dropPartition(partitionName);
+    List<List<Float>> vectors1 = generateVectors(size, dimension);
+    List<Long> vectorIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
+    InsertParam insertParam =
+        new InsertParam.Builder(randomTableName, vectors1)
+            .withVectorIds(vectorIds1)
+            .withPartitionTag(tag1)
+            .build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<List<Float>> vectors2 = generateVectors(size, dimension);
+    List<Long> vectorIds2 = LongStream.range(size, size * 2).boxed().collect(Collectors.toList());
+    insertParam =
+        new InsertParam.Builder(randomTableName, vectors2)
+            .withVectorIds(vectorIds2)
+            .withPartitionTag(tag2)
+            .build();
+    insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+
+    TimeUnit.SECONDS.sleep(1);
+
+    assertEquals(size * 2, client.getTableRowCount(randomTableName).getTableRowCount());
+
+    final int searchSize = 1;
+    final long topK = 10;
+
+    List<List<Float>> vectorsToSearch1 = vectors1.subList(0, searchSize);
+    List<String> partitionTags1 = new ArrayList<>();
+    partitionTags1.add(tag1);
+    SearchParam searchParam1 =
+        new SearchParam.Builder(randomTableName, vectorsToSearch1)
+            .withTopK(topK)
+            .withNProbe(20)
+            .withPartitionTags(partitionTags1)
+            .build();
+    SearchResponse searchResponse1 = client.search(searchParam1);
+    assertTrue(searchResponse1.ok());
+    List<List<Long>> resultIdsList1 = searchResponse1.getResultIdsList();
+    assertEquals(searchSize, resultIdsList1.size());
+    System.out.println(resultIdsList1);
+    System.out.println(vectorIds1);
+    assertTrue(vectorIds1.containsAll(resultIdsList1.get(0)));
+
+    List<List<Float>> vectorsToSearch2 = vectors2.subList(0, searchSize);
+    List<String> partitionTags2 = new ArrayList<>();
+    partitionTags2.add(tag2);
+    SearchParam searchParam2 =
+        new SearchParam.Builder(randomTableName, vectorsToSearch2)
+            .withTopK(topK)
+            .withNProbe(20)
+            .withPartitionTags(partitionTags2)
+            .build();
+    SearchResponse searchResponse2 = client.search(searchParam2);
+    assertTrue(searchResponse2.ok());
+    List<List<Long>> resultIdsList2 = searchResponse2.getResultIdsList();
+    assertEquals(searchSize, resultIdsList2.size());
+    assertTrue(vectorIds2.containsAll(resultIdsList2.get(0)));
+
+    assertTrue(Collections.disjoint(resultIdsList1, resultIdsList2));
+
+    Response dropPartitionResponse = client.dropPartition(partitionName1);
     assertTrue(dropPartitionResponse.ok());
 
     dropPartitionResponse = client.dropPartition(randomTableName, tag2);

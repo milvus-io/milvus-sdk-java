@@ -212,6 +212,7 @@ public interface MilvusClient {
    *                                          .withTopK(topK)
    *                                          .withNProbe(nProbe)
    *                                          .withDateRanges(dateRanges)
+   *                                          .withPartitionTags(partitionTagsList)
    *                                          .build();
    * </code>
    * </pre>
@@ -236,6 +237,7 @@ public interface MilvusClient {
    *                                          .withTopK(topK)
    *                                          .withNProbe(nProbe)
    *                                          .withDateRanges(dateRanges)
+   *                                          .withPartitionTags(partitionTagsList)
    *                                          .build();
    * SearchInFilesParam searchInFilesParam = new SearchInFilesParam.Builder(fileIds, searchParam)
    *                                                               .build();

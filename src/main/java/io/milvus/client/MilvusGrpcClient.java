@@ -479,6 +479,7 @@ public class MilvusGrpcClient implements MilvusClient {
             .addAllQueryRangeArray(queryRangeList)
             .setTopk(searchParam.getTopK())
             .setNprobe(searchParam.getNProbe())
+            .addAllPartitionTagArray(searchParam.getPartitionTags())
             .build();
 
     io.milvus.grpc.TopKQueryResult response;
@@ -533,6 +534,7 @@ public class MilvusGrpcClient implements MilvusClient {
             .addAllQueryRangeArray(queryRangeList)
             .setTopk(searchParam.getTopK())
             .setNprobe(searchParam.getNProbe())
+            .addAllPartitionTagArray(searchParam.getPartitionTags())
             .build();
 
     io.milvus.grpc.SearchInFilesParam request =
