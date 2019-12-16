@@ -1,5 +1,11 @@
 # Changelog     
 
+## milvus-sdk-java 0.4.1 (2019-12-16)
+
+### Bug
+---
+- \#78 - Partition tag not working when searching
+
 ## milvus-sdk-java 0.4.0 (2019-12-7)
 
 ### Bug
