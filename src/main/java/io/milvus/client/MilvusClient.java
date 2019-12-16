@@ -22,7 +22,7 @@ package io.milvus.client;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.4.0";
+  String clientVersion = "0.4.1";
 
   /** @return the current Milvus client version */
   default String getClientVersion() {
@@ -212,6 +212,7 @@ public interface MilvusClient {
    *                                          .withTopK(topK)
    *                                          .withNProbe(nProbe)
    *                                          .withDateRanges(dateRanges)
+   *                                          .withPartitionTags(partitionTagsList)
    *                                          .build();
    * </code>
    * </pre>
@@ -236,6 +237,7 @@ public interface MilvusClient {
    *                                          .withTopK(topK)
    *                                          .withNProbe(nProbe)
    *                                          .withDateRanges(dateRanges)
+   *                                          .withPartitionTags(partitionTagsList)
    *                                          .build();
    * SearchInFilesParam searchInFilesParam = new SearchInFilesParam.Builder(fileIds, searchParam)
    *                                                               .build();

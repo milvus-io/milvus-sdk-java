@@ -17,7 +17,7 @@ Milvus version compatibility:
 | 0.5.1 | 0.2.2 | 
 | 0.5.2 | 0.2.2 | 
 | 0.5.3 | 0.3.0 | 
-| 0.6.0 | 0.4.0 | 
+| 0.6.0 | 0.4.1 | 
 
 ### Dependency 
 
@@ -26,13 +26,13 @@ Apache Maven
 <dependency>
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>0.4.0</version>
+    <version>0.4.1</version>
 </dependency>
 ```
 
 Gradle/Grails 
 
-`compile 'io.milvus:milvus-sdk-java:0.4.0'`
+`compile 'io.milvus:milvus-sdk-java:0.4.1'`
 
 ### Examples
 
