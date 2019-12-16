@@ -67,7 +67,7 @@ class MilvusClientTest {
 
     client = new MilvusGrpcClient();
     ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("192.168.1.149").withPort("19530").build();
+        new ConnectParam.Builder().withHost("localhost").withPort("19530").build();
     client.connect(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
