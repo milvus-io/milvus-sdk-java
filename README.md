@@ -1,15 +1,19 @@
-# milvus-sdk-java
+# Milvus Java SDK
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.milvus/milvus-sdk-java.svg)](https://search.maven.org/artifact/io.milvus/milvus-sdk-java/)
 
-Java SDK for [Milvus](https://github.com/milvus-io/milvus) distributed high-performance vector search engine. 
-If you want to contribute to this repo, please read our [contribution guidelines](https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md).
+Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code to this project, please read our [contribution guidelines](https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md) first.
 
 ## Getting started
 
-You will need Java 8 or higher.
+### Prerequisites
 
-Milvus version compatibility:
+- Java 8 or higher.
+- Apache Maven or Gradle/Grails
+
+### Install Java SDK
+
+1. Clone this repository to your local machine. The following table shows Milvus versions and compatible SDK versions.
 
 |Milvus version| SDK version|
 |:-----:|:-----:|
@@ -19,9 +23,8 @@ Milvus version compatibility:
 | 0.5.3 | 0.3.0 | 
 | 0.6.0 | 0.4.1 | 
 
-### Dependency 
+2. Use **Apache Maven** or **Gradle**/**Grails** to compile the SDK. For Apache Maven, add the following dependency:
 
-Apache Maven
 ```xml
 <dependency>
     <groupId>io.milvus</groupId>
@@ -30,18 +33,19 @@ Apache Maven
 </dependency>
 ```
 
-Gradle/Grails 
+For Gradle/Grails, use the following command:
 
-`compile 'io.milvus:milvus-sdk-java:0.4.1'`
+```shell
+compile 'io.milvus:milvus-sdk-java:0.4.1'
+```
 
 ### Examples
 
-Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder
+Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java example programs.
 
 ### Documentation
 
 - [Javadoc](https://milvus-io.github.io/milvus-sdk-java/javadoc/index.html)
-- [Milvus doc](https://milvus.io/docs/en/userguide/install_milvus/)
 
 ### Additional information
 
