@@ -33,7 +33,7 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
     </dependency>
     ```
 
-For Gradle/Grails, use the following command:
+    For Gradle/Grails, use the following command:
 
     ```shell
     compile 'io.milvus:milvus-sdk-java:0.4.1'
