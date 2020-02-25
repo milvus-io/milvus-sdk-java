@@ -23,21 +23,23 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
     | 0.5.3 | 0.3.0 | 
     | 0.6.0 | 0.4.1 | 
 
-2. Use **Apache Maven** or **Gradle**/**Grails** to compile the SDK. For Apache Maven, add the following dependency:
+2. Use **Apache Maven** or **Gradle**/**Grails** to compile the SDK. 
 
-    ```xml
-    <dependency>
-        <groupId>io.milvus</groupId>
-        <artifactId>milvus-sdk-java</artifactId>
-        <version>0.4.1</version>
-    </dependency>
-    ```
+    - For Apache Maven, add the following dependency:
 
-    For Gradle/Grails, use the following command:
+        ```xml
+        <dependency>
+            <groupId>io.milvus</groupId>
+            <artifactId>milvus-sdk-java</artifactId>
+            <version>0.4.1</version>
+        </dependency>
+        ```
 
-    ```shell
-    compile 'io.milvus:milvus-sdk-java:0.4.1'
-    ```
+    - For Gradle/Grails, add the following dependency:
+
+        ```gradle
+        compile 'io.milvus:milvus-sdk-java:0.4.1'
+        ```
 
 ### Examples
 
