@@ -47,6 +47,15 @@ public class MilvusGrpcClient implements MilvusClient {
   private ManagedChannel channel = null;
   private io.milvus.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub = null;
 
+  //Constructor
+  public MilvusGrpcClient() {
+    logger.setLevel(Level.ALL);
+  }
+
+  public MilvusGrpcClient(Level logLevel) {
+    logger.setLevel(logLevel);
+  }
+
   /////////////////////// Client Calls///////////////////////
 
   @Override
