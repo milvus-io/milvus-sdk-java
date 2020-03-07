@@ -21,23 +21,23 @@ package io.milvus.client;
 
 import javax.annotation.Nonnull;
 
-/** Represents a table schema */
+/** Represents a collection mapping */
 // Builder Pattern
-public class TableSchema {
-  private final String tableName;
+public class CollectionMapping {
+  private final String collectionName;
   private final long dimension;
   private final long indexFileSize;
   private final MetricType metricType;
 
-  private TableSchema(@Nonnull Builder builder) {
-    tableName = builder.tableName;
+  private CollectionMapping(@Nonnull Builder builder) {
+    collectionName = builder.collectionName;
     dimension = builder.dimension;
     indexFileSize = builder.indexFileSize;
     metricType = builder.metricType;
   }
 
-  public String getTableName() {
-    return tableName;
+  public String getCollectionName() {
+    return collectionName;
   }
 
   public long getDimension() {
@@ -55,14 +55,14 @@ public class TableSchema {
   @Override
   public String toString() {
     return String.format(
-        "TableSchema = {tableName = %s, dimension = %d, indexFileSize = %d, metricType = %s}",
-        tableName, dimension, indexFileSize, metricType.name());
+        "CollectionMapping = {collectionName = %s, dimension = %d, indexFileSize = %d, metricType = %s}",
+        collectionName, dimension, indexFileSize, metricType.name());
   }
 
-  /** Builder for <code>TableSchema</code> */
+  /** Builder for <code>CollectionMapping</code> */
   public static class Builder {
     // Required parameters
-    private final String tableName;
+    private final String collectionName;
     private final long dimension;
 
     // Optional parameters - initialized to default values
@@ -70,11 +70,11 @@ public class TableSchema {
     private MetricType metricType = MetricType.L2;
 
     /**
-     * @param tableName table name
+     * @param collectionName collection name
      * @param dimension vector dimension
      */
-    public Builder(@Nonnull String tableName, long dimension) {
-      this.tableName = tableName;
+    public Builder(@Nonnull String collectionName, long dimension) {
+      this.collectionName = collectionName;
       this.dimension = dimension;
     }
 
@@ -101,8 +101,8 @@ public class TableSchema {
       return this;
     }
 
-    public TableSchema build() {
-      return new TableSchema(this);
+    public CollectionMapping build() {
+      return new CollectionMapping(this);
     }
   }
 }

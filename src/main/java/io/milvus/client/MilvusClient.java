@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import java.util.List;
+
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
@@ -38,7 +40,7 @@ public interface MilvusClient {
    * <code>
    * ConnectParam connectParam = new ConnectParam.Builder()
    *                                             .withHost("localhost")
-   *                                             .withPort("19530")
+   *                                             .withPort(19530)
    *                                             .withConnectTimeout(10, TimeUnit.SECONDS)
    *                                             .withKeepAliveTime(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
    *                                             .withKeepAliveTimeout(20, TimeUnit.SECONDS)
@@ -72,13 +74,13 @@ public interface MilvusClient {
   Response disconnect() throws InterruptedException;
 
   /**
-   * Creates table specified by <code>tableSchemaParam</code>
+   * Creates collection specified by <code>collectionMappingParam</code>
    *
-   * @param tableSchema the <code>TableSchema</code> object
+   * @param collectionMapping the <code>CollectionMapping</code> object
    *     <pre>
    * example usage:
    * <code>
-   * TableSchema tableSchema = new TableSchema.Builder(tableName, dimension)
+   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName, dimension)
    *                                          .withIndexFileSize(1024)
    *                                          .withMetricType(MetricType.IP)
    *                                          .build();
@@ -86,99 +88,81 @@ public interface MilvusClient {
    * </pre>
    *
    * @return <code>Response</code>
-   * @see TableSchema
+   * @see CollectionMapping
    * @see MetricType
    * @see Response
    */
-  Response createTable(TableSchema tableSchema);
+  Response createCollection(CollectionMapping collectionMapping);
 
   /**
-   * Check whether table exists
+   * Check whether collection exists
    *
-   * @param tableName table to check
-   * @return <code>HasTableResponse</code>
-   * @see HasTableResponse
+   * @param collectionName collection to check
+   * @return <code>HasCollectionResponse</code>
+   * @see HasCollectionResponse
    * @see Response
    */
-  HasTableResponse hasTable(String tableName);
+  HasCollectionResponse hasCollection(String collectionName);
 
   /**
-   * Drops table
+   * Drops collection
    *
-   * @param tableName table to drop
+   * @param collectionName collection to drop
    * @return <code>Response</code>
    * @see Response
    */
-  Response dropTable(String tableName);
+  Response dropCollection(String collectionName);
 
   /**
    * Creates index specified by <code>indexParam</code>
    *
-   * @param createIndexParam the <code>CreateIndexParam</code> object
+   * @param index the <code>Index</code> object
    *     <pre>
    * example usage:
    * <code>
    * Index index = new Index.Builder()
+   *                        .withCollectionName(collectionName)
    *                        .withIndexType(IndexType.IVF_SQ8)
-   *                        .withNList(16384)
+   *                        .withParamsInJson("{\"nlist\": 19384}")
    *                        .build();
-   * CreateIndexParam createIndexParam = new CreateIndexParam.Builder(tableName)
-   *                                                         .withIndex(index)
-   *                                                         .build();
    * </code>
    * </pre>
    *
    * @return <code>Response</code>
    * @see Index
-   * @see CreateIndexParam
    * @see IndexType
    * @see Response
    */
-  Response createIndex(CreateIndexParam createIndexParam);
+  Response createIndex(Index index);
 
   /**
    * Creates a partition specified by <code>PartitionParam</code>
    *
-   * @param partition the <code>PartitionParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * Partition partition = new Partition.Builder(tableName, partitionName, tag).build();
-   * </code>
-   * </pre>
-   *
+   * @param collectionName collection name
+   * @param tag partition tag
    * @return <code>Response</code>
-   * @see Partition
    * @see Response
    */
-  Response createPartition(Partition partition);
+  Response createPartition(String collectionName, String tag);
 
   /**
-   * Shows current partitions of a table
+   * Shows current partitions of a collection
    *
-   * @param tableName table name
+   * @param collectionName collection name
    * @return <code>ShowPartitionsResponse</code>
    * @see ShowPartitionsResponse
    * @see Response
    */
-  ShowPartitionsResponse showPartitions(String tableName);
+  ShowPartitionsResponse showPartitions(String collectionName);
 
   /**
-   * Drops partition specified by <code>partitionName</code>
+   * Drops partition specified by <code>collectionName</code> and <code>tag</code>
    *
-   * @param partitionName partition name
-   * @see Response
-   */
-  Response dropPartition(String partitionName);
-
-  /**
-   * Drops partition specified by <code>tableName</code> and <code>tag</code>
-   *
-   * @param tableName table name
+   * @param collectionName collection name
    * @param tag partition tag
    * @see Response
    */
-  Response dropPartition(String tableName, String tag);
+  Response dropPartition(String collectionName, String tag);
 
   /**
    * Inserts data specified by <code>insertParam</code>
@@ -187,7 +171,8 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * InsertParam insertParam = new InsertParam.Builder(tableName, vectors)
+   * InsertParam insertParam = new InsertParam.Builder(collectionName)
+   *                                          .withFloatVectors(floatVectors)
    *                                          .withVectorIds(vectorIds)
    *                                          .withPartitionTag(tag)
    *                                          .build();
@@ -208,18 +193,17 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)
+   * SearchParam searchParam = new SearchParam.Builder(collectionName)
+   *                                          .withFloatVectors(floatVectors)
    *                                          .withTopK(topK)
-   *                                          .withNProbe(nProbe)
-   *                                          .withDateRanges(dateRanges)
    *                                          .withPartitionTags(partitionTagsList)
+   *                                          .withParamsInJson("{\"nprobe\": 20}")
    *                                          .build();
    * </code>
    * </pre>
    *
    * @return <code>SearchResponse</code>
    * @see SearchParam
-   * @see DateRange
    * @see SearchResponse
    * @see SearchResponse.QueryResult
    * @see Response
@@ -229,61 +213,58 @@ public interface MilvusClient {
   /**
    * Searches vectors in specific files specified by <code>searchInFilesParam</code>
    *
-   * @param searchInFilesParam the <code>SearchInFilesParam</code> object
+   * @param fileIds list of file ids to search from
+   * @param searchParam the <code>SearchParam</code> object
    *     <pre>
    * example usage:
    * <code>
-   * SearchParam searchParam = new SearchParam.Builder(tableName, vectorsToSearch)
+   * SearchParam searchParam = new SearchParam.Builder(collectionName)
+   *                                          .withFloatVectors(floatVectors)
    *                                          .withTopK(topK)
-   *                                          .withNProbe(nProbe)
-   *                                          .withDateRanges(dateRanges)
    *                                          .withPartitionTags(partitionTagsList)
+   *                                          .withParamsInJson("{\"nprobe\": 20}")
    *                                          .build();
-   * SearchInFilesParam searchInFilesParam = new SearchInFilesParam.Builder(fileIds, searchParam)
-   *                                                               .build();
    * </code>
    * </pre>
    *
    * @return <code>SearchResponse</code>
-   * @see SearchInFilesParam
    * @see SearchParam
-   * @see DateRange
    * @see SearchResponse
    * @see SearchResponse.QueryResult
    * @see Response
    */
-  SearchResponse searchInFiles(SearchInFilesParam searchInFilesParam);
+  SearchResponse searchInFiles(List<String> fileIds, SearchParam searchParam);
 
   /**
-   * Describes table
+   * Describes collection
    *
-   * @param tableName table to describe
-   * @see DescribeTableResponse
+   * @param collectionName collection to describe
+   * @see DescribeCollectionResponse
    * @see Response
    */
-  DescribeTableResponse describeTable(String tableName);
+  DescribeCollectionResponse describeCollection(String collectionName);
 
   /**
-   * Shows current tables
+   * Shows current collections
    *
-   * @return <code>ShowTablesResponse</code>
-   * @see ShowTablesResponse
+   * @return <code>ShowCollectionsResponse</code>
+   * @see ShowCollectionsResponse
    * @see Response
    */
-  ShowTablesResponse showTables();
+  ShowCollectionsResponse showCollections();
 
   /**
-   * Gets current row count of table
+   * Gets current row count of collection
    *
-   * @param tableName table to count
-   * @return <code>GetTableRowCountResponse</code>
-   * @see GetTableRowCountResponse
+   * @param collectionName collection to count
+   * @return <code>GetCollectionRowCountResponse</code>
+   * @see GetCollectionRowCountResponse
    * @see Response
    */
-  GetTableRowCountResponse getTableRowCount(String tableName);
+  GetCollectionRowCountResponse getCollectionRowCount(String collectionName);
 
   /**
-   * Prints server status
+   * Get server status
    *
    * @return <code>Response</code>
    * @see Response
@@ -291,7 +272,7 @@ public interface MilvusClient {
   Response getServerStatus();
 
   /**
-   * Prints server version
+   * Get server version
    *
    * @return <code>Response</code>
    * @see Response
@@ -299,29 +280,115 @@ public interface MilvusClient {
   Response getServerVersion();
 
   /**
-   * Pre-loads table to memory
+   * Sends a command to server
    *
-   * @param tableName table to preload
+   * @return <code>Response</code> command's response will be return in <code>message</code>
+   * @see Response
+   */
+  Response command(String command);
+
+  /**
+   * Pre-loads collection to memory
+   *
+   * @param collectionName collection to preload
    * @return <code>Response</code>
    * @see Response
    */
-  Response preloadTable(String tableName);
+  Response preloadCollection(String collectionName);
 
   /**
-   * Describes table index
+   * Describes collection index
    *
-   * @param tableName table to describe index of
+   * @param collectionName collection to describe index of
    * @see DescribeIndexResponse
    * @see Index
    * @see Response
    */
-  DescribeIndexResponse describeIndex(String tableName);
+  DescribeIndexResponse describeIndex(String collectionName);
 
   /**
-   * Drops table index
+   * Drops collection index
    *
-   * @param tableName table to drop index of
+   * @param collectionName collection to drop index of
    * @see Response
    */
-  Response dropIndex(String tableName);
+  Response dropIndex(String collectionName);
+
+  /**
+   * Shows collection information. A collection consists of one or multiple partition (including the
+   * default partition), and a partitions consists of one or more segments. Each partition or
+   * segment in a collection can be uniquely identified by its partition tag or segment name,
+   * respectively.
+   *
+   * @param collectionName collection to show info from
+   * @see ShowCollectionInfoResponse
+   * @see CollectionInfo
+   * @see CollectionInfo.PartitionInfo
+   * @see CollectionInfo.PartitionInfo.SegmentInfo
+   * @see Response
+   */
+  ShowCollectionInfoResponse showCollectionInfo(String collectionName);
+
+  /**
+   * Gets either a float or binary vector by id.
+   *
+   * @param collectionName collection to get vector from
+   * @param id vector id
+   * @see GetVectorByIdResponse
+   * @see Response
+   */
+  GetVectorByIdResponse getVectorById(String collectionName, Long id);
+
+  /**
+   * Gets vector ids in a segment
+   *
+   * @param collectionName collection to get vector ids from
+   * @param segmentName segment name
+   * @see GetVectorIdsResponse
+   * @see Response
+   */
+  GetVectorIdsResponse getVectorIds(String collectionName, String segmentName);
+
+  /**
+   * Deletes data in a collection by a list of ids
+   *
+   * @param collectionName collection to delete ids from
+   * @param ids a <code>List</code> of vector ids to delete
+   * @see Response
+   */
+  Response deleteByIds(String collectionName, List<Long> ids);
+
+  /**
+   * Deletes data in a collection by a single id
+   *
+   * @param collectionName collection to delete id from
+   * @param id vector id to delete
+   * @see Response
+   */
+  Response deleteById(String collectionName, Long id);
+
+  /**
+   * Flushes data in a list collections
+   *
+   * @param collectionNames a <code>List</code> of collections to flush
+   * @see Response
+   */
+  Response flush(List<String> collectionNames);
+
+  /**
+   * Flushes data in a collection. Newly inserted or modifications on data will be visible after
+   * <code>flush</code> returned
+   *
+   * @param collectionName name of collection to flush
+   * @see Response
+   */
+  Response flush(String collectionName);
+
+  /**
+   * Compacts data in a collection. Previously deleted data will be erased from disk.
+   *
+   * @param collectionName name of collection to compact
+   * @see Response
+   */
+  Response compact(String collectionName);
 }

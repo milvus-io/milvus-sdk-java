@@ -23,7 +23,6 @@ import org.apache.commons.text.RandomStringGenerator;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
@@ -36,17 +35,17 @@ class MilvusClientTest {
 
   private RandomStringGenerator generator;
 
-  private String randomTableName;
+  private String randomCollectionName;
   private long size;
   private long dimension;
 
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(long vectorCount, long dimension) {
-    SplittableRandom splittableRandom = new SplittableRandom();
+    SplitcollectionRandom splitcollectionRandom = new SplitcollectionRandom();
     List<List<Float>> vectors = new ArrayList<>();
     for (int i = 0; i < vectorCount; ++i) {
-      splittableRandom = splittableRandom.split();
-      DoubleStream doubleStream = splittableRandom.doubles(dimension);
+      splitcollectionRandom = splitcollectionRandom.split();
+      DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
       List<Float> vector =
           doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
       vectors.add(vector);
@@ -72,21 +71,21 @@ class MilvusClientTest {
     client.connect(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
-    randomTableName = generator.generate(10);
+    randomCollectionName = generator.generate(10);
     size = 100000;
     dimension = 128;
-    TableSchema tableSchema =
-        new TableSchema.Builder(randomTableName, dimension)
+    CollectionMapping collectionMapping =
+        new CollectionMapping.Builder(randomCollectionName, dimension)
             .withIndexFileSize(1024)
             .withMetricType(MetricType.IP)
             .build();
 
-    assertTrue(client.createTable(tableSchema).ok());
+    assertTrue(client.createCollection(collectionMapping).ok());
   }
 
   @org.junit.jupiter.api.AfterEach
   void tearDown() throws InterruptedException {
-    assertTrue(client.dropTable(randomTableName).ok());
+    assertTrue(client.dropCollection(randomCollectionName).ok());
     client.disconnect();
   }
 
@@ -103,7 +102,7 @@ class MilvusClientTest {
     // Channel should be idle
     assertFalse(client.isConnected());
     // A new RPC would take the channel out of idle mode
-    assertTrue(client.showTables().ok());
+    assertTrue(client.showCollections().ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -152,26 +151,26 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void createInvalidTable() {
-    String invalidTableName = "╯°□°）╯";
-    TableSchema invalidTableSchema = new TableSchema.Builder(invalidTableName, dimension).build();
-    Response createTableResponse = client.createTable(invalidTableSchema);
-    assertFalse(createTableResponse.ok());
-    assertEquals(Response.Status.ILLEGAL_TABLE_NAME, createTableResponse.getStatus());
+  void createInvalidCollection() {
+    String invalidCollectionName = "╯°□°）╯";
+    CollectionMapping invalidCollectionMapping = new CollectionMapping.Builder(invalidCollectionName, dimension).build();
+    Response createCollectionResponse = client.createCollection(invalidCollectionMapping);
+    assertFalse(createCollectionResponse.ok());
+    assertEquals(Response.Status.ILLEGAL_TABLE_NAME, createCollectionResponse.getStatus());
   }
 
   @org.junit.jupiter.api.Test
-  void hasTable() {
-    HasTableResponse hasTableResponse = client.hasTable(randomTableName);
-    assertTrue(hasTableResponse.ok());
+  void hasCollection() {
+    HasCollectionResponse hasCollectionResponse = client.hasCollection(randomCollectionName);
+    assertTrue(hasCollectionResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
-  void dropTable() {
-    String nonExistingTableName = generator.generate(10);
-    Response dropTableResponse = client.dropTable(nonExistingTableName);
-    assertFalse(dropTableResponse.ok());
-    assertEquals(Response.Status.TABLE_NOT_EXISTS, dropTableResponse.getStatus());
+  void dropCollection() {
+    String nonExistingCollectionName = generator.generate(10);
+    Response dropCollectionResponse = client.dropCollection(nonExistingCollectionName);
+    assertFalse(dropCollectionResponse.ok());
+    assertEquals(Response.Status.TABLE_NOT_EXISTS, dropCollectionResponse.getStatus());
   }
 
   @org.junit.jupiter.api.Test
@@ -179,25 +178,25 @@ class MilvusClientTest {
     final String partitionName1 = "partition1";
     final String tag1 = "tag1";
 
-    Partition partition = new Partition.Builder(randomTableName, partitionName1, tag1).build();
+    Partition partition = new Partition.Builder(randomCollectionName, partitionName1, tag1).build();
     Response createPartitionResponse = client.createPartition(partition);
     assertTrue(createPartitionResponse.ok());
 
     final String partitionName2 = "partition2";
     final String tag2 = "tag2";
 
-    Partition partition2 = new Partition.Builder(randomTableName, partitionName2, tag2).build();
+    Partition partition2 = new Partition.Builder(randomCollectionName, partitionName2, tag2).build();
     createPartitionResponse = client.createPartition(partition2);
     assertTrue(createPartitionResponse.ok());
 
-    ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomTableName);
+    ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomCollectionName);
     assertTrue(showPartitionsResponse.ok());
     assertEquals(2, showPartitionsResponse.getPartitionList().size());
 
     List<List<Float>> vectors1 = generateVectors(size, dimension);
     List<Long> vectorIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
     InsertParam insertParam =
-        new InsertParam.Builder(randomTableName, vectors1)
+        new InsertParam.Builder(randomCollectionName, vectors1)
             .withVectorIds(vectorIds1)
             .withPartitionTag(tag1)
             .build();
@@ -206,7 +205,7 @@ class MilvusClientTest {
     List<List<Float>> vectors2 = generateVectors(size, dimension);
     List<Long> vectorIds2 = LongStream.range(size, size * 2).boxed().collect(Collectors.toList());
     insertParam =
-        new InsertParam.Builder(randomTableName, vectors2)
+        new InsertParam.Builder(randomCollectionName, vectors2)
             .withVectorIds(vectorIds2)
             .withPartitionTag(tag2)
             .build();
@@ -215,7 +214,7 @@ class MilvusClientTest {
 
     TimeUnit.SECONDS.sleep(1);
 
-    assertEquals(size * 2, client.getTableRowCount(randomTableName).getTableRowCount());
+    assertEquals(size * 2, client.getCollectionRowCount(randomCollectionName).getCollectionRowCount());
 
     final int searchSize = 1;
     final long topK = 10;
@@ -224,7 +223,7 @@ class MilvusClientTest {
     List<String> partitionTags1 = new ArrayList<>();
     partitionTags1.add(tag1);
     SearchParam searchParam1 =
-        new SearchParam.Builder(randomTableName, vectorsToSearch1)
+        new SearchParam.Builder(randomCollectionName, vectorsToSearch1)
             .withTopK(topK)
             .withNProbe(20)
             .withPartitionTags(partitionTags1)
@@ -239,7 +238,7 @@ class MilvusClientTest {
     List<String> partitionTags2 = new ArrayList<>();
     partitionTags2.add(tag2);
     SearchParam searchParam2 =
-        new SearchParam.Builder(randomTableName, vectorsToSearch2)
+        new SearchParam.Builder(randomCollectionName, vectorsToSearch2)
             .withTopK(topK)
             .withNProbe(20)
             .withPartitionTags(partitionTags2)
@@ -255,7 +254,7 @@ class MilvusClientTest {
     Response dropPartitionResponse = client.dropPartition(partitionName1);
     assertTrue(dropPartitionResponse.ok());
 
-    dropPartitionResponse = client.dropPartition(randomTableName, tag2);
+    dropPartitionResponse = client.dropPartition(randomCollectionName, tag2);
     assertTrue(dropPartitionResponse.ok());
   }
 
@@ -263,7 +262,7 @@ class MilvusClientTest {
   void createIndex() {
     Index index = new Index.Builder().withIndexType(IndexType.IVF_SQ8).withNList(16384).build();
     CreateIndexParam createIndexParam =
-        new CreateIndexParam.Builder(randomTableName).withIndex(index).build();
+        new CreateIndexParam.Builder(randomCollectionName).withIndex(index).build();
     Response createIndexResponse = client.createIndex(createIndexParam);
     assertTrue(createIndexResponse.ok());
   }
@@ -271,7 +270,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void insert() {
     List<List<Float>> vectors = generateVectors(size, dimension);
-    InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
+    InsertParam insertParam = new InsertParam.Builder(randomCollectionName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
     assertEquals(size, insertResponse.getVectorIds().size());
@@ -281,7 +280,7 @@ class MilvusClientTest {
   void search() throws InterruptedException {
     List<List<Float>> vectors = generateVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
-    InsertParam insertParam = new InsertParam.Builder(randomTableName, vectors).build();
+    InsertParam insertParam = new InsertParam.Builder(randomCollectionName, vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
     List<Long> vectorIds = insertResponse.getVectorIds();
@@ -304,7 +303,7 @@ class MilvusClientTest {
     queryRanges.add(new DateRange(yesterday, tomorrow));
     final long topK = 10;
     SearchParam searchParam =
-        new SearchParam.Builder(randomTableName, vectorsToSearch)
+        new SearchParam.Builder(randomCollectionName, vectorsToSearch)
             .withTopK(topK)
             .withNProbe(20)
             .withDateRanges(queryRanges)
@@ -332,21 +331,21 @@ class MilvusClientTest {
   //    }
 
   @org.junit.jupiter.api.Test
-  void describeTable() {
-    DescribeTableResponse describeTableResponse = client.describeTable(randomTableName);
-    assertTrue(describeTableResponse.ok());
-    assertTrue(describeTableResponse.getTableSchema().isPresent());
+  void describeCollection() {
+    DescribeCollectionResponse describeCollectionResponse = client.describeCollection(randomCollectionName);
+    assertTrue(describeCollectionResponse.ok());
+    assertTrue(describeCollectionResponse.getCollectionMapping().isPresent());
 
-    String nonExistingTableName = generator.generate(10);
-    describeTableResponse = client.describeTable(nonExistingTableName);
-    assertFalse(describeTableResponse.ok());
-    assertFalse(describeTableResponse.getTableSchema().isPresent());
+    String nonExistingCollectionName = generator.generate(10);
+    describeCollectionResponse = client.describeCollection(nonExistingCollectionName);
+    assertFalse(describeCollectionResponse.ok());
+    assertFalse(describeCollectionResponse.getCollectionMapping().isPresent());
   }
 
   @org.junit.jupiter.api.Test
-  void showTables() {
-    ShowTablesResponse showTablesResponse = client.showTables();
-    assertTrue(showTablesResponse.ok());
+  void showCollections() {
+    ShowCollectionsResponse showCollectionsResponse = client.showCollections();
+    assertTrue(showCollectionsResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -362,31 +361,31 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void getTableRowCount() throws InterruptedException {
+  void getCollectionRowCount() throws InterruptedException {
     insert();
     TimeUnit.SECONDS.sleep(1);
 
-    GetTableRowCountResponse getTableRowCountResponse = client.getTableRowCount(randomTableName);
-    assertTrue(getTableRowCountResponse.ok());
-    assertEquals(size, getTableRowCountResponse.getTableRowCount());
+    GetCollectionRowCountResponse getCollectionRowCountResponse = client.getCollectionRowCount(randomCollectionName);
+    assertTrue(getCollectionRowCountResponse.ok());
+    assertEquals(size, getCollectionRowCountResponse.getCollectionRowCount());
   }
 
   @org.junit.jupiter.api.Test
-  void preloadTable() {
-    Response preloadTableResponse = client.preloadTable(randomTableName);
-    assertTrue(preloadTableResponse.ok());
+  void preloadCollection() {
+    Response preloadCollectionResponse = client.preloadCollection(randomCollectionName);
+    assertTrue(preloadCollectionResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
   void describeIndex() {
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomTableName);
+    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomCollectionName);
     assertTrue(describeIndexResponse.ok());
     assertTrue(describeIndexResponse.getIndex().isPresent());
   }
 
   @org.junit.jupiter.api.Test
   void dropIndex() {
-    Response dropIndexResponse = client.dropIndex(randomTableName);
+    Response dropIndexResponse = client.dropIndex(randomCollectionName);
     assertTrue(dropIndexResponse.ok());
   }
 }

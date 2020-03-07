@@ -19,29 +19,21 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
-
 /**
- * Contains the returned <code>response</code> and <code>tableSchema</code> for <code>describeTable
- * </code>
+ * Contains the returned <code>response</code> and <code>collectionRowCount</code> for <code>
+ * getCollectionRowCount</code>
  */
-public class DescribeTableResponse {
+public class GetCollectionRowCountResponse {
   private final Response response;
-  private final TableSchema tableSchema;
+  private final long collectionRowCount;
 
-  DescribeTableResponse(Response response, @Nullable TableSchema tableSchema) {
+  GetCollectionRowCountResponse(Response response, long collectionRowCount) {
     this.response = response;
-    this.tableSchema = tableSchema;
+    this.collectionRowCount = collectionRowCount;
   }
 
-  /**
-   * @return an <code>Optional</code> object which may or may not contain a <code>TableSchema</code>
-   *     object
-   * @see Optional
-   */
-  public Optional<TableSchema> getTableSchema() {
-    return Optional.ofNullable(tableSchema);
+  public long getCollectionRowCount() {
+    return collectionRowCount;
   }
 
   public Response getResponse() {
@@ -55,7 +47,6 @@ public class DescribeTableResponse {
   @Override
   public String toString() {
     return String.format(
-        "DescribeTableResponse {%s, %s}",
-        response.toString(), tableSchema == null ? "Table schema = None" : tableSchema.toString());
+        "CountCollectionResponse {%s, collection row count = %d}", response.toString(), collectionRowCount);
   }
 }

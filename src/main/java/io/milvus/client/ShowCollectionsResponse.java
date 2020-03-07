@@ -22,20 +22,20 @@ package io.milvus.client;
 import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>tableNames</code> for <code>showTables
+ * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>showCollections
  * </code>
  */
-public class ShowTablesResponse {
+public class ShowCollectionsResponse {
   private final Response response;
-  private final List<String> tableNames;
+  private final List<String> collectionNames;
 
-  ShowTablesResponse(Response response, List<String> tableNames) {
+  ShowCollectionsResponse(Response response, List<String> collectionNames) {
     this.response = response;
-    this.tableNames = tableNames;
+    this.collectionNames = collectionNames;
   }
 
-  public List<String> getTableNames() {
-    return tableNames;
+  public List<String> getCollectionNames() {
+    return collectionNames;
   }
 
   public Response getResponse() {
@@ -49,6 +49,6 @@ public class ShowTablesResponse {
   @Override
   public String toString() {
     return String.format(
-        "ShowTablesResponse {%s, table names = %s}", response, tableNames.toString());
+        "ShowCollectionsResponse {%s, collection names = %s}", response, collectionNames.toString());
   }
 }

@@ -19,20 +19,29 @@
 
 package io.milvus.client;
 
-/**
- * Contains the returned <code>response</code> and <code>hasTable</code> for <code>hasTable</code>
- */
-public class HasTableResponse {
-  private final Response response;
-  private final boolean hasTable;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
-  HasTableResponse(Response response, boolean hasTable) {
+/**
+ * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>describeCollection
+ * </code>
+ */
+public class DescribeCollectionResponse {
+  private final Response response;
+  private final CollectionMapping collectionMapping;
+
+  DescribeCollectionResponse(Response response, @Nullable CollectionMapping collectionMapping) {
     this.response = response;
-    this.hasTable = hasTable;
+    this.collectionMapping = collectionMapping;
   }
 
-  public boolean hasTable() {
-    return hasTable;
+  /**
+   * @return an <code>Optional</code> object which may or may not contain a <code>CollectionMapping</code>
+   *     object
+   * @see Optional
+   */
+  public Optional<CollectionMapping> getCollectionMapping() {
+    return Optional.ofNullable(collectionMapping);
   }
 
   public Response getResponse() {
@@ -45,6 +54,8 @@ public class HasTableResponse {
 
   @Override
   public String toString() {
-    return String.format("HasTableResponse {%s, has table = %s}", response.toString(), hasTable);
+    return String.format(
+        "DescribeCollectionResponse {%s, %s}",
+        response.toString(), collectionMapping == null ? "Collection mapping = None" : collectionMapping.toString());
   }
 }

@@ -20,29 +20,36 @@
 package io.milvus.client;
 
 import javax.annotation.Nonnull;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Contains parameters for <code>insert</code> */
 public class InsertParam {
-  private final String tableName;
-  private final List<List<Float>> vectors;
+  private final String collectionName;
+  private final List<List<Float>> floatVectors;
+  private final List<ByteBuffer> binaryVectors;
   private final List<Long> vectorIds;
   private final String partitionTag;
 
   private InsertParam(@Nonnull Builder builder) {
-    this.tableName = builder.tableName;
-    this.vectors = builder.vectors;
+    this.collectionName = builder.collectionName;
+    this.floatVectors = builder.floatVectors;
+    this.binaryVectors = builder.binaryVectors;
     this.vectorIds = builder.vectorIds;
     this.partitionTag = builder.partitionTag;
   }
 
-  public String getTableName() {
-    return tableName;
+  public String getCollectionName() {
+    return collectionName;
   }
 
-  public List<List<Float>> getVectors() {
-    return vectors;
+  public List<List<Float>> getFloatVectors() {
+    return floatVectors;
+  }
+
+  public List<ByteBuffer> getBinaryVectors() {
+    return binaryVectors;
   }
 
   public List<Long> getVectorIds() {
@@ -56,21 +63,44 @@ public class InsertParam {
   /** Builder for <code>InsertParam</code> */
   public static class Builder {
     // Required parameters
-    private final String tableName;
-    private final List<List<Float>> vectors;
+    private final String collectionName;
 
     // Optional parameters - initialized to default values
+    private List<List<Float>> floatVectors = new ArrayList<>();
+    private List<ByteBuffer> binaryVectors = new ArrayList<>();
     private List<Long> vectorIds = new ArrayList<>();
     private String partitionTag = "";
 
+    /** @param collectionName collection to insert vectors to */
+    public Builder(@Nonnull String collectionName) {
+      this.collectionName = collectionName;
+    }
+
     /**
-     * @param tableName table to insert vectors to
-     * @param vectors a <code>List</code> of vectors to insert. Each inner <code>List</code>
-     *     represents a vector.
+     * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
+     * vectors, not both.
+     *
+     * @param floatVectors a <code>List</code> of float vectors to insert. Each inner <code>List
+     *     </code> represents a float vector.
+     * @return <code>Builder</code>
      */
-    public Builder(@Nonnull String tableName, @Nonnull List<List<Float>> vectors) {
-      this.tableName = tableName;
-      this.vectors = vectors;
+    public Builder withFloatVectors(@Nonnull List<List<Float>> floatVectors) {
+      this.floatVectors = floatVectors;
+      return this;
+    }
+
+    /**
+     * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
+     * vectors, not both.
+     *
+     * @param binaryVectors a <code>List</code> of binary vectors to insert. Each <code>ByteBuffer
+     *     </code> objects represents a binary vector.
+     * @return <code>Builder</code>
+     * @see ByteBuffer
+     */
+    public Builder withBinaryVectors(@Nonnull List<ByteBuffer> binaryVectors) {
+      this.binaryVectors = binaryVectors;
+      return this;
     }
 
     /**

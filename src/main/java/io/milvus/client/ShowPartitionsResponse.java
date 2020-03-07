@@ -23,56 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>partitionList</code> for <code>showPartitions
+ * Contains the returned <code>response</code> and <code>partitionList</code> for <code>
+ * showPartitions
  * </code>
  */
 public class ShowPartitionsResponse {
   private final Response response;
-  private final List<Partition> partitionList;
+  private final List<String> partitionList;
 
-  ShowPartitionsResponse(Response response, List<Partition> partitionList) {
+  ShowPartitionsResponse(Response response, List<String> partitionList) {
     this.response = response;
     this.partitionList = partitionList;
   }
 
-  /**
-   * @return a <code>List</code> of <code>Partition</code>s.
-   */
-  public List<Partition> getPartitionList() {
+  /** @return a <code>List</code> of partition tags. */
+  public List<String> getPartitionList() {
     return partitionList;
-  }
-
-  /**
-   * @return a <code>List</code> of table names of each partition.
-   */
-  public List<String> getTableNameList() {
-    List<String> tableNameList = new ArrayList<>();
-    for (Partition partition : partitionList) {
-      tableNameList.add(partition.getTableName());
-    }
-    return tableNameList;
-  }
-
-  /**
-   * @return a <code>List</code> of partition names.
-   */
-  public List<String> getPartitionNameList() {
-    List<String> partitionNameList = new ArrayList<>();
-    for (Partition partition : partitionList) {
-      partitionNameList.add(partition.getPartitionName());
-    }
-    return partitionNameList;
-  }
-
-  /**
-   * @return a <code>List</code> of partition tags.
-   */
-  public List<String> getPartitionTagList() {
-    List<String> partitionTagList = new ArrayList<>();
-    for (Partition partition : partitionList) {
-      partitionTagList.add(partition.getTag());
-    }
-    return partitionTagList;
   }
 
   public Response getResponse() {

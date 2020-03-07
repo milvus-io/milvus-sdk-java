@@ -23,52 +23,59 @@ import javax.annotation.Nonnull;
 
 /** Represents an index containing <code>indexType</code> and <code>nList</code> */
 public class Index {
+  private final String collectionName;
   private final IndexType indexType;
-  private final int nList;
+  private final String paramsInJson;
 
   private Index(@Nonnull Builder builder) {
+    this.collectionName = builder.collectionName;
     this.indexType = builder.indexType;
-    this.nList = builder.nList;
+    this.paramsInJson = builder.paramsInJson;
+  }
+
+  public String getCollectionName() {
+    return collectionName;
   }
 
   public IndexType getIndexType() {
     return indexType;
   }
 
-  public int getNList() {
-    return nList;
+  public String getParamsInJson() {
+    return paramsInJson;
   }
 
   @Override
   public String toString() {
-    return "Index {" + "indexType=" + indexType + ", nList=" + nList + '}';
+    return "Index {" + "indexType=" + indexType + ", params=" + paramsInJson + '}';
   }
 
   /** Builder for <code>Index</code> */
   public static class Builder {
+    // Required parameters
+    private final String collectionName;
+    private final IndexType indexType;
+
     // Optional parameters - initialized to default values
-    private IndexType indexType = IndexType.FLAT;
-    private int nList = 16384;
+    private String paramsInJson;
 
     /**
-     * Optional. Default to <code>IndexType.FLAT</code>
-     *
+     * @param collectionName collection to create index on
      * @param indexType a <code>IndexType</code> object
-     * @return <code>Builder</code>
      */
-    public Builder withIndexType(@Nonnull IndexType indexType) {
+    public Builder(@Nonnull String collectionName, @Nonnull IndexType indexType) {
+      this.collectionName = collectionName;
       this.indexType = indexType;
-      return this;
     }
 
     /**
-     * Optional. Default to 16384.
+     * Optional. Default to empty <code>String</code>.
      *
-     * @param nList nList of the index
+     * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */
-    public Builder withNList(int nList) {
-      this.nList = nList;
+    public Builder withParamsInJson(String paramsInJson) {
+      this.paramsInJson = paramsInJson;
       return this;
     }
 

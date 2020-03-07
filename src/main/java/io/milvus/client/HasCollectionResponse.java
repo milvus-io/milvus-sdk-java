@@ -20,20 +20,19 @@
 package io.milvus.client;
 
 /**
- * Contains the returned <code>response</code> and <code>tableRowCount</code> for <code>
- * getTableRowCount</code>
+ * Contains the returned <code>response</code> and <code>hasCollection</code> for <code>hasCollection</code>
  */
-public class GetTableRowCountResponse {
+public class HasCollectionResponse {
   private final Response response;
-  private final long tableRowCount;
+  private final boolean hasCollection;
 
-  GetTableRowCountResponse(Response response, long tableRowCount) {
+  HasCollectionResponse(Response response, boolean hasCollection) {
     this.response = response;
-    this.tableRowCount = tableRowCount;
+    this.hasCollection = hasCollection;
   }
 
-  public long getTableRowCount() {
-    return tableRowCount;
+  public boolean hasCollection() {
+    return hasCollection;
   }
 
   public Response getResponse() {
@@ -46,7 +45,6 @@ public class GetTableRowCountResponse {
 
   @Override
   public String toString() {
-    return String.format(
-        "CountTableResponse {%s, table row count = %d}", response.toString(), tableRowCount);
+    return String.format("HasCollectionResponse {%s, has collection = %s}", response.toString(), hasCollection);
   }
 }

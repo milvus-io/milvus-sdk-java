@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Represents different types of indexing method to query the table:
+ * Represents different types of indexing method to query the collection:
  *
  * <pre>
  *
@@ -46,7 +46,7 @@ import java.util.Optional;
  *
  * 6. IVF_PQ - Indexing method built based on product quantization. The input vectors are split into distinct sub-vectors
  * which are then quantized separately. Vector size can be reduced to 1/8 or 1/16 of the original size.
- * If you choose this index, note that there is an inevitable trade-off between memory and search accuracy.
+ * If you choose this index, note that there is an inevicollection trade-off between memory and search accuracy.
  *
  * </pre>
  */
@@ -55,9 +55,10 @@ public enum IndexType {
   FLAT(1),
   IVFLAT(2),
   IVF_SQ8(3),
-  NSG(4),
+  RNSG(4),
   IVF_SQ8_H(5),
   IVF_PQ(6),
+  HNSW(11),
 
   UNKNOWN(-1);
 
