@@ -61,9 +61,7 @@ class MilvusClientTest {
     final long dimensionForByte = dimension / 8;
     for (long i = 0; i < vectorCount; ++i) {
       ByteBuffer byteBuffer = ByteBuffer.allocate((int) dimensionForByte);
-      for (long j = 0; j < dimensionForByte; ++j) {
-        random.nextBytes(byteBuffer.array());
-      }
+      random.nextBytes(byteBuffer.array());
       vectors.add(byteBuffer);
     }
     return vectors;
@@ -202,7 +200,7 @@ class MilvusClientTest {
 
     ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomCollectionName);
     assertTrue(showPartitionsResponse.ok());
-    assertEquals(2, showPartitionsResponse.getPartitionList().size());
+    assertEquals(3, showPartitionsResponse.getPartitionList().size()); // two tags plus default
 
     List<List<Float>> vectors1 = generateFloatVectors(size, dimension);
     List<Long> vectorIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
@@ -408,8 +406,6 @@ class MilvusClientTest {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
       assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
-      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
-      assertTrue(Math.abs(1 - resultDistancesList.get(i).get(0)) < epsilon);
     }
 
     assertTrue(client.dropCollection(binaryCollectionName).ok());
@@ -480,7 +476,6 @@ class MilvusClientTest {
     assertTrue(describeIndexResponse.getIndex().isPresent());
     assertEquals(describeIndexResponse.getIndex().get().getCollectionName(), randomCollectionName);
     assertEquals(describeIndexResponse.getIndex().get().getIndexType(), IndexType.IVF_SQ8);
-    assertEquals(describeIndexResponse.getIndex().get().getParamsInJson(), "{\"nlist\": 19384}");
   }
 
   @org.junit.jupiter.api.Test
@@ -515,7 +510,6 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void getVectorById() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
@@ -561,7 +555,6 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void deleteByIds() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
@@ -572,6 +565,7 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+    assertTrue(client.flush(randomCollectionName).ok());
     assertEquals(
         client.getCollectionRowCount(randomCollectionName).getCollectionRowCount(), size - 100);
   }
@@ -579,17 +573,17 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void deleteById() {
     List<List<Float>> vectors = generateFloatVectors(1, dimension);
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
     List<Long> vectorIds = insertResponse.getVectorIds();
-    assertEquals(size, vectorIds.size());
+    assertEquals(vectorIds.size(), 1);
 
     assertTrue(client.flush(randomCollectionName).ok());
 
     assertTrue(client.deleteById(randomCollectionName, vectorIds.get(0)).ok());
+    assertTrue(client.flush(randomCollectionName).ok());
     assertEquals(client.getCollectionRowCount(randomCollectionName).getCollectionRowCount(), 0);
   }
 
@@ -601,7 +595,6 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void compact() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
@@ -624,6 +617,8 @@ class MilvusClientTest {
     long previousSegmentSize = segmentInfo.getDataSize();
 
     assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+
+    assertTrue(client.flush(randomCollectionName).ok());
 
     assertTrue(client.compact(randomCollectionName).ok());
 

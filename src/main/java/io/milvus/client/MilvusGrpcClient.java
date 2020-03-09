@@ -1072,6 +1072,7 @@ public class MilvusGrpcClient implements MilvusClient {
         rowRecordBuilder.addAllFloatData(floatVectors.get(i));
       }
       if (i < binaryVectors.size()) {
+        binaryVectors.get(i).rewind();
         rowRecordBuilder.setBinaryData(ByteString.copyFrom(binaryVectors.get(i)));
       }
 
