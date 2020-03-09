@@ -120,9 +120,7 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder()
-   *                        .withCollectionName(collectionName)
-   *                        .withIndexType(IndexType.IVF_SQ8)
+   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
    *                        .withParamsInJson("{\"nlist\": 19384}")
    *                        .build();
    * </code>
