@@ -8,7 +8,7 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
 
 ### Prerequisites
 
-    - Java 8 or higher.
+    - Java 8 or higher
     - Apache Maven or Gradle/Grails
 
 ### Install Java SDK
@@ -22,6 +22,7 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
    |     0.5.2      |    0.2.2    |
    |     0.5.3      |    0.3.0    |
    |     0.6.0      |    0.4.1    |
+   |     0.7.0      |    0.5.0    |
 
 2. Use **Apache Maven** or **Gradle**/**Grails** to compile the SDK.
 
@@ -31,14 +32,14 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>0.4.1</version>
+            <version>0.5.0</version>
         </dependency>
        ```
 
     - For Gradle/Grails, add the following dependency:
 
          ```gradle
-         compile 'io.milvus:milvus-sdk-java:0.4.1'
+         compile 'io.milvus:milvus-sdk-java:0.5.0'
          ```
 
 ### Examples
