@@ -138,6 +138,19 @@ public class SearchParam {
     /**
      * Optional. Default to empty <code>String</code>.
      *
+     * <pre>
+     *   For different index type, search parameter is different accordingly, for example:
+     *
+     *   FLAT/IVFLAT/SQ8/IVFPQ: {"nprobe": 32}
+     *   nprobe range:[1,999999]
+     *
+     *   NSG: {"search_length": 100}
+     *   search_length range:[10, 300]
+     *
+     *   HNSW: {"ef": 64}
+     *   ef range:[topk, 4096]
+     * </pre>
+     *
      * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */

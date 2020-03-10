@@ -178,6 +178,7 @@ class MilvusClientTest {
   void hasCollection() {
     HasCollectionResponse hasCollectionResponse = client.hasCollection(randomCollectionName);
     assertTrue(hasCollectionResponse.ok());
+    assertTrue(hasCollectionResponse.hasCollection());
   }
 
   @org.junit.jupiter.api.Test
@@ -200,7 +201,7 @@ class MilvusClientTest {
 
     ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomCollectionName);
     assertTrue(showPartitionsResponse.ok());
-    assertEquals(3, showPartitionsResponse.getPartitionList().size()); // two tags plus default
+    assertEquals(3, showPartitionsResponse.getPartitionList().size()); // two tags plus _default
 
     List<List<Float>> vectors1 = generateFloatVectors(size, dimension);
     List<Long> vectorIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
@@ -421,6 +422,9 @@ class MilvusClientTest {
         client.describeCollection(randomCollectionName);
     assertTrue(describeCollectionResponse.ok());
     assertTrue(describeCollectionResponse.getCollectionMapping().isPresent());
+    assertEquals(
+        describeCollectionResponse.getCollectionMapping().get().getCollectionName(),
+        randomCollectionName);
 
     String nonExistingCollectionName = generator.generate(10);
     describeCollectionResponse = client.describeCollection(nonExistingCollectionName);
@@ -536,6 +540,7 @@ class MilvusClientTest {
 
     ShowCollectionInfoResponse showCollectionInfoResponse =
         client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
 
     CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
         showCollectionInfoResponse
@@ -606,6 +611,7 @@ class MilvusClientTest {
 
     ShowCollectionInfoResponse showCollectionInfoResponse =
         client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
     CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
         showCollectionInfoResponse
             .getCollectionInfo()
@@ -623,6 +629,7 @@ class MilvusClientTest {
     assertTrue(client.compact(randomCollectionName).ok());
 
     showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
     segmentInfo =
         showCollectionInfoResponse
             .getCollectionInfo()

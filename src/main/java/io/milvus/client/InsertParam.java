@@ -78,7 +78,7 @@ public class InsertParam {
 
     /**
      * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
-     * vectors, not both.
+     * vectors to a collection, not both.
      *
      * @param floatVectors a <code>List</code> of float vectors to insert. Each inner <code>List
      *     </code> represents a float vector.
@@ -91,10 +91,10 @@ public class InsertParam {
 
     /**
      * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
-     * vectors, not both.
+     * vectors to a collection, not both.
      *
      * @param binaryVectors a <code>List</code> of binary vectors to insert. Each <code>ByteBuffer
-     *     </code> objects represents a binary vector.
+     *     </code> objects represents a binary vector, with every 8 bits constituting a byte.
      * @return <code>Builder</code>
      * @see ByteBuffer
      */

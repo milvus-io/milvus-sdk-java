@@ -71,6 +71,27 @@ public class Index {
     /**
      * Optional. Default to empty <code>String</code>.
      *
+     * <pre>
+     * For different index type, index parameter is different accordingly, for example:
+     *
+     * FLAT/IVFLAT/SQ8: {"nlist": 16384}
+     * nlist range:[1, 999999]
+     *
+     * IVFPQ: {"nlist": 16384, "m": 12}
+     * nlist range:[1, 999999]
+     * m is decided by dim and have a couple of results.
+     *
+     * NSG: {"search_length": 45, "out_degree": 50, "candidate_pool_size": 300, "knng": 100}
+     * search_length range:[10, 300]
+     * out_degree range:[5, 300]
+     * candidate_pool_size range:[50, 1000]
+     * knng range:[5, 300]
+     *
+     * HNSW: {"M": 16, "efConstruction": 500}
+     * M range:[5, 48]
+     * efConstruction range:[100, 500]
+     * </pre>
+     *
      * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */

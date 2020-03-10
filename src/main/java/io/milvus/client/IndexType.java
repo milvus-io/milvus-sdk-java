@@ -34,7 +34,7 @@ import java.util.Optional;
  * 3. IVF_SQ8 - Vector indexing that adopts a scalar quantization strategy that significantly reduces the size of a
  * vector (by about 3/4), thus improving the overall throughput of vector processing;
  *
- * 4. NSG - NSG (Navigating Spreading-out Graph) is a graph-base search algorithm that a) lowers the average
+ * 4. RNSG - NSG (Navigating Spreading-out Graph) is a graph-base search algorithm that a) lowers the average
  * out-degree of the graph for fast traversal; b) shortens the search path; c) reduces the index
  * size; d) lowers the indexing complexity. Extensive tests show that NSG can achieve very high
  * search performance at high precision, and needs much less memory. Compared to non-graph-based
@@ -47,6 +47,8 @@ import java.util.Optional;
  * 6. IVF_PQ - Indexing method built based on product quantization. The input vectors are split into distinct sub-vectors
  * which are then quantized separately. Vector size can be reduced to 1/8 or 1/16 of the original size.
  * If you choose this index, note that there is an inevicollection trade-off between memory and search accuracy.
+ *
+ * 7. HNSW - Hierarchical Navigable Small World graphs
  *
  * </pre>
  */

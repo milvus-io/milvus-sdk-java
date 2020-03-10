@@ -52,6 +52,12 @@ public class MilvusGrpcClient implements MilvusClient {
     logger.setLevel(Level.ALL);
   }
 
+  /**
+   * @param logLevel we currently have three levels of logs: <code>INFO</code>, <code>WARNING</code>
+   *     and <code>SEVERE</code>. You can also specify to be <code>Level.All</code> or <code>
+   *     Level.OFF</code>
+   * @see Level
+   */
   public MilvusGrpcClient(Level logLevel) {
     logger.setLevel(logLevel);
   }

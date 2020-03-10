@@ -59,7 +59,7 @@ public interface MilvusClient {
   Response connect(ConnectParam connectParam) throws ConnectFailedException;
 
   /**
-   * @return <code>true</code> if the client is connected to Milvus server. The channel's
+   * @return <code>true</code> if the client is connected to Milvus server and the channel's
    *     connectivity state is READY.
    */
   boolean isConnected();
@@ -74,7 +74,7 @@ public interface MilvusClient {
   Response disconnect() throws InterruptedException;
 
   /**
-   * Creates collection specified by <code>collectionMappingParam</code>
+   * Creates collection specified by <code>collectionMapping</code>
    *
    * @param collectionMapping the <code>CollectionMapping</code> object
    *     <pre>
@@ -95,7 +95,7 @@ public interface MilvusClient {
   Response createCollection(CollectionMapping collectionMapping);
 
   /**
-   * Check whether collection exists
+   * Checks whether the collection exists
    *
    * @param collectionName collection to check
    * @return <code>HasCollectionResponse</code>
@@ -114,7 +114,7 @@ public interface MilvusClient {
   Response dropCollection(String collectionName);
 
   /**
-   * Creates index specified by <code>indexParam</code>
+   * Creates index specified by <code>index</code>
    *
    * @param index the <code>Index</code> object
    *     <pre>
@@ -134,7 +134,7 @@ public interface MilvusClient {
   Response createIndex(Index index);
 
   /**
-   * Creates a partition specified by <code>PartitionParam</code>
+   * Creates a partition specified by <code>collectionName</code> and <code>tag</code>
    *
    * @param collectionName collection name
    * @param tag partition tag
@@ -234,10 +234,11 @@ public interface MilvusClient {
   SearchResponse searchInFiles(List<String> fileIds, SearchParam searchParam);
 
   /**
-   * Describes collection
+   * Describes the collection
    *
    * @param collectionName collection to describe
    * @see DescribeCollectionResponse
+   * @see CollectionMapping
    * @see Response
    */
   DescribeCollectionResponse describeCollection(String collectionName);
@@ -252,9 +253,9 @@ public interface MilvusClient {
   ShowCollectionsResponse showCollections();
 
   /**
-   * Gets current row count of collection
+   * Gets current row count of a collection
    *
-   * @param collectionName collection to count
+   * @param collectionName collection to get row count
    * @return <code>GetCollectionRowCountResponse</code>
    * @see GetCollectionRowCountResponse
    * @see Response
@@ -313,10 +314,9 @@ public interface MilvusClient {
   Response dropIndex(String collectionName);
 
   /**
-   * Shows collection information. A collection consists of one or multiple partition (including the
-   * default partition), and a partitions consists of one or more segments. Each partition or
-   * segment in a collection can be uniquely identified by its partition tag or segment name,
-   * respectively.
+   * Shows collection information. A collection consists of one or multiple partitions (including
+   * the default partition), and a partitions consists of one or more segments. Each partition or
+   * segment can be uniquely identified by its partition tag or segment name respectively.
    *
    * @param collectionName collection to show info from
    * @see ShowCollectionInfoResponse
@@ -338,7 +338,7 @@ public interface MilvusClient {
   GetVectorByIdResponse getVectorById(String collectionName, Long id);
 
   /**
-   * Gets vector ids in a segment
+   * Gets all vector ids in a segment
    *
    * @param collectionName collection to get vector ids from
    * @param segmentName segment name
@@ -366,7 +366,8 @@ public interface MilvusClient {
   Response deleteById(String collectionName, Long id);
 
   /**
-   * Flushes data in a list collections
+   * Flushes data in a list collections. Newly inserted or modifications on data will be visible
+   * after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
    * @see Response
@@ -383,7 +384,9 @@ public interface MilvusClient {
   Response flush(String collectionName);
 
   /**
-   * Compacts data in a collection. Previously deleted data will be erased from disk.
+   * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
+   * data size after compaction is still larger than indexFileSize). Data was only soft-deleted
+   * until you call compact.
    *
    * @param collectionName name of collection to compact
    * @see Response

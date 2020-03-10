@@ -21,18 +21,22 @@ import io.milvus.client.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SplitcollectionRandom;
-import java.util.concurrent.TimeUnit;
+import java.util.SplittableRandom;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+// This is a simple example demonstrating how to use the Milvus Java SDK.
+// For detailed API document, please refer to
+// https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html
+// You can also find more information in https://milvus.io/
 public class MilvusClientExample {
 
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(long vectorCount, long dimension) {
-    SplitcollectionRandom splitcollectionRandom = new SplitcollectionRandom();
+    SplittableRandom splitcollectionRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>();
-    for (int i = 0; i < vectorCount; ++i) {
+    for (long i = 0; i < vectorCount; ++i) {
       splitcollectionRandom = splitcollectionRandom.split();
       DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
       List<Float> vector =
@@ -55,23 +59,24 @@ public class MilvusClientExample {
 
     // You may need to change the following to the host and port of your Milvus server
     final String host = "localhost";
-    final String port = "19530";
+    final int port = 19530;
 
     // Create Milvus client
-    MilvusClient client = new MilvusGrpcClient();
+    // You can specify the log level. Currently we have three levels of logs: INFO, WARNING and
+    // SEVERE
+    MilvusClient client = new MilvusGrpcClient(Level.ALL);
 
     // Connect to Milvus server
     ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();
     try {
       Response connectResponse = client.connect(connectParam);
     } catch (ConnectFailedException e) {
-      System.out.println(e.toString());
+      System.out.println("Failed to connect to Milvus server: " + e.toString());
       throw e;
     }
 
     // Check whether we are connected
     boolean connected = client.isConnected();
-    System.out.println("Connected = " + connected);
 
     // Create a collection with the following collection mapping
     final String collectionName = "example"; // collection name
@@ -84,59 +89,64 @@ public class MilvusClientExample {
             .withMetricType(metricType)
             .build();
     Response createCollectionResponse = client.createCollection(collectionMapping);
-    System.out.println(createCollectionResponse);
 
     // Check whether the collection exists
     HasCollectionResponse hasCollectionResponse = client.hasCollection(collectionName);
-    System.out.println(hasCollectionResponse);
 
     // Describe the collection
-    DescribeCollectionResponse describeCollectionResponse = client.describeCollection(collectionName);
-    System.out.println(describeCollectionResponse);
+    DescribeCollectionResponse describeCollectionResponse =
+        client.describeCollection(collectionName);
 
     // Insert randomly generated vectors to collection
     final int vectorCount = 100000;
     List<List<Float>> vectors = generateVectors(vectorCount, dimension);
     vectors =
         vectors.stream().map(MilvusClientExample::normalizeVector).collect(Collectors.toList());
-    InsertParam insertParam = new InsertParam.Builder(collectionName, vectors).build();
+    InsertParam insertParam =
+        new InsertParam.Builder(collectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
-    System.out.println(insertResponse);
     // Insert returns a list of vector ids that you will be using (if you did not supply them
     // yourself) to reference the vectors you just inserted
     List<Long> vectorIds = insertResponse.getVectorIds();
 
-    // The data we just inserted won't be serialized and written to meta until the next second
-    // wait 1 second here
-    TimeUnit.SECONDS.sleep(1);
+    // Flush data in collection
+    Response flushResponse = client.flush(collectionName);
 
     // Get current row count of collection
-    GetCollectionRowCountResponse getCollectionRowCountResponse = client.getCollectionRowCount(collectionName);
-    System.out.println(getCollectionRowCountResponse);
+    GetCollectionRowCountResponse getCollectionRowCountResponse =
+        client.getCollectionRowCount(collectionName);
 
     // Create index for the collection
     // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
     // complete explanation of different index types
     final IndexType indexType = IndexType.IVF_SQ8;
-    Index index = new Index.Builder().withIndexType(indexType).build();
-    CreateIndexParam createIndexParam =
-        new CreateIndexParam.Builder(collectionName).withIndex(index).build();
-    Response createIndexResponse = client.createIndex(createIndexParam);
-    System.out.println(createIndexResponse);
+    // Each index type has its optional parameters you can set. Refer to the Milvus documentation
+    // for how to set the optimal parameters based on your needs.
+    final String createIndexParamsInJson = "{\"nlist\": 19384}";
+    Index index =
+        new Index.Builder(collectionName, indexType)
+            .withParamsInJson(createIndexParamsInJson)
+            .build();
+    Response createIndexResponse = client.createIndex(index);
 
     // Describe the index for your collection
     DescribeIndexResponse describeIndexResponse = client.describeIndex(collectionName);
-    System.out.println(describeIndexResponse);
 
     // Search vectors
     // Searching the first 5 vectors of the vectors we just inserted
     final int searchBatchSize = 5;
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchBatchSize);
     final long topK = 10;
+    // Based on the index you created, the available search parameters will be different. Refer to
+    // the Milvus documentation for how to set the optimal parameters based on your needs.
+    final String searchParamsInJson = "{\"nprobe\": 20}";
     SearchParam searchParam =
-        new SearchParam.Builder(collectionName, vectorsToSearch).withTopK(topK).build();
+        new SearchParam.Builder(collectionName)
+            .withFloatVectors(vectorsToSearch)
+            .withTopK(topK)
+            .withParamsInJson(searchParamsInJson)
+            .build();
     SearchResponse searchResponse = client.search(searchParam);
-    System.out.println(searchResponse);
     if (searchResponse.ok()) {
       List<List<SearchResponse.QueryResult>> queryResultsList =
           searchResponse.getQueryResultsList();
@@ -153,13 +163,31 @@ public class MilvusClientExample {
       }
     }
 
+    // Delete the first 5 of vectors you just searched
+    Response deleteByIdsResponse =
+        client.deleteByIds(collectionName, vectorIds.subList(0, searchBatchSize));
+
+    // Flush again, so deletions to data become visible
+    flushResponse = client.flush(collectionName);
+
+    // Try to get the corresponding vector of the first id you just deleted.
+    GetVectorByIdResponse getVectorByIdResponse =
+        client.getVectorById(collectionName, vectorIds.get(0));
+    // Obviously you won't get anything
+    if (getVectorByIdResponse.exists()) {
+      throw new AssertionError("This can never happen!");
+    }
+
+    // Compact the collection, erasing deleted data from disk and rebuild index in background (if
+    // the data size after compaction is still larger than indexFileSize). Data was only
+    // soft-deleted until you call compact.
+    Response compactResponse = client.compact(collectionName);
+
     // Drop index for the collection
     Response dropIndexResponse = client.dropIndex(collectionName);
-    System.out.println(dropIndexResponse);
 
     // Drop collection
     Response dropCollectionResponse = client.dropCollection(collectionName);
-    System.out.println(dropCollectionResponse);
 
     // Disconnect from Milvus server
     try {
