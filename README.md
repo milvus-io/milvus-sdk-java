@@ -26,7 +26,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
 
-   - For Apache Maven, add the following dependency:
+   - Apache Maven
 
        ```xml
         <dependency>
@@ -36,7 +36,7 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         </dependency>
        ```
 
-   - For Gradle/Grails, add the following dependency:
+   - Gradle/Grails
 
         ```gradle
         compile 'io.milvus:milvus-sdk-java:0.5.0'
