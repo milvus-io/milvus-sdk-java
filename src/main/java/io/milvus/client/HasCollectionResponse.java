@@ -39,6 +39,7 @@ public class HasCollectionResponse {
     return response;
   }
 
+  /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
   }

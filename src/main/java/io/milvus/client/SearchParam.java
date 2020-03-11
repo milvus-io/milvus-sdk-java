@@ -102,8 +102,8 @@ public class SearchParam {
      * not both.
      *
      * @param binaryVectors a <code>List</code> of binary vectors to be queried. Each <code>
-     *     ByteBuffer
-     *     </code> objects represents a binary vector.
+     *     ByteBuffer</code> object represents a binary vector, with every 8 bits constituting a
+     *     byte.
      * @return <code>Builder</code>
      * @see ByteBuffer
      */
@@ -119,7 +119,7 @@ public class SearchParam {
      * @param partitionTags a <code>List</code> of partition tags
      * @return <code>Builder</code>
      */
-    public Builder withPartitionTags(List<String> partitionTags) {
+    public Builder withPartitionTags(@Nonnull List<String> partitionTags) {
       this.partitionTags = partitionTags;
       return this;
     }
@@ -154,7 +154,7 @@ public class SearchParam {
      * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */
-    public SearchParam.Builder withParamsInJson(String paramsInJson) {
+    public SearchParam.Builder withParamsInJson(@Nonnull String paramsInJson) {
       this.paramsInJson = paramsInJson;
       return this;
     }

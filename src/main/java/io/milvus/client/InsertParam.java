@@ -94,7 +94,7 @@ public class InsertParam {
      * vectors to a collection, not both.
      *
      * @param binaryVectors a <code>List</code> of binary vectors to insert. Each <code>ByteBuffer
-     *     </code> objects represents a binary vector, with every 8 bits constituting a byte.
+     *     </code> object represents a binary vector, with every 8 bits constituting a byte.
      * @return <code>Builder</code>
      * @see ByteBuffer
      */

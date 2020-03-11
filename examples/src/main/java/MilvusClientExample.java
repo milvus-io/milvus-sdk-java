@@ -17,6 +17,7 @@
  * under the License.
  */
 
+import com.google.gson.JsonObject;
 import io.milvus.client.*;
 
 import java.util.ArrayList;
@@ -122,10 +123,11 @@ public class MilvusClientExample {
     final IndexType indexType = IndexType.IVF_SQ8;
     // Each index type has its optional parameters you can set. Refer to the Milvus documentation
     // for how to set the optimal parameters based on your needs.
-    final String createIndexParamsInJson = "{\"nlist\": 19384}";
+    JsonObject indexParamsJson = new JsonObject();
+    indexParamsJson.addProperty("nlist", 16384);
     Index index =
         new Index.Builder(collectionName, indexType)
-            .withParamsInJson(createIndexParamsInJson)
+            .withParamsInJson(indexParamsJson.toString())
             .build();
     Response createIndexResponse = client.createIndex(index);
 
@@ -139,12 +141,13 @@ public class MilvusClientExample {
     final long topK = 10;
     // Based on the index you created, the available search parameters will be different. Refer to
     // the Milvus documentation for how to set the optimal parameters based on your needs.
-    final String searchParamsInJson = "{\"nprobe\": 20}";
+    JsonObject searchParamsJson = new JsonObject();
+    searchParamsJson.addProperty("nprobe", 20);
     SearchParam searchParam =
         new SearchParam.Builder(collectionName)
             .withFloatVectors(vectorsToSearch)
             .withTopK(topK)
-            .withParamsInJson(searchParamsInJson)
+            .withParamsInJson(searchParamsJson.toString())
             .build();
     SearchResponse searchResponse = client.search(searchParam);
     if (searchResponse.ok()) {

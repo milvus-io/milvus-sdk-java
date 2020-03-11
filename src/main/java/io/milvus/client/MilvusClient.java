@@ -21,12 +21,13 @@ package io.milvus.client;
 
 import java.util.List;
 
+
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.4.1";
+  String clientVersion = "0.5.0";
 
-  /** @return the current Milvus client version */
+  /** @return current Milvus client version： 0.5.0 */
   default String getClientVersion() {
     return clientVersion;
   }

@@ -29,6 +29,7 @@ public class ShowCollectionInfoResponse {
     return Optional.ofNullable(collectionInfo);
   }
 
+  /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
   }

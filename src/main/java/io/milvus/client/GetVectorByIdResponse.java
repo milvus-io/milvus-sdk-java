@@ -4,6 +4,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Contains the returned <code>response</code> and either a <code>floatVector</code> or a <code>
+ * binaryVector</code> for <code>getVectorById</code>. If the id does not exist, both returned
+ * vectors will be empty.
+ */
 public class GetVectorByIdResponse {
   private final Response response;
   private final List<Float> floatVector;
@@ -48,6 +53,7 @@ public class GetVectorByIdResponse {
     return response;
   }
 
+  /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
   }

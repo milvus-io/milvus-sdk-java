@@ -47,7 +47,14 @@ public class Index {
 
   @Override
   public String toString() {
-    return "Index {" + "indexType=" + indexType + ", params=" + paramsInJson + '}';
+    return "Index {"
+        + "collectionName="
+        + collectionName
+        + ", indexType="
+        + indexType
+        + ", params="
+        + paramsInJson
+        + '}';
   }
 
   /** Builder for <code>Index</code> */
@@ -95,7 +102,7 @@ public class Index {
      * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */
-    public Builder withParamsInJson(String paramsInJson) {
+    public Builder withParamsInJson(@Nonnull String paramsInJson) {
       this.paramsInJson = paramsInJson;
       return this;
     }

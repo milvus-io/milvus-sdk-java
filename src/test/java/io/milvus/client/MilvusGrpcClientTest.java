@@ -58,9 +58,9 @@ class MilvusClientTest {
   static List<ByteBuffer> generateBinaryVectors(long vectorCount, long dimension) {
     Random random = new Random();
     List<ByteBuffer> vectors = new ArrayList<>();
-    final long dimensionForByte = dimension / 8;
+    final long dimensionInByte = dimension / 8;
     for (long i = 0; i < vectorCount; ++i) {
-      ByteBuffer byteBuffer = ByteBuffer.allocate((int) dimensionForByte);
+      ByteBuffer byteBuffer = ByteBuffer.allocate((int) dimensionInByte);
       random.nextBytes(byteBuffer.array());
       vectors.add(byteBuffer);
     }

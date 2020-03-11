@@ -42,10 +42,9 @@ public class MilvusGrpcClient implements MilvusClient {
   private static final String ANSI_YELLOW = "\u001B[33m";
   private static final String ANSI_PURPLE = "\u001B[35m";
   private static final String ANSI_BRIGHT_PURPLE = "\u001B[95m";
-
+  private final String extraParamKey = "params";
   private ManagedChannel channel = null;
   private io.milvus.grpc.MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub = null;
-  private final String extraParamKey = "params";
 
   ////////////////////// Constructor //////////////////////
   public MilvusGrpcClient() {
@@ -111,7 +110,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     logInfo(
         "Connection established successfully to host={0}, port={1}",
-        connectParam.getHost(), connectParam.getPort());
+        connectParam.getHost(), String.valueOf(connectParam.getPort()));
     return new Response(Response.Status.SUCCESS);
   }
 
@@ -887,8 +886,8 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
 
         logInfo(
-            "getVectorById for `{0}` in collection `{1}` returned successfully!",
-            id, collectionName);
+            "getVectorById for id={0} in collection `{1}` returned successfully!",
+            String.valueOf(id), collectionName);
         return new GetVectorByIdResponse(
             new Response(Response.Status.SUCCESS),
             response.getVectorData().getFloatDataList(),
@@ -896,7 +895,7 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logSevere(
             "getVectorById for `{0}` in collection `{1}` failed:\n{2}",
-            id, collectionName, response.toString());
+            String.valueOf(id), collectionName, response.toString());
         return new GetVectorByIdResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -971,7 +970,7 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.deleteByID(request);
 
       if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
-        logInfo("deleteByIds in collection `{0}` successfully!", collectionName);
+        logInfo("deleteByIds in collection `{0}` completed successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
         logSevere(
@@ -1050,10 +1049,10 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.compact(request);
 
       if (response.getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
-        logInfo("Compacted collection {0} successfully!", collectionName);
+        logInfo("Compacted collection `{0}` successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
-        logSevere("Compact collection {0} failed:\n{1}", collectionName, response.toString());
+        logSevere("Compact collection `{0}` failed:\n{1}", collectionName, response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
