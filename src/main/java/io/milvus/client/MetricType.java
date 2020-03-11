@@ -24,10 +24,17 @@ import java.util.Optional;
 
 /** Represents available metric types */
 public enum MetricType {
-  /** Euclidean distance */
+  INVALID(0),
+  /** Euclidean distance. For float vectors only */
   L2(1),
-  /** Inner product */
+  /** Inner product. For float vectors only */
   IP(2),
+  /** Hamming distance. For binary vectors only */
+  HAMMING(3),
+  /** Jaccard distance. For binary vectors only */
+  JACCARD(4),
+  /** Tanimoto distance. For binary vectors only */
+  TANIMOTO(5),
 
   UNKNOWN(-1);
 

@@ -20,87 +20,107 @@
 package io.milvus.client;
 
 import javax.annotation.Nonnull;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 /** Contains parameters for <code>search</code> */
 public class SearchParam {
 
-  private final String tableName;
-  private final List<List<Float>> queryVectors;
-  private final List<DateRange> dateRanges;
-  private final long topK;
-  private final long nProbe;
+  private final String collectionName;
+  private final List<List<Float>> floatVectors;
+  private final List<ByteBuffer> binaryVectors;
   private final List<String> partitionTags;
+  private final long topK;
+  private final String paramsInJson;
 
   private SearchParam(@Nonnull Builder builder) {
-    this.tableName = builder.tableName;
-    this.queryVectors = builder.queryVectors;
-    this.dateRanges = builder.dateRanges;
-    this.nProbe = builder.nProbe;
-    this.topK = builder.topK;
+    this.collectionName = builder.collectionName;
+    this.floatVectors = builder.floatVectors;
+    this.binaryVectors = builder.binaryVectors;
     this.partitionTags = builder.partitionTags;
+    this.topK = builder.topK;
+    this.paramsInJson = builder.paramsInJson;
   }
 
-  public String getTableName() {
-    return tableName;
+  public String getCollectionName() {
+    return collectionName;
   }
 
-  public List<List<Float>> getQueryVectors() {
-    return queryVectors;
+  public List<List<Float>> getFloatVectors() {
+    return floatVectors;
   }
 
-  @Deprecated
-  public List<DateRange> getDateRanges() {
-    return dateRanges;
-  }
-
-  public long getTopK() {
-    return topK;
-  }
-
-  public long getNProbe() {
-    return nProbe;
+  public List<ByteBuffer> getBinaryVectors() {
+    return binaryVectors;
   }
 
   public List<String> getPartitionTags() {
     return partitionTags;
   }
 
+  public long getTopK() {
+    return topK;
+  }
+
+  public String getParamsInJson() {
+    return paramsInJson;
+  }
+
   /** Builder for <code>SearchParam</code> */
   public static class Builder {
     // Required parameters
-    private final String tableName;
-    private final List<List<Float>> queryVectors;
+    private final String collectionName;
 
     // Optional parameters - initialized to default values
-    private List<DateRange> dateRanges = new ArrayList<>();
-    private long topK = 1024;
-    private long nProbe = 20;
+    private List<List<Float>> floatVectors = new ArrayList<>();
+    private List<ByteBuffer> binaryVectors = new ArrayList<>();
     private List<String> partitionTags = new ArrayList<>();
+    private long topK = 1024;
+    private String paramsInJson;
 
-    /**
-     * @param tableName table to search from
-     * @param queryVectors a <code>List</code> of vectors to be queried. Each inner <code>List
-     *     </code> represents a vector.
-     */
-    public Builder(@Nonnull String tableName, @Nonnull List<List<Float>> queryVectors) {
-      this.tableName = tableName;
-      this.queryVectors = queryVectors;
+    /** @param collectionName collection to search from */
+    public Builder(@Nonnull String collectionName) {
+      this.collectionName = collectionName;
     }
 
     /**
-     * Deprecated. Optional. Searches vectors in their corresponding date range. Default to an empty
-     * <code>
-     * ArrayList</code>
+     * Default to an empty <code>ArrayList</code>. You can search either float or binary vectors,
+     * not both.
      *
-     * @param dateRanges a <code>List</code> of <code>DateRange</code> objects
+     * @param floatVectors a <code>List</code> of float vectors to be queries. Each inner <code>List
+     *     </code> represents a float vector.
      * @return <code>Builder</code>
-     * @see DateRange
      */
-    @Deprecated
-    public Builder withDateRanges(@Nonnull List<DateRange> dateRanges) {
-      this.dateRanges = dateRanges;
+    public SearchParam.Builder withFloatVectors(@Nonnull List<List<Float>> floatVectors) {
+      this.floatVectors = floatVectors;
+      return this;
+    }
+
+    /**
+     * Default to an empty <code>ArrayList</code>. You can search either float or binary vectors,
+     * not both.
+     *
+     * @param binaryVectors a <code>List</code> of binary vectors to be queried. Each <code>
+     *     ByteBuffer</code> object represents a binary vector, with every 8 bits constituting a
+     *     byte.
+     * @return <code>Builder</code>
+     * @see ByteBuffer
+     */
+    public SearchParam.Builder withBinaryVectors(@Nonnull List<ByteBuffer> binaryVectors) {
+      this.binaryVectors = binaryVectors;
+      return this;
+    }
+
+    /**
+     * Optional. Search vectors with corresponding <code>partitionTags</code>. Default to an empty
+     * <code>List</code>
+     *
+     * @param partitionTags a <code>List</code> of partition tags
+     * @return <code>Builder</code>
+     */
+    public Builder withPartitionTags(@Nonnull List<String> partitionTags) {
+      this.partitionTags = partitionTags;
       return this;
     }
 
@@ -116,25 +136,26 @@ public class SearchParam {
     }
 
     /**
-     * Optional. Default to 20.
+     * Optional. Default to empty <code>String</code>.
      *
-     * @param nProbe a nProbe number
+     * <pre>
+     *   For different index type, search parameter is different accordingly, for example:
+     *
+     *   FLAT/IVFLAT/SQ8/IVFPQ: {"nprobe": 32}
+     *   nprobe range:[1,999999]
+     *
+     *   NSG: {"search_length": 100}
+     *   search_length range:[10, 300]
+     *
+     *   HNSW: {"ef": 64}
+     *   ef range:[topk, 4096]
+     * </pre>
+     *
+     * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */
-    public Builder withNProbe(long nProbe) {
-      this.nProbe = nProbe;
-      return this;
-    }
-
-    /**
-     * Optional. Search vectors with corresponding <code>partitionTags</code>. Default to an empty
-     * <code>List</code>
-     *
-     * @param partitionTags a <code>List</code> of partition tags
-     * @return <code>Builder</code>
-     */
-    public Builder withPartitionTags(List<String> partitionTags) {
-      this.partitionTags = partitionTags;
+    public SearchParam.Builder withParamsInJson(@Nonnull String paramsInJson) {
+      this.paramsInJson = paramsInJson;
       return this;
     }
 

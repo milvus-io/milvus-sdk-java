@@ -23,52 +23,87 @@ import javax.annotation.Nonnull;
 
 /** Represents an index containing <code>indexType</code> and <code>nList</code> */
 public class Index {
+  private final String collectionName;
   private final IndexType indexType;
-  private final int nList;
+  private final String paramsInJson;
 
   private Index(@Nonnull Builder builder) {
+    this.collectionName = builder.collectionName;
     this.indexType = builder.indexType;
-    this.nList = builder.nList;
+    this.paramsInJson = builder.paramsInJson;
+  }
+
+  public String getCollectionName() {
+    return collectionName;
   }
 
   public IndexType getIndexType() {
     return indexType;
   }
 
-  public int getNList() {
-    return nList;
+  public String getParamsInJson() {
+    return paramsInJson;
   }
 
   @Override
   public String toString() {
-    return "Index {" + "indexType=" + indexType + ", nList=" + nList + '}';
+    return "Index {"
+        + "collectionName="
+        + collectionName
+        + ", indexType="
+        + indexType
+        + ", params="
+        + paramsInJson
+        + '}';
   }
 
   /** Builder for <code>Index</code> */
   public static class Builder {
+    // Required parameters
+    private final String collectionName;
+    private final IndexType indexType;
+
     // Optional parameters - initialized to default values
-    private IndexType indexType = IndexType.FLAT;
-    private int nList = 16384;
+    private String paramsInJson;
 
     /**
-     * Optional. Default to <code>IndexType.FLAT</code>
-     *
+     * @param collectionName collection to create index on
      * @param indexType a <code>IndexType</code> object
-     * @return <code>Builder</code>
      */
-    public Builder withIndexType(@Nonnull IndexType indexType) {
+    public Builder(@Nonnull String collectionName, @Nonnull IndexType indexType) {
+      this.collectionName = collectionName;
       this.indexType = indexType;
-      return this;
     }
 
     /**
-     * Optional. Default to 16384.
+     * Optional. Default to empty <code>String</code>.
      *
-     * @param nList nList of the index
+     * <pre>
+     * For different index type, index parameter is different accordingly, for example:
+     *
+     * FLAT/IVFLAT/SQ8: {"nlist": 16384}
+     * nlist range:[1, 999999]
+     *
+     * IVFPQ: {"nlist": 16384, "m": 12}
+     * nlist range:[1, 999999]
+     * m is decided by dim and have a couple of results.
+     *
+     * NSG: {"search_length": 45, "out_degree": 50, "candidate_pool_size": 300, "knng": 100}
+     * search_length range:[10, 300]
+     * out_degree range:[5, 300]
+     * candidate_pool_size range:[50, 1000]
+     * knng range:[5, 300]
+     *
+     * HNSW: {"M": 16, "efConstruction": 500}
+     * M range:[5, 48]
+     * efConstruction range:[100, 500]
+     * </pre>
+     *
+     * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>
      */
-    public Builder withNList(int nList) {
-      this.nList = nList;
+    public Builder withParamsInJson(@Nonnull String paramsInJson) {
+      this.paramsInJson = paramsInJson;
       return this;
     }
 

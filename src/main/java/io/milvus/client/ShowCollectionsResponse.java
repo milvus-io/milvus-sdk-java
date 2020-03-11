@@ -19,35 +19,31 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>tableSchema</code> for <code>describeTable
+ * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>
+ * showCollections
  * </code>
  */
-public class DescribeTableResponse {
+public class ShowCollectionsResponse {
   private final Response response;
-  private final TableSchema tableSchema;
+  private final List<String> collectionNames;
 
-  DescribeTableResponse(Response response, @Nullable TableSchema tableSchema) {
+  ShowCollectionsResponse(Response response, List<String> collectionNames) {
     this.response = response;
-    this.tableSchema = tableSchema;
+    this.collectionNames = collectionNames;
   }
 
-  /**
-   * @return an <code>Optional</code> object which may or may not contain a <code>TableSchema</code>
-   *     object
-   * @see Optional
-   */
-  public Optional<TableSchema> getTableSchema() {
-    return Optional.ofNullable(tableSchema);
+  public List<String> getCollectionNames() {
+    return collectionNames;
   }
 
   public Response getResponse() {
     return response;
   }
 
+  /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
   }
@@ -55,7 +51,7 @@ public class DescribeTableResponse {
   @Override
   public String toString() {
     return String.format(
-        "DescribeTableResponse {%s, %s}",
-        response.toString(), tableSchema == null ? "Table schema = None" : tableSchema.toString());
+        "ShowCollectionsResponse {%s, collection names = %s}",
+        response, collectionNames.toString());
   }
 }

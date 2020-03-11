@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 /** Contains parameters for connecting to Milvus server */
 public class ConnectParam {
   private final String host;
-  private final String port;
+  private final int port;
   private final long connectTimeoutNanos;
   private final long keepAliveTimeNanos;
   private final long keepAliveTimeoutNanos;
@@ -46,7 +46,7 @@ public class ConnectParam {
     return host;
   }
 
-  public String getPort() {
+  public int getPort() {
     return port;
   }
 
@@ -70,33 +70,11 @@ public class ConnectParam {
     return timeUnit.convert(idleTimeoutNanos, TimeUnit.NANOSECONDS);
   }
 
-  @Override
-  public String toString() {
-    return "ConnectParam {"
-        + "host='"
-        + host
-        + '\''
-        + ", port='"
-        + port
-        + '\''
-        + ", connectTimeoutNanos="
-        + connectTimeoutNanos
-        + ", keepAliveTimeNanos="
-        + keepAliveTimeNanos
-        + ", keepAliveTimeoutNanos="
-        + keepAliveTimeoutNanos
-        + ", keepAliveWithoutCalls="
-        + keepAliveWithoutCalls
-        + ", idleTimeoutNanos="
-        + idleTimeoutNanos
-        + '}';
-  }
-
   /** Builder for <code>ConnectParam</code> */
   public static class Builder {
     // Optional parameters - initialized to default values
     private String host = "localhost";
-    private String port = "19530";
+    private int port = 19530;
     private long connectTimeoutNanos = TimeUnit.NANOSECONDS.convert(10, TimeUnit.SECONDS);
     private long keepAliveTimeNanos = Long.MAX_VALUE; // Disabling keepalive
     private long keepAliveTimeoutNanos = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
@@ -120,9 +98,8 @@ public class ConnectParam {
      * @param port server port
      * @return <code>Builder</code>
      */
-    public Builder withPort(@Nonnull String port) throws IllegalArgumentException {
-      int portInt = Integer.parseInt(port);
-      if (portInt < 0 || portInt > 0xFFFF) {
+    public Builder withPort(int port) throws IllegalArgumentException {
+      if (port < 0 || port > 0xFFFF) {
         throw new IllegalArgumentException("Port is out of range!");
       }
       this.port = port;

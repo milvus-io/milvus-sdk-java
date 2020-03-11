@@ -1,5 +1,7 @@
 # Changelog     
 
+## milvus-sdk-java 0.5.0 (2020-03-11)
+
 ## milvus-sdk-java 0.4.1 (2019-12-16)
 
 ### Bug

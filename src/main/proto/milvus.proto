@@ -9,606 +9,438 @@ option java_outer_classname = "MilvusProto";
 package milvus.grpc;
 
 /**
-
- * @brief Table Name
-
+ * @brief general usage
  */
+message KeyValuePair {
+    string key = 1;
+    string value = 2;
+}
 
+/**
+ * @brief Table name
+ */
 message TableName {
-
     string table_name = 1;
-
 }
 
 /**
-
- * @brief Partition name
-
+ * @brief Table name list
  */
-
-message PartitionName {
-    string partition_name = 1;
-}
-
-/**
-
- * @brief Table Name List
-
- */
-
 message TableNameList {
-
     Status status = 1;
-
     repeated string table_names = 2;
-
 }
 
 /**
-
- * @brief Table Schema
-
+ * @brief Table schema
+ * metric_type: 1-L2, 2-IP
  */
-
 message TableSchema {
-
     Status status = 1;
-
     string table_name = 2;
-
     int64 dimension = 3;
-
     int64 index_file_size = 4;
-
     int32 metric_type = 5;
-
+    repeated KeyValuePair extra_params = 6;
 }
 
 /**
-
- * @brief Range Schema
-
+ * @brief Params of partition
  */
-
-message Range {
-
-    string start_value = 1;
-
-    string end_value = 2;
-
-}
-
-/**
-
- * @brief Record inserted
-
- */
-
-message RowRecord {
-
-    repeated float vector_data = 1; //binary vector data
-
-}
-
-/**
-
- * @brief Partition param
-
- */
-
 message PartitionParam {
     string table_name = 1;
-    string partition_name = 2;
-    string tag = 3;
+    string tag = 2;
 }
 
 /**
-
  * @brief Partition list
-
  */
-
 message PartitionList {
     Status status = 1;
-    repeated PartitionParam partition_array = 2;
+    repeated string partition_tag_array = 2;
 }
 
 /**
-
- * @brief params to be inserted
-
+ * @brief Record inserted
  */
+message RowRecord {
+    repeated float float_data = 1;             //float vector data
+    bytes binary_data = 2;                      //binary vector data
+}
 
+/**
+ * @brief Params to be inserted
+ */
 message InsertParam {
-
     string table_name = 1;
-
     repeated RowRecord row_record_array = 2;
-
-    repeated int64 row_id_array = 3; //optional
-
-    string partition_tag = 4; // default empty
-
+    repeated int64 row_id_array = 3;            //optional
+    string partition_tag = 4;
+    repeated KeyValuePair extra_params = 5;
 }
 
 /**
-
  * @brief Vector ids
-
  */
-
 message VectorIds {
-
     Status status = 1;
-
     repeated int64 vector_id_array = 2;
-
 }
 
 /**
-
- * @brief params for searching vector
-
+ * @brief Params for searching vector
  */
-
 message SearchParam {
-
     string table_name = 1;
-
-    repeated RowRecord query_record_array = 2;
-
-    repeated Range query_range_array = 3;
-
+    repeated string partition_tag_array = 2;
+    repeated RowRecord query_record_array = 3;
     int64 topk = 4;
-
-    int64 nprobe = 5;
-
-    repeated string partition_tag_array = 6; // default empty
-
+    repeated KeyValuePair extra_params = 5;
 }
 
 /**
-
- * @brief params for searching vector in files
-
+ * @brief Params for searching vector in files
  */
-
 message SearchInFilesParam {
-
     repeated string file_id_array = 1;
-
     SearchParam search_param = 2;
-
 }
 
 /**
+ * @brief Params for searching vector by ID
+ */
+message SearchByIDParam {
+    string table_name = 1;
+    repeated string partition_tag_array = 2;
+    int64 id = 3;
+    int64 topk = 4;
+    repeated KeyValuePair extra_params = 5;
+}
 
+/**
  * @brief Query result params
-
  */
-
 message TopKQueryResult {
-
     Status status = 1;
-
     int64 row_num = 2;
-
     repeated int64 ids = 3;
-
     repeated float distances = 4;
-
 }
 
 /**
-
- * @brief Server String Reply
-
+ * @brief Server string Reply
  */
-
 message StringReply {
-
     Status status = 1;
-
     string string_reply = 2;
-
 }
 
 /**
-
  * @brief Server bool Reply
-
  */
-
 message BoolReply {
-
     Status status = 1;
-
     bool bool_reply = 2;
-
 }
 
 /**
-
  * @brief Return table row count
-
  */
-
 message TableRowCount {
-
     Status status = 1;
-
     int64 table_row_count = 2;
-
 }
 
 /**
-
- * @brief Give Server Command
-
+ * @brief Give server Command
  */
-
 message Command {
-
     string cmd = 1;
-
 }
 
 /**
-
- * @brief Index
-
- * @index_type: 0-invalid, 1-idmap, 2-ivflat, 3-ivfsq8, 4-nsgmix
-
- * @metric_type: 1-L2, 2-IP
-
- */
-
-message Index {
-
-    int32 index_type = 1;
-
-    int32 nlist = 2;
-
-}
-
-/**
-
  * @brief Index params
-
+ * @index_type: 0-invalid, 1-idmap, 2-ivflat, 3-ivfsq8, 4-nsgmix
  */
-
 message IndexParam {
-
     Status status = 1;
-
     string table_name = 2;
-
-    Index index = 3;
-
+    int32 index_type = 3;
+    repeated KeyValuePair extra_params = 4;
 }
 
 /**
-
- * @brief table name and range for DeleteByRange
-
+ * @brief Flush params
  */
+message FlushParam {
+    repeated string table_name_array = 1;
+}
 
-message DeleteByRangeParam {
+/**
+ * @brief Flush params
+ */
+message DeleteByIDParam {
+    string table_name = 1;
+    repeated int64 id_array = 2;
+}
 
-    Range range = 1;
+/**
+ * @brief segment statistics
+ */
+message SegmentStat {
+    string segment_name = 1;
+    int64 row_count = 2;
+    string index_name = 3;
+    int64 data_size = 4;
+}
 
-    string table_name = 2;
+/**
+ * @brief table statistics
+ */
+message PartitionStat {
+    string tag = 1;
+    int64 total_row_count = 2;
+    repeated SegmentStat segments_stat = 3;
+}
 
+/**
+ * @brief table information
+ */
+message TableInfo {
+    Status status = 1;
+    int64 total_row_count = 2;
+    repeated PartitionStat partitions_stat = 3;
+}
+
+/**
+ * @brief vector identity
+ */
+message VectorIdentity {
+    string table_name = 1;
+    int64 id = 2;
+}
+
+/**
+ * @brief vector data
+ */
+message VectorData {
+    Status status = 1;
+    RowRecord vector_data = 2;
+}
+
+/**
+ * @brief get vector ids from a segment parameters
+ */
+message GetVectorIDsParam {
+    string table_name = 1;
+    string segment_name = 2;
 }
 
 service MilvusService {
-
     /**
-
-     * @brief Create table method
-
+     * @brief This method is used to create table
      *
-
-     * This method is used to create table
-
+     * @param TableSchema, use to provide table information to be created.
      *
-
-     * @param param, use to provide table information to be created.
-
-     *
-
+     * @return Status
      */
-
-    rpc CreateTable (TableSchema) returns (Status) {
-    }
+    rpc CreateTable(TableSchema) returns (Status){}
 
     /**
-
-     * @brief Test table existence method
-
+     * @brief This method is used to test table existence.
      *
-
-     * This method is used to test table existence.
-
+     * @param TableName, table name is going to be tested.
      *
-
-     * @param table_name, table name is going to be tested.
-
-     *
-
+     * @return BoolReply
      */
-
-    rpc HasTable (TableName) returns (BoolReply) {
-    }
+    rpc HasTable(TableName) returns (BoolReply) {}
 
     /**
-
-     * @brief Delete table method
-
+     * @brief This method is used to get table schema.
      *
-
-     * This method is used to delete table.
-
+     * @param TableName, target table name.
      *
-
-     * @param table_name, table name is going to be deleted.
-
-     *
-
+     * @return TableSchema
      */
-
-    rpc DropTable (TableName) returns (Status) {
-    }
+    rpc DescribeTable(TableName) returns (TableSchema) {}
 
     /**
-
-     * @brief Build index by table method
-
+     * @brief This method is used to get table schema.
      *
-
-     * This method is used to build index by table in sync mode.
-
+     * @param TableName, target table name.
      *
-
-     * @param table_name, table is going to be built index.
-
-     *
-
+     * @return TableRowCount
      */
-
-    rpc CreateIndex (IndexParam) returns (Status) {
-    }
-
-    rpc CreatePartition (PartitionParam) returns (Status) {
-    }
-
-    rpc ShowPartitions (TableName) returns (PartitionList) {
-    }
-
-    rpc DropPartition (PartitionParam) returns (Status) {
-    }
+    rpc CountTable(TableName) returns (TableRowCount) {}
 
     /**
-
-     * @brief Add vector array to table
-
+     * @brief This method is used to list all tables.
      *
-
-     * This method is used to add vector array to table.
-
+     * @param Command, dummy parameter.
      *
-
-     * @param table_name, table_name is inserted.
-
-     * @param record_array, vector array is inserted.
-
-     *
-
-     * @return vector id array
-
+     * @return TableNameList
      */
-
-    rpc Insert (InsertParam) returns (VectorIds) {
-    }
+    rpc ShowTables(Command) returns (TableNameList) {}
 
     /**
-
-     * @brief Query vector
-
+     * @brief This method is used to get table detail information.
      *
-
-     * This method is used to query vector in table.
-
+     * @param TableName, target table name.
      *
-
-     * @param table_name, table_name is queried.
-
-     * @param query_record_array, all vector are going to be queried.
-
-     * @param query_range_array, optional ranges for conditional search. If not specified, search whole table
-
-     * @param topk, how many similarity vectors will be searched.
-
-     *
-
-     * @return query result array.
-
+     * @return TableInfo
      */
-
-    rpc Search (SearchParam) returns (TopKQueryResult) {
-    }
+    rpc ShowTableInfo(TableName) returns (TableInfo) {}
 
     /**
-
-     * @brief Internal use query interface
-
+     * @brief This method is used to delete table.
      *
-
-     * This method is used to query vector in specified files.
-
+     * @param TableName, table name is going to be deleted.
      *
-
-     * @param file_id_array, specified files id array, queried.
-
-     * @param query_record_array, all vector are going to be queried.
-
-     * @param query_range_array, optional ranges for conditional search. If not specified, search whole table
-
-     * @param topk, how many similarity vectors will be searched.
-
-     *
-
-     * @return query result array.
-
+     * @return TableNameList
      */
-
-    rpc SearchInFiles (SearchInFilesParam) returns (TopKQueryResult) {
-    }
+    rpc DropTable(TableName) returns (Status) {}
 
     /**
-
-     * @brief Get table schema
-
+     * @brief This method is used to build index by table in sync mode.
      *
-
-     * This method is used to get table schema.
-
+     * @param IndexParam, index paramters.
      *
-
-     * @param table_name, target table name.
-
-     *
-
-     * @return table schema
-
+     * @return Status
      */
-
-    rpc DescribeTable (TableName) returns (TableSchema) {
-    }
+    rpc CreateIndex(IndexParam) returns (Status) {}
 
     /**
-
-     * @brief Get table schema
-
+     * @brief This method is used to describe index
      *
-
-     * This method is used to get table schema.
-
+     * @param TableName, target table name.
      *
-
-     * @param table_name, target table name.
-
-     *
-
-     * @return table schema
-
+     * @return IndexParam
      */
-
-    rpc CountTable (TableName) returns (TableRowCount) {
-    }
+    rpc DescribeIndex(TableName) returns (IndexParam) {}
 
     /**
-
-     * @brief List all tables in database
-
+     * @brief This method is used to drop index
      *
-
-     * This method is used to list all tables.
-
+     * @param TableName, target table name.
      *
-
-     *
-
-     * @return table names.
-
+     * @return Status
      */
-
-    rpc ShowTables (Command) returns (TableNameList) {
-    }
+    rpc DropIndex(TableName) returns (Status) {}
 
     /**
-
-     * @brief Give the server status
-
+     * @brief This method is used to create partition
      *
-
-     * This method is used to give the server status.
-
+     * @param PartitionParam, partition parameters.
      *
-
-     * @return Server status.
-
+     * @return Status
      */
-
-    rpc Cmd (Command) returns (StringReply) {
-    }
+    rpc CreatePartition(PartitionParam) returns (Status) {}
 
     /**
-
-    * @brief delete table by range
-
-    *
-
-    * This method is used to delete vector by range
-
-    *
-
-    * @return rpc status.
-
-    */
-
-    rpc DeleteByRange (DeleteByRangeParam) returns (Status) {
-    }
-
-    /**
-
-     * @brief preload table
-
+     * @brief This method is used to show partition information
      *
-
-     * This method is used to preload table
-
+     * @param TableName, target table name.
      *
-
-     * @return Status.
-
+     * @return PartitionList
      */
-
-    rpc PreloadTable (TableName) returns (Status) {
-    }
+    rpc ShowPartitions(TableName) returns (PartitionList) {}
 
     /**
-
-     * @brief describe index
-
+     * @brief This method is used to drop partition
      *
-
-     * This method is used to describe index
-
+     * @param PartitionParam, target partition.
      *
-
-     * @return Status.
-
+     * @return Status
      */
-
-    rpc DescribeIndex (TableName) returns (IndexParam) {
-    }
+    rpc DropPartition(PartitionParam) returns (Status) {}
 
     /**
-
-     * @brief drop index
-
+     * @brief This method is used to add vector array to table.
      *
-
-     * This method is used to drop index
-
+     * @param InsertParam, insert parameters.
      *
-
-     * @return Status.
-
+     * @return VectorIds
      */
+    rpc Insert(InsertParam) returns (VectorIds) {}
 
-    rpc DropIndex (TableName) returns (Status) {
-    }
+    /**
+     * @brief This method is used to get vector data by id.
+     *
+     * @param VectorIdentity, target vector id.
+     *
+     * @return VectorData
+     */
+    rpc GetVectorByID(VectorIdentity) returns (VectorData) {}
 
+    /**
+     * @brief This method is used to get vector ids from a segment
+     *
+     * @param GetVectorIDsParam, target table and segment
+     *
+     * @return VectorIds
+     */
+    rpc GetVectorIDs(GetVectorIDsParam) returns (VectorIds) {}
+
+    /**
+     * @brief This method is used to query vector in table.
+     *
+     * @param SearchParam, search parameters.
+     *
+     * @return TopKQueryResult
+     */
+    rpc Search(SearchParam) returns (TopKQueryResult) {}
+
+    /**
+     * @brief This method is used to query vector in specified files.
+     *
+     * @param SearchInFilesParam, search in files paremeters.
+     *
+     * @return TopKQueryResult
+     */
+    rpc SearchInFiles(SearchInFilesParam) returns (TopKQueryResult) {}
+
+    /**
+     * @brief This method is used to give the server status.
+     *
+     * @param Command, command string
+     *
+     * @return StringReply
+     */
+    rpc Cmd(Command) returns (StringReply) {}
+
+    /**
+     * @brief This method is used to delete vector by id
+     *
+     * @param DeleteByIDParam, delete parameters.
+     *
+     * @return status
+     */
+    rpc DeleteByID(DeleteByIDParam) returns (Status) {}
+
+    /**
+     * @brief This method is used to preload table
+     *
+     * @param TableName, target table name.
+     *
+     * @return Status
+     */
+    rpc PreloadTable(TableName) returns (Status) {}
+
+    /**
+     * @brief This method is used to flush buffer into storage.
+     *
+     * @param FlushParam, flush parameters
+     *
+     * @return Status
+     */
+    rpc Flush(FlushParam) returns (Status) {}
+
+    /**
+     * @brief This method is used to compact table
+     *
+     * @param TableName, target table name.
+     *
+     * @return Status
+     */
+    rpc Compact(TableName) returns (Status) {}
 }

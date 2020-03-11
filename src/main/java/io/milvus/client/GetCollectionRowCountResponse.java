@@ -19,29 +19,28 @@
 
 package io.milvus.client;
 
-import java.util.List;
-
 /**
- * Contains the returned <code>response</code> and <code>tableNames</code> for <code>showTables
- * </code>
+ * Contains the returned <code>response</code> and <code>collectionRowCount</code> for <code>
+ * getCollectionRowCount</code>
  */
-public class ShowTablesResponse {
+public class GetCollectionRowCountResponse {
   private final Response response;
-  private final List<String> tableNames;
+  private final long collectionRowCount;
 
-  ShowTablesResponse(Response response, List<String> tableNames) {
+  GetCollectionRowCountResponse(Response response, long collectionRowCount) {
     this.response = response;
-    this.tableNames = tableNames;
+    this.collectionRowCount = collectionRowCount;
   }
 
-  public List<String> getTableNames() {
-    return tableNames;
+  public long getCollectionRowCount() {
+    return collectionRowCount;
   }
 
   public Response getResponse() {
     return response;
   }
 
+  /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
   }
@@ -49,6 +48,7 @@ public class ShowTablesResponse {
   @Override
   public String toString() {
     return String.format(
-        "ShowTablesResponse {%s, table names = %s}", response, tableNames.toString());
+        "CountCollectionResponse {%s, collection row count = %d}",
+        response.toString(), collectionRowCount);
   }
 }

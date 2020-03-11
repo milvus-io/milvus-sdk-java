@@ -19,38 +19,35 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nonnull;
-import java.util.Date;
+/**
+ * Contains the returned <code>response</code> and <code>hasCollection</code> for <code>
+ * hasCollection</code>
+ */
+public class HasCollectionResponse {
+  private final Response response;
+  private final boolean hasCollection;
 
-/** Represents a date range [<code>startDate</code>, <code>endDate</code>) */
-public class DateRange {
-  private Date startDate;
-  private Date endDate;
-
-  /** @see Date */
-  public DateRange(@Nonnull Date startDate, @Nonnull Date endDate) {
-    this.startDate = startDate;
-    this.endDate = endDate;
+  HasCollectionResponse(Response response, boolean hasCollection) {
+    this.response = response;
+    this.hasCollection = hasCollection;
   }
 
-  public Date getStartDate() {
-    return startDate;
+  public boolean hasCollection() {
+    return hasCollection;
   }
 
-  public void setStartDate(@Nonnull Date startDate) {
-    this.startDate = startDate;
+  public Response getResponse() {
+    return response;
   }
 
-  public Date getEndDate() {
-    return endDate;
-  }
-
-  public void setEndDate(@Nonnull Date endDate) {
-    this.endDate = endDate;
+  /** @return <code>true</code> if the response status equals SUCCESS */
+  public boolean ok() {
+    return response.ok();
   }
 
   @Override
   public String toString() {
-    return "{startDate=" + startDate + ", endDate=" + endDate + '}';
+    return String.format(
+        "HasCollectionResponse {%s, has collection = %s}", response.toString(), hasCollection);
   }
 }
