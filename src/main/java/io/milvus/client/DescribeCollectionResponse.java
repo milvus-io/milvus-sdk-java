@@ -23,7 +23,8 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
- * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>describeCollection
+ * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>
+ * describeCollection
  * </code>
  */
 public class DescribeCollectionResponse {
@@ -36,8 +37,8 @@ public class DescribeCollectionResponse {
   }
 
   /**
-   * @return an <code>Optional</code> object which may or may not contain a <code>CollectionMapping</code>
-   *     object
+   * @return an <code>Optional</code> object which may or may not contain a <code>CollectionMapping
+   *     </code> object
    * @see Optional
    */
   public Optional<CollectionMapping> getCollectionMapping() {
@@ -57,6 +58,7 @@ public class DescribeCollectionResponse {
   public String toString() {
     return String.format(
         "DescribeCollectionResponse {%s, %s}",
-        response.toString(), collectionMapping == null ? "Collection mapping = None" : collectionMapping.toString());
+        response.toString(),
+        collectionMapping == null ? "Collection mapping = None" : collectionMapping.toString());
   }
 }

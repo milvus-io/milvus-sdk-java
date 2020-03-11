@@ -10,7 +10,7 @@ public class GetVectorIdsResponse {
   private final Response response;
   private final List<Long> ids;
 
-  public GetVectorIdsResponse(Response response, List<Long> ids) {
+  GetVectorIdsResponse(Response response, List<Long> ids) {
     this.response = response;
     this.ids = ids;
   }

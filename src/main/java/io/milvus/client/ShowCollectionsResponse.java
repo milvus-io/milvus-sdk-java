@@ -22,7 +22,8 @@ package io.milvus.client;
 import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>showCollections
+ * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>
+ * showCollections
  * </code>
  */
 public class ShowCollectionsResponse {
@@ -50,6 +51,7 @@ public class ShowCollectionsResponse {
   @Override
   public String toString() {
     return String.format(
-        "ShowCollectionsResponse {%s, collection names = %s}", response, collectionNames.toString());
+        "ShowCollectionsResponse {%s, collection names = %s}",
+        response, collectionNames.toString());
   }
 }

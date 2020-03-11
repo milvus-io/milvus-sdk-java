@@ -48,6 +48,7 @@ public class GetCollectionRowCountResponse {
   @Override
   public String toString() {
     return String.format(
-        "CountCollectionResponse {%s, collection row count = %d}", response.toString(), collectionRowCount);
+        "CountCollectionResponse {%s, collection row count = %d}",
+        response.toString(), collectionRowCount);
   }
 }

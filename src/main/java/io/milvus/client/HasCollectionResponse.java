@@ -20,7 +20,8 @@
 package io.milvus.client;
 
 /**
- * Contains the returned <code>response</code> and <code>hasCollection</code> for <code>hasCollection</code>
+ * Contains the returned <code>response</code> and <code>hasCollection</code> for <code>
+ * hasCollection</code>
  */
 public class HasCollectionResponse {
   private final Response response;
@@ -46,6 +47,7 @@ public class HasCollectionResponse {
 
   @Override
   public String toString() {
-    return String.format("HasCollectionResponse {%s, has collection = %s}", response.toString(), hasCollection);
+    return String.format(
+        "HasCollectionResponse {%s, has collection = %s}", response.toString(), hasCollection);
   }
 }

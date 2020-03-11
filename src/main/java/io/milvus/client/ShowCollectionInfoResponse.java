@@ -11,7 +11,7 @@ public class ShowCollectionInfoResponse {
   private final Response response;
   private final CollectionInfo collectionInfo;
 
-  public ShowCollectionInfoResponse(Response response, CollectionInfo collectionInfo) {
+  ShowCollectionInfoResponse(Response response, CollectionInfo collectionInfo) {
     this.response = response;
     this.collectionInfo = collectionInfo;
   }

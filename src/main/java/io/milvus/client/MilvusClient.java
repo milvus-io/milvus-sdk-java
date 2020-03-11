@@ -21,7 +21,6 @@ package io.milvus.client;
 
 import java.util.List;
 
-
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
@@ -122,7 +121,7 @@ public interface MilvusClient {
    * example usage:
    * <code>
    * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
-   *                        .withParamsInJson("{\"nlist\": 19384}")
+   *                        .withParamsInJson("{\"nlist\": 16384}")
    *                        .build();
    * </code>
    * </pre>
@@ -210,7 +209,7 @@ public interface MilvusClient {
   SearchResponse search(SearchParam searchParam);
 
   /**
-   * Searches vectors in specific files specified by <code>searchInFilesParam</code>
+   * Searches vectors in specific files
    *
    * @param fileIds list of file ids to search from
    * @param searchParam the <code>SearchParam</code> object

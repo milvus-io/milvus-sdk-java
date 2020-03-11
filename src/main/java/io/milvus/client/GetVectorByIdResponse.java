@@ -14,8 +14,7 @@ public class GetVectorByIdResponse {
   private final List<Float> floatVector;
   private final ByteBuffer binaryVector;
 
-  public GetVectorByIdResponse(
-      Response response, List<Float> floatVector, ByteBuffer binaryVector) {
+  GetVectorByIdResponse(Response response, List<Float> floatVector, ByteBuffer binaryVector) {
     this.response = response;
     this.floatVector = floatVector;
     this.binaryVector = binaryVector;
