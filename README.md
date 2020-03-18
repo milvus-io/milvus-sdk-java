@@ -8,8 +8,8 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute code t
 
 ### Prerequisites
 
-    - Java 8 or higher
-    - Apache Maven or Gradle/Grails
+    -   Java 8 or higher
+    -   Apache Maven or Gradle/Grails
 
 The following table shows compatibilities between Milvus and Java SDK.
 
