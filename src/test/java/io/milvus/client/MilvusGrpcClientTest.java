@@ -60,12 +60,12 @@ class MilvusClientTest {
     List<ByteBuffer> vectors = new ArrayList<>();
     final long dimensionInByte = dimension / 8;
     for (long i = 0; i < vectorCount; ++i) {
-//      byte[] array = new byte[(int) dimensionInByte];
-//      for (int j = 0; j < dimensionInByte; j++) {
-//        Long num = Math.round(Math.random());
-//        array[j] = num.byteValue();
-//      }
-//      ByteBuffer buffer = ByteBuffer.wrap(array);
+      //      byte[] array = new byte[(int) dimensionInByte];
+      //      for (int j = 0; j < dimensionInByte; j++) {
+      //        Long num = Math.round(Math.random());
+      //        array[j] = num.byteValue();
+      //      }
+      //      ByteBuffer buffer = ByteBuffer.wrap(array);
       ByteBuffer byteBuffer = ByteBuffer.allocate((int) dimensionInByte);
       random.nextBytes(byteBuffer.array());
       vectors.add(byteBuffer);
