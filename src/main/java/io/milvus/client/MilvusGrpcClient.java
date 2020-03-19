@@ -27,6 +27,7 @@ import io.grpc.StatusRuntimeException;
 import org.apache.commons.collections4.ListUtils;
 
 import javax.annotation.Nonnull;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -1077,7 +1078,7 @@ public class MilvusGrpcClient implements MilvusClient {
         rowRecordBuilder.addAllFloatData(floatVectors.get(i));
       }
       if (i < binaryVectors.size()) {
-        binaryVectors.get(i).rewind();
+        ((Buffer)binaryVectors.get(i)).rewind();
         rowRecordBuilder.setBinaryData(ByteString.copyFrom(binaryVectors.get(i)));
       }
 
