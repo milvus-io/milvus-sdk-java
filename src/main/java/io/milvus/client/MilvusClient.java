@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.util.List;
 
 /** The Milvus Client Interface */
@@ -207,6 +209,31 @@ public interface MilvusClient {
    * @see Response
    */
   SearchResponse search(SearchParam searchParam);
+
+  /**
+   * Searches vectors specified by <code>searchParam</code> asynchronously
+   *
+   * @param searchParam the <code>SearchParam</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * SearchParam searchParam = new SearchParam.Builder(collectionName)
+   *                                          .withFloatVectors(floatVectors)
+   *                                          .withTopK(topK)
+   *                                          .withPartitionTags(partitionTagsList)
+   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .build();
+   * </code>
+   * </pre>
+   *
+   * @return a <code>ListenableFuture</code> object which holds the <code>SearchResponse</code>
+   * @see SearchParam
+   * @see SearchResponse
+   * @see SearchResponse.QueryResult
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<SearchResponse> searchAsync(SearchParam searchParam);
 
   /**
    * Searches vectors in specific files
