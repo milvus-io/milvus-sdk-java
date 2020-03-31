@@ -27,6 +27,7 @@ import io.grpc.StatusRuntimeException;
 import org.apache.commons.collections4.ListUtils;
 
 import javax.annotation.Nonnull;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -418,7 +419,7 @@ public class MilvusGrpcClient implements MilvusClient {
         return new InsertResponse(
             new Response(Response.Status.SUCCESS), response.getVectorIdArrayList());
       } else {
-        logSevere("Insert vectors failed:\n{0}", response.toString());
+        logSevere("Insert vectors failed:\n{0}", response.getStatus().toString());
         return new InsertResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -473,7 +474,7 @@ public class MilvusGrpcClient implements MilvusClient {
             searchResponse.getNumQueries());
         return searchResponse;
       } else {
-        logSevere("Search failed:\n{0}", response.toString());
+        logSevere("Search failed:\n{0}", response.getStatus().toString());
         SearchResponse searchResponse = new SearchResponse();
         searchResponse.setResponse(
             new Response(
@@ -537,7 +538,7 @@ public class MilvusGrpcClient implements MilvusClient {
             searchResponse.getNumQueries());
         return searchResponse;
       } else {
-        logSevere("Search in files failed: {0}", response.toString());
+        logSevere("Search in files failed: {0}", response.getStatus().toString());
 
         SearchResponse searchResponse = new SearchResponse();
         searchResponse.setResponse(
@@ -580,7 +581,9 @@ public class MilvusGrpcClient implements MilvusClient {
         return new DescribeCollectionResponse(
             new Response(Response.Status.SUCCESS), collectionMapping);
       } else {
-        logSevere("Describe Collection `{0}` failed:\n{1}", collectionName, response.toString());
+        logSevere(
+            "Describe Collection `{0}` failed:\n{1}",
+            collectionName, response.getStatus().toString());
         return new DescribeCollectionResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -614,7 +617,7 @@ public class MilvusGrpcClient implements MilvusClient {
         logInfo("Current collections: {0}", collectionNames.toString());
         return new ShowCollectionsResponse(new Response(Response.Status.SUCCESS), collectionNames);
       } else {
-        logSevere("Show collections failed:\n{0}", response.toString());
+        logSevere("Show collections failed:\n{0}", response.getStatus().toString());
         return new ShowCollectionsResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -651,7 +654,8 @@ public class MilvusGrpcClient implements MilvusClient {
             new Response(Response.Status.SUCCESS), collectionRowCount);
       } else {
         logSevere(
-            "Get collection `{0}` row count failed:\n{1}", collectionName, response.toString());
+            "Get collection `{0}` row count failed:\n{1}",
+            collectionName, response.getStatus().toString());
         return new GetCollectionRowCountResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -764,7 +768,7 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logSevere(
             "Describe index for collection `{0}` failed:\n{1}",
-            collectionName, response.toString());
+            collectionName, response.getStatus().toString());
         return new DescribeIndexResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -854,7 +858,9 @@ public class MilvusGrpcClient implements MilvusClient {
         return new ShowCollectionInfoResponse(
             new Response(Response.Status.SUCCESS), collectionInfo);
       } else {
-        logSevere("ShowCollectionInfo for `{0}` failed:\n{1}", collectionName, response.toString());
+        logSevere(
+            "ShowCollectionInfo for `{0}` failed:\n{1}",
+            collectionName, response.getStatus().toString());
         return new ShowCollectionInfoResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -895,7 +901,7 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logSevere(
             "getVectorById for `{0}` in collection `{1}` failed:\n{2}",
-            String.valueOf(id), collectionName, response.toString());
+            String.valueOf(id), collectionName, response.getStatus().toString());
         return new GetVectorByIdResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -938,7 +944,7 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logSevere(
             "getVectorIds in collection `{0}`, segment `{1}` failed:\n{2}",
-            collectionName, segmentName, response.toString());
+            collectionName, segmentName, response.getStatus().toString());
         return new GetVectorIdsResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -1077,7 +1083,7 @@ public class MilvusGrpcClient implements MilvusClient {
         rowRecordBuilder.addAllFloatData(floatVectors.get(i));
       }
       if (i < binaryVectors.size()) {
-        binaryVectors.get(i).rewind();
+        ((Buffer) binaryVectors.get(i)).rewind();
         rowRecordBuilder.setBinaryData(ByteString.copyFrom(binaryVectors.get(i)));
       }
 

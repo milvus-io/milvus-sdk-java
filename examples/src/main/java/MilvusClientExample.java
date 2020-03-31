@@ -165,6 +165,9 @@ public class MilvusClientExample {
         }
       }
     }
+    // You can also get result ids and distances separately
+    List<List<Long>> resultIds = searchResponse.getResultIdsList();
+    List<List<Float>> resultDistances = searchResponse.getResultDistancesList();
 
     // Delete the first 5 of vectors you just searched
     Response deleteByIdsResponse =

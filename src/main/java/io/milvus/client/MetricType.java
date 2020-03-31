@@ -35,6 +35,10 @@ public enum MetricType {
   JACCARD(4),
   /** Tanimoto distance. For binary vectors only */
   TANIMOTO(5),
+  /** Substructure: D(a, b) = 1 - N(a&b) / N(b). For binary vectors only */
+  SUBSTRUCTURE(6),
+  /** Superstructure: D(a, b) = 1 - N(a&b) / N(a). For binary vectors only */
+  SUPERSTRUCTURE(7),
 
   UNKNOWN(-1);
 
