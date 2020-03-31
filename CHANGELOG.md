@@ -1,5 +1,16 @@
 # Changelog     
 
+## milvus-sdk-java 0.6.0 (2020-03-31)
+
+### Bug
+---
+- \#1641 - Fix incorrect error logging message
+- \#1642 - Fix compilation error of ByteBuffer
+
+## Feature
+---
+- \#1603 - Add binary metrics: Substructure & Superstructure
+
 ## milvus-sdk-java 0.5.0 (2020-03-11)
 
 ## milvus-sdk-java 0.4.1 (2019-12-16)
