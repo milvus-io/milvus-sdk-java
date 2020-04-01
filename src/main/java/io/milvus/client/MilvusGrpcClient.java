@@ -532,12 +532,18 @@ public class MilvusGrpcClient implements MilvusClient {
         new FutureCallback<io.milvus.grpc.TopKQueryResult>() {
           @Override
           public void onSuccess(@Nullable io.milvus.grpc.TopKQueryResult result) {
-            logInfo("Search completed successfully!");
+            if (result.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
+              logInfo(
+                  "SearchAsync completed successfully! Returned results for {0} queries",
+                  result.getRowNum());
+            } else {
+              logSevere("SearchAsync failed:\n{0}", result.getStatus().toString());
+            }
           }
 
           @Override
           public void onFailure(Throwable t) {
-            logSevere("Search failed:\n{0}", t.getMessage());
+            logSevere("SearchAsync failed:\n{0}", t.getMessage());
           }
         },
         MoreExecutors.directExecutor());
