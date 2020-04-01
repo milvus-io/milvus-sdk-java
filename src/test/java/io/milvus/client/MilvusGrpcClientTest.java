@@ -290,11 +290,37 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void createIndexAsync() throws ExecutionException, InterruptedException {
+    insert();
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    Index index =
+        new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
+            .withParamsInJson("{\"nlist\": 19384}")
+            .build();
+
+    ListenableFuture<Response> createIndexResponseFuture = client.createIndexAsync(index);
+    Response createIndexResponse = createIndexResponseFuture.get();
+    assertTrue(createIndexResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
   void insert() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    assertEquals(size, insertResponse.getVectorIds().size());
+  }
+
+  @org.junit.jupiter.api.Test
+  void insertAsync() throws ExecutionException, InterruptedException {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    ListenableFuture<InsertResponse> insertResponseFuture = client.insertAsync(insertParam);
+    InsertResponse insertResponse = insertResponseFuture.get();
     assertTrue(insertResponse.ok());
     assertEquals(size, insertResponse.getVectorIds().size());
   }
@@ -642,6 +668,11 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void flushAsync() throws ExecutionException, InterruptedException {
+    assertTrue(client.flushAsync(randomCollectionName).get().ok());
+  }
+
+  @org.junit.jupiter.api.Test
   void compact() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
@@ -671,6 +702,52 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     assertTrue(client.compact(randomCollectionName).ok());
+
+    showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
+    segmentInfo =
+        showCollectionInfoResponse
+            .getCollectionInfo()
+            .get()
+            .getPartitionInfos()
+            .get(0)
+            .getSegmentInfos()
+            .get(0);
+    long currentSegmentSize = segmentInfo.getDataSize();
+
+    assertTrue(currentSegmentSize < previousSegmentSize);
+  }
+
+  @org.junit.jupiter.api.Test
+  void compactAsync() throws ExecutionException, InterruptedException {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    ShowCollectionInfoResponse showCollectionInfoResponse =
+        client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
+    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
+        showCollectionInfoResponse
+            .getCollectionInfo()
+            .get()
+            .getPartitionInfos()
+            .get(0)
+            .getSegmentInfos()
+            .get(0);
+    long previousSegmentSize = segmentInfo.getDataSize();
+
+    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
     showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
     assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());

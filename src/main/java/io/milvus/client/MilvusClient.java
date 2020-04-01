@@ -136,6 +136,27 @@ public interface MilvusClient {
   Response createIndex(Index index);
 
   /**
+   * Creates index specified by <code>index</code> asynchronously
+   *
+   * @param index the <code>Index</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
+   *                        .withParamsInJson("{\"nlist\": 16384}")
+   *                        .build();
+   * </code>
+   * </pre>
+   *
+   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
+   * @see Index
+   * @see IndexType
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<Response> createIndexAsync(Index index);
+
+  /**
    * Creates a partition specified by <code>collectionName</code> and <code>tag</code>
    *
    * @param collectionName collection name
@@ -185,6 +206,29 @@ public interface MilvusClient {
    * @see Response
    */
   InsertResponse insert(InsertParam insertParam);
+
+  /**
+   * Inserts data specified by <code>insertParam</code> asynchronously
+   *
+   * @param insertParam the <code>InsertParam</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * InsertParam insertParam = new InsertParam.Builder(collectionName)
+   *                                          .withFloatVectors(floatVectors)
+   *                                          .withVectorIds(vectorIds)
+   *                                          .withPartitionTag(tag)
+   *                                          .build();
+   * </code>
+   * </pre>
+   *
+   * @return a <code>ListenableFuture</code> object which holds the <code>InsertResponse</code>
+   * @see InsertParam
+   * @see InsertResponse
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<InsertResponse> insertAsync(InsertParam insertParam);
 
   /**
    * Searches vectors specified by <code>searchParam</code>
@@ -336,6 +380,7 @@ public interface MilvusClient {
    * Drops collection index
    *
    * @param collectionName collection to drop index of
+   * @return <code>Response</code>
    * @see Response
    */
   Response dropIndex(String collectionName);
@@ -346,6 +391,7 @@ public interface MilvusClient {
    * segment can be uniquely identified by its partition tag or segment name respectively.
    *
    * @param collectionName collection to show info from
+   * @return <code>ShowCollectionInfoResponse</code>
    * @see ShowCollectionInfoResponse
    * @see CollectionInfo
    * @see CollectionInfo.PartitionInfo
@@ -359,6 +405,7 @@ public interface MilvusClient {
    *
    * @param collectionName collection to get vector from
    * @param id vector id
+   * @return <code>GetVectorByIdResponse</code>
    * @see GetVectorByIdResponse
    * @see Response
    */
@@ -369,6 +416,7 @@ public interface MilvusClient {
    *
    * @param collectionName collection to get vector ids from
    * @param segmentName segment name
+   * @return <code>GetVectorIdsResponse</code>
    * @see GetVectorIdsResponse
    * @see Response
    */
@@ -379,6 +427,7 @@ public interface MilvusClient {
    *
    * @param collectionName collection to delete ids from
    * @param ids a <code>List</code> of vector ids to delete
+   * @return <code>Response</code>
    * @see Response
    */
   Response deleteByIds(String collectionName, List<Long> ids);
@@ -388,6 +437,7 @@ public interface MilvusClient {
    *
    * @param collectionName collection to delete id from
    * @param id vector id to delete
+   * @return <code>Response</code>
    * @see Response
    */
   Response deleteById(String collectionName, Long id);
@@ -397,18 +447,42 @@ public interface MilvusClient {
    * after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
+   * @return <code>Response</code>
    * @see Response
    */
   Response flush(List<String> collectionNames);
+
+  /**
+   * Flushes data in a list collections asynchronously. Newly inserted or modifications on data will
+   * be visible after <code>flush</code> returned
+   *
+   * @param collectionNames a <code>List</code> of collections to flush
+   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<Response> flushAsync(List<String> collectionNames);
 
   /**
    * Flushes data in a collection. Newly inserted or modifications on data will be visible after
    * <code>flush</code> returned
    *
    * @param collectionName name of collection to flush
+   * @return <code>Response</code>
    * @see Response
    */
   Response flush(String collectionName);
+
+  /**
+   * Flushes data in a collection asynchronously. Newly inserted or modifications on data will be
+   * visible after <code>flush</code> returned
+   *
+   * @param collectionName name of collection to flush
+   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<Response> flushAsync(String collectionName);
 
   /**
    * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
@@ -416,7 +490,20 @@ public interface MilvusClient {
    * until you call compact.
    *
    * @param collectionName name of collection to compact
+   * @return <code>Response</code>
    * @see Response
    */
   Response compact(String collectionName);
+
+  /**
+   * Compacts the collection asynchronously, erasing deleted data from disk and rebuild index in
+   * background (if the data size after compaction is still larger than indexFileSize). Data was
+   * only soft-deleted until you call compact.
+   *
+   * @param collectionName name of collection to compact
+   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
+   * @see Response
+   * @see ListenableFuture
+   */
+  ListenableFuture<Response> compactAsync(String collectionName);
 }
