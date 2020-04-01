@@ -531,7 +531,7 @@ public class MilvusGrpcClient implements MilvusClient {
         response,
         new FutureCallback<io.milvus.grpc.TopKQueryResult>() {
           @Override
-          public void onSuccess(@Nullable io.milvus.grpc.TopKQueryResult result) {
+          public void onSuccess(io.milvus.grpc.TopKQueryResult result) {
             if (result.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SUCCESS) {
               logInfo(
                   "SearchAsync completed successfully! Returned results for {0} queries",
@@ -548,7 +548,7 @@ public class MilvusGrpcClient implements MilvusClient {
         },
         MoreExecutors.directExecutor());
 
-    com.google.common.base.Function<TopKQueryResult, SearchResponse> transformFunc =
+    com.google.common.base.Function<io.milvus.grpc.TopKQueryResult, SearchResponse> transformFunc =
         new com.google.common.base.Function<io.milvus.grpc.TopKQueryResult, SearchResponse>() {
           @Override
           public SearchResponse apply(io.milvus.grpc.TopKQueryResult topKQueryResult) {
