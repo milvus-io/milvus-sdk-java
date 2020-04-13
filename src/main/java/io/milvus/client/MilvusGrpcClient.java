@@ -161,9 +161,9 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    TableSchema request =
-        TableSchema.newBuilder()
-            .setTableName(collectionMapping.getCollectionName())
+    CollectionSchema request =
+        CollectionSchema.newBuilder()
+            .setCollectionName(collectionMapping.getCollectionName())
             .setDimension(collectionMapping.getDimension())
             .setIndexFileSize(collectionMapping.getIndexFileSize())
             .setMetricType(collectionMapping.getMetricType().getVal())
@@ -172,7 +172,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.createTable(request);
+      response = blockingStub.createCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Created collection successfully!\n{0}", collectionMapping.toString());
@@ -202,11 +202,11 @@ public class MilvusGrpcClient implements MilvusClient {
       return new HasCollectionResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     BoolReply response;
 
     try {
-      response = blockingStub.hasTable(request);
+      response = blockingStub.hasCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("hasCollection `{0}` = {1}", collectionName, response.getBoolReply());
@@ -235,11 +235,11 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     Status response;
 
     try {
-      response = blockingStub.dropTable(request);
+      response = blockingStub.dropCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Dropped collection `{0}` successfully!", collectionName);
@@ -267,7 +267,7 @@ public class MilvusGrpcClient implements MilvusClient {
         KeyValuePair.newBuilder().setKey(extraParamKey).setValue(index.getParamsInJson()).build();
     IndexParam request =
         IndexParam.newBuilder()
-            .setTableName(index.getCollectionName())
+            .setCollectionName(index.getCollectionName())
             .setIndexType(index.getIndexType().getVal())
             .addExtraParams(extraParam)
             .build();
@@ -303,7 +303,7 @@ public class MilvusGrpcClient implements MilvusClient {
         KeyValuePair.newBuilder().setKey(extraParamKey).setValue(index.getParamsInJson()).build();
     IndexParam request =
         IndexParam.newBuilder()
-            .setTableName(index.getCollectionName())
+            .setCollectionName(index.getCollectionName())
             .setIndexType(index.getIndexType().getVal())
             .addExtraParams(extraParam)
             .build();
@@ -344,7 +344,7 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     PartitionParam request =
-        PartitionParam.newBuilder().setTableName(collectionName).setTag(tag).build();
+        PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
 
     Status response;
 
@@ -376,7 +376,7 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     PartitionList response;
 
     try {
@@ -412,7 +412,7 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     PartitionParam request =
-        PartitionParam.newBuilder().setTableName(collectionName).setTag(tag).build();
+        PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
     Status response;
 
     try {
@@ -448,7 +448,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     io.milvus.grpc.InsertParam request =
         io.milvus.grpc.InsertParam.newBuilder()
-            .setTableName(insertParam.getCollectionName())
+            .setCollectionName(insertParam.getCollectionName())
             .addAllRowRecordArray(rowRecordList)
             .addAllRowIdArray(insertParam.getVectorIds())
             .setPartitionTag(insertParam.getPartitionTag())
@@ -494,7 +494,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     io.milvus.grpc.InsertParam request =
         io.milvus.grpc.InsertParam.newBuilder()
-            .setTableName(insertParam.getCollectionName())
+            .setCollectionName(insertParam.getCollectionName())
             .addAllRowRecordArray(rowRecordList)
             .addAllRowIdArray(insertParam.getVectorIds())
             .setPartitionTag(insertParam.getPartitionTag())
@@ -563,7 +563,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     io.milvus.grpc.SearchParam request =
         io.milvus.grpc.SearchParam.newBuilder()
-            .setTableName(searchParam.getCollectionName())
+            .setCollectionName(searchParam.getCollectionName())
             .addAllQueryRecordArray(rowRecordList)
             .addAllPartitionTagArray(searchParam.getPartitionTags())
             .setTopk(searchParam.getTopK())
@@ -620,7 +620,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     io.milvus.grpc.SearchParam request =
         io.milvus.grpc.SearchParam.newBuilder()
-            .setTableName(searchParam.getCollectionName())
+            .setCollectionName(searchParam.getCollectionName())
             .addAllQueryRecordArray(rowRecordList)
             .addAllPartitionTagArray(searchParam.getPartitionTags())
             .setTopk(searchParam.getTopK())
@@ -693,7 +693,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     io.milvus.grpc.SearchParam constructSearchParam =
         io.milvus.grpc.SearchParam.newBuilder()
-            .setTableName(searchParam.getCollectionName())
+            .setCollectionName(searchParam.getCollectionName())
             .addAllQueryRecordArray(rowRecordList)
             .addAllPartitionTagArray(searchParam.getPartitionTags())
             .setTopk(searchParam.getTopK())
@@ -745,15 +745,15 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
-    TableSchema response;
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+    CollectionSchema response;
 
     try {
-      response = blockingStub.describeTable(request);
+      response = blockingStub.describeCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         CollectionMapping collectionMapping =
-            new CollectionMapping.Builder(response.getTableName(), response.getDimension())
+            new CollectionMapping.Builder(response.getCollectionName(), response.getDimension())
                 .withIndexFileSize(response.getIndexFileSize())
                 .withMetricType(MetricType.valueOf(response.getMetricType()))
                 .build();
@@ -787,13 +787,13 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     Command request = Command.newBuilder().setCmd("").build();
-    TableNameList response;
+    CollectionNameList response;
 
     try {
-      response = blockingStub.showTables(request);
+      response = blockingStub.showCollections(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        List<String> collectionNames = response.getTableNamesList();
+        List<String> collectionNames = response.getCollectionNamesList();
         logInfo("Current collections: {0}", collectionNames.toString());
         return new ShowCollectionsResponse(new Response(Response.Status.SUCCESS), collectionNames);
       } else {
@@ -820,14 +820,14 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
-    TableRowCount response;
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+    CollectionRowCount response;
 
     try {
-      response = blockingStub.countTable(request);
+      response = blockingStub.countCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        long collectionRowCount = response.getTableRowCount();
+        long collectionRowCount = response.getCollectionRowCount();
         logInfo("Collection `{0}` has {1} rows", collectionName, collectionRowCount);
         return new GetCollectionRowCountResponse(
             new Response(Response.Status.SUCCESS), collectionRowCount);
@@ -894,11 +894,11 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     Status response;
 
     try {
-      response = blockingStub.preloadTable(request);
+      response = blockingStub.preloadCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Preloaded collection `{0}` successfully!", collectionName);
@@ -922,7 +922,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return new DescribeIndexResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     IndexParam response;
 
     try {
@@ -936,7 +936,7 @@ public class MilvusGrpcClient implements MilvusClient {
           }
         }
         Index index =
-            new Index.Builder(response.getTableName(), IndexType.valueOf(response.getIndexType()))
+            new Index.Builder(response.getCollectionName(), IndexType.valueOf(response.getIndexType()))
                 .withParamsInJson(extraParam)
                 .build();
         logInfo(
@@ -966,7 +966,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     Status response;
 
     try {
@@ -995,11 +995,11 @@ public class MilvusGrpcClient implements MilvusClient {
           new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
-    TableInfo response;
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+    io.milvus.grpc.CollectionInfo response;
 
     try {
-      response = blockingStub.showTableInfo(request);
+      response = blockingStub.showCollectionInfo(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
@@ -1058,7 +1058,7 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     VectorIdentity request =
-        VectorIdentity.newBuilder().setTableName(collectionName).setId(id).build();
+        VectorIdentity.newBuilder().setCollectionName(collectionName).setId(id).build();
     VectorData response;
 
     try {
@@ -1101,7 +1101,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     GetVectorIDsParam request =
         GetVectorIDsParam.newBuilder()
-            .setTableName(collectionName)
+            .setCollectionName(collectionName)
             .setSegmentName(segmentName)
             .build();
     VectorIds response;
@@ -1141,7 +1141,7 @@ public class MilvusGrpcClient implements MilvusClient {
     }
 
     DeleteByIDParam request =
-        DeleteByIDParam.newBuilder().setTableName(collectionName).addAllIdArray(ids).build();
+        DeleteByIDParam.newBuilder().setCollectionName(collectionName).addAllIdArray(ids).build();
     Status response;
 
     try {
@@ -1180,7 +1180,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    FlushParam request = FlushParam.newBuilder().addAllTableNameArray(collectionNames).build();
+    FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
     Status response;
 
     try {
@@ -1208,7 +1208,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
     }
 
-    FlushParam request = FlushParam.newBuilder().addAllTableNameArray(collectionNames).build();
+    FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
 
     ListenableFuture<Status> response;
 
@@ -1266,7 +1266,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
     Status response;
 
     try {
@@ -1294,7 +1294,7 @@ public class MilvusGrpcClient implements MilvusClient {
       return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
     }
 
-    TableName request = TableName.newBuilder().setTableName(collectionName).build();
+    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
 
     ListenableFuture<Status> response;
 
