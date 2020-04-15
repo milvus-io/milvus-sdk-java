@@ -78,7 +78,7 @@ public class Index {
     /**
      * Optional. Default to empty <code>String</code>. Index parameters are different for different
      * index types. Refer to <a
-     * href="https://milvus.io/docs/v0.7.0/guides/milvus_operation.md">https://milvus.io/docs/v0.7.0/guides/milvus_operation.md</a>
+     * href="https://milvus.io/docs/v0.8.0/guides/milvus_operation.md">https://milvus.io/docs/v0.8.0/guides/milvus_operation.md</a>
      * for more information.
      *
      * <pre>
