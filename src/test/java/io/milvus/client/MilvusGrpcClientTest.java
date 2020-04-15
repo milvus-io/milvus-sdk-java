@@ -19,10 +19,12 @@
 
 package io.milvus.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.commons.text.RandomStringGenerator;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -288,11 +290,37 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void createIndexAsync() throws ExecutionException, InterruptedException {
+    insert();
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    Index index =
+        new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
+            .withParamsInJson("{\"nlist\": 19384}")
+            .build();
+
+    ListenableFuture<Response> createIndexResponseFuture = client.createIndexAsync(index);
+    Response createIndexResponse = createIndexResponseFuture.get();
+    assertTrue(createIndexResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
   void insert() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    assertEquals(size, insertResponse.getVectorIds().size());
+  }
+
+  @org.junit.jupiter.api.Test
+  void insertAsync() throws ExecutionException, InterruptedException {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    ListenableFuture<InsertResponse> insertResponseFuture = client.insertAsync(insertParam);
+    InsertResponse insertResponse = insertResponseFuture.get();
     assertTrue(insertResponse.ok());
     assertEquals(size, insertResponse.getVectorIds().size());
   }
@@ -344,6 +372,48 @@ class MilvusClientTest {
             .withParamsInJson("{\"nprobe\": 20}")
             .build();
     SearchResponse searchResponse = client.search(searchParam);
+    assertTrue(searchResponse.ok());
+    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+    assertEquals(searchSize, resultIdsList.size());
+    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+    assertEquals(searchSize, resultDistancesList.size());
+    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    assertEquals(searchSize, queryResultsList.size());
+    final double epsilon = 0.001;
+    for (int i = 0; i < searchSize; i++) {
+      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+      assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
+      assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
+      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
+      assertTrue(Math.abs(1 - resultDistancesList.get(i).get(0)) < epsilon);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void searchAsync() throws ExecutionException, InterruptedException {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
+    InsertParam insertParam =
+        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    final int searchSize = 5;
+    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
+
+    final long topK = 10;
+    SearchParam searchParam =
+        new SearchParam.Builder(randomCollectionName)
+            .withFloatVectors(vectorsToSearch)
+            .withTopK(topK)
+            .withParamsInJson("{\"nprobe\": 20}")
+            .build();
+    ListenableFuture<SearchResponse> searchResponseFuture = client.searchAsync(searchParam);
+    SearchResponse searchResponse = searchResponseFuture.get();
     assertTrue(searchResponse.ok());
     List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
     assertEquals(searchSize, resultIdsList.size());
@@ -598,6 +668,11 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void flushAsync() throws ExecutionException, InterruptedException {
+    assertTrue(client.flushAsync(randomCollectionName).get().ok());
+  }
+
+  @org.junit.jupiter.api.Test
   void compact() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
@@ -627,6 +702,52 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     assertTrue(client.compact(randomCollectionName).ok());
+
+    showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
+    segmentInfo =
+        showCollectionInfoResponse
+            .getCollectionInfo()
+            .get()
+            .getPartitionInfos()
+            .get(0)
+            .getSegmentInfos()
+            .get(0);
+    long currentSegmentSize = segmentInfo.getDataSize();
+
+    assertTrue(currentSegmentSize < previousSegmentSize);
+  }
+
+  @org.junit.jupiter.api.Test
+  void compactAsync() throws ExecutionException, InterruptedException {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    ShowCollectionInfoResponse showCollectionInfoResponse =
+        client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
+    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
+        showCollectionInfoResponse
+            .getCollectionInfo()
+            .get()
+            .getPartitionInfos()
+            .get(0)
+            .getSegmentInfos()
+            .get(0);
+    long previousSegmentSize = segmentInfo.getDataSize();
+
+    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
     showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
     assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());

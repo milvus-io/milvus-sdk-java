@@ -23,34 +23,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Represents different types of indexing method to query the collection:
- *
- * <pre>
- *
- * 1. FLAT - Provides 100% accuracy for recalls. However, performance might be downgraded due to huge computation effort;
- *
- * 2. IVFLAT - K-means based similarity search which is balanced between accuracy and performance;
- *
- * 3. IVF_SQ8 - Vector indexing that adopts a scalar quantization strategy that significantly reduces the size of a
- * vector (by about 3/4), thus improving the overall throughput of vector processing;
- *
- * 4. RNSG - NSG (Navigating Spreading-out Graph) is a graph-base search algorithm that a) lowers the average
- * out-degree of the graph for fast traversal; b) shortens the search path; c) reduces the index
- * size; d) lowers the indexing complexity. Extensive tests show that NSG can achieve very high
- * search performance at high precision, and needs much less memory. Compared to non-graph-based
- * algorithms, it is faster to achieve the same search precision.
- *
- * 5. IVF_SQ8_H - An enhanced index algorithm of IVF_SQ8. It supports hybrid computation on both CPU and GPU,
- * which significantly improves the search performance. To use this index type, make sure both cpu and gpu are added as
- * resources for search usage in the Milvus configuration file.
- *
- * 6. IVF_PQ - Indexing method built based on product quantization. The input vectors are split into distinct sub-vectors
- * which are then quantized separately. Vector size can be reduced to 1/8 or 1/16 of the original size.
- * If you choose this index, note that there is an inevicollection trade-off between memory and search accuracy.
- *
- * 7. HNSW - Hierarchical Navigable Small World graphs
- *
- * </pre>
+ * Represents different types of indexing method to query the collection. Refer to <a
+ * href="https://milvus.io/docs/v0.7.0/guides/index.md">https://milvus.io/docs/v0.7.0/guides/index.md</a>
+ * for more information.
  */
 public enum IndexType {
   INVALID(0),
@@ -61,6 +36,7 @@ public enum IndexType {
   IVF_SQ8_H(5),
   IVF_PQ(6),
   HNSW(11),
+  ANNOY(12),
 
   UNKNOWN(-1);
 

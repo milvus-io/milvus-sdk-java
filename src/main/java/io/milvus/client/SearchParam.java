@@ -136,11 +136,12 @@ public class SearchParam {
     }
 
     /**
-     * Optional. Default to empty <code>String</code>.
+     * Optional. Default to empty <code>String</code>. Search parameters are different for different
+     * index types. Refer to <a
+     * href="https://milvus.io/docs/v0.7.0/guides/milvus_operation.md">https://milvus.io/docs/v0.7.0/guides/milvus_operation.md</a>
+     * for more information.
      *
      * <pre>
-     *   For different index type, search parameter is different accordingly, for example:
-     *
      *   FLAT/IVFLAT/SQ8/IVFPQ: {"nprobe": 32}
      *   nprobe range:[1,999999]
      *
@@ -149,6 +150,9 @@ public class SearchParam {
      *
      *   HNSW: {"ef": 64}
      *   ef range:[topk, 4096]
+     *
+     *   ANNOY: {search_k", 0.05 * totalDataCount}
+     *   search_k range: none
      * </pre>
      *
      * @param paramsInJson extra parameters in JSON format

@@ -76,11 +76,12 @@ public class Index {
     }
 
     /**
-     * Optional. Default to empty <code>String</code>.
+     * Optional. Default to empty <code>String</code>. Index parameters are different for different
+     * index types. Refer to <a
+     * href="https://milvus.io/docs/v0.7.0/guides/milvus_operation.md">https://milvus.io/docs/v0.7.0/guides/milvus_operation.md</a>
+     * for more information.
      *
      * <pre>
-     * For different index type, index parameter is different accordingly, for example:
-     *
      * FLAT/IVFLAT/SQ8: {"nlist": 16384}
      * nlist range:[1, 999999]
      *
@@ -97,6 +98,9 @@ public class Index {
      * HNSW: {"M": 16, "efConstruction": 500}
      * M range:[5, 48]
      * efConstruction range:[100, 500]
+     *
+     * ANNOY: {"n_trees": 4}
+     * n_trees range: [1, 16384)
      * </pre>
      *
      * @param paramsInJson extra parameters in JSON format

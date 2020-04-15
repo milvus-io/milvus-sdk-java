@@ -22,7 +22,11 @@ package io.milvus.client;
 import java.util.Arrays;
 import java.util.Optional;
 
-/** Represents available metric types */
+/**
+ * Represents available metric types. Refer to <a
+ * href="https://milvus.io/docs/v0.7.0/guides/metric.md">https://milvus.io/docs/v0.7.0/guides/metric.md</a>
+ * for more information.
+ */
 public enum MetricType {
   INVALID(0),
   /** Euclidean distance. For float vectors only */
@@ -35,9 +39,9 @@ public enum MetricType {
   JACCARD(4),
   /** Tanimoto distance. For binary vectors only */
   TANIMOTO(5),
-  /** Substructure: D(a, b) = 1 - N(a&b) / N(b). For binary vectors only */
+  /** Substructure. For binary vectors only */
   SUBSTRUCTURE(6),
-  /** Superstructure: D(a, b) = 1 - N(a&b) / N(a). For binary vectors only */
+  /** Superstructure. For binary vectors only */
   SUPERSTRUCTURE(7),
 
   UNKNOWN(-1);
