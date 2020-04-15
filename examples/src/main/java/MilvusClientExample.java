@@ -17,12 +17,14 @@
  * under the License.
  */
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonObject;
 import io.milvus.client.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
@@ -168,6 +170,16 @@ public class MilvusClientExample {
     // You can also get result ids and distances separately
     List<List<Long>> resultIds = searchResponse.getResultIdsList();
     List<List<Float>> resultDistances = searchResponse.getResultDistancesList();
+
+    // You can send search request asynchronously, which returns a ListenableFuture object
+    ListenableFuture<SearchResponse> searchResponseFuture = client.searchAsync(searchParam);
+    try {
+      // Get search response immediately. Obviously you will want to do more complicated stuff with
+      // ListenableFuture
+      searchResponseFuture.get();
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
 
     // Delete the first 5 of vectors you just searched
     Response deleteByIdsResponse =
