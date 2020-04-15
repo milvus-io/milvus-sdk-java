@@ -1,5 +1,12 @@
 # Changelog     
 
+## milvus-sdk-java 0.7.0 (2020-04-15)
+
+## Feature
+---
+- \#261 - Integrate ANNOY into Milvus
+- \#1828 - Add searchAsync / createIndexAsync / insertAsync / flushAsync / compactAsync API
+
 ## milvus-sdk-java 0.6.0 (2020-03-31)
 
 ### Bug
