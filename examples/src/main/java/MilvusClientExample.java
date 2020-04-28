@@ -61,8 +61,12 @@ public class MilvusClientExample {
   public static void main(String[] args) throws InterruptedException, ConnectFailedException {
 
     // You may need to change the following to the host and port of your Milvus server
-    final String host = "localhost";
-    final int port = 19530;
+    String host = "localhost";
+    int port = 19530;
+    if (args.length >= 2) {
+      host = args[0];
+      port = Integer.parseInt(args[1]);
+    }
 
     // Create Milvus client
     // You can specify the log level. Currently we have three levels of logs: INFO, WARNING and
