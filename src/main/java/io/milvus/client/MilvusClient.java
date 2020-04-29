@@ -26,9 +26,9 @@ import java.util.List;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.7.0";
+  String clientVersion = "0.8.0";
 
-  /** @return current Milvus client version： 0.7.0 */
+  /** @return current Milvus client version： 0.8.0 */
   default String getClientVersion() {
     return clientVersion;
   }
@@ -167,6 +167,16 @@ public interface MilvusClient {
   Response createPartition(String collectionName, String tag);
 
   /**
+   * Checks whether the partition exists
+   *
+   * @param collectionName collection name
+   * @param tag partition tag
+   * @return <code>HasPartitionResponse</code>
+   * @see Response
+   */
+  HasPartitionResponse hasPartition(String collectionName, String tag);
+
+  /**
    * Shows current partitions of a collection
    *
    * @param collectionName collection name
@@ -253,6 +263,30 @@ public interface MilvusClient {
    * @see Response
    */
   SearchResponse search(SearchParam searchParam);
+
+  /**
+   * Searches vectors specified by <code>searchByIDParam</code>
+   *
+   * @param searchByIDParam the <code>SearchByIDParam</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * SearchByIDParam searchByIDParam = new SearchByIDParam.Builder(collectionName)
+   *                                          .withIDs(ids)
+   *                                          .withTopK(topK)
+   *                                          .withPartitionTags(partitionTagsList)
+   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .build();
+   * </code>
+   * </pre>
+   *
+   * @return <code>SearchResponse</code>
+   * @see SearchByIDParam
+   * @see SearchResponse
+   * @see SearchResponse.QueryResult
+   * @see Response
+   */
+  SearchResponse searchByID(SearchByIDParam searchByIDParam);
 
   /**
    * Searches vectors specified by <code>searchParam</code> asynchronously
@@ -389,27 +423,24 @@ public interface MilvusClient {
    * Shows collection information. A collection consists of one or multiple partitions (including
    * the default partition), and a partitions consists of one or more segments. Each partition or
    * segment can be uniquely identified by its partition tag or segment name respectively.
+   * The result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
-   * @return <code>ShowCollectionInfoResponse</code>
-   * @see ShowCollectionInfoResponse
-   * @see CollectionInfo
-   * @see CollectionInfo.PartitionInfo
-   * @see CollectionInfo.PartitionInfo.SegmentInfo
+   * @return <code>Response</code>
    * @see Response
    */
-  ShowCollectionInfoResponse showCollectionInfo(String collectionName);
+  Response showCollectionInfo(String collectionName);
 
   /**
-   * Gets either a float or binary vector by id.
+   * Gets vectors data by id array
    *
-   * @param collectionName collection to get vector from
-   * @param id vector id
-   * @return <code>GetVectorByIdResponse</code>
+   * @param collectionName collection to get vectors from
+   * @param ids a <code>List</code> of vector ids
+   * @return <code>List<GetVectorByIdResponse></code>
    * @see GetVectorByIdResponse
    * @see Response
    */
-  GetVectorByIdResponse getVectorById(String collectionName, Long id);
+  List<GetVectorByIdResponse> getVectorsById(String collectionName, List<Long> ids);
 
   /**
    * Gets all vector ids in a segment

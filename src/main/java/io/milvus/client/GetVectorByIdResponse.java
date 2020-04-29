@@ -6,7 +6,7 @@ import java.util.Optional;
 
 /**
  * Contains the returned <code>response</code> and either a <code>floatVector</code> or a <code>
- * binaryVector</code> for <code>getVectorById</code>. If the id does not exist, both returned
+ * binaryVector</code> for each vector of <code>getVectorsById</code>. If the id does not exist, both returned
  * vectors will be empty.
  */
 public class GetVectorByIdResponse {

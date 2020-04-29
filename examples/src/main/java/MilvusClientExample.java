@@ -140,6 +140,21 @@ public class MilvusClientExample {
     // Describe the index for your collection
     DescribeIndexResponse describeIndexResponse = client.describeIndex(collectionName);
 
+    // Get collection info
+    Response showCollectionInfoResponse = client.showCollectionInfo(collectionName);
+    if (showCollectionInfoResponse.ok()) {
+      // Collection info is sent back with JSON type string
+      String jsonString = showCollectionInfoResponse.getMessage();
+      System.out.println(jsonString);
+    }
+
+    // Check whether a partition exists in collection
+    // Obviously we do not have partition "tag" now
+    HasPartitionResponse testHasPartition = client.hasPartition(collectionName, "tag");
+    if (testHasPartition.ok() && testHasPartition.hasPartition()) {
+      throw new AssertionError("Wrong results!");
+    }
+
     // Search vectors
     // Searching the first 5 vectors of the vectors we just inserted
     final int searchBatchSize = 5;
@@ -175,6 +190,29 @@ public class MilvusClientExample {
     List<List<Long>> resultIds = searchResponse.getResultIdsList();
     List<List<Float>> resultDistances = searchResponse.getResultDistancesList();
 
+    // SearchByIDs
+    // Searching the first 5 vectors of the vectors we just inserted by ID
+    SearchByIDParam searchByIDParam =
+            new SearchByIDParam.Builder(collectionName)
+                    .withIDs(vectorIds.subList(0, searchBatchSize))
+                    .withTopK(topK)
+                    .withParamsInJson(searchParamsJson.toString())
+                    .build();
+    SearchResponse searchByIDResponse = client.searchByID(searchByIDParam);
+    if (searchByIDResponse.ok()) {
+      List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+      List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+      List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+      final double epsilon = 0.001;
+      for (int i = 0; i < searchBatchSize; i++) {
+        SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+        if (firstQueryResult.getVectorId() != vectorIds.get(i)
+                || Math.abs(1 - firstQueryResult.getDistance()) > epsilon) {
+          throw new AssertionError("Wrong results!");
+        }
+      }
+    }
+
     // You can send search request asynchronously, which returns a ListenableFuture object
     ListenableFuture<SearchResponse> searchResponseFuture = client.searchAsync(searchParam);
     try {
@@ -193,10 +231,10 @@ public class MilvusClientExample {
     flushResponse = client.flush(collectionName);
 
     // Try to get the corresponding vector of the first id you just deleted.
-    GetVectorByIdResponse getVectorByIdResponse =
-        client.getVectorById(collectionName, vectorIds.get(0));
+    List<GetVectorByIdResponse> getVectorByIdResponse =
+        client.getVectorsById(collectionName, vectorIds.subList(0, searchBatchSize));
     // Obviously you won't get anything
-    if (getVectorByIdResponse.exists()) {
+    if (getVectorByIdResponse.get(0).exists()) {
       throw new AssertionError("This can never happen!");
     }
 
