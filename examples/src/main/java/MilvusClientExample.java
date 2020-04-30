@@ -200,8 +200,6 @@ public class MilvusClientExample {
                     .build();
     SearchResponse searchByIDResponse = client.searchByID(searchByIDParam);
     if (searchByIDResponse.ok()) {
-      List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
-      List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
       List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
       final double epsilon = 0.001;
       for (int i = 0; i < searchBatchSize; i++) {
