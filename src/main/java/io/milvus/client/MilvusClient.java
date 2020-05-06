@@ -440,7 +440,7 @@ public interface MilvusClient {
    * @see GetVectorByIdResponse
    * @see Response
    */
-  List<GetVectorByIdResponse> getVectorsById(String collectionName, List<Long> ids);
+  List<GetVectorByIdResponse> getVectorsByIds(String collectionName, List<Long> ids);
 
   /**
    * Gets all vector ids in a segment

@@ -1108,7 +1108,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public List<GetVectorByIdResponse> getVectorsById(String collectionName, List<Long> ids) {
+  public List<GetVectorByIdResponse> getVectorsByIds(String collectionName, List<Long> ids) {
     List<GetVectorByIdResponse> res = new ArrayList<>();
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
@@ -1127,7 +1127,7 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
         logInfo(
-            "getVectorsById in collection `{0}` returned successfully!", collectionName);
+            "getVectorsByIds in collection `{0}` returned successfully!", collectionName);
 
         for (int i = 0; i < ids.size(); i++) {
           res.add(new GetVectorByIdResponse(
@@ -1139,7 +1139,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
       } else {
         logSevere(
-            "getVectorsById in collection `{0}` failed:\n{1}",
+            "getVectorsByIds in collection `{0}` failed:\n{1}",
             collectionName, response.getStatus().toString());
         res.add(new GetVectorByIdResponse(
             new Response(
@@ -1150,7 +1150,7 @@ public class MilvusGrpcClient implements MilvusClient {
         return res;
       }
     } catch (StatusRuntimeException e) {
-      logSevere("getVectorsById RPC failed:\n{0}", e.getStatus().toString());
+      logSevere("getVectorsByIds RPC failed:\n{0}", e.getStatus().toString());
       res.add(new GetVectorByIdResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>(), null));
       return res;

@@ -630,7 +630,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void getVectorsById() {
+  void getVectorsByIds() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
@@ -642,7 +642,7 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     List<GetVectorByIdResponse> getVectorByIdResponse =
-        client.getVectorsById(randomCollectionName, vectorIds.subList(0, 100));
+        client.getVectorsByIds(randomCollectionName, vectorIds.subList(0, 100));
     assertTrue(getVectorByIdResponse.size() == 100);
     assertTrue(getVectorByIdResponse.get(0).ok());
     assertTrue(getVectorByIdResponse.get(0).exists());
