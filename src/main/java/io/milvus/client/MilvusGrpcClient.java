@@ -1108,13 +1108,11 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public List<GetVectorByIdResponse> getVectorsByIds(String collectionName, List<Long> ids) {
-    List<GetVectorByIdResponse> res = new ArrayList<>();
+  public GetVectorsByIdsResponse getVectorsByIds(String collectionName, List<Long> ids) {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      res.add(new GetVectorByIdResponse(
-              new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>(), null));
-      return res;
+      return new GetVectorsByIdsResponse(
+              new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>(), null);
     }
 
     VectorsIdentity request =
@@ -1129,31 +1127,30 @@ public class MilvusGrpcClient implements MilvusClient {
         logInfo(
             "getVectorsByIds in collection `{0}` returned successfully!", collectionName);
 
+        List<List<Float>> floatVectors = new ArrayList<>();
+        List<ByteBuffer> binaryVectors = new ArrayList<>();
         for (int i = 0; i < ids.size(); i++) {
-          res.add(new GetVectorByIdResponse(
-                  new Response(Response.Status.SUCCESS),
-                  response.getVectorsData(i).getFloatDataList(),
-                  response.getVectorsData(i).getBinaryData().asReadOnlyByteBuffer()));
+          floatVectors.add(response.getVectorsData(i).getFloatDataList());
+          binaryVectors.add(response.getVectorsData(i).getBinaryData().asReadOnlyByteBuffer());
         }
-        return res;
+        return new GetVectorsByIdsResponse(
+                new Response(Response.Status.SUCCESS), floatVectors, binaryVectors);
 
       } else {
         logSevere(
             "getVectorsByIds in collection `{0}` failed:\n{1}",
             collectionName, response.getStatus().toString());
-        res.add(new GetVectorByIdResponse(
+        return new GetVectorsByIdsResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             new ArrayList<>(),
-            null));
-        return res;
+            null);
       }
     } catch (StatusRuntimeException e) {
       logSevere("getVectorsByIds RPC failed:\n{0}", e.getStatus().toString());
-      res.add(new GetVectorByIdResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>(), null));
-      return res;
+      return new GetVectorsByIdsResponse(
+          new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>(), null);
     }
   }
 

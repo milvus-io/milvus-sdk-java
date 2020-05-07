@@ -436,11 +436,11 @@ public interface MilvusClient {
    *
    * @param collectionName collection to get vectors from
    * @param ids a <code>List</code> of vector ids
-   * @return <code>List<GetVectorByIdResponse></code>
-   * @see GetVectorByIdResponse
+   * @return <code>GetVectorsByIdsResponse</code>
+   * @see GetVectorsByIdsResponse
    * @see Response
    */
-  List<GetVectorByIdResponse> getVectorsByIds(String collectionName, List<Long> ids);
+  GetVectorsByIdsResponse getVectorsByIds(String collectionName, List<Long> ids);
 
   /**
    * Gets all vector ids in a segment

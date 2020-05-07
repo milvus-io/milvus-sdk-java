@@ -229,10 +229,10 @@ public class MilvusClientExample {
     flushResponse = client.flush(collectionName);
 
     // Try to get the corresponding vector of the first id you just deleted.
-    List<GetVectorByIdResponse> getVectorByIdResponse =
+    GetVectorsByIdsResponse getVectorsByIdsResponse =
         client.getVectorsByIds(collectionName, vectorIds.subList(0, searchBatchSize));
     // Obviously you won't get anything
-    if (getVectorByIdResponse.get(0).exists()) {
+    if (!getVectorsByIdsResponse.getFloatVectors().get(0).isEmpty()) {
       throw new AssertionError("This can never happen!");
     }
 

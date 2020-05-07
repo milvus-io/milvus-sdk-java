@@ -641,14 +641,13 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    List<GetVectorByIdResponse> getVectorByIdResponse =
+    GetVectorsByIdsResponse getVectorsByIdsResponse =
         client.getVectorsByIds(randomCollectionName, vectorIds.subList(0, 100));
-    assertTrue(getVectorByIdResponse.size() == 100);
-    assertTrue(getVectorByIdResponse.get(0).ok());
-    assertTrue(getVectorByIdResponse.get(0).exists());
-    assertTrue(getVectorByIdResponse.get(0).isFloatVector());
-    assertFalse(getVectorByIdResponse.get(0).isBinaryVector());
-    assertArrayEquals(getVectorByIdResponse.get(0).getFloatVector().toArray(), vectors.get(0).toArray());
+    assertTrue(getVectorsByIdsResponse.ok());
+    ByteBuffer bb = getVectorsByIdsResponse.getBinaryVectors().get(0);
+    assertTrue(bb == null || bb.remaining() == 0);
+
+    assertArrayEquals(getVectorsByIdsResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
   }
 
   @org.junit.jupiter.api.Test
