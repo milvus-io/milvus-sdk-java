@@ -634,7 +634,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public SearchResponse searchByID(@Nonnull SearchByIDParam searchByIDParam) {
+  public SearchResponse searchByIds(@Nonnull SearchByIdsParam searchByIdsParam) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
@@ -643,20 +643,20 @@ public class MilvusGrpcClient implements MilvusClient {
       return searchResponse;
     }
 
-    List<Long> idList = searchByIDParam.getIds();
+    List<Long> idList = searchByIdsParam.getIds();
 
     KeyValuePair extraParam =
             KeyValuePair.newBuilder()
                     .setKey(extraParamKey)
-                    .setValue(searchByIDParam.getParamsInJson())
+                    .setValue(searchByIdsParam.getParamsInJson())
                     .build();
 
     io.milvus.grpc.SearchByIDParam request =
             io.milvus.grpc.SearchByIDParam.newBuilder()
-                    .setCollectionName(searchByIDParam.getCollectionName())
+                    .setCollectionName(searchByIdsParam.getCollectionName())
                     .addAllIdArray(idList)
-                    .addAllPartitionTagArray(searchByIDParam.getPartitionTags())
-                    .setTopk(searchByIDParam.getTopK())
+                    .addAllPartitionTagArray(searchByIdsParam.getPartitionTags())
+                    .setTopk(searchByIdsParam.getTopK())
                     .addExtraParams(extraParam)
                     .build();
 

@@ -265,13 +265,13 @@ public interface MilvusClient {
   SearchResponse search(SearchParam searchParam);
 
   /**
-   * Searches vectors specified by <code>searchByIDParam</code>
+   * Searches vectors specified by <code>searchByIdsParam</code>
    *
-   * @param searchByIDParam the <code>SearchByIDParam</code> object
+   * @param searchByIdsParam the <code>SearchByIdsParam</code> object
    *     <pre>
    * example usage:
    * <code>
-   * SearchByIDParam searchByIDParam = new SearchByIDParam.Builder(collectionName)
+   * SearchByIdsParam searchByIdsParam = new SearchByIdsParam.Builder(collectionName)
    *                                          .withIDs(ids)
    *                                          .withTopK(topK)
    *                                          .withPartitionTags(partitionTagsList)
@@ -281,12 +281,12 @@ public interface MilvusClient {
    * </pre>
    *
    * @return <code>SearchResponse</code>
-   * @see SearchByIDParam
+   * @see SearchByIdsParam
    * @see SearchResponse
    * @see SearchResponse.QueryResult
    * @see Response
    */
-  SearchResponse searchByID(SearchByIDParam searchByIDParam);
+  SearchResponse searchByIds(SearchByIdsParam searchByIdsParam);
 
   /**
    * Searches vectors specified by <code>searchParam</code> asynchronously

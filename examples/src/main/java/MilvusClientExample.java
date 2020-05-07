@@ -190,15 +190,15 @@ public class MilvusClientExample {
     List<List<Long>> resultIds = searchResponse.getResultIdsList();
     List<List<Float>> resultDistances = searchResponse.getResultDistancesList();
 
-    // SearchByIDs
+    // SearchByIds
     // Searching the first 5 vectors of the vectors we just inserted by ID
-    SearchByIDParam searchByIDParam =
-            new SearchByIDParam.Builder(collectionName)
+    SearchByIdsParam searchByIdsParam =
+            new SearchByIdsParam.Builder(collectionName)
                     .withIDs(vectorIds.subList(0, searchBatchSize))
                     .withTopK(topK)
                     .withParamsInJson(searchParamsJson.toString())
                     .build();
-    SearchResponse searchByIDResponse = client.searchByID(searchByIDParam);
+    SearchResponse searchByIDResponse = client.searchByIds(searchByIdsParam);
     if (searchByIDResponse.ok()) {
       List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
       final double epsilon = 0.001;

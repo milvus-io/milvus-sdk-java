@@ -23,8 +23,8 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Contains parameters for <code>searchByID</code> */
-public class SearchByIDParam {
+/** Contains parameters for <code>searchByIds</code> */
+public class SearchByIdsParam {
 
     private final String collectionName;
     private final List<String> partitionTags;
@@ -32,7 +32,7 @@ public class SearchByIDParam {
     private final long topK;
     private final String paramsInJson;
 
-    private SearchByIDParam(@Nonnull Builder builder) {
+    private SearchByIdsParam(@Nonnull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionTags = builder.partitionTags;
         this.ids = builder.ids;
@@ -60,7 +60,7 @@ public class SearchByIDParam {
         return paramsInJson;
     }
 
-    /** Builder for <code>SearchByIDParam</code> */
+    /** Builder for <code>SearchByIdsParam</code> */
     public static class Builder {
         // Required parameters
         private final String collectionName;
@@ -133,13 +133,13 @@ public class SearchByIDParam {
          * @param paramsInJson extra parameters in JSON format
          * @return <code>Builder</code>
          */
-        public SearchByIDParam.Builder withParamsInJson(@Nonnull String paramsInJson) {
+        public SearchByIdsParam.Builder withParamsInJson(@Nonnull String paramsInJson) {
             this.paramsInJson = paramsInJson;
             return this;
         }
 
-        public SearchByIDParam build() {
-            return new SearchByIDParam(this);
+        public SearchByIdsParam build() {
+            return new SearchByIdsParam(this);
         }
     }
 }

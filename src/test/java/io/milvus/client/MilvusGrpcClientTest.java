@@ -357,21 +357,21 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void search() {
-    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    List<List<Float>> vectors = generateFloatVectors(100, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
     List<Long> vectorIds = insertResponse.getVectorIds();
-    assertEquals(size, vectorIds.size());
+    assertEquals(100, vectorIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
 
     final int searchSize = 5;
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
 
-    final long topK = 10;
+    final long topK = 200;
     SearchParam searchParam =
         new SearchParam.Builder(randomCollectionName)
             .withFloatVectors(vectorsToSearch)
@@ -385,6 +385,7 @@ class MilvusClientTest {
     List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
     assertEquals(searchSize, resultDistancesList.size());
     List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    System.out.println(queryResultsList.get(0).size());
     assertEquals(searchSize, queryResultsList.size());
     final double epsilon = 0.001;
     for (int i = 0; i < searchSize; i++) {
@@ -397,7 +398,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void searchById() {
+  void searchByIds() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
@@ -411,13 +412,13 @@ class MilvusClientTest {
 
     final long topK = 10;
     final int queryLength = 5;
-    SearchByIDParam searchByIDParam =
-            new SearchByIDParam.Builder(randomCollectionName)
+    SearchByIdsParam searchByIdsParam =
+            new SearchByIdsParam.Builder(randomCollectionName)
                     .withIDs(vectorIds.subList(0, queryLength))
                     .withTopK(topK)
                     .withParamsInJson("{\"nprobe\": 20}")
                     .build();
-    SearchResponse searchResponse = client.searchByID(searchByIDParam);
+    SearchResponse searchResponse = client.searchByIds(searchByIdsParam);
     assertTrue(searchResponse.ok());
     List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
     assertEquals(queryLength, resultIdsList.size());
