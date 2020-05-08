@@ -669,11 +669,11 @@ public class MilvusGrpcClient implements MilvusClient {
         SearchResponse searchResponse = buildSearchResponse(response);
         searchResponse.setResponse(new Response(Response.Status.SUCCESS));
         logInfo(
-                "Search completed successfully! Returned results for {0} queries",
+                "Search by ids completed successfully! Returned results for {0} queries",
                 searchResponse.getNumQueries());
         return searchResponse;
       } else {
-        logSevere("Search failed:\n{0}", response.getStatus().toString());
+        logSevere("Search by ids failed:\n{0}", response.getStatus().toString());
         SearchResponse searchResponse = new SearchResponse();
         searchResponse.setResponse(
                 new Response(
@@ -682,7 +682,7 @@ public class MilvusGrpcClient implements MilvusClient {
         return searchResponse;
       }
     } catch (StatusRuntimeException e) {
-      logSevere("search RPC failed:\n{0}", e.getStatus().toString());
+      logSevere("search by ids RPC failed:\n{0}", e.getStatus().toString());
       SearchResponse searchResponse = new SearchResponse();
       searchResponse.setResponse(new Response(Response.Status.RPC_ERROR, e.toString()));
       return searchResponse;
@@ -1432,9 +1432,17 @@ public class MilvusGrpcClient implements MilvusClient {
 
     List<List<Long>> resultIdsList = new ArrayList<>();
     List<List<Float>> resultDistancesList = new ArrayList<>();
+
     if (topK > 0) {
-      resultIdsList = ListUtils.partition(topKQueryResult.getIdsList(), topK);
-      resultDistancesList = ListUtils.partition(topKQueryResult.getDistancesList(), topK);
+      for (int i = 0; i < numQueries; i++) {
+        // Process result of query i
+        int pos = i * topK;
+        while (pos < i * topK + topK && topKQueryResult.getIdsList().get(pos) != -1) {
+          pos++;
+        }
+        resultIdsList.add(topKQueryResult.getIdsList().subList(i * topK, pos));
+        resultDistancesList.add(topKQueryResult.getDistancesList().subList(i * topK, pos));
+      }
     }
 
     SearchResponse searchResponse = new SearchResponse();

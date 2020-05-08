@@ -357,21 +357,21 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void search() {
-    List<List<Float>> vectors = generateFloatVectors(100, dimension);
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
     InsertResponse insertResponse = client.insert(insertParam);
     assertTrue(insertResponse.ok());
     List<Long> vectorIds = insertResponse.getVectorIds();
-    assertEquals(100, vectorIds.size());
+    assertEquals(size, vectorIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
 
     final int searchSize = 5;
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
 
-    final long topK = 200;
+    final long topK = 10;
     SearchParam searchParam =
         new SearchParam.Builder(randomCollectionName)
             .withFloatVectors(vectorsToSearch)
@@ -385,8 +385,8 @@ class MilvusClientTest {
     List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
     assertEquals(searchSize, resultDistancesList.size());
     List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    System.out.println(queryResultsList.get(0).size());
     assertEquals(searchSize, queryResultsList.size());
+
     final double epsilon = 0.001;
     for (int i = 0; i < searchSize; i++) {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
