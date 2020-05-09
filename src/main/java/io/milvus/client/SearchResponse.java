@@ -60,7 +60,7 @@ public class SearchResponse {
     return IntStream.range(0, numQueries)
         .mapToObj(
             i ->
-                LongStream.range(0, topK)
+                LongStream.range(0, resultIdsList.get(i).size())
                     .mapToObj(
                         j ->
                             new QueryResult(

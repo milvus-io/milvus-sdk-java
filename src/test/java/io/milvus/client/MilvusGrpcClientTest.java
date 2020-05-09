@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.commons.text.RandomStringGenerator;
+import org.json.*;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -268,8 +269,14 @@ class MilvusClientTest {
 
     assertTrue(Collections.disjoint(resultIdsList1, resultIdsList2));
 
+    HasPartitionResponse testHasPartition = client.hasPartition(randomCollectionName, tag1);
+    assertTrue(testHasPartition.hasPartition());
+
     Response dropPartitionResponse = client.dropPartition(randomCollectionName, tag1);
     assertTrue(dropPartitionResponse.ok());
+
+    testHasPartition = client.hasPartition(randomCollectionName, tag1);
+    assertFalse(testHasPartition.hasPartition());
 
     dropPartitionResponse = client.dropPartition(randomCollectionName, tag2);
     assertTrue(dropPartitionResponse.ok());
@@ -379,8 +386,48 @@ class MilvusClientTest {
     assertEquals(searchSize, resultDistancesList.size());
     List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
     assertEquals(searchSize, queryResultsList.size());
+
     final double epsilon = 0.001;
     for (int i = 0; i < searchSize; i++) {
+      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+      assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
+      assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
+      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
+      assertTrue(Math.abs(1 - resultDistancesList.get(i).get(0)) < epsilon);
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void searchByIds() {
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
+    InsertParam insertParam =
+            new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    final long topK = 10;
+    final int queryLength = 5;
+    SearchByIdsParam searchByIdsParam =
+            new SearchByIdsParam.Builder(randomCollectionName)
+                    .withIDs(vectorIds.subList(0, queryLength))
+                    .withTopK(topK)
+                    .withParamsInJson("{\"nprobe\": 20}")
+                    .build();
+    SearchResponse searchResponse = client.searchByIds(searchByIdsParam);
+    assertTrue(searchResponse.ok());
+    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+    assertEquals(queryLength, resultIdsList.size());
+    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+    assertEquals(queryLength, resultDistancesList.size());
+    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    assertEquals(queryLength, queryResultsList.size());
+    final double epsilon = 0.001;
+    for (int i = 0; i < queryLength; i++) {
       SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
       assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
@@ -506,7 +553,7 @@ class MilvusClientTest {
   void showCollections() {
     ShowCollectionsResponse showCollectionsResponse = client.showCollections();
     assertTrue(showCollectionsResponse.ok());
-    assertEquals(showCollectionsResponse.getCollectionNames().get(0), randomCollectionName);
+    assertTrue(showCollectionsResponse.getCollectionNames().contains(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
@@ -564,25 +611,27 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    ShowCollectionInfoResponse showCollectionInfoResponse =
+    Response showCollectionInfoResponse =
         client.showCollectionInfo(randomCollectionName);
     assertTrue(showCollectionInfoResponse.ok());
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
 
-    CollectionInfo collectionInfo = showCollectionInfoResponse.getCollectionInfo().get();
-    assertEquals(collectionInfo.getRowCount(), size);
+    String jsonString = showCollectionInfoResponse.getMessage();
+    JSONObject jsonInfo = new JSONObject(jsonString);
+    assertTrue(jsonInfo.getInt("row_count") == size);
 
-    CollectionInfo.PartitionInfo partitionInfo = collectionInfo.getPartitionInfos().get(0);
-    assertEquals(partitionInfo.getTag(), "_default");
-    assertEquals(partitionInfo.getRowCount(), size);
+    JSONArray partitions = jsonInfo.getJSONArray("partitions");
+    JSONObject partitionInfo = partitions.getJSONObject(0);
+    assertEquals(partitionInfo.getString("tag"), "_default");
+    assertEquals(partitionInfo.getInt("row_count"), size);
 
-    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo = partitionInfo.getSegmentInfos().get(0);
-    assertEquals(segmentInfo.getRowCount(), size);
-    assertEquals(segmentInfo.getIndexName(), "IDMAP");
+    JSONArray segments = partitionInfo.getJSONArray("segments");
+    JSONObject segmentInfo = segments.getJSONObject(0);
+    assertEquals(segmentInfo.getString("index_name"), "IDMAP");
+    assertEquals(segmentInfo.getInt("row_count"), size);
   }
 
   @org.junit.jupiter.api.Test
-  void getVectorById() {
+  void getVectorsByIds() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
@@ -593,13 +642,13 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    GetVectorByIdResponse getVectorByIdResponse =
-        client.getVectorById(randomCollectionName, vectorIds.get(0));
-    assertTrue(getVectorByIdResponse.ok());
-    assertTrue(getVectorByIdResponse.exists());
-    assertTrue(getVectorByIdResponse.isFloatVector());
-    assertFalse(getVectorByIdResponse.isBinaryVector());
-    assertArrayEquals(getVectorByIdResponse.getFloatVector().toArray(), vectors.get(0).toArray());
+    GetVectorsByIdsResponse getVectorsByIdsResponse =
+        client.getVectorsByIds(randomCollectionName, vectorIds.subList(0, 100));
+    assertTrue(getVectorsByIdsResponse.ok());
+    ByteBuffer bb = getVectorsByIdsResponse.getBinaryVectors().get(0);
+    assertTrue(bb == null || bb.remaining() == 0);
+
+    assertArrayEquals(getVectorsByIdsResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
   }
 
   @org.junit.jupiter.api.Test
@@ -608,21 +657,19 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    ShowCollectionInfoResponse showCollectionInfoResponse =
+    Response showCollectionInfoResponse =
         client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
+    assertTrue(showCollectionInfoResponse.ok());
 
-    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
-        showCollectionInfoResponse
-            .getCollectionInfo()
-            .get()
-            .getPartitionInfos()
-            .get(0)
-            .getSegmentInfos()
-            .get(0);
+    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject segmentInfo = jsonInfo
+                                 .getJSONArray("partitions")
+                                 .getJSONObject(0)
+                                 .getJSONArray("segments")
+                                 .getJSONObject(0);
 
     GetVectorIdsResponse getVectorIdsResponse =
-        client.getVectorIds(randomCollectionName, segmentInfo.getSegmentName());
+        client.getVectorIds(randomCollectionName,segmentInfo.getString("name"));
     assertTrue(getVectorIdsResponse.ok());
     assertFalse(getVectorIdsResponse.getIds().isEmpty());
   }
@@ -684,36 +731,32 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    ShowCollectionInfoResponse showCollectionInfoResponse =
+    Response showCollectionInfoResponse =
         client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
-    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
-        showCollectionInfoResponse
-            .getCollectionInfo()
-            .get()
-            .getPartitionInfos()
-            .get(0)
-            .getSegmentInfos()
-            .get(0);
-    long previousSegmentSize = segmentInfo.getDataSize();
+    assertTrue(showCollectionInfoResponse.ok());
+
+    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject segmentInfo = jsonInfo
+            .getJSONArray("partitions")
+            .getJSONObject(0)
+            .getJSONArray("segments")
+            .getJSONObject(0);
+
+    long previousSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
-
     assertTrue(client.flush(randomCollectionName).ok());
-
     assertTrue(client.compact(randomCollectionName).ok());
 
     showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
-    segmentInfo =
-        showCollectionInfoResponse
-            .getCollectionInfo()
-            .get()
-            .getPartitionInfos()
-            .get(0)
-            .getSegmentInfos()
-            .get(0);
-    long currentSegmentSize = segmentInfo.getDataSize();
+    assertTrue(showCollectionInfoResponse.ok());
+    jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    segmentInfo = jsonInfo
+            .getJSONArray("partitions")
+            .getJSONObject(0)
+            .getJSONArray("segments")
+            .getJSONObject(0);
+    long currentSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(currentSegmentSize < previousSegmentSize);
   }
@@ -730,36 +773,32 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    ShowCollectionInfoResponse showCollectionInfoResponse =
-        client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
-    CollectionInfo.PartitionInfo.SegmentInfo segmentInfo =
-        showCollectionInfoResponse
-            .getCollectionInfo()
-            .get()
-            .getPartitionInfos()
-            .get(0)
-            .getSegmentInfos()
-            .get(0);
-    long previousSegmentSize = segmentInfo.getDataSize();
+    Response showCollectionInfoResponse =
+            client.showCollectionInfo(randomCollectionName);
+    assertTrue(showCollectionInfoResponse.ok());
+
+    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject segmentInfo = jsonInfo
+            .getJSONArray("partitions")
+            .getJSONObject(0)
+            .getJSONArray("segments")
+            .getJSONObject(0);
+
+    long previousSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
-
     assertTrue(client.flush(randomCollectionName).ok());
-
     assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
     showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.getCollectionInfo().isPresent());
-    segmentInfo =
-        showCollectionInfoResponse
-            .getCollectionInfo()
-            .get()
-            .getPartitionInfos()
-            .get(0)
-            .getSegmentInfos()
-            .get(0);
-    long currentSegmentSize = segmentInfo.getDataSize();
+    assertTrue(showCollectionInfoResponse.ok());
+    jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    segmentInfo = jsonInfo
+            .getJSONArray("partitions")
+            .getJSONObject(0)
+            .getJSONArray("segments")
+            .getJSONObject(0);
+    long currentSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(currentSegmentSize < previousSegmentSize);
   }
