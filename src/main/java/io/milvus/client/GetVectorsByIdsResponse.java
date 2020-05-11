@@ -2,7 +2,6 @@ package io.milvus.client;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Contains the returned <code>response</code> and either a <code>List</code> of <code>floatVectors</code> or <code>

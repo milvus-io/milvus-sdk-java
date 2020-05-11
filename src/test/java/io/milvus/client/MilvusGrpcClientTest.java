@@ -289,7 +289,7 @@ class MilvusClientTest {
 
     Index index =
         new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
-            .withParamsInJson("{\"nlist\": 19384}")
+            .withParamsInJson("{\"nlist\": 16384}")
             .build();
 
     Response createIndexResponse = client.createIndex(index);
@@ -303,7 +303,7 @@ class MilvusClientTest {
 
     Index index =
         new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
-            .withParamsInJson("{\"nlist\": 19384}")
+            .withParamsInJson("{\"nlist\": 16384}")
             .build();
 
     ListenableFuture<Response> createIndexResponseFuture = client.createIndexAsync(index);
@@ -756,8 +756,8 @@ class MilvusClientTest {
             .getJSONObject(0)
             .getJSONArray("segments")
             .getJSONObject(0);
-    long currentSegmentSize = segmentInfo.getLong("data_size");
 
+    long currentSegmentSize = segmentInfo.getLong("data_size");
     assertTrue(currentSegmentSize < previousSegmentSize);
   }
 
