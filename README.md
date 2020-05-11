@@ -60,7 +60,9 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
     ```
     Exception in thread "main" java.lang.NoClassDefFoundError: org/slf4j/LoggerFactory
     ```
-  This is because SLF4J jar file needs to be added into your application's classpath. To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
+  This is because SLF4J jar file needs to be added into your application's classpath.
+  
+  To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
                                                                                                          
     - Apache Maven
  
