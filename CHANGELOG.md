@@ -4,16 +4,12 @@
 
 ### Feature
 
----
-
 - \#93 - Add/Improve getVectorByID, collectionInfo and hasPartition API
-- \#2295 - Rename sdk interfaces
+- \#2295 - Rename SDK interfaces
 
 ## milvus-sdk-java 0.7.0 (2020-04-15)
 
 ### Feature
-
----
 
 - \#261 - Integrate ANNOY into Milvus
 - \#1828 - Add searchAsync / createIndexAsync / insertAsync / flushAsync / compactAsync API
@@ -22,14 +18,10 @@
 
 ### Bug
 
----
-
 - \#1641 - Fix incorrect error logging message
 - \#1642 - Fix compilation error of ByteBuffer
 
 ### Feature
-
----
 
 - \#1603 - Add binary metrics: Substructure & Superstructure
 
@@ -39,21 +31,15 @@
 
 ### Bug
 
----
-
 - \#78 - Partition tag not working when searching
 
 ## milvus-sdk-java 0.4.0 (2019-12-7)
 
 ### Bug
 
----
-
 - \#74 - Partition tag not working when inserting
 
 ### Improvement
-
----
 
 - \#61 - Add partition
 - \#70 - Add IndexType IVF_PQ
@@ -64,13 +50,9 @@
 
 ### Bug
 
----
-
 - \#64 - Search failed with exception if search result is empty
 
 ### Improvement
-
----
 
 - \#56 - Add keepalive and idleTimeout settings
 - \#57 - add ok() in other types of Response
@@ -81,8 +63,6 @@
 
 ### Improvement
 
----
-
 - \#49 - Add waitTime option in ConnectParam
 - \#51 - Change connect waitTime to timeout
 - \#52 - Change IVF_SQ8H to IVF_SQ8_H
@@ -91,13 +71,9 @@
 
 ### Bug
 
----
-
 - \#42 - fix search result validation
     
 ### Improvement
-
----
 
 - \#3 - Force channel to request connection in connect()  and some code cleanup
 - \#6 - Update pom & fix deleteByRange error message & update unittest
@@ -113,13 +89,9 @@
 
 ### Feature
 
----
-
 - \#16 - add IVF_SQ8_H index type
 
 ### Task
-
----
 
 - \#1 - First implementation
 - \#21 - Add javadoc
