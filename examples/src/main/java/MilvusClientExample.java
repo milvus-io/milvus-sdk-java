@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SplittableRandom;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
@@ -69,9 +68,7 @@ public class MilvusClientExample {
     }
 
     // Create Milvus client
-    // You can specify the log level. Currently we have three levels of logs: INFO, WARNING and
-    // SEVERE
-    MilvusClient client = new MilvusGrpcClient(Level.ALL);
+    MilvusClient client = new MilvusGrpcClient();
 
     // Connect to Milvus server
     ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();

@@ -1,8 +1,15 @@
 # Changelog     
 
+## milvus-sdk-java 0.8.0 (2020-05-15)
+
+### Feature
+---
+- \#93 - Update Java SDK APIs for getVectorByID, collectionInfo and hasPartition
+- \#2295 - Rename sdk interfaces
+
 ## milvus-sdk-java 0.7.0 (2020-04-15)
 
-## Feature
+### Feature
 ---
 - \#261 - Integrate ANNOY into Milvus
 - \#1828 - Add searchAsync / createIndexAsync / insertAsync / flushAsync / compactAsync API
@@ -14,7 +21,7 @@
 - \#1641 - Fix incorrect error logging message
 - \#1642 - Fix compilation error of ByteBuffer
 
-## Feature
+### Feature
 ---
 - \#1603 - Add binary metrics: Substructure & Superstructure
 
