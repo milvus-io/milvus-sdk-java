@@ -63,18 +63,18 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
   
   To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
                                                                                                          
-- Apache Maven
-
-    ```xml
-     <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <version>1.7.30</version>
-     </dependency>
-    ```
-
-- Gradle/Grails
-
-     ```gradle
-     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
-     ```
+    - Apache Maven
+    
+        ```xml
+         <dependency>
+             <groupId>org.slf4j</groupId>
+             <artifactId>slf4j-api</artifactId>
+             <version>1.7.30</version>
+         </dependency>
+        ```
+    
+    - Gradle/Grails
+    
+         ```gradle
+         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+         ```
