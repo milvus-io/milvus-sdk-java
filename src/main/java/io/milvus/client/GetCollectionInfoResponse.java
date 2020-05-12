@@ -19,21 +19,30 @@
 
 package io.milvus.client;
 
-/**
- * Contains the returned <code>response</code> and <code>collectionRowCount</code> for <code>
- * getCollectionRowCount</code>
- */
-public class GetCollectionRowCountResponse {
-  private final Response response;
-  private final long collectionRowCount;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
-  GetCollectionRowCountResponse(Response response, long collectionRowCount) {
+/**
+ * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>
+ * getCollectionInfo
+ * </code>
+ */
+public class GetCollectionInfoResponse {
+  private final Response response;
+  private final CollectionMapping collectionMapping;
+
+  GetCollectionInfoResponse(Response response, @Nullable CollectionMapping collectionMapping) {
     this.response = response;
-    this.collectionRowCount = collectionRowCount;
+    this.collectionMapping = collectionMapping;
   }
 
-  public long getCollectionRowCount() {
-    return collectionRowCount;
+  /**
+   * @return an <code>Optional</code> object which may or may not contain a <code>CollectionMapping
+   *     </code> object
+   * @see Optional
+   */
+  public Optional<CollectionMapping> getCollectionMapping() {
+    return Optional.ofNullable(collectionMapping);
   }
 
   public Response getResponse() {
@@ -48,7 +57,8 @@ public class GetCollectionRowCountResponse {
   @Override
   public String toString() {
     return String.format(
-        "CountCollectionResponse {%s, collection row count = %d}",
-        response.toString(), collectionRowCount);
+        "GetCollectionInfoResponse {%s, %s}",
+        response.toString(),
+        collectionMapping == null ? "Collection mapping = None" : collectionMapping.toString());
   }
 }

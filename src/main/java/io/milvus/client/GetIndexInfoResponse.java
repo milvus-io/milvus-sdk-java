@@ -23,26 +23,24 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
- * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>
- * describeCollection
- * </code>
+ * Contains the returned <code>response</code> and <code>index</code> for <code>getIndexInfo</code>
  */
-public class DescribeCollectionResponse {
+public class GetIndexInfoResponse {
   private final Response response;
-  private final CollectionMapping collectionMapping;
+  private final Index index;
 
-  DescribeCollectionResponse(Response response, @Nullable CollectionMapping collectionMapping) {
+  GetIndexInfoResponse(Response response, @Nullable Index index) {
     this.response = response;
-    this.collectionMapping = collectionMapping;
+    this.index = index;
   }
 
   /**
-   * @return an <code>Optional</code> object which may or may not contain a <code>CollectionMapping
-   *     </code> object
+   * @return an <code>Optional</code> object which may or may not contain an <code>Index</code>
+   *     object
    * @see Optional
    */
-  public Optional<CollectionMapping> getCollectionMapping() {
-    return Optional.ofNullable(collectionMapping);
+  public Optional<Index> getIndex() {
+    return Optional.ofNullable(index);
   }
 
   public Response getResponse() {
@@ -57,8 +55,7 @@ public class DescribeCollectionResponse {
   @Override
   public String toString() {
     return String.format(
-        "DescribeCollectionResponse {%s, %s}",
-        response.toString(),
-        collectionMapping == null ? "Collection mapping = None" : collectionMapping.toString());
+        "GetIndexInfoResponse {%s, %s}",
+        response.toString(), index == null ? "Index = Null" : index.toString());
   }
 }

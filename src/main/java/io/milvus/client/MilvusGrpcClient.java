@@ -44,10 +44,6 @@ import org.slf4j.LoggerFactory;
 public class MilvusGrpcClient implements MilvusClient {
 
   private static final Logger logger = LoggerFactory.getLogger(MilvusGrpcClient.class);
-  private static final String ANSI_RESET = "\u001B[0m";
-  private static final String ANSI_YELLOW = "\u001B[33m";
-  private static final String ANSI_PURPLE = "\u001B[35m";
-  private static final String ANSI_BRIGHT_PURPLE = "\u001B[95m";
   private final String extraParamKey = "params";
   private ManagedChannel channel = null;
   private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub = null;
@@ -389,11 +385,11 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public ShowPartitionsResponse showPartitions(String collectionName) {
+  public ListPartitionsResponse listPartitions(String collectionName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new ShowPartitionsResponse(
+      return new ListPartitionsResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
@@ -407,19 +403,19 @@ public class MilvusGrpcClient implements MilvusClient {
         logInfo(
             "Current partitions of collection {}: {}",
             collectionName, response.getPartitionTagArrayList());
-        return new ShowPartitionsResponse(
+        return new ListPartitionsResponse(
             new Response(Response.Status.SUCCESS), response.getPartitionTagArrayList());
       } else {
-        logError("Show partitions failed:\n{}", response.toString());
-        return new ShowPartitionsResponse(
+        logError("List partitions failed:\n{}", response.toString());
+        return new ListPartitionsResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             new ArrayList<>());
       }
     } catch (StatusRuntimeException e) {
-      logError("showPartitions RPC failed:\n{}", e.getStatus().toString());
-      return new ShowPartitionsResponse(
+      logError("listPartitions RPC failed:\n{}", e.getStatus().toString());
+      return new ListPartitionsResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>());
     }
   }
@@ -621,62 +617,6 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public SearchResponse searchByIds(@Nonnull SearchByIdsParam searchByIdsParam) {
-
-    if (!channelIsReadyOrIdle()) {
-      logWarning("You are not connected to Milvus server");
-      SearchResponse searchResponse = new SearchResponse();
-      searchResponse.setResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED));
-      return searchResponse;
-    }
-
-    List<Long> idList = searchByIdsParam.getIds();
-
-    KeyValuePair extraParam =
-            KeyValuePair.newBuilder()
-                    .setKey(extraParamKey)
-                    .setValue(searchByIdsParam.getParamsInJson())
-                    .build();
-
-    io.milvus.grpc.SearchByIDParam request =
-            io.milvus.grpc.SearchByIDParam.newBuilder()
-                    .setCollectionName(searchByIdsParam.getCollectionName())
-                    .addAllIdArray(idList)
-                    .addAllPartitionTagArray(searchByIdsParam.getPartitionTags())
-                    .setTopk(searchByIdsParam.getTopK())
-                    .addExtraParams(extraParam)
-                    .build();
-
-    TopKQueryResult response;
-
-    try {
-      response = blockingStub.searchByID(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        SearchResponse searchResponse = buildSearchResponse(response);
-        searchResponse.setResponse(new Response(Response.Status.SUCCESS));
-        logInfo(
-                "Search by ids completed successfully! Returned results for {} queries",
-                searchResponse.getNumQueries());
-        return searchResponse;
-      } else {
-        logError("Search by ids failed:\n{}", response.getStatus().toString());
-        SearchResponse searchResponse = new SearchResponse();
-        searchResponse.setResponse(
-                new Response(
-                        Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                        response.getStatus().getReason()));
-        return searchResponse;
-      }
-    } catch (StatusRuntimeException e) {
-      logError("search by ids RPC failed:\n{}", e.getStatus().toString());
-      SearchResponse searchResponse = new SearchResponse();
-      searchResponse.setResponse(new Response(Response.Status.RPC_ERROR, e.toString()));
-      return searchResponse;
-    }
-  }
-
-  @Override
   public ListenableFuture<SearchResponse> searchAsync(@Nonnull SearchParam searchParam) {
 
     if (!channelIsReadyOrIdle()) {
@@ -749,76 +689,11 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public SearchResponse searchInFiles(
-      @Nonnull List<String> fileIds, @Nonnull SearchParam searchParam) {
+  public GetCollectionInfoResponse getCollectionInfo(@Nonnull String collectionName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      SearchResponse searchResponse = new SearchResponse();
-      searchResponse.setResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED));
-      return searchResponse;
-    }
-
-    List<RowRecord> rowRecordList =
-        buildRowRecordList(searchParam.getFloatVectors(), searchParam.getBinaryVectors());
-
-    KeyValuePair extraParam =
-        KeyValuePair.newBuilder()
-            .setKey(extraParamKey)
-            .setValue(searchParam.getParamsInJson())
-            .build();
-
-    io.milvus.grpc.SearchParam constructSearchParam =
-        io.milvus.grpc.SearchParam.newBuilder()
-            .setCollectionName(searchParam.getCollectionName())
-            .addAllQueryRecordArray(rowRecordList)
-            .addAllPartitionTagArray(searchParam.getPartitionTags())
-            .setTopk(searchParam.getTopK())
-            .addExtraParams(extraParam)
-            .build();
-
-    SearchInFilesParam request =
-        SearchInFilesParam.newBuilder()
-            .addAllFileIdArray(fileIds)
-            .setSearchParam(constructSearchParam)
-            .build();
-
-    TopKQueryResult response;
-
-    try {
-      response = blockingStub.searchInFiles(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        SearchResponse searchResponse = buildSearchResponse(response);
-        searchResponse.setResponse(new Response(Response.Status.SUCCESS));
-        logInfo(
-            "Search in files completed successfully! Returned results for {} queries",
-            searchResponse.getNumQueries());
-        return searchResponse;
-      } else {
-        logError("Search in files failed: {}", response.getStatus().toString());
-
-        SearchResponse searchResponse = new SearchResponse();
-        searchResponse.setResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()));
-        return searchResponse;
-      }
-    } catch (StatusRuntimeException e) {
-      logError("searchInFiles RPC failed:\n{}", e.getStatus().toString());
-      SearchResponse searchResponse = new SearchResponse();
-      searchResponse.setResponse(new Response(Response.Status.RPC_ERROR, e.toString()));
-      return searchResponse;
-    }
-  }
-
-  @Override
-  public DescribeCollectionResponse describeCollection(@Nonnull String collectionName) {
-
-    if (!channelIsReadyOrIdle()) {
-      logWarning("You are not connected to Milvus server");
-      return new DescribeCollectionResponse(
+      return new GetCollectionInfoResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
 
@@ -834,32 +709,32 @@ public class MilvusGrpcClient implements MilvusClient {
                 .withIndexFileSize(response.getIndexFileSize())
                 .withMetricType(MetricType.valueOf(response.getMetricType()))
                 .build();
-        logInfo("Describe Collection `{}` returned:\n{}", collectionName, collectionMapping);
-        return new DescribeCollectionResponse(
+        logInfo("Get Collection Info `{}` returned:\n{}", collectionName, collectionMapping);
+        return new GetCollectionInfoResponse(
             new Response(Response.Status.SUCCESS), collectionMapping);
       } else {
         logError(
-            "Describe Collection `{}` failed:\n{}",
+            "Get Collection Info `{}` failed:\n{}",
             collectionName, response.getStatus().toString());
-        return new DescribeCollectionResponse(
+        return new GetCollectionInfoResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             null);
       }
     } catch (StatusRuntimeException e) {
-      logError("describeCollection RPC failed:\n{}", e.getStatus().toString());
-      return new DescribeCollectionResponse(
+      logError("getCollectionInfo RPC failed:\n{}", e.getStatus().toString());
+      return new GetCollectionInfoResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), null);
     }
   }
 
   @Override
-  public ShowCollectionsResponse showCollections() {
+  public ListCollectionsResponse listCollections() {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new ShowCollectionsResponse(
+      return new ListCollectionsResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
@@ -872,28 +747,28 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         List<String> collectionNames = response.getCollectionNamesList();
         logInfo("Current collections: {}", collectionNames.toString());
-        return new ShowCollectionsResponse(new Response(Response.Status.SUCCESS), collectionNames);
+        return new ListCollectionsResponse(new Response(Response.Status.SUCCESS), collectionNames);
       } else {
-        logError("Show collections failed:\n{}", response.getStatus().toString());
-        return new ShowCollectionsResponse(
+        logError("List collections failed:\n{}", response.getStatus().toString());
+        return new ListCollectionsResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             new ArrayList<>());
       }
     } catch (StatusRuntimeException e) {
-      logError("showCollections RPC failed:\n{}", e.getStatus().toString());
-      return new ShowCollectionsResponse(
+      logError("listCollections RPC failed:\n{}", e.getStatus().toString());
+      return new ListCollectionsResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>());
     }
   }
 
   @Override
-  public GetCollectionRowCountResponse getCollectionRowCount(@Nonnull String collectionName) {
+  public CountEntitiesResponse countEntities(@Nonnull String collectionName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new GetCollectionRowCountResponse(
+      return new CountEntitiesResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
     }
 
@@ -905,22 +780,22 @@ public class MilvusGrpcClient implements MilvusClient {
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         long collectionRowCount = response.getCollectionRowCount();
-        logInfo("Collection `{}` has {} rows", collectionName, collectionRowCount);
-        return new GetCollectionRowCountResponse(
+        logInfo("Collection `{}` has {} entities", collectionName, collectionRowCount);
+        return new CountEntitiesResponse(
             new Response(Response.Status.SUCCESS), collectionRowCount);
       } else {
         logError(
-            "Get collection `{}` row count failed:\n{}",
+            "Get collection `{}` entity count failed:\n{}",
             collectionName, response.getStatus().toString());
-        return new GetCollectionRowCountResponse(
+        return new CountEntitiesResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             0);
       }
     } catch (StatusRuntimeException e) {
-      logError("countCollection RPC failed:\n{}", e.getStatus().toString());
-      return new GetCollectionRowCountResponse(
+      logError("countEntities RPC failed:\n{}", e.getStatus().toString());
+      return new CountEntitiesResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), 0);
     }
   }
@@ -964,7 +839,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response preloadCollection(@Nonnull String collectionName) {
+  public Response loadCollection(@Nonnull String collectionName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
@@ -978,25 +853,25 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.preloadCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Preloaded collection `{}` successfully!", collectionName);
+        logInfo("Loaded collection `{}` successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
-        logError("Preload collection `{}` failed:\n{}", collectionName, response.toString());
+        logError("Load collection `{}` failed:\n{}", collectionName, response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
     } catch (StatusRuntimeException e) {
-      logError("preloadCollection RPC failed:\n{}", e.getStatus().toString());
+      logError("loadCollection RPC failed:\n{}", e.getStatus().toString());
       return new Response(Response.Status.RPC_ERROR, e.toString());
     }
   }
 
   @Override
-  public DescribeIndexResponse describeIndex(@Nonnull String collectionName) {
+  public GetIndexInfoResponse getIndexInfo(@Nonnull String collectionName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new DescribeIndexResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
+      return new GetIndexInfoResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
     }
 
     CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
@@ -1017,21 +892,21 @@ public class MilvusGrpcClient implements MilvusClient {
                 .withParamsInJson(extraParam)
                 .build();
         logInfo(
-            "Describe index for collection `{}` returned:\n{}", collectionName, index.toString());
-        return new DescribeIndexResponse(new Response(Response.Status.SUCCESS), index);
+            "Get index info for collection `{}` returned:\n{}", collectionName, index.toString());
+        return new GetIndexInfoResponse(new Response(Response.Status.SUCCESS), index);
       } else {
         logError(
-            "Describe index for collection `{}` failed:\n{}",
+            "Get index info for collection `{}` failed:\n{}",
             collectionName, response.getStatus().toString());
-        return new DescribeIndexResponse(
+        return new GetIndexInfoResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             null);
       }
     } catch (StatusRuntimeException e) {
-      logError("describeIndex RPC failed:\n{}", e.getStatus().toString());
-      return new DescribeIndexResponse(new Response(Response.Status.RPC_ERROR, e.toString()), null);
+      logError("getIndexInfo RPC failed:\n{}", e.getStatus().toString());
+      return new GetIndexInfoResponse(new Response(Response.Status.RPC_ERROR, e.toString()), null);
     }
   }
 
@@ -1065,7 +940,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response showCollectionInfo(String collectionName) {
+  public Response getCollectionStats(String collectionName) {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
@@ -1078,27 +953,27 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.showCollectionInfo(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("ShowCollectionInfo for `{}` returned successfully!", collectionName);
+        logInfo("getCollectionStats for `{}` returned successfully!", collectionName);
         return new Response(Response.Status.SUCCESS, response.getJsonInfo());
       } else {
         logError(
-            "ShowCollectionInfo for `{}` failed:\n{}",
+            "getCollectionStats for `{}` failed:\n{}",
             collectionName, response.getStatus().toString());
         return new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason());
       }
     } catch (StatusRuntimeException e) {
-      logError("showCollectionInfo RPC failed:\n{}", e.getStatus().toString());
+      logError("getCollectionStats RPC failed:\n{}", e.getStatus().toString());
       return new Response(Response.Status.RPC_ERROR, e.toString());
     }
   }
 
   @Override
-  public GetVectorsByIdsResponse getVectorsByIds(String collectionName, List<Long> ids) {
+  public GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids) {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new GetVectorsByIdsResponse(
+      return new GetEntityByIDResponse(
               new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>(), null);
     }
 
@@ -1112,7 +987,7 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
         logInfo(
-            "getVectorsByIds in collection `{}` returned successfully!", collectionName);
+            "getEntityByID in collection `{}` returned successfully!", collectionName);
 
         List<List<Float>> floatVectors = new ArrayList<>();
         List<ByteBuffer> binaryVectors = new ArrayList<>();
@@ -1120,14 +995,14 @@ public class MilvusGrpcClient implements MilvusClient {
           floatVectors.add(response.getVectorsData(i).getFloatDataList());
           binaryVectors.add(response.getVectorsData(i).getBinaryData().asReadOnlyByteBuffer());
         }
-        return new GetVectorsByIdsResponse(
+        return new GetEntityByIDResponse(
                 new Response(Response.Status.SUCCESS), floatVectors, binaryVectors);
 
       } else {
         logError(
-            "getVectorsByIds in collection `{}` failed:\n{}",
+            "getEntityByID in collection `{}` failed:\n{}",
             collectionName, response.getStatus().toString());
-        return new GetVectorsByIdsResponse(
+        return new GetEntityByIDResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
@@ -1135,17 +1010,17 @@ public class MilvusGrpcClient implements MilvusClient {
             null);
       }
     } catch (StatusRuntimeException e) {
-      logError("getVectorsByIds RPC failed:\n{}", e.getStatus().toString());
-      return new GetVectorsByIdsResponse(
+      logError("getEntityByID RPC failed:\n{}", e.getStatus().toString());
+      return new GetEntityByIDResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>(), null);
     }
   }
 
   @Override
-  public GetVectorIdsResponse getVectorIds(String collectionName, String segmentName) {
+  public ListIDInSegmentResponse listIDInSegment(String collectionName, String segmentName) {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new GetVectorIdsResponse(
+      return new ListIDInSegmentResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>());
     }
 
@@ -1162,29 +1037,29 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
         logInfo(
-            "getVectorIds in collection `{}`, segment `{}` returned successfully!",
+            "listIDInSegment in collection `{}`, segment `{}` returned successfully!",
             collectionName, segmentName);
-        return new GetVectorIdsResponse(
+        return new ListIDInSegmentResponse(
             new Response(Response.Status.SUCCESS), response.getVectorIdArrayList());
       } else {
         logError(
-            "getVectorIds in collection `{}`, segment `{}` failed:\n{}",
+            "listIDInSegment in collection `{}`, segment `{}` failed:\n{}",
             collectionName, segmentName, response.getStatus().toString());
-        return new GetVectorIdsResponse(
+        return new ListIDInSegmentResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
                 response.getStatus().getReason()),
             new ArrayList<>());
       }
     } catch (StatusRuntimeException e) {
-      logError("getVectorIds RPC failed:\n{}", e.getStatus().toString());
-      return new GetVectorIdsResponse(
+      logError("listIDInSegment RPC failed:\n{}", e.getStatus().toString());
+      return new ListIDInSegmentResponse(
           new Response(Response.Status.RPC_ERROR, e.toString()), new ArrayList<>());
     }
   }
 
   @Override
-  public Response deleteByIds(String collectionName, List<Long> ids) {
+  public Response deleteEntityByID(String collectionName, List<Long> ids) {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
@@ -1198,29 +1073,18 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.deleteByID(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("deleteByIds in collection `{}` completed successfully!", collectionName);
+        logInfo("deleteEntityByID in collection `{}` completed successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
         logError(
-            "deleteByIds in collection `{}` failed:\n{}", collectionName, response.toString());
+            "deleteEntityByID in collection `{}` failed:\n{}", collectionName, response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
     } catch (StatusRuntimeException e) {
-      logError("deleteByIds RPC failed:\n{}", e.getStatus().toString());
+      logError("deleteEntityByID RPC failed:\n{}", e.getStatus().toString());
       return new Response(Response.Status.RPC_ERROR, e.toString());
     }
-  }
-
-  @Override
-  public Response deleteById(String collectionName, Long id) {
-    List<Long> list =
-        new ArrayList<Long>() {
-          {
-            add(id);
-          }
-        };
-    return deleteByIds(collectionName, list);
   }
 
   @Override

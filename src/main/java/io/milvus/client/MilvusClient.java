@@ -177,14 +177,14 @@ public interface MilvusClient {
   HasPartitionResponse hasPartition(String collectionName, String tag);
 
   /**
-   * Shows current partitions of a collection
+   * Lists current partitions of a collection
    *
    * @param collectionName collection name
-   * @return <code>ShowPartitionsResponse</code>
-   * @see ShowPartitionsResponse
+   * @return <code>ListPartitionsResponse</code>
+   * @see ListPartitionsResponse
    * @see Response
    */
-  ShowPartitionsResponse showPartitions(String collectionName);
+  ListPartitionsResponse listPartitions(String collectionName);
 
   /**
    * Drops partition specified by <code>collectionName</code> and <code>tag</code>
@@ -265,30 +265,6 @@ public interface MilvusClient {
   SearchResponse search(SearchParam searchParam);
 
   /**
-   * Searches vectors specified by <code>searchByIdsParam</code>
-   *
-   * @param searchByIdsParam the <code>SearchByIdsParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * SearchByIdsParam searchByIdsParam = new SearchByIdsParam.Builder(collectionName)
-   *                                          .withIDs(ids)
-   *                                          .withTopK(topK)
-   *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
-   *                                          .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>SearchResponse</code>
-   * @see SearchByIdsParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
-   */
-  SearchResponse searchByIds(SearchByIdsParam searchByIdsParam);
-
-  /**
    * Searches vectors specified by <code>searchParam</code> asynchronously
    *
    * @param searchParam the <code>SearchParam</code> object
@@ -314,58 +290,33 @@ public interface MilvusClient {
   ListenableFuture<SearchResponse> searchAsync(SearchParam searchParam);
 
   /**
-   * Searches vectors in specific files
-   *
-   * @param fileIds list of file ids to search from
-   * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withTopK(topK)
-   *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
-   *                                          .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>SearchResponse</code>
-   * @see SearchParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
-   */
-  SearchResponse searchInFiles(List<String> fileIds, SearchParam searchParam);
-
-  /**
-   * Describes the collection
+   * Gets collection info
    *
    * @param collectionName collection to describe
-   * @see DescribeCollectionResponse
+   * @see GetCollectionInfoResponse
    * @see CollectionMapping
    * @see Response
    */
-  DescribeCollectionResponse describeCollection(String collectionName);
+  GetCollectionInfoResponse getCollectionInfo(String collectionName);
 
   /**
-   * Shows current collections
+   * Lists current collections
    *
-   * @return <code>ShowCollectionsResponse</code>
-   * @see ShowCollectionsResponse
+   * @return <code>ListCollectionsResponse</code>
+   * @see ListCollectionsResponse
    * @see Response
    */
-  ShowCollectionsResponse showCollections();
+  ListCollectionsResponse listCollections();
 
   /**
-   * Gets current row count of a collection
+   * Gets current entity count of a collection
    *
-   * @param collectionName collection to get row count
-   * @return <code>GetCollectionRowCountResponse</code>
-   * @see GetCollectionRowCountResponse
+   * @param collectionName collection to count entities
+   * @return <code>CountEntitiesResponse</code>
+   * @see CountEntitiesResponse
    * @see Response
    */
-  GetCollectionRowCountResponse getCollectionRowCount(String collectionName);
+  CountEntitiesResponse countEntities(String collectionName);
 
   /**
    * Get server status
@@ -394,21 +345,21 @@ public interface MilvusClient {
   /**
    * Pre-loads collection to memory
    *
-   * @param collectionName collection to preload
+   * @param collectionName collection to load
    * @return <code>Response</code>
    * @see Response
    */
-  Response preloadCollection(String collectionName);
+  Response loadCollection(String collectionName);
 
   /**
-   * Describes collection index
+   * Gets collection index information
    *
-   * @param collectionName collection to describe index of
-   * @see DescribeIndexResponse
+   * @param collectionName collection to get info from
+   * @see GetIndexInfoResponse
    * @see Index
    * @see Response
    */
-  DescribeIndexResponse describeIndex(String collectionName);
+  GetIndexInfoResponse getIndexInfo(String collectionName);
 
   /**
    * Drops collection index
@@ -429,29 +380,29 @@ public interface MilvusClient {
    * @return <code>Response</code>
    * @see Response
    */
-  Response showCollectionInfo(String collectionName);
+  Response getCollectionStats(String collectionName);
 
   /**
    * Gets vectors data by id array
    *
    * @param collectionName collection to get vectors from
    * @param ids a <code>List</code> of vector ids
-   * @return <code>GetVectorsByIdsResponse</code>
-   * @see GetVectorsByIdsResponse
+   * @return <code>GetEntityByIDResponse</code>
+   * @see GetEntityByIDResponse
    * @see Response
    */
-  GetVectorsByIdsResponse getVectorsByIds(String collectionName, List<Long> ids);
+  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Gets all vector ids in a segment
    *
    * @param collectionName collection to get vector ids from
-   * @param segmentName segment name
-   * @return <code>GetVectorIdsResponse</code>
-   * @see GetVectorIdsResponse
+   * @param segmentName segment name in the collection
+   * @return <code>ListIDInSegmentResponse</code>
+   * @see ListIDInSegmentResponse
    * @see Response
    */
-  GetVectorIdsResponse getVectorIds(String collectionName, String segmentName);
+  ListIDInSegmentResponse listIDInSegment(String collectionName, String segmentName);
 
   /**
    * Deletes data in a collection by a list of ids
@@ -461,17 +412,7 @@ public interface MilvusClient {
    * @return <code>Response</code>
    * @see Response
    */
-  Response deleteByIds(String collectionName, List<Long> ids);
-
-  /**
-   * Deletes data in a collection by a single id
-   *
-   * @param collectionName collection to delete id from
-   * @param id vector id to delete
-   * @return <code>Response</code>
-   * @see Response
-   */
-  Response deleteById(String collectionName, Long id);
+  Response deleteEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Flushes data in a list collections. Newly inserted or modifications on data will be visible

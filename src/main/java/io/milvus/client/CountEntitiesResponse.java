@@ -19,28 +19,21 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nullable;
-import java.util.Optional;
-
 /**
- * Contains the returned <code>response</code> and <code>index</code> for <code>describeIndex</code>
+ * Contains the returned <code>response</code> and <code>collectionEntityCount</code> for <code>
+ * countEntities</code>
  */
-public class DescribeIndexResponse {
+public class CountEntitiesResponse {
   private final Response response;
-  private final Index index;
+  private final long collectionEntityCount;
 
-  DescribeIndexResponse(Response response, @Nullable Index index) {
+  CountEntitiesResponse(Response response, long collectionEntityCount) {
     this.response = response;
-    this.index = index;
+    this.collectionEntityCount = collectionEntityCount;
   }
 
-  /**
-   * @return an <code>Optional</code> object which may or may not contain an <code>Index</code>
-   *     object
-   * @see Optional
-   */
-  public Optional<Index> getIndex() {
-    return Optional.ofNullable(index);
+  public long getCollectionEntityCount() {
+    return collectionEntityCount;
   }
 
   public Response getResponse() {
@@ -55,7 +48,7 @@ public class DescribeIndexResponse {
   @Override
   public String toString() {
     return String.format(
-        "DescribeIndexResponse {%s, %s}",
-        response.toString(), index == null ? "Index = Null" : index.toString());
+        "CountCollectionResponse {%s, collection entity count = %d}",
+        response.toString(), collectionEntityCount);
   }
 }

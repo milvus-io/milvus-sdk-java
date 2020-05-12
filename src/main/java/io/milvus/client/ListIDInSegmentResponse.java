@@ -4,13 +4,13 @@ import java.util.List;
 
 /**
  * Contains the returned <code>response</code> and a <code>List</code> of ids present in a segment
- * for <code>getVectorIds</code>.
+ * for <code>listIDInSegment</code>.
  */
-public class GetVectorIdsResponse {
+public class ListIDInSegmentResponse {
   private final Response response;
   private final List<Long> ids;
 
-  GetVectorIdsResponse(Response response, List<Long> ids) {
+  ListIDInSegmentResponse(Response response, List<Long> ids) {
     this.response = response;
     this.ids = ids;
   }

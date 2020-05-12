@@ -22,22 +22,21 @@ package io.milvus.client;
 import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>partitionList</code> for <code>
- * showPartitions
+ * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>
+ * listCollections
  * </code>
  */
-public class ShowPartitionsResponse {
+public class ListCollectionsResponse {
   private final Response response;
-  private final List<String> partitionList;
+  private final List<String> collectionNames;
 
-  ShowPartitionsResponse(Response response, List<String> partitionList) {
+  ListCollectionsResponse(Response response, List<String> collectionNames) {
     this.response = response;
-    this.partitionList = partitionList;
+    this.collectionNames = collectionNames;
   }
 
-  /** @return a <code>List</code> of partition tags. */
-  public List<String> getPartitionList() {
-    return partitionList;
+  public List<String> getCollectionNames() {
+    return collectionNames;
   }
 
   public Response getResponse() {
@@ -47,5 +46,12 @@ public class ShowPartitionsResponse {
   /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "ListCollectionsResponse {%s, collection names = %s}",
+        response, collectionNames.toString());
   }
 }

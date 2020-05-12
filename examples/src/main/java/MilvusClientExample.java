@@ -97,9 +97,9 @@ public class MilvusClientExample {
     // Check whether the collection exists
     HasCollectionResponse hasCollectionResponse = client.hasCollection(collectionName);
 
-    // Describe the collection
-    DescribeCollectionResponse describeCollectionResponse =
-        client.describeCollection(collectionName);
+    // Get collection info
+    GetCollectionInfoResponse getCollectionInfoResponse =
+        client.getCollectionInfo(collectionName);
 
     // Insert randomly generated vectors to collection
     final int vectorCount = 100000;
@@ -116,9 +116,9 @@ public class MilvusClientExample {
     // Flush data in collection
     Response flushResponse = client.flush(collectionName);
 
-    // Get current row count of collection
-    GetCollectionRowCountResponse getCollectionRowCountResponse =
-        client.getCollectionRowCount(collectionName);
+    // Get current entity count of collection
+    CountEntitiesResponse ountEntitiesResponse =
+        client.countEntities(collectionName);
 
     // Create index for the collection
     // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
@@ -134,15 +134,16 @@ public class MilvusClientExample {
             .build();
     Response createIndexResponse = client.createIndex(index);
 
-    // Describe the index for your collection
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(collectionName);
+    // Get index info for your collection
+    GetIndexInfoResponse getIndexInfoResponse = client.getIndexInfo(collectionName);
+    System.out.format("Index Info: %s\n", getIndexInfoResponse.getIndex().toString());
 
     // Get collection info
-    Response showCollectionInfoResponse = client.showCollectionInfo(collectionName);
-    if (showCollectionInfoResponse.ok()) {
+    Response getCollectionStatsResponse = client.getCollectionStats(collectionName);
+    if (getCollectionStatsResponse.ok()) {
       // Collection info is sent back with JSON type string
-      String jsonString = showCollectionInfoResponse.getMessage();
-      System.out.println(jsonString);
+      String jsonString = getCollectionStatsResponse.getMessage();
+      System.out.format("Collection Stats: %s\n", jsonString);
     }
 
     // Check whether a partition exists in collection
@@ -187,27 +188,6 @@ public class MilvusClientExample {
     List<List<Long>> resultIds = searchResponse.getResultIdsList();
     List<List<Float>> resultDistances = searchResponse.getResultDistancesList();
 
-    // SearchByIds
-    // Searching the first 5 vectors of the vectors we just inserted by ID
-    SearchByIdsParam searchByIdsParam =
-            new SearchByIdsParam.Builder(collectionName)
-                    .withIDs(vectorIds.subList(0, searchBatchSize))
-                    .withTopK(topK)
-                    .withParamsInJson(searchParamsJson.toString())
-                    .build();
-    SearchResponse searchByIDResponse = client.searchByIds(searchByIdsParam);
-    if (searchByIDResponse.ok()) {
-      List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-      final double epsilon = 0.001;
-      for (int i = 0; i < searchBatchSize; i++) {
-        SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
-        if (firstQueryResult.getVectorId() != vectorIds.get(i)
-                || Math.abs(1 - firstQueryResult.getDistance()) > epsilon) {
-          throw new AssertionError("Wrong results!");
-        }
-      }
-    }
-
     // You can send search request asynchronously, which returns a ListenableFuture object
     ListenableFuture<SearchResponse> searchResponseFuture = client.searchAsync(searchParam);
     try {
@@ -220,16 +200,16 @@ public class MilvusClientExample {
 
     // Delete the first 5 of vectors you just searched
     Response deleteByIdsResponse =
-        client.deleteByIds(collectionName, vectorIds.subList(0, searchBatchSize));
+        client.deleteEntityByID(collectionName, vectorIds.subList(0, searchBatchSize));
 
     // Flush again, so deletions to data become visible
     flushResponse = client.flush(collectionName);
 
     // Try to get the corresponding vector of the first id you just deleted.
-    GetVectorsByIdsResponse getVectorsByIdsResponse =
-        client.getVectorsByIds(collectionName, vectorIds.subList(0, searchBatchSize));
+    GetEntityByIDResponse getEntityByIDResponse =
+        client.getEntityByID(collectionName, vectorIds.subList(0, searchBatchSize));
     // Obviously you won't get anything
-    if (!getVectorsByIdsResponse.getFloatVectors().get(0).isEmpty()) {
+    if (!getEntityByIDResponse.getFloatVectors().get(0).isEmpty()) {
       throw new AssertionError("This can never happen!");
     }
 
