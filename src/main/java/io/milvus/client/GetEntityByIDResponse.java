@@ -5,15 +5,15 @@ import java.util.List;
 
 /**
  * Contains the returned <code>response</code> and either a <code>List</code> of <code>floatVectors</code> or <code>
- * binaryVectors</code> for <code>getVectorsByIds</code>. If the id does not exist, both float and binary
+ * binaryVectors</code> for <code>getEntityByID</code>. If the id does not exist, both float and binary
  * vectors corresponding to the id will be empty.
  */
-public class GetVectorsByIdsResponse {
+public class GetEntityByIDResponse {
   private final Response response;
   private final List<List<Float>> floatVectors;
   private final List<ByteBuffer> binaryVectors;
 
-  GetVectorsByIdsResponse(Response response, List<List<Float>> floatVectors, List<ByteBuffer> binaryVectors) {
+  GetEntityByIDResponse(Response response, List<List<Float>> floatVectors, List<ByteBuffer> binaryVectors) {
     this.response = response;
     this.floatVectors = floatVectors;
     this.binaryVectors = binaryVectors;

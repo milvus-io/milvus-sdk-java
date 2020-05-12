@@ -119,7 +119,7 @@ class MilvusClientTest {
     // Channel should be idle
     assertFalse(client.isConnected());
     // A new RPC would take the channel out of idle mode
-    assertTrue(client.showCollections().ok());
+    assertTrue(client.listCollections().ok());
   }
 
   @org.junit.jupiter.api.Test
@@ -202,9 +202,9 @@ class MilvusClientTest {
     createPartitionResponse = client.createPartition(randomCollectionName, tag2);
     assertTrue(createPartitionResponse.ok());
 
-    ShowPartitionsResponse showPartitionsResponse = client.showPartitions(randomCollectionName);
-    assertTrue(showPartitionsResponse.ok());
-    assertEquals(3, showPartitionsResponse.getPartitionList().size()); // two tags plus _default
+    ListPartitionsResponse listPartitionsResponse = client.listPartitions(randomCollectionName);
+    assertTrue(listPartitionsResponse.ok());
+    assertEquals(3, listPartitionsResponse.getPartitionList().size()); // two tags plus _default
 
     List<List<Float>> vectors1 = generateFloatVectors(size, dimension);
     List<Long> vectorIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
@@ -230,7 +230,7 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     assertEquals(
-        size * 2, client.getCollectionRowCount(randomCollectionName).getCollectionRowCount());
+        size * 2, client.countEntities(randomCollectionName).getCollectionEntityCount());
 
     final int searchSize = 1;
     final long topK = 10;
@@ -398,45 +398,6 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void searchByIds() {
-    List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
-    InsertParam insertParam =
-            new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> vectorIds = insertResponse.getVectorIds();
-    assertEquals(size, vectorIds.size());
-
-    assertTrue(client.flush(randomCollectionName).ok());
-
-    final long topK = 10;
-    final int queryLength = 5;
-    SearchByIdsParam searchByIdsParam =
-            new SearchByIdsParam.Builder(randomCollectionName)
-                    .withIDs(vectorIds.subList(0, queryLength))
-                    .withTopK(topK)
-                    .withParamsInJson("{\"nprobe\": 20}")
-                    .build();
-    SearchResponse searchResponse = client.searchByIds(searchByIdsParam);
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
-    assertEquals(queryLength, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
-    assertEquals(queryLength, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    assertEquals(queryLength, queryResultsList.size());
-    final double epsilon = 0.001;
-    for (int i = 0; i < queryLength; i++) {
-      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
-      assertEquals(vectorIds.get(i), firstQueryResult.getVectorId());
-      assertEquals(vectorIds.get(i), resultIdsList.get(i).get(0));
-      assertTrue(Math.abs(1 - firstQueryResult.getDistance()) < epsilon);
-      assertTrue(Math.abs(1 - resultDistancesList.get(i).get(0)) < epsilon);
-    }
-  }
-
-  @org.junit.jupiter.api.Test
   void searchAsync() throws ExecutionException, InterruptedException {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
@@ -529,31 +490,27 @@ class MilvusClientTest {
     assertTrue(client.dropCollection(binaryCollectionName).ok());
   }
 
-  //    @org.junit.jupiter.api.Test
-  //    void searchInFiles() {
-  //    }
-
   @org.junit.jupiter.api.Test
-  void describeCollection() {
-    DescribeCollectionResponse describeCollectionResponse =
-        client.describeCollection(randomCollectionName);
-    assertTrue(describeCollectionResponse.ok());
-    assertTrue(describeCollectionResponse.getCollectionMapping().isPresent());
+  void getCollectionInfo() {
+    GetCollectionInfoResponse getCollectionInfoResponse =
+        client.getCollectionInfo(randomCollectionName);
+    assertTrue(getCollectionInfoResponse.ok());
+    assertTrue(getCollectionInfoResponse.getCollectionMapping().isPresent());
     assertEquals(
-        describeCollectionResponse.getCollectionMapping().get().getCollectionName(),
+        getCollectionInfoResponse.getCollectionMapping().get().getCollectionName(),
         randomCollectionName);
 
     String nonExistingCollectionName = generator.generate(10);
-    describeCollectionResponse = client.describeCollection(nonExistingCollectionName);
-    assertFalse(describeCollectionResponse.ok());
-    assertFalse(describeCollectionResponse.getCollectionMapping().isPresent());
+    getCollectionInfoResponse = client.getCollectionInfo(nonExistingCollectionName);
+    assertFalse(getCollectionInfoResponse.ok());
+    assertFalse(getCollectionInfoResponse.getCollectionMapping().isPresent());
   }
 
   @org.junit.jupiter.api.Test
-  void showCollections() {
-    ShowCollectionsResponse showCollectionsResponse = client.showCollections();
-    assertTrue(showCollectionsResponse.ok());
-    assertTrue(showCollectionsResponse.getCollectionNames().contains(randomCollectionName));
+  void listCollections() {
+    ListCollectionsResponse listCollectionsResponse = client.listCollections();
+    assertTrue(listCollectionsResponse.ok());
+    assertTrue(listCollectionsResponse.getCollectionNames().contains(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
@@ -569,34 +526,34 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void getCollectionRowCount() {
+  void countEntities() {
     insert();
     assertTrue(client.flush(randomCollectionName).ok());
 
-    GetCollectionRowCountResponse getCollectionRowCountResponse =
-        client.getCollectionRowCount(randomCollectionName);
-    assertTrue(getCollectionRowCountResponse.ok());
-    assertEquals(size, getCollectionRowCountResponse.getCollectionRowCount());
+    CountEntitiesResponse countEntitiesResponse =
+        client.countEntities(randomCollectionName);
+    assertTrue(countEntitiesResponse.ok());
+    assertEquals(size, countEntitiesResponse.getCollectionEntityCount());
   }
 
   @org.junit.jupiter.api.Test
-  void preloadCollection() {
+  void loadCollection() {
     insert();
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response preloadCollectionResponse = client.preloadCollection(randomCollectionName);
-    assertTrue(preloadCollectionResponse.ok());
+    Response loadCollectionResponse = client.loadCollection(randomCollectionName);
+    assertTrue(loadCollectionResponse.ok());
   }
 
   @org.junit.jupiter.api.Test
-  void describeIndex() {
+  void getIndexInfo() {
     createIndex();
 
-    DescribeIndexResponse describeIndexResponse = client.describeIndex(randomCollectionName);
-    assertTrue(describeIndexResponse.ok());
-    assertTrue(describeIndexResponse.getIndex().isPresent());
-    assertEquals(describeIndexResponse.getIndex().get().getCollectionName(), randomCollectionName);
-    assertEquals(describeIndexResponse.getIndex().get().getIndexType(), IndexType.IVF_SQ8);
+    GetIndexInfoResponse getIndexInfoResponse = client.getIndexInfo(randomCollectionName);
+    assertTrue(getIndexInfoResponse.ok());
+    assertTrue(getIndexInfoResponse.getIndex().isPresent());
+    assertEquals(getIndexInfoResponse.getIndex().get().getCollectionName(), randomCollectionName);
+    assertEquals(getIndexInfoResponse.getIndex().get().getIndexType(), IndexType.IVF_SQ8);
   }
 
   @org.junit.jupiter.api.Test
@@ -606,16 +563,16 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void showCollectionInfo() {
+  void getCollectionStats() {
     insert();
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response showCollectionInfoResponse =
-        client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
+    Response getCollectionStatsResponse =
+        client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
 
-    String jsonString = showCollectionInfoResponse.getMessage();
+    String jsonString = getCollectionStatsResponse.getMessage();
     JSONObject jsonInfo = new JSONObject(jsonString);
     assertTrue(jsonInfo.getInt("row_count") == size);
 
@@ -631,7 +588,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void getVectorsByIds() {
+  void getEntityByID() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
@@ -642,13 +599,13 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    GetVectorsByIdsResponse getVectorsByIdsResponse =
-        client.getVectorsByIds(randomCollectionName, vectorIds.subList(0, 100));
-    assertTrue(getVectorsByIdsResponse.ok());
-    ByteBuffer bb = getVectorsByIdsResponse.getBinaryVectors().get(0);
+    GetEntityByIDResponse getEntityByIDResponse =
+        client.getEntityByID(randomCollectionName, vectorIds.subList(0, 100));
+    assertTrue(getEntityByIDResponse.ok());
+    ByteBuffer bb = getEntityByIDResponse.getBinaryVectors().get(0);
     assertTrue(bb == null || bb.remaining() == 0);
 
-    assertArrayEquals(getVectorsByIdsResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
+    assertArrayEquals(getEntityByIDResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
   }
 
   @org.junit.jupiter.api.Test
@@ -657,25 +614,25 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response showCollectionInfoResponse =
-        client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
+    Response getCollectionStatsResponse =
+        client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
 
-    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
     JSONObject segmentInfo = jsonInfo
                                  .getJSONArray("partitions")
                                  .getJSONObject(0)
                                  .getJSONArray("segments")
                                  .getJSONObject(0);
 
-    GetVectorIdsResponse getVectorIdsResponse =
-        client.getVectorIds(randomCollectionName,segmentInfo.getString("name"));
-    assertTrue(getVectorIdsResponse.ok());
-    assertFalse(getVectorIdsResponse.getIds().isEmpty());
+    ListIDInSegmentResponse listIDInSegmentResponse =
+        client.listIDInSegment(randomCollectionName,segmentInfo.getString("name"));
+    assertTrue(listIDInSegmentResponse.ok());
+    assertFalse(listIDInSegmentResponse.getIds().isEmpty());
   }
 
   @org.junit.jupiter.api.Test
-  void deleteByIds() {
+  void deleteEntityByID() {
     List<List<Float>> vectors = generateFloatVectors(size, dimension);
     InsertParam insertParam =
         new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
@@ -686,27 +643,10 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+    assertTrue(client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, 100)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertEquals(
-        client.getCollectionRowCount(randomCollectionName).getCollectionRowCount(), size - 100);
-  }
-
-  @org.junit.jupiter.api.Test
-  void deleteById() {
-    List<List<Float>> vectors = generateFloatVectors(1, dimension);
-    InsertParam insertParam =
-        new InsertParam.Builder(randomCollectionName).withFloatVectors(vectors).build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> vectorIds = insertResponse.getVectorIds();
-    assertEquals(vectorIds.size(), 1);
-
-    assertTrue(client.flush(randomCollectionName).ok());
-
-    assertTrue(client.deleteById(randomCollectionName, vectorIds.get(0)).ok());
-    assertTrue(client.flush(randomCollectionName).ok());
-    assertEquals(client.getCollectionRowCount(randomCollectionName).getCollectionRowCount(), 0);
+        client.countEntities(randomCollectionName).getCollectionEntityCount(), size - 100);
   }
 
   @org.junit.jupiter.api.Test
@@ -731,11 +671,11 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response showCollectionInfoResponse =
-        client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
+    Response getCollectionStatsResponse =
+        client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
 
-    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
     JSONObject segmentInfo = jsonInfo
             .getJSONArray("partitions")
             .getJSONObject(0)
@@ -744,13 +684,13 @@ class MilvusClientTest {
 
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
-    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
+    assertTrue(client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compact(randomCollectionName).ok());
 
-    showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
-    jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
+    jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
     segmentInfo = jsonInfo
             .getJSONArray("partitions")
             .getJSONObject(0)
@@ -773,11 +713,11 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response showCollectionInfoResponse =
-            client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
+    Response getCollectionStatsResponse =
+            client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
 
-    JSONObject jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
     JSONObject segmentInfo = jsonInfo
             .getJSONArray("partitions")
             .getJSONObject(0)
@@ -786,13 +726,13 @@ class MilvusClientTest {
 
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
-    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
+    assertTrue(client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
-    showCollectionInfoResponse = client.showCollectionInfo(randomCollectionName);
-    assertTrue(showCollectionInfoResponse.ok());
-    jsonInfo = new JSONObject(showCollectionInfoResponse.getMessage());
+    getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
+    assertTrue(getCollectionStatsResponse.ok());
+    jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
     segmentInfo = jsonInfo
             .getJSONArray("partitions")
             .getJSONObject(0)
