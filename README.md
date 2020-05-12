@@ -23,6 +23,7 @@ The following table shows compatibilities between Milvus and Java SDK.
    |     0.7.0      |    0.5.0    |
    |     0.7.1      |    0.6.0    |
    |     0.8.0      |    0.7.0    |
+   |     0.9.0      |    0.8.0    |
 
 ### Install Java SDK
 
@@ -55,3 +56,26 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
 ### Additional information
 
 - The Java source code is formatted using [google-java-format](https://github.com/google/google-java-format).
+- If you receive the following error when running your application:
+    ```
+    Exception in thread "main" java.lang.NoClassDefFoundError: org/slf4j/LoggerFactory
+    ```
+  This is because SLF4J jar file needs to be added into your application's classpath.
+  
+  To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
+                                                                                                         
+    - Apache Maven
+ 
+        ```xml
+         <dependency>
+             <groupId>org.slf4j</groupId>
+             <artifactId>slf4j-api</artifactId>
+             <version>1.7.30</version>
+         </dependency>
+        ```
+ 
+    - Gradle/Grails
+ 
+         ```gradle
+         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+         ```

@@ -289,7 +289,7 @@ class MilvusClientTest {
 
     Index index =
         new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
-            .withParamsInJson("{\"nlist\": 19384}")
+            .withParamsInJson("{\"nlist\": 16384}")
             .build();
 
     Response createIndexResponse = client.createIndex(index);
@@ -303,7 +303,7 @@ class MilvusClientTest {
 
     Index index =
         new Index.Builder(randomCollectionName, IndexType.IVF_SQ8)
-            .withParamsInJson("{\"nlist\": 19384}")
+            .withParamsInJson("{\"nlist\": 16384}")
             .build();
 
     ListenableFuture<Response> createIndexResponseFuture = client.createIndexAsync(index);
@@ -744,7 +744,7 @@ class MilvusClientTest {
 
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
-    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compact(randomCollectionName).ok());
 
@@ -756,8 +756,8 @@ class MilvusClientTest {
             .getJSONObject(0)
             .getJSONArray("segments")
             .getJSONObject(0);
-    long currentSegmentSize = segmentInfo.getLong("data_size");
 
+    long currentSegmentSize = segmentInfo.getLong("data_size");
     assertTrue(currentSegmentSize < previousSegmentSize);
   }
 
@@ -786,7 +786,7 @@ class MilvusClientTest {
 
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
-    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, 100)).ok());
+    assertTrue(client.deleteByIds(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
