@@ -174,7 +174,7 @@ class MilvusClientTest {
         new CollectionMapping.Builder(invalidCollectionName, dimension).build();
     Response createCollectionResponse = client.createCollection(invalidCollectionMapping);
     assertFalse(createCollectionResponse.ok());
-    assertEquals(Response.Status.ILLEGAL_TABLE_NAME, createCollectionResponse.getStatus());
+    assertEquals(Response.Status.ILLEGAL_COLLECTION_NAME, createCollectionResponse.getStatus());
   }
 
   @org.junit.jupiter.api.Test
@@ -189,7 +189,7 @@ class MilvusClientTest {
     String nonExistingCollectionName = generator.generate(10);
     Response dropCollectionResponse = client.dropCollection(nonExistingCollectionName);
     assertFalse(dropCollectionResponse.ok());
-    assertEquals(Response.Status.TABLE_NOT_EXISTS, dropCollectionResponse.getStatus());
+    assertEquals(Response.Status.COLLECTION_NOT_EXISTS, dropCollectionResponse.getStatus());
   }
 
   @org.junit.jupiter.api.Test
