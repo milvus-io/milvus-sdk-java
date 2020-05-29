@@ -13,17 +13,17 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute to thi
 
 The following table shows compatibilities between Milvus and Java SDK.
 
-   | Milvus version | SDK version |
-   | :------------: | :---------: |
-   |     0.5.0      |    0.2.2    |
-   |     0.5.1      |    0.2.2    |
-   |     0.5.2      |    0.2.2    |
-   |     0.5.3      |    0.3.0    |
-   |     0.6.0      |    0.4.1    |
-   |     0.7.0      |    0.5.0    |
-   |     0.7.1      |    0.6.0    |
-   |     0.8.0      |    0.7.0    |
-   |     0.9.0      |    0.8.0    |
+| Milvus version | Java SDK version |
+| :------------: | :--------------: |
+|     0.9.0      |    0.8.0         |
+|     0.8.0      |    0.7.0         |
+|     0.7.1      |    0.6.0         |
+|     0.7.0      |    0.5.0         |
+|     0.6.0      |    0.4.1         |
+|     0.5.3      |    0.3.0         |
+|     0.5.2      |    0.2.2         |
+|     0.5.1      |    0.2.2         |
+|     0.5.0      |    0.2.2         |
 
 ### Install Java SDK
 
