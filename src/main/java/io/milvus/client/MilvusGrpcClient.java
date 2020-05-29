@@ -93,6 +93,13 @@ public class MilvusGrpcClient implements MilvusClient {
       blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
       futureStub = MilvusServiceGrpc.newFutureStub(channel);
 
+      // check server version
+      String serverVersion = getServerVersion().getMessage();
+      if (!serverVersion.contains("0.9.")) {
+        logError("Connect failed! Server version {} does not match SDK version 0.8.1", serverVersion);
+        throw new ConnectFailedException("Failed to connect to Milvus server.");
+      }
+
     } catch (Exception e) {
       if (!(e instanceof ConnectFailedException)) {
         logError("Connect failed! {}", e.toString());

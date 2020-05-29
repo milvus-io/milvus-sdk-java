@@ -69,11 +69,11 @@ public class Response {
     UNEXPECTED_ERROR(1),
     CONNECT_FAILED(2),
     PERMISSION_DENIED(3),
-    TABLE_NOT_EXISTS(4),
+    COLLECTION_NOT_EXISTS(4),
     ILLEGAL_ARGUMENT(5),
     ILLEGAL_DIMENSION(7),
     ILLEGAL_INDEX_TYPE(8),
-    ILLEGAL_TABLE_NAME(9),
+    ILLEGAL_COLLECTION_NAME(9),
     ILLEGAL_TOPK(10),
     ILLEGAL_ROWRECORD(11),
     ILLEGAL_VECTOR_ID(12),
@@ -93,7 +93,8 @@ public class Response {
     // Client side error
     RPC_ERROR(-1),
     CLIENT_NOT_CONNECTED(-2),
-    UNKNOWN(-3);
+    UNKNOWN(-3),
+    VERSION_MISMATCH(-4);
 
     private final int code;
 
