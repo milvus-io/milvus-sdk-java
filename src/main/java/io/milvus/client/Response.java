@@ -93,7 +93,8 @@ public class Response {
     // Client side error
     RPC_ERROR(-1),
     CLIENT_NOT_CONNECTED(-2),
-    UNKNOWN(-3);
+    UNKNOWN(-3),
+    VERSION_MISMATCH(-4);
 
     private final int code;
 
