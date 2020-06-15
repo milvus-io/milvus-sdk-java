@@ -26,9 +26,9 @@ import java.util.List;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.8.1";
+  String clientVersion = "0.8.2";
 
-  /** @return current Milvus client version： 0.8.1 */
+  /** @return current Milvus client version： 0.8.2 */
   default String getClientVersion() {
     return clientVersion;
   }
