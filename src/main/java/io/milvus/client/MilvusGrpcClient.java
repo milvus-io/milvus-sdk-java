@@ -95,8 +95,8 @@ public class MilvusGrpcClient implements MilvusClient {
 
       // check server version
       String serverVersion = getServerVersion().getMessage();
-      if (!serverVersion.contains("0.9.")) {
-        logError("Connect failed! Server version {} does not match SDK version 0.8.1", serverVersion);
+      if (!serverVersion.contains("0.10.")) {
+        logError("Connect failed! Server version {} does not match SDK version 0.8.2", serverVersion);
         throw new ConnectFailedException("Failed to connect to Milvus server.");
       }
 
