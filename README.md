@@ -49,7 +49,7 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
 
 ### Examples
 
-Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java example programs.
+Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
 
 ### Documentation
 
