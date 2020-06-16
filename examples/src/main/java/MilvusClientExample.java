@@ -28,10 +28,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-// This is a simple example demonstrating how to use the Milvus Java SDK.
+// This is a simple example demonstrating how to use Milvus Java SDK.
 // For detailed API document, please refer to
 // https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html
-// You can also find more information in https://milvus.io/
+// You can also find more information on https://milvus.io/
 public class MilvusClientExample {
 
   // Helper function that generates random vectors
@@ -136,7 +136,7 @@ public class MilvusClientExample {
 
     // Get index info for your collection
     GetIndexInfoResponse getIndexInfoResponse = client.getIndexInfo(collectionName);
-    System.out.format("Index Info: %s\n", getIndexInfoResponse.getIndex().toString());
+    System.out.format("Index Info: %s\n", getIndexInfoResponse.getIndex().get().toString());
 
     // Get collection info
     Response getCollectionStatsResponse = client.getCollectionStats(collectionName);
@@ -198,11 +198,9 @@ public class MilvusClientExample {
       e.printStackTrace();
     }
 
-    // Delete the first 5 of vectors you just searched
+    // Delete the first 5 vectors you just searched
     Response deleteByIdsResponse =
         client.deleteEntityByID(collectionName, vectorIds.subList(0, searchBatchSize));
-
-    // Flush again, so deletions to data become visible
     flushResponse = client.flush(collectionName);
 
     // Try to get the corresponding vector of the first id you just deleted.
@@ -213,7 +211,7 @@ public class MilvusClientExample {
       throw new AssertionError("This can never happen!");
     }
 
-    // Compact the collection, erasing deleted data from disk and rebuild index in background (if
+    // Compact the collection, erase deleted data from disk and rebuild index in background (if
     // the data size after compaction is still larger than indexFileSize). Data was only
     // soft-deleted until you call compact.
     Response compactResponse = client.compact(collectionName);
