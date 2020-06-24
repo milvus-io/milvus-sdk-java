@@ -373,8 +373,8 @@ public interface MilvusClient {
   /**
    * Shows collection information. A collection consists of one or multiple partitions (including
    * the default partition), and a partitions consists of one or more segments. Each partition or
-   * segment can be uniquely identified by its partition tag or segment name respectively.
-   * The result will be returned as JSON string.
+   * segment can be uniquely identified by its partition tag or segment name respectively. The
+   * result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
    * @return <code>Response</code>

@@ -29,6 +29,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.milvus.grpc.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.nio.Buffer;
@@ -37,8 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Actual implementation of interface <code>MilvusClient</code> */
 public class MilvusGrpcClient implements MilvusClient {
@@ -96,7 +96,8 @@ public class MilvusGrpcClient implements MilvusClient {
       // check server version
       String serverVersion = getServerVersion().getMessage();
       if (!serverVersion.contains("0.10.")) {
-        logError("Connect failed! Server version {} does not match SDK version 0.8.2", serverVersion);
+        logError(
+            "Connect failed! Server version {} does not match SDK version 0.8.2", serverVersion);
         throw new ConnectFailedException("Failed to connect to Milvus server.");
       }
 
@@ -109,7 +110,8 @@ public class MilvusGrpcClient implements MilvusClient {
 
     logInfo(
         "Connection established successfully to host={}, port={}",
-        connectParam.getHost(), String.valueOf(connectParam.getPort()));
+        connectParam.getHost(),
+        String.valueOf(connectParam.getPort()));
     return new Response(Response.Status.SUCCESS);
   }
 
@@ -173,8 +175,7 @@ public class MilvusGrpcClient implements MilvusClient {
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       } else {
         logError(
-            "Create collection failed\n{}\n{}",
-            collectionMapping.toString(), response.toString());
+            "Create collection failed\n{}\n{}", collectionMapping.toString(), response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
@@ -347,7 +348,9 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logError(
             "Create partition `{}` in collection `{}` failed: {}",
-            tag, collectionName, response.toString());
+            tag,
+            collectionName,
+            response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
@@ -373,21 +376,28 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.hasPartition(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("hasPartition with tag `{}` in `{}` = {}", tag, collectionName, response.getBoolReply());
+        logInfo(
+            "hasPartition with tag `{}` in `{}` = {}",
+            tag,
+            collectionName,
+            response.getBoolReply());
         return new HasPartitionResponse(
-                new Response(Response.Status.SUCCESS), response.getBoolReply());
+            new Response(Response.Status.SUCCESS), response.getBoolReply());
       } else {
-        logError("hasPartition with tag `{}` in `{}` failed:\n{}", tag, collectionName, response.toString());
+        logError(
+            "hasPartition with tag `{}` in `{}` failed:\n{}",
+            tag,
+            collectionName,
+            response.toString());
         return new HasPartitionResponse(
-                new Response(
-                        Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                        response.getStatus().getReason()),
-                false);
+            new Response(
+                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
+                response.getStatus().getReason()),
+            false);
       }
     } catch (StatusRuntimeException e) {
       logError("hasPartition RPC failed:\n{}", e.getStatus().toString());
-      return new HasPartitionResponse(
-              new Response(Response.Status.RPC_ERROR, e.toString()), false);
+      return new HasPartitionResponse(new Response(Response.Status.RPC_ERROR, e.toString()), false);
     }
   }
 
@@ -409,7 +419,8 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo(
             "Current partitions of collection {}: {}",
-            collectionName, response.getPartitionTagArrayList());
+            collectionName,
+            response.getPartitionTagArrayList());
         return new ListPartitionsResponse(
             new Response(Response.Status.SUCCESS), response.getPartitionTagArrayList());
       } else {
@@ -448,7 +459,9 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logError(
             "Drop partition `{}` in collection `{}` failed:\n{}",
-            tag, collectionName, response.toString());
+            tag,
+            collectionName,
+            response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
@@ -485,7 +498,8 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo(
             "Inserted {} vectors to collection `{}` successfully!",
-            response.getVectorIdArrayCount(), insertParam.getCollectionName());
+            response.getVectorIdArrayCount(),
+            insertParam.getCollectionName());
         return new InsertResponse(
             new Response(Response.Status.SUCCESS), response.getVectorIdArrayList());
       } else {
@@ -536,7 +550,8 @@ public class MilvusGrpcClient implements MilvusClient {
             if (result.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
               logInfo(
                   "Inserted {} vectors to collection `{}` successfully!",
-                  result.getVectorIdArrayCount(), insertParam.getCollectionName());
+                  result.getVectorIdArrayCount(),
+                  insertParam.getCollectionName());
             } else {
               logError("InsertAsync failed:\n{}", result.getStatus().toString());
             }
@@ -722,7 +737,8 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logError(
             "Get Collection Info `{}` failed:\n{}",
-            collectionName, response.getStatus().toString());
+            collectionName,
+            response.getStatus().toString());
         return new GetCollectionInfoResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -775,8 +791,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
-      return new CountEntitiesResponse(
-          new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
+      return new CountEntitiesResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
     }
 
     CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
@@ -788,12 +803,12 @@ public class MilvusGrpcClient implements MilvusClient {
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         long collectionRowCount = response.getCollectionRowCount();
         logInfo("Collection `{}` has {} entities", collectionName, collectionRowCount);
-        return new CountEntitiesResponse(
-            new Response(Response.Status.SUCCESS), collectionRowCount);
+        return new CountEntitiesResponse(new Response(Response.Status.SUCCESS), collectionRowCount);
       } else {
         logError(
             "Get collection `{}` entity count failed:\n{}",
-            collectionName, response.getStatus().toString());
+            collectionName,
+            response.getStatus().toString());
         return new CountEntitiesResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -802,8 +817,7 @@ public class MilvusGrpcClient implements MilvusClient {
       }
     } catch (StatusRuntimeException e) {
       logError("countEntities RPC failed:\n{}", e.getStatus().toString());
-      return new CountEntitiesResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), 0);
+      return new CountEntitiesResponse(new Response(Response.Status.RPC_ERROR, e.toString()), 0);
     }
   }
 
@@ -895,7 +909,8 @@ public class MilvusGrpcClient implements MilvusClient {
           }
         }
         Index index =
-            new Index.Builder(response.getCollectionName(), IndexType.valueOf(response.getIndexType()))
+            new Index.Builder(
+                    response.getCollectionName(), IndexType.valueOf(response.getIndexType()))
                 .withParamsInJson(extraParam)
                 .build();
         logInfo(
@@ -904,7 +919,8 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logError(
             "Get index info for collection `{}` failed:\n{}",
-            collectionName, response.getStatus().toString());
+            collectionName,
+            response.getStatus().toString());
         return new GetIndexInfoResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -935,8 +951,7 @@ public class MilvusGrpcClient implements MilvusClient {
         logInfo("Dropped index for collection `{}` successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
-        logError(
-            "Drop index for collection `{}` failed:\n{}", collectionName, response.toString());
+        logError("Drop index for collection `{}` failed:\n{}", collectionName, response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }
@@ -965,10 +980,11 @@ public class MilvusGrpcClient implements MilvusClient {
       } else {
         logError(
             "getCollectionStats for `{}` failed:\n{}",
-            collectionName, response.getStatus().toString());
+            collectionName,
+            response.getStatus().toString());
         return new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason());
+            Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
+            response.getStatus().getReason());
       }
     } catch (StatusRuntimeException e) {
       logError("getCollectionStats RPC failed:\n{}", e.getStatus().toString());
@@ -981,7 +997,7 @@ public class MilvusGrpcClient implements MilvusClient {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
       return new GetEntityByIDResponse(
-              new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>(), null);
+          new Response(Response.Status.CLIENT_NOT_CONNECTED), new ArrayList<>(), null);
     }
 
     VectorsIdentity request =
@@ -993,8 +1009,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
-        logInfo(
-            "getEntityByID in collection `{}` returned successfully!", collectionName);
+        logInfo("getEntityByID in collection `{}` returned successfully!", collectionName);
 
         List<List<Float>> floatVectors = new ArrayList<>();
         List<ByteBuffer> binaryVectors = new ArrayList<>();
@@ -1003,12 +1018,13 @@ public class MilvusGrpcClient implements MilvusClient {
           binaryVectors.add(response.getVectorsData(i).getBinaryData().asReadOnlyByteBuffer());
         }
         return new GetEntityByIDResponse(
-                new Response(Response.Status.SUCCESS), floatVectors, binaryVectors);
+            new Response(Response.Status.SUCCESS), floatVectors, binaryVectors);
 
       } else {
         logError(
             "getEntityByID in collection `{}` failed:\n{}",
-            collectionName, response.getStatus().toString());
+            collectionName,
+            response.getStatus().toString());
         return new GetEntityByIDResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
@@ -1045,13 +1061,16 @@ public class MilvusGrpcClient implements MilvusClient {
 
         logInfo(
             "listIDInSegment in collection `{}`, segment `{}` returned successfully!",
-            collectionName, segmentName);
+            collectionName,
+            segmentName);
         return new ListIDInSegmentResponse(
             new Response(Response.Status.SUCCESS), response.getVectorIdArrayList());
       } else {
         logError(
             "listIDInSegment in collection `{}`, segment `{}` failed:\n{}",
-            collectionName, segmentName, response.getStatus().toString());
+            collectionName,
+            segmentName,
+            response.getStatus().toString());
         return new ListIDInSegmentResponse(
             new Response(
                 Response.Status.valueOf(response.getStatus().getErrorCodeValue()),

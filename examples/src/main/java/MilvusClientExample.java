@@ -19,7 +19,6 @@
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonObject;
-import io.milvus.client.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,8 +97,7 @@ public class MilvusClientExample {
     HasCollectionResponse hasCollectionResponse = client.hasCollection(collectionName);
 
     // Get collection info
-    GetCollectionInfoResponse getCollectionInfoResponse =
-        client.getCollectionInfo(collectionName);
+    GetCollectionInfoResponse getCollectionInfoResponse = client.getCollectionInfo(collectionName);
 
     // Insert randomly generated vectors to collection
     final int vectorCount = 100000;
@@ -117,8 +115,7 @@ public class MilvusClientExample {
     Response flushResponse = client.flush(collectionName);
 
     // Get current entity count of collection
-    CountEntitiesResponse ountEntitiesResponse =
-        client.countEntities(collectionName);
+    CountEntitiesResponse ountEntitiesResponse = client.countEntities(collectionName);
 
     // Create index for the collection
     // We choose IVF_SQ8 as our index type here. Refer to IndexType javadoc for a
