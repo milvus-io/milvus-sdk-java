@@ -19,20 +19,27 @@
 
 package io.milvus.client;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import org.apache.commons.text.RandomStringGenerator;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.SplittableRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.apache.commons.text.RandomStringGenerator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 class MilvusClientTest {
 

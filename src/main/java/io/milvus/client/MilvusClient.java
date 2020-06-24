@@ -20,7 +20,6 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.util.List;
 
 /** The Milvus Client Interface */

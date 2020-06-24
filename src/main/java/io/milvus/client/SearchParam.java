@@ -19,10 +19,10 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 /** Contains parameters for <code>search</code> */
 public class SearchParam {

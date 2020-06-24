@@ -28,17 +28,37 @@ import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import io.milvus.grpc.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
+import io.milvus.grpc.BoolReply;
+import io.milvus.grpc.CollectionName;
+import io.milvus.grpc.CollectionNameList;
+import io.milvus.grpc.CollectionRowCount;
+import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.Command;
+import io.milvus.grpc.DeleteByIDParam;
+import io.milvus.grpc.ErrorCode;
+import io.milvus.grpc.FlushParam;
+import io.milvus.grpc.GetVectorIDsParam;
+import io.milvus.grpc.IndexParam;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.PartitionList;
+import io.milvus.grpc.PartitionParam;
+import io.milvus.grpc.RowRecord;
+import io.milvus.grpc.Status;
+import io.milvus.grpc.StringReply;
+import io.milvus.grpc.TopKQueryResult;
+import io.milvus.grpc.VectorIds;
+import io.milvus.grpc.VectorsData;
+import io.milvus.grpc.VectorsIdentity;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Actual implementation of interface <code>MilvusClient</code> */
 public class MilvusGrpcClient implements MilvusClient {
