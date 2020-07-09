@@ -115,15 +115,6 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public boolean isConnected() {
-    if (channel == null) {
-      return false;
-    }
-    ConnectivityState connectivityState = channel.getState(false);
-    return connectivityState == ConnectivityState.READY;
-  }
-
-  @Override
   public Response disconnect() throws InterruptedException {
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
