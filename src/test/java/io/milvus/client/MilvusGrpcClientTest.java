@@ -116,8 +116,6 @@ class MilvusClientTest {
             .build();
     client.connect(connectParam);
     TimeUnit.SECONDS.sleep(2);
-    // Channel should be idle
-    assertFalse(client.isConnected());
     // A new RPC would take the channel out of idle mode
     assertTrue(client.listCollections().ok());
   }
@@ -160,11 +158,6 @@ class MilvusClientTest {
     MilvusClient client = new MilvusGrpcClient();
     ConnectParam connectParam = new ConnectParam.Builder().withHost("250.250.250.250").build();
     assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
-  }
-
-  @org.junit.jupiter.api.Test
-  void isConnected() {
-    assertTrue(client.isConnected());
   }
 
   @org.junit.jupiter.api.Test

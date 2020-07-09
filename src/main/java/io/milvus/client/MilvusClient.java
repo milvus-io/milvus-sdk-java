@@ -60,12 +60,6 @@ public interface MilvusClient {
   Response connect(ConnectParam connectParam) throws ConnectFailedException;
 
   /**
-   * @return <code>true</code> if the client is connected to Milvus server and the channel's
-   *     connectivity state is READY.
-   */
-  boolean isConnected();
-
-  /**
    * Disconnects from Milvus server
    *
    * @return <code>Response</code>

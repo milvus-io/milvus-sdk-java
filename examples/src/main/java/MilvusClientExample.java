@@ -78,9 +78,6 @@ public class MilvusClientExample {
       throw e;
     }
 
-    // Check whether we are connected
-    boolean connected = client.isConnected();
-
     // Create a collection with the following collection mapping
     final String collectionName = "example"; // collection name
     final long dimension = 128; // dimension of each vector
