@@ -25,11 +25,11 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>0.8.2</version>
+    <version>0.8.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
-    <description>Java SDK for Milvus distributed high-performance vector search engine.</description>
+    <description>Java SDK for Milvus, a distributed high-performance vector search engine.</description>
     <url>https://github.com/milvus-io/milvus-sdk-java</url>
 
     <licenses>
@@ -42,14 +42,14 @@
 
     <developers>
         <developer>
-            <name>Zhiru Zhu</name>
-            <email>zhiru.zhu@zilliz.com</email>
+            <name>Xiaohai Xu</name>
+            <email>xiaohai.xu@zilliz.com</email>
             <organization>Milvus</organization>
             <organizationUrl>http://www.milvus.io</organizationUrl>
         </developer>
         <developer>
-            <name>Xiaohai Xu</name>
-            <email>xiaohai.xu@zilliz.com</email>
+            <name>Zhiru Zhu</name>
+            <email>zhiru.zhu@zilliz.com</email>
             <organization>Milvus</organization>
             <organizationUrl>http://www.milvus.io</organizationUrl>
         </developer>
@@ -70,7 +70,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.27.2</grpc.version>
+        <grpc.version>1.30.2</grpc.version>
         <protobuf.version>3.11.0</protobuf.version>
         <protoc.version>3.11.0</protoc.version>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -98,15 +98,18 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
+            <version>1.30.2</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
+            <version>1.30.2</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
+            <version>1.30.2</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>

@@ -35,11 +35,11 @@ public class MilvusClientExample {
 
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(long vectorCount, long dimension) {
-    SplittableRandom splitcollectionRandom = new SplittableRandom();
+    SplittableRandom splitCollectionRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>();
     for (long i = 0; i < vectorCount; ++i) {
-      splitcollectionRandom = splitcollectionRandom.split();
-      DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
+      splitCollectionRandom = splitCollectionRandom.split();
+      DoubleStream doubleStream = splitCollectionRandom.doubles(dimension);
       List<Float> vector =
           doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
       vectors.add(vector);
@@ -47,8 +47,7 @@ public class MilvusClientExample {
     return vectors;
   }
 
-  // Helper function that normalizes a vector if you are using IP (Inner Product) as your metric
-  // type
+  // Helper function that normalizes a vector if you are using Inner Product as your metric type
   static List<Float> normalizeVector(List<Float> vector) {
     float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
     final float norm = (float) Math.sqrt(squareSum);
