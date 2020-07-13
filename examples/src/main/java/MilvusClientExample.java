@@ -34,10 +34,10 @@ import java.util.stream.DoubleStream;
 public class MilvusClientExample {
 
   // Helper function that generates random vectors
-  static List<List<Float>> generateVectors(long vectorCount, long dimension) {
+  static List<List<Float>> generateVectors(int vectorCount, int dimension) {
     SplittableRandom splitcollectionRandom = new SplittableRandom();
-    List<List<Float>> vectors = new ArrayList<>();
-    for (long i = 0; i < vectorCount; ++i) {
+    List<List<Float>> vectors = new ArrayList<>(vectorCount);
+    for (int i = 0; i < vectorCount; ++i) {
       splitcollectionRandom = splitcollectionRandom.split();
       DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
       List<Float> vector =
@@ -80,8 +80,8 @@ public class MilvusClientExample {
 
     // Create a collection with the following collection mapping
     final String collectionName = "example"; // collection name
-    final long dimension = 128; // dimension of each vector
-    final long indexFileSize = 1024; // maximum size (in MB) of each index file
+    final int dimension = 128; // dimension of each vector
+    final int indexFileSize = 1024; // maximum size (in MB) of each index file
     final MetricType metricType = MetricType.IP; // we choose IP (Inner Product) as our metric type
     CollectionMapping collectionMapping =
         new CollectionMapping.Builder(collectionName, dimension)
