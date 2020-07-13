@@ -36,7 +36,7 @@ public class MilvusClientExample {
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(long vectorCount, long dimension) {
     SplittableRandom splitcollectionRandom = new SplittableRandom();
-    List<List<Float>> vectors = new ArrayList<>();
+    List<List<Float>> vectors = new ArrayList<>(vectorCount);
     for (long i = 0; i < vectorCount; ++i) {
       splitcollectionRandom = splitcollectionRandom.split();
       DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
