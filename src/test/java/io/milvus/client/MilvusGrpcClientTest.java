@@ -433,7 +433,7 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void searchBinary() {
-    final long binaryDimension = 10000;
+    final int binaryDimension = 10000;
 
     String binaryCollectionName = generator.generate(10);
     CollectionMapping collectionMapping =
