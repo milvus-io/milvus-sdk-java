@@ -40,14 +40,14 @@ class MilvusClientTest {
   private RandomStringGenerator generator;
 
   private String randomCollectionName;
-  private long size;
-  private long dimension;
+  private int size;
+  private int dimension;
 
   // Helper function that generates random float vectors
-  static List<List<Float>> generateFloatVectors(long vectorCount, long dimension) {
+  static List<List<Float>> generateFloatVectors(int vectorCount, int dimension) {
     SplittableRandom splittableRandom = new SplittableRandom();
-    List<List<Float>> vectors = new ArrayList<>();
-    for (long i = 0; i < vectorCount; ++i) {
+    List<List<Float>> vectors = new ArrayList<>(vectorCount);
+    for (int i = 0; i < vectorCount; ++i) {
       splittableRandom = splittableRandom.split();
       DoubleStream doubleStream = splittableRandom.doubles(dimension);
       List<Float> vector =
@@ -58,12 +58,12 @@ class MilvusClientTest {
   }
 
   // Helper function that generates random binary vectors
-  static List<ByteBuffer> generateBinaryVectors(long vectorCount, long dimension) {
+  static List<ByteBuffer> generateBinaryVectors(int vectorCount, int dimension) {
     Random random = new Random();
-    List<ByteBuffer> vectors = new ArrayList<>();
-    final long dimensionInByte = dimension / 8;
-    for (long i = 0; i < vectorCount; ++i) {
-      ByteBuffer byteBuffer = ByteBuffer.allocate((int) dimensionInByte);
+    List<ByteBuffer> vectors = new ArrayList<>(vectorCount);
+    final int dimensionInByte = dimension / 8;
+    for (int i = 0; i < vectorCount; ++i) {
+      ByteBuffer byteBuffer = ByteBuffer.allocate(dimensionInByte);
       random.nextBytes(byteBuffer.array());
       vectors.add(byteBuffer);
     }
@@ -326,7 +326,7 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void insertBinary() {
-    final long binaryDimension = 10000;
+    final int binaryDimension = 10000;
 
     String binaryCollectionName = generator.generate(10);
     CollectionMapping collectionMapping =
