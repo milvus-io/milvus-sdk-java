@@ -1,4 +1,10 @@
-# Changelog     
+# Changelog   
+
+## milvus-sdk-java 0.8.3 (2020-07-15)
+
+### Improvement
+
+- \#117 - Remove isConnect() API
 
 ## milvus-sdk-java 0.8.0 (2020-05-15)
 
