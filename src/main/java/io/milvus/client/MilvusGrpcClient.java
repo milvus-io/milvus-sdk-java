@@ -1002,8 +1002,8 @@ public class MilvusGrpcClient implements MilvusClient {
 
         logInfo("getEntityByID in collection `{}` returned successfully!", collectionName);
 
-        List<List<Float>> floatVectors = new ArrayList<>();
-        List<ByteBuffer> binaryVectors = new ArrayList<>();
+        List<List<Float>> floatVectors = new ArrayList<>(ids.size());
+        List<ByteBuffer> binaryVectors = new ArrayList<>(ids.size());
         for (int i = 0; i < ids.size(); i++) {
           floatVectors.add(response.getVectorsData(i).getFloatDataList());
           binaryVectors.add(response.getVectorsData(i).getBinaryData().asReadOnlyByteBuffer());
@@ -1267,9 +1267,9 @@ public class MilvusGrpcClient implements MilvusClient {
 
   private List<RowRecord> buildRowRecordList(
       @Nonnull List<List<Float>> floatVectors, @Nonnull List<ByteBuffer> binaryVectors) {
-    List<RowRecord> rowRecordList = new ArrayList<>();
-
     int largerSize = Math.max(floatVectors.size(), binaryVectors.size());
+    
+    List<RowRecord> rowRecordList = new ArrayList<>(largerSize); 
 
     for (int i = 0; i < largerSize; ++i) {
 
@@ -1298,8 +1298,8 @@ public class MilvusGrpcClient implements MilvusClient {
             : topKQueryResult.getIdsCount()
                 / numQueries; // Guaranteed to be divisible from server side
 
-    List<List<Long>> resultIdsList = new ArrayList<>();
-    List<List<Float>> resultDistancesList = new ArrayList<>();
+    List<List<Long>> resultIdsList = new ArrayList<>(numQueries);
+    List<List<Float>> resultDistancesList = new ArrayList<>(numQueries);
 
     if (topK > 0) {
       for (int i = 0; i < numQueries; i++) {
