@@ -138,7 +138,7 @@ public class SearchParam {
     /**
      * Optional. Default to empty <code>String</code>. Search parameters are different for different
      * index types. Refer to <a
-     * href="https://milvus.io/docs/v0.8.0/guides/milvus_operation.md">https://milvus.io/docs/v0.8.0/guides/milvus_operation.md</a>
+     * href="https://milvus.io/docs/milvus_operation.md">https://milvus.io/docs/milvus_operation.md</a>
      * for more information.
      *
      * <pre>
