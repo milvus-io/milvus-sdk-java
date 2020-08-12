@@ -24,7 +24,7 @@ import java.util.Optional;
 
 /**
  * Represents different types of indexing method to query the collection. Refer to <a
- * href="https://milvus.io/docs/v0.8.0/guides/index.md">https://milvus.io/docs/v0.8.0/guides/index.md</a>
+ * href="https://milvus.io/docs/index.md">https://milvus.io/docs/index.md</a>
  * for more information.
  */
 public enum IndexType {

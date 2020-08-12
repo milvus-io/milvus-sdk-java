@@ -24,7 +24,7 @@ import java.util.Optional;
 
 /**
  * Represents available metric types. Refer to <a
- * href="https://milvus.io/docs/v0.8.0/guides/metric.md">https://milvus.io/docs/v0.8.0/guides/metric.md</a>
+ * href="https://milvus.io/docs/metric.md">https://milvus.io/docs/metric.md</a>
  * for more information.
  */
 public enum MetricType {
