@@ -60,12 +60,12 @@ public class SearchResponse {
     return IntStream.range(0, numQueries)
         .mapToObj(
             i ->
-                LongStream.range(0, resultIdsList.get(i).size())
+                IntStream.range(0, resultIdsList.get(i).size())
                     .mapToObj(
                         j ->
                             new QueryResult(
-                                resultIdsList.get(i).get((int) j),
-                                resultDistancesList.get(i).get((int) j)))
+                                resultIdsList.get(i).get(j),
+                                resultDistancesList.get(i).get(j)))
                     .collect(Collectors.toList()))
         .collect(Collectors.toList());
   }
