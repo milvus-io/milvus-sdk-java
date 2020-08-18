@@ -18,7 +18,6 @@
  */
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.gson.JsonObject;
 import io.milvus.client.*;
 import java.util.ArrayList;
 import java.util.HashMap;

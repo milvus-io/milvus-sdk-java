@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
-import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -308,7 +307,7 @@ class MilvusClientTest {
     assertEquals(Response.Status.COLLECTION_NOT_EXISTS, dropCollectionResponse.getStatus());
   }
 
-  @Test
+  @org.junit.jupiter.api.Test
   void partitionTest() {
     final String tag1 = "tag1";
     Response createPartitionResponse = client.createPartition(randomCollectionName, tag1);
