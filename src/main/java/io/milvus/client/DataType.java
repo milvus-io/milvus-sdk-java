@@ -23,38 +23,35 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Represents available metric types. Refer to <a
- * href="https://milvus.io/docs/metric.md">https://milvus.io/docs/metric.md</a>
- * for more information.
+ * Represents available data types.
  */
-public enum MetricType {
-  INVALID(0),
-  /** Euclidean distance. For float vectors only */
-  L2(1),
-  /** Inner product. For float vectors only */
-  IP(2),
-  /** Hamming distance. For binary vectors only */
-  HAMMING(3),
-  /** Jaccard distance. For binary vectors only */
-  JACCARD(4),
-  /** Tanimoto distance. For binary vectors only */
-  TANIMOTO(5),
-  /** Substructure. For binary vectors only */
-  SUBSTRUCTURE(6),
-  /** Superstructure. For binary vectors only */
-  SUPERSTRUCTURE(7),
+public enum DataType {
+  NONE(0),
+  BOOL(1),
+  INT8(2),
+  INT16(3),
+  INT32(4),
+  INT64(5),
+
+  FLOAT(10),
+  DOUBLE(11),
+
+  STRING(20),
+
+  VECTOR_BINARY(100),
+  VECTOR_FLOAT(101),
 
   UNKNOWN(-1);
 
   private final int val;
 
-  MetricType(int val) {
+  DataType(int val) {
     this.val = val;
   }
 
-  public static MetricType valueOf(int val) {
-    Optional<MetricType> search =
-        Arrays.stream(values()).filter(metricType -> metricType.val == val).findFirst();
+  public static DataType valueOf(int val) {
+    Optional<DataType> search =
+        Arrays.stream(values()).filter(dataType -> dataType.val == val).findFirst();
     return search.orElse(UNKNOWN);
   }
 

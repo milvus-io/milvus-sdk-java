@@ -25,9 +25,9 @@ import java.util.List;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.8.4";
+  String clientVersion = "0.9.0";
 
-  /** @return current Milvus client version： 0.8.4 */
+  /** @return current Milvus client version： 0.9.0 */
   default String getClientVersion() {
     return clientVersion;
   }
@@ -63,7 +63,7 @@ public interface MilvusClient {
    * Disconnects from Milvus server
    *
    * @return <code>Response</code>
-   * @throws InterruptedException
+   * @throws InterruptedException if disconnect interrupted
    * @see Response
    */
   Response disconnect() throws InterruptedException;
@@ -75,16 +75,16 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName, dimension)
-   *                                          .withIndexFileSize(1024)
-   *                                          .withMetricType(MetricType.IP)
+   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName)
+   *                                          .withFields(fields)
+   *                                          .withParamsInJson("{\"segment_row_count\": 100000}")
    *                                          .build();
    * </code>
+   * Refer to <code>withFields</code> method for example <code>fields</code> usage.
    * </pre>
    *
    * @return <code>Response</code>
    * @see CollectionMapping
-   * @see MetricType
    * @see Response
    */
   Response createCollection(CollectionMapping collectionMapping);
@@ -115,15 +115,16 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
-   *                        .withParamsInJson("{\"nlist\": 16384}")
+   * Index index = new Index.Builder(collectionName, fieldName)
+   *                        .withParamsInJson(
+   *                            "{\"index_type\": "IVF_FLAT", \"metric_type\": "L2",
+   *                             \"params\": {\"nlist\": 16384}}")
    *                        .build();
    * </code>
    * </pre>
    *
    * @return <code>Response</code>
    * @see Index
-   * @see IndexType
    * @see Response
    */
   Response createIndex(Index index);
@@ -135,15 +136,16 @@ public interface MilvusClient {
    *     <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
-   *                        .withParamsInJson("{\"nlist\": 16384}")
+   * Index index = new Index.Builder(collectionName, fieldName)
+   *                        .withParamsInJson(
+   *                            "{\"index_type\": "IVF_FLAT", \"metric_type\": "L2",
+   *                             \"params\": {\"nlist\": 16384}}")
    *                        .build();
    * </code>
    * </pre>
    *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
    * @see Index
-   * @see IndexType
    * @see Response
    * @see ListenableFuture
    */
@@ -196,8 +198,8 @@ public interface MilvusClient {
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withVectorIds(vectorIds)
+   *                                          .withFields(fields)
+   *                                          .withEntityIds(entityIds)
    *                                          .withPartitionTag(tag)
    *                                          .build();
    * </code>
@@ -218,8 +220,8 @@ public interface MilvusClient {
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withVectorIds(vectorIds)
+   *                                          .withFields(fields)
+   *                                          .withEntityIds(entityIds)
    *                                          .withPartitionTag(tag)
    *                                          .build();
    * </code>
@@ -234,17 +236,16 @@ public interface MilvusClient {
   ListenableFuture<InsertResponse> insertAsync(InsertParam insertParam);
 
   /**
-   * Searches vectors specified by <code>searchParam</code>
+   * Searches entities specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
    *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withTopK(topK)
+   *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .withParamsInJson("{\"fields\": [\"B\"]}")
    *                                          .build();
    * </code>
    * </pre>
@@ -258,17 +259,16 @@ public interface MilvusClient {
   SearchResponse search(SearchParam searchParam);
 
   /**
-   * Searches vectors specified by <code>searchParam</code> asynchronously
+   * Searches entities specified by <code>searchParam</code> asynchronously
    *
    * @param searchParam the <code>SearchParam</code> object
    *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withTopK(topK)
+   *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .withParamsInJson("{\"fields\": [\"B\"]}")
    *                                          .build();
    * </code>
    * </pre>
@@ -286,6 +286,7 @@ public interface MilvusClient {
    * Gets collection info
    *
    * @param collectionName collection to describe
+   * @return <code>GetCollectionInfoResponse</code>
    * @see GetCollectionInfoResponse
    * @see CollectionMapping
    * @see Response
@@ -345,23 +346,14 @@ public interface MilvusClient {
   Response loadCollection(String collectionName);
 
   /**
-   * Gets collection index information
+   * Drops collection index
    *
-   * @param collectionName collection to get info from
-   * @see GetIndexInfoResponse
+   * @param index The index to drop. <code>paramsInJson</code> is not needed.
+   * @return <code>Response</code>
    * @see Index
    * @see Response
    */
-  GetIndexInfoResponse getIndexInfo(String collectionName);
-
-  /**
-   * Drops collection index
-   *
-   * @param collectionName collection to drop index of
-   * @return <code>Response</code>
-   * @see Response
-   */
-  Response dropIndex(String collectionName);
+  Response dropIndex(Index index);
 
   /**
    * Shows collection information. A collection consists of one or multiple partitions (including
@@ -376,10 +368,23 @@ public interface MilvusClient {
   Response getCollectionStats(String collectionName);
 
   /**
-   * Gets vectors data by id array
+   * Gets entities data by id array
    *
-   * @param collectionName collection to get vectors from
-   * @param ids a <code>List</code> of vector ids
+   * @param collectionName collection to get entities from
+   * @param ids a <code>List</code> of entity ids
+   * @param fieldNames  a <code>List</code> of field names. Server will only return entity
+   *                    information for those fields.
+   * @return <code>GetEntityByIDResponse</code>
+   * @see GetEntityByIDResponse
+   * @see Response
+   */
+  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
+
+  /**
+   * Gets entities data by id array
+   *
+   * @param collectionName collection to get entities from
+   * @param ids a <code>List</code> of entity ids
    * @return <code>GetEntityByIDResponse</code>
    * @see GetEntityByIDResponse
    * @see Response
@@ -387,21 +392,21 @@ public interface MilvusClient {
   GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids);
 
   /**
-   * Gets all vector ids in a segment
+   * Gets all entity ids in a segment
    *
-   * @param collectionName collection to get vector ids from
-   * @param segmentName segment name in the collection
+   * @param collectionName collection to get entity ids from
+   * @param segmentId segment id in the collection
    * @return <code>ListIDInSegmentResponse</code>
    * @see ListIDInSegmentResponse
    * @see Response
    */
-  ListIDInSegmentResponse listIDInSegment(String collectionName, String segmentName);
+  ListIDInSegmentResponse listIDInSegment(String collectionName, Long segmentId);
 
   /**
    * Deletes data in a collection by a list of ids
    *
    * @param collectionName collection to delete ids from
-   * @param ids a <code>List</code> of vector ids to delete
+   * @param ids a <code>List</code> of entity ids to delete
    * @return <code>Response</code>
    * @see Response
    */
@@ -454,21 +459,41 @@ public interface MilvusClient {
    * data size after compaction is still larger than indexFileSize). Data was only soft-deleted
    * until you call compact.
    *
-   * @param collectionName name of collection to compact
+   * @param compactParam the <code>CompactParam</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * CompactParam compactParam = new CompactParam.Builder(collectionName)
+   *                                             .withThreshold(0.3)
+   *                                             .build();
+   * </code>
+   * </pre>
+   *
    * @return <code>Response</code>
+   * @see CompactParam
    * @see Response
    */
-  Response compact(String collectionName);
+  Response compact(CompactParam compactParam);
 
   /**
-   * Compacts the collection asynchronously, erasing deleted data from disk and rebuild index in
-   * background (if the data size after compaction is still larger than indexFileSize). Data was
-   * only soft-deleted until you call compact.
+   * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
+   * data size after compaction is still larger than indexFileSize). Data was only soft-deleted
+   * until you call compact.
    *
-   * @param collectionName name of collection to compact
+   * @param compactParam the <code>CompactParam</code> object
+   *     <pre>
+   * example usage:
+   * <code>
+   * CompactParam compactParam = new CompactParam.Builder(collectionName)
+   *                                             .withThreshold(0.3)
+   *                                             .build();
+   * </code>
+   * </pre>
+   *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
+   * @see CompactParam
    * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<Response> compactAsync(String collectionName);
+  ListenableFuture<Response> compactAsync(CompactParam compactParam);
 }

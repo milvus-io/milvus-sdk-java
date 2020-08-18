@@ -20,6 +20,7 @@
 package io.milvus.client;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -35,6 +36,7 @@ public class SearchResponse {
   private long topK;
   private List<List<Long>> resultIdsList;
   private List<List<Float>> resultDistancesList;
+  private List<Map<String, Object>> fieldsMap;
 
   public int getNumQueries() {
     return numQueries;
@@ -54,7 +56,7 @@ public class SearchResponse {
 
   /**
    * @return a <code>List</code> of <code>QueryResult</code>s. Each inner <code>List</code> contains
-   *     the query result of a vector.
+   *     the query result of an entity.
    */
   public List<List<QueryResult>> getQueryResultsList() {
     return IntStream.range(0, numQueries)
@@ -72,7 +74,7 @@ public class SearchResponse {
 
   /**
    * @return a <code>List</code> of result ids. Each inner <code>List</code> contains the result ids
-   *     of a vector.
+   *     of an entity.
    */
   public List<List<Long>> getResultIdsList() {
     return resultIdsList;
@@ -83,8 +85,8 @@ public class SearchResponse {
   }
 
   /**
-   * @return @return a <code>List</code> of result distances. Each inner <code>List</code> contains
-   *     the result distances of a vector.
+   * @return a <code>List</code> of result distances. Each inner <code>List</code> contains
+   *     the result distances of an entity.
    */
   public List<List<Float>> getResultDistancesList() {
     return resultDistancesList;
@@ -102,6 +104,18 @@ public class SearchResponse {
     this.response = response;
   }
 
+  /**
+   * @return A <code>List</code> of map with fields information. The list order corresponds to
+   * <code>resultIdsList</code>. Each <code>Map</code> maps field names to records in a row.
+   * The record object can be one of int, long, float, double, List<Float> or ByteBuffer
+   * depending on the field's <code>DataType</code> you specified.
+   */
+  public List<Map<String, Object>> getFieldsMap() { return fieldsMap; }
+
+  void setFieldsMap(List<Map<String, Object>> fieldsMap) {
+    this.fieldsMap = fieldsMap;
+  }
+
   /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
@@ -114,20 +128,20 @@ public class SearchResponse {
   }
 
   /**
-   * Represents a single result of a vector query. Contains the result <code>vectorId</code> and its
-   * <code>distance</code> to the vector being queried
+   * Represents a single result of an entity query. Contains the result <code>entityId</code> and its
+   * <code>distance</code> to the entity being queried
    */
   public static class QueryResult {
-    private final long vectorId;
+    private final long entityId;
     private final float distance;
 
-    QueryResult(long vectorId, float distance) {
-      this.vectorId = vectorId;
+    QueryResult(long entityId, float distance) {
+      this.entityId = entityId;
       this.distance = distance;
     }
 
-    public long getVectorId() {
-      return vectorId;
+    public long getEntityId() {
+      return entityId;
     }
 
     public float getDistance() {

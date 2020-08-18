@@ -23,8 +23,7 @@ import java.util.List;
 
 /**
  * Contains the returned <code>response</code> and <code>partitionList</code> for <code>
- * listPartitions
- * </code>
+ * listPartitions</code>
  */
 public class ListPartitionsResponse {
   private final Response response;

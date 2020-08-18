@@ -32,6 +32,7 @@ public class CountEntitiesResponse {
     this.collectionEntityCount = collectionEntityCount;
   }
 
+  /** @return collection entity count */
   public long getCollectionEntityCount() {
     return collectionEntityCount;
   }

@@ -21,46 +21,38 @@ package io.milvus.client;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Nonnull;
 
 /** Contains parameters for <code>search</code> */
 public class SearchParam {
 
   private final String collectionName;
-  private final List<List<Float>> floatVectors;
-  private final List<ByteBuffer> binaryVectors;
+  private final String dsl;
+  private final Map<String, List<ByteBuffer>> binaryEntities;
   private final List<String> partitionTags;
-  private final long topK;
   private final String paramsInJson;
 
   private SearchParam(@Nonnull Builder builder) {
     this.collectionName = builder.collectionName;
-    this.floatVectors = builder.floatVectors;
-    this.binaryVectors = builder.binaryVectors;
+    this.dsl = builder.dsl;
     this.partitionTags = builder.partitionTags;
-    this.topK = builder.topK;
     this.paramsInJson = builder.paramsInJson;
+    this.binaryEntities = builder.binaryEntities;
   }
 
   public String getCollectionName() {
     return collectionName;
   }
 
-  public List<List<Float>> getFloatVectors() {
-    return floatVectors;
-  }
+  public String getDSL() { return dsl; }
 
-  public List<ByteBuffer> getBinaryVectors() {
-    return binaryVectors;
-  }
+  public Map<String, List<ByteBuffer>> getBinaryEntities() { return binaryEntities; }
 
   public List<String> getPartitionTags() {
     return partitionTags;
-  }
-
-  public long getTopK() {
-    return topK;
   }
 
   public String getParamsInJson() {
@@ -69,15 +61,14 @@ public class SearchParam {
 
   /** Builder for <code>SearchParam</code> */
   public static class Builder {
-    // Required parameters
+    // Required parameter
     private final String collectionName;
 
     // Optional parameters - initialized to default values
-    private List<List<Float>> floatVectors = new ArrayList<>();
-    private List<ByteBuffer> binaryVectors = new ArrayList<>();
     private List<String> partitionTags = new ArrayList<>();
-    private long topK = 1024;
-    private String paramsInJson;
+    private String dsl = "{}";
+    private String paramsInJson = "{}";
+    private Map<String, List<ByteBuffer>> binaryEntities = new HashMap<>();
 
     /** @param collectionName collection to search from */
     public Builder(@Nonnull String collectionName) {
@@ -85,30 +76,75 @@ public class SearchParam {
     }
 
     /**
-     * Default to an empty <code>ArrayList</code>. You can search either float or binary vectors,
-     * not both.
+     * The DSL statement for search. DSL provides a more convenient and idiomatic way to write and
+     * manipulate queries. It is in JSON format (passed into builder as String), and an example of
+     * DSL statement is as follows.
      *
-     * @param floatVectors a <code>List</code> of float vectors to be queries. Each inner <code>List
-     *     </code> represents a float vector.
+     * <pre>
+     *   <code>
+     * {
+     *     "bool": {
+     *         "must": [
+     *             {
+     *                 "term": {
+     *                     "A": [1, 2, 5]
+     *                 }
+     *             },
+     *             {
+     *                 "range": {
+     *                     "B": {"GT": 1, "LT": 100}
+     *                 }
+     *             },
+     *             {
+     *                 "vector": {
+     *                     "Vec": {
+     *                         "topk": 10, "type": "float", "query": list_of_vecs, "params": {"nprobe": 10}
+     *                     }
+     *                 }
+     *             }
+     *         ],
+     *     },
+     * }
+     *   </code>
+     * </pre>
+     *
+     * Note that "vector" must be included in DSL. The "params" in "Vec" is different for different
+     * index types. Refer to Milvus documentation for more information about DSL.
+     *
+     * A "type" key must be present in "Vec" field to indicate whether your query vectors are
+     * "float" or "binary".
+     *
+     * @param dsl The DSL String in JSON format
      * @return <code>Builder</code>
      */
-    public SearchParam.Builder withFloatVectors(@Nonnull List<List<Float>> floatVectors) {
-      this.floatVectors = floatVectors;
+    public SearchParam.Builder withDSL(@Nonnull String dsl) {
+      this.dsl = dsl;
       return this;
     }
 
     /**
-     * Default to an empty <code>ArrayList</code>. You can search either float or binary vectors,
-     * not both.
+     * Optional. Default to empty map. Due to the nature of <code>ByteBuffer</code>, it is not
+     * feasible to pass binary entities as query vectors in DSL statement.
+     * JSON strings cannot be parsed back to <code>List<ByteBuffer></code> object.
      *
-     * @param binaryVectors a <code>List</code> of binary vectors to be queried. Each <code>
-     *     ByteBuffer</code> object represents a binary vector, with every 8 bits constituting a
-     *     byte.
+     * The map will take user-defined name (placeholder) as the key, and list of query vectors as
+     * the value. When building DSL statement, use the placeholder instead of raw entities in "query".
+     * For example, for float vectors we have
+     * <code>
+     *   {"topk": 10, "type": "float", "query": vecs, "params": {"nprobe": 10}}
+     * </code>
+     * While for binary vectors we have
+     * <code>
+     *   {"topk": 10, "type": "binary", "query": "placeholder", "params": {"nprobe": 10}}
+     * </code>
+     * And in <code>binaryEntities</code>, we have a key-value pair of ("placeholder", vecs).
+     *
+     * @param binaryEntities a <code>Map</code> of placeholders to query binary vectors. If using
+     *                       float data, this builder is not needed.
      * @return <code>Builder</code>
-     * @see ByteBuffer
      */
-    public SearchParam.Builder withBinaryVectors(@Nonnull List<ByteBuffer> binaryVectors) {
-      this.binaryVectors = binaryVectors;
+    public SearchParam.Builder withBinaryEntities(@Nonnull Map<String, List<ByteBuffer>> binaryEntities) {
+      this.binaryEntities = binaryEntities;
       return this;
     }
 
@@ -119,40 +155,18 @@ public class SearchParam {
      * @param partitionTags a <code>List</code> of partition tags
      * @return <code>Builder</code>
      */
-    public Builder withPartitionTags(@Nonnull List<String> partitionTags) {
+    public SearchParam.Builder withPartitionTags(@Nonnull List<String> partitionTags) {
       this.partitionTags = partitionTags;
       return this;
     }
 
     /**
-     * Optional. Limits search result to <code>topK</code>. Default to 1024.
-     *
-     * @param topK a topK number
-     * @return <code>Builder</code>
-     */
-    public Builder withTopK(long topK) {
-      this.topK = topK;
-      return this;
-    }
-
-    /**
-     * Optional. Default to empty <code>String</code>. Search parameters are different for different
-     * index types. Refer to <a
-     * href="https://milvus.io/docs/milvus_operation.md">https://milvus.io/docs/milvus_operation.md</a>
-     * for more information.
+     * Optional. Default to empty <code>String</code>. This is to specify the fields you would like
+     * Milvus server to return from query results. No field information will be returned if this
+     * is not specified.
      *
      * <pre>
-     *   FLAT/IVFLAT/SQ8/IVFPQ: {"nprobe": 32}
-     *   nprobe range:[1,999999]
-     *
-     *   NSG: {"search_length": 100}
-     *   search_length range:[10, 300]
-     *
-     *   HNSW: {"ef": 64}
-     *   ef range:[topk, 4096]
-     *
-     *   ANNOY: {search_k", 0.05 * totalDataCount}
-     *   search_k range: none
+     *   {"fields": ["B", "D"]}
      * </pre>
      *
      * @param paramsInJson extra parameters in JSON format
