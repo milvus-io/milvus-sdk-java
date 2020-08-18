@@ -308,6 +308,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  @SuppressWarnings("unchecked")
   void partitionTest() {
     final String tag1 = "tag1";
     Response createPartitionResponse = client.createPartition(randomCollectionName, tag1);
@@ -819,6 +820,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  @SuppressWarnings("unchecked")
   void getEntityByID() {
     List<Map<String, Object>> fieldList = new ArrayList<>();
     Map<String, Object> intField = new HashMap<>();

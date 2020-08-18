@@ -530,6 +530,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public InsertResponse insert(@Nonnull InsertParam insertParam) {
 
     if (!channelIsReadyOrIdle()) {
@@ -641,6 +642,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public ListenableFuture<InsertResponse> insertAsync(@Nonnull InsertParam insertParam) {
 
     if (!channelIsReadyOrIdle()) {
