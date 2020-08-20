@@ -1144,8 +1144,8 @@ public class MilvusGrpcClient implements MilvusClient {
           // copy from fieldParam to map
           map.put("field", fieldParam.getName());
           map.put("type", fieldParam.getType());
-          map.put("indexParams", fieldParam.getIndexParamsList().toString());
-          map.put("params", fieldParam.getExtraParamsList().toString());
+          map.put("indexParams", kvListToString(fieldParam.getIndexParamsList()));
+          map.put("params", kvListToString(fieldParam.getExtraParamsList()));
           fieldsCollection.add(map);
         }
         CollectionMapping collectionMapping =
@@ -1785,6 +1785,15 @@ public class MilvusGrpcClient implements MilvusClient {
     return connectivityState == ConnectivityState.READY
         || connectivityState
             == ConnectivityState.IDLE; // Since a new RPC would take the channel out of idle mode
+  }
+
+  private String kvListToString(List<KeyValuePair> kv) {
+    JSONObject jsonObject = new JSONObject();
+    for (KeyValuePair keyValuePair : kv) {
+      if (keyValuePair.getValue().equals("null")) continue;
+      jsonObject.put(keyValuePair.getKey(), keyValuePair.getValue());
+    }
+    return jsonObject.toString();
   }
 
   ///////////////////// Log Functions//////////////////////

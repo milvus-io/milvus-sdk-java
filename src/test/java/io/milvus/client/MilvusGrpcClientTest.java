@@ -752,6 +752,16 @@ class MilvusClientTest {
         getCollectionInfoResponse.getCollectionMapping().get().getCollectionName(),
         randomCollectionName);
 
+    List<? extends Map<String, Object>> fields = getCollectionInfoResponse.getCollectionMapping()
+        .get().getFields();
+    for (Map<String, Object> field : fields) {
+      if (field.get("field").equals("float_vec")) {
+        JSONObject jsonObject = new JSONObject(field.get("params").toString());
+        JSONObject params = new JSONObject(jsonObject.get("params").toString());
+        assertTrue(params.has("dim"));
+      }
+    }
+
     String nonExistingCollectionName = generator.generate(10);
     getCollectionInfoResponse = client.getCollectionInfo(nonExistingCollectionName);
     assertFalse(getCollectionInfoResponse.ok());
