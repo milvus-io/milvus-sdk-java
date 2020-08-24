@@ -37,11 +37,11 @@ public class MilvusClientExample {
 
   // Helper function that generates random vectors
   static List<List<Float>> generateVectors(int vectorCount, int dimension) {
-    SplittableRandom splitcollectionRandom = new SplittableRandom();
+    SplittableRandom splitCollectionRandom = new SplittableRandom();
     List<List<Float>> vectors = new ArrayList<>(vectorCount);
     for (int i = 0; i < vectorCount; ++i) {
-      splitcollectionRandom = splitcollectionRandom.split();
-      DoubleStream doubleStream = splitcollectionRandom.doubles(dimension);
+      splitCollectionRandom = splitCollectionRandom.split();
+      DoubleStream doubleStream = splitCollectionRandom.doubles(dimension);
       List<Float> vector =
           doubleStream.boxed().map(Double::floatValue).collect(Collectors.toList());
       vectors.add(vector);
@@ -139,7 +139,7 @@ public class MilvusClientExample {
     }
 
     // Create a collection with the following collection mapping
-    final String collectionName = "example1"; // collection name
+    final String collectionName = "example"; // collection name
     final int dimension = 128; // dimension of each vector
     // we choose IP (Inner Product) as our metric type
     CollectionMapping collectionMapping =
@@ -274,7 +274,7 @@ public class MilvusClientExample {
         new CompactParam.Builder(collectionName).withThreshold(0.2).build());
 
     // Drop index for the collection
-    Response dropIndexResponse = client.dropIndex(index);
+    Response dropIndexResponse = client.dropIndex(collectionName, "float_vec");
 
     // Drop collection
     Response dropCollectionResponse = client.dropCollection(collectionName);

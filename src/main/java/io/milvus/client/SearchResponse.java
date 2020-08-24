@@ -26,8 +26,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
- * Contains the returned <code>response</code> and <code>queryResultsList</code> for <code>search
- * </code>
+ * Contains the returned <code>response</code> and query results for <code>search</code>
  */
 public class SearchResponse {
 

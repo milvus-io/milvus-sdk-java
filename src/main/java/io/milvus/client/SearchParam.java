@@ -108,11 +108,11 @@ public class SearchParam {
      *   </code>
      * </pre>
      *
-     * Note that "vector" must be included in DSL. The "params" in "Vec" is different for different
-     * index types. Refer to Milvus documentation for more information about DSL.
+     * <p>Note that "vector" must be included in DSL. The "params" in "Vec" is different for different
+     * index types. Refer to Milvus documentation for more information about DSL.</p>
      *
-     * A "type" key must be present in "Vec" field to indicate whether your query vectors are
-     * "float" or "binary".
+     * <p>A "type" key must be present in "Vec" field to indicate whether your query vectors are
+     * "float" or "binary".</p>
      *
      * @param dsl The DSL String in JSON format
      * @return <code>Builder</code>
@@ -126,9 +126,10 @@ public class SearchParam {
      * Optional. Default to empty map. Due to the nature of <code>ByteBuffer</code>, it is not
      * feasible to pass binary entities as query vectors in DSL statement.
      * JSON strings cannot be parsed back to <code>List<ByteBuffer></code> object.
-     *
-     * The map will take user-defined name (placeholder) as the key, and list of query vectors as
-     * the value. When building DSL statement, use the placeholder instead of raw entities in "query".
+     * <p>The map will take user-defined name (placeholder) as the key, and list of query vectors
+     * as the value. When building DSL statement, use the placeholder instead of raw entities
+     * in "query".</p>
+     * <pre>
      * For example, for float vectors we have
      * <code>
      *   {"topk": 10, "type": "float", "query": vecs, "params": {"nprobe": 10}}
@@ -138,6 +139,7 @@ public class SearchParam {
      *   {"topk": 10, "type": "binary", "query": "placeholder", "params": {"nprobe": 10}}
      * </code>
      * And in <code>binaryEntities</code>, we have a key-value pair of ("placeholder", vecs).
+     * </pre>
      *
      * @param binaryEntities a <code>Map</code> of placeholders to query binary vectors. If using
      *                       float data, this builder is not needed.
@@ -163,8 +165,7 @@ public class SearchParam {
     /**
      * Optional. Default to empty <code>String</code>. This is to specify the fields you would like
      * Milvus server to return from query results. No field information will be returned if this
-     * is not specified.
-     *
+     * is not specified. Example:
      * <pre>
      *   {"fields": ["B", "D"]}
      * </pre>

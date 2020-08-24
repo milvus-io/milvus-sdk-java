@@ -147,7 +147,7 @@ public class ConnectParam {
      * expires without any read activity on the connection, the connection is considered dead. An
      * unreasonably small value might be increased. Defaults to 20 seconds.
      *
-     * <p>This value should be at least multiple times the RTT to allow for lost packets.
+     * <p>This value should be at least multiple times the RTT to allow for lost packets.</p>
      *
      * @see <a
      *     href="https://grpc.github.io/grpc-java/javadoc/io/grpc/ManagedChannelBuilder.html#keepAliveTimeout-long-java.util.concurrent.TimeUnit-">

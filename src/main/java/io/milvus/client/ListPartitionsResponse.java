@@ -47,4 +47,11 @@ public class ListPartitionsResponse {
   public boolean ok() {
     return response.ok();
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "ListPartitionsResponse {%s, partition names = %s}",
+        response, partitionList.toString());
+  }
 }

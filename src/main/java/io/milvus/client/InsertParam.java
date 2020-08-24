@@ -74,15 +74,15 @@ public class InsertParam {
      *     field name. "field", "values" and "type" must be present in each map. The size of
      *     map["values"] must match for all maps in the list, which is equivalent to entity count.
      *     Example fields:
-     *     <pre>
-     * <code>
+     * <pre>
+     *     <code>
      *   [
      *         {"field": "A", "values": A_list, "type": DataType.INT32},
      *         {"field": "B", "values": B_list, "type": DataType.INT32},
      *         {"field": "C", "values": C_list, "type": DataType.INT64},
      *         {"field": "Vec", "values": vecs, "type": DataType.FLOAT_VECTOR}
      *   ]
-     * </code>
+     *     </code>
      * </pre>
      *
      * @return <code>Builder</code>

@@ -36,7 +36,7 @@ public interface MilvusClient {
    * Connects to Milvus server
    *
    * @param connectParam the <code>ConnectParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * ConnectParam connectParam = new ConnectParam.Builder()
@@ -72,13 +72,13 @@ public interface MilvusClient {
    * Creates collection specified by <code>collectionMapping</code>
    *
    * @param collectionMapping the <code>CollectionMapping</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName)
-   *                                          .withFields(fields)
-   *                                          .withParamsInJson("{\"segment_row_count\": 100000}")
-   *                                          .build();
+   *                                                            .withFields(fields)
+   *                                                            .withParamsInJson("{"segment_row_count": 100000}")
+   *                                                            .build();
    * </code>
    * Refer to <code>withFields</code> method for example <code>fields</code> usage.
    * </pre>
@@ -112,13 +112,13 @@ public interface MilvusClient {
    * Creates index specified by <code>index</code>
    *
    * @param index the <code>Index</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * Index index = new Index.Builder(collectionName, fieldName)
    *                        .withParamsInJson(
-   *                            "{\"index_type\": "IVF_FLAT", \"metric_type\": "L2",
-   *                             \"params\": {\"nlist\": 16384}}")
+   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
+   *                              "params": {"nlist": 16384}}")
    *                        .build();
    * </code>
    * </pre>
@@ -133,13 +133,13 @@ public interface MilvusClient {
    * Creates index specified by <code>index</code> asynchronously
    *
    * @param index the <code>Index</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * Index index = new Index.Builder(collectionName, fieldName)
    *                        .withParamsInJson(
-   *                            "{\"index_type\": "IVF_FLAT", \"metric_type\": "L2",
-   *                             \"params\": {\"nlist\": 16384}}")
+   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
+   *                              "params\": {"nlist": 16384}}")
    *                        .build();
    * </code>
    * </pre>
@@ -194,7 +194,7 @@ public interface MilvusClient {
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
@@ -216,7 +216,7 @@ public interface MilvusClient {
    * Inserts data specified by <code>insertParam</code> asynchronously
    *
    * @param insertParam the <code>InsertParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
@@ -239,13 +239,13 @@ public interface MilvusClient {
    * Searches entities specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
    *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"fields\": [\"B\"]}")
+   *                                          .withParamsInJson("{"fields": ["B"]}")
    *                                          .build();
    * </code>
    * </pre>
@@ -262,13 +262,13 @@ public interface MilvusClient {
    * Searches entities specified by <code>searchParam</code> asynchronously
    *
    * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
    *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"fields\": [\"B\"]}")
+   *                                          .withParamsInJson("{"fields": ["B"]}")
    *                                          .build();
    * </code>
    * </pre>
@@ -305,7 +305,7 @@ public interface MilvusClient {
   /**
    * Gets current entity count of a collection
    *
-   * @param collectionName collection to count entities
+   * @param collectionName collection name
    * @return <code>CountEntitiesResponse</code>
    * @see CountEntitiesResponse
    * @see Response
@@ -313,7 +313,7 @@ public interface MilvusClient {
   CountEntitiesResponse countEntities(String collectionName);
 
   /**
-   * Get server status
+   * Gets server status
    *
    * @return <code>Response</code>
    * @see Response
@@ -321,7 +321,7 @@ public interface MilvusClient {
   Response getServerStatus();
 
   /**
-   * Get server version
+   * Gets server version
    *
    * @return <code>Response</code>
    * @see Response
@@ -348,12 +348,13 @@ public interface MilvusClient {
   /**
    * Drops collection index
    *
-   * @param index The index to drop. <code>paramsInJson</code> is not needed.
+   * @param collectionName The collection to drop index.
+   * @param fieldName Name of the field to drop index for. If this is set to empty string,
+   *                  index of all fields in the collection will be dropped.
    * @return <code>Response</code>
-   * @see Index
    * @see Response
    */
-  Response dropIndex(Index index);
+  Response dropIndex(String collectionName, String fieldName);
 
   /**
    * Shows collection information. A collection consists of one or multiple partitions (including
@@ -373,7 +374,7 @@ public interface MilvusClient {
    * @param collectionName collection to get entities from
    * @param ids a <code>List</code> of entity ids
    * @param fieldNames  a <code>List</code> of field names. Server will only return entity
-   *                    information for those fields.
+   *                    information for these fields.
    * @return <code>GetEntityByIDResponse</code>
    * @see GetEntityByIDResponse
    * @see Response
@@ -460,7 +461,7 @@ public interface MilvusClient {
    * until you call compact.
    *
    * @param compactParam the <code>CompactParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * CompactParam compactParam = new CompactParam.Builder(collectionName)
@@ -481,7 +482,7 @@ public interface MilvusClient {
    * until you call compact.
    *
    * @param compactParam the <code>CompactParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * CompactParam compactParam = new CompactParam.Builder(collectionName)

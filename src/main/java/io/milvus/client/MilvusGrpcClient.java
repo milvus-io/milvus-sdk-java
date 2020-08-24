@@ -1310,7 +1310,7 @@ public class MilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response dropIndex(@Nonnull Index index) {
+  public Response dropIndex(String collectionName, String fieldName) {
 
     if (!channelIsReadyOrIdle()) {
       logWarning("You are not connected to Milvus server");
@@ -1319,8 +1319,8 @@ public class MilvusGrpcClient implements MilvusClient {
 
     IndexParam request =
         IndexParam.newBuilder()
-            .setCollectionName(index.getCollectionName())
-            .setFieldName(index.getFieldName())
+            .setCollectionName(collectionName)
+            .setFieldName(fieldName)
             .build();
     Status response;
 
@@ -1328,10 +1328,10 @@ public class MilvusGrpcClient implements MilvusClient {
       response = blockingStub.dropIndex(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Dropped index for collection `{}` successfully!", index.getCollectionName());
+        logInfo("Dropped index for collection `{}` successfully!", collectionName);
         return new Response(Response.Status.SUCCESS);
       } else {
-        logError("Drop index for collection `{}` failed:\n{}", index.getCollectionName(), response.toString());
+        logError("Drop index for collection `{}` failed:\n{}", collectionName, response.toString());
         return new Response(
             Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
       }

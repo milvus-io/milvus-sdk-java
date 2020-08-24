@@ -77,8 +77,7 @@ public class Index {
 
     /**
      * @param collectionName collection to create index for
-     * @param fieldName name of the field on which index is built. If set to empty string
-     *                  in <code>dropIndex</code>, all index of the collection will be dropped.
+     * @param fieldName name of the field on which index is built.
      */
     public Builder(@Nonnull String collectionName, @Nonnull String fieldName) {
       this.collectionName = collectionName;
@@ -87,24 +86,19 @@ public class Index {
 
     /**
      * Optional. The parameters for building an index. Index parameters are different for different
-     * index types. Refer to <a
-     * href="https://milvus.io/docs/v0.10.1/create_drop_index_python.md">https://milvus.io/docs/v0.10.1/create_drop_index_python.md</a>
-     * for more information.
+     * index types. Refer to Milvus documentation for more information.
+     * <pre>
+     * "index_type": one of the values: FLAT, IVF_FLAT, IVF_SQ8, NSG, IVF_SQ8_HYBRID, IVF_PQ,
+     *                                  HNSW, RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ, ANNOY
+     * "metric_type": one of the values: L2, IP, HAMMING, JACCARD, TANIMOTO,
+     *                                   SUBSTRUCTURE, SUPERSTRUCTURE
+     * "params": optional parameters for index, including <code>nlist</code>
      *
-     * Example index parameters in json format
-     *    for vector field:
-     *        extra_params["index_type"] = one of the values: FLAT, IVF_FLAT, IVF_SQ8, NSG,
-     *                                                        IVF_SQ8_HYBRID, IVF_PQ, HNSW,
-     *                                                        RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ, ANNOY
-     *        extra_params["metric_type"] = one of the values: L2, IP, HAMMING, JACCARD, TANIMOTO
-     *                                                         SUBSTRUCTURE, SUPERSTRUCTURE
-     *        extra_params["params"] = optional parameters for index, including <code>nlist</code>
-     *
-     * Example param: <code>
-     *   {\"index_type\": "IVF_FLAT",
-     *   \"metric_type\": "IP",
-     *   \"params\": {\"nlist\": 2048}}
+     * Example param:
+     * <code>
+     *   {"index_type": "IVF_FLAT", "metric_type": "IP", "params": {nlist": 2048}}
      * </code>
+     * </pre>
      *
      * @param paramsInJson extra parameters in JSON format
      * @return <code>Builder</code>

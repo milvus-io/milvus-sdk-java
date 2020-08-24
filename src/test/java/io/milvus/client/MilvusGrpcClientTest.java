@@ -173,7 +173,7 @@ class MilvusClientTest {
             + "    }},{"
             + "    \"vector\": {"
             + "        \"binary_vec\": {"
-            + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"binary\", \"query\": %s, \"params\": {\"nprobe\": 20}"
+            + "            \"topk\": %d, \"metric_type\": \"JACCARD\", \"type\": \"binary\", \"query\": %s, \"params\": {\"nprobe\": 20}"
             + "    }}}]}}",
         topK, placeholder);
   }
@@ -412,7 +412,7 @@ class MilvusClientTest {
     assertTrue(createIndexResponse.ok());
 
     // also test drop index here
-    Response dropIndexResponse = client.dropIndex(index);
+    Response dropIndexResponse = client.dropIndex(randomCollectionName, "float_vec");
     assertTrue(dropIndexResponse.ok());
   }
 

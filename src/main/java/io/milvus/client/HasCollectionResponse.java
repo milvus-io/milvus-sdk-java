@@ -32,6 +32,7 @@ public class HasCollectionResponse {
     this.hasCollection = hasCollection;
   }
 
+  /** @return <code>true</code> if the collection is present */
   public boolean hasCollection() {
     return hasCollection;
   }
