@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {
@@ -33,40 +34,18 @@ public interface MilvusClient {
   }
 
   /**
-   * Connects to Milvus server
-   *
-   * @param connectParam the <code>ConnectParam</code> object
-   *     <pre>
-   * example usage:
-   * <code>
-   * ConnectParam connectParam = new ConnectParam.Builder()
-   *                                             .withHost("localhost")
-   *                                             .withPort(19530)
-   *                                             .withConnectTimeout(10, TimeUnit.SECONDS)
-   *                                             .withKeepAliveTime(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
-   *                                             .withKeepAliveTimeout(20, TimeUnit.SECONDS)
-   *                                             .keepAliveWithoutCalls(false)
-   *                                             .withIdleTimeout(24, TimeUnit.HOURS)
-   *                                             .build();
-   * </code>
-   * </pre>
-   *
-   * @return <code>Response</code>
-   * @throws ConnectFailedException if client failed to connect
-   * @see ConnectParam
-   * @see Response
-   * @see ConnectFailedException
+   * Close this MilvusClient. Wait at most 1 minute for graceful shutdown.
    */
-  Response connect(ConnectParam connectParam) throws ConnectFailedException;
+  default void close() {
+    close(TimeUnit.MINUTES.toSeconds(1));
+  }
 
   /**
-   * Disconnects from Milvus server
-   *
-   * @return <code>Response</code>
-   * @throws InterruptedException
-   * @see Response
+   * Close this MilvusClient. Wait at most `maxWaitSeconds` for graceful shutdown.
    */
-  Response disconnect() throws InterruptedException;
+  void close(long maxWaitSeconds);
+
+  MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
   /**
    * Creates collection specified by <code>collectionMapping</code>
