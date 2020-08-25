@@ -24,6 +24,8 @@ import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import org.apache.commons.text.RandomStringGenerator;
 import org.json.*;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -39,6 +41,31 @@ import java.util.stream.LongStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
+@EnabledIfSystemProperty(named = "with-containers", matches = "true")
+class ContainerMilvusClientTest extends MilvusClientTest {
+  @Container
+  private static GenericContainer milvusContainer =
+      new GenericContainer("milvusdb/milvus:0.10.1-cpu-d072020-bd02b1")
+          .withExposedPorts(19530);
+
+  @Container
+  private static GenericContainer unsupportedMilvusContainer =
+      new GenericContainer("milvusdb/milvus:0.9.1-cpu-d052920-e04ed5")
+          .withExposedPorts(19530);
+
+  @Override
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder(milvusContainer);
+  }
+
+  @org.junit.jupiter.api.Test
+  void unsupportedServerVersion() {
+    ConnectParam connectParam = connectParamBuilder(unsupportedMilvusContainer).build();
+    assertThrows(UnsupportedServerVersion.class, () -> new MilvusGrpcClient(connectParam));
+  }
+}
+
+@DisabledIfSystemProperty(named = "with-containers", matches = "true")
 class MilvusClientTest {
 
   private MilvusClient client;
@@ -49,16 +76,11 @@ class MilvusClientTest {
   private int size;
   private int dimension;
 
-  @Container
-  private GenericContainer milvusContainer =
-      new GenericContainer("milvusdb/milvus:0.10.1-cpu-d072020-bd02b1")
-          .withExposedPorts(19530);
-
-  private ConnectParam.Builder connectParamBuilder() {
-    return connectParamBuilder(milvusContainer);
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder("localhost", 19530);
   }
 
-  private ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
+  protected ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
     return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
   }
 
@@ -174,20 +196,6 @@ class MilvusClientTest {
   void connectUnreachableHost() {
     ConnectParam connectParam = connectParamBuilder("250.250.250.250", 19530).build();
     assertThrows(InitializationException.class, () -> new MilvusGrpcClient(connectParam));
-  }
-
-  @org.junit.jupiter.api.Test
-  void unsupportedServerVersion() {
-    GenericContainer unsupportedMilvusContainer =
-        new GenericContainer("milvusdb/milvus:0.9.1-cpu-d052920-e04ed5")
-            .withExposedPorts(19530);
-    try {
-      unsupportedMilvusContainer.start();
-      ConnectParam connectParam = connectParamBuilder(unsupportedMilvusContainer).build();
-      assertThrows(UnsupportedServerVersion.class, () -> new MilvusGrpcClient(connectParam));
-    } finally {
-      unsupportedMilvusContainer.stop();
-    }
   }
 
   @org.junit.jupiter.api.Test
