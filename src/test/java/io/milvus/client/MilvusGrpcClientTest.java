@@ -549,7 +549,7 @@ class MilvusClientTest {
     SearchParam searchParam =
         new SearchParam.Builder(randomCollectionName)
             .withDSL(generateComplexDSL(topK, vectorsToSearch.toString()))
-            .withParamsInJson("{\"fields\": [\"int64\", \"float\"]}")
+            .withParamsInJson("{\"fields\": [\"int64\", \"float_vec\"]}")
             .build();
     SearchResponse searchResponse = client.search(searchParam);
     assertTrue(searchResponse.ok());

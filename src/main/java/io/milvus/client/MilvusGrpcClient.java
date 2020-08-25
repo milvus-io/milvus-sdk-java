@@ -1717,28 +1717,11 @@ public class MilvusGrpcClient implements MilvusClient {
 
     List<List<Long>> resultIdsList = new ArrayList<>(numQueries);
     List<List<Float>> resultDistancesList = new ArrayList<>(numQueries);
+    List<List<Map<String, Object>>> resultFieldsMap = new ArrayList<>(numQueries);
 
     Entities entities = topKQueryResult.getEntities();
     List<Long> queryIdsList = entities.getIdsList();
     List<Float> queryDistancesList = topKQueryResult.getDistancesList();
-
-    if (topK > 0) {
-      for (int i = 0; i < numQueries; i++) {
-        // Process result of query i
-        int pos = i * topK;
-        while (pos < i * topK + topK && queryIdsList.get(pos) != -1) {
-          pos++;
-        }
-        resultIdsList.add(queryIdsList.subList(i * topK, pos));
-        resultDistancesList.add(queryDistancesList.subList(i * topK, pos));
-      }
-    }
-
-    SearchResponse searchResponse = new SearchResponse();
-    searchResponse.setNumQueries(numQueries);
-    searchResponse.setTopK(topK);
-    searchResponse.setResultIdsList(resultIdsList);
-    searchResponse.setResultDistancesList(resultDistancesList);
 
     // If fields specified, put it into searchResponse
     List<Map<String, Object>> fieldsMap = new ArrayList<>();
@@ -1749,7 +1732,7 @@ public class MilvusGrpcClient implements MilvusClient {
       List<FieldValue> fieldValueList = entities.getFieldsList();
       for (FieldValue fieldValue : fieldValueList) {
         String fieldName = fieldValue.getFieldName();
-        for (int j = 0; j < resultIdsList.size(); j++) {
+        for (int j = 0; j < queryIdsList.size(); j++) {
           if (fieldValue.getAttrRecord().getInt32ValueCount() > 0) {
             fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getInt32ValueList().get(j));
           } else if (fieldValue.getAttrRecord().getInt64ValueCount() > 0) {
@@ -1772,7 +1755,26 @@ public class MilvusGrpcClient implements MilvusClient {
         }
       }
     }
-    searchResponse.setFieldsMap(fieldsMap);
+
+    if (topK > 0) {
+      for (int i = 0; i < numQueries; i++) {
+        // Process result of query i
+        int pos = i * topK;
+        while (pos < i * topK + topK && queryIdsList.get(pos) != -1) {
+          pos++;
+        }
+        resultIdsList.add(queryIdsList.subList(i * topK, pos));
+        resultDistancesList.add(queryDistancesList.subList(i * topK, pos));
+        resultFieldsMap.add(fieldsMap.subList(i * topK, pos));
+      }
+    }
+
+    SearchResponse searchResponse = new SearchResponse();
+    searchResponse.setNumQueries(numQueries);
+    searchResponse.setTopK(topK);
+    searchResponse.setResultIdsList(resultIdsList);
+    searchResponse.setResultDistancesList(resultDistancesList);
+    searchResponse.setFieldsMap(resultFieldsMap);
 
     return searchResponse;
   }

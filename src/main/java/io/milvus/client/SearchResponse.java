@@ -35,7 +35,7 @@ public class SearchResponse {
   private long topK;
   private List<List<Long>> resultIdsList;
   private List<List<Float>> resultDistancesList;
-  private List<Map<String, Object>> fieldsMap;
+  private List<List<Map<String, Object>>> fieldsMap;
 
   public int getNumQueries() {
     return numQueries;
@@ -104,14 +104,14 @@ public class SearchResponse {
   }
 
   /**
-   * @return A <code>List</code> of map with fields information. The list order corresponds to
-   * <code>resultIdsList</code>. Each <code>Map</code> maps field names to records in a row.
+   * @return A <code>List</code> of map with fields information. Each inner <code>List</code> contains
+   * a <code>Map</code> of field names to records in a row.
    * The record object can be one of int, long, float, double, List<Float> or ByteBuffer
    * depending on the field's <code>DataType</code> you specified.
    */
-  public List<Map<String, Object>> getFieldsMap() { return fieldsMap; }
+  public List<List<Map<String, Object>>> getFieldsMap() { return fieldsMap; }
 
-  void setFieldsMap(List<Map<String, Object>> fieldsMap) {
+  void setFieldsMap(List<List<Map<String, Object>>> fieldsMap) {
     this.fieldsMap = fieldsMap;
   }
 
