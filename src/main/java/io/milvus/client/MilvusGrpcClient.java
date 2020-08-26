@@ -107,14 +107,22 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     channel.shutdown();
     long now = System.nanoTime();
     long deadline = now + TimeUnit.SECONDS.toNanos(maxWaitSeconds);
-    while (now < deadline && !channel.isTerminated()) {
-      try {
-        channel.awaitTermination(deadline - now, TimeUnit.NANOSECONDS);
-      } catch (InterruptedException ex) {
+    boolean interrupted = false;
+    try {
+      while (now < deadline && !channel.isTerminated()) {
+        try {
+          channel.awaitTermination(deadline - now, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException ex) {
+          interrupted = true;
+        }
       }
-    }
-    if (!channel.isTerminated()) {
-      channel.shutdownNow();
+      if (!channel.isTerminated()) {
+        channel.shutdownNow();
+      }
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
