@@ -56,7 +56,7 @@ public class MilvusClientExample {
     return vector;
   }
 
-  public static void main(String[] args) throws InterruptedException, ConnectFailedException {
+  public static void main(String[] args) throws InterruptedException {
 
     // You may need to change the following to the host and port of your Milvus server
     String host = "localhost";
@@ -66,17 +66,8 @@ public class MilvusClientExample {
       port = Integer.parseInt(args[1]);
     }
 
-    // Create Milvus client
-    MilvusClient client = new MilvusGrpcClient();
-
-    // Connect to Milvus server
     ConnectParam connectParam = new ConnectParam.Builder().withHost(host).withPort(port).build();
-    try {
-      Response connectResponse = client.connect(connectParam);
-    } catch (ConnectFailedException e) {
-      System.out.println("Failed to connect to Milvus server: " + e.toString());
-      throw e;
-    }
+    MilvusClient client = new MilvusGrpcClient(connectParam);
 
     // Create a collection with the following collection mapping
     final String collectionName = "example"; // collection name
@@ -217,11 +208,6 @@ public class MilvusClientExample {
     Response dropCollectionResponse = client.dropCollection(collectionName);
 
     // Disconnect from Milvus server
-    try {
-      Response disconnectResponse = client.disconnect();
-    } catch (InterruptedException e) {
-      System.out.println("Failed to disconnect: " + e.toString());
-      throw e;
-    }
+    client.close();
   }
 }
