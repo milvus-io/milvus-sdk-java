@@ -53,9 +53,13 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
   private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
   public MilvusGrpcClient(ConnectParam connectParam) {
-    channel = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
-        .usePlaintext()
+    ManagedChannelBuilder builder = connectParam.getTarget() != null
+        ? ManagedChannelBuilder.forTarget(connectParam.getTarget())
+        : ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort());
+
+    channel = builder.usePlaintext()
         .maxInboundMessageSize(Integer.MAX_VALUE)
+        .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
         .keepAliveTime(connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .keepAliveTimeout(connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
