@@ -67,7 +67,7 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     try {
       Response response = getServerVersion();
       if (response.ok()) {
-        String serverVersion = getServerVersion().getMessage();
+        String serverVersion = response.getMessage();
         if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
           throw new UnsupportedServerVersion(connectParam.getHost(), SUPPORTED_SERVER_VERSION, serverVersion);
         }
