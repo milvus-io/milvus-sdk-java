@@ -32,6 +32,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
@@ -65,8 +66,8 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
         .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .build();
-    blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
-    futureStub = MilvusServiceGrpc.newFutureStub(channel);
+    blockingStub = MetadataUtils.attachHeaders(MilvusServiceGrpc.newBlockingStub(channel), commonHeaders);
+    futureStub = MetadataUtils.attachHeaders(MilvusServiceGrpc.newFutureStub(channel), commonHeaders);
 
     try {
       Response response = getServerVersion();
