@@ -20,6 +20,7 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.Metadata;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
@@ -49,6 +50,16 @@ public interface MilvusClient {
         }
       }
       return properties.getProperty("version");
+    }
+  }.get();
+
+  Metadata commonHeaders = new Supplier<Metadata>() {
+    @Override
+    public Metadata get() {
+      Metadata metadata = new Metadata();
+      Metadata.Key<String> key = Metadata.Key.of("Milvus-Client-Version", Metadata.ASCII_STRING_MARSHALLER);
+      metadata.put(key, clientVersion);
+      return metadata;
     }
   }.get();
 

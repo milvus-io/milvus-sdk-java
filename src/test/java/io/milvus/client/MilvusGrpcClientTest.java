@@ -20,6 +20,8 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import io.grpc.NameResolverProvider;
+import io.grpc.NameResolverRegistry;
 import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import org.apache.commons.text.RandomStringGenerator;
@@ -30,12 +32,14 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,6 +50,11 @@ class ContainerMilvusClientTest extends MilvusClientTest {
   @Container
   private static GenericContainer milvusContainer =
       new GenericContainer("milvusdb/milvus:0.10.1-cpu-d072020-bd02b1")
+          .withExposedPorts(19530);
+
+  @Container
+  private static GenericContainer milvusContainer2 =
+      new GenericContainer("milvusdb/milvus:0.10.0-cpu-d061620-5f3c00")
           .withExposedPorts(19530);
 
   @Container
@@ -62,6 +71,27 @@ class ContainerMilvusClientTest extends MilvusClientTest {
   void unsupportedServerVersion() {
     ConnectParam connectParam = connectParamBuilder(unsupportedMilvusContainer).build();
     assertThrows(UnsupportedServerVersion.class, () -> new MilvusGrpcClient(connectParam));
+  }
+
+  @org.junit.jupiter.api.Test
+  void loadBalancing() {
+    NameResolverProvider testNameResolverProvider = new StaticNameResolverProvider(
+        "test",
+        new InetSocketAddress(milvusContainer.getHost(), milvusContainer.getFirstMappedPort()),
+        new InetSocketAddress(milvusContainer2.getHost(), milvusContainer2.getFirstMappedPort()));
+
+    NameResolverRegistry.getDefaultRegistry().register(testNameResolverProvider);
+
+    ConnectParam connectParam = connectParamBuilder()
+        .withTarget(testNameResolverProvider.getDefaultScheme() + ":///test")
+        .build();
+
+    MilvusClient client = new MilvusGrpcClient(connectParam);
+    List<String> serverVersions = IntStream.range(0, 100)
+        .mapToObj(i -> client.getServerVersion().getMessage())
+        .collect(Collectors.toList());
+    assertTrue(serverVersions.stream().allMatch(version -> version.matches("0\\.10\\.[01]")));
+    assertEquals(50, serverVersions.stream().filter(version -> version.equals("0.10.0")).count());
   }
 }
 

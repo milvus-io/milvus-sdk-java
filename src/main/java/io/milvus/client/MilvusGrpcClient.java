@@ -32,6 +32,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.MetadataUtils;
 import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
@@ -53,21 +54,25 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
   private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
   public MilvusGrpcClient(ConnectParam connectParam) {
-    channel = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
-        .usePlaintext()
+    ManagedChannelBuilder builder = connectParam.getTarget() != null
+        ? ManagedChannelBuilder.forTarget(connectParam.getTarget())
+        : ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort());
+
+    channel = builder.usePlaintext()
         .maxInboundMessageSize(Integer.MAX_VALUE)
+        .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
         .keepAliveTime(connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .keepAliveTimeout(connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
         .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
         .build();
-    blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
-    futureStub = MilvusServiceGrpc.newFutureStub(channel);
+    blockingStub = MetadataUtils.attachHeaders(MilvusServiceGrpc.newBlockingStub(channel), commonHeaders);
+    futureStub = MetadataUtils.attachHeaders(MilvusServiceGrpc.newFutureStub(channel), commonHeaders);
 
     try {
       Response response = getServerVersion();
       if (response.ok()) {
-        String serverVersion = getServerVersion().getMessage();
+        String serverVersion = response.getMessage();
         if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
           throw new UnsupportedServerVersion(connectParam.getHost(), SUPPORTED_SERVER_VERSION, serverVersion);
         }
