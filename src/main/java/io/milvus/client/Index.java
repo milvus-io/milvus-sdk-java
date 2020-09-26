@@ -21,15 +21,19 @@ package io.milvus.client;
 
 import javax.annotation.Nonnull;
 
-/** Represents an index containing <code>indexType</code> and <code>nList</code> */
+/** Represents an index containing <code>fieldName</code>, <code>indexName</code> and
+ * <code>paramsInJson</code>, which contains index_type, params etc.
+ */
 public class Index {
   private final String collectionName;
-  private final IndexType indexType;
+  private final String fieldName;
+  private final String indexName;
   private final String paramsInJson;
 
   private Index(@Nonnull Builder builder) {
     this.collectionName = builder.collectionName;
-    this.indexType = builder.indexType;
+    this.fieldName = builder.fieldName;
+    this.indexName = builder.indexName;
     this.paramsInJson = builder.paramsInJson;
   }
 
@@ -37,8 +41,12 @@ public class Index {
     return collectionName;
   }
 
-  public IndexType getIndexType() {
-    return indexType;
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  public String getIndexName() {
+    return indexName;
   }
 
   public String getParamsInJson() {
@@ -50,8 +58,8 @@ public class Index {
     return "Index {"
         + "collectionName="
         + collectionName
-        + ", indexType="
-        + indexType
+        + ", fieldName="
+        + fieldName
         + ", params="
         + paramsInJson
         + '}';
@@ -61,49 +69,39 @@ public class Index {
   public static class Builder {
     // Required parameters
     private final String collectionName;
-    private final IndexType indexType;
+    private final String fieldName;
 
     // Optional parameters - initialized to default values
-    private String paramsInJson;
+    private String paramsInJson = "{}";
+    private String indexName = "";
 
     /**
-     * @param collectionName collection to create index on
-     * @param indexType a <code>IndexType</code> object
+     * @param collectionName collection to create index for
+     * @param fieldName name of the field on which index is built.
      */
-    public Builder(@Nonnull String collectionName, @Nonnull IndexType indexType) {
+    public Builder(@Nonnull String collectionName, @Nonnull String fieldName) {
       this.collectionName = collectionName;
-      this.indexType = indexType;
+      this.fieldName = fieldName;
     }
 
     /**
-     * Optional. Default to empty <code>String</code>. Index parameters are different for different
-     * index types. Refer to <a
-     * href="https://milvus.io/docs/milvus_operation.md">https://milvus.io/docs/milvus_operation.md</a>
-     * for more information.
-     *
+     * Optional. The parameters for building an index. Index parameters are different for different
+     * index types. Refer to Milvus documentation for more information.
      * <pre>
-     * FLAT/IVFLAT/SQ8: {"nlist": 16384}
-     * nlist range:[1, 999999]
+     * "index_type": one of the values: FLAT, IVF_FLAT, IVF_SQ8, NSG, IVF_SQ8_HYBRID, IVF_PQ,
+     *                                  HNSW, RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ, ANNOY
+     * "metric_type": one of the values: L2, IP, HAMMING, JACCARD, TANIMOTO,
+     *                                   SUBSTRUCTURE, SUPERSTRUCTURE
+     * "params": optional parameters for index, including <code>nlist</code>
      *
-     * IVFPQ: {"nlist": 16384, "m": 12}
-     * nlist range:[1, 999999]
-     * m is decided by dim and have a couple of results.
-     *
-     * NSG: {"search_length": 45, "out_degree": 50, "candidate_pool_size": 300, "knng": 100}
-     * search_length range:[10, 300]
-     * out_degree range:[5, 300]
-     * candidate_pool_size range:[50, 1000]
-     * knng range:[5, 300]
-     *
-     * HNSW: {"M": 16, "efConstruction": 500}
-     * M range:[5, 48]
-     * efConstruction range:[100, 500]
-     *
-     * ANNOY: {"n_trees": 4}
-     * n_trees range: [1, 16384)
+     * Example param:
+     * <code>
+     *   {"index_type": "IVF_FLAT", "metric_type": "IP", "params": {nlist": 2048}}
+     * </code>
      * </pre>
      *
      * @param paramsInJson extra parameters in JSON format
+     * @see JsonBuilder
      * @return <code>Builder</code>
      */
     public Builder withParamsInJson(@Nonnull String paramsInJson) {

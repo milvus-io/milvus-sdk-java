@@ -1,11 +1,5 @@
 # Changelog   
 
-## milvus-sdk-java 0.8.5 (2020-08-26)
-
-### Feature
-
-- \#128 - GRPC timeout support
-
 ## milvus-sdk-java 0.8.3 (2020-07-15)
 
 ### Improvement

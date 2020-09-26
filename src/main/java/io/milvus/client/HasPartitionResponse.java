@@ -32,6 +32,7 @@ public class HasPartitionResponse {
         this.hasPartition = hasPartition;
     }
 
+    /** @return <code>true</code> if the partition is present */
     public boolean hasPartition() {
         return hasPartition;
     }

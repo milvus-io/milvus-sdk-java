@@ -23,8 +23,7 @@ import java.util.List;
 
 /**
  * Contains the returned <code>response</code> and <code>collectionNames</code> for <code>
- * listCollections
- * </code>
+ * listCollections</code>
  */
 public class ListCollectionsResponse {
   private final Response response;

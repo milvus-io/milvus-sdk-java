@@ -24,8 +24,7 @@ import java.util.Optional;
 
 /**
  * Contains the returned <code>response</code> and <code>collectionMapping</code> for <code>
- * getCollectionInfo
- * </code>
+ * getCollectionInfo</code>
  */
 public class GetCollectionInfoResponse {
   private final Response response;

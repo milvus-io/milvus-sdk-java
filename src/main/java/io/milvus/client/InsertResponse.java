@@ -22,19 +22,19 @@ package io.milvus.client;
 import java.util.List;
 
 /**
- * Contains the returned <code>response</code> and <code>vectorIds</code> for <code>insert</code>
+ * Contains the returned <code>response</code> and <code>entityIds</code> for <code>insert</code>
  */
 public class InsertResponse {
   private final Response response;
-  private final List<Long> vectorIds;
+  private final List<Long> entityIds;
 
-  InsertResponse(Response response, List<Long> vectorIds) {
+  InsertResponse(Response response, List<Long> entityIds) {
     this.response = response;
-    this.vectorIds = vectorIds;
+    this.entityIds = entityIds;
   }
 
-  public List<Long> getVectorIds() {
-    return vectorIds;
+  public List<Long> getEntityIds() {
+    return entityIds;
   }
 
   public Response getResponse() {
@@ -49,6 +49,6 @@ public class InsertResponse {
   @Override
   public String toString() {
     return String.format(
-        "InsertResponse {%s, returned %d vector ids}", response.toString(), this.vectorIds.size());
+        "InsertResponse {%s, returned %d entity ids}", response.toString(), this.entityIds.size());
   }
 }

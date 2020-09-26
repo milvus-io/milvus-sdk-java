@@ -23,8 +23,7 @@ import java.util.List;
 
 /**
  * Contains the returned <code>response</code> and <code>partitionList</code> for <code>
- * listPartitions
- * </code>
+ * listPartitions</code>
  */
 public class ListPartitionsResponse {
   private final Response response;
@@ -47,5 +46,12 @@ public class ListPartitionsResponse {
   /** @return <code>true</code> if the response status equals SUCCESS */
   public boolean ok() {
     return response.ok();
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "ListPartitionsResponse {%s, partition names = %s}",
+        response, partitionList.toString());
   }
 }
