@@ -26,9 +26,11 @@ import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
 import io.milvus.client.InsertParam.Builder;
-import io.milvus.client.Response.Status;
+import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.InitializationException;
+import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
+import io.milvus.grpc.ErrorCode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -123,6 +125,10 @@ class MilvusClientTest {
     return new ConnectParam.Builder().withHost(host).withPort(port);
   }
 
+  protected void assertErrorCode(ErrorCode errorCode, Runnable runnable) {
+    assertEquals(errorCode, assertThrows(ServerSideMilvusException.class, runnable::run).getErrorCode());
+  }
+
   // Helper function that generates random float vectors
   static List<List<Float>> generateFloatVectors(int vectorCount, int dimension) {
     SplittableRandom splittableRandom = new SplittableRandom();
@@ -207,19 +213,18 @@ class MilvusClientTest {
     randomCollectionName = generator.generate(10);
     size = 100000;
     dimension = 128;
-    CollectionMapping collectionMapping =
-        new CollectionMapping.Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64).build())
-            .field(new FieldBuilder("float", DataType.FLOAT).build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .param("dim", dimension)
-                .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_limit", 50000)
-                                               .param("auto_id", false)
-                                               .build())
-            .build();
 
-    assertTrue(client.createCollection(collectionMapping).ok());
+    CollectionMapping collectionMapping = CollectionMapping
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64)
+        .addField("float", DataType.FLOAT)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, dimension)
+        .setParamsInJson(new JsonBuilder()
+            .param("segment_row_limit", 50000)
+            .param("auto_id", false)
+            .build());
+
+    client.createCollection(collectionMapping);
   }
 
   @org.junit.jupiter.api.AfterEach
@@ -310,37 +315,25 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void createInvalidCollection() {
     // invalid collection name
-    String invalidCollectionName = "╯°□°）╯";
-    CollectionMapping invalidCollectionMapping =
-        new CollectionMapping.Builder(invalidCollectionName)
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .param("dim", dimension)
-                .build())
-            .build();
-    Response createCollectionResponse = client.createCollection(invalidCollectionMapping);
-    assertFalse(createCollectionResponse.ok());
-    assertEquals(Response.Status.ILLEGAL_COLLECTION_NAME, createCollectionResponse.getStatus());
+    CollectionMapping invalidCollectionName = CollectionMapping
+        .create("╯°□°）╯")
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, dimension);
+
+    assertErrorCode(ErrorCode.ILLEGAL_COLLECTION_NAME, () -> client.createCollection(invalidCollectionName));
 
     // invalid field
-    invalidCollectionMapping =
-        new CollectionMapping.Builder("validCollectionName")
-            .build();
-    createCollectionResponse = client.createCollection(invalidCollectionMapping);
-    assertFalse(createCollectionResponse.ok());
+    CollectionMapping withoutField = CollectionMapping.create("validCollectionName");
+    assertThrows(ClientSideMilvusException.class, () -> client.createCollection(withoutField));
 
-    // invalid segment_row_limit
-    invalidCollectionMapping =
-        new CollectionMapping.Builder("validCollectionName")
-            .field(new FieldBuilder("int64", DataType.INT64).build())
-            .field(new FieldBuilder("float", DataType.FLOAT).build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .param("dim", dimension)
-                .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_limit", -1000).build())
-            .build();
-    createCollectionResponse = client.createCollection(invalidCollectionMapping);
-    assertFalse(createCollectionResponse.ok());
-    assertEquals(Status.ILLEGAL_ARGUMENT, createCollectionResponse.getStatus());
+    // invalid segment_row_count
+    CollectionMapping invalidSegmentRowCount = CollectionMapping
+        .create("validCollectionName")
+        .addField("int64", DataType.INT64)
+        .addField("float", DataType.FLOAT)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, dimension)
+        .setParamsInJson(new JsonBuilder().param("segment_row_limit", -1000).build());
+
+    assertErrorCode(ErrorCode.ILLEGAL_ARGUMENT, () -> client.createCollection(invalidSegmentRowCount));
   }
 
   @org.junit.jupiter.api.Test
@@ -593,13 +586,12 @@ class MilvusClientTest {
     final int binaryDimension = 10000;
 
     String binaryCollectionName = generator.generate(10);
-    CollectionMapping collectionMapping =
-        new CollectionMapping.Builder(binaryCollectionName)
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .param("dim", binaryDimension)
-                .build())
-            .build();
-    assertTrue(client.createCollection(collectionMapping).ok());
+
+    CollectionMapping collectionMapping = CollectionMapping
+        .create(binaryCollectionName)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, binaryDimension);
+
+    client.createCollection(collectionMapping);
 
     List<List<Byte>> vectors = generateBinaryVectors(size, binaryDimension);
     InsertParam insertParam =
@@ -758,15 +750,13 @@ class MilvusClientTest {
     final int binaryDimension = 64;
 
     String binaryCollectionName = generator.generate(10);
-    CollectionMapping collectionMapping =
-        new CollectionMapping.Builder(binaryCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64).build())
-            .field(new FieldBuilder("float", DataType.FLOAT).build())
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .param("dim", binaryDimension)
-                .build())
-            .build();
-    assertTrue(client.createCollection(collectionMapping).ok());
+    CollectionMapping collectionMapping = CollectionMapping
+        .create(binaryCollectionName)
+        .addField("int64", DataType.INT64)
+        .addField("float", DataType.FLOAT)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, binaryDimension);
+
+    client.createCollection(collectionMapping);
 
     // field list for insert
     List<Long> intValues = new ArrayList<>(size);
@@ -836,8 +826,7 @@ class MilvusClientTest {
         .get().getFields();
     for (Map<String, Object> field : fields) {
       if (field.get("field").equals("float_vec")) {
-        JSONObject jsonObject = new JSONObject(field.get("params").toString());
-        JSONObject params = new JSONObject(jsonObject.get("params").toString());
+        JSONObject params = new JSONObject(field.get("params").toString());
         assertTrue(params.has("dim"));
       }
     }
@@ -955,14 +944,12 @@ class MilvusClientTest {
     final int binaryDimension = 64;
 
     String binaryCollectionName = generator.generate(10);
-    CollectionMapping collectionMapping =
-        new CollectionMapping.Builder(binaryCollectionName)
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .param("dim", binaryDimension)
-                .build())
-            .withParamsInJson(new JsonBuilder().param("auto_id", false).build())
-            .build();
-    assertTrue(client.createCollection(collectionMapping).ok());
+    CollectionMapping collectionMapping = CollectionMapping
+        .create(binaryCollectionName)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, binaryDimension)
+        .setParamsInJson(new JsonBuilder().param("auto_id", false).build());
+
+    client.createCollection(collectionMapping);
 
     List<List<Byte>> vectors = generateBinaryVectors(size, binaryDimension);
     List<Long> entityIds = LongStream.range(0, size).boxed().collect(Collectors.toList());

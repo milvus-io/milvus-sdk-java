@@ -32,6 +32,8 @@ import java.util.function.Supplier;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
+  String extraParamKey = "params";
+
   String clientVersion = new Supplier<String>() {
 
     @Override
@@ -48,6 +50,8 @@ public interface MilvusClient {
       return properties.getProperty("version");
     }
   }.get();
+
+  String target();
 
   /** @return current Milvus client version： 0.9.0 */
   default String getClientVersion() {
@@ -83,11 +87,9 @@ public interface MilvusClient {
    * Refer to <code>withFields</code> method for example <code>fields</code> usage.
    * </pre>
    *
-   * @return <code>Response</code>
    * @see CollectionMapping
-   * @see Response
    */
-  Response createCollection(CollectionMapping collectionMapping);
+  void createCollection(CollectionMapping collectionMapping);
 
   /**
    * Checks whether the collection exists

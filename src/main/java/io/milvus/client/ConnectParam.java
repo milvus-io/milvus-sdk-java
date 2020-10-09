@@ -22,13 +22,12 @@ package io.milvus.client;
 import io.grpc.ManagedChannelBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /** Contains parameters for connecting to Milvus server */
 public class ConnectParam {
   private final String target;
-  private final String host;
-  private final int port;
   private final String defaultLoadBalancingPolicy;
   private final long connectTimeoutNanos;
   private final long keepAliveTimeNanos;
@@ -37,9 +36,7 @@ public class ConnectParam {
   private final long idleTimeoutNanos;
 
   private ConnectParam(@Nonnull Builder builder) {
-    this.target = builder.target;
-    this.host = builder.host;
-    this.port = builder.port;
+    this.target = builder.target != null ? builder.target : String.format("dns:///%s:%d", builder.host, builder.port);
     this.defaultLoadBalancingPolicy = builder.defaultLoadBalancingPolicy;
     this.connectTimeoutNanos = builder.connectTimeoutNanos;
     this.keepAliveTimeNanos = builder.keepAliveTimeNanos;
@@ -50,14 +47,6 @@ public class ConnectParam {
 
   public String getTarget() {
     return target;
-  }
-
-  public String getHost() {
-    return host;
-  }
-
-  public int getPort() {
-    return port;
   }
 
   public String getDefaultLoadBalancingPolicy() {
