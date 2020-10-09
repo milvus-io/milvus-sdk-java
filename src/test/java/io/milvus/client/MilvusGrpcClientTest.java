@@ -29,6 +29,9 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.json.*;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -40,6 +43,7 @@ import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Testcontainers
 class MilvusClientTest {
 
   private MilvusClient client;
@@ -49,6 +53,23 @@ class MilvusClientTest {
   private String randomCollectionName;
   private int size;
   private int dimension;
+
+  @Container
+  private GenericContainer milvusContainer =
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+          .withExposedPorts(19530);
+
+  private ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder(milvusContainer);
+  }
+
+  private ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
+    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
+  }
+
+  private ConnectParam.Builder connectParamBuilder(String host, int port) {
+    return new ConnectParam.Builder().withHost(host).withPort(port);
+  }
 
   // Helper function that generates random float vectors
   static List<List<Float>> generateFloatVectors(int vectorCount, int dimension) {
@@ -128,8 +149,7 @@ class MilvusClientTest {
   void setUp() throws Exception {
 
     client = new MilvusGrpcClient();
-    ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withPort(19530).build();
+    ConnectParam connectParam = connectParamBuilder().build();
     client.connect(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
@@ -160,11 +180,9 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void idleTest() throws InterruptedException, ConnectFailedException {
     MilvusClient client = new MilvusGrpcClient();
-    ConnectParam connectParam =
-        new ConnectParam.Builder()
-            .withHost("localhost")
-            .withIdleTimeout(1, TimeUnit.SECONDS)
-            .build();
+    ConnectParam connectParam = connectParamBuilder()
+        .withIdleTimeout(1, TimeUnit.SECONDS)
+        .build();
     client.connect(connectParam);
     TimeUnit.SECONDS.sleep(2);
     // A new RPC would take the channel out of idle mode
@@ -207,7 +225,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void connectUnreachableHost() {
     MilvusClient client = new MilvusGrpcClient();
-    ConnectParam connectParam = new ConnectParam.Builder().withHost("250.250.250.250").build();
+    ConnectParam connectParam = connectParamBuilder("250.250.250.250", 19530).build();
     assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
   }
 
