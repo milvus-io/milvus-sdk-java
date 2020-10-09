@@ -23,6 +23,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.NameResolverProvider;
+import io.grpc.NameResolverRegistry;
 import io.milvus.client.InsertParam.Builder;
 import io.milvus.client.Response.Status;
 import io.milvus.client.exception.InitializationException;
@@ -38,6 +40,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +53,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -66,9 +70,32 @@ class ContainerMilvusClientTest extends MilvusClientTest {
       new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
           .withExposedPorts(19530);
 
+  @Container
+  private static GenericContainer milvusContainer2 =
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+          .withExposedPorts(19530);
+
   @Override
   protected ConnectParam.Builder connectParamBuilder() {
     return connectParamBuilder(milvusContainer);
+  }
+
+  @org.junit.jupiter.api.Test
+  void loadBalancing() {
+    NameResolverProvider testNameResolverProvider = new StaticNameResolverProvider(
+        new InetSocketAddress(milvusContainer.getHost(), milvusContainer.getFirstMappedPort()),
+        new InetSocketAddress(milvusContainer2.getHost(), milvusContainer2.getFirstMappedPort()));
+
+    NameResolverRegistry.getDefaultRegistry().register(testNameResolverProvider);
+
+    ConnectParam connectParam = connectParamBuilder()
+        .withTarget(testNameResolverProvider.getDefaultScheme() + ":///test")
+        .build();
+
+    MilvusClient loadBalancingClient = new MilvusGrpcClient(connectParam);
+    assertEquals(50, IntStream.range(0, 100)
+            .filter(i -> loadBalancingClient.hasCollection(randomCollectionName).hasCollection())
+            .count());
   }
 }
 
@@ -80,7 +107,7 @@ class MilvusClientTest {
 
   private RandomStringGenerator generator;
 
-  private String randomCollectionName;
+  protected String randomCollectionName;
   private int size;
   private int dimension;
 
