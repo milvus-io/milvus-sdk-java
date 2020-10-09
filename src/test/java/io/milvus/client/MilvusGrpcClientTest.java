@@ -28,22 +28,54 @@ import io.milvus.client.Response.Status;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SplittableRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.LongStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
+@EnabledIfSystemProperty(named = "with-containers", matches = "true")
+class ContainerMilvusClientTest extends MilvusClientTest {
+  @Container
+  private GenericContainer milvusContainer =
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+          .withExposedPorts(19530);
+
+  @Override
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder(milvusContainer);
+  }
+
+  private ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
+    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
+  }
+}
+
+@Testcontainers
+@DisabledIfSystemProperty(named = "with-containers", matches = "true")
 class MilvusClientTest {
 
   private MilvusClient client;
@@ -54,20 +86,11 @@ class MilvusClientTest {
   private int size;
   private int dimension;
 
-  @Container
-  private GenericContainer milvusContainer =
-      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
-          .withExposedPorts(19530);
-
-  private ConnectParam.Builder connectParamBuilder() {
-    return connectParamBuilder(milvusContainer);
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder("localhost", 19530);
   }
 
-  private ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
-    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
-  }
-
-  private ConnectParam.Builder connectParamBuilder(String host, int port) {
+  protected ConnectParam.Builder connectParamBuilder(String host, int port) {
     return new ConnectParam.Builder().withHost(host).withPort(port);
   }
 
