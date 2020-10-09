@@ -249,36 +249,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public HasCollectionResponse hasCollection(@Nonnull String collectionName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new HasCollectionResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    BoolReply response;
-
-    try {
-      response = blockingStub().hasCollection(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("hasCollection `{}` = {}", collectionName, response.getBoolReply());
-        return new HasCollectionResponse(
-            new Response(Response.Status.SUCCESS), response.getBoolReply());
-      } else {
-        logError("hasCollection `{}` failed:\n{}", collectionName, response.toString());
-        return new HasCollectionResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            false);
-      }
-    } catch (StatusRuntimeException e) {
-      logError("hasCollection RPC failed:\n{}", e.getStatus().toString());
-      return new HasCollectionResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), false);
-    }
+  public boolean hasCollection(@Nonnull String collectionName) {
+    return translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      BoolReply response = blockingStub().hasCollection(request);
+      checkResponseStatus(response.getStatus());
+      return response.getBoolReply();
+    });
   }
 
   @Override

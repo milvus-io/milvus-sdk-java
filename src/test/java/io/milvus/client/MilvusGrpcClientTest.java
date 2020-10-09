@@ -338,9 +338,7 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void hasCollection() {
-    HasCollectionResponse hasCollectionResponse = client.hasCollection(randomCollectionName);
-    assertTrue(hasCollectionResponse.ok());
-    assertTrue(hasCollectionResponse.hasCollection());
+    assertTrue(client.hasCollection(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test

@@ -95,11 +95,9 @@ public interface MilvusClient {
    * Checks whether the collection exists
    *
    * @param collectionName collection to check
-   * @return <code>HasCollectionResponse</code>
-   * @see HasCollectionResponse
-   * @see Response
+   * @return true if the collection exists, false otherwise.
    */
-  HasCollectionResponse hasCollection(String collectionName);
+  boolean hasCollection(String collectionName);
 
   /**
    * Drops collection
