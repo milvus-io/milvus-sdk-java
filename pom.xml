@@ -288,6 +288,21 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- JUnit5 tests are not running with maven 3.6.x
+            https://dzone.com/articles/why-your-junit-5-tests-are-not-running-under-maven
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.jupiter</groupId>
+                        <artifactId>junit-jupiter-engine</artifactId>
+                        <version>5.1.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
