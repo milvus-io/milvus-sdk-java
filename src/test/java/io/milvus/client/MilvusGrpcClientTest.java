@@ -344,9 +344,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void dropCollection() {
     String nonExistingCollectionName = generator.generate(10);
-    Response dropCollectionResponse = client.dropCollection(nonExistingCollectionName);
-    assertFalse(dropCollectionResponse.ok());
-    assertEquals(Response.Status.COLLECTION_NOT_EXISTS, dropCollectionResponse.getStatus());
+    assertErrorCode(ErrorCode.COLLECTION_NOT_EXISTS, () -> client.dropCollection(nonExistingCollectionName));
   }
 
   @org.junit.jupiter.api.Test
@@ -617,7 +615,7 @@ class MilvusClientTest {
     Response dropIndexResponse = client.dropIndex(binaryCollectionName, "binary_vec");
     assertTrue(dropIndexResponse.ok());
 
-    assertTrue(client.dropCollection(binaryCollectionName).ok());
+    client.dropCollection(binaryCollectionName);
   }
 
   @org.junit.jupiter.api.Test
@@ -807,7 +805,7 @@ class MilvusClientTest {
       assertEquals(entityIds.get(i), resultIdsList.get(i).get(0));
     }
 
-    assertTrue(client.dropCollection(binaryCollectionName).ok());
+    client.dropCollection(binaryCollectionName);
   }
 
   @org.junit.jupiter.api.Test

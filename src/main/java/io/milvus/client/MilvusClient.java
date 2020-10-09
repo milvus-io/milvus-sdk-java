@@ -103,10 +103,8 @@ public interface MilvusClient {
    * Drops collection
    *
    * @param collectionName collection to drop
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response dropCollection(String collectionName);
+  void dropCollection(String collectionName);
 
   /**
    * Creates index specified by <code>index</code>

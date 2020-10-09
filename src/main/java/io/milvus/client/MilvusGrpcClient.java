@@ -259,31 +259,12 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response dropCollection(@Nonnull String collectionName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    Status response;
-
-    try {
-      response = blockingStub().dropCollection(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Dropped collection `{}` successfully!", collectionName);
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError("Drop collection `{}` failed:\n{}", collectionName, response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("dropCollection RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void dropCollection(@Nonnull String collectionName) {
+    translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      Status response = blockingStub().dropCollection(request);
+      checkResponseStatus(response);
+    });
   }
 
   @Override
