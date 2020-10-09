@@ -25,6 +25,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.milvus.client.InsertParam.Builder;
 import io.milvus.client.Response.Status;
+import io.milvus.client.exception.InitializationException;
+import io.milvus.client.exception.UnsupportedServerVersion;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -68,10 +70,6 @@ class ContainerMilvusClientTest extends MilvusClientTest {
   protected ConnectParam.Builder connectParamBuilder() {
     return connectParamBuilder(milvusContainer);
   }
-
-  private ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
-    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
-  }
 }
 
 @Testcontainers
@@ -88,6 +86,10 @@ class MilvusClientTest {
 
   protected ConnectParam.Builder connectParamBuilder() {
     return connectParamBuilder("localhost", 19530);
+  }
+
+  protected ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
+    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
   }
 
   protected ConnectParam.Builder connectParamBuilder(String host, int port) {
@@ -171,9 +173,8 @@ class MilvusClientTest {
   @org.junit.jupiter.api.BeforeEach
   void setUp() throws Exception {
 
-    client = new MilvusGrpcClient();
     ConnectParam connectParam = connectParamBuilder().build();
-    client.connect(connectParam);
+    client = new MilvusGrpcClient(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     randomCollectionName = generator.generate(10);
@@ -195,18 +196,17 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.AfterEach
-  void tearDown() throws InterruptedException {
-    assertTrue(client.dropCollection(randomCollectionName).ok());
-    client.disconnect();
+  void tearDown() {
+    client.dropCollection(randomCollectionName);
+    client.close();
   }
 
   @org.junit.jupiter.api.Test
-  void idleTest() throws InterruptedException, ConnectFailedException {
-    MilvusClient client = new MilvusGrpcClient();
+  void idleTest() throws InterruptedException {
     ConnectParam connectParam = connectParamBuilder()
         .withIdleTimeout(1, TimeUnit.SECONDS)
         .build();
-    client.connect(connectParam);
+    MilvusClient client = new MilvusGrpcClient(connectParam);
     TimeUnit.SECONDS.sleep(2);
     // A new RPC would take the channel out of idle mode
     assertTrue(client.listCollections().ok());
@@ -247,9 +247,37 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void connectUnreachableHost() {
-    MilvusClient client = new MilvusGrpcClient();
     ConnectParam connectParam = connectParamBuilder("250.250.250.250", 19530).build();
-    assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
+    assertThrows(InitializationException.class, () -> new MilvusGrpcClient(connectParam));
+  }
+
+  @org.junit.jupiter.api.Test
+  void unsupportedServerVersion() {
+    GenericContainer unsupportedMilvusContainer =
+        new GenericContainer("milvusdb/milvus:0.9.1-cpu-d052920-e04ed5")
+            .withExposedPorts(19530);
+    try {
+      unsupportedMilvusContainer.start();
+      ConnectParam connectParam = connectParamBuilder(unsupportedMilvusContainer).build();
+      assertThrows(UnsupportedServerVersion.class, () -> new MilvusGrpcClient(connectParam));
+    } finally {
+      unsupportedMilvusContainer.stop();
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void grpcTimeout() {
+    insert();
+    MilvusClient timeoutClient = client.withTimeout(1, TimeUnit.MILLISECONDS);
+    Response response = timeoutClient.createIndex(
+        new Index.Builder(randomCollectionName, "float_vec")
+            .withParamsInJson(new JsonBuilder()
+                .param("index_type", "IVF_FLAT")
+                .param("metric_type", "L2")
+                .indexParam("nlist", 2048)
+                .build())
+            .build());
+    assertEquals(Response.Status.RPC_ERROR, response.getStatus());
   }
 
   @org.junit.jupiter.api.Test
