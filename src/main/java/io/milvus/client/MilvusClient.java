@@ -20,12 +20,33 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  String clientVersion = "0.9.0";
+  String clientVersion = new Supplier<String>() {
+
+    @Override
+    /** @return current Milvus client version */
+    public String get() {
+      Properties properties = new Properties();
+      try (InputStream inputStream =
+               MilvusClient.class.getClassLoader()
+                   .getResourceAsStream("milvus-client.properties")) {
+        properties.load(inputStream);
+      } catch (IOException ex) {
+        ExceptionUtils.wrapAndThrow(ex);
+      }
+      return properties.getProperty("version");
+    }
+  }.get();
 
   /** @return current Milvus client version： 0.9.0 */
   default String getClientVersion() {
