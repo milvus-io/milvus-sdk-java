@@ -20,12 +20,12 @@
 package io.milvus.client;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.milvus.client.exception.ClientSideMilvusException;
-import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.ErrorCode;
@@ -92,7 +92,7 @@ class ContainerMilvusClientTest extends MilvusClientTest {
 
     MilvusClient loadBalancingClient = new MilvusGrpcClient(connectParam);
     assertEquals(50, IntStream.range(0, 100)
-            .filter(i -> loadBalancingClient.hasCollection(randomCollectionName).hasCollection())
+            .filter(i -> loadBalancingClient.hasCollection(randomCollectionName))
             .count());
   }
 }
@@ -280,7 +280,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void connectUnreachableHost() {
     ConnectParam connectParam = connectParamBuilder("250.250.250.250", 19530).build();
-    assertThrows(InitializationException.class, () -> new MilvusGrpcClient(connectParam));
+    assertThrows(ClientSideMilvusException.class, () -> new MilvusGrpcClient(connectParam));
   }
 
   @org.junit.jupiter.api.Test
@@ -626,14 +626,13 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void serverStatus() {
-    Response serverStatusResponse = client.getServerStatus();
-    assertTrue(serverStatusResponse.ok());
+    JSONObject serverStatus = new JSONObject(client.getServerStatus());
+    assertEquals(ImmutableSet.of("indexing", "require_restart", "server_time", "uptime"), serverStatus.keySet());
   }
 
   @org.junit.jupiter.api.Test
   void serverVersion() {
-    Response serverVersionResponse = client.getServerVersion();
-    assertTrue(serverVersionResponse.ok());
+    assertEquals("0.11.0", client.getServerVersion());
   }
 
   @org.junit.jupiter.api.Test

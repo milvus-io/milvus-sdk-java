@@ -32,7 +32,6 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
 import io.milvus.client.exception.ClientSideMilvusException;
-import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.MilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
@@ -80,14 +79,9 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
     futureStub = MilvusServiceGrpc.newFutureStub(channel);
     try {
-      Response response = getServerVersion();
-      if (response.ok()) {
-        String serverVersion = response.getMessage();
-        if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
-          throw new UnsupportedServerVersion(connectParam.getTarget(), SUPPORTED_SERVER_VERSION, serverVersion);
-        }
-      } else {
-        throw new InitializationException(connectParam.getTarget(), response.getMessage());
+      String serverVersion = getServerVersion();
+      if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
+        throw new UnsupportedServerVersion(connectParam.getTarget(), SUPPORTED_SERVER_VERSION, serverVersion);
       }
     } catch (Throwable t) {
       channel.shutdownNow();
@@ -387,41 +381,22 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response getServerStatus() {
+  public String getServerStatus() {
     return command("status");
   }
 
   @Override
-  public Response getServerVersion() {
+  public String getServerVersion() {
     return command("version");
   }
 
-  public Response command(@Nonnull String command) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    Command request = Command.newBuilder().setCmd(command).build();
-    StringReply response;
-
-    try {
-      response = blockingStub().cmd(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Command `{}`: {}", command, response.getStringReply());
-        return new Response(Response.Status.SUCCESS, response.getStringReply());
-      } else {
-        logError("Command `{}` failed:\n{}", command, response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-            response.getStatus().getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("Command RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public String command(@Nonnull String command) {
+    return translateExceptions(() -> {
+      Command request = Command.newBuilder().setCmd(command).build();
+      StringReply response = blockingStub().cmd(request);
+      checkResponseStatus(response.getStatus());
+      return response.getStringReply();
+    });
   }
 
   @Override

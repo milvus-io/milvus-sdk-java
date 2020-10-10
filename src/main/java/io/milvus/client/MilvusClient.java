@@ -290,26 +290,23 @@ public interface MilvusClient {
   /**
    * Gets server status
    *
-   * @return <code>Response</code>
-   * @see Response
+   * @return a server status string
    */
-  Response getServerStatus();
+  String getServerStatus();
 
   /**
    * Gets server version
    *
-   * @return <code>Response</code>
-   * @see Response
+   * @return a server version string.
    */
-  Response getServerVersion();
+  String getServerVersion();
 
   /**
    * Sends a command to server
    *
-   * @return <code>Response</code> command's response will be return in <code>message</code>
-   * @see Response
+   * @return a message string
    */
-  Response command(String command);
+  String command(String command);
 
   /**
    * Pre-loads collection to memory
