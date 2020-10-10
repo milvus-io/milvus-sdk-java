@@ -235,13 +235,11 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return <code>SearchResponse</code>
+   * @return <code>SearchResult</code>
    * @see SearchParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
+   * @see SearchResult
    */
-  SearchResponse search(SearchParam searchParam);
+  SearchResult search(SearchParam searchParam);
 
   /**
    * Searches entities specified by <code>searchParam</code> asynchronously
@@ -258,14 +256,12 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the <code>SearchResponse</code>
+   * @return a <code>ListenableFuture</code> object which holds the <code>SearchResult</code>
    * @see SearchParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
+   * @see SearchResult
    * @see ListenableFuture
    */
-  ListenableFuture<SearchResponse> searchAsync(SearchParam searchParam);
+  ListenableFuture<SearchResult> searchAsync(SearchParam searchParam);
 
   /**
    * Gets collection info

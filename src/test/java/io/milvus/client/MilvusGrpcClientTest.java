@@ -396,28 +396,23 @@ class MilvusClientTest {
     List<List<Float>> vectorsToSearch1 = vectors.subList(0, searchSize);
     List<String> partitionTags1 = new ArrayList<>();
     partitionTags1.add(tag1);
-    SearchParam searchParam1 =
-        new SearchParam.Builder(randomCollectionName)
-            .withDSL(generateSimpleDSL(topK, vectorsToSearch1.toString()))
-            .withPartitionTags(partitionTags1)
-            .build();
-    SearchResponse searchResponse1 = client.search(searchParam1);
-    assertTrue(searchResponse1.ok());
-    List<List<Long>> resultIdsList1 = searchResponse1.getResultIdsList();
+    SearchParam searchParam1 = SearchParam
+        .create(randomCollectionName)
+        .setDsl(generateSimpleDSL(topK, vectorsToSearch1.toString()))
+        .setPartitionTags(partitionTags1);
+    SearchResult searchResult1 = client.search(searchParam1);
+    List<List<Long>> resultIdsList1 = searchResult1.getResultIdsList();
     assertEquals(searchSize, resultIdsList1.size());
     assertTrue(entityIds1.containsAll(resultIdsList1.get(0)));
 
     List<List<Float>> vectorsToSearch2 = vectors.subList(0, searchSize);
     List<String> partitionTags2 = new ArrayList<>();
     partitionTags2.add(tag2);
-    SearchParam searchParam2 =
-        new SearchParam.Builder(randomCollectionName)
-            .withDSL(generateSimpleDSL(topK, vectorsToSearch2.toString()))
-            .withPartitionTags(partitionTags2)
-            .build();
-    SearchResponse searchResponse2 = client.search(searchParam2);
-    assertTrue(searchResponse2.ok());
-    List<List<Long>> resultIdsList2 = searchResponse2.getResultIdsList();
+    SearchParam searchParam2 = SearchParam.create(randomCollectionName)
+        .setDsl(generateSimpleDSL(topK, vectorsToSearch2.toString()))
+        .setPartitionTags(partitionTags2);
+    SearchResult searchResult2 = client.search(searchParam2);
+    List<List<Long>> resultIdsList2 = searchResult2.getResultIdsList();
     assertEquals(searchSize, resultIdsList2.size());
     assertTrue(entityIds2.containsAll(resultIdsList2.get(0)));
 
@@ -529,77 +524,22 @@ class MilvusClientTest {
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
 
     final long topK = 10;
-    SearchParam searchParam =
-        new SearchParam.Builder(randomCollectionName)
-            .withDSL(generateComplexDSL(topK, vectorsToSearch.toString()))
-            .withParamsInJson(new JsonBuilder().param("fields",
-                new ArrayList<>(Arrays.asList("int64", "float_vec"))).build())
-            .build();
-    SearchResponse searchResponse = client.search(searchParam);
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
-    assertEquals(searchSize, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
-    assertEquals(searchSize, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
-    assertEquals(searchSize, queryResultsList.size());
-
-    final double epsilon = 0.001;
-    for (int i = 0; i < searchSize; i++) {
-      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
-      assertEquals(entityIds.get(i), firstQueryResult.getEntityId());
-      assertEquals(entityIds.get(i), resultIdsList.get(i).get(0));
-      assertTrue(Math.abs(firstQueryResult.getDistance()) < epsilon);
-      assertTrue(Math.abs(resultDistancesList.get(i).get(0)) < epsilon);
-    }
-  }
-
-  @org.junit.jupiter.api.Test
-  void searchAsync() throws ExecutionException, InterruptedException {
-    List<Long> intValues = new ArrayList<>(size);
-    List<Float> floatValues = new ArrayList<>(size);
-    List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    for (int i = 0; i < size; i++) {
-      intValues.add((long) i);
-      floatValues.add((float) i);
-    }
-    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
-
-    List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam = InsertParam
+    SearchParam searchParam = SearchParam
         .create(randomCollectionName)
-        .addField("int64", DataType.INT64, intValues)
-        .addField("float", DataType.FLOAT, floatValues)
-        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
-        .setEntityIds(insertIds);
-    List<Long> entityIds = client.insert(insertParam);
-    assertEquals(size, entityIds.size());
-
-    assertTrue(client.flush(randomCollectionName).ok());
-
-    final int searchSize = 5;
-    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
-
-    final long topK = 10;
-    SearchParam searchParam =
-        new SearchParam.Builder(randomCollectionName)
-            .withDSL(generateComplexDSL(topK, vectorsToSearch.toString()))
-            .withParamsInJson(new JsonBuilder().param("fields",
-                new ArrayList<>(Arrays.asList("int64", "float"))).build())
-            .build();
-    ListenableFuture<SearchResponse> searchResponseFuture = client.searchAsync(searchParam);
-    SearchResponse searchResponse = searchResponseFuture.get();
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+        .setDsl(generateComplexDSL(topK, vectorsToSearch.toString()))
+        .setParamsInJson(new JsonBuilder().param("fields",
+            new ArrayList<>(Arrays.asList("int64", "float_vec"))).build());
+    SearchResult searchResult = client.search(searchParam);
+    List<List<Long>> resultIdsList = searchResult.getResultIdsList();
     assertEquals(searchSize, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+    List<List<Float>> resultDistancesList = searchResult.getResultDistancesList();
     assertEquals(searchSize, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    List<List<SearchResult.QueryResult>> queryResultsList = searchResult.getQueryResultsList();
     assertEquals(searchSize, queryResultsList.size());
 
     final double epsilon = 0.001;
     for (int i = 0; i < searchSize; i++) {
-      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+      SearchResult.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(entityIds.get(i), firstQueryResult.getEntityId());
       assertEquals(entityIds.get(i), resultIdsList.get(i).get(0));
       assertTrue(Math.abs(firstQueryResult.getDistance()) < epsilon);
@@ -645,21 +585,19 @@ class MilvusClientTest {
         .collect(Collectors.toList());
 
     final long topK = 10;
-    SearchParam searchParam =
-        new SearchParam.Builder(binaryCollectionName)
-            .withDSL(generateComplexDSLBinary(topK, vectorsToSearch.toString()))
-            .build();
-    SearchResponse searchResponse = client.search(searchParam);
-    assertTrue(searchResponse.ok());
-    List<List<Long>> resultIdsList = searchResponse.getResultIdsList();
+    SearchParam searchParam = SearchParam
+        .create(binaryCollectionName)
+        .setDsl(generateComplexDSLBinary(topK, vectorsToSearch.toString()));
+    SearchResult searchResult = client.search(searchParam);
+    List<List<Long>> resultIdsList = searchResult.getResultIdsList();
     assertEquals(searchSize, resultIdsList.size());
-    List<List<Float>> resultDistancesList = searchResponse.getResultDistancesList();
+    List<List<Float>> resultDistancesList = searchResult.getResultDistancesList();
     assertEquals(searchSize, resultDistancesList.size());
-    List<List<SearchResponse.QueryResult>> queryResultsList = searchResponse.getQueryResultsList();
+    List<List<SearchResult.QueryResult>> queryResultsList = searchResult.getQueryResultsList();
     assertEquals(searchSize, queryResultsList.size());
 
     for (int i = 0; i < searchSize; i++) {
-      SearchResponse.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
+      SearchResult.QueryResult firstQueryResult = queryResultsList.get(i).get(0);
       assertEquals(entityIds.get(i), firstQueryResult.getEntityId());
       assertEquals(entityIds.get(i), resultIdsList.get(i).get(0));
     }
