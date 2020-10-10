@@ -437,8 +437,7 @@ class MilvusClientTest {
     client.createIndex(index);
 
     // also test drop index here
-    Response dropIndexResponse = client.dropIndex(randomCollectionName, "float_vec");
-    assertTrue(dropIndexResponse.ok());
+    client.dropIndex(randomCollectionName, "float_vec");
   }
 
   @org.junit.jupiter.api.Test
@@ -488,8 +487,7 @@ class MilvusClientTest {
     client.createIndex(index);
 
     // also test drop index here
-    Response dropIndexResponse = client.dropIndex(binaryCollectionName, "binary_vec");
-    assertTrue(dropIndexResponse.ok());
+    client.dropIndex(binaryCollectionName, "binary_vec");
 
     client.dropCollection(binaryCollectionName);
   }

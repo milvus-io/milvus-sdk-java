@@ -409,35 +409,15 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response dropIndex(String collectionName, String fieldName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    IndexParam request =
-        IndexParam.newBuilder()
-            .setCollectionName(collectionName)
-            .setFieldName(fieldName)
-            .build();
-    Status response;
-
-    try {
-      response = blockingStub().dropIndex(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Dropped index for collection `{}` successfully!", collectionName);
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError("Drop index for collection `{}` failed:\n{}", collectionName, response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("dropIndex RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void dropIndex(String collectionName, String fieldName) {
+    translateExceptions(() -> {
+      IndexParam request = IndexParam.newBuilder()
+          .setCollectionName(collectionName)
+          .setFieldName(fieldName)
+          .build();
+      Status response = blockingStub().dropIndex(request);
+      checkResponseStatus(response);
+    });
   }
 
   @Override

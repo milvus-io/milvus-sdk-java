@@ -321,10 +321,8 @@ public interface MilvusClient {
    * @param collectionName The collection to drop index.
    * @param fieldName Name of the field to drop index for. If this is set to empty string,
    *                  index of all fields in the collection will be dropped.
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response dropIndex(String collectionName, String fieldName);
+  void dropIndex(String collectionName, String fieldName);
 
   /**
    * Shows collection information. A collection consists of one or multiple partitions (including
