@@ -167,11 +167,9 @@ public interface MilvusClient {
    * Lists current partitions of a collection
    *
    * @param collectionName collection name
-   * @return <code>ListPartitionsResponse</code>
-   * @see ListPartitionsResponse
-   * @see Response
+   * @return a list of partition names
    */
-  ListPartitionsResponse listPartitions(String collectionName);
+  List<String> listPartitions(String collectionName);
 
   /**
    * Drops partition specified by <code>collectionName</code> and <code>tag</code>

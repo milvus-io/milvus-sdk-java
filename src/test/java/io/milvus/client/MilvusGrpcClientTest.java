@@ -361,9 +361,8 @@ class MilvusClientTest {
     final String tag2 = "tag2";
     client.createPartition(randomCollectionName, tag2);
 
-    ListPartitionsResponse listPartitionsResponse = client.listPartitions(randomCollectionName);
-    assertTrue(listPartitionsResponse.ok());
-    assertEquals(3, listPartitionsResponse.getPartitionList().size()); // two tags plus _default
+    List<String> partitionList = client.listPartitions(randomCollectionName);
+    assertEquals(3, partitionList.size()); // two tags plus _default
 
     List<Long> intValues = new ArrayList<>(size);
     List<Float> floatValues = new ArrayList<>(size);

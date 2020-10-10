@@ -305,40 +305,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public ListPartitionsResponse listPartitions(String collectionName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new ListPartitionsResponse(
-          new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    PartitionList response;
-
-    try {
-      response = blockingStub().showPartitions(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo(
-            "Current partitions of collection {}: {}",
-            collectionName,
-            response.getPartitionTagArrayList());
-        return new ListPartitionsResponse(
-            new Response(Response.Status.SUCCESS), response.getPartitionTagArrayList());
-      } else {
-        logError("List partitions failed:\n{}", response.toString());
-        return new ListPartitionsResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            Collections.emptyList());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("listPartitions RPC failed:\n{}", e.getStatus().toString());
-      return new ListPartitionsResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), Collections.emptyList());
-    }
+  public List<String> listPartitions(String collectionName) {
+    return translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      PartitionList response = blockingStub().showPartitions(request);
+      checkResponseStatus(response.getStatus());
+      return response.getPartitionTagArrayList();
+    });
   }
 
   @Override
