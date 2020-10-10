@@ -446,13 +446,11 @@ class MilvusClientTest {
 
     assertTrue(client.hasPartition(randomCollectionName, tag1));
 
-    Response dropPartitionResponse = client.dropPartition(randomCollectionName, tag1);
-    assertTrue(dropPartitionResponse.ok());
-
+    client.dropPartition(randomCollectionName, tag1);
     assertFalse(client.hasPartition(randomCollectionName, tag1));
 
-    dropPartitionResponse = client.dropPartition(randomCollectionName, tag2);
-    assertTrue(dropPartitionResponse.ok());
+    client.dropPartition(randomCollectionName, tag2);
+    assertFalse(client.hasPartition(randomCollectionName, tag2));
   }
 
   @org.junit.jupiter.api.Test

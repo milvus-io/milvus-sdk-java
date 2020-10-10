@@ -176,9 +176,8 @@ public interface MilvusClient {
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @see Response
    */
-  Response dropPartition(String collectionName, String tag);
+  void dropPartition(String collectionName, String tag);
 
   /**
    * Inserts data specified by <code>insertParam</code>
