@@ -275,21 +275,17 @@ public interface MilvusClient {
   /**
    * Lists current collections
    *
-   * @return <code>ListCollectionsResponse</code>
-   * @see ListCollectionsResponse
-   * @see Response
+   * @return a list of collection names
    */
-  ListCollectionsResponse listCollections();
+  List<String> listCollections();
 
   /**
    * Gets current entity count of a collection
    *
    * @param collectionName collection name
-   * @return <code>CountEntitiesResponse</code>
-   * @see CountEntitiesResponse
-   * @see Response
+   * @return a count of entities in the collection
    */
-  CountEntitiesResponse countEntities(String collectionName);
+  long countEntities(String collectionName);
 
   /**
    * Gets server status

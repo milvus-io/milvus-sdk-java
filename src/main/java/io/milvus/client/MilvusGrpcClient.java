@@ -367,72 +367,23 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public ListCollectionsResponse listCollections() {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new ListCollectionsResponse(
-          new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
-    }
-
-    Command request = Command.newBuilder().setCmd("").build();
-    CollectionNameList response;
-
-    try {
-      response = blockingStub().showCollections(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        List<String> collectionNames = response.getCollectionNamesList();
-        logInfo("Current collections: {}", collectionNames.toString());
-        return new ListCollectionsResponse(new Response(Response.Status.SUCCESS), collectionNames);
-      } else {
-        logError("List collections failed:\n{}", response.getStatus().toString());
-        return new ListCollectionsResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            Collections.emptyList());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("listCollections RPC failed:\n{}", e.getStatus().toString());
-      return new ListCollectionsResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), Collections.emptyList());
-    }
+  public List<String> listCollections() {
+    return translateExceptions(() -> {
+      Command request = Command.newBuilder().setCmd("").build();
+      CollectionNameList response = blockingStub().showCollections(request);
+      checkResponseStatus(response.getStatus());
+      return response.getCollectionNamesList();
+    });
   }
 
   @Override
-  public CountEntitiesResponse countEntities(@Nonnull String collectionName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new CountEntitiesResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    CollectionRowCount response;
-
-    try {
-      response = blockingStub().countCollection(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        long collectionRowCount = response.getCollectionRowCount();
-        logInfo("Collection `{}` has {} entities", collectionName, collectionRowCount);
-        return new CountEntitiesResponse(new Response(Response.Status.SUCCESS), collectionRowCount);
-      } else {
-        logError(
-            "Get collection `{}` entity count failed:\n{}",
-            collectionName,
-            response.getStatus().toString());
-        return new CountEntitiesResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            0);
-      }
-    } catch (StatusRuntimeException e) {
-      logError("countEntities RPC failed:\n{}", e.getStatus().toString());
-      return new CountEntitiesResponse(new Response(Response.Status.RPC_ERROR, e.toString()), 0);
-    }
+  public long countEntities(@Nonnull String collectionName) {
+    return translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      CollectionRowCount response = blockingStub().countCollection(request);
+      checkResponseStatus(response.getStatus());
+      return response.getCollectionRowCount();
+    });
   }
 
   @Override

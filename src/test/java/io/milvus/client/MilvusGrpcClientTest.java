@@ -241,7 +241,7 @@ class MilvusClientTest {
     MilvusClient client = new MilvusGrpcClient(connectParam);
     TimeUnit.SECONDS.sleep(2);
     // A new RPC would take the channel out of idle mode
-    assertTrue(client.listCollections().ok());
+    client.listCollections();
   }
 
   @org.junit.jupiter.api.Test
@@ -385,8 +385,7 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    assertEquals(size * 2,
-        client.countEntities(randomCollectionName).getCollectionEntityCount());
+    assertEquals(size * 2, client.countEntities(randomCollectionName));
 
     final int searchSize = 1;
     final long topK = 10;
@@ -621,9 +620,8 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void listCollections() {
-    ListCollectionsResponse listCollectionsResponse = client.listCollections();
-    assertTrue(listCollectionsResponse.ok());
-    assertTrue(listCollectionsResponse.getCollectionNames().contains(randomCollectionName));
+    List<String> collectionList = client.listCollections();
+    assertTrue(collectionList.contains(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
@@ -642,10 +640,7 @@ class MilvusClientTest {
   void countEntities() {
     insert();
     assertTrue(client.flush(randomCollectionName).ok());
-
-    CountEntitiesResponse countEntitiesResponse = client.countEntities(randomCollectionName);
-    assertTrue(countEntitiesResponse.ok());
-    assertEquals(size, countEntitiesResponse.getCollectionEntityCount());
+    assertEquals(size, client.countEntities(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
@@ -796,7 +791,7 @@ class MilvusClientTest {
 
     assertTrue(client.deleteEntityByID(randomCollectionName, entityIds.subList(0, 100)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
-    assertEquals(client.countEntities(randomCollectionName).getCollectionEntityCount(), size - 100);
+    assertEquals(size - 100, client.countEntities(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
