@@ -653,11 +653,8 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
-
-    String jsonString = getCollectionStatsResponse.getMessage();
-    JSONObject jsonInfo = new JSONObject(jsonString);
+    String collectionStats = client.getCollectionStats(randomCollectionName);
+    JSONObject jsonInfo = new JSONObject(collectionStats);
     assertEquals(jsonInfo.getInt("row_count"), size);
 
     JSONArray partitions = jsonInfo.getJSONArray("partitions");
@@ -744,16 +741,13 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
-
-    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
-    JSONObject segmentInfo =
-        jsonInfo
-            .getJSONArray("partitions")
-            .getJSONObject(0)
-            .getJSONArray("segments")
-            .getJSONObject(0);
+    String collectionStats = client.getCollectionStats(randomCollectionName);
+    JSONObject jsonInfo = new JSONObject(collectionStats);
+    JSONObject segmentInfo = jsonInfo
+        .getJSONArray("partitions")
+        .getJSONObject(0)
+        .getJSONArray("segments")
+        .getJSONObject(0);
 
     ListIDInSegmentResponse listIDInSegmentResponse =
         client.listIDInSegment(randomCollectionName, segmentInfo.getLong("id"));
@@ -822,15 +816,12 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
-
-    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
-    long previousSegmentSize =
-        jsonInfo
-            .getJSONArray("partitions")
-            .getJSONObject(0)
-            .getLong("data_size");
+    String collectionStats = client.getCollectionStats(randomCollectionName);
+    JSONObject jsonInfo = new JSONObject(collectionStats);
+    long previousSegmentSize = jsonInfo
+        .getJSONArray("partitions")
+        .getJSONObject(0)
+        .getLong("data_size");
 
     assertTrue(
         client.deleteEntityByID(randomCollectionName,
@@ -839,15 +830,13 @@ class MilvusClientTest {
     assertTrue(client.compact(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.2).build()).ok());
 
-    getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
+    collectionStats = client.getCollectionStats(randomCollectionName);
 
-    jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
-    long currentSegmentSize =
-        jsonInfo
-            .getJSONArray("partitions")
-            .getJSONObject(0)
-            .getLong("data_size");
+    jsonInfo = new JSONObject(collectionStats);
+    long currentSegmentSize = jsonInfo
+        .getJSONArray("partitions")
+        .getJSONObject(0)
+        .getLong("data_size");
     assertTrue(currentSegmentSize < previousSegmentSize);
   }
 
@@ -874,10 +863,8 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Response getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
-
-    JSONObject jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
+    String collectionStats = client.getCollectionStats(randomCollectionName);
+    JSONObject jsonInfo = new JSONObject(collectionStats);
     JSONObject segmentInfo =
         jsonInfo
             .getJSONArray("partitions")
@@ -894,15 +881,13 @@ class MilvusClientTest {
     assertTrue(client.compactAsync(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.8).build()).get().ok());
 
-    getCollectionStatsResponse = client.getCollectionStats(randomCollectionName);
-    assertTrue(getCollectionStatsResponse.ok());
-    jsonInfo = new JSONObject(getCollectionStatsResponse.getMessage());
-    segmentInfo =
-        jsonInfo
-            .getJSONArray("partitions")
-            .getJSONObject(0)
-            .getJSONArray("segments")
-            .getJSONObject(0);
+    collectionStats = client.getCollectionStats(randomCollectionName);
+    jsonInfo = new JSONObject(collectionStats);
+    segmentInfo = jsonInfo
+        .getJSONArray("partitions")
+        .getJSONObject(0)
+        .getJSONArray("segments")
+        .getJSONObject(0);
 
     long currentSegmentSize = segmentInfo.getLong("data_size");
     assertFalse(currentSegmentSize < previousSegmentSize); // threshold 0.8 > 0.5, no compact

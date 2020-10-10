@@ -331,10 +331,8 @@ public interface MilvusClient {
    * result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response getCollectionStats(String collectionName);
+  String getCollectionStats(String collectionName);
 
   /**
    * Gets entities data by id array

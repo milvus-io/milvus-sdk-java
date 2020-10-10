@@ -421,34 +421,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response getCollectionStats(String collectionName) {
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    io.milvus.grpc.CollectionInfo response;
-
-    try {
-      response = blockingStub().showCollectionInfo(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("getCollectionStats for `{}` returned successfully!", collectionName);
-        return new Response(Response.Status.SUCCESS, response.getJsonInfo());
-      } else {
-        logError(
-            "getCollectionStats for `{}` failed:\n{}",
-            collectionName,
-            response.getStatus().toString());
-        return new Response(
-            Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-            response.getStatus().getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("getCollectionStats RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public String getCollectionStats(String collectionName) {
+    return translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      CollectionInfo response = blockingStub().showCollectionInfo(request);
+      checkResponseStatus(response.getStatus());
+      return response.getJsonInfo();
+    });
   }
 
   @Override
