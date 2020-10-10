@@ -295,44 +295,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public HasPartitionResponse hasPartition(String collectionName, String tag) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new HasPartitionResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
-    }
-
-    PartitionParam request =
-        PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
-    BoolReply response;
-
-    try {
-      response = blockingStub().hasPartition(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo(
-            "hasPartition with tag `{}` in `{}` = {}",
-            tag,
-            collectionName,
-            response.getBoolReply());
-        return new HasPartitionResponse(
-            new Response(Response.Status.SUCCESS), response.getBoolReply());
-      } else {
-        logError(
-            "hasPartition with tag `{}` in `{}` failed:\n{}",
-            tag,
-            collectionName,
-            response.toString());
-        return new HasPartitionResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            false);
-      }
-    } catch (StatusRuntimeException e) {
-      logError("hasPartition RPC failed:\n{}", e.getStatus().toString());
-      return new HasPartitionResponse(new Response(Response.Status.RPC_ERROR, e.toString()), false);
-    }
+  public boolean hasPartition(String collectionName, String tag) {
+    return translateExceptions(() -> {
+      PartitionParam request = PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
+      BoolReply response = blockingStub().hasPartition(request);
+      checkResponseStatus(response.getStatus());
+      return response.getBoolReply();
+    });
   }
 
   @Override

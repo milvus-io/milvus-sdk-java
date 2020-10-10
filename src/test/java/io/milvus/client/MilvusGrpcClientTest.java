@@ -445,14 +445,12 @@ class MilvusClientTest {
 
     assertTrue(Collections.disjoint(resultIdsList1, resultIdsList2));
 
-    HasPartitionResponse testHasPartition = client.hasPartition(randomCollectionName, tag1);
-    assertTrue(testHasPartition.hasPartition());
+    assertTrue(client.hasPartition(randomCollectionName, tag1));
 
     Response dropPartitionResponse = client.dropPartition(randomCollectionName, tag1);
     assertTrue(dropPartitionResponse.ok());
 
-    testHasPartition = client.hasPartition(randomCollectionName, tag1);
-    assertFalse(testHasPartition.hasPartition());
+    assertFalse(client.hasPartition(randomCollectionName, tag1));
 
     dropPartitionResponse = client.dropPartition(randomCollectionName, tag2);
     assertTrue(dropPartitionResponse.ok());

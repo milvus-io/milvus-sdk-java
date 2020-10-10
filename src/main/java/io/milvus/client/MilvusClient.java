@@ -159,10 +159,9 @@ public interface MilvusClient {
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @return <code>HasPartitionResponse</code>
-   * @see Response
+   * @return true if the partition exists, false otherwise.
    */
-  HasPartitionResponse hasPartition(String collectionName, String tag);
+  boolean hasPartition(String collectionName, String tag);
 
   /**
    * Lists current partitions of a collection
