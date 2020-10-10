@@ -38,7 +38,6 @@ import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -359,41 +357,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public GetCollectionInfoResponse getCollectionInfo(@Nonnull String collectionName) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new GetCollectionInfoResponse(
-          new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
-    }
-
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-    Mapping response;
-
-    try {
-      response = blockingStub().describeCollection(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-        CollectionMapping collectionMapping = new CollectionMapping(response);
-        logInfo("Get Collection Info `{}` returned:\n{}", collectionName, collectionMapping);
-        return new GetCollectionInfoResponse(
-            new Response(Response.Status.SUCCESS), collectionMapping);
-      } else {
-        logError(
-            "Get Collection Info `{}` failed:\n{}",
-            collectionName,
-            response.getStatus().toString());
-        return new GetCollectionInfoResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            null);
-      }
-    } catch (StatusRuntimeException e) {
-      logError("getCollectionInfo RPC failed:\n{}", e.getStatus().toString());
-      return new GetCollectionInfoResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), null);
-    }
+  public CollectionMapping getCollectionInfo(@Nonnull String collectionName) {
+    return translateExceptions(() -> {
+      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+      Mapping response = blockingStub().describeCollection(request);
+      checkResponseStatus(response.getStatus());
+      return new CollectionMapping(response);
+    });
   }
 
   @Override

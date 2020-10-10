@@ -267,12 +267,10 @@ public interface MilvusClient {
    * Gets collection info
    *
    * @param collectionName collection to describe
-   * @return <code>GetCollectionInfoResponse</code>
-   * @see GetCollectionInfoResponse
+   * @return <code>CollectionMapping</code>
    * @see CollectionMapping
-   * @see Response
    */
-  GetCollectionInfoResponse getCollectionInfo(String collectionName);
+  CollectionMapping getCollectionInfo(String collectionName);
 
   /**
    * Lists current collections

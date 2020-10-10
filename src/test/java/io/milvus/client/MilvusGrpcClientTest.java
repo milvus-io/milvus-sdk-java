@@ -20,7 +20,6 @@
 package io.milvus.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
 import io.grpc.Status;
@@ -30,7 +29,6 @@ import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.ErrorCode;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -607,17 +605,10 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void getCollectionInfo() {
-    GetCollectionInfoResponse getCollectionInfoResponse =
-        client.getCollectionInfo(randomCollectionName);
-    assertTrue(getCollectionInfoResponse.ok());
-    assertTrue(getCollectionInfoResponse.getCollectionMapping().isPresent());
-    assertEquals(
-        getCollectionInfoResponse.getCollectionMapping().get().getCollectionName(),
-        randomCollectionName);
+    CollectionMapping collectionMapping = client.getCollectionInfo(randomCollectionName);
+    assertEquals(randomCollectionName, collectionMapping.getCollectionName());
 
-    List<? extends Map<String, Object>> fields = getCollectionInfoResponse.getCollectionMapping()
-        .get().getFields();
-    for (Map<String, Object> field : fields) {
+    for (Map<String, Object> field : collectionMapping.getFields()) {
       if (field.get("field").equals("float_vec")) {
         JSONObject params = new JSONObject(field.get("params").toString());
         assertTrue(params.has("dim"));
@@ -625,9 +616,7 @@ class MilvusClientTest {
     }
 
     String nonExistingCollectionName = generator.generate(10);
-    getCollectionInfoResponse = client.getCollectionInfo(nonExistingCollectionName);
-    assertFalse(getCollectionInfoResponse.ok());
-    assertFalse(getCollectionInfoResponse.getCollectionMapping().isPresent());
+    assertErrorCode(ErrorCode.COLLECTION_NOT_EXISTS, () -> client.getCollectionInfo(nonExistingCollectionName));
   }
 
   @org.junit.jupiter.api.Test
