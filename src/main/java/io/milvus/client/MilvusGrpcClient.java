@@ -228,8 +228,10 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   private <R> R translate(Throwable e) {
     if (e instanceof MilvusException) {
       throw (MilvusException) e;
-    } else {
+    } else if (e.getCause() == null || e.getCause() == e) {
       throw new ClientSideMilvusException(target(), e);
+    } else {
+      return translate(e.getCause());
     }
   }
 
@@ -268,115 +270,19 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response createIndex(@Nonnull Index index) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    List<KeyValuePair> extraParams = new ArrayList<>();
-
-    try {
-      JSONObject jsonInfo = new JSONObject(index.getParamsInJson());
-      Iterator<String> keys = jsonInfo.keys();
-      while (keys.hasNext()) {
-        String key = keys.next();
-        KeyValuePair extraParam = KeyValuePair.newBuilder()
-            .setKey(key)
-            .setValue(jsonInfo.get(key).toString())
-            .build();
-        extraParams.add(extraParam);
-      }
-    } catch (JSONException err){
-      logError("Params must be in json format.\n`{}`", err.toString());
-      return new Response(Response.Status.ILLEGAL_ARGUMENT);
-    }
-
-    IndexParam request =
-        IndexParam.newBuilder()
-            .setCollectionName(index.getCollectionName())
-            .setFieldName(index.getFieldName())
-            .addAllExtraParams(extraParams)
-            .build();
-
-    Status response;
-
-    try {
-      response = blockingStub().createIndex(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Created index successfully!\n{}", index.toString());
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError("Create index failed:\n{}\n{}", index.toString(), response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("createIndex RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void createIndex(@Nonnull Index index) {
+    translateExceptions(() -> {
+      Futures.getUnchecked(createIndexAsync(index));
+    });
   }
 
   @Override
-  public ListenableFuture<Response> createIndexAsync(@Nonnull Index index) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
-    }
-
-    List<KeyValuePair> extraParams = new ArrayList<>();
-
-    try {
-      JSONObject jsonInfo = new JSONObject(index.getParamsInJson());
-      Iterator<String> keys = jsonInfo.keys();
-      while (keys.hasNext()) {
-        String key = keys.next();
-        KeyValuePair extraParam = KeyValuePair.newBuilder()
-            .setKey(key)
-            .setValue(jsonInfo.get(key).toString())
-            .build();
-        extraParams.add(extraParam);
-      }
-    } catch (JSONException err){
-      logError("Params must be in json format.\n`{}`", err.toString());
-      return Futures.immediateFuture(new Response(Response.Status.ILLEGAL_ARGUMENT));
-    }
-
-    IndexParam request =
-        IndexParam.newBuilder()
-            .setCollectionName(index.getCollectionName())
-            .setFieldName(index.getFieldName())
-            .addAllExtraParams(extraParams)
-            .build();
-
-    ListenableFuture<Status> response;
-
-    response = futureStub().createIndex(request);
-
-    Futures.addCallback(
-        response,
-        new FutureCallback<Status>() {
-          @Override
-          public void onSuccess(Status result) {
-            if (result.getErrorCode() == ErrorCode.SUCCESS) {
-              logInfo("Created index successfully!\n{}", index.toString());
-            } else {
-              logError("CreateIndexAsync failed:\n{}\n{}", index.toString(), result.toString());
-            }
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            logError("CreateIndexAsync failed:\n{}", t.getMessage());
-          }
-        },
-        MoreExecutors.directExecutor());
-
-    return Futures.transform(
-        response, transformStatusToResponseFunc::apply, MoreExecutors.directExecutor());
+  public ListenableFuture<Void> createIndexAsync(@Nonnull Index index) {
+    return translateExceptions(() -> {
+      IndexParam request = index.grpc();
+      ListenableFuture<Status> responseFuture = futureStub().createIndex(request);
+      return Futures.transform(responseFuture, this::checkResponseStatus, MoreExecutors.directExecutor());
+    });
   }
 
   @Override

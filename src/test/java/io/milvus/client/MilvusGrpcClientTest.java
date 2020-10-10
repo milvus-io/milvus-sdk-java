@@ -19,12 +19,15 @@
 
 package io.milvus.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.milvus.client.InsertParam.Builder;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.InitializationException;
@@ -127,6 +130,12 @@ class MilvusClientTest {
 
   protected void assertErrorCode(ErrorCode errorCode, Runnable runnable) {
     assertEquals(errorCode, assertThrows(ServerSideMilvusException.class, runnable::run).getErrorCode());
+  }
+
+  protected void assertGrpcStatusCode(Status.Code statusCode, Runnable runnable) {
+    ClientSideMilvusException error = assertThrows(ClientSideMilvusException.class, runnable::run);
+    assertTrue(error.getCause() instanceof StatusRuntimeException);
+    assertEquals(statusCode, ((StatusRuntimeException) error.getCause()).getStatus().getCode());
   }
 
   // Helper function that generates random float vectors
@@ -301,15 +310,11 @@ class MilvusClientTest {
   void grpcTimeout() {
     insert();
     MilvusClient timeoutClient = client.withTimeout(1, TimeUnit.MILLISECONDS);
-    Response response = timeoutClient.createIndex(
-        new Index.Builder(randomCollectionName, "float_vec")
-            .withParamsInJson(new JsonBuilder()
-                .param("index_type", "IVF_FLAT")
-                .param("metric_type", "L2")
-                .indexParam("nlist", 2048)
-                .build())
-            .build());
-    assertEquals(Response.Status.RPC_ERROR, response.getStatus());
+    Index index = Index.create(randomCollectionName, "float_vec")
+        .setIndexType(IndexType.IVF_FLAT)
+        .setMetricType(MetricType.L2)
+        .setParamsInJson(new JsonBuilder().param("nlist", 2048).build());
+    assertGrpcStatusCode(Status.Code.DEADLINE_EXCEEDED, () -> timeoutClient.createIndex(index));
   }
 
   @org.junit.jupiter.api.Test
@@ -460,51 +465,16 @@ class MilvusClientTest {
     insert();
     assertTrue(client.flush(randomCollectionName).ok());
 
-    Index index =
-        new Index.Builder(randomCollectionName, "float_vec")
-            .withParamsInJson(new JsonBuilder().param("index_type", "IVF_SQ8")
-                                               .param("metric_type", "L2")
-                                               .indexParam("nlist", 2048)
-                                               .build())
-            .build();
+    Index index = Index.create(randomCollectionName, "float_vec")
+        .setIndexType(IndexType.IVF_SQ8)
+        .setMetricType(MetricType.L2)
+        .setParamsInJson(new JsonBuilder().param("nlist", 2048).build());
 
-    Response createIndexResponse = client.createIndex(index);
-    assertTrue(createIndexResponse.ok());
+    client.createIndex(index);
 
     // also test drop index here
     Response dropIndexResponse = client.dropIndex(randomCollectionName, "float_vec");
     assertTrue(dropIndexResponse.ok());
-  }
-
-  @org.junit.jupiter.api.Test
-  void createIndexAsync() throws ExecutionException, InterruptedException {
-    insert();
-    assertTrue(client.flush(randomCollectionName).ok());
-
-    Index index =
-        new Index.Builder(randomCollectionName, "float_vec")
-            .withParamsInJson(new JsonBuilder().param("index_type", "IVF_SQ8")
-                                               .param("metric_type", "L2")
-                                               .indexParam("nlist", 2048)
-                                               .build())
-            .build();
-
-    ListenableFuture<Response> createIndexResponseFuture = client.createIndexAsync(index);
-    Futures.addCallback(
-        createIndexResponseFuture,
-        new FutureCallback<Response>() {
-          @Override
-          public void onSuccess(@NullableDecl Response createIndexResponse) {
-            assert createIndexResponse != null;
-            assertTrue(createIndexResponse.ok());
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            System.out.println(t.getMessage());
-          }
-        }, MoreExecutors.directExecutor()
-    );
   }
 
   @org.junit.jupiter.api.Test
@@ -600,16 +570,12 @@ class MilvusClientTest {
     assertTrue(insertResponse.ok());
     assertEquals(size, insertResponse.getEntityIds().size());
 
-    Index index =
-        new Index.Builder(binaryCollectionName, "binary_vec")
-            .withParamsInJson(new JsonBuilder().param("index_type", "BIN_IVF_FLAT")
-                .param("metric_type", "JACCARD")
-                .indexParam("nlist", 100)
-                .build())
-            .build();
+    Index index = Index.create(binaryCollectionName, "binary_vec")
+        .setIndexType(IndexType.BIN_IVF_FLAT)
+        .setMetricType(MetricType.JACCARD)
+        .setParamsInJson(new JsonBuilder().param("nlist", 100).build());
 
-    Response createIndexResponse = client.createIndex(index);
-    assertTrue(createIndexResponse.ok());
+    client.createIndex(index);
 
     // also test drop index here
     Response dropIndexResponse = client.dropIndex(binaryCollectionName, "binary_vec");

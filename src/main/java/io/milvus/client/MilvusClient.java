@@ -121,11 +121,9 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return <code>Response</code>
    * @see Index
-   * @see Response
    */
-  Response createIndex(Index index);
+  void createIndex(Index index);
 
   /**
    * Creates index specified by <code>index</code> asynchronously
@@ -144,10 +142,9 @@ public interface MilvusClient {
    *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
    * @see Index
-   * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<Response> createIndexAsync(Index index);
+  ListenableFuture<Void> createIndexAsync(Index index);
 
   /**
    * Creates a partition specified by <code>collectionName</code> and <code>tag</code>
