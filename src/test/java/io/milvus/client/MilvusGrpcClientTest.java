@@ -356,12 +356,10 @@ class MilvusClientTest {
   @SuppressWarnings("unchecked")
   void partitionTest() {
     final String tag1 = "tag1";
-    Response createPartitionResponse = client.createPartition(randomCollectionName, tag1);
-    assertTrue(createPartitionResponse.ok());
+    client.createPartition(randomCollectionName, tag1);
 
     final String tag2 = "tag2";
-    createPartitionResponse = client.createPartition(randomCollectionName, tag2);
-    assertTrue(createPartitionResponse.ok());
+    client.createPartition(randomCollectionName, tag2);
 
     ListPartitionsResponse listPartitionsResponse = client.listPartitions(randomCollectionName);
     assertTrue(listPartitionsResponse.ok());

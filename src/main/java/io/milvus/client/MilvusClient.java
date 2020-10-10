@@ -151,10 +151,8 @@ public interface MilvusClient {
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response createPartition(String collectionName, String tag);
+  void createPartition(String collectionName, String tag);
 
   /**
    * Checks whether the partition exists

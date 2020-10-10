@@ -286,37 +286,12 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response createPartition(String collectionName, String tag) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    PartitionParam request =
-        PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
-
-    Status response;
-
-    try {
-      response = blockingStub().createPartition(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Created partition `{}` in collection `{}` successfully!", tag, collectionName);
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError(
-            "Create partition `{}` in collection `{}` failed: {}",
-            tag,
-            collectionName,
-            response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("createPartition RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void createPartition(String collectionName, String tag) {
+    translateExceptions(() -> {
+      PartitionParam request = PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
+      Status response = blockingStub().createPartition(request);
+      checkResponseStatus(response);
+    });
   }
 
   @Override
