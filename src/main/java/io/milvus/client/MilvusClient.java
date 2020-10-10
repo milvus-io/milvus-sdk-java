@@ -312,10 +312,8 @@ public interface MilvusClient {
    * Pre-loads collection to memory
    *
    * @param collectionName collection to load
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response loadCollection(String collectionName);
+  void loadCollection(String collectionName);
 
   /**
    * Drops collection index

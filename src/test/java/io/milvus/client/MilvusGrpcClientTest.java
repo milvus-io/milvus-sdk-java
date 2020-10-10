@@ -646,9 +646,7 @@ class MilvusClientTest {
   void loadCollection() {
     insert();
     assertTrue(client.flush(randomCollectionName).ok());
-
-    Response loadCollectionResponse = client.loadCollection(randomCollectionName);
-    assertTrue(loadCollectionResponse.ok());
+    client.loadCollection(randomCollectionName);
   }
 
   @org.junit.jupiter.api.Test
