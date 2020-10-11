@@ -371,52 +371,44 @@ public interface MilvusClient {
    *
    * @param collectionName collection to delete ids from
    * @param ids a <code>List</code> of entity ids to delete
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response deleteEntityByID(String collectionName, List<Long> ids);
+  void deleteEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Flushes data in a list collections. Newly inserted or modifications on data will be visible
    * after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response flush(List<String> collectionNames);
+  void flush(List<String> collectionNames);
 
   /**
    * Flushes data in a list collections asynchronously. Newly inserted or modifications on data will
    * be visible after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
-   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
-   * @see Response
+   * @return <code>ListenableFuture</code>
    * @see ListenableFuture
    */
-  ListenableFuture<Response> flushAsync(List<String> collectionNames);
+  ListenableFuture<Void> flushAsync(List<String> collectionNames);
 
   /**
    * Flushes data in a collection. Newly inserted or modifications on data will be visible after
    * <code>flush</code> returned
    *
    * @param collectionName name of collection to flush
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response flush(String collectionName);
+  void flush(String collectionName);
 
   /**
    * Flushes data in a collection asynchronously. Newly inserted or modifications on data will be
    * visible after <code>flush</code> returned
    *
    * @param collectionName name of collection to flush
-   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
-   * @see Response
+   * @return <code>ListenableFuture</code>
    * @see ListenableFuture
    */
-  ListenableFuture<Response> flushAsync(String collectionName);
+  ListenableFuture<Void> flushAsync(String collectionName);
 
   /**
    * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the

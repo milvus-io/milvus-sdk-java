@@ -496,118 +496,39 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response deleteEntityByID(String collectionName, List<Long> ids) {
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    DeleteByIDParam request =
-        DeleteByIDParam.newBuilder().setCollectionName(collectionName).addAllIdArray(ids).build();
-    Status response;
-
-    try {
-      response = blockingStub().deleteByID(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("deleteEntityByID in collection `{}` completed successfully!", collectionName);
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError(
-            "deleteEntityByID in collection `{}` failed:\n{}", collectionName, response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("deleteEntityByID RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void deleteEntityByID(String collectionName, List<Long> ids) {
+    translateExceptions(() -> {
+      DeleteByIDParam request = DeleteByIDParam.newBuilder()
+          .setCollectionName(collectionName)
+          .addAllIdArray(ids)
+          .build();
+      Status response = blockingStub().deleteByID(request);
+      checkResponseStatus(response);
+    });
   }
 
   @Override
-  public Response flush(List<String> collectionNames) {
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
-    Status response;
-
-    try {
-      response = blockingStub().flush(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Flushed collection {} successfully!", collectionNames);
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError("Flush collection {} failed:\n{}", collectionNames, response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("flush RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void flush(List<String> collectionNames) {
+    translateExceptions(() -> Futures.getUnchecked(flushAsync(collectionNames)));
   }
 
   @Override
-  public ListenableFuture<Response> flushAsync(@Nonnull List<String> collectionNames) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
-    }
-
-    FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
-
-    ListenableFuture<Status> response;
-
-    response = futureStub().flush(request);
-
-    Futures.addCallback(
-        response,
-        new FutureCallback<Status>() {
-          @Override
-          public void onSuccess(Status result) {
-            if (result.getErrorCode() == ErrorCode.SUCCESS) {
-              logInfo("Flushed collection {} successfully!", collectionNames);
-            } else {
-              logError("Flush collection {} failed:\n{}", collectionNames, result.toString());
-            }
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            logError("FlushAsync failed:\n{}", t.getMessage());
-          }
-        },
-        MoreExecutors.directExecutor());
-
-    return Futures.transform(
-        response, transformStatusToResponseFunc::apply, MoreExecutors.directExecutor());
+  public ListenableFuture<Void> flushAsync(@Nonnull List<String> collectionNames) {
+    return translateExceptions(() -> {
+      FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
+      ListenableFuture<Status> response = futureStub().flush(request);
+      return Futures.transform(response, this::checkResponseStatus, MoreExecutors.directExecutor());
+    });
   }
 
   @Override
-  public Response flush(String collectionName) {
-    List<String> list =
-        new ArrayList<String>() {
-          {
-            add(collectionName);
-          }
-        };
-    return flush(list);
+  public void flush(String collectionName) {
+    flush(Collections.singletonList(collectionName));
   }
 
   @Override
-  public ListenableFuture<Response> flushAsync(String collectionName) {
-    List<String> list =
-        new ArrayList<String>() {
-          {
-            add(collectionName);
-          }
-        };
-    return flushAsync(list);
+  public ListenableFuture<Void> flushAsync(String collectionName) {
+    return flushAsync(Collections.singletonList(collectionName));
   }
 
   @Override

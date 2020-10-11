@@ -383,7 +383,7 @@ class MilvusClientTest {
         .setPartitionTag(tag2);
     client.insert(insertParam);
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     assertEquals(size * 2, client.countEntities(randomCollectionName));
 
@@ -427,7 +427,7 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void createIndex() {
     insert();
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     Index index = Index.create(randomCollectionName, "float_vec")
         .setIndexType(IndexType.IVF_SQ8)
@@ -513,7 +513,7 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     final int searchSize = 5;
     List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
@@ -572,7 +572,7 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(binaryCollectionName).ok());
+    client.flush(binaryCollectionName);
 
     final int searchSize = 5;
     List<String> vectorsToSearch = vectors.subList(0, searchSize)
@@ -636,14 +636,14 @@ class MilvusClientTest {
   @org.junit.jupiter.api.Test
   void countEntities() {
     insert();
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
     assertEquals(size, client.countEntities(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
   void loadCollection() {
     insert();
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
     client.loadCollection(randomCollectionName);
   }
 
@@ -651,7 +651,7 @@ class MilvusClientTest {
   void getCollectionStats() {
     insert();
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     String collectionStats = client.getCollectionStats(randomCollectionName);
     JSONObject jsonInfo = new JSONObject(collectionStats);
@@ -685,7 +685,7 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     List<Map<String, Object>> fieldsMap =
         client.getEntityByID(randomCollectionName, entityIds.subList(0, 100));
@@ -717,7 +717,7 @@ class MilvusClientTest {
         .setEntityIds(entityIds);
     assertEquals(size, client.insert(insertParam).size());
 
-    assertTrue(client.flush(binaryCollectionName).ok());
+    client.flush(binaryCollectionName);
 
     List<Map<String, Object>> fieldsMap =
         client.getEntityByID(binaryCollectionName, entityIds.subList(0, 100));
@@ -731,7 +731,7 @@ class MilvusClientTest {
   void getEntityIds() {
     insert();
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     String collectionStats = client.getCollectionStats(randomCollectionName);
     JSONObject jsonInfo = new JSONObject(collectionStats);
@@ -766,21 +766,21 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
-    assertTrue(client.deleteEntityByID(randomCollectionName, entityIds.subList(0, 100)).ok());
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.deleteEntityByID(randomCollectionName, entityIds.subList(0, 100));
+    client.flush(randomCollectionName);
     assertEquals(size - 100, client.countEntities(randomCollectionName));
   }
 
   @org.junit.jupiter.api.Test
   void flush() {
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
   }
 
   @org.junit.jupiter.api.Test
   void flushAsync() throws ExecutionException, InterruptedException {
-    assertTrue(client.flushAsync(randomCollectionName).get().ok());
+    client.flushAsync(randomCollectionName);
   }
 
   @org.junit.jupiter.api.Test
@@ -804,7 +804,7 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     String collectionStats = client.getCollectionStats(randomCollectionName);
     JSONObject jsonInfo = new JSONObject(collectionStats);
@@ -813,10 +813,8 @@ class MilvusClientTest {
         .getJSONObject(0)
         .getLong("data_size");
 
-    assertTrue(
-        client.deleteEntityByID(randomCollectionName,
-            entityIds.subList(0, size / 2)).ok());
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.deleteEntityByID(randomCollectionName, entityIds.subList(0, size / 2));
+    client.flush(randomCollectionName);
     assertTrue(client.compact(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.2).build()).ok());
 
@@ -851,7 +849,7 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.flush(randomCollectionName);
 
     String collectionStats = client.getCollectionStats(randomCollectionName);
     JSONObject jsonInfo = new JSONObject(collectionStats);
@@ -864,10 +862,8 @@ class MilvusClientTest {
 
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
-    assertTrue(
-        client.deleteEntityByID(randomCollectionName,
-            entityIds.subList(0, size / 2)).ok());
-    assertTrue(client.flush(randomCollectionName).ok());
+    client.deleteEntityByID(randomCollectionName, entityIds.subList(0, size / 2));
+    client.flush(randomCollectionName);
     assertTrue(client.compactAsync(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.8).build()).get().ok());
 
