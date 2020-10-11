@@ -425,11 +425,9 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return <code>Response</code>
    * @see CompactParam
-   * @see Response
    */
-  Response compact(CompactParam compactParam);
+  void compact(CompactParam compactParam);
 
   /**
    * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
@@ -448,8 +446,7 @@ public interface MilvusClient {
    *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
    * @see CompactParam
-   * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<Response> compactAsync(CompactParam compactParam);
+  ListenableFuture<Void> compactAsync(CompactParam compactParam);
 }

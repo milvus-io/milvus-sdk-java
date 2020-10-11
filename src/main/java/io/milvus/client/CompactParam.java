@@ -19,53 +19,25 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nonnull;
-
 /** Contains parameters for <code>compact</code> */
 public class CompactParam {
-  private final String collectionName;
-  private final double threshold;
+  private io.milvus.grpc.CompactParam.Builder builder;
 
-  private CompactParam(@Nonnull Builder builder) {
-    this.collectionName = builder.collectionName;
-    this.threshold = builder.threshold;
+  public static CompactParam create(String collectionName) {
+    return new CompactParam(collectionName);
   }
 
-  public String getCollectionName() {
-    return collectionName;
+  private CompactParam(String collectionName) {
+    builder = io.milvus.grpc.CompactParam.newBuilder();
+    builder.setCollectionName(collectionName).setThreshold(0.2);
   }
 
-  public double getThreshold() {
-    return threshold;
+  public CompactParam setThreshold(double threshold) {
+    builder.setThreshold(threshold);
+    return this;
   }
 
-  /** Builder for <code>CompactParam</code> */
-  public static class Builder {
-    // Required parameter
-    private final String collectionName;
-
-    // Optional parameter - initialized to default value
-    private double threshold = 0.2;
-
-    /** @param collectionName collection to compact */
-    public Builder(@Nonnull String collectionName) {
-      this.collectionName = collectionName;
-    }
-
-    /**
-     * Optional. Default to 0.2. Segment will compact if and only if the percentage of entities
-     * deleted exceeds the threshold.
-     *
-     * @param threshold The threshold
-     * @return <code>Builder</code>
-     */
-    public Builder withThreshold(double threshold) {
-      this.threshold = threshold;
-      return this;
-    }
-
-    public CompactParam build() {
-      return new CompactParam(this);
-    }
+  io.milvus.grpc.CompactParam grpc() {
+    return builder.build();
   }
 }

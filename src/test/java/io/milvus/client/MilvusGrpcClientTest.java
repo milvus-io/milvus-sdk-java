@@ -815,8 +815,7 @@ class MilvusClientTest {
 
     client.deleteEntityByID(randomCollectionName, entityIds.subList(0, size / 2));
     client.flush(randomCollectionName);
-    assertTrue(client.compact(
-        new CompactParam.Builder(randomCollectionName).withThreshold(0.2).build()).ok());
+    client.compact(CompactParam.create(randomCollectionName).setThreshold(0.2));
 
     collectionStats = client.getCollectionStats(randomCollectionName);
 
@@ -864,8 +863,7 @@ class MilvusClientTest {
 
     client.deleteEntityByID(randomCollectionName, entityIds.subList(0, size / 2));
     client.flush(randomCollectionName);
-    assertTrue(client.compactAsync(
-        new CompactParam.Builder(randomCollectionName).withThreshold(0.8).build()).get().ok());
+    client.compactAsync(CompactParam.create(randomCollectionName).setThreshold(0.8)).get();
 
     collectionStats = client.getCollectionStats(randomCollectionName);
     jsonInfo = new JSONObject(collectionStats);

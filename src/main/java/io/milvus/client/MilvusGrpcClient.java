@@ -532,78 +532,17 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response compact(CompactParam compactParam) {
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    }
-
-    io.milvus.grpc.CompactParam request =
-        io.milvus.grpc.CompactParam.newBuilder()
-            .setCollectionName(compactParam.getCollectionName())
-            .setThreshold(compactParam.getThreshold())
-            .build();
-    Status response;
-
-    try {
-      response = blockingStub().compact(request);
-
-      if (response.getErrorCode() == ErrorCode.SUCCESS) {
-        logInfo("Compacted collection `{}` successfully!", compactParam.getCollectionName());
-        return new Response(Response.Status.SUCCESS);
-      } else {
-        logError("Compact collection `{}` failed:\n{}",
-            compactParam.getCollectionName(), response.toString());
-        return new Response(
-            Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("compact RPC failed:\n{}", e.getStatus().toString());
-      return new Response(Response.Status.RPC_ERROR, e.toString());
-    }
+  public void compact(CompactParam compactParam) {
+    translateExceptions(() -> Futures.getUnchecked(compactAsync(compactParam)));
   }
 
   @Override
-  public ListenableFuture<Response> compactAsync(@Nonnull CompactParam compactParam) {
-
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
-    }
-
-    io.milvus.grpc.CompactParam request =
-        io.milvus.grpc.CompactParam.newBuilder()
-            .setCollectionName(compactParam.getCollectionName())
-            .setThreshold(compactParam.getThreshold())
-            .build();
-
-    ListenableFuture<Status> response;
-
-    response = futureStub().compact(request);
-
-    Futures.addCallback(
-        response,
-        new FutureCallback<Status>() {
-          @Override
-          public void onSuccess(Status result) {
-            if (result.getErrorCode() == ErrorCode.SUCCESS) {
-              logInfo("Compacted collection `{}` successfully!",
-                  compactParam.getCollectionName());
-            } else {
-              logError("Compact collection `{}` failed:\n{}",
-                  compactParam.getCollectionName(), result.toString());
-            }
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            logError("CompactAsync failed:\n{}", t.getMessage());
-          }
-        },
-        MoreExecutors.directExecutor());
-
-    return Futures.transform(
-        response, transformStatusToResponseFunc::apply, MoreExecutors.directExecutor());
+  public ListenableFuture<Void> compactAsync(@Nonnull CompactParam compactParam) {
+    return translateExceptions(() -> {
+      io.milvus.grpc.CompactParam request = compactParam.grpc();
+      ListenableFuture<Status> response = futureStub().compact(request);
+      return Futures.transform(response, this::checkResponseStatus, MoreExecutors.directExecutor());
+    });
   }
 
   ///////////////////// Util Functions/////////////////////
