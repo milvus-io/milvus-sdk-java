@@ -28,7 +28,7 @@ import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.ErrorCode;
-import org.apache.commons.text.RandomStringGenerator;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -101,8 +101,6 @@ class ContainerMilvusClientTest extends MilvusClientTest {
 class MilvusClientTest {
 
   private MilvusClient client;
-
-  private RandomStringGenerator generator;
 
   protected String randomCollectionName;
   private int size;
@@ -208,8 +206,7 @@ class MilvusClientTest {
     ConnectParam connectParam = connectParamBuilder().build();
     client = new MilvusGrpcClient(connectParam);
 
-    generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
-    randomCollectionName = generator.generate(10);
+    randomCollectionName = RandomStringUtils.randomAlphabetic(10);
     size = 100000;
     dimension = 128;
 
@@ -338,7 +335,7 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void dropCollection() {
-    String nonExistingCollectionName = generator.generate(10);
+    String nonExistingCollectionName = RandomStringUtils.randomAlphabetic(10);
     assertErrorCode(ErrorCode.COLLECTION_NOT_EXISTS, () -> client.dropCollection(nonExistingCollectionName));
   }
 
@@ -463,7 +460,7 @@ class MilvusClientTest {
   void insertBinary() {
     final int binaryDimension = 10000;
 
-    String binaryCollectionName = generator.generate(10);
+    String binaryCollectionName = RandomStringUtils.randomAlphabetic(10);
 
     CollectionMapping collectionMapping = CollectionMapping
         .create(binaryCollectionName)
@@ -544,7 +541,7 @@ class MilvusClientTest {
   void searchBinary() {
     final int binaryDimension = 64;
 
-    String binaryCollectionName = generator.generate(10);
+    String binaryCollectionName = RandomStringUtils.randomAlphabetic(10);
     CollectionMapping collectionMapping = CollectionMapping
         .create(binaryCollectionName)
         .addField("int64", DataType.INT64)
@@ -610,7 +607,7 @@ class MilvusClientTest {
       }
     }
 
-    String nonExistingCollectionName = generator.generate(10);
+    String nonExistingCollectionName = RandomStringUtils.randomAlphabetic(10);
     assertErrorCode(ErrorCode.COLLECTION_NOT_EXISTS, () -> client.getCollectionInfo(nonExistingCollectionName));
   }
 
@@ -698,7 +695,7 @@ class MilvusClientTest {
   void getEntityByIDBinary() {
     final int binaryDimension = 64;
 
-    String binaryCollectionName = generator.generate(10);
+    String binaryCollectionName = RandomStringUtils.randomAlphabetic(10);
     CollectionMapping collectionMapping = CollectionMapping
         .create(binaryCollectionName)
         .addVectorField("binary_vec", DataType.VECTOR_BINARY, binaryDimension)
