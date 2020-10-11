@@ -741,10 +741,8 @@ class MilvusClientTest {
         .getJSONArray("segments")
         .getJSONObject(0);
 
-    ListIDInSegmentResponse listIDInSegmentResponse =
-        client.listIDInSegment(randomCollectionName, segmentInfo.getLong("id"));
-    assertTrue(listIDInSegmentResponse.ok());
-    assertFalse(listIDInSegmentResponse.getIds().isEmpty());
+    List<Long> entityIds = client.listIDInSegment(randomCollectionName, segmentInfo.getLong("id"));
+    assertFalse(entityIds.isEmpty());
   }
 
   @org.junit.jupiter.api.Test

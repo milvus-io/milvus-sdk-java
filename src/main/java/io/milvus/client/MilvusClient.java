@@ -362,11 +362,9 @@ public interface MilvusClient {
    *
    * @param collectionName collection to get entity ids from
    * @param segmentId segment id in the collection
-   * @return <code>ListIDInSegmentResponse</code>
-   * @see ListIDInSegmentResponse
-   * @see Response
+   * @return a list of entity ids in the segment
    */
-  ListIDInSegmentResponse listIDInSegment(String collectionName, Long segmentId);
+  List<Long> listIDInSegment(String collectionName, Long segmentId);
 
   /**
    * Deletes data in a collection by a list of ids

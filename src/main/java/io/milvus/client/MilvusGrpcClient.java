@@ -483,48 +483,16 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public ListIDInSegmentResponse listIDInSegment(String collectionName, Long segmentId) {
-    if (!maybeAvailable()) {
-      logWarning("You are not connected to Milvus server");
-      return new ListIDInSegmentResponse(
-          new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
-    }
-
-    GetEntityIDsParam request =
-        GetEntityIDsParam.newBuilder()
-            .setCollectionName(collectionName)
-            .setSegmentId(segmentId)
-            .build();
-    EntityIds response;
-
-    try {
-      response = blockingStub().getEntityIDs(request);
-
-      if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
-
-        logInfo(
-            "listIDInSegment in collection `{}`, segment `{}` returned successfully!",
-            collectionName,
-            segmentId);
-        return new ListIDInSegmentResponse(
-            new Response(Response.Status.SUCCESS), response.getEntityIdArrayList());
-      } else {
-        logError(
-            "listIDInSegment in collection `{}`, segment `{}` failed:\n{}",
-            collectionName,
-            segmentId,
-            response.getStatus().toString());
-        return new ListIDInSegmentResponse(
-            new Response(
-                Response.Status.valueOf(response.getStatus().getErrorCodeValue()),
-                response.getStatus().getReason()),
-            Collections.emptyList());
-      }
-    } catch (StatusRuntimeException e) {
-      logError("listIDInSegment RPC failed:\n{}", e.getStatus().toString());
-      return new ListIDInSegmentResponse(
-          new Response(Response.Status.RPC_ERROR, e.toString()), Collections.emptyList());
-    }
+  public List<Long> listIDInSegment(String collectionName, Long segmentId) {
+    return translateExceptions(() -> {
+      GetEntityIDsParam request = GetEntityIDsParam.newBuilder()
+          .setCollectionName(collectionName)
+          .setSegmentId(segmentId)
+          .build();
+      EntityIds response = blockingStub().getEntityIDs(request);
+      checkResponseStatus(response.getStatus());
+      return response.getEntityIdArrayList();
+    });
   }
 
   @Override
