@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -341,11 +342,9 @@ public interface MilvusClient {
    * @param ids a <code>List</code> of entity ids
    * @param fieldNames  a <code>List</code> of field names. Server will only return entity
    *                    information for these fields.
-   * @return <code>GetEntityByIDResponse</code>
-   * @see GetEntityByIDResponse
-   * @see Response
+   * @return a list of property maps.
    */
-  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
+  List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
 
   /**
    * Gets entities data by id array
@@ -356,7 +355,7 @@ public interface MilvusClient {
    * @see GetEntityByIDResponse
    * @see Response
    */
-  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids);
+  List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Gets all entity ids in a segment

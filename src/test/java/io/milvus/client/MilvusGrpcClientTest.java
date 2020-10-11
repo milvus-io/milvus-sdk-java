@@ -687,11 +687,9 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    GetEntityByIDResponse getEntityByIDResponse =
+    List<Map<String, Object>> fieldsMap =
         client.getEntityByID(randomCollectionName, entityIds.subList(0, 100));
-    assertTrue(getEntityByIDResponse.ok());
     int vecIndex = 0;
-    List<Map<String, Object>> fieldsMap = getEntityByIDResponse.getFieldsMap();
     assertTrue(fieldsMap.get(vecIndex).get("float_vec") instanceof List);
     List<Float> first = (List<Float>) (fieldsMap.get(vecIndex).get("float_vec"));
 
@@ -721,18 +719,12 @@ class MilvusClientTest {
 
     assertTrue(client.flush(binaryCollectionName).ok());
 
-    GetEntityByIDResponse getEntityByIDResponse =
+    List<Map<String, Object>> fieldsMap =
         client.getEntityByID(binaryCollectionName, entityIds.subList(0, 100));
-    assertTrue(getEntityByIDResponse.ok());
-    assertEquals(getEntityByIDResponse.getFieldsMap().size(), 100);
-    List<Map<String, Object>> fieldsMap = getEntityByIDResponse.getFieldsMap();
-    assertTrue(fieldsMap.get(0).get("binary_vec") instanceof List);
-    List<Byte> first = (List<Byte>) (fieldsMap.get(0).get("binary_vec"));
-    byte[] bytes = new byte[first.size()];
-    for (int i = 0; i < first.size(); i++) {
-      bytes[i] = first.get(i);
-    }
-    assertEquals(ByteBuffer.wrap(bytes), vectors.get(0));
+    assertEquals(100, fieldsMap.size());
+    assertTrue(fieldsMap.get(0).get("binary_vec") instanceof ByteBuffer);
+    ByteBuffer first = (ByteBuffer) (fieldsMap.get(0).get("binary_vec"));
+    assertEquals(vectors.get(0), first);
   }
 
   @org.junit.jupiter.api.Test
