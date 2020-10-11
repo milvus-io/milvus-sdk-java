@@ -351,9 +351,7 @@ public interface MilvusClient {
    *
    * @param collectionName collection to get entities from
    * @param ids a <code>List</code> of entity ids
-   * @return <code>GetEntityByIDResponse</code>
-   * @see GetEntityByIDResponse
-   * @see Response
+   * @return a list of property maps.
    */
   List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids);
 

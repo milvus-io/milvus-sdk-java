@@ -21,7 +21,6 @@ package io.milvus.client;
 
 import io.milvus.grpc.IndexParam;
 import io.milvus.grpc.KeyValuePair;
-import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import java.util.List;

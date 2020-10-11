@@ -19,7 +19,6 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nonnull;
 import org.json.JSONObject;
 
 /** Contains Json Parameter Builder */
@@ -40,24 +39,6 @@ public class JsonBuilder {
   public JsonBuilder param(String key, Object value) {
     JSONObject jsonObject = new JSONObject(this.paramsInJson);
     jsonObject.put(key, value);
-    this.paramsInJson = jsonObject.toString();
-    return this;
-  }
-
-  /**
-   * Add key-value pair to "params" in paramsInJson. Used by index.
-   *
-   * @param key The param key
-   * @param value The param value
-   * @return <code>JsonBuilder</code>
-   */
-  public JsonBuilder indexParam(String key, Object value) {
-    JSONObject jsonObject = new JSONObject(this.paramsInJson);
-    if (!jsonObject.has("params")) {
-      jsonObject.put("params", new JSONObject().put(key, value));
-    } else {
-      ((JSONObject) jsonObject.get("params")).put(key, value);
-    }
     this.paramsInJson = jsonObject.toString();
     return this;
   }

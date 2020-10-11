@@ -19,7 +19,6 @@
 
 package io.milvus.client;
 
-import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -30,14 +29,12 @@ import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.MethodDescriptor;
-import io.grpc.StatusRuntimeException;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.MilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -107,18 +103,6 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
   }
 
   @Override
-  protected boolean maybeAvailable() {
-    switch (channel.getState(false)) {
-      case IDLE:
-      case CONNECTING:
-      case READY:
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  @Override
   public void close(long maxWaitSeconds) {
     channel.shutdown();
     try {
@@ -155,11 +139,6 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
       }
 
       @Override
-      protected boolean maybeAvailable() {
-        return MilvusGrpcClient.this.maybeAvailable();
-      }
-
-      @Override
       public void close(long maxWaitSeconds) {
         MilvusGrpcClient.this.close(maxWaitSeconds);
       }
@@ -187,13 +166,8 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 }
 
 abstract class AbstractMilvusGrpcClient implements MilvusClient {
-  private static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
-
   protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
-
   protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
-
-  protected abstract boolean maybeAvailable();
 
   private void translateExceptions(Runnable body) {
     translateExceptions(() -> {
@@ -317,13 +291,11 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public List<Long> insert(@Nonnull InsertParam insertParam) {
     return translateExceptions(() -> Futures.getUnchecked(insertAsync(insertParam)));
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public ListenableFuture<List<Long>> insertAsync(@Nonnull InsertParam insertParam) {
     return translateExceptions(() -> {
       io.milvus.grpc.InsertParam request = insertParam.grpc();
@@ -546,16 +518,6 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   ///////////////////// Util Functions/////////////////////
-  Function<Status, Response> transformStatusToResponseFunc =
-      status -> {
-        if (status.getErrorCode() == ErrorCode.SUCCESS) {
-          return new Response(Response.Status.SUCCESS);
-        } else {
-          return new Response(
-              Response.Status.valueOf(status.getErrorCodeValue()), status.getReason());
-        }
-      };
-
   private SearchResult buildSearchResponse(QueryResult topKQueryResult) {
     final int numQueries = (int) topKQueryResult.getRowNum();
     final int topK = numQueries == 0 ? 0 : topKQueryResult.getDistancesCount() / numQueries;
@@ -614,28 +576,5 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     return new SearchResult(numQueries, topK, resultIdsList, resultDistancesList, resultFieldsMap);
-  }
-
-  private String kvListToString(List<KeyValuePair> kv) {
-    JSONObject jsonObject = new JSONObject();
-    for (KeyValuePair keyValuePair : kv) {
-      if (keyValuePair.getValue().equals("null")) continue;
-      jsonObject.put(keyValuePair.getKey(), keyValuePair.getValue());
-    }
-    return jsonObject.toString();
-  }
-
-  ///////////////////// Log Functions//////////////////////
-
-  private void logInfo(String msg, Object... params) {
-    logger.info(msg, params);
-  }
-
-  private void logWarning(String msg, Object... params) {
-    logger.warn(msg, params);
-  }
-
-  private void logError(String msg, Object... params) {
-    logger.error(msg, params);
   }
 }

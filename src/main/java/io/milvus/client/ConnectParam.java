@@ -22,7 +22,6 @@ package io.milvus.client;
 import io.grpc.ManagedChannelBuilder;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /** Contains parameters for connecting to Milvus server */

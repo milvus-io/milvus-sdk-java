@@ -19,7 +19,6 @@
 
 package io.milvus.client;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
@@ -344,7 +343,6 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  @SuppressWarnings("unchecked")
   void partitionTest() {
     final String tag1 = "tag1";
     client.createPartition(randomCollectionName, tag1);
@@ -697,7 +695,6 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  @SuppressWarnings("unchecked")
   void getEntityByIDBinary() {
     final int binaryDimension = 64;
 
@@ -779,7 +776,7 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
-  void flushAsync() throws ExecutionException, InterruptedException {
+  void flushAsync() {
     client.flushAsync(randomCollectionName);
   }
 
