@@ -317,7 +317,7 @@ class MilvusClientTest {
     CollectionMapping withoutField = CollectionMapping.create("validCollectionName");
     assertThrows(ClientSideMilvusException.class, () -> client.createCollection(withoutField));
 
-    // invalid segment_row_count
+    // invalid segment_row_limit
     CollectionMapping invalidSegmentRowCount = CollectionMapping
         .create("validCollectionName")
         .addField("int64", DataType.INT64)
