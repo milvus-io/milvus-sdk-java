@@ -53,7 +53,6 @@ import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -680,15 +679,19 @@ class MilvusClientTest {
     List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
+    client.deleteEntityByID(randomCollectionName, entityIds.subList(10, 20));
+
     client.flush(randomCollectionName);
 
-    List<Map<String, Object>> fieldsMap =
+    Map<Long, Map<String, Object>> entities =
         client.getEntityByID(randomCollectionName, entityIds.subList(0, 100));
-    int vecIndex = 0;
-    assertTrue(fieldsMap.get(vecIndex).get("float_vec") instanceof List);
-    List<Float> first = (List<Float>) (fieldsMap.get(vecIndex).get("float_vec"));
-
-    assertArrayEquals(first.toArray(), vectors.get(0).toArray());
+    for (int i = 0; i < 100; i++) {
+      if (i >= 10 && i < 20) {
+        assertFalse(entities.containsKey(entityIds.get(i)));
+      } else {
+        assertEquals(vectors.get(i), entities.get(entityIds.get(i)).get("float_vec"));
+      }
+    }
   }
 
   @org.junit.jupiter.api.Test
@@ -711,14 +714,19 @@ class MilvusClientTest {
         .setEntityIds(entityIds);
     assertEquals(size, client.insert(insertParam).size());
 
+    client.deleteEntityByID(binaryCollectionName, entityIds.subList(10, 20));
+
     client.flush(binaryCollectionName);
 
-    List<Map<String, Object>> fieldsMap =
+    Map<Long, Map<String, Object>> entities =
         client.getEntityByID(binaryCollectionName, entityIds.subList(0, 100));
-    assertEquals(100, fieldsMap.size());
-    assertTrue(fieldsMap.get(0).get("binary_vec") instanceof ByteBuffer);
-    ByteBuffer first = (ByteBuffer) (fieldsMap.get(0).get("binary_vec"));
-    assertEquals(vectors.get(0), first);
+    for (int i = 0; i < 100; i++) {
+      if (i >= 10 && i < 20) {
+        assertFalse(entities.containsKey(entityIds.get(i)));
+      } else {
+        assertEquals(vectors.get(i), entities.get(entityIds.get(i)).get("binary_vec"));
+      }
+    }
   }
 
   @org.junit.jupiter.api.Test

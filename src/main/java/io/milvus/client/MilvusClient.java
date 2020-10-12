@@ -342,18 +342,18 @@ public interface MilvusClient {
    * @param ids a <code>List</code> of entity ids
    * @param fieldNames  a <code>List</code> of field names. Server will only return entity
    *                    information for these fields.
-   * @return a list of property maps.
+   * @return a map of entity id to entity properties
    */
-  List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
+  Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
 
   /**
    * Gets entities data by id array
    *
    * @param collectionName collection to get entities from
    * @param ids a <code>List</code> of entity ids
-   * @return a list of property maps.
+   * @return a map of entity id to entity properties
    */
-  List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids);
+  Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Gets all entity ids in a segment

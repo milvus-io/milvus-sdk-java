@@ -34,14 +34,11 @@ import io.milvus.client.exception.MilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
-import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -405,7 +402,7 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
   
   @Override
-  public List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames) {
+  public Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames) {
     return translateExceptions(() -> {
       EntityIdentity request = EntityIdentity.newBuilder()
           .setCollectionName(collectionName)
@@ -417,9 +414,15 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
       Map<String, Iterator<?>> fieldIterators = response.getFieldsList()
           .stream()
           .collect(Collectors.toMap(FieldValue::getFieldName, this::fieldValueIterator));
-      return response.getValidRowList().stream()
-          .map(valid -> valid ? toMap(fieldIterators) : Collections.<String, Object>emptyMap())
-          .collect(Collectors.toList());
+      Iterator<Long> idIterator = ids.iterator();
+      Map<Long, Map<String, Object>> entities = new HashMap<>(response.getValidRowList().size());
+      for (boolean valid : response.getValidRowList()) {
+        long id = idIterator.next();
+        if (valid) {
+          entities.put(id, toMap(fieldIterators));
+        }
+      }
+      return entities;
     });
   }
   
@@ -450,7 +453,7 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public List<Map<String, Object>> getEntityByID(String collectionName, List<Long> ids) {
+  public Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids) {
     return getEntityByID(collectionName, ids, Collections.emptyList());
   }
 
