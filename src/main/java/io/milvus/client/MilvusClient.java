@@ -77,7 +77,7 @@ public interface MilvusClient {
    * <code>
    * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName)
    *                                                            .withFields(fields)
-   *                                                            .withParamsInJson("{"segment_row_count": 100000}")
+   *                                                            .withParamsInJson("{"segment_row_limit": 100000}")
    *                                                            .build();
    * </code>
    * Refer to <code>withFields</code> method for example <code>fields</code> usage.

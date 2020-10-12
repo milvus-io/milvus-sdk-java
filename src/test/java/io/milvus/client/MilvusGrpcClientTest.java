@@ -143,7 +143,7 @@ class MilvusClientTest {
             .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
                 .param("dim", dimension)
                 .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_count", 50000)
+            .withParamsInJson(new JsonBuilder().param("segment_row_limit", 50000)
                                                .param("auto_id", false)
                                                .build())
             .build();
@@ -232,7 +232,7 @@ class MilvusClientTest {
     createCollectionResponse = client.createCollection(invalidCollectionMapping);
     assertFalse(createCollectionResponse.ok());
 
-    // invalid segment_row_count
+    // invalid segment_row_limit
     invalidCollectionMapping =
         new CollectionMapping.Builder("validCollectionName")
             .field(new FieldBuilder("int64", DataType.INT64).build())
@@ -240,7 +240,7 @@ class MilvusClientTest {
             .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
                 .param("dim", dimension)
                 .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_count", -1000).build())
+            .withParamsInJson(new JsonBuilder().param("segment_row_limit", -1000).build())
             .build();
     createCollectionResponse = client.createCollection(invalidCollectionMapping);
     assertFalse(createCollectionResponse.ok());
