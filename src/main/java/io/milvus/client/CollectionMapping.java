@@ -80,10 +80,18 @@ public class CollectionMapping {
   }
 
   public List<Map<String, Object>> getFields() {
-    return builder.getFieldsList().stream().map(f -> ImmutableMap.of(
-        "field", f.getName(),
-        "type", DataType.valueOf(f.getType().getNumber()),
-        "params", (Object) getParamsInJson(f.getExtraParamsList())))
+    return builder.getFieldsList().stream()
+        .map(f -> {
+          ImmutableMap.Builder<String, Object> builder = ImmutableMap
+              .<String, Object>builder()
+              .put("field", f.getName())
+              .put("type", DataType.valueOf(f.getType().getNumber()));
+          String paramsInJson = getParamsInJson(f.getExtraParamsList());
+          if (paramsInJson != null) {
+            builder.put(MilvusClient.extraParamKey, paramsInJson);
+          }
+          return builder.build();
+        })
         .collect(Collectors.toList());
   }
 
