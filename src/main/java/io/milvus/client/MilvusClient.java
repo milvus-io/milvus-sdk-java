@@ -194,12 +194,10 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return <code>InsertResponse</code>
+   * @return a list of ids for the inserted entities
    * @see InsertParam
-   * @see InsertResponse
-   * @see Response
    */
-  InsertResponse insert(InsertParam insertParam);
+  List<Long> insert(InsertParam insertParam);
 
   /**
    * Inserts data specified by <code>insertParam</code> asynchronously
@@ -216,13 +214,11 @@ public interface MilvusClient {
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the <code>InsertResponse</code>
+   * @return a <code>ListenableFuture</code> object which holds the list of ids for the inserted entities.
    * @see InsertParam
-   * @see InsertResponse
-   * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<InsertResponse> insertAsync(InsertParam insertParam);
+  ListenableFuture<List<Long>> insertAsync(InsertParam insertParam);
 
   /**
    * Searches entities specified by <code>searchParam</code>

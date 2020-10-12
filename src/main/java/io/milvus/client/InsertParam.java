@@ -19,125 +19,93 @@
 
 package io.milvus.client;
 
-import java.util.Map;
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import com.google.protobuf.ByteString;
+import io.milvus.client.exception.UnsupportedDataType;
+import io.milvus.grpc.AttrRecord;
+import io.milvus.grpc.FieldValue;
+import io.milvus.grpc.VectorRecord;
+import io.milvus.grpc.VectorRowRecord;
+
+import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Contains parameters for <code>insert</code> */
 public class InsertParam {
-  private final String collectionName;
-  private final List<? extends Map<String, Object>> fields;
-  private final List<Long> entityIds;
-  private final String partitionTag;
+  private io.milvus.grpc.InsertParam.Builder builder;
 
-  private InsertParam(@Nonnull Builder builder) {
-    this.collectionName = builder.collectionName;
-    this.fields = builder.fields;
-    this.entityIds = builder.entityIds;
-    this.partitionTag = builder.partitionTag;
+  public static InsertParam create(String collectionName) {
+    return new InsertParam(collectionName);
   }
 
-  public String getCollectionName() {
-    return collectionName;
+  private InsertParam(String collectionName) {
+    this.builder = io.milvus.grpc.InsertParam.newBuilder();
+    builder.setCollectionName(collectionName);
   }
 
-  public List<? extends Map<String, Object>> getFields() { return fields; }
-
-  public List<Long> getEntityIds() {
-    return entityIds;
+  public InsertParam setEntityIds(List<Long> entityIds) {
+    builder.addAllEntityIdArray(entityIds);
+    return this;
   }
 
-  public String getPartitionTag() {
-    return partitionTag;
+  public <T> InsertParam addField(String name, DataType type, List<T> values) {
+    AttrRecord.Builder record = AttrRecord.newBuilder();
+    switch (type) {
+      case INT32:
+        record.addAllInt32Value((List<Integer>) values);
+        break;
+      case INT64:
+        record.addAllInt64Value((List<Long>) values);
+        break;
+      case FLOAT:
+        record.addAllFloatValue((List<Float>) values);
+        break;
+      case DOUBLE:
+        record.addAllDoubleValue((List<Double>) values);
+        break;
+      default:
+        throw new UnsupportedDataType("Unsupported data type: " + type.name());
+    }
+    builder.addFields(FieldValue.newBuilder()
+        .setFieldName(name)
+        .setTypeValue(type.getVal())
+        .setAttrRecord(record.build())
+        .build());
+    return this;
   }
 
-  /** Builder for <code>InsertParam</code> */
-  public static class Builder {
-    // Required parameter
-    private final String collectionName;
-
-    // Optional parameters - initialized to default values
-    private List<Map<String, Object>> fields = new ArrayList<>();
-    private List<Long> entityIds = new ArrayList<>();
-    private String partitionTag = "";
-
-    /** @param collectionName collection to insert entities to */
-    public Builder(@Nonnull String collectionName) {
-      this.collectionName = collectionName;
+  public <T> InsertParam addVectorField(String name, DataType type, List<T> values) {
+    VectorRecord.Builder record = VectorRecord.newBuilder();
+    switch (type) {
+      case VECTOR_FLOAT:
+        record.addAllRecords(
+            ((List<List<Float>>) values).stream()
+                .map(row -> VectorRowRecord.newBuilder().addAllFloatData(row).build())
+                .collect(Collectors.toList()));
+        break;
+      case VECTOR_BINARY:
+        record.addAllRecords(
+            ((List<ByteBuffer>) values).stream()
+                .map(row -> VectorRowRecord.newBuilder().setBinaryData(ByteString.copyFrom(row.slice())).build())
+                .collect(Collectors.toList()));
+        break;
+      default:
+        throw new UnsupportedDataType("Unsupported data type: " + type.name());
     }
+    builder.addFields(FieldValue.newBuilder()
+        .setFieldName(name)
+        .setTypeValue(type.getVal())
+        .setVectorRecord(record.build())
+        .build());
+    return this;
+  }
 
-    /**
-     * The data you wish to insert into collections. Default to an empty <code>ArrayList</code>
-     *
-     * @param fields a <code>List</code> of <code>Map</code> that contains data to insert for each
-     *     field name. "field", "values" and "type" must be present in each map. The size of
-     *     map["values"] must match for all maps in the list, which is equivalent to entity count.
-     *     Example fields:
-     * <pre>
-     *     <code>
-     *   [
-     *         {"field": "A", "values": A_list, "type": DataType.INT32},
-     *         {"field": "B", "values": B_list, "type": DataType.INT32},
-     *         {"field": "C", "values": C_list, "type": DataType.INT64},
-     *         {"field": "Vec", "values": vecs, "type": DataType.VECTOR_FLOAT}
-     *   ]
-     *     </code>
-     * </pre>
-     *
-     * @return <code>Builder</code>
-     */
-    public Builder withFields(@Nonnull List<Map<String, Object>> fields) {
-      this.fields = fields;
-      return this;
-    }
+  public InsertParam setPartitionTag(String partitionTag) {
+    builder.setPartitionTag(partitionTag);
+    return this;
+  }
 
-    /**
-     * Add a single field to collection. Example field:
-     * <pre>
-     *   <code>
-     *      {"field": "A", "values": A_list, "type": DataType.INT64}, or
-     *      {"field": "B", "values": B_list, "type": DataType.INT32}, or
-     *      {"field": "C", "values": C_list, "type": DataType.FLOAT}, or
-     *      {"field": "Vec", "values": vecs, "type": DataType.VECTOR_FLOAT}
-     *   </code>
-     * </pre>
-     *
-     * @param field A field must have keys "field", "values" and "type".
-     *              <code>FieldBuilder</code> can be used to create a field.
-     * @see FieldBuilder
-     * @return <code>Builder</code>
-     */
-    public Builder field(@Nonnull Map<String, Object> field) {
-      this.fields.add(field);
-      return this;
-    }
-
-    /**
-     * Optional. Default to an empty <code>ArrayList</code>. Only needed when entity ids are not
-     * auto-generated by milvus. This is specified when creating collection.
-     *
-     * @param entityIds a <code>List</code> of ids associated with the entities to insert.
-     * @return <code>Builder</code>
-     */
-    public Builder withEntityIds(@Nonnull List<Long> entityIds) {
-      this.entityIds = entityIds;
-      return this;
-    }
-
-    /**
-     * Optional. Default to an empty <code>String</code>
-     *
-     * @param partitionTag partition tag
-     * @return <code>Builder</code>
-     */
-    public Builder withPartitionTag(@Nonnull String partitionTag) {
-      this.partitionTag = partitionTag;
-      return this;
-    }
-
-    public InsertParam build() {
-      return new InsertParam(this);
-    }
+  io.milvus.grpc.InsertParam grpc() {
+    return builder.build();
   }
 }

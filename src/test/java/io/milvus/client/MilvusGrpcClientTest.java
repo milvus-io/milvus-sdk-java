@@ -20,15 +20,11 @@
 package io.milvus.client;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.milvus.client.InsertParam.Builder;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.InitializationException;
 import io.milvus.client.exception.ServerSideMilvusException;
@@ -36,7 +32,6 @@ import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.ErrorCode;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -153,16 +148,14 @@ class MilvusClientTest {
   }
 
   // Helper function that generates random binary vectors
-  static List<List<Byte>> generateBinaryVectors(int vectorCount, int dimension) {
+  static List<ByteBuffer> generateBinaryVectors(int vectorCount, int dimension) {
     Random random = new Random();
-    List<List<Byte>> vectors = new ArrayList<>(vectorCount);
+    List<ByteBuffer> vectors = new ArrayList<>(vectorCount);
     final int dimensionInByte = dimension / 8;
     for (int i = 0; i < vectorCount; ++i) {
       ByteBuffer byteBuffer = ByteBuffer.allocate(dimensionInByte);
       random.nextBytes(byteBuffer.array());
-      byte[] b = new byte[byteBuffer.remaining()];
-      byteBuffer.get(b);
-      vectors.add(Arrays.asList(ArrayUtils.toObject(b)));
+      vectors.add(byteBuffer);
     }
     return vectors;
   }
@@ -371,40 +364,26 @@ class MilvusClientTest {
       intValues.add((long) i);
       floatValues.add((float) i);
     }
+
     List<Long> entityIds1 = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(entityIds1)
-            .withPartitionTag(tag1)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(entityIds1)
+        .setPartitionTag(tag1);
+    client.insert(insertParam);
+
     List<Long> entityIds2 = LongStream.range(size, size * 2).boxed().collect(Collectors.toList());
-    insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(entityIds2)
-            .withPartitionTag(tag2)
-            .build();
-    insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
+    insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(entityIds2)
+        .setPartitionTag(tag2);
+    client.insert(insertParam);
 
     assertTrue(client.flush(randomCollectionName).ok());
 
@@ -479,65 +458,16 @@ class MilvusClientTest {
       intValues.add((long) i);
       floatValues.add((float) i);
     }
-    List<Long> entityIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(entityIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
-  }
 
-  @org.junit.jupiter.api.Test
-  void insertAsync() throws ExecutionException, InterruptedException {
-    List<Long> intValues = new ArrayList<>(size);
-    List<Float> floatValues = new ArrayList<>(size);
-    List<List<Float>> vectors = generateFloatVectors(size, dimension);
-    for (int i = 0; i < size; i++) {
-      intValues.add((long) i);
-      floatValues.add((float) i);
-    }
     List<Long> entityIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(entityIds)
-            .build();
-    ListenableFuture<InsertResponse> insertResponseFuture = client.insertAsync(insertParam);
-    Futures.addCallback(
-        insertResponseFuture,
-        new FutureCallback<InsertResponse>() {
-          @Override
-          public void onSuccess(@NullableDecl InsertResponse insertResponse) {
-            assert insertResponse != null;
-            assertTrue(insertResponse.ok());
-            assertEquals(size, insertResponse.getEntityIds().size());
-          }
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(entityIds);
 
-          @Override
-          public void onFailure(Throwable t) {
-            System.out.println(t.getMessage());
-          }
-        }, MoreExecutors.directExecutor()
-    );
+    assertEquals(entityIds, client.insert(insertParam));
   }
 
   @org.junit.jupiter.api.Test
@@ -552,16 +482,11 @@ class MilvusClientTest {
 
     client.createCollection(collectionMapping);
 
-    List<List<Byte>> vectors = generateBinaryVectors(size, binaryDimension);
-    InsertParam insertParam =
-        new Builder(binaryCollectionName)
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .values(vectors)
-                .build())
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
+    List<ByteBuffer> vectors = generateBinaryVectors(size, binaryDimension);
+    InsertParam insertParam = InsertParam
+        .create(binaryCollectionName)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, vectors);
+    assertEquals(size, client.insert(insertParam).size());
 
     Index index = Index.create(binaryCollectionName, "binary_vec")
         .setIndexType(IndexType.BIN_IVF_FLAT)
@@ -589,22 +514,13 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> entityIds = insertResponse.getEntityIds();
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
@@ -650,22 +566,13 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> entityIds = insertResponse.getEntityIds();
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
@@ -720,29 +627,22 @@ class MilvusClientTest {
       intValues.add((long) i);
       floatValues.add((float) i);
     }
-    List<List<Byte>> vectors = generateBinaryVectors(size, binaryDimension);
+    List<ByteBuffer> vectors = generateBinaryVectors(size, binaryDimension);
 
-    InsertParam insertParam =
-        new Builder(binaryCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .values(vectors)
-                .build())
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> entityIds = insertResponse.getEntityIds();
+    InsertParam insertParam = InsertParam
+        .create(binaryCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, vectors);
+    List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(binaryCollectionName).ok());
 
     final int searchSize = 5;
-    List<List<Byte>> vectorsToSearch = vectors.subList(0, searchSize);
+    List<String> vectorsToSearch = vectors.subList(0, searchSize)
+        .stream().map(byteBuffer -> Arrays.toString(byteBuffer.array()))
+        .collect(Collectors.toList());
 
     final long topK = 10;
     SearchParam searchParam =
@@ -862,22 +762,13 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    List<Long> entityIds = insertResponse.getEntityIds();
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
     assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
@@ -906,18 +797,13 @@ class MilvusClientTest {
 
     client.createCollection(collectionMapping);
 
-    List<List<Byte>> vectors = generateBinaryVectors(size, binaryDimension);
+    List<ByteBuffer> vectors = generateBinaryVectors(size, binaryDimension);
     List<Long> entityIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(binaryCollectionName)
-            .field(new FieldBuilder("binary_vec", DataType.VECTOR_BINARY)
-                .values(vectors)
-                .build())
-            .withEntityIds(entityIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
+    InsertParam insertParam = InsertParam
+        .create(binaryCollectionName)
+        .addVectorField("binary_vec", DataType.VECTOR_BINARY, vectors)
+        .setEntityIds(entityIds);
+    assertEquals(size, client.insert(insertParam).size());
 
     assertTrue(client.flush(binaryCollectionName).ok());
 
@@ -928,8 +814,11 @@ class MilvusClientTest {
     List<Map<String, Object>> fieldsMap = getEntityByIDResponse.getFieldsMap();
     assertTrue(fieldsMap.get(0).get("binary_vec") instanceof List);
     List<Byte> first = (List<Byte>) (fieldsMap.get(0).get("binary_vec"));
-
-    assertArrayEquals(first.toArray(), vectors.get(0).toArray());
+    byte[] bytes = new byte[first.size()];
+    for (int i = 0; i < first.size(); i++) {
+      bytes[i] = first.get(i);
+    }
+    assertEquals(ByteBuffer.wrap(bytes), vectors.get(0));
   }
 
   @org.junit.jupiter.api.Test
@@ -967,27 +856,18 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
+    assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    assertTrue(client.deleteEntityByID(randomCollectionName,
-        insertResponse.getEntityIds().subList(0, 100)).ok());
+    assertTrue(client.deleteEntityByID(randomCollectionName, entityIds.subList(0, 100)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertEquals(client.countEntities(randomCollectionName).getCollectionEntityCount(), size - 100);
   }
@@ -1014,22 +894,14 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
+    assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
 
@@ -1045,7 +917,7 @@ class MilvusClientTest {
 
     assertTrue(
         client.deleteEntityByID(randomCollectionName,
-            insertResponse.getEntityIds().subList(0, size / 2)).ok());
+            entityIds.subList(0, size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compact(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.2).build()).ok());
@@ -1074,22 +946,14 @@ class MilvusClientTest {
     vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
 
     List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
-    InsertParam insertParam =
-        new Builder(randomCollectionName)
-            .field(new FieldBuilder("int64", DataType.INT64)
-                .values(intValues)
-                .build())
-            .field(new FieldBuilder("float", DataType.FLOAT)
-                .values(floatValues)
-                .build())
-            .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
-                .values(vectors)
-                .build())
-            .withEntityIds(insertIds)
-            .build();
-    InsertResponse insertResponse = client.insert(insertParam);
-    assertTrue(insertResponse.ok());
-    assertEquals(size, insertResponse.getEntityIds().size());
+    InsertParam insertParam = InsertParam
+        .create(randomCollectionName)
+        .addField("int64", DataType.INT64, intValues)
+        .addField("float", DataType.FLOAT, floatValues)
+        .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+        .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
+    assertEquals(size, entityIds.size());
 
     assertTrue(client.flush(randomCollectionName).ok());
 
@@ -1108,7 +972,7 @@ class MilvusClientTest {
 
     assertTrue(
         client.deleteEntityByID(randomCollectionName,
-            insertResponse.getEntityIds().subList(0, size / 2)).ok());
+            entityIds.subList(0, size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compactAsync(
         new CompactParam.Builder(randomCollectionName).withThreshold(0.8).build()).get().ok());
