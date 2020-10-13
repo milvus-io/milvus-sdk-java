@@ -88,7 +88,7 @@ class ContainerMilvusClientTest extends MilvusClientTest {
         .withTarget(testNameResolverProvider.getDefaultScheme() + ":///test")
         .build();
 
-    MilvusClient loadBalancingClient = new MilvusGrpcClient(connectParam);
+    MilvusClient loadBalancingClient = new MilvusGrpcClient(connectParam).withLogging();
     assertEquals(50, IntStream.range(0, 100)
             .filter(i -> loadBalancingClient.hasCollection(randomCollectionName))
             .count());
@@ -203,7 +203,7 @@ class MilvusClientTest {
   void setUp() throws Exception {
 
     ConnectParam connectParam = connectParamBuilder().build();
-    client = new MilvusGrpcClient(connectParam);
+    client = new MilvusGrpcClient(connectParam).withLogging();
 
     randomCollectionName = RandomStringUtils.randomAlphabetic(10);
     size = 100000;
@@ -233,7 +233,7 @@ class MilvusClientTest {
     ConnectParam connectParam = connectParamBuilder()
         .withIdleTimeout(1, TimeUnit.SECONDS)
         .build();
-    MilvusClient client = new MilvusGrpcClient(connectParam);
+    MilvusClient client = new MilvusGrpcClient(connectParam).withLogging();
     TimeUnit.SECONDS.sleep(2);
     // A new RPC would take the channel out of idle mode
     client.listCollections();

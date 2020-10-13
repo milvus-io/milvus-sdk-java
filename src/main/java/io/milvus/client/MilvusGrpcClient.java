@@ -26,8 +26,11 @@ import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
 import io.grpc.ClientInterceptor;
+import io.grpc.ForwardingClientCall;
+import io.grpc.ForwardingClientCallListener;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.MilvusException;
@@ -111,13 +114,25 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     }
   }
 
+  public MilvusClient withLogging() {
+    return withLogging(LoggingAdapter.DEFAULT_LOGGING_ADAPTER);
+  }
+
+  public MilvusClient withLogging(LoggingAdapter loggingAdapter) {
+    return withInterceptors(new LoggingInterceptor(loggingAdapter));
+  }
+
   public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
     final long timeoutMillis = timeoutUnit.toMillis(timeout);
     final TimeoutInterceptor timeoutInterceptor = new TimeoutInterceptor(timeoutMillis);
+    return withInterceptors(timeoutInterceptor);
+  }
+
+  private MilvusClient withInterceptors(ClientInterceptor... interceptors) {
     final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub =
-        this.blockingStub.withInterceptors(timeoutInterceptor);
+        this.blockingStub.withInterceptors(interceptors);
     final MilvusServiceGrpc.MilvusServiceFutureStub futureStub =
-        this.futureStub.withInterceptors(timeoutInterceptor);
+        this.futureStub.withInterceptors(interceptors);
 
     return new AbstractMilvusGrpcClient() {
       @Override
@@ -158,6 +173,39 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
       return next.newCall(method, callOptions.withDeadlineAfter(timeoutMillis, TimeUnit.MILLISECONDS));
+    }
+  }
+
+  private static class LoggingInterceptor implements ClientInterceptor {
+    private LoggingAdapter loggingAdapter;
+
+    LoggingInterceptor(LoggingAdapter loggingAdapter) {
+      this.loggingAdapter = loggingAdapter;
+    }
+
+    @Override
+    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+        MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+        private String traceId = loggingAdapter.getTraceId();
+
+        @Override
+        public void sendMessage(ReqT message) {
+          loggingAdapter.logRequest(logger, traceId, method, message);
+          super.sendMessage(message);
+        }
+
+        @Override
+        public void start(Listener<RespT> responseListener, Metadata headers) {
+          super.start(new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(responseListener) {
+            @Override
+            public void onMessage(RespT message) {
+              loggingAdapter.logResponse(logger, traceId, method, message);
+              super.onMessage(message);
+            }
+          }, headers);
+        }
+      };
     }
   }
 }

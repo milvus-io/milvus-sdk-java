@@ -73,7 +73,7 @@ public class MilvusClientExample {
 
   public static void run(ConnectParam connectParam) {
     // Create Milvus client
-    MilvusClient client = new MilvusGrpcClient(connectParam);
+    MilvusClient client = new MilvusGrpcClient(connectParam).withLogging();
 
     // Create a collection with the following collection mapping
     final String collectionName = "example"; // collection name
