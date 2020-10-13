@@ -24,11 +24,25 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
-import io.grpc.ConnectivityState;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.MethodDescriptor;
 import io.grpc.StatusRuntimeException;
+import io.milvus.client.exception.InitializationException;
+import io.milvus.client.exception.UnsupportedServerVersion;
 import io.milvus.grpc.*;
+import org.apache.commons.lang3.ArrayUtils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,114 +53,149 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import javax.annotation.Nonnull;
-import org.apache.commons.lang3.ArrayUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Actual implementation of interface <code>MilvusClient</code> */
-public class MilvusGrpcClient implements MilvusClient {
+public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 
   private static final Logger logger = LoggerFactory.getLogger(MilvusGrpcClient.class);
-  private final String extraParamKey = "params";
-  private ManagedChannel channel = null;
-  private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub = null;
-  private MilvusServiceGrpc.MilvusServiceFutureStub futureStub = null;
+  private static final String SUPPORTED_SERVER_VERSION = "0.11";
 
-  ////////////////////// Constructor //////////////////////
-  public MilvusGrpcClient() {}
+  private final ManagedChannel channel;
+  private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+  private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
-  /////////////////////// Client Calls///////////////////////
+  public MilvusGrpcClient(ConnectParam connectParam) {
+    ManagedChannelBuilder builder = connectParam.getTarget() != null
+        ? ManagedChannelBuilder.forTarget(connectParam.getTarget())
+        : ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort());
 
-  @Override
-  public Response connect(ConnectParam connectParam) throws ConnectFailedException {
-    if (channel != null && !(channel.isShutdown() || channel.isTerminated())) {
-      logWarning("Channel is not shutdown or terminated");
-      throw new ConnectFailedException("Channel is not shutdown or terminated");
-    }
-
+    channel = builder.usePlaintext()
+        .maxInboundMessageSize(Integer.MAX_VALUE)
+        .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
+        .keepAliveTime(connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+        .keepAliveTimeout(connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+        .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
+        .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+        .build();
+    blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
+    futureStub = MilvusServiceGrpc.newFutureStub(channel);
     try {
-
-      channel =
-          ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
-              .usePlaintext()
-              .maxInboundMessageSize(Integer.MAX_VALUE)
-              .keepAliveTime(
-                  connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-              .keepAliveTimeout(
-                  connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-              .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
-              .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-              .build();
-
-      channel.getState(true);
-
-      long timeout = connectParam.getConnectTimeout(TimeUnit.MILLISECONDS);
-      logInfo("Trying to connect...Timeout in {} ms", timeout);
-
-      final long checkFrequency = 100; // ms
-      while (channel.getState(false) != ConnectivityState.READY) {
-        if (timeout <= 0) {
-          logError("Connect timeout!");
-          throw new ConnectFailedException("Connect timeout");
+      Response response = getServerVersion();
+      if (response.ok()) {
+        String serverVersion = response.getMessage();
+        if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
+          throw new UnsupportedServerVersion(connectParam.getHost(), SUPPORTED_SERVER_VERSION, serverVersion);
         }
-        TimeUnit.MILLISECONDS.sleep(checkFrequency);
-        timeout -= checkFrequency;
+      } else {
+        throw new InitializationException(connectParam.getHost(), response.getMessage());
       }
-
-      blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
-      futureStub = MilvusServiceGrpc.newFutureStub(channel);
-
-      // check server version
-      String serverVersion = getServerVersion().getMessage();
-      if (!serverVersion.contains("0.11.")) {
-        logError(
-            "Connect failed! Server version {} does not match SDK version 0.9.0", serverVersion);
-        throw new ConnectFailedException("Failed to connect to Milvus server.");
-      }
-
-    } catch (Exception e) {
-      if (!(e instanceof ConnectFailedException)) {
-        logError("Connect failed! {}", e.toString());
-      }
-      throw new ConnectFailedException("Exception occurred: " + e.toString());
+    } catch (Throwable t) {
+      channel.shutdownNow();
+      throw t;
     }
-
-    logInfo(
-        "Connection established successfully to host={}, port={}",
-        connectParam.getHost(),
-        String.valueOf(connectParam.getPort()));
-    return new Response(Response.Status.SUCCESS);
   }
 
   @Override
-  public Response disconnect() throws InterruptedException {
-    if (!channelIsReadyOrIdle()) {
-      logWarning("You are not connected to Milvus server");
-      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
-    } else {
-      try {
-        if (channel.shutdown().awaitTermination(60, TimeUnit.SECONDS)) {
-          logInfo("Channel terminated");
-        } else {
-          logError("Encountered error when terminating channel");
-          return new Response(Response.Status.RPC_ERROR);
-        }
-      } catch (InterruptedException e) {
-        logError("Exception thrown when terminating channel: {}", e.toString());
-        throw e;
-      }
-    }
-    return new Response(Response.Status.SUCCESS);
+  protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub() {
+    return blockingStub;
   }
+
+  @Override
+  protected MilvusServiceGrpc.MilvusServiceFutureStub futureStub() {
+    return futureStub;
+  }
+
+  @Override
+  protected boolean maybeAvailable() {
+    switch (channel.getState(false)) {
+      case IDLE:
+      case CONNECTING:
+      case READY:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @Override
+  public void close(long maxWaitSeconds) {
+    channel.shutdown();
+    try {
+      channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
+    } catch (InterruptedException ex) {
+      logger.warn("Milvus client close interrupted");
+      channel.shutdownNow();
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
+    final long timeoutMillis = timeoutUnit.toMillis(timeout);
+    final TimeoutInterceptor timeoutInterceptor = new TimeoutInterceptor(timeoutMillis);
+    final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub =
+        this.blockingStub.withInterceptors(timeoutInterceptor);
+    final MilvusServiceGrpc.MilvusServiceFutureStub futureStub =
+        this.futureStub.withInterceptors(timeoutInterceptor);
+
+    return new AbstractMilvusGrpcClient() {
+
+      @Override
+      protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub() {
+        return blockingStub;
+      }
+
+      @Override
+      protected MilvusServiceGrpc.MilvusServiceFutureStub futureStub() {
+        return futureStub;
+      }
+
+      @Override
+      protected boolean maybeAvailable() {
+        return MilvusGrpcClient.this.maybeAvailable();
+      }
+
+      @Override
+      public void close(long maxWaitSeconds) {
+        MilvusGrpcClient.this.close(maxWaitSeconds);
+      }
+
+      @Override
+      public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
+        return MilvusGrpcClient.this.withTimeout(timeout, timeoutUnit);
+      }
+    };
+  }
+
+  private static class TimeoutInterceptor implements ClientInterceptor {
+    private long timeoutMillis;
+
+    TimeoutInterceptor(long timeoutMillis) {
+      this.timeoutMillis = timeoutMillis;
+    }
+
+    @Override
+    public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+        MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+      return next.newCall(method, callOptions.withDeadlineAfter(timeoutMillis, TimeUnit.MILLISECONDS));
+    }
+  }
+}
+
+abstract class AbstractMilvusGrpcClient implements MilvusClient {
+  private static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
+
+  private final String extraParamKey = "params";
+
+  protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
+
+  protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
+
+  protected abstract boolean maybeAvailable();
 
   @Override
   public Response createCollection(@Nonnull CollectionMapping collectionMapping) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -191,7 +240,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.createCollection(request);
+      response = blockingStub().createCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Created collection successfully!\n{}", collectionMapping.toString());
@@ -215,7 +264,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public HasCollectionResponse hasCollection(@Nonnull String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new HasCollectionResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
     }
@@ -224,7 +273,7 @@ public class MilvusGrpcClient implements MilvusClient {
     BoolReply response;
 
     try {
-      response = blockingStub.hasCollection(request);
+      response = blockingStub().hasCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("hasCollection `{}` = {}", collectionName, response.getBoolReply());
@@ -248,7 +297,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response dropCollection(@Nonnull String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -257,7 +306,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.dropCollection(request);
+      response = blockingStub().dropCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Dropped collection `{}` successfully!", collectionName);
@@ -276,7 +325,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response createIndex(@Nonnull Index index) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -309,7 +358,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.createIndex(request);
+      response = blockingStub().createIndex(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Created index successfully!\n{}", index.toString());
@@ -328,7 +377,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListenableFuture<Response> createIndexAsync(@Nonnull Index index) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
     }
@@ -360,7 +409,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     ListenableFuture<Status> response;
 
-    response = futureStub.createIndex(request);
+    response = futureStub().createIndex(request);
 
     Futures.addCallback(
         response,
@@ -388,7 +437,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response createPartition(String collectionName, String tag) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -399,7 +448,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.createPartition(request);
+      response = blockingStub().createPartition(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Created partition `{}` in collection `{}` successfully!", tag, collectionName);
@@ -422,7 +471,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public HasPartitionResponse hasPartition(String collectionName, String tag) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new HasPartitionResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), false);
     }
@@ -432,7 +481,7 @@ public class MilvusGrpcClient implements MilvusClient {
     BoolReply response;
 
     try {
-      response = blockingStub.hasPartition(request);
+      response = blockingStub().hasPartition(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo(
@@ -463,7 +512,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListPartitionsResponse listPartitions(String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new ListPartitionsResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
@@ -473,7 +522,7 @@ public class MilvusGrpcClient implements MilvusClient {
     PartitionList response;
 
     try {
-      response = blockingStub.showPartitions(request);
+      response = blockingStub().showPartitions(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo(
@@ -500,7 +549,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response dropPartition(String collectionName, String tag) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -510,7 +559,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.dropPartition(request);
+      response = blockingStub().dropPartition(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Dropped partition `{}` in collection `{}` successfully!", tag, collectionName);
@@ -534,7 +583,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @SuppressWarnings("unchecked")
   public InsertResponse insert(@Nonnull InsertParam insertParam) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new InsertResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
@@ -621,7 +670,7 @@ public class MilvusGrpcClient implements MilvusClient {
     EntityIds response;
 
     try {
-      response = blockingStub.insert(request);
+      response = blockingStub().insert(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo(
@@ -649,7 +698,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @SuppressWarnings("unchecked")
   public ListenableFuture<InsertResponse> insertAsync(@Nonnull InsertParam insertParam) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return Futures.immediateFuture(
           new InsertResponse(
@@ -739,7 +788,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     ListenableFuture<EntityIds> response;
 
-    response = futureStub.insert(request);
+    response = futureStub().insert(request);
 
     Futures.addCallback(
         response,
@@ -783,7 +832,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public SearchResponse search(@Nonnull SearchParam searchParam) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       SearchResponse searchResponse = new SearchResponse();
       searchResponse.setResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED));
@@ -889,7 +938,7 @@ public class MilvusGrpcClient implements MilvusClient {
     QueryResult response;
 
     try {
-      response = blockingStub.search(request);
+      response = blockingStub().search(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         SearchResponse searchResponse = buildSearchResponse(response);
@@ -918,7 +967,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListenableFuture<SearchResponse> searchAsync(@Nonnull SearchParam searchParam) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       SearchResponse searchResponse = new SearchResponse();
       searchResponse.setResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED));
@@ -1023,7 +1072,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     ListenableFuture<QueryResult> response;
 
-    response = futureStub.search(request);
+    response = futureStub().search(request);
 
     Futures.addCallback(
         response,
@@ -1068,7 +1117,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public GetCollectionInfoResponse getCollectionInfo(@Nonnull String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new GetCollectionInfoResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), null);
@@ -1078,7 +1127,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Mapping response;
 
     try {
-      response = blockingStub.describeCollection(request);
+      response = blockingStub().describeCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         String extraParam = "";
@@ -1128,7 +1177,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListCollectionsResponse listCollections() {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new ListCollectionsResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
@@ -1138,7 +1187,7 @@ public class MilvusGrpcClient implements MilvusClient {
     CollectionNameList response;
 
     try {
-      response = blockingStub.showCollections(request);
+      response = blockingStub().showCollections(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         List<String> collectionNames = response.getCollectionNamesList();
@@ -1162,7 +1211,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public CountEntitiesResponse countEntities(@Nonnull String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new CountEntitiesResponse(new Response(Response.Status.CLIENT_NOT_CONNECTED), 0);
     }
@@ -1171,7 +1220,7 @@ public class MilvusGrpcClient implements MilvusClient {
     CollectionRowCount response;
 
     try {
-      response = blockingStub.countCollection(request);
+      response = blockingStub().countCollection(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         long collectionRowCount = response.getCollectionRowCount();
@@ -1206,7 +1255,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   public Response command(@Nonnull String command) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1215,7 +1264,7 @@ public class MilvusGrpcClient implements MilvusClient {
     StringReply response;
 
     try {
-      response = blockingStub.cmd(request);
+      response = blockingStub().cmd(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Command `{}`: {}", command, response.getStringReply());
@@ -1235,7 +1284,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response loadCollection(@Nonnull String collectionName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1244,7 +1293,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.preloadCollection(request);
+      response = blockingStub().preloadCollection(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Loaded collection `{}` successfully!", collectionName);
@@ -1263,7 +1312,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public Response dropIndex(String collectionName, String fieldName) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1276,7 +1325,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.dropIndex(request);
+      response = blockingStub().dropIndex(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Dropped index for collection `{}` successfully!", collectionName);
@@ -1294,7 +1343,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response getCollectionStats(String collectionName) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1303,7 +1352,7 @@ public class MilvusGrpcClient implements MilvusClient {
     io.milvus.grpc.CollectionInfo response;
 
     try {
-      response = blockingStub.showCollectionInfo(request);
+      response = blockingStub().showCollectionInfo(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("getCollectionStats for `{}` returned successfully!", collectionName);
@@ -1325,7 +1374,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new GetEntityByIDResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
@@ -1340,7 +1389,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Entities response;
 
     try {
-      response = blockingStub.getEntityByID(request);
+      response = blockingStub().getEntityByID(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
@@ -1411,7 +1460,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public ListIDInSegmentResponse listIDInSegment(String collectionName, Long segmentId) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new ListIDInSegmentResponse(
           new Response(Response.Status.CLIENT_NOT_CONNECTED), Collections.emptyList());
@@ -1425,7 +1474,7 @@ public class MilvusGrpcClient implements MilvusClient {
     EntityIds response;
 
     try {
-      response = blockingStub.getEntityIDs(request);
+      response = blockingStub().getEntityIDs(request);
 
       if (response.getStatus().getErrorCode() == ErrorCode.SUCCESS) {
 
@@ -1456,7 +1505,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response deleteEntityByID(String collectionName, List<Long> ids) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1466,7 +1515,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.deleteByID(request);
+      response = blockingStub().deleteByID(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("deleteEntityByID in collection `{}` completed successfully!", collectionName);
@@ -1485,7 +1534,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response flush(List<String> collectionNames) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1494,7 +1543,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.flush(request);
+      response = blockingStub().flush(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Flushed collection {} successfully!", collectionNames);
@@ -1513,7 +1562,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListenableFuture<Response> flushAsync(@Nonnull List<String> collectionNames) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
     }
@@ -1522,7 +1571,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     ListenableFuture<Status> response;
 
-    response = futureStub.flush(request);
+    response = futureStub().flush(request);
 
     Futures.addCallback(
         response,
@@ -1571,7 +1620,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response compact(CompactParam compactParam) {
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
@@ -1584,7 +1633,7 @@ public class MilvusGrpcClient implements MilvusClient {
     Status response;
 
     try {
-      response = blockingStub.compact(request);
+      response = blockingStub().compact(request);
 
       if (response.getErrorCode() == ErrorCode.SUCCESS) {
         logInfo("Compacted collection `{}` successfully!", compactParam.getCollectionName());
@@ -1604,7 +1653,7 @@ public class MilvusGrpcClient implements MilvusClient {
   @Override
   public ListenableFuture<Response> compactAsync(@Nonnull CompactParam compactParam) {
 
-    if (!channelIsReadyOrIdle()) {
+    if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return Futures.immediateFuture(new Response(Response.Status.CLIENT_NOT_CONNECTED));
     }
@@ -1617,7 +1666,7 @@ public class MilvusGrpcClient implements MilvusClient {
 
     ListenableFuture<Status> response;
 
-    response = futureStub.compact(request);
+    response = futureStub().compact(request);
 
     Futures.addCallback(
         response,
@@ -1728,16 +1777,6 @@ public class MilvusGrpcClient implements MilvusClient {
     searchResponse.setFieldsMap(resultFieldsMap);
 
     return searchResponse;
-  }
-
-  private boolean channelIsReadyOrIdle() {
-    if (channel == null) {
-      return false;
-    }
-    ConnectivityState connectivityState = channel.getState(false);
-    return connectivityState == ConnectivityState.READY
-        || connectivityState
-            == ConnectivityState.IDLE; // Since a new RPC would take the channel out of idle mode
   }
 
   private String kvListToString(List<KeyValuePair> kv) {

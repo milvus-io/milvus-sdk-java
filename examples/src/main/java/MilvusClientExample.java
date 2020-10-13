@@ -145,7 +145,7 @@ public class MilvusClientExample {
     CollectionMapping collectionMapping =
         new CollectionMapping.Builder(collectionName)
             .withFields(generateDefaultFields(dimension))
-            .withParamsInJson("{\"segment_row_count\": 50000, \"auto_id\": true}")
+            .withParamsInJson("{\"segment_row_limit\": 50000, \"auto_id\": true}")
             .build();
     Response createCollectionResponse = client.createCollection(collectionMapping);
 

@@ -19,13 +19,17 @@
 
 package io.milvus.client;
 
+import io.grpc.ManagedChannelBuilder;
+
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
 /** Contains parameters for connecting to Milvus server */
 public class ConnectParam {
+  private final String target;
   private final String host;
   private final int port;
+  private final String defaultLoadBalancingPolicy;
   private final long connectTimeoutNanos;
   private final long keepAliveTimeNanos;
   private final long keepAliveTimeoutNanos;
@@ -33,13 +37,19 @@ public class ConnectParam {
   private final long idleTimeoutNanos;
 
   private ConnectParam(@Nonnull Builder builder) {
+    this.target = builder.target;
     this.host = builder.host;
     this.port = builder.port;
+    this.defaultLoadBalancingPolicy = builder.defaultLoadBalancingPolicy;
     this.connectTimeoutNanos = builder.connectTimeoutNanos;
     this.keepAliveTimeNanos = builder.keepAliveTimeNanos;
     this.keepAliveTimeoutNanos = builder.keepAliveTimeoutNanos;
     this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
     this.idleTimeoutNanos = builder.idleTimeoutNanos;
+  }
+
+  public String getTarget() {
+    return target;
   }
 
   public String getHost() {
@@ -48,6 +58,10 @@ public class ConnectParam {
 
   public int getPort() {
     return port;
+  }
+
+  public String getDefaultLoadBalancingPolicy() {
+    return defaultLoadBalancingPolicy;
   }
 
   public long getConnectTimeout(@Nonnull TimeUnit timeUnit) {
@@ -73,13 +87,28 @@ public class ConnectParam {
   /** Builder for <code>ConnectParam</code> */
   public static class Builder {
     // Optional parameters - initialized to default values
+    private String target = null;
     private String host = "localhost";
     private int port = 19530;
+    private String defaultLoadBalancingPolicy = "round_robin";
     private long connectTimeoutNanos = TimeUnit.NANOSECONDS.convert(10, TimeUnit.SECONDS);
     private long keepAliveTimeNanos = Long.MAX_VALUE; // Disabling keepalive
     private long keepAliveTimeoutNanos = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
     private boolean keepAliveWithoutCalls = false;
     private long idleTimeoutNanos = TimeUnit.NANOSECONDS.convert(24, TimeUnit.HOURS);
+
+    /**
+     * Optional. Defaults to null. Will be used in precedence to host and port.
+     *
+     * @param target a GRPC target string
+     * @return <code>Builder</code>
+     *
+     * @see ManagedChannelBuilder#forTarget(String)
+     */
+    public Builder withTarget(@Nonnull String target) {
+      this.target = target;
+      return this;
+    }
 
     /**
      * Optional. Defaults to "localhost".
@@ -103,6 +132,17 @@ public class ConnectParam {
         throw new IllegalArgumentException("Port is out of range!");
       }
       this.port = port;
+      return this;
+    }
+
+    /**
+     * Optional. Defaults to "round_robin".
+     *
+     * @param defaultLoadBalancingPolicy the default load-balancing policy name
+     * @return <code>Builder</code>
+     */
+    public Builder withDefaultLoadBalancingPolicy(String defaultLoadBalancingPolicy) {
+      this.defaultLoadBalancingPolicy = defaultLoadBalancingPolicy;
       return this;
     }
 

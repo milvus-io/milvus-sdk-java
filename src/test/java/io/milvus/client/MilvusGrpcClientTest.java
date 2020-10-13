@@ -23,32 +23,105 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.grpc.NameResolverProvider;
+import io.grpc.NameResolverRegistry;
 import io.milvus.client.InsertParam.Builder;
 import io.milvus.client.Response.Status;
+import io.milvus.client.exception.InitializationException;
+import io.milvus.client.exception.UnsupportedServerVersion;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.SplittableRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
+@EnabledIfSystemProperty(named = "with-containers", matches = "true")
+class ContainerMilvusClientTest extends MilvusClientTest {
+  @Container
+  private GenericContainer milvusContainer =
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+          .withExposedPorts(19530);
+
+  @Container
+  private static GenericContainer milvusContainer2 =
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+          .withExposedPorts(19530);
+
+  @Override
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder(milvusContainer);
+  }
+
+  @org.junit.jupiter.api.Test
+  void loadBalancing() {
+    NameResolverProvider testNameResolverProvider = new StaticNameResolverProvider(
+        new InetSocketAddress(milvusContainer.getHost(), milvusContainer.getFirstMappedPort()),
+        new InetSocketAddress(milvusContainer2.getHost(), milvusContainer2.getFirstMappedPort()));
+
+    NameResolverRegistry.getDefaultRegistry().register(testNameResolverProvider);
+
+    ConnectParam connectParam = connectParamBuilder()
+        .withTarget(testNameResolverProvider.getDefaultScheme() + ":///test")
+        .build();
+
+    MilvusClient loadBalancingClient = new MilvusGrpcClient(connectParam);
+    assertEquals(50, IntStream.range(0, 100)
+            .filter(i -> loadBalancingClient.hasCollection(randomCollectionName).hasCollection())
+            .count());
+  }
+}
+
+@Testcontainers
+@DisabledIfSystemProperty(named = "with-containers", matches = "true")
 class MilvusClientTest {
 
   private MilvusClient client;
 
   private RandomStringGenerator generator;
 
-  private String randomCollectionName;
+  protected String randomCollectionName;
   private int size;
   private int dimension;
+
+  protected ConnectParam.Builder connectParamBuilder() {
+    return connectParamBuilder("localhost", 19530);
+  }
+
+  protected ConnectParam.Builder connectParamBuilder(GenericContainer milvusContainer) {
+    return connectParamBuilder(milvusContainer.getHost(), milvusContainer.getFirstMappedPort());
+  }
+
+  protected ConnectParam.Builder connectParamBuilder(String host, int port) {
+    return new ConnectParam.Builder().withHost(host).withPort(port);
+  }
 
   // Helper function that generates random float vectors
   static List<List<Float>> generateFloatVectors(int vectorCount, int dimension) {
@@ -127,10 +200,8 @@ class MilvusClientTest {
   @org.junit.jupiter.api.BeforeEach
   void setUp() throws Exception {
 
-    client = new MilvusGrpcClient();
-    ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("localhost").withPort(19530).build();
-    client.connect(connectParam);
+    ConnectParam connectParam = connectParamBuilder().build();
+    client = new MilvusGrpcClient(connectParam);
 
     generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     randomCollectionName = generator.generate(10);
@@ -143,7 +214,7 @@ class MilvusClientTest {
             .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
                 .param("dim", dimension)
                 .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_count", 50000)
+            .withParamsInJson(new JsonBuilder().param("segment_row_limit", 50000)
                                                .param("auto_id", false)
                                                .build())
             .build();
@@ -152,20 +223,17 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.AfterEach
-  void tearDown() throws InterruptedException {
-    assertTrue(client.dropCollection(randomCollectionName).ok());
-    client.disconnect();
+  void tearDown() {
+    client.dropCollection(randomCollectionName);
+    client.close();
   }
 
   @org.junit.jupiter.api.Test
-  void idleTest() throws InterruptedException, ConnectFailedException {
-    MilvusClient client = new MilvusGrpcClient();
-    ConnectParam connectParam =
-        new ConnectParam.Builder()
-            .withHost("localhost")
-            .withIdleTimeout(1, TimeUnit.SECONDS)
-            .build();
-    client.connect(connectParam);
+  void idleTest() throws InterruptedException {
+    ConnectParam connectParam = connectParamBuilder()
+        .withIdleTimeout(1, TimeUnit.SECONDS)
+        .build();
+    MilvusClient client = new MilvusGrpcClient(connectParam);
     TimeUnit.SECONDS.sleep(2);
     // A new RPC would take the channel out of idle mode
     assertTrue(client.listCollections().ok());
@@ -206,9 +274,37 @@ class MilvusClientTest {
 
   @org.junit.jupiter.api.Test
   void connectUnreachableHost() {
-    MilvusClient client = new MilvusGrpcClient();
-    ConnectParam connectParam = new ConnectParam.Builder().withHost("250.250.250.250").build();
-    assertThrows(ConnectFailedException.class, () -> client.connect(connectParam));
+    ConnectParam connectParam = connectParamBuilder("250.250.250.250", 19530).build();
+    assertThrows(InitializationException.class, () -> new MilvusGrpcClient(connectParam));
+  }
+
+  @org.junit.jupiter.api.Test
+  void unsupportedServerVersion() {
+    GenericContainer unsupportedMilvusContainer =
+        new GenericContainer("milvusdb/milvus:0.9.1-cpu-d052920-e04ed5")
+            .withExposedPorts(19530);
+    try {
+      unsupportedMilvusContainer.start();
+      ConnectParam connectParam = connectParamBuilder(unsupportedMilvusContainer).build();
+      assertThrows(UnsupportedServerVersion.class, () -> new MilvusGrpcClient(connectParam));
+    } finally {
+      unsupportedMilvusContainer.stop();
+    }
+  }
+
+  @org.junit.jupiter.api.Test
+  void grpcTimeout() {
+    insert();
+    MilvusClient timeoutClient = client.withTimeout(1, TimeUnit.MILLISECONDS);
+    Response response = timeoutClient.createIndex(
+        new Index.Builder(randomCollectionName, "float_vec")
+            .withParamsInJson(new JsonBuilder()
+                .param("index_type", "IVF_FLAT")
+                .param("metric_type", "L2")
+                .indexParam("nlist", 2048)
+                .build())
+            .build());
+    assertEquals(Response.Status.RPC_ERROR, response.getStatus());
   }
 
   @org.junit.jupiter.api.Test
@@ -232,7 +328,7 @@ class MilvusClientTest {
     createCollectionResponse = client.createCollection(invalidCollectionMapping);
     assertFalse(createCollectionResponse.ok());
 
-    // invalid segment_row_count
+    // invalid segment_row_limit
     invalidCollectionMapping =
         new CollectionMapping.Builder("validCollectionName")
             .field(new FieldBuilder("int64", DataType.INT64).build())
@@ -240,7 +336,7 @@ class MilvusClientTest {
             .field(new FieldBuilder("float_vec", DataType.VECTOR_FLOAT)
                 .param("dim", dimension)
                 .build())
-            .withParamsInJson(new JsonBuilder().param("segment_row_count", -1000).build())
+            .withParamsInJson(new JsonBuilder().param("segment_row_limit", -1000).build())
             .build();
     createCollectionResponse = client.createCollection(invalidCollectionMapping);
     assertFalse(createCollectionResponse.ok());
