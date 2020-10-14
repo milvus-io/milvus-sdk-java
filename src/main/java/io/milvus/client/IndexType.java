@@ -2,6 +2,7 @@ package io.milvus.client;
 
 public enum IndexType {
   ANNOY,
+  BIN_FLAT,
   BIN_IVF_FLAT,
   FLAT,
   HNSW,
@@ -12,5 +13,7 @@ public enum IndexType {
   NSG,
   RHNSW_FLAT,
   RHNSW_PQ,
-  RHNSW_SQ
+  RHNSW_SQ,
+  SPTAG_BKT_RNT,
+  SPTAG_KDT_RNT
 }
