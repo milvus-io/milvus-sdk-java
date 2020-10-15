@@ -600,7 +600,7 @@ class MilvusClientTest {
     assertEquals(randomCollectionName, collectionMapping.getCollectionName());
 
     for (Map<String, Object> field : collectionMapping.getFields()) {
-      if (field.get("field").equals("float_vec")) {
+      if (field.get("name").equals("float_vec")) {
         JSONObject params = new JSONObject(field.get("params").toString());
         assertTrue(params.has("dim"));
       }

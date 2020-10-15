@@ -84,7 +84,7 @@ public class CollectionMapping {
         .map(f -> {
           ImmutableMap.Builder<String, Object> builder = ImmutableMap
               .<String, Object>builder()
-              .put("field", f.getName())
+              .put("name", f.getName())
               .put("type", DataType.valueOf(f.getType().getNumber()));
           String paramsInJson = getParamsInJson(f.getExtraParamsList());
           if (paramsInJson != null) {
