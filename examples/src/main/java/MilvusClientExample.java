@@ -20,7 +20,6 @@
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.client.*;
-import org.testcontainers.containers.GenericContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +49,7 @@ public class MilvusClientExample {
     return vectors;
   }
 
-  // Helper function that normalizes a vector if you are using IP (Inner Product) as your metric
-  // type
+  // Helper function that normalizes a vector if you are using IP (Inner Product) as your metric type
   static List<Float> normalizeVector(List<Float> vector) {
     float squareSum = vector.stream().map(x -> x * x).reduce((float) 0, Float::sum);
     final float norm = (float) Math.sqrt(squareSum);
@@ -59,15 +57,12 @@ public class MilvusClientExample {
     return vector;
   }
 
-  public static void main(String[] args) throws InterruptedException {
-    String dockerImage = System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu");
-    try (GenericContainer milvusContainer = new GenericContainer(dockerImage).withExposedPorts(19530)) {
-      milvusContainer.start();
-      ConnectParam connectParam = new ConnectParam.Builder()
-          .withHost("localhost")
-          .withPort(milvusContainer.getFirstMappedPort())
-          .build();
+  public static void main(String[] args) {
+    try {
+      ConnectParam connectParam = new ConnectParam.Builder().build();
       run(connectParam);
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 
@@ -76,7 +71,7 @@ public class MilvusClientExample {
     MilvusClient client = new MilvusGrpcClient(connectParam).withLogging();
 
     // Create a collection with the following collection mapping
-    final String collectionName = "example"; // collection name
+    final String collectionName = "example_collection"; // collection name
     final int dimension = 128; // dimension of each vector
     // we choose IP (Inner Product) as our metric type
     CollectionMapping collectionMapping = CollectionMapping
@@ -210,5 +205,8 @@ public class MilvusClientExample {
 
     // Drop collection
     client.dropCollection(collectionName);
+
+    // Close connection
+    client.close();
   }
 }
