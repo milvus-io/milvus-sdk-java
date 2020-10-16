@@ -24,8 +24,6 @@ The following table shows compatibilities between Milvus and Java SDK.
 |     0.8.0      |    0.7.0         |
 |     0.7.1      |    0.6.0         |
 |     0.7.0      |    0.5.0         |
-|     0.6.0      |    0.4.1         |
-|     0.5.3      |    0.3.0         |
 
 ### Install Java SDK
 
@@ -57,7 +55,7 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
 
 ### Troubleshooting
 
-- If you encounter the following error when running `MilvusClientExample.java`:
+- If you encounter the following error when running your application:
     ```
     SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
     SLF4J: Defaulting to no-operation (NOP) logger implementation
