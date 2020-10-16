@@ -63,12 +63,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ContainerMilvusClientTest extends MilvusClientTest {
   @Container
   private GenericContainer milvusContainer =
-      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu-d101620-4c44c0"))
           .withExposedPorts(19530);
 
   @Container
   private static GenericContainer milvusContainer2 =
-      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu"))
+      new GenericContainer(System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu-d101620-4c44c0"))
           .withExposedPorts(19530);
 
   @Override
