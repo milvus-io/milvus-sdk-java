@@ -43,7 +43,7 @@ public class SearchParam {
   private static final String VECTOR_QUERY_KEY = "vector";
   private static final String VECTOR_QUERY_PLACEHOLDER = "placeholder";
 
-  private io.milvus.grpc.SearchParam.Builder builder;
+  private final io.milvus.grpc.SearchParam.Builder builder;
 
   public static SearchParam create(String collectionName) {
     return new SearchParam(collectionName);
@@ -52,6 +52,11 @@ public class SearchParam {
   private SearchParam(String collectionName) {
     builder = io.milvus.grpc.SearchParam.newBuilder();
     builder.setCollectionName(collectionName);
+  }
+
+  public SearchParam setDsl(JSONObject json) {
+    builder.setDsl(json.toString());
+    return this;
   }
 
   public SearchParam setDsl(String dsl) {
@@ -93,6 +98,11 @@ public class SearchParam {
     } catch (JSONException e) {
       throw new InvalidDsl(e.getMessage(), dsl);
     }
+  }
+
+  public SearchParam addQueries(VectorParam vectorParam) {
+    builder.addVectorParam(vectorParam);
+    return this;
   }
 
   public SearchParam setPartitionTags(List<String> partitionTags) {

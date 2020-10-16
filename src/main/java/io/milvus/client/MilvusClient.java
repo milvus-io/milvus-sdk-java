@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /** The Milvus Client Interface */
-public interface MilvusClient {
+public interface MilvusClient extends AutoCloseable {
 
   String extraParamKey = "params";
 
