@@ -1,16 +1,27 @@
 # Changelog   
 
+## milvus-sdk-java 0.9.0 (2020-10-16)
+
+### Feature
+
+- \#2976 Scalar-field filtering support
+
+### Improvement
+
+- \#134 - Simplify the client code
+
 ## milvus-sdk-java 0.8.5 (2020-08-26)
 
 ### Feature
 
 - \#128 - GRPC timeout support
+- \#129 - Support GRPC name resolver and load balancing
 
 ## milvus-sdk-java 0.8.3 (2020-07-15)
 
 ### Improvement
 
-- \#117 - Remove isConnect() API
+- \#118 - Remove isConnect() API
 
 ## milvus-sdk-java 0.8.0 (2020-05-15)
 

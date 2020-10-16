@@ -1,20 +1,26 @@
 package io.milvus.client.exception;
 
-public class MilvusException extends RuntimeException {
+public abstract class MilvusException extends RuntimeException {
+  private String target;
   private boolean fillInStackTrace;
 
-  MilvusException(boolean fillInStackTrace) {
+  MilvusException(String target, boolean fillInStackTrace) {
+    this(target, fillInStackTrace, null, null);
+  }
+
+  MilvusException(String target, boolean fillInStackTrace, String message, Throwable cause) {
+    super(message, cause);
+    this.target = target;
     this.fillInStackTrace = fillInStackTrace;
   }
 
-  MilvusException(boolean fillInStackTrace, Throwable cause) {
-    super(cause);
-    this.fillInStackTrace = fillInStackTrace;
+  @Override
+  public final String getMessage() {
+    return String.format("%s: %s", target, getErrorMessage());
   }
 
-  MilvusException(boolean fillInStackTrace, String message) {
-    super(message);
-    this.fillInStackTrace = fillInStackTrace;
+  protected String getErrorMessage() {
+    return super.getMessage();
   }
 
   @Override

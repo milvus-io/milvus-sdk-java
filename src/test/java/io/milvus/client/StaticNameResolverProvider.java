@@ -13,11 +13,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class StaticNameResolverProvider extends NameResolverProvider {
-  private String name;
   private List<SocketAddress> addresses;
 
-  public StaticNameResolverProvider(String name, SocketAddress... addresses) {
-    this.name = name;
+  public StaticNameResolverProvider(SocketAddress... addresses) {
     this.addresses = Arrays.asList(addresses);
   }
 

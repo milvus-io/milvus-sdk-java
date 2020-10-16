@@ -19,35 +19,43 @@
 
 package io.milvus.client;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
- * Contains the returned <code>response</code> and <code>hasPartition</code> for <code>
- * hasPartition</code>
+ * Represents available data types.
  */
-public class HasPartitionResponse {
-    private final Response response;
-    private final boolean hasPartition;
+public enum DataType {
+  NONE(0),
+  BOOL(1),
+  INT8(2),
+  INT16(3),
+  INT32(4),
+  INT64(5),
 
-    HasPartitionResponse(Response response, boolean hasPartition) {
-        this.response = response;
-        this.hasPartition = hasPartition;
-    }
+  FLOAT(10),
+  DOUBLE(11),
 
-    public boolean hasPartition() {
-        return hasPartition;
-    }
+  STRING(20),
 
-    public Response getResponse() {
-        return response;
-    }
+  VECTOR_BINARY(100),
+  VECTOR_FLOAT(101),
 
-    /** @return <code>true</code> if the response status equals SUCCESS */
-    public boolean ok() {
-        return response.ok();
-    }
+  UNKNOWN(-1);
 
-    @Override
-    public String toString() {
-        return String.format(
-                "HasPartitionResponse {%s, has partition = %s}", response.toString(), hasPartition);
-    }
+  private final int val;
+
+  DataType(int val) {
+    this.val = val;
+  }
+
+  public static DataType valueOf(int val) {
+    Optional<DataType> search =
+        Arrays.stream(values()).filter(dataType -> dataType.val == val).findFirst();
+    return search.orElse(UNKNOWN);
+  }
+
+  public int getVal() {
+    return val;
+  }
 }

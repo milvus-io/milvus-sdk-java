@@ -19,100 +19,94 @@
 
 package io.milvus.client;
 
+import io.milvus.grpc.IndexParam;
+import io.milvus.grpc.KeyValuePair;
+
 import javax.annotation.Nonnull;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-/** Represents an index containing <code>indexType</code> and <code>nList</code> */
+/** Represents an index containing <code>fieldName</code>, <code>indexName</code> and
+ * <code>paramsInJson</code>, which contains index_type, params etc.
+ */
 public class Index {
-  private final String collectionName;
-  private final IndexType indexType;
-  private final String paramsInJson;
+  private final IndexParam.Builder builder;
 
-  private Index(@Nonnull Builder builder) {
-    this.collectionName = builder.collectionName;
-    this.indexType = builder.indexType;
-    this.paramsInJson = builder.paramsInJson;
+  public static Index create(@Nonnull String collectionName, @Nonnull String fieldName) {
+    return new Index(collectionName, fieldName);
+  }
+
+  private Index(String collectionName, String fieldName) {
+    this.builder = IndexParam.newBuilder()
+        .setCollectionName(collectionName)
+        .setFieldName(fieldName);
   }
 
   public String getCollectionName() {
-    return collectionName;
+    return builder.getCollectionName();
   }
 
-  public IndexType getIndexType() {
-    return indexType;
+  public Index setCollectionName(@Nonnull String collectionName) {
+    builder.setCollectionName(collectionName);
+    return this;
   }
 
-  public String getParamsInJson() {
-    return paramsInJson;
+  public String getFieldName() {
+    return builder.getFieldName();
+  }
+
+  public Index setFieldName(@Nonnull String collectionName) {
+    builder.setFieldName(collectionName);
+    return this;
+  }
+
+  public String getIndexName() {
+    return builder.getIndexName();
+  }
+
+  public Map<String, String> getExtraParams() {
+    return toMap(builder.getExtraParamsList());
+  }
+
+  public Index setIndexType(IndexType indexType) {
+    return addParam("index_type", indexType.name());
+  }
+
+  public Index setMetricType(MetricType metricType) {
+    return addParam("metric_type", metricType.name());
+  }
+
+  public Index setParamsInJson(String paramsInJson) {
+    return addParam(MilvusClient.extraParamKey, paramsInJson);
+  }
+
+  private Index addParam(String key, Object value) {
+    builder.addExtraParams(
+        KeyValuePair.newBuilder()
+            .setKey(key)
+            .setValue(String.valueOf(value))
+            .build());
+    return this;
   }
 
   @Override
   public String toString() {
     return "Index {"
         + "collectionName="
-        + collectionName
-        + ", indexType="
-        + indexType
+        + getCollectionName()
+        + ", fieldName="
+        + getFieldName()
         + ", params="
-        + paramsInJson
+        + getExtraParams()
         + '}';
   }
 
-  /** Builder for <code>Index</code> */
-  public static class Builder {
-    // Required parameters
-    private final String collectionName;
-    private final IndexType indexType;
+  IndexParam grpc() {
+    return builder.build();
+  }
 
-    // Optional parameters - initialized to default values
-    private String paramsInJson;
-
-    /**
-     * @param collectionName collection to create index on
-     * @param indexType a <code>IndexType</code> object
-     */
-    public Builder(@Nonnull String collectionName, @Nonnull IndexType indexType) {
-      this.collectionName = collectionName;
-      this.indexType = indexType;
-    }
-
-    /**
-     * Optional. Default to empty <code>String</code>. Index parameters are different for different
-     * index types. Refer to <a
-     * href="https://milvus.io/docs/milvus_operation.md">https://milvus.io/docs/milvus_operation.md</a>
-     * for more information.
-     *
-     * <pre>
-     * FLAT/IVFLAT/SQ8: {"nlist": 16384}
-     * nlist range:[1, 999999]
-     *
-     * IVFPQ: {"nlist": 16384, "m": 12}
-     * nlist range:[1, 999999]
-     * m is decided by dim and have a couple of results.
-     *
-     * NSG: {"search_length": 45, "out_degree": 50, "candidate_pool_size": 300, "knng": 100}
-     * search_length range:[10, 300]
-     * out_degree range:[5, 300]
-     * candidate_pool_size range:[50, 1000]
-     * knng range:[5, 300]
-     *
-     * HNSW: {"M": 16, "efConstruction": 500}
-     * M range:[5, 48]
-     * efConstruction range:[100, 500]
-     *
-     * ANNOY: {"n_trees": 4}
-     * n_trees range: [1, 16384)
-     * </pre>
-     *
-     * @param paramsInJson extra parameters in JSON format
-     * @return <code>Builder</code>
-     */
-    public Builder withParamsInJson(@Nonnull String paramsInJson) {
-      this.paramsInJson = paramsInJson;
-      return this;
-    }
-
-    public Index build() {
-      return new Index(this);
-    }
+  private Map<String, String> toMap(List<KeyValuePair> extraParams) {
+    return extraParams.stream().collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
   }
 }

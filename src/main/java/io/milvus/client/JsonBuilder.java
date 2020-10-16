@@ -19,36 +19,31 @@
 
 package io.milvus.client;
 
-import java.util.List;
+import org.json.JSONObject;
 
-/**
- * Contains the returned <code>response</code> and <code>vectorIds</code> for <code>insert</code>
- */
-public class InsertResponse {
-  private final Response response;
-  private final List<Long> vectorIds;
+/** Contains Json Parameter Builder */
+public class JsonBuilder {
+  private String paramsInJson;
 
-  InsertResponse(Response response, List<Long> vectorIds) {
-    this.response = response;
-    this.vectorIds = vectorIds;
+  public JsonBuilder() {
+    this.paramsInJson = "{}";
   }
 
-  public List<Long> getVectorIds() {
-    return vectorIds;
+  /**
+   * Add key-value pair to paramsInJson.
+   *
+   * @param key The param key
+   * @param value The param value
+   * @return <code>JsonBuilder</code>
+   */
+  public JsonBuilder param(String key, Object value) {
+    JSONObject jsonObject = new JSONObject(this.paramsInJson);
+    jsonObject.put(key, value);
+    this.paramsInJson = jsonObject.toString();
+    return this;
   }
 
-  public Response getResponse() {
-    return response;
-  }
-
-  /** @return <code>true</code> if the response status equals SUCCESS */
-  public boolean ok() {
-    return response.ok();
-  }
-
-  @Override
-  public String toString() {
-    return String.format(
-        "InsertResponse {%s, returned %d vector ids}", response.toString(), this.vectorIds.size());
+  public String build() {
+    return this.paramsInJson;
   }
 }

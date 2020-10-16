@@ -20,12 +20,12 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.Metadata;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -33,37 +33,28 @@ import java.util.function.Supplier;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
+  String extraParamKey = "params";
+
   String clientVersion = new Supplier<String>() {
+
     @Override
+    /** @return current Milvus client version */
     public String get() {
       Properties properties = new Properties();
-      InputStream inputStream = MilvusClient.class
-          .getClassLoader().getResourceAsStream("milvus-client.properties");
-      try {
+      try (InputStream inputStream =
+               MilvusClient.class.getClassLoader()
+                   .getResourceAsStream("milvus-client.properties")) {
         properties.load(inputStream);
       } catch (IOException ex) {
         ExceptionUtils.wrapAndThrow(ex);
-      } finally {
-        try {
-          inputStream.close();
-        } catch (IOException ex) {
-        }
       }
       return properties.getProperty("version");
     }
   }.get();
 
-  Metadata commonHeaders = new Supplier<Metadata>() {
-    @Override
-    public Metadata get() {
-      Metadata metadata = new Metadata();
-      Metadata.Key<String> key = Metadata.Key.of("Milvus-Client-Version", Metadata.ASCII_STRING_MARSHALLER);
-      metadata.put(key, clientVersion);
-      return metadata;
-    }
-  }.get();
+  String target();
 
-  /** @return current Milvus client version */
+  /** @return current Milvus client version： 0.9.0 */
   default String getClientVersion() {
     return clientVersion;
   }
@@ -86,296 +77,253 @@ public interface MilvusClient {
    * Creates collection specified by <code>collectionMapping</code>
    *
    * @param collectionMapping the <code>CollectionMapping</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
-   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName, dimension)
-   *                                          .withIndexFileSize(1024)
-   *                                          .withMetricType(MetricType.IP)
-   *                                          .build();
+   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName)
+   *                                                            .withFields(fields)
+   *                                                            .withParamsInJson("{"segment_row_limit": 100000}")
+   *                                                            .build();
    * </code>
+   * Refer to <code>withFields</code> method for example <code>fields</code> usage.
    * </pre>
    *
-   * @return <code>Response</code>
    * @see CollectionMapping
-   * @see MetricType
-   * @see Response
    */
-  Response createCollection(CollectionMapping collectionMapping);
+  void createCollection(CollectionMapping collectionMapping);
 
   /**
    * Checks whether the collection exists
    *
    * @param collectionName collection to check
-   * @return <code>HasCollectionResponse</code>
-   * @see HasCollectionResponse
-   * @see Response
+   * @return true if the collection exists, false otherwise.
    */
-  HasCollectionResponse hasCollection(String collectionName);
+  boolean hasCollection(String collectionName);
 
   /**
    * Drops collection
    *
    * @param collectionName collection to drop
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response dropCollection(String collectionName);
+  void dropCollection(String collectionName);
 
   /**
    * Creates index specified by <code>index</code>
    *
    * @param index the <code>Index</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
-   *                        .withParamsInJson("{\"nlist\": 16384}")
+   * Index index = new Index.Builder(collectionName, fieldName)
+   *                        .withParamsInJson(
+   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
+   *                              "params": {"nlist": 16384}}")
    *                        .build();
    * </code>
    * </pre>
    *
-   * @return <code>Response</code>
    * @see Index
-   * @see IndexType
-   * @see Response
    */
-  Response createIndex(Index index);
+  void createIndex(Index index);
 
   /**
    * Creates index specified by <code>index</code> asynchronously
    *
    * @param index the <code>Index</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, IndexType.IVF_SQ8)
-   *                        .withParamsInJson("{\"nlist\": 16384}")
+   * Index index = new Index.Builder(collectionName, fieldName)
+   *                        .withParamsInJson(
+   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
+   *                              "params\": {"nlist": 16384}}")
    *                        .build();
    * </code>
    * </pre>
    *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
    * @see Index
-   * @see IndexType
-   * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<Response> createIndexAsync(Index index);
+  ListenableFuture<Void> createIndexAsync(Index index);
 
   /**
    * Creates a partition specified by <code>collectionName</code> and <code>tag</code>
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response createPartition(String collectionName, String tag);
+  void createPartition(String collectionName, String tag);
 
   /**
    * Checks whether the partition exists
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @return <code>HasPartitionResponse</code>
-   * @see Response
+   * @return true if the partition exists, false otherwise.
    */
-  HasPartitionResponse hasPartition(String collectionName, String tag);
+  boolean hasPartition(String collectionName, String tag);
 
   /**
    * Lists current partitions of a collection
    *
    * @param collectionName collection name
-   * @return <code>ListPartitionsResponse</code>
-   * @see ListPartitionsResponse
-   * @see Response
+   * @return a list of partition names
    */
-  ListPartitionsResponse listPartitions(String collectionName);
+  List<String> listPartitions(String collectionName);
 
   /**
    * Drops partition specified by <code>collectionName</code> and <code>tag</code>
    *
    * @param collectionName collection name
    * @param tag partition tag
-   * @see Response
    */
-  Response dropPartition(String collectionName, String tag);
+  void dropPartition(String collectionName, String tag);
 
   /**
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withVectorIds(vectorIds)
+   *                                          .withFields(fields)
+   *                                          .withEntityIds(entityIds)
    *                                          .withPartitionTag(tag)
    *                                          .build();
    * </code>
    * </pre>
    *
-   * @return <code>InsertResponse</code>
+   * @return a list of ids for the inserted entities
    * @see InsertParam
-   * @see InsertResponse
-   * @see Response
    */
-  InsertResponse insert(InsertParam insertParam);
+  List<Long> insert(InsertParam insertParam);
 
   /**
    * Inserts data specified by <code>insertParam</code> asynchronously
    *
    * @param insertParam the <code>InsertParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withVectorIds(vectorIds)
+   *                                          .withFields(fields)
+   *                                          .withEntityIds(entityIds)
    *                                          .withPartitionTag(tag)
    *                                          .build();
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the <code>InsertResponse</code>
+   * @return a <code>ListenableFuture</code> object which holds the list of ids for the inserted entities.
    * @see InsertParam
-   * @see InsertResponse
-   * @see Response
    * @see ListenableFuture
    */
-  ListenableFuture<InsertResponse> insertAsync(InsertParam insertParam);
+  ListenableFuture<List<Long>> insertAsync(InsertParam insertParam);
 
   /**
-   * Searches vectors specified by <code>searchParam</code>
+   * Searches entities specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withTopK(topK)
+   *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .withParamsInJson("{"fields": ["B"]}")
    *                                          .build();
    * </code>
    * </pre>
    *
-   * @return <code>SearchResponse</code>
+   * @return <code>SearchResult</code>
    * @see SearchParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
+   * @see SearchResult
    */
-  SearchResponse search(SearchParam searchParam);
+  SearchResult search(SearchParam searchParam);
 
   /**
-   * Searches vectors specified by <code>searchParam</code> asynchronously
+   * Searches entities specified by <code>searchParam</code> asynchronously
    *
    * @param searchParam the <code>SearchParam</code> object
-   *     <pre>
+   * <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withFloatVectors(floatVectors)
-   *                                          .withTopK(topK)
+   *                                          .withDSL(dslStatement)
    *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{\"nprobe\": 20}")
+   *                                          .withParamsInJson("{"fields": ["B"]}")
    *                                          .build();
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the <code>SearchResponse</code>
+   * @return a <code>ListenableFuture</code> object which holds the <code>SearchResult</code>
    * @see SearchParam
-   * @see SearchResponse
-   * @see SearchResponse.QueryResult
-   * @see Response
+   * @see SearchResult
    * @see ListenableFuture
    */
-  ListenableFuture<SearchResponse> searchAsync(SearchParam searchParam);
+  ListenableFuture<SearchResult> searchAsync(SearchParam searchParam);
 
   /**
    * Gets collection info
    *
    * @param collectionName collection to describe
-   * @see GetCollectionInfoResponse
+   * @return <code>CollectionMapping</code>
    * @see CollectionMapping
-   * @see Response
    */
-  GetCollectionInfoResponse getCollectionInfo(String collectionName);
+  CollectionMapping getCollectionInfo(String collectionName);
 
   /**
    * Lists current collections
    *
-   * @return <code>ListCollectionsResponse</code>
-   * @see ListCollectionsResponse
-   * @see Response
+   * @return a list of collection names
    */
-  ListCollectionsResponse listCollections();
+  List<String> listCollections();
 
   /**
    * Gets current entity count of a collection
    *
-   * @param collectionName collection to count entities
-   * @return <code>CountEntitiesResponse</code>
-   * @see CountEntitiesResponse
-   * @see Response
+   * @param collectionName collection name
+   * @return a count of entities in the collection
    */
-  CountEntitiesResponse countEntities(String collectionName);
+  long countEntities(String collectionName);
 
   /**
-   * Get server status
+   * Gets server status
    *
-   * @return <code>Response</code>
-   * @see Response
+   * @return a server status string
    */
-  Response getServerStatus();
+  String getServerStatus();
 
   /**
-   * Get server version
+   * Gets server version
    *
-   * @return <code>Response</code>
-   * @see Response
+   * @return a server version string.
    */
-  Response getServerVersion();
+  String getServerVersion();
 
   /**
    * Sends a command to server
    *
-   * @return <code>Response</code> command's response will be return in <code>message</code>
-   * @see Response
+   * @return a message string
    */
-  Response command(String command);
+  String command(String command);
 
   /**
    * Pre-loads collection to memory
    *
    * @param collectionName collection to load
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response loadCollection(String collectionName);
-
-  /**
-   * Gets collection index information
-   *
-   * @param collectionName collection to get info from
-   * @see GetIndexInfoResponse
-   * @see Index
-   * @see Response
-   */
-  GetIndexInfoResponse getIndexInfo(String collectionName);
+  void loadCollection(String collectionName);
 
   /**
    * Drops collection index
    *
-   * @param collectionName collection to drop index of
-   * @return <code>Response</code>
-   * @see Response
+   * @param collectionName The collection to drop index.
+   * @param fieldName Name of the field to drop index for. If this is set to empty string,
+   *                  index of all fields in the collection will be dropped.
    */
-  Response dropIndex(String collectionName);
+  void dropIndex(String collectionName, String fieldName);
 
   /**
    * Shows collection information. A collection consists of one or multiple partitions (including
@@ -384,105 +332,119 @@ public interface MilvusClient {
    * result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response getCollectionStats(String collectionName);
+  String getCollectionStats(String collectionName);
 
   /**
-   * Gets vectors data by id array
+   * Gets entities data by id array
    *
-   * @param collectionName collection to get vectors from
-   * @param ids a <code>List</code> of vector ids
-   * @return <code>GetEntityByIDResponse</code>
-   * @see GetEntityByIDResponse
-   * @see Response
+   * @param collectionName collection to get entities from
+   * @param ids a <code>List</code> of entity ids
+   * @param fieldNames  a <code>List</code> of field names. Server will only return entity
+   *                    information for these fields.
+   * @return a map of entity id to entity properties
    */
-  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids);
+  Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
 
   /**
-   * Gets all vector ids in a segment
+   * Gets entities data by id array
    *
-   * @param collectionName collection to get vector ids from
-   * @param segmentName segment name in the collection
-   * @return <code>ListIDInSegmentResponse</code>
-   * @see ListIDInSegmentResponse
-   * @see Response
+   * @param collectionName collection to get entities from
+   * @param ids a <code>List</code> of entity ids
+   * @return a map of entity id to entity properties
    */
-  ListIDInSegmentResponse listIDInSegment(String collectionName, String segmentName);
+  Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids);
+
+  /**
+   * Gets all entity ids in a segment
+   *
+   * @param collectionName collection to get entity ids from
+   * @param segmentId segment id in the collection
+   * @return a list of entity ids in the segment
+   */
+  List<Long> listIDInSegment(String collectionName, Long segmentId);
 
   /**
    * Deletes data in a collection by a list of ids
    *
    * @param collectionName collection to delete ids from
-   * @param ids a <code>List</code> of vector ids to delete
-   * @return <code>Response</code>
-   * @see Response
+   * @param ids a <code>List</code> of entity ids to delete
    */
-  Response deleteEntityByID(String collectionName, List<Long> ids);
+  void deleteEntityByID(String collectionName, List<Long> ids);
 
   /**
    * Flushes data in a list collections. Newly inserted or modifications on data will be visible
    * after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response flush(List<String> collectionNames);
+  void flush(List<String> collectionNames);
 
   /**
    * Flushes data in a list collections asynchronously. Newly inserted or modifications on data will
    * be visible after <code>flush</code> returned
    *
    * @param collectionNames a <code>List</code> of collections to flush
-   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
-   * @see Response
+   * @return <code>ListenableFuture</code>
    * @see ListenableFuture
    */
-  ListenableFuture<Response> flushAsync(List<String> collectionNames);
+  ListenableFuture<Void> flushAsync(List<String> collectionNames);
 
   /**
    * Flushes data in a collection. Newly inserted or modifications on data will be visible after
    * <code>flush</code> returned
    *
    * @param collectionName name of collection to flush
-   * @return <code>Response</code>
-   * @see Response
    */
-  Response flush(String collectionName);
+  void flush(String collectionName);
 
   /**
    * Flushes data in a collection asynchronously. Newly inserted or modifications on data will be
    * visible after <code>flush</code> returned
    *
    * @param collectionName name of collection to flush
-   * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
-   * @see Response
+   * @return <code>ListenableFuture</code>
    * @see ListenableFuture
    */
-  ListenableFuture<Response> flushAsync(String collectionName);
+  ListenableFuture<Void> flushAsync(String collectionName);
 
   /**
    * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
    * data size after compaction is still larger than indexFileSize). Data was only soft-deleted
    * until you call compact.
    *
-   * @param collectionName name of collection to compact
-   * @return <code>Response</code>
-   * @see Response
+   * @param compactParam the <code>CompactParam</code> object
+   * <pre>
+   * example usage:
+   * <code>
+   * CompactParam compactParam = new CompactParam.Builder(collectionName)
+   *                                             .withThreshold(0.3)
+   *                                             .build();
+   * </code>
+   * </pre>
+   *
+   * @see CompactParam
    */
-  Response compact(String collectionName);
+  void compact(CompactParam compactParam);
 
   /**
-   * Compacts the collection asynchronously, erasing deleted data from disk and rebuild index in
-   * background (if the data size after compaction is still larger than indexFileSize). Data was
-   * only soft-deleted until you call compact.
+   * Compacts the collection, erasing deleted data from disk and rebuild index in background (if the
+   * data size after compaction is still larger than indexFileSize). Data was only soft-deleted
+   * until you call compact.
    *
-   * @param collectionName name of collection to compact
+   * @param compactParam the <code>CompactParam</code> object
+   * <pre>
+   * example usage:
+   * <code>
+   * CompactParam compactParam = new CompactParam.Builder(collectionName)
+   *                                             .withThreshold(0.3)
+   *                                             .build();
+   * </code>
+   * </pre>
+   *
    * @return a <code>ListenableFuture</code> object which holds the <code>Response</code>
-   * @see Response
+   * @see CompactParam
    * @see ListenableFuture
    */
-  ListenableFuture<Response> compactAsync(String collectionName);
+  ListenableFuture<Void> compactAsync(CompactParam compactParam);
 }

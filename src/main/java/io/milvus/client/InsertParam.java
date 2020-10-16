@@ -19,114 +19,93 @@
 
 package io.milvus.client;
 
-import javax.annotation.Nonnull;
+import com.google.protobuf.ByteString;
+import io.milvus.client.exception.UnsupportedDataType;
+import io.milvus.grpc.AttrRecord;
+import io.milvus.grpc.FieldValue;
+import io.milvus.grpc.VectorRecord;
+import io.milvus.grpc.VectorRowRecord;
+
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /** Contains parameters for <code>insert</code> */
 public class InsertParam {
-  private final String collectionName;
-  private final List<List<Float>> floatVectors;
-  private final List<ByteBuffer> binaryVectors;
-  private final List<Long> vectorIds;
-  private final String partitionTag;
+  private io.milvus.grpc.InsertParam.Builder builder;
 
-  private InsertParam(@Nonnull Builder builder) {
-    this.collectionName = builder.collectionName;
-    this.floatVectors = builder.floatVectors;
-    this.binaryVectors = builder.binaryVectors;
-    this.vectorIds = builder.vectorIds;
-    this.partitionTag = builder.partitionTag;
+  public static InsertParam create(String collectionName) {
+    return new InsertParam(collectionName);
   }
 
-  public String getCollectionName() {
-    return collectionName;
+  private InsertParam(String collectionName) {
+    this.builder = io.milvus.grpc.InsertParam.newBuilder();
+    builder.setCollectionName(collectionName);
   }
 
-  public List<List<Float>> getFloatVectors() {
-    return floatVectors;
+  public InsertParam setEntityIds(List<Long> entityIds) {
+    builder.addAllEntityIdArray(entityIds);
+    return this;
   }
 
-  public List<ByteBuffer> getBinaryVectors() {
-    return binaryVectors;
+  public <T> InsertParam addField(String name, DataType type, List<T> values) {
+    AttrRecord.Builder record = AttrRecord.newBuilder();
+    switch (type) {
+      case INT32:
+        record.addAllInt32Value((List<Integer>) values);
+        break;
+      case INT64:
+        record.addAllInt64Value((List<Long>) values);
+        break;
+      case FLOAT:
+        record.addAllFloatValue((List<Float>) values);
+        break;
+      case DOUBLE:
+        record.addAllDoubleValue((List<Double>) values);
+        break;
+      default:
+        throw new UnsupportedDataType("Unsupported data type: " + type.name());
+    }
+    builder.addFields(FieldValue.newBuilder()
+        .setFieldName(name)
+        .setTypeValue(type.getVal())
+        .setAttrRecord(record.build())
+        .build());
+    return this;
   }
 
-  public List<Long> getVectorIds() {
-    return vectorIds;
+  public <T> InsertParam addVectorField(String name, DataType type, List<T> values) {
+    VectorRecord.Builder record = VectorRecord.newBuilder();
+    switch (type) {
+      case VECTOR_FLOAT:
+        record.addAllRecords(
+            ((List<List<Float>>) values).stream()
+                .map(row -> VectorRowRecord.newBuilder().addAllFloatData(row).build())
+                .collect(Collectors.toList()));
+        break;
+      case VECTOR_BINARY:
+        record.addAllRecords(
+            ((List<ByteBuffer>) values).stream()
+                .map(row -> VectorRowRecord.newBuilder().setBinaryData(ByteString.copyFrom(row.slice())).build())
+                .collect(Collectors.toList()));
+        break;
+      default:
+        throw new UnsupportedDataType("Unsupported data type: " + type.name());
+    }
+    builder.addFields(FieldValue.newBuilder()
+        .setFieldName(name)
+        .setTypeValue(type.getVal())
+        .setVectorRecord(record.build())
+        .build());
+    return this;
   }
 
-  public String getPartitionTag() {
-    return partitionTag;
+  public InsertParam setPartitionTag(String partitionTag) {
+    builder.setPartitionTag(partitionTag);
+    return this;
   }
 
-  /** Builder for <code>InsertParam</code> */
-  public static class Builder {
-    // Required parameters
-    private final String collectionName;
-
-    // Optional parameters - initialized to default values
-    private List<List<Float>> floatVectors = new ArrayList<>();
-    private List<ByteBuffer> binaryVectors = new ArrayList<>();
-    private List<Long> vectorIds = new ArrayList<>();
-    private String partitionTag = "";
-
-    /** @param collectionName collection to insert vectors to */
-    public Builder(@Nonnull String collectionName) {
-      this.collectionName = collectionName;
-    }
-
-    /**
-     * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
-     * vectors to a collection, not both.
-     *
-     * @param floatVectors a <code>List</code> of float vectors to insert. Each inner <code>List
-     *     </code> represents a float vector.
-     * @return <code>Builder</code>
-     */
-    public Builder withFloatVectors(@Nonnull List<List<Float>> floatVectors) {
-      this.floatVectors = floatVectors;
-      return this;
-    }
-
-    /**
-     * Default to an empty <code>ArrayList</code>. You can only insert either float or binary
-     * vectors to a collection, not both.
-     *
-     * @param binaryVectors a <code>List</code> of binary vectors to insert. Each <code>ByteBuffer
-     *     </code> object represents a binary vector, with every 8 bits constituting a byte.
-     * @return <code>Builder</code>
-     * @see ByteBuffer
-     */
-    public Builder withBinaryVectors(@Nonnull List<ByteBuffer> binaryVectors) {
-      this.binaryVectors = binaryVectors;
-      return this;
-    }
-
-    /**
-     * Optional. Default to an empty <code>ArrayList</code>
-     *
-     * @param vectorIds a <code>List</code> of ids associated with the vectors to insert
-     * @return <code>Builder</code>
-     */
-    public Builder withVectorIds(@Nonnull List<Long> vectorIds) {
-      this.vectorIds = vectorIds;
-      return this;
-    }
-
-    /**
-     * Optional. Default to an empty <code>String</code>
-     *
-     * @param partitionTag partition tag
-     * @return <code>Builder</code>
-     */
-    public Builder withPartitionTag(@Nonnull String partitionTag) {
-      this.partitionTag = partitionTag;
-      return this;
-    }
-
-    public InsertParam build() {
-      return new InsertParam(this);
-    }
+  io.milvus.grpc.InsertParam grpc() {
+    return builder.build();
   }
 }

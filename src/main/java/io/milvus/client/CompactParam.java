@@ -19,33 +19,25 @@
 
 package io.milvus.client;
 
-import java.util.List;
+/** Contains parameters for <code>compact</code> */
+public class CompactParam {
+  private io.milvus.grpc.CompactParam.Builder builder;
 
-/**
- * Contains the returned <code>response</code> and <code>partitionList</code> for <code>
- * listPartitions
- * </code>
- */
-public class ListPartitionsResponse {
-  private final Response response;
-  private final List<String> partitionList;
-
-  ListPartitionsResponse(Response response, List<String> partitionList) {
-    this.response = response;
-    this.partitionList = partitionList;
+  public static CompactParam create(String collectionName) {
+    return new CompactParam(collectionName);
   }
 
-  /** @return a <code>List</code> of partition tags. */
-  public List<String> getPartitionList() {
-    return partitionList;
+  private CompactParam(String collectionName) {
+    builder = io.milvus.grpc.CompactParam.newBuilder();
+    builder.setCollectionName(collectionName).setThreshold(0.2);
   }
 
-  public Response getResponse() {
-    return response;
+  public CompactParam setThreshold(double threshold) {
+    builder.setThreshold(threshold);
+    return this;
   }
 
-  /** @return <code>true</code> if the response status equals SUCCESS */
-  public boolean ok() {
-    return response.ok();
+  io.milvus.grpc.CompactParam grpc() {
+    return builder.build();
   }
 }

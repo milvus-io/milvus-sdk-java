@@ -15,7 +15,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 | Milvus version | Java SDK version |
 | :------------: | :--------------: |
-|     0.10.x     |    0.8.5         |
+|     0.11.0     |    0.9.0         |
 |     0.10.2     |    0.8.4         |
 |     0.10.1     |    0.8.3         |
 |     0.10.0     |    0.8.2         |
@@ -37,14 +37,14 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>0.8.5</version>
+            <version>0.9.0</version>
         </dependency>
        ```
 
    - Gradle/Grails
 
         ```gradle
-        compile 'io.milvus:milvus-sdk-java:0.8.5'
+        compile 'io.milvus:milvus-sdk-java:0.9.0'
         ```
 
 ### Examples
@@ -57,11 +57,13 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
 
 ### Troubleshooting
 
-- If you encounter the following error when running your application:
+- If you encounter the following error when running `MilvusClientExample.java`:
     ```
-    Exception in thread "main" java.lang.NoClassDefFoundError: org/slf4j/LoggerFactory
+    SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+    SLF4J: Defaulting to no-operation (NOP) logger implementation
+    SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
     ```
-  This is because SLF4J jar files need to be added into your application's classpath. SLF4J is required by Java SDK for logging purpose.
+  This is because SLF4J jar files need to be added into your application's classpath. SLF4J is used by Java SDK for logging purpose.
   
   To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
                                                                                                          
@@ -70,13 +72,14 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
         ```xml
          <dependency>
              <groupId>org.slf4j</groupId>
-             <artifactId>slf4j-api</artifactId>
+             <artifactId>slf4j-simple</artifactId>
              <version>1.7.30</version>
+             <scope>test</scope>
          </dependency>
         ```
     
     - Gradle/Grails
     
          ```gradle
-         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+         test compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
          ```
