@@ -1,5 +1,6 @@
 package io.milvus.client.exception;
 
+/** Milvus exception from client side */
 public class ClientSideMilvusException extends MilvusException {
 
   public ClientSideMilvusException(String target) {

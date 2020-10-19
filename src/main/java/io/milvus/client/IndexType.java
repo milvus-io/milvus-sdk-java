@@ -1,5 +1,6 @@
 package io.milvus.client;
 
+/** represents available index types */
 public enum IndexType {
   ANNOY,
   BIN_FLAT,

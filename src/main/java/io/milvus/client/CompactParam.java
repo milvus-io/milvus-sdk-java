@@ -23,6 +23,7 @@ package io.milvus.client;
 public class CompactParam {
   private io.milvus.grpc.CompactParam.Builder builder;
 
+  /** @param collectionName collection to compact */
   public static CompactParam create(String collectionName) {
     return new CompactParam(collectionName);
   }
@@ -32,6 +33,12 @@ public class CompactParam {
     builder.setCollectionName(collectionName).setThreshold(0.2);
   }
 
+  /**
+   * Optional. Default to 0.2. Segment will compact if and only if the percentage of entities
+   * deleted exceeds the threshold.
+   *
+   * @param threshold The threshold
+   */
   public CompactParam setThreshold(double threshold) {
     builder.setThreshold(threshold);
     return this;

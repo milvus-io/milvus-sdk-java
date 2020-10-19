@@ -3,6 +3,7 @@ package io.milvus.client.exception;
 import io.milvus.grpc.ErrorCode;
 import io.milvus.grpc.Status;
 
+/** Milvus exception from server side */
 public class ServerSideMilvusException extends MilvusException {
   private ErrorCode errorCode;
   private String reason;

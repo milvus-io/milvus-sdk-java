@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/** A class that contains information from Search */
 public class SearchResult {
   private int numQueries;
   private long topK;
