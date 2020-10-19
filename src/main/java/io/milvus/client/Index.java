@@ -33,6 +33,10 @@ import java.util.stream.Collectors;
 public class Index {
   private final IndexParam.Builder builder;
 
+  /**
+   * @param collectionName collection to create index for
+   * @param fieldName name of the field on which index is built.
+   */
   public static Index create(@Nonnull String collectionName, @Nonnull String fieldName) {
     return new Index(collectionName, fieldName);
   }
@@ -77,6 +81,7 @@ public class Index {
     return addParam("metric_type", metricType.name());
   }
 
+  /** @param paramsInJson optional parameters for index, such as <code>nlist</code> */
   public Index setParamsInJson(String paramsInJson) {
     return addParam(MilvusClient.extraParamKey, paramsInJson);
   }

@@ -33,6 +33,9 @@ import java.util.stream.Collectors;
 public class CollectionMapping {
   private final Mapping.Builder builder;
 
+  /**
+   * @param collectionName collection name
+   */
   public static CollectionMapping create(String collectionName) {
     return new CollectionMapping(collectionName);
   }

@@ -1,5 +1,6 @@
 package io.milvus.client;
 
+/** represents available metric types */
 public enum MetricType {
   HAMMING,
   IP,

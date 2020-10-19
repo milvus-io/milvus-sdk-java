@@ -38,7 +38,6 @@ public interface MilvusClient {
   String clientVersion = new Supplier<String>() {
 
     @Override
-    /** @return current Milvus client version */
     public String get() {
       Properties properties = new Properties();
       try (InputStream inputStream =
@@ -54,7 +53,7 @@ public interface MilvusClient {
 
   String target();
 
-  /** @return current Milvus client version： 0.9.0 */
+  /** @return current Milvus client version */
   default String getClientVersion() {
     return clientVersion;
   }
@@ -71,6 +70,11 @@ public interface MilvusClient {
    */
   void close(long maxWaitSeconds);
 
+  /**
+   * Milvus service with timeout support.
+   * @param timeout the desired timeout
+   * @param timeoutUnit unit for timeout
+   */
   MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
   /**
@@ -80,12 +84,16 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * CollectionMapping collectionMapping = new CollectionMapping.Builder(collectionName)
-   *                                                            .withFields(fields)
-   *                                                            .withParamsInJson("{"segment_row_limit": 100000}")
-   *                                                            .build();
+   * CollectionMapping collectionMapping = CollectionMapping
+   *                          .create(collectionName)
+   *                          .addField("int64", DataType.INT64)
+   *                          .addVectorField("float_vec", DataType.VECTOR_FLOAT, dimension)
+   *                          .setParamsInJson(new JsonBuilder()
+   *                              .param("segment_row_limit", 50000)
+   *                              .param("auto_id", false)
+   *                              .build());
    * </code>
-   * Refer to <code>withFields</code> method for example <code>fields</code> usage.
+   * Refer to <code>addField</code> and <code>addVectorField</code> for example usage.
    * </pre>
    *
    * @see CollectionMapping
@@ -114,11 +122,10 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, fieldName)
-   *                        .withParamsInJson(
-   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
-   *                              "params": {"nlist": 16384}}")
-   *                        .build();
+   * Index index = Index.create(collectionName, "float_vec")
+   *                    .setIndexType(IndexType.IVF_SQ8)
+   *                    .setMetricType(MetricType.L2)
+   *                    .setParamsInJson(new JsonBuilder().param("nlist", 2048).build());
    * </code>
    * </pre>
    *
@@ -133,11 +140,10 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * Index index = new Index.Builder(collectionName, fieldName)
-   *                        .withParamsInJson(
-   *                            "{"index_type": "IVF_FLAT", "metric_type": "L2",
-   *                              "params\": {"nlist": 16384}}")
-   *                        .build();
+   * Index index = Index.create(collectionName, "float_vec")
+   *                    .setIndexType(IndexType.IVF_SQ8)
+   *                    .setMetricType(MetricType.L2)
+   *                    .setParamsInJson(new JsonBuilder().param("nlist", 2048).build());
    * </code>
    * </pre>
    *
@@ -187,15 +193,16 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFields(fields)
-   *                                          .withEntityIds(entityIds)
-   *                                          .withPartitionTag(tag)
-   *                                          .build();
+   * InsertParam insertParam = InsertParam
+   *                    .create(collectionName)
+   *                    .addField("int64", DataType.INT64, intValues)
+   *                    .addField("float", DataType.FLOAT, floatValues)
+   *                    .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+   *                    .setEntityIds(entityIds);
    * </code>
    * </pre>
    *
-   * @return a list of ids for the inserted entities
+   * @return a list of ids of the inserted entities
    * @see InsertParam
    */
   List<Long> insert(InsertParam insertParam);
@@ -207,15 +214,16 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * InsertParam insertParam = new InsertParam.Builder(collectionName)
-   *                                          .withFields(fields)
-   *                                          .withEntityIds(entityIds)
-   *                                          .withPartitionTag(tag)
-   *                                          .build();
+   * InsertParam insertParam = InsertParam
+   *                    .create(collectionName)
+   *                    .addField("int64", DataType.INT64, intValues)
+   *                    .addField("float", DataType.FLOAT, floatValues)
+   *                    .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+   *                    .setEntityIds(entityIds);
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the list of ids for the inserted entities.
+   * @return a <code>ListenableFuture</code> object which holds the list of ids of the inserted entities.
    * @see InsertParam
    * @see ListenableFuture
    */
@@ -228,11 +236,12 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withDSL(dslStatement)
-   *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{"fields": ["B"]}")
-   *                                          .build();
+   * SearchParam searchParam = SearchParam.create(collectionName)
+   *                                      .setDSL(dsl)
+   *                                      .setPartitionTags(partitionTagsList)
+   *                                      .setParamsInJson(new JsonBuilder()
+   *                                          .param("fields", new ArrayList<>(Arrays.asList("int64", "float_vec")))
+   *                                          .build());
    * </code>
    * </pre>
    *
@@ -249,11 +258,12 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * SearchParam searchParam = new SearchParam.Builder(collectionName)
-   *                                          .withDSL(dslStatement)
-   *                                          .withPartitionTags(partitionTagsList)
-   *                                          .withParamsInJson("{"fields": ["B"]}")
-   *                                          .build();
+   * SearchParam searchParam = SearchParam.create(collectionName)
+   *                                      .setDSL(dsl)
+   *                                      .setPartitionTags(partitionTagsList)
+   *                                      .setParamsInJson(new JsonBuilder()
+   *                                          .param("fields", new ArrayList<>(Arrays.asList("int64", "float_vec")))
+   *                                          .build());
    * </code>
    * </pre>
    *
@@ -332,6 +342,8 @@ public interface MilvusClient {
    * result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
+   *
+   * @return collection stats
    */
   String getCollectionStats(String collectionName);
 
@@ -417,9 +429,7 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * CompactParam compactParam = new CompactParam.Builder(collectionName)
-   *                                             .withThreshold(0.3)
-   *                                             .build();
+   * CompactParam compactParam = CompactParam.create(collectionName).setThreshold(0.3);
    * </code>
    * </pre>
    *
@@ -436,9 +446,7 @@ public interface MilvusClient {
    * <pre>
    * example usage:
    * <code>
-   * CompactParam compactParam = new CompactParam.Builder(collectionName)
-   *                                             .withThreshold(0.3)
-   *                                             .build();
+   * CompactParam compactParam = CompactParam.create(collectionName).setThreshold(0.3);
    * </code>
    * </pre>
    *

@@ -2,6 +2,7 @@ package io.milvus.client.exception;
 
 import io.milvus.client.MilvusClient;
 
+/** Milvus exception where client and server versions do not match */
 public class UnsupportedServerVersion extends ClientSideMilvusException {
   private String expect;
   private String actual;
