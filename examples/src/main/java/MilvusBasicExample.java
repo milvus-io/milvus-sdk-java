@@ -216,7 +216,7 @@ public class MilvusBasicExample {
             + "        \"embedding\": {"
             + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"float\", \"query\": %s"
             + "    }}}]}}",
-        releaseYears.subList(0, 3).toString(), topK, queryEmbedding.toString());
+        releaseYears.subList(1, 3).toString(), topK, queryEmbedding.toString());
 
     // Only specified fields in `setParamsInJson` will be returned from search request.
     // If not set, all fields will be returned.
