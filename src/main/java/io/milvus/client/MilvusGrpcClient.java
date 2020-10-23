@@ -591,22 +591,24 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
       for (FieldValue fieldValue : fieldValueList) {
         String fieldName = fieldValue.getFieldName();
         for (int j = 0; j < queryIdsList.size(); j++) {
-          if (fieldValue.getAttrRecord().getInt32ValueCount() > 0) {
+          if (fieldValue.getAttrRecord().getInt32ValueCount() > j) {
             fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getInt32ValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getInt64ValueCount() > 0) {
+          } else if (fieldValue.getAttrRecord().getInt64ValueCount() > j) {
             fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getInt64ValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getDoubleValueCount() > 0) {
+          } else if (fieldValue.getAttrRecord().getDoubleValueCount() > j) {
             fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getDoubleValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getFloatValueCount() > 0) {
+          } else if (fieldValue.getAttrRecord().getFloatValueCount() > j) {
             fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getFloatValueList().get(j));
           } else {
             // the object is vector
             List<VectorRowRecord> vectorRowRecordList =
                 fieldValue.getVectorRecord().getRecordsList();
-            if (vectorRowRecordList.get(j).getFloatDataCount() > 0) {
-              fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getFloatDataList());
-            } else {
-              fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getBinaryData().asReadOnlyByteBuffer());
+            if (vectorRowRecordList.size() > j) {
+              if (vectorRowRecordList.get(j).getFloatDataCount() > 0) {
+                fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getFloatDataList());
+              } else {
+                fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getBinaryData().asReadOnlyByteBuffer());
+              }
             }
           }
         }

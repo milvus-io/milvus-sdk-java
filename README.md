@@ -15,6 +15,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 | Milvus version | Java SDK version |
 | :------------: | :--------------: |
+|     0.11.1     |    0.9.1         |
 |     0.11.0     |    0.9.0         |
 |     0.10.3     |    0.8.5         |
 |     0.10.2     |    0.8.4         |
@@ -24,7 +25,6 @@ The following table shows compatibilities between Milvus and Java SDK.
 |     0.9.0      |    0.8.0         |
 |     0.8.0      |    0.7.0         |
 |     0.7.1      |    0.6.0         |
-|     0.7.0      |    0.5.0         |
 
 ### Install Java SDK
 
@@ -36,14 +36,14 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>0.9.0</version>
+            <version>0.9.1</version>
         </dependency>
        ```
 
    - Gradle/Grails
 
         ```gradle
-        compile 'io.milvus:milvus-sdk-java:0.9.0'
+        compile 'io.milvus:milvus-sdk-java:0.9.1'
         ```
 
 ### Examples
