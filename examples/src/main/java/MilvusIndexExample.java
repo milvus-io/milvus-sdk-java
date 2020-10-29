@@ -17,7 +17,18 @@
  * under the License.
  */
 
-import io.milvus.client.*;
+import io.milvus.client.CollectionMapping;
+import io.milvus.client.ConnectParam;
+import io.milvus.client.DataType;
+import io.milvus.client.Index;
+import io.milvus.client.IndexType;
+import io.milvus.client.InsertParam;
+import io.milvus.client.JsonBuilder;
+import io.milvus.client.MetricType;
+import io.milvus.client.MilvusClient;
+import io.milvus.client.MilvusGrpcClient;
+import io.milvus.client.SearchParam;
+import io.milvus.client.SearchResult;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -29,15 +40,16 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import org.json.JSONObject;
 
-/** This is an example of Milvus Java SDK v0.9.1. In particular, we demonstrate how we can build
- * and search by index in Milvus.
+/**
+ * This is an example of Milvus Java SDK v0.9.1. In particular, we demonstrate how we can build and
+ * search by index in Milvus.
  *
- * We will be using `films.csv` as our dataset. There are 4 columns in the file, namely
- * `id`, `title`, `release_year` and `embedding`. The dataset comes from MovieLens `ml-latest-small`,
- * with id and embedding being fake values.
+ * <p>We will be using `films.csv` as our dataset. There are 4 columns in the file, namely `id`,
+ * `title`, `release_year` and `embedding`. The dataset comes from MovieLens `ml-latest-small`, with
+ * id and embedding being fake values.
  *
- * We assume that you have walked through `MilvusBasicExample.java` and understand basic operations
- * in Milvus. For detailed API documentation, please refer to
+ * <p>We assume that you have walked through `MilvusBasicExample.java` and understand basic
+ * operations in Milvus. For detailed API documentation, please refer to
  * https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html
  */
 public class MilvusIndexExample {
@@ -77,11 +89,11 @@ public class MilvusIndexExample {
 
     // Create collection
     final int dimension = 8;
-    CollectionMapping collectionMapping = CollectionMapping
-        .create(collectionName)
-        .addField("release_year", DataType.INT64)
-        .addVectorField("embedding", DataType.VECTOR_FLOAT, dimension)
-        .setParamsInJson("{\"segment_row_limit\": 4096, \"auto_id\": false}");
+    CollectionMapping collectionMapping =
+        CollectionMapping.create(collectionName)
+            .addField("release_year", DataType.INT64)
+            .addVectorField("embedding", DataType.VECTOR_FLOAT, dimension)
+            .setParamsInJson("{\"segment_row_limit\": 4096, \"auto_id\": false}");
 
     client.createCollection(collectionMapping);
 
@@ -123,15 +135,16 @@ public class MilvusIndexExample {
     csvReader.close();
 
     // Now we can insert entities, the total row count should be 8657.
-    InsertParam insertParam = InsertParam
-        .create(collectionName)
-        .addField("release_year", DataType.INT64, releaseYears)
-        .addVectorField("embedding", DataType.VECTOR_FLOAT, embeddings)
-        .setEntityIds(ids);
+    InsertParam insertParam =
+        InsertParam.create(collectionName)
+            .addField("release_year", DataType.INT64, releaseYears)
+            .addVectorField("embedding", DataType.VECTOR_FLOAT, embeddings)
+            .setEntityIds(ids);
 
     client.insert(insertParam);
     client.flush(collectionName);
-    System.out.printf("There are %d films in the collection.\n", client.countEntities(collectionName));
+    System.out.printf(
+        "There are %d films in the collection.\n", client.countEntities(collectionName));
 
     /*
      * Basic create index:
@@ -143,11 +156,11 @@ public class MilvusIndexExample {
      *   Note that if there is already an index and create index is called again, the previous index
      *   will be replaced.
      */
-    Index index = Index
-        .create(collectionName, "embedding")
-        .setIndexType(IndexType.IVF_FLAT)
-        .setMetricType(MetricType.L2)
-        .setParamsInJson(new JsonBuilder().param("nlist", 100).build());
+    Index index =
+        Index.create(collectionName, "embedding")
+            .setIndexType(IndexType.IVF_FLAT)
+            .setMetricType(MetricType.L2)
+            .setParamsInJson(new JsonBuilder().param("nlist", 100).build());
 
     client.createIndex(index);
 
@@ -166,23 +179,24 @@ public class MilvusIndexExample {
      */
     List<List<Float>> queryEmbedding = randomFloatVectors(1, dimension);
     final long topK = 3;
-    String dsl = String.format(
-        "{\"bool\": {"
-            + "\"must\": [{"
-            + "    \"term\": {"
-            + "        \"release_year\": [2002, 1995]"
-            + "    }},{"
-            + "    \"vector\": {"
-            + "        \"embedding\": {"
-            + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"float\", \"query\": "
-            + "%s, \"params\": {\"nprobe\": 8}"
-            + "    }}}]}}",
-        topK, queryEmbedding.toString());
+    String dsl =
+        String.format(
+            "{\"bool\": {"
+                + "\"must\": [{"
+                + "    \"term\": {"
+                + "        \"release_year\": [2002, 1995]"
+                + "    }},{"
+                + "    \"vector\": {"
+                + "        \"embedding\": {"
+                + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"float\", \"query\": "
+                + "%s, \"params\": {\"nprobe\": 8}"
+                + "    }}}]}}",
+            topK, queryEmbedding.toString());
 
-    SearchParam searchParam = SearchParam
-        .create(collectionName)
-        .setDsl(dsl)
-        .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
+    SearchParam searchParam =
+        SearchParam.create(collectionName)
+            .setDsl(dsl)
+            .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
     System.out.println("\n--------Search Result--------");
     SearchResult searchResult = client.search(searchParam);
     System.out.println("- ids: " + searchResult.getResultIdsList().toString());
@@ -191,8 +205,9 @@ public class MilvusIndexExample {
       for (int i = 0; i < singleQueryResult.size(); i++) {
         Map<String, Object> res = singleQueryResult.get(i);
         System.out.println("==");
-        System.out.println("- title: " + titles.get(
-            Math.toIntExact(searchResult.getResultIdsList().get(0).get(i))));
+        System.out.println(
+            "- title: "
+                + titles.get(Math.toIntExact(searchResult.getResultIdsList().get(0).get(i))));
         System.out.println("- release_year: " + res.get("release_year"));
         System.out.println("- embedding: " + res.get("embedding"));
       }
