@@ -15,8 +15,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 | Milvus version | Java SDK version |
 | :------------: | :--------------: |
-|     0.11.1     |    0.9.1         |
-|     0.11.0     |    0.9.0         |
+|     0.11.0     |    0.9.1         |
 |     0.10.3     |    0.8.5         |
 |     0.10.2     |    0.8.4         |
 |     0.10.1     |    0.8.3         |
@@ -48,7 +47,7 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
 
 ### Examples
 
-Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
+Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/0.9.1/examples) folder for Java SDK examples.
 
 ### Documentation
 

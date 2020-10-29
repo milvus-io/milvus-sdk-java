@@ -19,7 +19,15 @@
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.milvus.client.*;
+import io.milvus.client.CollectionMapping;
+import io.milvus.client.CompactParam;
+import io.milvus.client.ConnectParam;
+import io.milvus.client.DataType;
+import io.milvus.client.InsertParam;
+import io.milvus.client.MilvusClient;
+import io.milvus.client.MilvusGrpcClient;
+import io.milvus.client.SearchParam;
+import io.milvus.client.SearchResult;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,10 +38,11 @@ import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import org.json.JSONObject;
 
-/** This is a simple example demonstrating how to use Milvus Java SDK v0.9.1.
- * For detailed API documentation, please refer to
- * https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html
- * You can also find more information on https://milvus.io/docs/overview.md
+/**
+ * This is a simple example demonstrating how to use Milvus Java SDK v0.9.1. For detailed API
+ * documentation, please refer to
+ * https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html You can
+ * also find more information on https://milvus.io/docs/overview.md
  */
 public class MilvusBasicExample {
 
@@ -68,7 +77,8 @@ public class MilvusBasicExample {
      *
      *   You can use `withLogging()` for `client` to enable logging framework.
      */
-    ConnectParam connectParam = new ConnectParam.Builder().withHost("127.0.0.1").withPort(19530).build();
+    ConnectParam connectParam =
+        new ConnectParam.Builder().withHost("127.0.0.1").withPort(19530).build();
     MilvusClient client = new MilvusGrpcClient(connectParam);
 
     /*
@@ -91,12 +101,12 @@ public class MilvusBasicExample {
      *   dimension must be specified. `auto_id` is set to false so we can provide custom ids.
      */
     final int dimension = 8;
-    CollectionMapping collectionMapping = CollectionMapping
-        .create(collectionName)
-        .addField("duration", DataType.INT32)
-        .addField("release_year", DataType.INT64)
-        .addVectorField("embedding", DataType.VECTOR_FLOAT, dimension)
-        .setParamsInJson("{\"segment_row_limit\": 4096, \"auto_id\": false}");
+    CollectionMapping collectionMapping =
+        CollectionMapping.create(collectionName)
+            .addField("duration", DataType.INT32)
+            .addField("release_year", DataType.INT64)
+            .addVectorField("embedding", DataType.VECTOR_FLOAT, dimension)
+            .setParamsInJson("{\"segment_row_limit\": 4096, \"auto_id\": false}");
 
     client.createCollection(collectionMapping);
     // Check the existence of collection
@@ -134,18 +144,19 @@ public class MilvusBasicExample {
      *   The titles and relative film properties are listed below for your reference.
      */
     List<Long> ids = new ArrayList<>(Arrays.asList(1L, 2L, 3L));
-    List<String> titles = Arrays.asList("The_Fellowship_of_the_Ring", "The_Two_Towers", "The_Return_of_the_King");
+    List<String> titles =
+        Arrays.asList("The_Fellowship_of_the_Ring", "The_Two_Towers", "The_Return_of_the_King");
     List<Integer> durations = new ArrayList<>(Arrays.asList(208, 226, 252));
     List<Long> releaseYears = new ArrayList<>(Arrays.asList(2001L, 2002L, 2003L));
     List<List<Float>> embeddings = randomFloatVectors(3, dimension);
 
-    InsertParam insertParam = InsertParam
-        .create(collectionName)
-        .addField("duration", DataType.INT32, durations)
-        .addField("release_year", DataType.INT64, releaseYears)
-        .addVectorField("embedding", DataType.VECTOR_FLOAT, embeddings)
-        .setEntityIds(ids)
-        .setPartitionTag(partitionTag);
+    InsertParam insertParam =
+        InsertParam.create(collectionName)
+            .addField("duration", DataType.INT32, durations)
+            .addField("release_year", DataType.INT64, releaseYears)
+            .addVectorField("embedding", DataType.VECTOR_FLOAT, embeddings)
+            .setEntityIds(ids)
+            .setPartitionTag(partitionTag);
 
     System.out.println("\n--------Insert Entities--------");
     List<Long> entityIds = client.insert(insertParam);
@@ -203,27 +214,28 @@ public class MilvusBasicExample {
      */
     List<List<Float>> queryEmbedding = randomFloatVectors(1, dimension);
     final long topK = 3;
-    String dsl = String.format(
-        "{\"bool\": {"
-            + "\"must\": [{"
-            + "    \"range\": {"
-            + "        \"duration\": {\"GT\": 250}" // "GT" for greater than
-            + "    }},{"
-            + "    \"term\": {"
-            + "        \"release_year\": %s" // "term" is a list
-            + "    }},{"
-            + "    \"vector\": {"
-            + "        \"embedding\": {"
-            + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"float\", \"query\": %s"
-            + "    }}}]}}",
-        releaseYears.subList(1, 3).toString(), topK, queryEmbedding.toString());
+    String dsl =
+        String.format(
+            "{\"bool\": {"
+                + "\"must\": [{"
+                + "    \"range\": {"
+                + "        \"duration\": {\"GT\": 250}" // "GT" for greater than
+                + "    }},{"
+                + "    \"term\": {"
+                + "        \"release_year\": %s" // "term" is a list
+                + "    }},{"
+                + "    \"vector\": {"
+                + "        \"embedding\": {"
+                + "            \"topk\": %d, \"metric_type\": \"L2\", \"type\": \"float\", \"query\": %s"
+                + "    }}}]}}",
+            releaseYears.subList(1, 3).toString(), topK, queryEmbedding.toString());
 
     // Only specified fields in `setParamsInJson` will be returned from search request.
     // If not set, all fields will be returned.
-    SearchParam searchParam = SearchParam
-        .create(collectionName)
-        .setDsl(dsl)
-        .setParamsInJson("{\"fields\": [\"duration\", \"release_year\", \"embedding\"]}");
+    SearchParam searchParam =
+        SearchParam.create(collectionName)
+            .setDsl(dsl)
+            .setParamsInJson("{\"fields\": [\"duration\", \"release_year\", \"embedding\"]}");
     System.out.println("\n--------Search Result--------");
     SearchResult searchResult = client.search(searchParam);
     System.out.println("- ids: " + searchResult.getResultIdsList().toString());
