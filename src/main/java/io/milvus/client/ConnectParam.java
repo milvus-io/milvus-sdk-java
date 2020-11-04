@@ -20,9 +20,8 @@
 package io.milvus.client;
 
 import io.grpc.ManagedChannelBuilder;
-
-import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 /** Contains parameters for connecting to Milvus server */
 public class ConnectParam {
@@ -35,7 +34,10 @@ public class ConnectParam {
   private final long idleTimeoutNanos;
 
   private ConnectParam(@Nonnull Builder builder) {
-    this.target = builder.target != null ? builder.target : String.format("dns:///%s:%d", builder.host, builder.port);
+    this.target =
+        builder.target != null
+            ? builder.target
+            : String.format("dns:///%s:%d", builder.host, builder.port);
     this.defaultLoadBalancingPolicy = builder.defaultLoadBalancingPolicy;
     this.connectTimeoutNanos = builder.connectTimeoutNanos;
     this.keepAliveTimeNanos = builder.keepAliveTimeNanos;
@@ -90,7 +92,6 @@ public class ConnectParam {
      *
      * @param target a GRPC target string
      * @return <code>Builder</code>
-     *
      * @see ManagedChannelBuilder#forTarget(String)
      */
     public Builder withTarget(@Nonnull String target) {
@@ -175,7 +176,7 @@ public class ConnectParam {
      * expires without any read activity on the connection, the connection is considered dead. An
      * unreasonably small value might be increased. Defaults to 20 seconds.
      *
-     * <p>This value should be at least multiple times the RTT to allow for lost packets.</p>
+     * <p>This value should be at least multiple times the RTT to allow for lost packets.
      *
      * @see <a
      *     href="https://grpc.github.io/grpc-java/javadoc/io/grpc/ManagedChannelBuilder.html#keepAliveTimeout-long-java.util.concurrent.TimeUnit-">

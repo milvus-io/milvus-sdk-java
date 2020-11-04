@@ -39,7 +39,7 @@ import java.util.stream.DoubleStream;
 import org.json.JSONObject;
 
 /**
- * This is a simple example demonstrating how to use Milvus Java SDK v0.9.1. For detailed API
+ * This is a simple example demonstrating how to use Milvus Java SDK v0.9.2. For detailed API
  * documentation, please refer to
  * https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html You can
  * also find more information on https://milvus.io/docs/overview.md

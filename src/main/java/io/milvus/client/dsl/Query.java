@@ -1,9 +1,8 @@
 package io.milvus.client.dsl;
 
 import io.milvus.client.SearchParam;
-import org.json.JSONObject;
-
 import java.util.Arrays;
+import org.json.JSONObject;
 
 public abstract class Query {
 

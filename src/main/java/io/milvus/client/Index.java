@@ -21,17 +21,22 @@ package io.milvus.client;
 
 import io.milvus.grpc.IndexParam;
 import io.milvus.grpc.KeyValuePair;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 
-/** Represents an index containing <code>fieldName</code>, <code>indexName</code> and
- * <code>paramsInJson</code>, which contains index_type, params etc.
+/**
+ * Represents an index containing <code>fieldName</code>, <code>indexName</code> and <code>
+ * paramsInJson</code>, which contains index_type, params etc.
  */
 public class Index {
   private final IndexParam.Builder builder;
+
+  private Index(String collectionName, String fieldName) {
+    this.builder =
+        IndexParam.newBuilder().setCollectionName(collectionName).setFieldName(fieldName);
+  }
 
   /**
    * @param collectionName collection to create index for
@@ -39,12 +44,6 @@ public class Index {
    */
   public static Index create(@Nonnull String collectionName, @Nonnull String fieldName) {
     return new Index(collectionName, fieldName);
-  }
-
-  private Index(String collectionName, String fieldName) {
-    this.builder = IndexParam.newBuilder()
-        .setCollectionName(collectionName)
-        .setFieldName(fieldName);
   }
 
   public String getCollectionName() {
@@ -88,10 +87,7 @@ public class Index {
 
   private Index addParam(String key, Object value) {
     builder.addExtraParams(
-        KeyValuePair.newBuilder()
-            .setKey(key)
-            .setValue(String.valueOf(value))
-            .build());
+        KeyValuePair.newBuilder().setKey(key).setValue(String.valueOf(value)).build());
     return this;
   }
 
@@ -112,6 +108,7 @@ public class Index {
   }
 
   private Map<String, String> toMap(List<KeyValuePair> extraParams) {
-    return extraParams.stream().collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+    return extraParams.stream()
+        .collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
   }
 }

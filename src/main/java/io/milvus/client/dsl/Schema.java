@@ -2,7 +2,6 @@ package io.milvus.client.dsl;
 
 import io.milvus.client.CollectionMapping;
 import io.milvus.client.DataType;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -18,13 +17,16 @@ public abstract class Schema {
 
   CollectionMapping mapToCollection(String collectionName) {
     CollectionMapping mapping = CollectionMapping.create(collectionName);
-    fields.values().forEach(f -> {
-      if (f instanceof ScalarField) {
-        mapping.addField(f.name, f.dataType);
-      } else if (f instanceof VectorField) {
-        mapping.addVectorField(f.name, f.dataType, ((VectorField<?>) f).dimension);
-      }
-    });
+    fields
+        .values()
+        .forEach(
+            f -> {
+              if (f instanceof ScalarField) {
+                mapping.addField(f.name, f.dataType);
+              } else if (f instanceof VectorField) {
+                mapping.addVectorField(f.name, f.dataType, ((VectorField<?>) f).dimension);
+              }
+            });
     return mapping;
   }
 

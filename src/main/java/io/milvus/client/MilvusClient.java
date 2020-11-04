@@ -20,8 +20,6 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -29,27 +27,28 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /** The Milvus Client Interface */
 public interface MilvusClient extends AutoCloseable {
 
   String extraParamKey = "params";
 
-  String clientVersion = new Supplier<String>() {
+  String clientVersion =
+      new Supplier<String>() {
 
-    @Override
-    public String get() {
-      Properties properties = new Properties();
-      try (InputStream inputStream =
-               MilvusClient.class.getClassLoader()
-                   .getResourceAsStream("milvus-client.properties")) {
-        properties.load(inputStream);
-      } catch (IOException ex) {
-        ExceptionUtils.wrapAndThrow(ex);
-      }
-      return properties.getProperty("version");
-    }
-  }.get();
+        @Override
+        public String get() {
+          Properties properties = new Properties();
+          try (InputStream inputStream =
+              MilvusClient.class.getClassLoader().getResourceAsStream("milvus-client.properties")) {
+            properties.load(inputStream);
+          } catch (IOException ex) {
+            ExceptionUtils.wrapAndThrow(ex);
+          }
+          return properties.getProperty("version");
+        }
+      }.get();
 
   String target();
 
@@ -58,20 +57,17 @@ public interface MilvusClient extends AutoCloseable {
     return clientVersion;
   }
 
-  /**
-   * Close this MilvusClient. Wait at most 1 minute for graceful shutdown.
-   */
+  /** Close this MilvusClient. Wait at most 1 minute for graceful shutdown. */
   default void close() {
     close(TimeUnit.MINUTES.toSeconds(1));
   }
 
-  /**
-   * Close this MilvusClient. Wait at most `maxWaitSeconds` for graceful shutdown.
-   */
+  /** Close this MilvusClient. Wait at most `maxWaitSeconds` for graceful shutdown. */
   void close(long maxWaitSeconds);
 
   /**
    * Milvus service with timeout support.
+   *
    * @param timeout the desired timeout
    * @param timeoutUnit unit for timeout
    */
@@ -81,7 +77,7 @@ public interface MilvusClient extends AutoCloseable {
    * Creates collection specified by <code>collectionMapping</code>
    *
    * @param collectionMapping the <code>CollectionMapping</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * CollectionMapping collectionMapping = CollectionMapping
@@ -119,7 +115,7 @@ public interface MilvusClient extends AutoCloseable {
    * Creates index specified by <code>index</code>
    *
    * @param index the <code>Index</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * Index index = Index.create(collectionName, "float_vec")
@@ -137,7 +133,7 @@ public interface MilvusClient extends AutoCloseable {
    * Creates index specified by <code>index</code> asynchronously
    *
    * @param index the <code>Index</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * Index index = Index.create(collectionName, "float_vec")
@@ -190,7 +186,7 @@ public interface MilvusClient extends AutoCloseable {
    * Inserts data specified by <code>insertParam</code>
    *
    * @param insertParam the <code>InsertParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = InsertParam
@@ -211,7 +207,7 @@ public interface MilvusClient extends AutoCloseable {
    * Inserts data specified by <code>insertParam</code> asynchronously
    *
    * @param insertParam the <code>InsertParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * InsertParam insertParam = InsertParam
@@ -223,7 +219,8 @@ public interface MilvusClient extends AutoCloseable {
    * </code>
    * </pre>
    *
-   * @return a <code>ListenableFuture</code> object which holds the list of ids of the inserted entities.
+   * @return a <code>ListenableFuture</code> object which holds the list of ids of the inserted
+   *     entities.
    * @see InsertParam
    * @see ListenableFuture
    */
@@ -233,7 +230,7 @@ public interface MilvusClient extends AutoCloseable {
    * Searches entities specified by <code>searchParam</code>
    *
    * @param searchParam the <code>SearchParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = SearchParam.create(collectionName)
@@ -255,7 +252,7 @@ public interface MilvusClient extends AutoCloseable {
    * Searches entities specified by <code>searchParam</code> asynchronously
    *
    * @param searchParam the <code>SearchParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * SearchParam searchParam = SearchParam.create(collectionName)
@@ -330,8 +327,8 @@ public interface MilvusClient extends AutoCloseable {
    * Drops collection index
    *
    * @param collectionName The collection to drop index.
-   * @param fieldName Name of the field to drop index for. If this is set to empty string,
-   *                  index of all fields in the collection will be dropped.
+   * @param fieldName Name of the field to drop index for. If this is set to empty string, index of
+   *     all fields in the collection will be dropped.
    */
   void dropIndex(String collectionName, String fieldName);
 
@@ -342,7 +339,6 @@ public interface MilvusClient extends AutoCloseable {
    * result will be returned as JSON string.
    *
    * @param collectionName collection to show info from
-   *
    * @return collection stats
    */
   String getCollectionStats(String collectionName);
@@ -352,11 +348,12 @@ public interface MilvusClient extends AutoCloseable {
    *
    * @param collectionName collection to get entities from
    * @param ids a <code>List</code> of entity ids
-   * @param fieldNames  a <code>List</code> of field names. Server will only return entity
-   *                    information for these fields.
+   * @param fieldNames a <code>List</code> of field names. Server will only return entity
+   *     information for these fields.
    * @return a map of entity id to entity properties
    */
-  Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames);
+  Map<Long, Map<String, Object>> getEntityByID(
+      String collectionName, List<Long> ids, List<String> fieldNames);
 
   /**
    * Gets entities data by id array
@@ -426,7 +423,7 @@ public interface MilvusClient extends AutoCloseable {
    * until you call compact.
    *
    * @param compactParam the <code>CompactParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * CompactParam compactParam = CompactParam.create(collectionName).setThreshold(0.3);
@@ -443,7 +440,7 @@ public interface MilvusClient extends AutoCloseable {
    * until you call compact.
    *
    * @param compactParam the <code>CompactParam</code> object
-   * <pre>
+   *     <pre>
    * example usage:
    * <code>
    * CompactParam compactParam = CompactParam.create(collectionName).setThreshold(0.3);

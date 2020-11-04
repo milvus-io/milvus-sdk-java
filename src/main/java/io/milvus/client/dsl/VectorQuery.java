@@ -6,11 +6,10 @@ import io.milvus.client.SearchParam;
 import io.milvus.grpc.VectorParam;
 import io.milvus.grpc.VectorRecord;
 import io.milvus.grpc.VectorRowRecord;
-import org.json.JSONObject;
-
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.json.JSONObject;
 
 public class VectorQuery<T> extends Query {
   private final Schema.VectorField<T> field;
@@ -62,30 +61,48 @@ public class VectorQuery<T> extends Query {
   void buildSearchParam(SearchParam searchParam) {
     VectorRecord vectorRecord = null;
     if (field instanceof Schema.FloatVectorField) {
-      vectorRecord = VectorRecord.newBuilder().addAllRecords(
-          ((List<List<Float>>) this.queries).stream().map(vector ->
-              VectorRowRecord.newBuilder().addAllFloatData(vector).build())
-              .collect(Collectors.toList()))
-          .build();
+      vectorRecord =
+          VectorRecord.newBuilder()
+              .addAllRecords(
+                  ((List<List<Float>>) this.queries)
+                      .stream()
+                          .map(
+                              vector ->
+                                  VectorRowRecord.newBuilder().addAllFloatData(vector).build())
+                          .collect(Collectors.toList()))
+              .build();
     } else if (field instanceof Schema.BinaryVectorField) {
-      vectorRecord = VectorRecord.newBuilder().addAllRecords(
-          ((List<ByteBuffer>) this.queries).stream().map(vector ->
-            VectorRowRecord.newBuilder().setBinaryData(UnsafeByteOperations.unsafeWrap(vector)).build())
-              .collect(Collectors.toList()))
-          .build();
+      vectorRecord =
+          VectorRecord.newBuilder()
+              .addAllRecords(
+                  ((List<ByteBuffer>) this.queries)
+                      .stream()
+                          .map(
+                              vector ->
+                                  VectorRowRecord.newBuilder()
+                                      .setBinaryData(UnsafeByteOperations.unsafeWrap(vector))
+                                      .build())
+                          .collect(Collectors.toList()))
+              .build();
     }
 
-    VectorParam vectorParam = VectorParam.newBuilder()
-        .setJson(new JSONObject()
-            .put(placeholder, new JSONObject()
-                .put(field.name, new JSONObject()
-                    .put("topk", topK)
-                    .put("metric_type", metricType.name())
-                    .put("boost", boost)
-                    .put("params", params)))
-                .toString())
-        .setRowRecord(vectorRecord)
-        .build();
+    VectorParam vectorParam =
+        VectorParam.newBuilder()
+            .setJson(
+                new JSONObject()
+                    .put(
+                        placeholder,
+                        new JSONObject()
+                            .put(
+                                field.name,
+                                new JSONObject()
+                                    .put("topk", topK)
+                                    .put("metric_type", metricType.name())
+                                    .put("boost", boost)
+                                    .put("params", params)))
+                    .toString())
+            .setRowRecord(vectorRecord)
+            .build();
 
     searchParam.addQueries(vectorParam);
   }

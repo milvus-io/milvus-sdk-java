@@ -7,17 +7,18 @@ import java.util.stream.IntStream;
 
 /** A class that contains information from Search */
 public class SearchResult {
-  private int numQueries;
-  private long topK;
-  private List<List<Long>> resultIdsList;
-  private List<List<Float>> resultDistancesList;
-  private List<List<Map<String, Object>>> fieldsMap;
+  private final int numQueries;
+  private final long topK;
+  private final List<List<Long>> resultIdsList;
+  private final List<List<Float>> resultDistancesList;
+  private final List<List<Map<String, Object>>> fieldsMap;
 
-  public SearchResult(int numQueries,
-                      long topK,
-                      List<List<Long>> resultIdsList,
-                      List<List<Float>> resultDistancesList,
-                      List<List<Map<String, Object>>> fieldsMap) {
+  public SearchResult(
+      int numQueries,
+      long topK,
+      List<List<Long>> resultIdsList,
+      List<List<Float>> resultDistancesList,
+      List<List<Map<String, Object>>> fieldsMap) {
     this.numQueries = numQueries;
     this.topK = topK;
     this.resultIdsList = resultIdsList;
@@ -47,9 +48,14 @@ public class SearchResult {
 
   public List<List<QueryResult>> getQueryResultsList() {
     return IntStream.range(0, numQueries)
-        .mapToObj(i -> IntStream.range(0, resultIdsList.get(i).size())
-            .mapToObj(j -> new QueryResult(resultIdsList.get(i).get(j), resultDistancesList.get(i).get(j)))
-            .collect(Collectors.toList()))
+        .mapToObj(
+            i ->
+                IntStream.range(0, resultIdsList.get(i).size())
+                    .mapToObj(
+                        j ->
+                            new QueryResult(
+                                resultIdsList.get(i).get(j), resultDistancesList.get(i).get(j)))
+                    .collect(Collectors.toList()))
         .collect(Collectors.toList());
   }
 

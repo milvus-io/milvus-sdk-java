@@ -1,11 +1,10 @@
 package io.milvus.client.dsl;
 
 import io.milvus.client.SearchParam;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.List;
 import java.util.stream.Collectors;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class BoolQuery extends Query {
   private final Type type;
@@ -16,8 +15,15 @@ public class BoolQuery extends Query {
     this.subqueries = subqueries;
   }
 
+  @Override
+  protected JSONObject buildSearchParam(SearchParam searchParam, JSONObject outer) {
+    return outer.put(type.name().toLowerCase(), type.buildSearchParam(searchParam, subqueries));
+  }
+
   enum Type {
-    MUST, MUST_NOT, SHOULD,
+    MUST,
+    MUST_NOT,
+    SHOULD,
 
     BOOL {
       @Override
@@ -29,14 +35,10 @@ public class BoolQuery extends Query {
     };
 
     public Object buildSearchParam(SearchParam searchParam, List<Query> subqueries) {
-      return new JSONArray(subqueries.stream()
-          .map(query -> query.buildSearchParam(searchParam, new JSONObject()))
-          .collect(Collectors.toList()));
+      return new JSONArray(
+          subqueries.stream()
+              .map(query -> query.buildSearchParam(searchParam, new JSONObject()))
+              .collect(Collectors.toList()));
     }
-  }
-
-  @Override
-  protected JSONObject buildSearchParam(SearchParam searchParam, JSONObject outer) {
-    return outer.put(type.name().toLowerCase(), type.buildSearchParam(searchParam, subqueries));
   }
 }
