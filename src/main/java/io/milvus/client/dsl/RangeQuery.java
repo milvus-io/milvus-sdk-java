@@ -34,16 +34,6 @@ public class RangeQuery<T> extends Query {
     return this;
   }
 
-  public RangeQuery<T> eq(T value) {
-    exprs.add(new Expr(Type.EQ, value));
-    return this;
-  }
-
-  public RangeQuery<T> ne(T value) {
-    exprs.add(new Expr(Type.NE, value));
-    return this;
-  }
-
   @Override
   protected JSONObject buildSearchParam(SearchParam searchParam, JSONObject outer) {
     return outer.put("range", new JSONObject().put(field.name, buildSearchParam(exprs)));
@@ -56,7 +46,7 @@ public class RangeQuery<T> extends Query {
   }
 
   public enum Type {
-    GT, GTE, LT, LTE, EQ, NE;
+    GT, GTE, LT, LTE;
   }
 
   private class Expr {

@@ -66,14 +66,6 @@ public abstract class Schema {
       return new RangeQuery<T>(this).lte(value);
     }
 
-    public RangeQuery<T> eq(T value) {
-      return new RangeQuery<T>(this).eq(value);
-    }
-
-    public RangeQuery<T> ne(T value) {
-      return new RangeQuery<T>(this).ne(value);
-    }
-
     @SuppressWarnings("unchecked")
     public TermQuery<T> in(T... values) {
       return new TermQuery<>(this, TermQuery.Type.IN, Arrays.asList(values));
