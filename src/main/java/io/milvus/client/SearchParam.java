@@ -27,16 +27,15 @@ import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.VectorParam;
 import io.milvus.grpc.VectorRecord;
 import io.milvus.grpc.VectorRowRecord;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /** Contains parameters for <code>search</code> */
 public class SearchParam {
@@ -45,13 +44,13 @@ public class SearchParam {
 
   private final io.milvus.grpc.SearchParam.Builder builder;
 
-  public static SearchParam create(String collectionName) {
-    return new SearchParam(collectionName);
-  }
-
   private SearchParam(String collectionName) {
     builder = io.milvus.grpc.SearchParam.newBuilder();
     builder.setCollectionName(collectionName);
+  }
+
+  public static SearchParam create(String collectionName) {
+    return new SearchParam(collectionName);
   }
 
   public SearchParam setDsl(JSONObject json) {
@@ -62,8 +61,9 @@ public class SearchParam {
   public SearchParam setDsl(String dsl) {
     try {
       JSONObject dslJson = new JSONObject(dsl);
-      JSONObject vectorQueryParent = locateVectorQuery(dslJson)
-          .orElseThrow(() -> new InvalidDsl("A vector query must be specified", dsl));
+      JSONObject vectorQueryParent =
+          locateVectorQuery(dslJson)
+              .orElseThrow(() -> new InvalidDsl("A vector query must be specified", dsl));
       JSONObject vectorQueries = vectorQueryParent.getJSONObject(VECTOR_QUERY_KEY);
       vectorQueryParent.put(VECTOR_QUERY_KEY, VECTOR_QUERY_PLACEHOLDER);
       String vectorQueryField = vectorQueries.keys().next();
@@ -87,13 +87,10 @@ public class SearchParam {
       vectorQuery.remove("type");
       vectorQuery.remove("query");
       json.put("placeholder", vectorQueries);
-      VectorParam vectorParam = VectorParam.newBuilder()
-          .setJson(json.toString())
-          .setRowRecord(vectorRecord)
-          .build();
+      VectorParam vectorParam =
+          VectorParam.newBuilder().setJson(json.toString()).setRowRecord(vectorRecord).build();
 
-      builder.setDsl(dslJson.toString())
-          .addAllVectorParam(ImmutableList.of(vectorParam));
+      builder.setDsl(dslJson.toString()).addAllVectorParam(ImmutableList.of(vectorParam));
       return this;
     } catch (JSONException e) {
       throw new InvalidDsl(e.getMessage(), dsl);
@@ -111,10 +108,11 @@ public class SearchParam {
   }
 
   public SearchParam setParamsInJson(String paramsInJson) {
-    builder.addExtraParams(KeyValuePair.newBuilder()
-        .setKey(MilvusClient.extraParamKey)
-        .setValue(paramsInJson)
-        .build());
+    builder.addExtraParams(
+        KeyValuePair.newBuilder()
+            .setKey(MilvusClient.extraParamKey)
+            .setValue(paramsInJson)
+            .build());
     return this;
   }
 
@@ -123,9 +121,9 @@ public class SearchParam {
   }
 
   private Optional<JSONObject> locateVectorQuery(Object obj) {
-    return obj instanceof JSONObject ? locateVectorQuery((JSONObject) obj)
-        : obj instanceof JSONArray ? locateVectorQuery((JSONArray) obj)
-        : Optional.empty();
+    return obj instanceof JSONObject
+        ? locateVectorQuery((JSONObject) obj)
+        : obj instanceof JSONArray ? locateVectorQuery((JSONArray) obj) : Optional.empty();
   }
 
   private Optional<JSONObject> locateVectorQuery(JSONArray array) {
@@ -148,36 +146,40 @@ public class SearchParam {
   }
 
   private VectorRecord toFloatVectorRecord(JSONArray data) {
-    return VectorRecord.newBuilder().addAllRecords(
-        StreamSupport.stream(data.spliterator(), false)
-            .map(element -> (JSONArray) element)
-            .map(array -> {
-              int dimension = array.length();
-              List<Float> vector = new ArrayList<>(dimension);
-              for (int i = 0; i < dimension; i++) {
-                vector.add(array.getFloat(i));
-              }
-              return VectorRowRecord.newBuilder().addAllFloatData(vector).build();
-            })
-            .collect(Collectors.toList()))
+    return VectorRecord.newBuilder()
+        .addAllRecords(
+            StreamSupport.stream(data.spliterator(), false)
+                .map(element -> (JSONArray) element)
+                .map(
+                    array -> {
+                      int dimension = array.length();
+                      List<Float> vector = new ArrayList<>(dimension);
+                      for (int i = 0; i < dimension; i++) {
+                        vector.add(array.getFloat(i));
+                      }
+                      return VectorRowRecord.newBuilder().addAllFloatData(vector).build();
+                    })
+                .collect(Collectors.toList()))
         .build();
   }
 
   private VectorRecord toBinaryVectorRecord(JSONArray data) {
-    return VectorRecord.newBuilder().addAllRecords(
-        StreamSupport.stream(data.spliterator(), false)
-            .map(element -> (JSONArray) element)
-            .map(array -> {
-              int dimension = array.length();
-              ByteBuffer bytes = ByteBuffer.allocate(dimension);
-              for (int i = 0; i < dimension; i++) {
-                bytes.put(array.getNumber(i).byteValue());
-              }
-              bytes.flip();
-              ByteString vector = UnsafeByteOperations.unsafeWrap(bytes);
-              return VectorRowRecord.newBuilder().setBinaryData(vector).build();
-            })
-            .collect(Collectors.toList()))
+    return VectorRecord.newBuilder()
+        .addAllRecords(
+            StreamSupport.stream(data.spliterator(), false)
+                .map(element -> (JSONArray) element)
+                .map(
+                    array -> {
+                      int dimension = array.length();
+                      ByteBuffer bytes = ByteBuffer.allocate(dimension);
+                      for (int i = 0; i < dimension; i++) {
+                        bytes.put(array.getNumber(i).byteValue());
+                      }
+                      bytes.flip();
+                      ByteString vector = UnsafeByteOperations.unsafeWrap(bytes);
+                      return VectorRowRecord.newBuilder().setBinaryData(vector).build();
+                    })
+                .collect(Collectors.toList()))
         .build();
   }
 }

@@ -4,7 +4,6 @@ import io.grpc.Attributes;
 import io.grpc.EquivalentAddressGroup;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverProvider;
-
 import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Arrays;
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class StaticNameResolverProvider extends NameResolverProvider {
-  private List<SocketAddress> addresses;
+  private final List<SocketAddress> addresses;
 
   public StaticNameResolverProvider(SocketAddress... addresses) {
     this.addresses = Arrays.asList(addresses);
@@ -47,9 +46,10 @@ public class StaticNameResolverProvider extends NameResolverProvider {
 
       @Override
       public void start(Listener2 listener) {
-        List<EquivalentAddressGroup> addrs = addresses.stream()
-            .map(addr -> new EquivalentAddressGroup(Collections.singletonList(addr)))
-            .collect(Collectors.toList());
+        List<EquivalentAddressGroup> addrs =
+            addresses.stream()
+                .map(addr -> new EquivalentAddressGroup(Collections.singletonList(addr)))
+                .collect(Collectors.toList());
 
         listener.onResult(
             ResolutionResult.newBuilder()
@@ -59,8 +59,7 @@ public class StaticNameResolverProvider extends NameResolverProvider {
       }
 
       @Override
-      public void shutdown() {
-      }
+      public void shutdown() {}
     };
   }
 }

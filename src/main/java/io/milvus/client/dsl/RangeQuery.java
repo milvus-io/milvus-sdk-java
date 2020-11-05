@@ -1,14 +1,13 @@
 package io.milvus.client.dsl;
 
 import io.milvus.client.SearchParam;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.json.JSONObject;
 
 public class RangeQuery<T> extends Query {
-  private Schema.Field<T> field;
-  private List<Expr> exprs = new ArrayList<>();
+  private final Schema.Field<T> field;
+  private final List<Expr> exprs = new ArrayList<>();
 
   RangeQuery(Schema.Field field) {
     this.field = field;
@@ -46,7 +45,10 @@ public class RangeQuery<T> extends Query {
   }
 
   public enum Type {
-    GT, GTE, LT, LTE;
+    GT,
+    GTE,
+    LT,
+    LTE
   }
 
   private class Expr {

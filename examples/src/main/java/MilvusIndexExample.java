@@ -41,7 +41,7 @@ import java.util.stream.DoubleStream;
 import org.json.JSONObject;
 
 /**
- * This is an example of Milvus Java SDK v0.9.1. In particular, we demonstrate how we can build and
+ * This is an example of Milvus Java SDK v0.9.2. In particular, we demonstrate how we can build and
  * search by index in Milvus.
  *
  * <p>We will be using `films.csv` as our dataset. There are 4 columns in the file, namely `id`,

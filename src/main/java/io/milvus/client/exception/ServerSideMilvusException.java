@@ -5,8 +5,8 @@ import io.milvus.grpc.Status;
 
 /** Milvus exception from server side */
 public class ServerSideMilvusException extends MilvusException {
-  private ErrorCode errorCode;
-  private String reason;
+  private final ErrorCode errorCode;
+  private final String reason;
 
   public ServerSideMilvusException(String target, Status status) {
     super(target, false);

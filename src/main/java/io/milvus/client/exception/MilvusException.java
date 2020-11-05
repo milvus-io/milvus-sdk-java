@@ -2,8 +2,8 @@ package io.milvus.client.exception;
 
 /** General Milvus exception */
 public abstract class MilvusException extends RuntimeException {
-  private String target;
-  private boolean fillInStackTrace;
+  private final String target;
+  private final boolean fillInStackTrace;
 
   MilvusException(String target, boolean fillInStackTrace) {
     this(target, fillInStackTrace, null, null);

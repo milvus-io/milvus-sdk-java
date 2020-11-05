@@ -1,10 +1,9 @@
 package io.milvus.client.dsl;
 
 import io.milvus.client.SearchParam;
+import java.util.Collection;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.util.Collection;
 
 public class TermQuery<T> extends Query {
   private final Schema.Field<T> field;

@@ -8,7 +8,6 @@ import io.milvus.client.MetricType;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.SearchParam;
 import io.milvus.client.SearchResult;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ public class MilvusService {
   private final String collectionName;
   private final Schema schema;
 
-  public MilvusService(MilvusClient client, String  collectionName, Schema schema) {
+  public MilvusService(MilvusClient client, String collectionName, Schema schema) {
     this.client = client;
     this.collectionName = collectionName;
     this.schema = schema;
@@ -48,12 +47,18 @@ public class MilvusService {
   }
 
   public void createIndex(
-      Schema.VectorField vectorField, IndexType indexType, MetricType metricType, String paramsInJson) {
+      Schema.VectorField vectorField,
+      IndexType indexType,
+      MetricType metricType,
+      String paramsInJson) {
     Futures.getUnchecked(createIndexAsync(vectorField, indexType, metricType, paramsInJson));
   }
 
   public ListenableFuture<Void> createIndexAsync(
-      Schema.VectorField vectorField, IndexType indexType, MetricType metricType, String paramsInJson) {
+      Schema.VectorField vectorField,
+      IndexType indexType,
+      MetricType metricType,
+      String paramsInJson) {
     return client.createIndexAsync(
         Index.create(collectionName, vectorField.name)
             .setIndexType(indexType)
@@ -83,10 +88,8 @@ public class MilvusService {
 
   public Map<Long, Schema.Entity> getEntityByID(List<Long> ids, List<Schema.Field<?>> fields) {
     List<String> fieldNames = fields.stream().map(f -> f.name).collect(Collectors.toList());
-    return client.getEntityByID(collectionName, ids, fieldNames)
-        .entrySet().stream().collect(Collectors.toMap(
-            e -> e.getKey(),
-            e -> schema.new Entity(e.getValue())));
+    return client.getEntityByID(collectionName, ids, fieldNames).entrySet().stream()
+        .collect(Collectors.toMap(e -> e.getKey(), e -> schema.new Entity(e.getValue())));
   }
 
   public boolean hasCollection(String collectionName) {

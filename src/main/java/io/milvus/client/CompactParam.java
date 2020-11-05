@@ -21,16 +21,16 @@ package io.milvus.client;
 
 /** Contains parameters for <code>compact</code> */
 public class CompactParam {
-  private io.milvus.grpc.CompactParam.Builder builder;
-
-  /** @param collectionName collection to compact */
-  public static CompactParam create(String collectionName) {
-    return new CompactParam(collectionName);
-  }
+  private final io.milvus.grpc.CompactParam.Builder builder;
 
   private CompactParam(String collectionName) {
     builder = io.milvus.grpc.CompactParam.newBuilder();
     builder.setCollectionName(collectionName).setThreshold(0.2);
+  }
+
+  /** @param collectionName collection to compact */
+  public static CompactParam create(String collectionName) {
+    return new CompactParam(collectionName);
   }
 
   /**
