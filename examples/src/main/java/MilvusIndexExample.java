@@ -17,17 +17,7 @@
  * under the License.
  */
 
-import io.milvus.client.ConnectParam;
-import io.milvus.client.DataType;
-import io.milvus.client.Index;
-import io.milvus.client.IndexType;
-import io.milvus.client.InsertParam;
-import io.milvus.client.JsonBuilder;
-import io.milvus.client.MetricType;
-import io.milvus.client.MilvusClient;
-import io.milvus.client.MilvusGrpcClient;
-import io.milvus.client.SearchParam;
-import io.milvus.client.SearchResult;
+import io.milvus.client.*;
 import io.milvus.client.dsl.MilvusService;
 import io.milvus.client.dsl.Query;
 import io.milvus.client.dsl.Schema;
@@ -185,20 +175,14 @@ public class MilvusIndexExample {
      */
     List<List<Float>> queryEmbedding = randomFloatVectors(1, dimension);
     final long topK = 3;
-    Query query =
-        Query.bool(
-            Query.must(
-                filmSchema.releaseYear.in(1995, 2002),
-                filmSchema
-                    .embedding
-                    .query(queryEmbedding)
-                    .metricType(MetricType.L2)
-                    .top((int) topK)
-                    .param("nprobe", 8)));
-    SearchParam searchParam =
-        service
-            .buildSearchParam(query)
-            .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
+    Query query = Query.bool(Query.must(
+        filmSchema.releaseYear.in(1995, 2002),
+        filmSchema.embedding.query(queryEmbedding)
+            .metricType(MetricType.L2)
+            .top((int) topK)
+            .param("nprobe", 8)));
+    SearchParam searchParam = service.buildSearchParam(query)
+        .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
     System.out.println("\n--------Search Result--------");
     SearchResult searchResult = service.search(searchParam);
     System.out.println("- ids: " + searchResult.getResultIdsList().toString());
