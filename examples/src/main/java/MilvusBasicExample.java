@@ -19,15 +19,7 @@
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.milvus.client.CollectionMapping;
-import io.milvus.client.CompactParam;
-import io.milvus.client.ConnectParam;
-import io.milvus.client.DataType;
-import io.milvus.client.InsertParam;
-import io.milvus.client.MilvusClient;
-import io.milvus.client.MilvusGrpcClient;
-import io.milvus.client.SearchParam;
-import io.milvus.client.SearchResult;
+import io.milvus.client.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
