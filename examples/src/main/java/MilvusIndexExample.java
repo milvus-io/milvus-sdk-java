@@ -174,12 +174,12 @@ public class MilvusIndexExample {
      *   Here we present a way to use predefined schema to search vectors.
      */
     List<List<Float>> queryEmbedding = randomFloatVectors(1, dimension);
-    final long topK = 3;
+    final int topK = 3;
     Query query = Query.bool(Query.must(
         filmSchema.releaseYear.in(1995, 2002),
         filmSchema.embedding.query(queryEmbedding)
             .metricType(MetricType.L2)
-            .top((int) topK)
+            .top(topK)
             .param("nprobe", 8)));
     SearchParam searchParam = service.buildSearchParam(query)
         .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
