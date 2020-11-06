@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONObject;
 
+/** Range Query */
 public class RangeQuery<T> extends Query {
   private final Schema.Field<T> field;
   private final List<Expr> exprs = new ArrayList<>();
@@ -44,6 +45,13 @@ public class RangeQuery<T> extends Query {
     return json;
   }
 
+  /**
+   * Range query types.
+   * GT: greater than
+   * GTE: greater than or equal to
+   * LT: less than
+   * LTE: less than or equal to
+   */
   public enum Type {
     GT,
     GTE,

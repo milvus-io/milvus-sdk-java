@@ -49,15 +49,18 @@ public class SearchParam {
     builder.setCollectionName(collectionName);
   }
 
+  /** @param collectionName collection name */
   public static SearchParam create(String collectionName) {
     return new SearchParam(collectionName);
   }
 
+  /** @param json DSL in JSON format. */
   public SearchParam setDsl(JSONObject json) {
     builder.setDsl(json.toString());
     return this;
   }
 
+  /** @param dsl DSL in string format. */
   public SearchParam setDsl(String dsl) {
     try {
       JSONObject dslJson = new JSONObject(dsl);

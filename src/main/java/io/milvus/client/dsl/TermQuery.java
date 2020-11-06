@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/** Term Query */
 public class TermQuery<T> extends Query {
   private final Schema.Field<T> field;
   private final Type type;
@@ -21,6 +22,10 @@ public class TermQuery<T> extends Query {
     return outer.put("term", new JSONObject().put(field.name, type.toJson(param)));
   }
 
+  /**
+   * Term query types.
+   * IN: field value should belong to one of the following values
+   */
   enum Type {
     IN {
       @Override

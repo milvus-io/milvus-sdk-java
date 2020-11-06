@@ -97,7 +97,7 @@ public interface MilvusClient extends AutoCloseable {
   void createCollection(CollectionMapping collectionMapping);
 
   /**
-   * Checks whether the collection exists
+   * Check whether a collection exists
    *
    * @param collectionName collection to check
    * @return true if the collection exists, false otherwise.

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 
+/** Vector query */
 public class VectorQuery<T> extends Query {
   private final Schema.VectorField<T> field;
   private final List<T> queries;
@@ -32,6 +33,7 @@ public class VectorQuery<T> extends Query {
     return this;
   }
 
+  /** topK */
   public VectorQuery<T> top(int topK) {
     this.topK = topK;
     return this;

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/** Boolean Query */
 public class BoolQuery extends Query {
   private final Type type;
   private final List<Query> subqueries;
