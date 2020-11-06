@@ -28,7 +28,7 @@ import javax.annotation.Nonnull;
 
 /**
  * Represents an index containing <code>fieldName</code>, <code>indexName</code> and <code>
- * paramsInJson</code>, which contains index_type, params etc.
+ * paramsInJson</code>, which contains <code>index_type</code>, params etc.
  */
 public class Index {
   private final IndexParam.Builder builder;
@@ -50,6 +50,7 @@ public class Index {
     return builder.getCollectionName();
   }
 
+  /** @param collectionName The collection name */
   public Index setCollectionName(@Nonnull String collectionName) {
     builder.setCollectionName(collectionName);
     return this;
@@ -59,8 +60,9 @@ public class Index {
     return builder.getFieldName();
   }
 
-  public Index setFieldName(@Nonnull String collectionName) {
-    builder.setFieldName(collectionName);
+  /** @param fieldName The field name */
+  public Index setFieldName(@Nonnull String fieldName) {
+    builder.setFieldName(fieldName);
     return this;
   }
 
@@ -72,10 +74,12 @@ public class Index {
     return toMap(builder.getExtraParamsList());
   }
 
+  /** @param indexType The index type */
   public Index setIndexType(IndexType indexType) {
     return addParam("index_type", indexType.name());
   }
 
+  /** @param metricType The metric type */
   public Index setMetricType(MetricType metricType) {
     return addParam("metric_type", metricType.name());
   }

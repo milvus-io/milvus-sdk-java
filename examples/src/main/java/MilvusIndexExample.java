@@ -76,18 +76,20 @@ public class MilvusIndexExample {
     ConnectParam connectParam = new ConnectParam.Builder().build();
     MilvusClient client = new MilvusGrpcClient(connectParam);
 
-    final String collectionName = "demo_index";
-    if (client.listCollections().contains(collectionName)) {
-      client.dropCollection(collectionName);
-    }
-
     /*
      * Basic create collection:
-     *   Another way to create a collection is to predefine a schema.
-     *   The schema can later be used in querying.
+     *   Another way to create a collection is to predefine a schema. Then we can use a
+     *   MilvusService to wrap the schema, collection name and Milvus client. The service
+     *   is intended to simplify API calls.
      */
+    final String collectionName = "demo_index";
     FilmSchema filmSchema = new FilmSchema();
     MilvusService service = new MilvusService(client, collectionName, filmSchema);
+
+    if (service.listCollections().contains(collectionName)) {
+      service.dropCollection();
+    }
+
     service.createCollection(
         new JsonBuilder().param("auto_id", false).param("segment_row_limit", 4096).build());
 
@@ -129,16 +131,14 @@ public class MilvusIndexExample {
     csvReader.close();
 
     // Now we can insert entities, the total row count should be 8657.
-    InsertParam insertParam =
-        InsertParam.create(collectionName)
-            .addField("release_year", DataType.INT32, releaseYears)
-            .addVectorField("embedding", DataType.VECTOR_FLOAT, embeddings)
-            .setEntityIds(ids);
-
-    client.insert(insertParam);
-    client.flush(collectionName);
-    System.out.printf(
-        "There are %d films in the collection.\n", client.countEntities(collectionName));
+    service.insert(
+        insertParam ->
+            insertParam
+                .withIds(ids)
+                .with(filmSchema.releaseYear, releaseYears)
+                .with(filmSchema.embedding, embeddings));
+    service.flush();
+    System.out.printf("There are %d films in the collection.\n", service.countEntities());
 
     /*
      * Basic create index:
@@ -149,18 +149,27 @@ public class MilvusIndexExample {
      *
      *   Note that if there is already an index and create index is called again, the previous index
      *   will be replaced.
+     *
+     *   We present two ways to create an index: using Index or MilvusService.
      */
+    // Approach one
     Index index =
         Index.create(collectionName, "embedding")
             .setIndexType(IndexType.IVF_FLAT)
             .setMetricType(MetricType.L2)
             .setParamsInJson(new JsonBuilder().param("nlist", 100).build());
-
     client.createIndex(index);
+
+    // Approach two
+    service.createIndex(
+        filmSchema.embedding,
+        IndexType.IVF_FLAT,
+        MetricType.L2,
+        new JsonBuilder().param("nlist", 100).build());
 
     // Get collection stats with index
     System.out.println("\n--------Collection Stats--------");
-    JSONObject json = new JSONObject(client.getCollectionStats(collectionName));
+    JSONObject json = new JSONObject(service.getCollectionStats());
     System.out.println(json.toString(4));
 
     /*
@@ -175,14 +184,18 @@ public class MilvusIndexExample {
      */
     List<List<Float>> queryEmbedding = randomFloatVectors(1, dimension);
     final int topK = 3;
-    Query query = Query.bool(Query.must(
-        filmSchema.releaseYear.in(1995, 2002),
-        filmSchema.embedding.query(queryEmbedding)
-            .metricType(MetricType.L2)
-            .top(topK)
-            .param("nprobe", 8)));
-    SearchParam searchParam = service.buildSearchParam(query)
-        .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
+    Query query =
+        Query.bool(
+            Query.must(
+                filmSchema.releaseYear.in(1995, 2002),
+                filmSchema.embedding.query(queryEmbedding)
+                    .metricType(MetricType.L2)
+                    .top(topK)
+                    .param("nprobe", 8)));
+    SearchParam searchParam =
+        service
+            .buildSearchParam(query)
+            .setParamsInJson("{\"fields\": [\"release_year\", \"embedding\"]}");
     System.out.println("\n--------Search Result--------");
     SearchResult searchResult = service.search(searchParam);
     System.out.println("- ids: " + searchResult.getResultIdsList().toString());
@@ -203,14 +216,14 @@ public class MilvusIndexExample {
      * Basic delete index:
      *   Index can be dropped for a vector field.
      */
-    client.dropIndex(collectionName, "embedding");
+    service.dropIndex(filmSchema.embedding);
 
-    if (client.listCollections().contains(collectionName)) {
-      client.dropCollection(collectionName);
+    if (service.listCollections().contains(collectionName)) {
+      service.dropCollection();
     }
 
     // Close connection
-    client.close();
+    service.close();
   }
 
   // Schema that defines a collection

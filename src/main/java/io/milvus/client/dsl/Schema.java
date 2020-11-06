@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/** An abstract class that allows you to predefine a schema to be used. */
 public abstract class Schema {
   private final Map<String, Field> fields = new LinkedHashMap<>();
 
