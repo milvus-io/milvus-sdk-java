@@ -43,7 +43,7 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
    - Gradle/Grails
 
         ```gradle
-        compile 'io.milvus:milvus-sdk-java:0.9.2'
+        compile group: 'io.milvus', name: 'milvus-sdk-java', version: '0.9.2'
         ```
 
 ### Examples
@@ -64,7 +64,7 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/0.9
     ```
   This is because SLF4J jar files need to be added into your application's classpath. SLF4J is used by Java SDK for logging purpose.
   
-  To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
+  To fix this issue, you can download the required jar files.
                                                                                                          
     - Apache Maven
     

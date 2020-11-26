@@ -715,6 +715,12 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
         resultDistancesList.add(queryDistancesList.subList(i * topK, pos));
         resultFieldsMap.add(fieldsMap.subList(i * topK, pos));
       }
+    } else {
+      for (int i = 0; i < numQueries; i++) {
+        resultIdsList.add(new ArrayList<>());
+        resultDistancesList.add(new ArrayList<>());
+        resultFieldsMap.add(new ArrayList<>());
+      }
     }
 
     return new SearchResult(numQueries, topK, resultIdsList, resultDistancesList, resultFieldsMap);
