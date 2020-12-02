@@ -1,6 +1,7 @@
 package io.milvus.client.dsl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.milvus.client.ConnectParam;
@@ -11,6 +12,7 @@ import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusGrpcClient;
 import io.milvus.client.SearchParam;
 import io.milvus.client.SearchResult;
+import io.milvus.client.exception.InvalidDsl;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -298,6 +301,31 @@ public class SearchDslTest {
               searchResult.getResultIdsList().stream()
                   .map(ids -> ids.get(0))
                   .collect(Collectors.toList()));
+        });
+  }
+
+  @Test
+  public void testMultipleVectorsQuery() {
+    withMilvusServiceFloat(
+        service -> {
+          testCreateIndexFloat();
+
+          List<Long> entityIds = LongStream.range(0, 10).boxed().collect(Collectors.toList());
+
+          Map<Long, Schema.Entity> entities = service.getEntityByID(entityIds);
+
+          List<List<Float>> vectors =
+              entities.values().stream()
+                  .map(e -> e.get(floatSchema.floatVectorField))
+                  .collect(Collectors.toList());
+
+          Query query =
+              Query.bool(
+                  Query.must(
+                      floatSchema.floatVectorField.query(vectors).param("nprobe", 16).top(1),
+                      floatSchema.floatVectorField.query(vectors).param("nprobe", 16).top(1)));
+
+          assertThrows(InvalidDsl.class, () -> service.buildSearchParam(query));
         });
   }
 }

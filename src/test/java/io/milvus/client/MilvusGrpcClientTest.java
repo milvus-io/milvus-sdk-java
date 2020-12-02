@@ -609,6 +609,54 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void searchEmptyResult() {
+    List<Long> intValues = new ArrayList<>(size);
+    List<Float> floatValues = new ArrayList<>(size);
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    for (int i = 0; i < size; i++) {
+      intValues.add((long) i);
+      floatValues.add((float) i);
+    }
+    vectors = vectors.stream().map(MilvusClientTest::normalizeVector).collect(Collectors.toList());
+
+    List<Long> insertIds = LongStream.range(0, size).boxed().collect(Collectors.toList());
+    InsertParam insertParam =
+        InsertParam.create(randomCollectionName)
+            .addField("int64", DataType.INT64, intValues)
+            .addField("float", DataType.FLOAT, floatValues)
+            .addVectorField("float_vec", DataType.VECTOR_FLOAT, vectors)
+            .setEntityIds(insertIds);
+    List<Long> entityIds = client.insert(insertParam);
+    assertEquals(size, entityIds.size());
+
+    client.flush(randomCollectionName);
+
+    final int searchSize = 5;
+    List<List<Float>> vectorsToSearch = vectors.subList(0, searchSize);
+
+    final long topK = 10;
+    final String tag = "tag";
+    List<String> partitionTags = new ArrayList<>();
+    partitionTags.add(tag);
+    SearchParam searchParam =
+        SearchParam.create(randomCollectionName)
+            .setDsl(generateComplexDSL(topK, vectorsToSearch.toString()))
+            .setPartitionTags(partitionTags)
+            .setParamsInJson(
+                new JsonBuilder()
+                    .param("fields", new ArrayList<>(Arrays.asList("int64", "float_vec")))
+                    .build());
+    SearchResult searchResult = client.search(searchParam);
+    assertEquals(searchSize, searchResult.getQueryResultsList().size());
+    List<List<Long>> resultIdsList = searchResult.getResultIdsList();
+    assertEquals(searchSize, resultIdsList.size());
+    assertEquals(0, resultIdsList.get(0).size());
+    List<List<Float>> resultDistancesList = searchResult.getResultDistancesList();
+    assertEquals(searchSize, resultDistancesList.size());
+    assertEquals(0, resultDistancesList.get(0).size());
+  }
+
+  @org.junit.jupiter.api.Test
   void getCollectionInfo() {
     CollectionMapping collectionMapping = client.getCollectionInfo(randomCollectionName);
     assertEquals(randomCollectionName, collectionMapping.getCollectionName());
