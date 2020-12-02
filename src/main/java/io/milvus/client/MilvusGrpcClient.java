@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -32,6 +34,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+import io.grpc.stub.MetadataUtils;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.MilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
@@ -87,9 +90,13 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 
   public MilvusGrpcClient(ConnectParam connectParam) {
     target = connectParam.getTarget();
+    Metadata metadata = new Metadata();
+    metadata.put(
+        Metadata.Key.of("client_tag", ASCII_STRING_MARSHALLER), connectParam.getClientTag());
     channel =
         ManagedChannelBuilder.forTarget(connectParam.getTarget())
             .usePlaintext()
+            .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
             .maxInboundMessageSize(Integer.MAX_VALUE)
             .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
             .keepAliveTime(

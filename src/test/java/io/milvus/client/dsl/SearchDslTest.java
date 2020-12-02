@@ -23,6 +23,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomUtils;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.testcontainers.containers.GenericContainer;
@@ -305,6 +306,7 @@ public class SearchDslTest {
   }
 
   @Test
+  @Ignore
   public void testMultipleVectorsQuery() {
     withMilvusServiceFloat(
         service -> {

@@ -69,8 +69,11 @@ public class MilvusBasicExample {
      *
      *   You can use `withLogging()` for `client` to enable logging framework.
      */
-    ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("127.0.0.1").withPort(19530).build();
+    ConnectParam connectParam = new ConnectParam.Builder()
+        .withHost("127.0.0.1")
+        .withPort(19530)
+        .withClientTag("films_client")
+        .build();
     MilvusClient client = new MilvusGrpcClient(connectParam);
 
     /*
