@@ -15,7 +15,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 | Milvus version | Java SDK version |
 | :------------: | :--------------: |
-|     0.10.x     |    0.8.5         |
+|     0.10.3, 0.10.4     |    0.8.5         |
 |     0.10.2     |    0.8.4         |
 |     0.10.1     |    0.8.3         |
 |     0.10.0     |    0.8.2         |
