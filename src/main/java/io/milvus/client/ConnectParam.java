@@ -27,6 +27,7 @@ import javax.annotation.Nonnull;
 public class ConnectParam {
   private final String target;
   private final String defaultLoadBalancingPolicy;
+  private final String clientTag;
   private final long connectTimeoutNanos;
   private final long keepAliveTimeNanos;
   private final long keepAliveTimeoutNanos;
@@ -39,6 +40,7 @@ public class ConnectParam {
             ? builder.target
             : String.format("dns:///%s:%d", builder.host, builder.port);
     this.defaultLoadBalancingPolicy = builder.defaultLoadBalancingPolicy;
+    this.clientTag = builder.clientTag;
     this.connectTimeoutNanos = builder.connectTimeoutNanos;
     this.keepAliveTimeNanos = builder.keepAliveTimeNanos;
     this.keepAliveTimeoutNanos = builder.keepAliveTimeoutNanos;
@@ -53,6 +55,8 @@ public class ConnectParam {
   public String getDefaultLoadBalancingPolicy() {
     return defaultLoadBalancingPolicy;
   }
+
+  public String getClientTag() { return clientTag; }
 
   public long getConnectTimeout(@Nonnull TimeUnit timeUnit) {
     return timeUnit.convert(connectTimeoutNanos, TimeUnit.NANOSECONDS);
@@ -81,6 +85,7 @@ public class ConnectParam {
     private String host = "localhost";
     private int port = 19530;
     private String defaultLoadBalancingPolicy = "round_robin";
+    private String clientTag = "";
     private long connectTimeoutNanos = TimeUnit.NANOSECONDS.convert(10, TimeUnit.SECONDS);
     private long keepAliveTimeNanos = Long.MAX_VALUE; // Disabling keepalive
     private long keepAliveTimeoutNanos = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
@@ -132,6 +137,17 @@ public class ConnectParam {
      */
     public Builder withDefaultLoadBalancingPolicy(String defaultLoadBalancingPolicy) {
       this.defaultLoadBalancingPolicy = defaultLoadBalancingPolicy;
+      return this;
+    }
+
+    /**
+     * Optional. Defaults to empty string.
+     *
+     * @param clientTag the client tag to be passed to server
+     * @return <code>Builder</code>
+     */
+    public Builder withClientTag(String clientTag) {
+      this.clientTag = clientTag;
       return this;
     }
 
