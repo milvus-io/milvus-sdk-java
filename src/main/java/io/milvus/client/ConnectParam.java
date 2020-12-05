@@ -20,14 +20,14 @@
 package io.milvus.client;
 
 import io.grpc.ManagedChannelBuilder;
-
-import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
 
 /** Contains parameters for connecting to Milvus server */
 public class ConnectParam {
   private final String target;
   private final String defaultLoadBalancingPolicy;
+  private final String clientTag;
   private final long connectTimeoutNanos;
   private final long keepAliveTimeNanos;
   private final long keepAliveTimeoutNanos;
@@ -35,8 +35,12 @@ public class ConnectParam {
   private final long idleTimeoutNanos;
 
   private ConnectParam(@Nonnull Builder builder) {
-    this.target = builder.target != null ? builder.target : String.format("dns:///%s:%d", builder.host, builder.port);
+    this.target =
+        builder.target != null
+            ? builder.target
+            : String.format("dns:///%s:%d", builder.host, builder.port);
     this.defaultLoadBalancingPolicy = builder.defaultLoadBalancingPolicy;
+    this.clientTag = builder.clientTag;
     this.connectTimeoutNanos = builder.connectTimeoutNanos;
     this.keepAliveTimeNanos = builder.keepAliveTimeNanos;
     this.keepAliveTimeoutNanos = builder.keepAliveTimeoutNanos;
@@ -51,6 +55,8 @@ public class ConnectParam {
   public String getDefaultLoadBalancingPolicy() {
     return defaultLoadBalancingPolicy;
   }
+
+  public String getClientTag() { return clientTag; }
 
   public long getConnectTimeout(@Nonnull TimeUnit timeUnit) {
     return timeUnit.convert(connectTimeoutNanos, TimeUnit.NANOSECONDS);
@@ -79,6 +85,7 @@ public class ConnectParam {
     private String host = "localhost";
     private int port = 19530;
     private String defaultLoadBalancingPolicy = "round_robin";
+    private String clientTag = "";
     private long connectTimeoutNanos = TimeUnit.NANOSECONDS.convert(10, TimeUnit.SECONDS);
     private long keepAliveTimeNanos = Long.MAX_VALUE; // Disabling keepalive
     private long keepAliveTimeoutNanos = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
@@ -90,7 +97,6 @@ public class ConnectParam {
      *
      * @param target a GRPC target string
      * @return <code>Builder</code>
-     *
      * @see ManagedChannelBuilder#forTarget(String)
      */
     public Builder withTarget(@Nonnull String target) {
@@ -135,6 +141,17 @@ public class ConnectParam {
     }
 
     /**
+     * Optional. Defaults to empty string.
+     *
+     * @param clientTag the client tag to be passed to server
+     * @return <code>Builder</code>
+     */
+    public Builder withClientTag(String clientTag) {
+      this.clientTag = clientTag;
+      return this;
+    }
+
+    /**
      * Optional. Defaults to 10 seconds.
      *
      * @param connectTimeout Timeout for client to establish a connection to server
@@ -175,7 +192,7 @@ public class ConnectParam {
      * expires without any read activity on the connection, the connection is considered dead. An
      * unreasonably small value might be increased. Defaults to 20 seconds.
      *
-     * <p>This value should be at least multiple times the RTT to allow for lost packets.</p>
+     * <p>This value should be at least multiple times the RTT to allow for lost packets.
      *
      * @see <a
      *     href="https://grpc.github.io/grpc-java/javadoc/io/grpc/ManagedChannelBuilder.html#keepAliveTimeout-long-java.util.concurrent.TimeUnit-">

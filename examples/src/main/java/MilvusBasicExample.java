@@ -19,15 +19,7 @@
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.milvus.client.CollectionMapping;
-import io.milvus.client.CompactParam;
-import io.milvus.client.ConnectParam;
-import io.milvus.client.DataType;
-import io.milvus.client.InsertParam;
-import io.milvus.client.MilvusClient;
-import io.milvus.client.MilvusGrpcClient;
-import io.milvus.client.SearchParam;
-import io.milvus.client.SearchResult;
+import io.milvus.client.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +31,7 @@ import java.util.stream.DoubleStream;
 import org.json.JSONObject;
 
 /**
- * This is a simple example demonstrating how to use Milvus Java SDK v0.9.1. For detailed API
+ * This is a simple example demonstrating how to use Milvus Java SDK v0.9.2. For detailed API
  * documentation, please refer to
  * https://milvus-io.github.io/milvus-sdk-java/javadoc/io/milvus/client/package-summary.html You can
  * also find more information on https://milvus.io/docs/overview.md
@@ -77,8 +69,11 @@ public class MilvusBasicExample {
      *
      *   You can use `withLogging()` for `client` to enable logging framework.
      */
-    ConnectParam connectParam =
-        new ConnectParam.Builder().withHost("127.0.0.1").withPort(19530).build();
+    ConnectParam connectParam = new ConnectParam.Builder()
+        .withHost("127.0.0.1")
+        .withPort(19530)
+        .withClientTag("films_client")
+        .build();
     MilvusClient client = new MilvusGrpcClient(connectParam);
 
     /*

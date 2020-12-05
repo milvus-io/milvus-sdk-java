@@ -22,21 +22,19 @@ package io.milvus.client;
 import java.util.Arrays;
 import java.util.Optional;
 
-/**
- * Represents available data types.
- */
+/** Represents available data types. */
 public enum DataType {
-  NONE(0),
-  BOOL(1),
-  INT8(2),
-  INT16(3),
+  // NONE(0),
+  // BOOL(1),
+  // INT8(2),
+  // INT16(3),
   INT32(4),
   INT64(5),
 
   FLOAT(10),
   DOUBLE(11),
 
-  STRING(20),
+  // STRING(20),
 
   VECTOR_BINARY(100),
   VECTOR_FLOAT(101),

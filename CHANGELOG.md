@@ -1,43 +1,49 @@
 # Changelog   
 
-## milvus-sdk-java 0.9.0 (2020-10-16)
+## v0.9.1 (2020-10-29)
+
+### Bug
+
+- [\#4086](https://github.com/milvus-io/milvus/issues/4086) - Fix vector search error when topK is small
+
+## v0.9.0 (2020-10-16)
 
 ### Feature
 
-- \#2976 Scalar-field filtering support
+- [\#2976](https://github.com/milvus-io/milvus/pull/2976) Scalar-field filtering support
 
 ### Improvement
 
-- \#134 - Simplify the client code
+- [\#134](https://github.com/milvus-io/milvus-sdk-java/pull/134) - Simplify the client code
 
-## milvus-sdk-java 0.8.5 (2020-08-26)
+## v0.8.5 (2020-08-26)
 
 ### Feature
 
-- \#128 - GRPC timeout support
-- \#129 - Support GRPC name resolver and load balancing
+- [\#128](https://github.com/milvus-io/milvus-sdk-java/pull/128) - GRPC timeout support
+- [\#129](https://github.com/milvus-io/milvus-sdk-java/pull/129) - Support GRPC name resolver and load balancing
 
-## milvus-sdk-java 0.8.3 (2020-07-15)
+## v0.8.3 (2020-07-15)
 
 ### Improvement
 
-- \#118 - Remove isConnect() API
+- [\#118](https://github.com/milvus-io/milvus-sdk-java/pull/118) - Remove isConnect() API
 
-## milvus-sdk-java 0.8.0 (2020-05-15)
-
-### Feature
-
-- \#93 - Add/Improve getVectorByID, collectionInfo and hasPartition API
-- \#2295 - Rename SDK interfaces
-
-## milvus-sdk-java 0.7.0 (2020-04-15)
+## v0.8.0 (2020-05-15)
 
 ### Feature
 
-- \#261 - Integrate ANNOY into Milvus
-- \#1828 - Add searchAsync / createIndexAsync / insertAsync / flushAsync / compactAsync API
+- [\#93](https://github.com/milvus-io/milvus-sdk-java/pull/93) - Add/Improve getVectorByID, collectionInfo and hasPartition API
+- [\#2295](https://github.com/milvus-io/milvus/issues/2295) - Rename SDK interfaces
 
-## milvus-sdk-java 0.6.0 (2020-03-31)
+## v0.7.0 (2020-04-15)
+
+### Feature
+
+- [\#261](https://github.com/milvus-io/milvus/issues/261) - Integrate ANNOY into Milvus
+- [\#1828](https://github.com/milvus-io/milvus/issues/1828) - Add searchAsync / createIndexAsync / insertAsync / flushAsync / compactAsync API
+
+## v0.6.0 (2020-03-31)
 
 ### Bug
 
@@ -48,15 +54,13 @@
 
 - \#1603 - Add binary metrics: Substructure & Superstructure
 
-## milvus-sdk-java 0.5.0 (2020-03-11)
-
-## milvus-sdk-java 0.4.1 (2019-12-16)
+## v0.4.1 (2019-12-16)
 
 ### Bug
 
 - \#78 - Partition tag not working when searching
 
-## milvus-sdk-java 0.4.0 (2019-12-7)
+## v0.4.0 (2019-12-7)
 
 ### Bug
 
@@ -69,7 +73,7 @@
 - \#72 - Add more getters in ShowPartitionResponse
 - \#73 - Add @Deprecated for DateRanges in SearchParam
 
-## milvus-sdk-java 0.3.0 (2019-11-13)
+## v0.3.0 (2019-11-13)
 
 ### Bug
 
@@ -82,7 +86,7 @@
 - \#62 - Change GRPC proto (and related code) to increase search result's transmission speed
 - \#63 - Make some functions and constructors package-private if necessary
 
-## milvus-sdk-java 0.2.2 (2019-11-4)
+## v0.2.2 (2019-11-4)
 
 ### Improvement
 
@@ -90,7 +94,7 @@
 - \#51 - Change connect waitTime to timeout
 - \#52 - Change IVF_SQ8H to IVF_SQ8_H
 
-## milvus-sdk-java 0.2.0 (2019-10-21)
+## v0.2.0 (2019-10-21)
 
 ### Bug
 

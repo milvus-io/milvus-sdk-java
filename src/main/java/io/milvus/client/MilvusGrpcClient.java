@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import static io.grpc.Metadata.ASCII_STRING_MARSHALLER;
+
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -32,15 +34,36 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
+import io.grpc.stub.MetadataUtils;
 import io.milvus.client.exception.ClientSideMilvusException;
 import io.milvus.client.exception.MilvusException;
 import io.milvus.client.exception.ServerSideMilvusException;
 import io.milvus.client.exception.UnsupportedServerVersion;
-import io.milvus.grpc.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
+import io.milvus.grpc.AttrRecord;
+import io.milvus.grpc.BoolReply;
+import io.milvus.grpc.CollectionInfo;
+import io.milvus.grpc.CollectionName;
+import io.milvus.grpc.CollectionNameList;
+import io.milvus.grpc.CollectionRowCount;
+import io.milvus.grpc.Command;
+import io.milvus.grpc.DeleteByIDParam;
+import io.milvus.grpc.Entities;
+import io.milvus.grpc.EntityIdentity;
+import io.milvus.grpc.EntityIds;
+import io.milvus.grpc.ErrorCode;
+import io.milvus.grpc.FieldValue;
+import io.milvus.grpc.FlushParam;
+import io.milvus.grpc.GetEntityIDsParam;
+import io.milvus.grpc.IndexParam;
+import io.milvus.grpc.Mapping;
+import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.PartitionList;
+import io.milvus.grpc.PartitionParam;
+import io.milvus.grpc.QueryResult;
+import io.milvus.grpc.Status;
+import io.milvus.grpc.StringReply;
+import io.milvus.grpc.VectorRecord;
+import io.milvus.grpc.VectorRowRecord;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +73,9 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Actual implementation of interface <code>MilvusClient</code> */
 public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
@@ -64,22 +90,29 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 
   public MilvusGrpcClient(ConnectParam connectParam) {
     target = connectParam.getTarget();
-    channel = ManagedChannelBuilder
-        .forTarget(connectParam.getTarget())
-        .usePlaintext()
-        .maxInboundMessageSize(Integer.MAX_VALUE)
-        .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
-        .keepAliveTime(connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-        .keepAliveTimeout(connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-        .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
-        .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
-        .build();
+    Metadata metadata = new Metadata();
+    metadata.put(
+        Metadata.Key.of("client_tag", ASCII_STRING_MARSHALLER), connectParam.getClientTag());
+    channel =
+        ManagedChannelBuilder.forTarget(connectParam.getTarget())
+            .usePlaintext()
+            .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
+            .maxInboundMessageSize(Integer.MAX_VALUE)
+            .defaultLoadBalancingPolicy(connectParam.getDefaultLoadBalancingPolicy())
+            .keepAliveTime(
+                connectParam.getKeepAliveTime(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+            .keepAliveTimeout(
+                connectParam.getKeepAliveTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+            .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
+            .idleTimeout(connectParam.getIdleTimeout(TimeUnit.NANOSECONDS), TimeUnit.NANOSECONDS)
+            .build();
     blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
     futureStub = MilvusServiceGrpc.newFutureStub(channel);
     try {
       String serverVersion = getServerVersion();
       if (!serverVersion.matches("^" + SUPPORTED_SERVER_VERSION + "(\\..*)?$")) {
-        throw new UnsupportedServerVersion(connectParam.getTarget(), SUPPORTED_SERVER_VERSION, serverVersion);
+        throw new UnsupportedServerVersion(
+            connectParam.getTarget(), SUPPORTED_SERVER_VERSION, serverVersion);
       }
     } catch (Throwable t) {
       channel.shutdownNow();
@@ -163,7 +196,7 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
   }
 
   private static class TimeoutInterceptor implements ClientInterceptor {
-    private long timeoutMillis;
+    private final long timeoutMillis;
 
     TimeoutInterceptor(long timeoutMillis) {
       this.timeoutMillis = timeoutMillis;
@@ -172,12 +205,13 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-      return next.newCall(method, callOptions.withDeadlineAfter(timeoutMillis, TimeUnit.MILLISECONDS));
+      return next.newCall(
+          method, callOptions.withDeadlineAfter(timeoutMillis, TimeUnit.MILLISECONDS));
     }
   }
 
   private static class LoggingInterceptor implements ClientInterceptor {
-    private LoggingAdapter loggingAdapter;
+    private final LoggingAdapter loggingAdapter;
 
     LoggingInterceptor(LoggingAdapter loggingAdapter) {
       this.loggingAdapter = loggingAdapter;
@@ -186,8 +220,9 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
         MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
-        private String traceId = loggingAdapter.getTraceId();
+      return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
+          next.newCall(method, callOptions)) {
+        private final String traceId = loggingAdapter.getTraceId();
 
         @Override
         public void sendMessage(ReqT message) {
@@ -197,13 +232,16 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {
-          super.start(new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(responseListener) {
-            @Override
-            public void onMessage(RespT message) {
-              loggingAdapter.logResponse(logger, traceId, method, message);
-              super.onMessage(message);
-            }
-          }, headers);
+          super.start(
+              new ForwardingClientCallListener.SimpleForwardingClientCallListener<RespT>(
+                  responseListener) {
+                @Override
+                public void onMessage(RespT message) {
+                  loggingAdapter.logResponse(logger, traceId, method, message);
+                  super.onMessage(message);
+                }
+              },
+              headers);
         }
       };
     }
@@ -212,13 +250,15 @@ public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
 
 abstract class AbstractMilvusGrpcClient implements MilvusClient {
   protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
+
   protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
 
   private void translateExceptions(Runnable body) {
-    translateExceptions(() -> {
-      body.run();
-      return null;
-    });
+    translateExceptions(
+        () -> {
+          body.run();
+          return null;
+        });
   }
 
   @SuppressWarnings("unchecked")
@@ -227,8 +267,10 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
       T result = body.get();
       if (result instanceof ListenableFuture) {
         ListenableFuture futureResult = (ListenableFuture) result;
-        result = (T) Futures.catching(
-            futureResult, Throwable.class, this::translate, MoreExecutors.directExecutor());
+        result =
+            (T)
+                Futures.catching(
+                    futureResult, Throwable.class, this::translate, MoreExecutors.directExecutor());
       }
       return result;
     } catch (Throwable e) {
@@ -255,84 +297,99 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public void createCollection(@Nonnull CollectionMapping collectionMapping) {
-    translateExceptions(() -> {
-      Status response = blockingStub().createCollection(collectionMapping.grpc());
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          Status response = blockingStub().createCollection(collectionMapping.grpc());
+          checkResponseStatus(response);
+        });
   }
 
   @Override
   public boolean hasCollection(@Nonnull String collectionName) {
-    return translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      BoolReply response = blockingStub().hasCollection(request);
-      checkResponseStatus(response.getStatus());
-      return response.getBoolReply();
-    });
+    return translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          BoolReply response = blockingStub().hasCollection(request);
+          checkResponseStatus(response.getStatus());
+          return response.getBoolReply();
+        });
   }
 
   @Override
   public void dropCollection(@Nonnull String collectionName) {
-    translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      Status response = blockingStub().dropCollection(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          Status response = blockingStub().dropCollection(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
   public void createIndex(@Nonnull Index index) {
-    translateExceptions(() -> {
-      Futures.getUnchecked(createIndexAsync(index));
-    });
+    translateExceptions(
+        () -> {
+          Futures.getUnchecked(createIndexAsync(index));
+        });
   }
 
   @Override
   public ListenableFuture<Void> createIndexAsync(@Nonnull Index index) {
-    return translateExceptions(() -> {
-      IndexParam request = index.grpc();
-      ListenableFuture<Status> responseFuture = futureStub().createIndex(request);
-      return Futures.transform(responseFuture, this::checkResponseStatus, MoreExecutors.directExecutor());
-    });
+    return translateExceptions(
+        () -> {
+          IndexParam request = index.grpc();
+          ListenableFuture<Status> responseFuture = futureStub().createIndex(request);
+          return Futures.transform(
+              responseFuture, this::checkResponseStatus, MoreExecutors.directExecutor());
+        });
   }
 
   @Override
   public void createPartition(String collectionName, String tag) {
-    translateExceptions(() -> {
-      PartitionParam request = PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
-      Status response = blockingStub().createPartition(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          PartitionParam request =
+              PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
+          Status response = blockingStub().createPartition(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
   public boolean hasPartition(String collectionName, String tag) {
-    return translateExceptions(() -> {
-      PartitionParam request = PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
-      BoolReply response = blockingStub().hasPartition(request);
-      checkResponseStatus(response.getStatus());
-      return response.getBoolReply();
-    });
+    return translateExceptions(
+        () -> {
+          PartitionParam request =
+              PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
+          BoolReply response = blockingStub().hasPartition(request);
+          checkResponseStatus(response.getStatus());
+          return response.getBoolReply();
+        });
   }
 
   @Override
   public List<String> listPartitions(String collectionName) {
-    return translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      PartitionList response = blockingStub().showPartitions(request);
-      checkResponseStatus(response.getStatus());
-      return response.getPartitionTagArrayList();
-    });
+    return translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          PartitionList response = blockingStub().showPartitions(request);
+          checkResponseStatus(response.getStatus());
+          return response.getPartitionTagArrayList();
+        });
   }
 
   @Override
   public void dropPartition(String collectionName, String tag) {
-    translateExceptions(() -> {
-      PartitionParam request =
-          PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
-      Status response = blockingStub().dropPartition(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          PartitionParam request =
+              PartitionParam.newBuilder().setCollectionName(collectionName).setTag(tag).build();
+          Status response = blockingStub().dropPartition(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
@@ -342,14 +399,18 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public ListenableFuture<List<Long>> insertAsync(@Nonnull InsertParam insertParam) {
-    return translateExceptions(() -> {
-      io.milvus.grpc.InsertParam request = insertParam.grpc();
-      ListenableFuture<EntityIds> responseFuture = futureStub().insert(request);
-      return Futures.transform(responseFuture, entityIds -> {
-        checkResponseStatus(entityIds.getStatus());
-        return entityIds.getEntityIdArrayList();
-      }, MoreExecutors.directExecutor());
-    });
+    return translateExceptions(
+        () -> {
+          io.milvus.grpc.InsertParam request = insertParam.grpc();
+          ListenableFuture<EntityIds> responseFuture = futureStub().insert(request);
+          return Futures.transform(
+              responseFuture,
+              entityIds -> {
+                checkResponseStatus(entityIds.getStatus());
+                return entityIds.getEntityIdArrayList();
+              },
+              MoreExecutors.directExecutor());
+        });
   }
 
   @Override
@@ -359,44 +420,53 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public ListenableFuture<SearchResult> searchAsync(@Nonnull SearchParam searchParam) {
-    return translateExceptions(() -> {
-      io.milvus.grpc.SearchParam request = searchParam.grpc();
-      ListenableFuture<QueryResult> responseFuture = futureStub().search(request);
-      return Futures.transform(responseFuture, queryResult -> {
-        checkResponseStatus(queryResult.getStatus());
-        return buildSearchResponse(queryResult);
-      }, MoreExecutors.directExecutor());
-    });
+    return translateExceptions(
+        () -> {
+          io.milvus.grpc.SearchParam request = searchParam.grpc();
+          ListenableFuture<QueryResult> responseFuture = futureStub().search(request);
+          return Futures.transform(
+              responseFuture,
+              queryResult -> {
+                checkResponseStatus(queryResult.getStatus());
+                return buildSearchResponse(queryResult);
+              },
+              MoreExecutors.directExecutor());
+        });
   }
 
   @Override
   public CollectionMapping getCollectionInfo(@Nonnull String collectionName) {
-    return translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      Mapping response = blockingStub().describeCollection(request);
-      checkResponseStatus(response.getStatus());
-      return new CollectionMapping(response);
-    });
+    return translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          Mapping response = blockingStub().describeCollection(request);
+          checkResponseStatus(response.getStatus());
+          return new CollectionMapping(response);
+        });
   }
 
   @Override
   public List<String> listCollections() {
-    return translateExceptions(() -> {
-      Command request = Command.newBuilder().setCmd("").build();
-      CollectionNameList response = blockingStub().showCollections(request);
-      checkResponseStatus(response.getStatus());
-      return response.getCollectionNamesList();
-    });
+    return translateExceptions(
+        () -> {
+          Command request = Command.newBuilder().setCmd("").build();
+          CollectionNameList response = blockingStub().showCollections(request);
+          checkResponseStatus(response.getStatus());
+          return response.getCollectionNamesList();
+        });
   }
 
   @Override
   public long countEntities(@Nonnull String collectionName) {
-    return translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      CollectionRowCount response = blockingStub().countCollection(request);
-      checkResponseStatus(response.getStatus());
-      return response.getCollectionRowCount();
-    });
+    return translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          CollectionRowCount response = blockingStub().countCollection(request);
+          checkResponseStatus(response.getStatus());
+          return response.getCollectionRowCount();
+        });
   }
 
   @Override
@@ -410,75 +480,84 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   public String command(@Nonnull String command) {
-    return translateExceptions(() -> {
-      Command request = Command.newBuilder().setCmd(command).build();
-      StringReply response = blockingStub().cmd(request);
-      checkResponseStatus(response.getStatus());
-      return response.getStringReply();
-    });
+    return translateExceptions(
+        () -> {
+          Command request = Command.newBuilder().setCmd(command).build();
+          StringReply response = blockingStub().cmd(request);
+          checkResponseStatus(response.getStatus());
+          return response.getStringReply();
+        });
   }
 
   @Override
   public void loadCollection(@Nonnull String collectionName) {
-    translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      Status response = blockingStub().preloadCollection(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          Status response = blockingStub().preloadCollection(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
   public void dropIndex(String collectionName, String fieldName) {
-    translateExceptions(() -> {
-      IndexParam request = IndexParam.newBuilder()
-          .setCollectionName(collectionName)
-          .setFieldName(fieldName)
-          .build();
-      Status response = blockingStub().dropIndex(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          IndexParam request =
+              IndexParam.newBuilder()
+                  .setCollectionName(collectionName)
+                  .setFieldName(fieldName)
+                  .build();
+          Status response = blockingStub().dropIndex(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
   public String getCollectionStats(String collectionName) {
-    return translateExceptions(() -> {
-      CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
-      CollectionInfo response = blockingStub().showCollectionInfo(request);
-      checkResponseStatus(response.getStatus());
-      return response.getJsonInfo();
-    });
+    return translateExceptions(
+        () -> {
+          CollectionName request =
+              CollectionName.newBuilder().setCollectionName(collectionName).build();
+          CollectionInfo response = blockingStub().showCollectionInfo(request);
+          checkResponseStatus(response.getStatus());
+          return response.getJsonInfo();
+        });
   }
-  
+
   @Override
-  public Map<Long, Map<String, Object>> getEntityByID(String collectionName, List<Long> ids, List<String> fieldNames) {
-    return translateExceptions(() -> {
-      EntityIdentity request = EntityIdentity.newBuilder()
-          .setCollectionName(collectionName)
-          .addAllIdArray(ids)
-          .addAllFieldNames(fieldNames)
-          .build();
-      Entities response = blockingStub().getEntityByID(request);
-      checkResponseStatus(response.getStatus());
-      Map<String, Iterator<?>> fieldIterators = response.getFieldsList()
-          .stream()
-          .collect(Collectors.toMap(FieldValue::getFieldName, this::fieldValueIterator));
-      Iterator<Long> idIterator = ids.iterator();
-      Map<Long, Map<String, Object>> entities = new HashMap<>(response.getValidRowList().size());
-      for (boolean valid : response.getValidRowList()) {
-        long id = idIterator.next();
-        if (valid) {
-          entities.put(id, toMap(fieldIterators));
-        }
-      }
-      return entities;
-    });
+  public Map<Long, Map<String, Object>> getEntityByID(
+      String collectionName, List<Long> ids, List<String> fieldNames) {
+    return translateExceptions(
+        () -> {
+          EntityIdentity request =
+              EntityIdentity.newBuilder()
+                  .setCollectionName(collectionName)
+                  .addAllIdArray(ids)
+                  .addAllFieldNames(fieldNames)
+                  .build();
+          Entities response = blockingStub().getEntityByID(request);
+          checkResponseStatus(response.getStatus());
+          Map<String, Iterator<?>> fieldIterators =
+              response.getFieldsList().stream()
+                  .collect(Collectors.toMap(FieldValue::getFieldName, this::fieldValueIterator));
+          Iterator<Long> idIterator = ids.iterator();
+          Map<Long, Map<String, Object>> entities =
+              new HashMap<>(response.getValidRowList().size());
+          for (boolean valid : response.getValidRowList()) {
+            long id = idIterator.next();
+            if (valid) {
+              entities.put(id, toMap(fieldIterators));
+            }
+          }
+          return entities;
+        });
   }
-  
+
   private Map<String, Object> toMap(Map<String, Iterator<?>> fieldIterators) {
     return fieldIterators.entrySet().stream()
-        .collect(Collectors.toMap(
-            entry -> entry.getKey(),
-            entry -> entry.getValue().next()));
+        .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().next()));
   }
 
   private Iterator<?> fieldValueIterator(FieldValue fieldValue) {
@@ -496,7 +575,11 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
     VectorRecord record = fieldValue.getVectorRecord();
     return record.getRecordsList().stream()
-        .map(row -> row.getFloatDataCount() > 0 ? row.getFloatDataList() : row.getBinaryData().asReadOnlyByteBuffer())
+        .map(
+            row ->
+                row.getFloatDataCount() > 0
+                    ? row.getFloatDataList()
+                    : row.getBinaryData().asReadOnlyByteBuffer())
         .iterator();
   }
 
@@ -507,27 +590,31 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public List<Long> listIDInSegment(String collectionName, Long segmentId) {
-    return translateExceptions(() -> {
-      GetEntityIDsParam request = GetEntityIDsParam.newBuilder()
-          .setCollectionName(collectionName)
-          .setSegmentId(segmentId)
-          .build();
-      EntityIds response = blockingStub().getEntityIDs(request);
-      checkResponseStatus(response.getStatus());
-      return response.getEntityIdArrayList();
-    });
+    return translateExceptions(
+        () -> {
+          GetEntityIDsParam request =
+              GetEntityIDsParam.newBuilder()
+                  .setCollectionName(collectionName)
+                  .setSegmentId(segmentId)
+                  .build();
+          EntityIds response = blockingStub().getEntityIDs(request);
+          checkResponseStatus(response.getStatus());
+          return response.getEntityIdArrayList();
+        });
   }
 
   @Override
   public void deleteEntityByID(String collectionName, List<Long> ids) {
-    translateExceptions(() -> {
-      DeleteByIDParam request = DeleteByIDParam.newBuilder()
-          .setCollectionName(collectionName)
-          .addAllIdArray(ids)
-          .build();
-      Status response = blockingStub().deleteByID(request);
-      checkResponseStatus(response);
-    });
+    translateExceptions(
+        () -> {
+          DeleteByIDParam request =
+              DeleteByIDParam.newBuilder()
+                  .setCollectionName(collectionName)
+                  .addAllIdArray(ids)
+                  .build();
+          Status response = blockingStub().deleteByID(request);
+          checkResponseStatus(response);
+        });
   }
 
   @Override
@@ -537,11 +624,14 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public ListenableFuture<Void> flushAsync(@Nonnull List<String> collectionNames) {
-    return translateExceptions(() -> {
-      FlushParam request = FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
-      ListenableFuture<Status> response = futureStub().flush(request);
-      return Futures.transform(response, this::checkResponseStatus, MoreExecutors.directExecutor());
-    });
+    return translateExceptions(
+        () -> {
+          FlushParam request =
+              FlushParam.newBuilder().addAllCollectionNameArray(collectionNames).build();
+          ListenableFuture<Status> response = futureStub().flush(request);
+          return Futures.transform(
+              response, this::checkResponseStatus, MoreExecutors.directExecutor());
+        });
   }
 
   @Override
@@ -561,11 +651,13 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public ListenableFuture<Void> compactAsync(@Nonnull CompactParam compactParam) {
-    return translateExceptions(() -> {
-      io.milvus.grpc.CompactParam request = compactParam.grpc();
-      ListenableFuture<Status> response = futureStub().compact(request);
-      return Futures.transform(response, this::checkResponseStatus, MoreExecutors.directExecutor());
-    });
+    return translateExceptions(
+        () -> {
+          io.milvus.grpc.CompactParam request = compactParam.grpc();
+          ListenableFuture<Status> response = futureStub().compact(request);
+          return Futures.transform(
+              response, this::checkResponseStatus, MoreExecutors.directExecutor());
+        });
   }
 
   ///////////////////// Util Functions/////////////////////
@@ -607,7 +699,11 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
               if (vectorRowRecordList.get(j).getFloatDataCount() > 0) {
                 fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getFloatDataList());
               } else {
-                fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getBinaryData().asReadOnlyByteBuffer());
+                fieldsMap
+                    .get(j)
+                    .put(
+                        fieldName,
+                        vectorRowRecordList.get(j).getBinaryData().asReadOnlyByteBuffer());
               }
             }
           }
@@ -625,6 +721,12 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
         resultIdsList.add(queryIdsList.subList(i * topK, pos));
         resultDistancesList.add(queryDistancesList.subList(i * topK, pos));
         resultFieldsMap.add(fieldsMap.subList(i * topK, pos));
+      }
+    } else {
+      for (int i = 0; i < numQueries; i++) {
+        resultIdsList.add(new ArrayList<>());
+        resultDistancesList.add(new ArrayList<>());
+        resultFieldsMap.add(new ArrayList<>());
       }
     }
 
