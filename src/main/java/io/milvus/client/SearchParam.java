@@ -27,6 +27,7 @@ import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.VectorParam;
 import io.milvus.grpc.VectorRecord;
 import io.milvus.grpc.VectorRowRecord;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -178,7 +179,7 @@ public class SearchParam {
                       for (int i = 0; i < dimension; i++) {
                         bytes.put(array.getNumber(i).byteValue());
                       }
-                      bytes.flip();
+                      ((Buffer) bytes).flip();
                       ByteString vector = UnsafeByteOperations.unsafeWrap(bytes);
                       return VectorRowRecord.newBuilder().setBinaryData(vector).build();
                     })

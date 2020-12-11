@@ -4,14 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import io.milvus.client.ConnectParam;
-import io.milvus.client.IndexType;
-import io.milvus.client.JsonBuilder;
-import io.milvus.client.MetricType;
-import io.milvus.client.MilvusClient;
-import io.milvus.client.MilvusGrpcClient;
-import io.milvus.client.SearchParam;
-import io.milvus.client.SearchResult;
+import io.milvus.client.*;
 import io.milvus.client.exception.InvalidDsl;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -25,7 +18,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -36,11 +28,10 @@ public class SearchDslTest {
   @Container
   private final GenericContainer milvusContainer =
       new GenericContainer(
-              System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu-d101620-4c44c0"))
+              System.getProperty("docker_image_name", "registry.zilliz.com/milvus/engine:0.11.1-cpu-centos7-release"))
           .withExposedPorts(19530);
 
-  private final TestFloatSchema floatSchema = new TestFloatSchema();
-  private final TestBinarySchema binarySchema = new TestBinarySchema();
+  private final TestSchema schema = new TestSchema();
   private final String collectionName = "test_collection";
   private final int size = 1000;
 
@@ -51,15 +42,9 @@ public class SearchDslTest {
         .build();
   }
 
-  private void withMilvusServiceFloat(Consumer<MilvusService> test) {
+  private void withMilvusService(Consumer<MilvusService> test) {
     try (MilvusClient client = new MilvusGrpcClient(connectParam(milvusContainer))) {
-      test.accept(new MilvusService(client, collectionName, floatSchema));
-    }
-  }
-
-  private void withMilvusServiceBinary(Consumer<MilvusService> test) {
-    try (MilvusClient client = new MilvusGrpcClient(connectParam(milvusContainer))) {
-      test.accept(new MilvusService(client, collectionName, binarySchema));
+      test.accept(new MilvusService(client, collectionName, schema));
     }
   }
 
@@ -84,8 +69,8 @@ public class SearchDslTest {
   }
 
   @Test
-  public void testCreateCollectionFloat() {
-    withMilvusServiceFloat(
+  public void testCreateCollection() {
+    withMilvusService(
         service -> {
           service.createCollection(new JsonBuilder().param("auto_id", false).build());
           assertTrue(service.hasCollection(collectionName));
@@ -93,45 +78,39 @@ public class SearchDslTest {
   }
 
   @Test
-  public void testCreateCollectionBinary() {
-    withMilvusServiceBinary(
-        service -> {
-          service.createCollection(new JsonBuilder().param("auto_id", false).build());
-          assertTrue(service.hasCollection(collectionName));
-        });
-  }
+  public void testInsert() {
+    testCreateCollection();
 
-  @Test
-  public void testInsertFloat() {
-    testCreateCollectionFloat();
-
-    withMilvusServiceFloat(
+    withMilvusService(
         service -> {
           service.insert(
               insertParam ->
                   insertParam
                       .withIds(LongStream.range(0, size).boxed().collect(Collectors.toList()))
                       .with(
-                          floatSchema.intField,
+                          schema.intField,
                           IntStream.range(0, size).boxed().collect(Collectors.toList()))
                       .with(
-                          floatSchema.longField,
+                          schema.longField,
                           LongStream.range(0, size).boxed().collect(Collectors.toList()))
                       .with(
-                          floatSchema.floatField,
+                          schema.floatField,
                           IntStream.range(0, size)
                               .boxed()
                               .map(Number::floatValue)
                               .collect(Collectors.toList()))
                       .with(
-                          floatSchema.doubleField,
+                          schema.doubleField,
                           IntStream.range(0, size)
                               .boxed()
                               .map(Number::doubleValue)
                               .collect(Collectors.toList()))
                       .with(
-                          floatSchema.floatVectorField,
-                          randomFloatVectors(size, floatSchema.floatVectorField.dimension)));
+                          schema.floatVectorField,
+                          randomFloatVectors(size, schema.floatVectorField.dimension))
+                      .with(
+                          schema.binaryVectorField,
+                          randomBinaryVectors(size, schema.binaryVectorField.dimension)));
 
           service.flush();
 
@@ -140,110 +119,43 @@ public class SearchDslTest {
   }
 
   @Test
-  public void testInsertBinary() {
-    testCreateCollectionBinary();
+  public void testCreateIndex() {
+    testInsert();
 
-    withMilvusServiceBinary(
-        service -> {
-          service.insert(
-              insertParam ->
-                  insertParam
-                      .withIds(LongStream.range(0, size).boxed().collect(Collectors.toList()))
-                      .with(
-                          binarySchema.intField,
-                          IntStream.range(0, size).boxed().collect(Collectors.toList()))
-                      .with(
-                          binarySchema.longField,
-                          LongStream.range(0, size).boxed().collect(Collectors.toList()))
-                      .with(
-                          binarySchema.floatField,
-                          IntStream.range(0, size)
-                              .boxed()
-                              .map(Number::floatValue)
-                              .collect(Collectors.toList()))
-                      .with(
-                          binarySchema.doubleField,
-                          IntStream.range(0, size)
-                              .boxed()
-                              .map(Number::doubleValue)
-                              .collect(Collectors.toList()))
-                      .with(
-                          binarySchema.binaryVectorField,
-                          randomBinaryVectors(size, binarySchema.binaryVectorField.dimension)));
-
-          service.flush();
-
-          assertEquals(size, service.countEntities());
-        });
-  }
-
-  @Test
-  public void testCreateIndexFloat() {
-    testInsertFloat();
-
-    withMilvusServiceFloat(
+    withMilvusService(
         service -> {
           service.createIndex(
-              floatSchema.floatVectorField, IndexType.IVF_SQ8, MetricType.L2, "{\"nlist\": 256}");
-        });
-  }
-
-  @Test
-  public void testCreateIndexBinary() {
-    testInsertBinary();
-
-    withMilvusServiceBinary(
-        service -> {
+              schema.floatVectorField, IndexType.IVF_SQ8, MetricType.L2, "{\"nlist\": 256}");
           service.createIndex(
-              binarySchema.binaryVectorField, IndexType.BIN_FLAT, MetricType.JACCARD, "{}");
+              schema.binaryVectorField, IndexType.BIN_FLAT, MetricType.JACCARD, "{}");
         });
   }
 
   @Test
-  public void testGetEntityByIdFloat() {
-    withMilvusServiceFloat(
+  public void testGetEntityById() {
+    withMilvusService(
         service -> {
-          testInsertFloat();
+          testInsert();
 
           Map<Long, Schema.Entity> entities =
               service.getEntityByID(
                   LongStream.range(0, 10).boxed().collect(Collectors.toList()),
-                  Arrays.asList(floatSchema.intField, floatSchema.longField));
+                  Arrays.asList(schema.intField, schema.longField));
 
           LongStream.range(0, 10)
               .forEach(
                   i -> {
-                    assertEquals((int) i, entities.get(i).get(floatSchema.intField));
-                    assertEquals(i, entities.get(i).get(floatSchema.longField));
-                  });
-        });
-  }
-
-  @Test
-  public void testGetEntityByIdBinary() {
-    withMilvusServiceBinary(
-        service -> {
-          testInsertBinary();
-
-          Map<Long, Schema.Entity> entities =
-              service.getEntityByID(
-                  LongStream.range(0, 10).boxed().collect(Collectors.toList()),
-                  Arrays.asList(binarySchema.intField, binarySchema.longField));
-
-          LongStream.range(0, 10)
-              .forEach(
-                  i -> {
-                    assertEquals((int) i, entities.get(i).get(binarySchema.intField));
-                    assertEquals(i, entities.get(i).get(binarySchema.longField));
+                    assertEquals((int) i, entities.get(i).get(schema.intField));
+                    assertEquals(i, entities.get(i).get(schema.longField));
                   });
         });
   }
 
   @Test
   public void testFloatVectorQuery() {
-    withMilvusServiceFloat(
+    withMilvusService(
         service -> {
-          testCreateIndexFloat();
+          testCreateIndex();
 
           List<Long> entityIds = LongStream.range(0, 10).boxed().collect(Collectors.toList());
 
@@ -251,13 +163,13 @@ public class SearchDslTest {
 
           List<List<Float>> vectors =
               entities.values().stream()
-                  .map(e -> e.get(floatSchema.floatVectorField))
+                  .map(e -> e.get(schema.floatVectorField))
                   .collect(Collectors.toList());
 
           Query query =
               Query.bool(
                   Query.must(
-                      floatSchema.floatVectorField.query(vectors).param("nprobe", 16).top(1)));
+                      schema.floatVectorField.query(vectors).param("nprobe", 16).top(1)));
 
           SearchParam searchParam =
               service
@@ -278,9 +190,9 @@ public class SearchDslTest {
 
   @Test
   public void testBinaryVectorQuery() {
-    withMilvusServiceBinary(
+    withMilvusService(
         service -> {
-          testCreateIndexBinary();
+          testCreateIndex();
 
           List<Long> entityIds = LongStream.range(0, 10).boxed().collect(Collectors.toList());
 
@@ -288,11 +200,11 @@ public class SearchDslTest {
 
           List<ByteBuffer> vectors =
               entities.values().stream()
-                  .map(e -> e.get(binarySchema.binaryVectorField))
+                  .map(e -> e.get(schema.binaryVectorField))
                   .collect(Collectors.toList());
 
           Query query =
-              Query.bool(Query.must(binarySchema.binaryVectorField.query(vectors).top(1)));
+              Query.bool(Query.must(schema.binaryVectorField.query(vectors).top(1)));
 
           SearchParam searchParam = service.buildSearchParam(query);
 
@@ -305,12 +217,12 @@ public class SearchDslTest {
         });
   }
 
+  @Ignore("Not necessary.")
   @Test
-  @Ignore
   public void testMultipleVectorsQuery() {
-    withMilvusServiceFloat(
+    withMilvusService(
         service -> {
-          testCreateIndexFloat();
+          testCreateIndex();
 
           List<Long> entityIds = LongStream.range(0, 10).boxed().collect(Collectors.toList());
 
@@ -318,14 +230,14 @@ public class SearchDslTest {
 
           List<List<Float>> vectors =
               entities.values().stream()
-                  .map(e -> e.get(floatSchema.floatVectorField))
+                  .map(e -> e.get(schema.floatVectorField))
                   .collect(Collectors.toList());
 
           Query query =
               Query.bool(
                   Query.must(
-                      floatSchema.floatVectorField.query(vectors).param("nprobe", 16).top(1),
-                      floatSchema.floatVectorField.query(vectors).param("nprobe", 16).top(1)));
+                      schema.floatVectorField.query(vectors).param("nprobe", 16).top(1),
+                      schema.floatVectorField.query(vectors).param("nprobe", 128).top(1)));
 
           assertThrows(InvalidDsl.class, () -> service.buildSearchParam(query));
         });
