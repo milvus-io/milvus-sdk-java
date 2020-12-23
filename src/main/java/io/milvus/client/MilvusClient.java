@@ -348,6 +348,16 @@ public interface MilvusClient {
   Response loadCollection(String collectionName);
 
   /**
+   * Pre-loads collection/partitions to memory
+   *
+   * @param collectionName collection to load
+   * @param partitionTags partitions to load
+   * @return <code>Response</code>
+   * @see Response
+   */
+  Response loadCollection(String collectionName, List<String> partitionTags);
+
+  /**
    * Gets collection index information
    *
    * @param collectionName collection to get info from

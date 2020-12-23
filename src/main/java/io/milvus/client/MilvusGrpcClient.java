@@ -905,13 +905,22 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
   @Override
   public Response loadCollection(@Nonnull String collectionName) {
+    return loadCollection(collectionName, new ArrayList<>());
+  }
+
+  @Override
+  public Response loadCollection(@Nonnull String collectionName, List<String> partitionTags) {
 
     if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
-    CollectionName request = CollectionName.newBuilder().setCollectionName(collectionName).build();
+    PreloadCollectionParam request =
+        PreloadCollectionParam.newBuilder()
+            .setCollectionName(collectionName)
+            .addAllPartitionTagArray(partitionTags)
+            .build();
     Status response;
 
     try {
