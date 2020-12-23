@@ -682,28 +682,28 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
       List<FieldValue> fieldValueList = entities.getFieldsList();
       for (FieldValue fieldValue : fieldValueList) {
         String fieldName = fieldValue.getFieldName();
+        AttrRecord attrRecord = fieldValue.getAttrRecord();
         for (int j = 0; j < queryIdsList.size(); j++) {
-          if (fieldValue.getAttrRecord().getInt32ValueCount() > j) {
-            fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getInt32ValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getInt64ValueCount() > j) {
-            fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getInt64ValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getDoubleValueCount() > j) {
-            fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getDoubleValueList().get(j));
-          } else if (fieldValue.getAttrRecord().getFloatValueCount() > j) {
-            fieldsMap.get(j).put(fieldName, fieldValue.getAttrRecord().getFloatValueList().get(j));
+          if (attrRecord.getInt32ValueCount() > j) {
+            fieldsMap.get(j).put(fieldName, attrRecord.getInt32ValueList().get(j));
+          } else if (attrRecord.getInt64ValueCount() > j) {
+            fieldsMap.get(j).put(fieldName, attrRecord.getInt64ValueList().get(j));
+          } else if (attrRecord.getDoubleValueCount() > j) {
+            fieldsMap.get(j).put(fieldName, attrRecord.getDoubleValueList().get(j));
+          } else if (attrRecord.getFloatValueCount() > j) {
+            fieldsMap.get(j).put(fieldName, attrRecord.getFloatValueList().get(j));
           } else {
             // the object is vector
             List<VectorRowRecord> vectorRowRecordList =
                 fieldValue.getVectorRecord().getRecordsList();
             if (vectorRowRecordList.size() > j) {
-              if (vectorRowRecordList.get(j).getFloatDataCount() > 0) {
-                fieldsMap.get(j).put(fieldName, vectorRowRecordList.get(j).getFloatDataList());
+              VectorRowRecord vectorRowRecord = vectorRowRecordList.get(j);
+              if (vectorRowRecord.getFloatDataCount() > 0) {
+                fieldsMap.get(j).put(fieldName, vectorRowRecord.getFloatDataList());
               } else {
                 fieldsMap
                     .get(j)
-                    .put(
-                        fieldName,
-                        vectorRowRecordList.get(j).getBinaryData().asReadOnlyByteBuffer());
+                    .put(fieldName, vectorRowRecord.getBinaryData().asReadOnlyByteBuffer());
               }
             }
           }
