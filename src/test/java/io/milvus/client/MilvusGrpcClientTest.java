@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContainerMilvusClientTest extends MilvusClientTest {
   @Container
   private static GenericContainer milvusContainer =
-      new GenericContainer("milvusdb/milvus:0.10.1-cpu-d072020-bd02b1")
+      new GenericContainer("milvusdb/milvus:0.10.5-cpu-d010621-4eda95")
           .withExposedPorts(19530);
 
   @Container
