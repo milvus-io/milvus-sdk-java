@@ -63,12 +63,12 @@ class ContainerMilvusClientTest extends MilvusClientTest {
   @Container
   private static final GenericContainer milvusContainer2 =
       new GenericContainer(
-              System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu-d101620-4c44c0"))
+              System.getProperty("docker_image_name", "registry.zilliz.com/milvus/engine:0.11.1-cpu-centos7-release"))
           .withExposedPorts(19530);
   @Container
   private final GenericContainer milvusContainer =
       new GenericContainer(
-              System.getProperty("docker_image_name", "milvusdb/milvus:0.11.0-cpu-d101620-4c44c0"))
+              System.getProperty("docker_image_name", "registry.zilliz.com/milvus/engine:0.11.1-cpu-centos7-release"))
           .withExposedPorts(19530);
 
   @Override
