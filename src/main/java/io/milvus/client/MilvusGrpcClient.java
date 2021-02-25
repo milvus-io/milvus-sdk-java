@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
-  private static String SUPPORTED_SERVER_VERSION = "0.10";
+  private static String SUPPORTED_SERVER_VERSION = "1.0";
   private final ManagedChannel channel;
   private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
   private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
