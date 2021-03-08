@@ -25,7 +25,11 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java-examples</artifactId>
+<<<<<<< HEAD
     <version>1.0.0-SNAPSHOT</version>
+=======
+    <version>1.0.0</version>
+>>>>>>> 1.0.0
     <build>
         <plugins>
             <plugin>
