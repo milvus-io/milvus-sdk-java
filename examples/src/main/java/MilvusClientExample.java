@@ -185,12 +185,12 @@ public class MilvusClientExample {
 
     // Delete the first 5 vectors you just searched
     Response deleteByIdsResponse =
-        client.deleteEntityByID(collectionName, vectorIds.subList(0, searchBatchSize));
+        client.deleteEntityByID(collectionName, "", vectorIds.subList(0, searchBatchSize));
     flushResponse = client.flush(collectionName);
 
     // Try to get the corresponding vector of the first id you just deleted.
     GetEntityByIDResponse getEntityByIDResponse =
-        client.getEntityByID(collectionName, vectorIds.subList(0, searchBatchSize));
+        client.getEntityByID(collectionName, "", vectorIds.subList(0, searchBatchSize));
     // Obviously you won't get anything
     if (!getEntityByIDResponse.getFloatVectors().get(0).isEmpty()) {
       throw new AssertionError("This can never happen!");
