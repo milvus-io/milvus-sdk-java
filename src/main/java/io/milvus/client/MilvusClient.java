@@ -358,6 +358,25 @@ public interface MilvusClient {
   Response loadCollection(String collectionName, List<String> partitionTags);
 
   /**
+   * Release collection from memory
+   *
+   * @param collectionName collection to release
+   * @return <code>Response</code>
+   * @see Response
+   */
+  Response releaseCollection(String collectionName);
+
+  /**
+   * Release collection/partitions from memory
+   *
+   * @param collectionName collection to release
+   * @param partitionTags partitions to release
+   * @return <code>Response</code>
+   * @see Response
+   */
+  Response releaseCollection(String collectionName, List<String> partitionTags);
+
+  /**
    * Gets collection index information
    *
    * @param collectionName collection to get info from
@@ -392,12 +411,13 @@ public interface MilvusClient {
    * Gets vectors data by id array
    *
    * @param collectionName collection to get vectors from
+   * @param partitionTag partition to get vectors from
    * @param ids a <code>List</code> of vector ids
    * @return <code>GetEntityByIDResponse</code>
    * @see GetEntityByIDResponse
    * @see Response
    */
-  GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids);
+  GetEntityByIDResponse getEntityByID(String collectionName, String partitionTag, List<Long> ids);
 
   /**
    * Gets all vector ids in a segment
@@ -414,11 +434,12 @@ public interface MilvusClient {
    * Deletes data in a collection by a list of ids
    *
    * @param collectionName collection to delete ids from
+   * @param partitionTag partition to delete ids from
    * @param ids a <code>List</code> of vector ids to delete
    * @return <code>Response</code>
    * @see Response
    */
-  Response deleteEntityByID(String collectionName, List<Long> ids);
+  Response deleteEntityByID(String collectionName, String partitionTag, List<Long> ids);
 
   /**
    * Flushes data in a list collections. Newly inserted or modifications on data will be visible

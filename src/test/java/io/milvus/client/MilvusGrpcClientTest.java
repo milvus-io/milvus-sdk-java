@@ -45,12 +45,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContainerMilvusClientTest extends MilvusClientTest {
   @Container
   private static GenericContainer milvusContainer =
-      new GenericContainer("milvusdb/milvus:0.10.5-cpu-d010621-4eda95")
+      new GenericContainer("milvusdb/milvus:1.0.0-cpu-d030521-1ea92e")
           .withExposedPorts(19530);
 
   @Container
   private static GenericContainer unsupportedMilvusContainer =
-      new GenericContainer("milvusdb/milvus:0.9.1-cpu-d052920-e04ed5")
+      new GenericContainer("milvusdb/milvus:0.10.5-cpu-d010621-4eda95")
           .withExposedPorts(19530);
 
   @Override
@@ -585,6 +585,63 @@ class MilvusClientTest {
   }
 
   @org.junit.jupiter.api.Test
+  void loadCollectionPartiton() {
+    String partitionTag = "p1";
+    Response createPartitionResponse = client.createPartition(randomCollectionName, partitionTag);
+    assertTrue(createPartitionResponse.ok());
+
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+            new InsertParam.Builder(randomCollectionName)
+                    .withPartitionTag(partitionTag)
+                    .withFloatVectors(vectors)
+                    .build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+
+    List<String> partitionTags = new ArrayList<>();
+    partitionTags.add(partitionTag);
+    Response loadCollectionResponse = client.loadCollection(randomCollectionName, partitionTags);
+    assertTrue(loadCollectionResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
+  void releaseCollection() {
+    insert();
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    Response loadCollectionResponse = client.loadCollection(randomCollectionName);
+    assertTrue(loadCollectionResponse.ok());
+
+    Response releaseCollectionResponse = client.releaseCollection(randomCollectionName);
+    assertTrue(releaseCollectionResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
+  void releaseCollectionPartition() {
+    String partitionTag = "p1";
+    Response createPartitionResponse = client.createPartition(randomCollectionName, partitionTag);
+    assertTrue(createPartitionResponse.ok());
+
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+            new InsertParam.Builder(randomCollectionName)
+                    .withPartitionTag(partitionTag)
+                    .withFloatVectors(vectors)
+                    .build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+
+    List<String> partitionTags = new ArrayList<>();
+    partitionTags.add(partitionTag);
+    Response loadCollectionResponse = client.loadCollection(randomCollectionName, partitionTags);
+    assertTrue(loadCollectionResponse.ok());
+
+    Response releaseCollectionResponse = client.releaseCollection(randomCollectionName, partitionTags);
+    assertTrue(releaseCollectionResponse.ok());
+  }
+
+  @org.junit.jupiter.api.Test
   void getIndexInfo() {
     createIndex();
 
@@ -638,13 +695,42 @@ class MilvusClientTest {
     assertTrue(client.flush(randomCollectionName).ok());
 
     GetEntityByIDResponse getEntityByIDResponse =
-        client.getEntityByID(randomCollectionName, vectorIds.subList(0, 100));
+        client.getEntityByID(randomCollectionName, "", vectorIds.subList(0, 100));
     assertTrue(getEntityByIDResponse.ok());
     ByteBuffer bb = getEntityByIDResponse.getBinaryVectors().get(0);
     assertTrue(bb == null || bb.remaining() == 0);
 
     assertArrayEquals(
         getEntityByIDResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
+  }
+
+  @org.junit.jupiter.api.Test
+  void getEntityByIDinPartition() {
+    String partitionTag = "p1";
+    Response createPartitionResponse = client.createPartition(randomCollectionName, partitionTag);
+    assertTrue(createPartitionResponse.ok());
+
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+            new InsertParam.Builder(randomCollectionName)
+                    .withPartitionTag(partitionTag)
+                    .withFloatVectors(vectors)
+                    .build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    GetEntityByIDResponse getEntityByIDResponse =
+            client.getEntityByID(randomCollectionName, partitionTag, vectorIds.subList(0, 100));
+    assertTrue(getEntityByIDResponse.ok());
+    ByteBuffer bb = getEntityByIDResponse.getBinaryVectors().get(0);
+    assertTrue(bb == null || bb.remaining() == 0);
+
+    assertArrayEquals(
+            getEntityByIDResponse.getFloatVectors().get(0).toArray(), vectors.get(0).toArray());
   }
 
   @org.junit.jupiter.api.Test
@@ -682,7 +768,31 @@ class MilvusClientTest {
 
     assertTrue(client.flush(randomCollectionName).ok());
 
-    assertTrue(client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, 100)).ok());
+    assertTrue(client.deleteEntityByID(randomCollectionName, "", vectorIds.subList(0, 100)).ok());
+    assertTrue(client.flush(randomCollectionName).ok());
+    assertEquals(client.countEntities(randomCollectionName).getCollectionEntityCount(), size - 100);
+  }
+
+  @org.junit.jupiter.api.Test
+  void deleteEntityByIDinPartition() {
+    String partitionTag = "p1";
+    Response createPartitionResponse = client.createPartition(randomCollectionName, partitionTag);
+    assertTrue(createPartitionResponse.ok());
+
+    List<List<Float>> vectors = generateFloatVectors(size, dimension);
+    InsertParam insertParam =
+            new InsertParam.Builder(randomCollectionName)
+                    .withPartitionTag(partitionTag)
+                    .withFloatVectors(vectors)
+                    .build();
+    InsertResponse insertResponse = client.insert(insertParam);
+    assertTrue(insertResponse.ok());
+    List<Long> vectorIds = insertResponse.getVectorIds();
+    assertEquals(size, vectorIds.size());
+
+    assertTrue(client.flush(randomCollectionName).ok());
+
+    assertTrue(client.deleteEntityByID(randomCollectionName, partitionTag, vectorIds.subList(0, 100)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertEquals(client.countEntities(randomCollectionName).getCollectionEntityCount(), size - 100);
   }
@@ -723,7 +833,7 @@ class MilvusClientTest {
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(
-        client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
+        client.deleteEntityByID(randomCollectionName, "", vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compact(randomCollectionName).ok());
 
@@ -767,7 +877,7 @@ class MilvusClientTest {
     long previousSegmentSize = segmentInfo.getLong("data_size");
 
     assertTrue(
-        client.deleteEntityByID(randomCollectionName, vectorIds.subList(0, (int) size / 2)).ok());
+        client.deleteEntityByID(randomCollectionName, "", vectorIds.subList(0, (int) size / 2)).ok());
     assertTrue(client.flush(randomCollectionName).ok());
     assertTrue(client.compactAsync(randomCollectionName).get().ok());
 
