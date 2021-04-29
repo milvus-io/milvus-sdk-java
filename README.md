@@ -2,7 +2,7 @@
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.milvus/milvus-sdk-java.svg)](https://search.maven.org/artifact/io.milvus/milvus-sdk-java/)
 
-Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute to this project, please read our [contribution guidelines](https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md) first.
+Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute to this project, please read our [contribution guidelines](https://github.com/milvus-io/milvus/blob/1.1/CONTRIBUTING.md) first.
 
 ## Getting started
 
@@ -16,6 +16,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 | Milvus version | Java SDK version |
 | :------------: | :--------------: |
 |     1.0.x      |    1.0.0         |
+|     1.1.x      |    1.1.0         |
 
 ### Install Java SDK
 
@@ -27,19 +28,19 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.0</version>
         </dependency>
        ```
 
    - Gradle/Grails
 
         ```gradle
-        compile 'io.milvus:milvus-sdk-java:1.0.0'
+        compile 'io.milvus:milvus-sdk-java:1.1.0'
         ```
 
 ### Examples
 
-Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
+Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/1.1/examples) folder for Java SDK examples.
 
 ### Documentation
 

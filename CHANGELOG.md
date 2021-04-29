@@ -4,7 +4,7 @@
 
 ### Feature
 
-- \#4564 - get_entity_by_id with partition_name
+- \#4564 - API for get_entity_by_id in specific partition
 - \#4806 - API for deleting an entity in specific partition
 - \#4905 - Add the operation to unload collection from the memory
 
