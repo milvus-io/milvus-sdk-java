@@ -47,7 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MilvusGrpcClient extends AbstractMilvusGrpcClient {
-  private static String SUPPORTED_SERVER_VERSION = "1.0";
+  private static String SUPPORTED_SERVER_VERSION = "1.1";
   private final ManagedChannel channel;
   private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
   private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
@@ -941,6 +941,43 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
+  public Response releaseCollection(String collectionName) {
+    return releaseCollection(collectionName, new ArrayList<>());
+  }
+
+  @Override
+  public Response releaseCollection(String collectionName, List<String> partitionTags) {
+
+    if (!maybeAvailable()) {
+      logWarning("You are not connected to Milvus server");
+      return new Response(Response.Status.CLIENT_NOT_CONNECTED);
+    }
+
+    PreloadCollectionParam request =
+            PreloadCollectionParam.newBuilder()
+                    .setCollectionName(collectionName)
+                    .addAllPartitionTagArray(partitionTags)
+                    .build();
+    Status response;
+
+    try {
+      response = blockingStub().releaseCollection(request);
+
+      if (response.getErrorCode() == ErrorCode.SUCCESS) {
+        logInfo("Release collection `{}` successfully!", collectionName);
+        return new Response(Response.Status.SUCCESS);
+      } else {
+        logError("Release collection `{}` failed:\n{}", collectionName, response.toString());
+        return new Response(
+                Response.Status.valueOf(response.getErrorCodeValue()), response.getReason());
+      }
+    } catch (StatusRuntimeException e) {
+      logError("releaseCollection RPC failed:\n{}", e.getStatus().toString());
+      return new Response(Response.Status.RPC_ERROR, e.toString());
+    }
+  }
+
+  @Override
   public GetIndexInfoResponse getIndexInfo(@Nonnull String collectionName) {
 
     if (!maybeAvailable()) {
@@ -1046,7 +1083,7 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public GetEntityByIDResponse getEntityByID(String collectionName, List<Long> ids) {
+  public GetEntityByIDResponse getEntityByID(String collectionName, String partitionTag, List<Long> ids) {
     if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new GetEntityByIDResponse(
@@ -1054,7 +1091,11 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     VectorsIdentity request =
-        VectorsIdentity.newBuilder().setCollectionName(collectionName).addAllIdArray(ids).build();
+        VectorsIdentity.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionTag(partitionTag)
+                .addAllIdArray(ids)
+                .build();
     VectorsData response;
 
     try {
@@ -1138,14 +1179,17 @@ abstract class AbstractMilvusGrpcClient implements MilvusClient {
   }
 
   @Override
-  public Response deleteEntityByID(String collectionName, List<Long> ids) {
+  public Response deleteEntityByID(String collectionName, String partitionTag, List<Long> ids) {
     if (!maybeAvailable()) {
       logWarning("You are not connected to Milvus server");
       return new Response(Response.Status.CLIENT_NOT_CONNECTED);
     }
 
     DeleteByIDParam request =
-        DeleteByIDParam.newBuilder().setCollectionName(collectionName).addAllIdArray(ids).build();
+        DeleteByIDParam.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionTag(partitionTag)
+                .addAllIdArray(ids).build();
     Status response;
 
     try {

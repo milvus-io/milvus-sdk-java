@@ -1,5 +1,16 @@
 # Changelog   
 
+## milvus-sdk-java 1.1.0 (2021-04-23)
+
+### Feature
+
+- \#4564 - get_entity_by_id with partition_name
+- \#4806 - API for deleting an entity in specific partition
+- \#4905 - Add the operation to unload collection from the memory
+
+## milvus-sdk-java 1.0.0 (2021-03-08)
+(derived from 0.8.5)
+
 ## milvus-sdk-java 0.8.5 (2020-08-26)
 
 ### Feature
