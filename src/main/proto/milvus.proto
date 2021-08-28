@@ -1,469 +1,501 @@
 syntax = "proto3";
 
-import "status.proto";
+import "common.proto";
+import "schema.proto";
 
 option java_multiple_files = true;
 option java_package = "io.milvus.grpc";
 option java_outer_classname = "MilvusProto";
+option java_generate_equals_and_hash = true;
 
 package milvus.grpc;
 
-/**
- * @brief general usage
- */
-message KeyValuePair {
-    string key = 1;
+service MilvusService {
+    rpc CreateCollection(CreateCollectionRequest) returns (common.Status) {}
+    rpc DropCollection(DropCollectionRequest) returns (common.Status) {}
+    rpc HasCollection(HasCollectionRequest) returns (BoolResponse) {}
+    rpc LoadCollection(LoadCollectionRequest) returns (common.Status) {}
+    rpc ReleaseCollection(ReleaseCollectionRequest) returns (common.Status) {}
+    rpc DescribeCollection(DescribeCollectionRequest) returns (DescribeCollectionResponse) {}
+    rpc GetCollectionStatistics(GetCollectionStatisticsRequest) returns (GetCollectionStatisticsResponse) {}
+    rpc ShowCollections(ShowCollectionsRequest) returns (ShowCollectionsResponse) {}
+
+    rpc CreatePartition(CreatePartitionRequest) returns (common.Status) {}
+    rpc DropPartition(DropPartitionRequest) returns (common.Status) {}
+    rpc HasPartition(HasPartitionRequest) returns (BoolResponse) {}
+    rpc LoadPartitions(LoadPartitionsRequest) returns (common.Status) {}
+    rpc ReleasePartitions(ReleasePartitionsRequest) returns (common.Status) {}
+    rpc GetPartitionStatistics(GetPartitionStatisticsRequest) returns (GetPartitionStatisticsResponse) {}
+    rpc ShowPartitions(ShowPartitionsRequest) returns (ShowPartitionsResponse) {}
+
+    rpc CreateIndex(CreateIndexRequest) returns (common.Status) {}
+    rpc DescribeIndex(DescribeIndexRequest) returns (DescribeIndexResponse) {}
+    rpc GetIndexState(GetIndexStateRequest) returns (GetIndexStateResponse) {}
+    rpc GetIndexBuildProgress(GetIndexBuildProgressRequest) returns (GetIndexBuildProgressResponse) {}
+    rpc DropIndex(DropIndexRequest) returns (common.Status) {}
+
+    rpc Insert(InsertRequest) returns (MutationResult) {}
+    rpc Delete(DeleteRequest) returns (MutationResult) {}
+    rpc Search(SearchRequest) returns (SearchResults) {}
+    rpc Flush(FlushRequest) returns (FlushResponse) {}
+    rpc Query(QueryRequest) returns (QueryResults) {}
+    rpc CalcDistance(CalcDistanceRequest) returns (CalcDistanceResults) {}
+
+    rpc GetPersistentSegmentInfo(GetPersistentSegmentInfoRequest) returns (GetPersistentSegmentInfoResponse) {}
+    rpc GetQuerySegmentInfo(GetQuerySegmentInfoRequest) returns (GetQuerySegmentInfoResponse) {}
+
+    rpc Dummy(DummyRequest) returns (DummyResponse) {}
+
+    // TODO: remove
+    rpc RegisterLink(RegisterLinkRequest) returns (RegisterLinkResponse) {}
+
+    // https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy
+    rpc GetMetrics(GetMetricsRequest) returns (GetMetricsResponse) {}
+}
+
+message CreateCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    // `schema` is the serialized `schema.CollectionSchema`
+    bytes schema = 4; // must
+    int32 shards_num = 5; // must. Once set, no modification is allowed
+}
+
+message DropCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+}
+
+message HasCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    uint64 time_stamp = 4;
+}
+
+message BoolResponse {
+    common.Status status = 1;
+    bool value = 2;
+}
+
+message StringResponse {
+    common.Status status = 1;
     string value = 2;
 }
 
-/**
- * @brief Collection name
- */
-message CollectionName {
-    string collection_name = 1;
+message DescribeCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    int64 collectionID = 4;
+    uint64 time_stamp = 5;
 }
 
-/**
- * @brief Collection name list
- */
-message CollectionNameList {
-    Status status = 1;
+message DescribeCollectionResponse {
+    common.Status status = 1;
+    schema.CollectionSchema schema = 2;
+    int64 collectionID = 3;
+    repeated string virtual_channel_names = 4;
+    repeated string physical_channel_names = 5;
+    uint64 created_timestamp = 6; // hybrid timestamp
+    uint64 created_utc_timestamp = 7; // physical timestamp
+}
+
+message LoadCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+}
+
+message ReleaseCollectionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+}
+
+message GetCollectionStatisticsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+}
+
+message GetCollectionStatisticsResponse {
+    common.Status status = 1;
+    repeated common.KeyValuePair stats = 2;
+}
+
+enum ShowType {
+    All = 0;
+    InMemory = 1;
+}
+
+message ShowCollectionsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    uint64 time_stamp = 3;
+    ShowType type = 4;
+    repeated string collection_names = 5; // show collection in querynode, showType = InMemory
+}
+
+message ShowCollectionsResponse {
+    common.Status status = 1;
     repeated string collection_names = 2;
+    repeated int64 collection_ids = 3;
+    repeated uint64 created_timestamps = 4; // hybrid timestamps
+    repeated uint64 created_utc_timestamps = 5; // physical timestamps
+    repeated int64 inMemory_percentages = 6; // load percentage on querynode
 }
 
-/**
- * @brief Collection schema
- * metric_type: 1-L2, 2-IP
- */
-message CollectionSchema {
-    Status status = 1;
-    string collection_name = 2;
-    int64 dimension = 3;
-    int64 index_file_size = 4;
-    int32 metric_type = 5;
-    repeated KeyValuePair extra_params = 6;
+message CreatePartitionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string partition_name = 4; // must
 }
 
-/**
- * @brief Params of partition
- */
-message PartitionParam {
+message DropPartitionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string partition_name = 4; // must
+}
+
+message HasPartitionRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string partition_name = 4; // must
+}
+
+message LoadPartitionsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    repeated string partition_names = 4; // must
+}
+
+message ReleasePartitionsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    repeated string partition_names = 4; // must
+}
+
+message GetPartitionStatisticsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string partition_name = 4; // must
+}
+
+message GetPartitionStatisticsResponse {
+    common.Status status = 1;
+    repeated common.KeyValuePair stats = 2;
+}
+
+message ShowPartitionsRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    int64 collectionID = 4;
+    repeated string partition_names = 5; // show partition in querynode, showType = InMemory
+    ShowType type = 6;
+}
+
+message ShowPartitionsResponse {
+    common.Status status = 1;
+    repeated string partition_names = 2;
+    repeated int64 partitionIDs = 3;
+    repeated uint64 created_timestamps = 4; // hybrid timestamps
+    repeated uint64 created_utc_timestamps = 5; // physical timestamps
+    repeated int64 inMemory_percentages = 6; // load percentage on querynode
+}
+
+message DescribeSegmentRequest {
+    common.MsgBase base = 1;
+    int64 collectionID = 2;
+    int64 segmentID = 3;
+}
+
+message DescribeSegmentResponse {
+    common.Status status = 1;
+    int64 indexID = 2;
+    int64 buildID = 3;
+    bool enable_index = 4;
+}
+
+message ShowSegmentsRequest {
+    common.MsgBase base = 1;
+    int64 collectionID = 2;
+    int64 partitionID = 3;
+}
+
+message ShowSegmentsResponse {
+    common.Status status = 1;
+    repeated int64 segmentIDs = 2;
+}
+
+message CreateIndexRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string field_name = 4; // must
+    repeated common.KeyValuePair extra_params = 5; // must
+}
+
+message DescribeIndexRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string field_name = 4;
+    string index_name = 5; // No need to set up for now @2021.06.30
+}
+
+message IndexDescription {
+    string index_name = 1;
+    int64 indexID = 2;
+    repeated common.KeyValuePair params = 3;
+    string field_name = 4;
+}
+
+message DescribeIndexResponse {
+    common.Status status = 1;
+    repeated IndexDescription index_descriptions = 2;
+}
+
+message GetIndexBuildProgressRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2 ;
+    string collection_name = 3; // must
+    string field_name = 4;
+    string index_name = 5; // must
+}
+
+message GetIndexBuildProgressResponse {
+    common.Status status = 1;
+    int64 indexed_rows = 2;
+    int64 total_rows = 3;
+}
+
+message GetIndexStateRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2 ;
+    string collection_name = 3; // must
+    string field_name = 4;
+    string index_name = 5; // No need to set up for now @2021.06.30
+}
+
+message GetIndexStateResponse {
+    common.Status status = 1;
+    common.IndexState state = 2;
+    string fail_reason = 3;
+}
+
+message DropIndexRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    string field_name = 4;
+    string index_name = 5; // No need to set up for now @2021.06.30
+}
+
+message InsertRequest {
+    common.MsgBase base = 1;
+    string db_name = 2;
+    string collection_name = 3;
+    string partition_name = 4;
+    repeated schema.FieldData fields_data = 5;
+    repeated uint32 hash_keys = 6;
+    uint32 num_rows = 7;
+}
+
+message MutationResult {
+    common.Status status = 1;
+    schema.IDs IDs = 2; // required for insert, delete
+    repeated uint32 succ_index = 3; // error indexes indicate
+    repeated uint32 err_index = 4; // error indexes indicate
+    bool acknowledged = 5;
+    int64 insert_cnt = 6;
+    int64 delete_cnt = 7;
+    int64 upsert_cnt = 8;
+    uint64 timestamp = 9;
+}
+
+message DeleteRequest {
+    common.MsgBase base = 1;
+    string db_name = 2;
+    string collection_name = 3;
+    string partition_name = 4;
+    string expr = 5;
+}
+
+enum PlaceholderType {
+    None = 0;
+    BinaryVector = 100;
+    FloatVector = 101;
+}
+
+message PlaceholderValue {
+    string tag = 1;
+    PlaceholderType type = 2;
+    // values is a 2d-array, every array contains a vector
+    repeated bytes values = 3;
+}
+
+message PlaceholderGroup {
+    repeated PlaceholderValue placeholders = 1;
+}
+
+message SearchRequest {
+    common.MsgBase base = 1; // must
+    string db_name = 2;
+    string collection_name = 3; // must
+    repeated string partition_names = 4; // must
+    string dsl = 5; // must
+    // serialized `PlaceholderGroup`
+    bytes placeholder_group = 6; // must
+    common.DslType dsl_type = 7; // must
+    repeated string output_fields = 8;
+    repeated common.KeyValuePair search_params = 9; // must
+    uint64 travel_timestamp = 10;
+    uint64 guarantee_timestamp = 11; // guarantee_timestamp
+}
+
+message Hits {
+    repeated int64 IDs = 1;
+    repeated bytes row_data = 2;
+    repeated float scores = 3;
+}
+
+message SearchResults {
+    common.Status status = 1;
+    schema.SearchResultData results = 2;
+}
+
+message FlushRequest {
+    common.MsgBase base = 1;
+    string db_name = 2;
+    repeated string collection_names = 3;
+}
+
+message FlushResponse{
+    common.Status status = 1;
+    string db_name = 2;
+    map<string, schema.LongArray> coll_segIDs = 3;
+}
+
+message QueryRequest {
+    common.MsgBase base = 1;
+    string db_name = 2;
+    string collection_name = 3;
+    string expr = 4;
+    repeated string output_fields = 5;
+    repeated string partition_names = 6;
+    uint64 travel_timestamp = 7;
+    uint64 guarantee_timestamp = 8; // guarantee_timestamp
+}
+
+message QueryResults {
+    common.Status status = 1;
+    repeated schema.FieldData fields_data = 2;
+}
+
+message VectorIDs {
     string collection_name = 1;
-    string tag = 2;
+    string field_name = 2;
+    schema.IDs id_array = 3;
+    repeated string partition_names = 4;
 }
 
-/**
- * @brief Partition list
- */
-message PartitionList {
-    Status status = 1;
-    repeated string partition_tag_array = 2;
+message VectorsArray {
+    oneof array {
+        VectorIDs id_array = 1; // vector ids
+        schema.VectorField data_array = 2; // vectors data
+    }
 }
 
-/**
- * @brief Record inserted
- */
-message RowRecord {
-    repeated float float_data = 1;             //float vector data
-    bytes binary_data = 2;                      //binary vector data
+message CalcDistanceRequest {
+    common.MsgBase base = 1;
+    VectorsArray op_left = 2; // vectors on the left of operator
+    VectorsArray op_right = 3; // vectors on the right of operator
+    repeated common.KeyValuePair params = 4; // "metric":"L2"/"IP"/"HAMMIN"/"TANIMOTO"
 }
 
-/**
- * @brief Params to be inserted
- */
-message InsertParam {
-    string collection_name = 1;
-    repeated RowRecord row_record_array = 2;
-    repeated int64 row_id_array = 3;            //optional
-    string partition_tag = 4;
-    repeated KeyValuePair extra_params = 5;
+message CalcDistanceResults {
+    common.Status status = 1;
+    // num(op_left)*num(op_right) distance values, "HAMMIN" return integer distance
+    oneof array {
+        schema.IntArray int_dist = 2;
+        schema.FloatArray float_dist = 3;
+    }
 }
 
-/**
- * @brief Vector ids
- */
-message VectorIds {
-    Status status = 1;
-    repeated int64 vector_id_array = 2;
+message PersistentSegmentInfo {
+    int64 segmentID = 1;
+    int64 collectionID = 2;
+    int64 partitionID = 3;
+    int64 num_rows = 4;
+    common.SegmentState state = 5;
 }
 
-/**
- * @brief Params for searching vector
- */
-message SearchParam {
-    string collection_name = 1;
-    repeated string partition_tag_array = 2;
-    repeated RowRecord query_record_array = 3;
-    int64 topk = 4;
-    repeated KeyValuePair extra_params = 5;
+message GetPersistentSegmentInfoRequest {
+    common.MsgBase base = 1; // must
+    string dbName = 2;
+    string collectionName = 3; // must
 }
 
-/**
- * @brief Params for searching vector in files
- */
-message SearchInFilesParam {
-    repeated string file_id_array = 1;
-    SearchParam search_param = 2;
+message GetPersistentSegmentInfoResponse {
+    common.Status status = 1;
+    repeated PersistentSegmentInfo infos = 2;
 }
 
-/**
- * @brief Params for searching vector by ID
- */
-message SearchByIDParam {
-    string collection_name = 1;
-    repeated string partition_tag_array = 2;
-    repeated int64 id_array = 3;
-    int64 topk = 4;
-    repeated KeyValuePair extra_params = 5;
+message QuerySegmentInfo {
+    int64 segmentID = 1;
+    int64 collectionID = 2;
+    int64 partitionID = 3;
+    int64 mem_size = 4;
+    int64 num_rows = 5;
+    string index_name = 6;
+    int64 indexID = 7;
 }
 
-/**
- * @brief Params for preload collection/partitions
- */
-message PreloadCollectionParam {
-    string collection_name = 1;
-    repeated string partition_tag_array = 2;
+message GetQuerySegmentInfoRequest {
+    common.MsgBase base = 1; // must
+    string dbName = 2;
+    string collectionName = 3; // must
 }
 
-/**
- * @brief Params for reloading segments
- */
-message ReLoadSegmentsParam {
-    string collection_name = 1;
-    repeated string segment_id_array = 2;
+message GetQuerySegmentInfoResponse {
+    common.Status status = 1;
+    repeated QuerySegmentInfo infos = 2;
 }
 
-/**
- * @brief Query result params
- */
-message TopKQueryResult {
-    Status status = 1;
-    int64 row_num = 2;
-    repeated int64 ids = 3;
-    repeated float distances = 4;
+message DummyRequest {
+    string request_type = 1;
 }
 
-/**
- * @brief Server string Reply
- */
-message StringReply {
-    Status status = 1;
-    string string_reply = 2;
+message DummyResponse {
+    string response = 1;
 }
 
-/**
- * @brief Server bool Reply
- */
-message BoolReply {
-    Status status = 1;
-    bool bool_reply = 2;
+message RegisterLinkRequest {
 }
 
-/**
- * @brief Return collection row count
- */
-message CollectionRowCount {
-    Status status = 1;
-    int64 collection_row_count = 2;
+message RegisterLinkResponse {
+    common.Address address = 1;
+    common.Status status = 2;
 }
 
-/**
- * @brief Give server Command
- */
-message Command {
-    string cmd = 1;
+message GetMetricsRequest {
+    common.MsgBase base = 1;
+    string request = 2; // request is of jsonic format
 }
 
-/**
- * @brief Index params
- * @index_type: 0-invalid, 1-idmap, 2-ivflat, 3-ivfsq8, 4-nsgmix
- */
-message IndexParam {
-    Status status = 1;
-    string collection_name = 2;
-    int32 index_type = 3;
-    repeated KeyValuePair extra_params = 4;
+message GetMetricsResponse {
+    common.Status status = 1;
+    string response = 2;  // response is of jsonic format
+    string component_name = 3; // metrics from which component
 }
 
-/**
- * @brief Flush params
- */
-message FlushParam {
-    repeated string collection_name_array = 1;
-}
-
-/**
- * @brief Flush params
- */
-message DeleteByIDParam {
-    string collection_name = 1;
-    repeated int64 id_array = 2;
-}
-
-/**
- * @brief collection information
- */
-message CollectionInfo {
-    Status status = 1;
-    string json_info = 2;
-}
-
-/**
- * @brief vectors identity
- */
-message VectorsIdentity {
-    string collection_name = 1;
-    repeated int64 id_array = 2;
-}
-
-/**
- * @brief vector data
- */
-message VectorsData {
-    Status status = 1;
-    repeated RowRecord vectors_data = 2;
-}
-
-/**
- * @brief get vector ids from a segment parameters
- */
-message GetVectorIDsParam {
-    string collection_name = 1;
-    string segment_name = 2;
-}
-
-service MilvusService {
-    /**
-     * @brief This method is used to create collection
-     *
-     * @param CollectionSchema, use to provide collection information to be created.
-     *
-     * @return Status
-     */
-    rpc CreateCollection(CollectionSchema) returns (Status){}
-
-    /**
-     * @brief This method is used to test collection existence.
-     *
-     * @param CollectionName, collection name is going to be tested.
-     *
-     * @return BoolReply
-     */
-    rpc HasCollection(CollectionName) returns (BoolReply) {}
-
-    /**
-     * @brief This method is used to get collection schema.
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return CollectionSchema
-     */
-    rpc DescribeCollection(CollectionName) returns (CollectionSchema) {}
-
-    /**
-     * @brief This method is used to get collection schema.
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return CollectionRowCount
-     */
-    rpc CountCollection(CollectionName) returns (CollectionRowCount) {}
-
-    /**
-     * @brief This method is used to list all collections.
-     *
-     * @param Command, dummy parameter.
-     *
-     * @return CollectionNameList
-     */
-    rpc ShowCollections(Command) returns (CollectionNameList) {}
-
-    /**
-     * @brief This method is used to get collection detail information.
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return CollectionInfo
-     */
-    rpc ShowCollectionInfo(CollectionName) returns (CollectionInfo) {}
-
-    /**
-     * @brief This method is used to delete collection.
-     *
-     * @param CollectionName, collection name is going to be deleted.
-     *
-     * @return CollectionNameList
-     */
-    rpc DropCollection(CollectionName) returns (Status) {}
-
-    /**
-     * @brief This method is used to build index by collection in sync mode.
-     *
-     * @param IndexParam, index paramters.
-     *
-     * @return Status
-     */
-    rpc CreateIndex(IndexParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to describe index
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return IndexParam
-     */
-    rpc DescribeIndex(CollectionName) returns (IndexParam) {}
-
-    /**
-     * @brief This method is used to drop index
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return Status
-     */
-    rpc DropIndex(CollectionName) returns (Status) {}
-
-    /**
-     * @brief This method is used to create partition
-     *
-     * @param PartitionParam, partition parameters.
-     *
-     * @return Status
-     */
-    rpc CreatePartition(PartitionParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to test partition existence.
-     *
-     * @param PartitionParam, target partition.
-     *
-     * @return BoolReply
-     */
-    rpc HasPartition(PartitionParam) returns (BoolReply) {}
-
-    /**
-     * @brief This method is used to show partition information
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return PartitionList
-     */
-    rpc ShowPartitions(CollectionName) returns (PartitionList) {}
-
-    /**
-     * @brief This method is used to drop partition
-     *
-     * @param PartitionParam, target partition.
-     *
-     * @return Status
-     */
-    rpc DropPartition(PartitionParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to add vector array to collection.
-     *
-     * @param InsertParam, insert parameters.
-     *
-     * @return VectorIds
-     */
-    rpc Insert(InsertParam) returns (VectorIds) {}
-
-    /**
-     * @brief This method is used to get vectors data by id array.
-     *
-     * @param VectorsIdentity, target vector id array.
-     *
-     * @return VectorsData
-     */
-    rpc GetVectorsByID(VectorsIdentity) returns (VectorsData) {}
-
-    /**
-     * @brief This method is used to get vector ids from a segment
-     *
-     * @param GetVectorIDsParam, target collection and segment
-     *
-     * @return VectorIds
-     */
-    rpc GetVectorIDs(GetVectorIDsParam) returns (VectorIds) {}
-
-    /**
-     * @brief This method is used to query vector in collection.
-     *
-     * @param SearchParam, search parameters.
-     *
-     * @return TopKQueryResult
-     */
-    rpc Search(SearchParam) returns (TopKQueryResult) {}
-
-    /**
-     * @brief This method is used to query vector by id.
-     *
-     * @param SearchByIDParam, search parameters.
-     *
-     * @return TopKQueryResult
-     */
-    rpc SearchByID(SearchByIDParam) returns (TopKQueryResult) {}
-
-    /**
-     * @brief This method is used to query vector in specified files.
-     *
-     * @param SearchInFilesParam, search in files paremeters.
-     *
-     * @return TopKQueryResult
-     */
-    rpc SearchInFiles(SearchInFilesParam) returns (TopKQueryResult) {}
-
-    /**
-     * @brief This method is used to give the server status.
-     *
-     * @param Command, command string
-     *
-     * @return StringReply
-     */
-    rpc Cmd(Command) returns (StringReply) {}
-
-    /**
-     * @brief This method is used to delete vector by id
-     *
-     * @param DeleteByIDParam, delete parameters.
-     *
-     * @return status
-     */
-    rpc DeleteByID(DeleteByIDParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to preload collection/partitions
-     *
-     * @param PreloadCollectionParam, target collection/partitions.
-     *
-     * @return Status
-     */
-    rpc PreloadCollection(PreloadCollectionParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to reload collection segments
-     *
-     * @param ReLoadSegmentsParam, target segments information.
-     *
-     * @return Status
-     */
-    rpc ReloadSegments(ReLoadSegmentsParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to flush buffer into storage.
-     *
-     * @param FlushParam, flush parameters
-     *
-     * @return Status
-     */
-    rpc Flush(FlushParam) returns (Status) {}
-
-    /**
-     * @brief This method is used to compact collection
-     *
-     * @param CollectionName, target collection name.
-     *
-     * @return Status
-     */
-    rpc Compact(CollectionName) returns (Status) {}
-}
