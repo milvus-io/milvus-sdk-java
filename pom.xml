@@ -25,7 +25,7 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
@@ -42,14 +42,8 @@
 
     <developers>
         <developer>
-            <name>Xiaohai Xu</name>
-            <email>xiaohai.xu@zilliz.com</email>
-            <organization>Milvus</organization>
-            <organizationUrl>http://www.milvus.io</organizationUrl>
-        </developer>
-        <developer>
-            <name>Zhiru Zhu</name>
-            <email>zhiru.zhu@zilliz.com</email>
+            <name>Xiaofan Luan</name>
+            <email>xiaofan.luan@zilliz.com</email>
             <organization>Milvus</organization>
             <organizationUrl>http://www.milvus.io</organizationUrl>
         </developer>
@@ -70,9 +64,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.30.2</grpc.version>
-        <protobuf.version>3.11.0</protobuf.version>
-        <protoc.version>3.11.0</protoc.version>
+        <grpc.version>1.38.0</grpc.version>
+        <protobuf.version>3.12.0</protobuf.version>
+        <protoc.version>3.12.0</protoc.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
@@ -98,18 +92,18 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.30.2</version>
+            <version>${grpc.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-protobuf</artifactId>
-            <version>1.30.2</version>
+            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
-            <version>1.30.2</version>
+            <version>${grpc.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
@@ -128,25 +122,9 @@
             <version>${protobuf.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.google.errorprone</groupId>
-            <artifactId>error_prone_annotations</artifactId>
-            <version>2.3.4</version> <!-- prefer to use 2.3.3 or later -->
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.6.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>1.6</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -272,11 +250,9 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}
-                    </protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}
-                    </pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                 </configuration>
                 <executions>
                     <execution>
