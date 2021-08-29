@@ -8,7 +8,7 @@ option java_package = "io.milvus.grpc";
 option java_outer_classname = "MilvusProto";
 option java_generate_equals_and_hash = true;
 
-package milvus.grpc;
+package milvus.proto.milvus;
 
 service MilvusService {
     rpc CreateCollection(CreateCollectionRequest) returns (common.Status) {}
