@@ -30,7 +30,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             response = blockingStub().hasCollection(hasCollectionRequest);
         } catch (StatusRuntimeException e) {
             logger.error("[milvus] hasCollection:{} request error: {}", collectionName, e.getMessage());
-            return R.failed(String.format("rpc request failed:%s", e.getMessage()));
+            return R.failed(e);
         }
         Boolean aBoolean = Optional.ofNullable(response)
                 .map(BoolResponse::getValue)

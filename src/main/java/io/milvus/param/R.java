@@ -3,16 +3,16 @@ package io.milvus.param;
 import io.milvus.grpc.ErrorCode;
 
 public class R<T> {
-    private String msg;
+    private Exception exception;
     private Integer status;
     private T data;
 
-    public String getMsg() {
-        return msg;
+    public Exception getException() {
+        return exception;
     }
 
-    public void setMsg(String msg) {
-        this.msg = msg;
+    public void setException(Exception exception) {
+        this.exception = exception;
     }
 
     public Integer getStatus() {
@@ -31,24 +31,22 @@ public class R<T> {
         this.data = data;
     }
 
-    public static <T> R<T> failed(String msg){
+    public static <T> R<T> failed(Exception exception){
         R<T> r = new R<>();
         r.setStatus(-1);
-        r.setMsg(msg);
+        r.setException(exception);
         return r;
     }
 
     public static <T> R<T> failed(ErrorCode errorCode){
         R<T> r = new R<>();
         r.setStatus(errorCode.ordinal());
-        r.setMsg(errorCode.name());
         return r;
     }
 
-    public static <T> R<T> success(String msg){
+    public static <T> R<T> success(){
         R<T> r = new R<>();
         r.setStatus(0);
-        r.setMsg(msg);
         return r;
     }
 
@@ -56,17 +54,8 @@ public class R<T> {
     public static <T> R<T> success(T data){
         R<T> r = new R<>();
         r.setStatus(0);
-        r.setMsg("success");
         r.setData(data);
         return r;
     }
 
-    @Override
-    public String toString() {
-        return "R{" +
-                "msg='" + msg + '\'' +
-                ", status=" + status +
-                ", data=" + data +
-                '}';
-    }
 }
