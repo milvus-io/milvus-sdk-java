@@ -41,6 +41,7 @@ public class R<T> {
     public static <T> R<T> failed(ErrorCode errorCode){
         R<T> r = new R<>();
         r.setStatus(errorCode.ordinal());
+        r.setException(new Exception(errorCode.name()));
         return r;
     }
 
