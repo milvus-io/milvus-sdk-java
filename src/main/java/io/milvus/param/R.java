@@ -34,7 +34,7 @@ public class R<T> {
 
     public static <T> R<T> failed(Exception exception){
         R<T> r = new R<>();
-        r.setStatus(Status.UNKNOWN.getCode());
+        r.setStatus(Status.Unknown.getCode());
         r.setException(exception);
         return r;
     }
@@ -94,10 +94,10 @@ public class R<T> {
         DDRequestRace(1000),
 
         // Client side error
-        RPC_ERROR(-1),
-        CLIENT_NOT_CONNECTED(-2),
-        UNKNOWN(-3),
-        VERSION_MISMATCH(-4);
+        RpcError(-1),
+        ClientNotConnected(-2),
+        Unknown(-3),
+        VersionMismatch(-4);
 
         private final int code;
 
@@ -108,7 +108,7 @@ public class R<T> {
         public static Status valueOf(int val) {
             Optional<Status> search =
                     Arrays.stream(values()).filter(status -> status.code == val).findFirst();
-            return search.orElse(UNKNOWN);
+            return search.orElse(Unknown);
         }
 
         public int getCode() {
