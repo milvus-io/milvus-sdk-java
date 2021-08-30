@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.milvus.grpc.*;
 import io.milvus.param.ConnectParam;
+import io.milvus.param.DeleteParam;
 import io.milvus.param.R;
 
 import java.util.concurrent.TimeUnit;
@@ -59,21 +60,6 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     @Override
     public void close(long maxWaitSeconds) {
 
-    }
-
-
-
-    public static void main(String[] args) {
-        ConnectParam build = ConnectParam.Builder.newBuilder()
-                .withHost("localhost")
-                .withPort(19530)
-                .build();
-
-        MilvusServiceClient milvusServiceClient = new MilvusServiceClient(build);
-
-        R<Boolean> chuwutest = milvusServiceClient.hasCollection("chuwutest");
-
-        System.out.println(chuwutest);
     }
 
 
