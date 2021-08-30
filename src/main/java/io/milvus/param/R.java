@@ -31,32 +31,36 @@ public class R<T> {
         this.data = data;
     }
 
-    public static <T> R<T> failed(Exception exception){
+    public static <T> R<T> failed(Exception exception) {
         R<T> r = new R<>();
         r.setStatus(-1);
         r.setException(exception);
         return r;
     }
 
-    public static <T> R<T> failed(ErrorCode errorCode){
+    public static <T> R<T> failed(ErrorCode errorCode) {
         R<T> r = new R<>();
         r.setStatus(errorCode.ordinal());
         r.setException(new Exception(errorCode.name()));
         return r;
     }
 
-    public static <T> R<T> success(){
+    public static <T> R<T> success() {
         R<T> r = new R<>();
         r.setStatus(0);
         return r;
     }
 
 
-    public static <T> R<T> success(T data){
+    public static <T> R<T> success(T data) {
         R<T> r = new R<>();
         r.setStatus(0);
         r.setData(data);
         return r;
     }
 
+    @Override
+    public String toString() {
+        return String.format("status:%s,data:{}", status, data.toString());
+    }
 }
