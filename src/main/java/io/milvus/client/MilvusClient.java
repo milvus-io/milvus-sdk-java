@@ -21,9 +21,11 @@ package io.milvus.client;
 
 import io.milvus.grpc.FlushResponse;
 import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.SearchResults;
 import io.milvus.param.DeleteParam;
 import io.milvus.param.InsertParam;
 import io.milvus.param.R;
+import io.milvus.param.SearchParam;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -50,4 +52,6 @@ public interface MilvusClient {
   R<FlushResponse> flush(List<String> collectionNames, String dbName);
 
   R<MutationResult> delete(DeleteParam deleteParam);
+
+  R<SearchResults> search(SearchParam searchParam);
 }

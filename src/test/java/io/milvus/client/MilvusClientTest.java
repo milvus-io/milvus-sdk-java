@@ -1,2 +1,4 @@
-package io.milvus.client;public class MilvusClientTest {
+package io.milvus.client;
+
+public class MilvusClientTest {
 }

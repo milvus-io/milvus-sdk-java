@@ -4,9 +4,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
-import io.milvus.param.DeleteParam;
-import io.milvus.param.InsertParam;
-import io.milvus.param.R;
+import io.milvus.param.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,6 +90,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return R.success(delete);
     }
 
+    @Override
     public R<MutationResult> insert(InsertParam insertParam) {
         //check params : two steps
         // 1、check sdk incoming params
@@ -108,7 +107,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             throw new ParamException("size is illegal");
         }
 
-        //2、need to DDL request to get collection meta schema; whether the collection schema needs to be cached locally todo
+        //2、need to DDL request to get collection meta schema and check vector dim;
+        // whether the collection schema needs to be cached locally todo
         assert fieldValues != null;
         int numRow = fieldValues.get(0).size();
 
@@ -134,6 +134,83 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         return R.success(insert);
 
+    }
+
+    @Override
+    public R<SearchResults> search(SearchParam searchParam) {
+        SearchRequest.Builder builder = SearchRequest.newBuilder()
+                .setDbName(searchParam.getDbName())
+                .setCollectionName(searchParam.getCollectionName());
+        if (!searchParam.getPartitionNames().isEmpty()) {
+            searchParam.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+
+        List<List<Float>> vectors = searchParam.getVectors();
+        List<ByteString> byteStrings = vectors.stream().map(vector -> {
+            ByteBuffer allocate1 = ByteBuffer.allocate(16);
+            vector.forEach(allocate1::putFloat);
+            byte[] array = allocate1.array();
+            return ByteString.copyFrom(array);
+        }).collect(Collectors.toList());
+
+
+        PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
+                .setTag("$0")
+                .setType(PlaceholderType.FloatVector);
+        byteStrings.forEach(pldBuilder::addValues);
+
+        PlaceholderGroup placeholderGroup = PlaceholderGroup.newBuilder()
+                .addPlaceholders(pldBuilder.build())
+                .build();
+
+        builder.setPlaceholderGroup(placeholderGroup.toByteString());
+
+        builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey("anns_field")
+                                .setValue(searchParam.getVectorFieldName())
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey("topk")
+                                .setValue(String.valueOf(searchParam.getTopK()))
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey("metric_type")
+                                .setValue(searchParam.getMetricType().name())
+                                .build());
+
+        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get("params")
+                && !searchParam.getParams().get("params").isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey("params")
+                            .setValue(searchParam.getParams().get("params"))
+                            .build());
+        }
+
+        if (!searchParam.getOutFields().isEmpty()) {
+            searchParam.getOutFields().forEach(builder::addOutputFields);
+        }
+
+        builder.setDslType(searchParam.getDslType());
+        if (searchParam.getDsl() == null || searchParam.getDsl().isEmpty()) {
+            builder.setDsl(searchParam.getDsl());
+        }
+
+        SearchRequest searchRequest = builder.build();
+
+
+        SearchResults search;
+        try {
+            search = this.blockingStub().search(searchRequest);
+        } catch (Exception e) {
+            logger.error("[milvus] search rpc request error:{}", e.getMessage());
+            return R.failed(e);
+        }
+
+        return R.success(search);
     }
 
     private FieldData genFieldData(String fieldName, DataType dataType, List<?> objects) {

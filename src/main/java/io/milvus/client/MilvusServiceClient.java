@@ -23,8 +23,8 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.milvus.grpc.*;
 import io.milvus.param.ConnectParam;
-import io.milvus.param.DeleteParam;
 import io.milvus.param.R;
+import io.milvus.param.SearchParam;
 
 import java.util.concurrent.TimeUnit;
 
@@ -59,7 +59,6 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public void close(long maxWaitSeconds) {
-
     }
 
 

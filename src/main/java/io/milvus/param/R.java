@@ -62,7 +62,8 @@ public class R<T> {
 
     @Override
     public String toString() {
-        return String.format("status:%s,data:{}", status, data.toString());
+        return String.format("status:%s,\n" +
+                "data:%s", status, data.toString());
     }
     /** Represents server and client side status code */
     public enum Status {
