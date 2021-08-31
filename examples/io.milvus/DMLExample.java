@@ -1,22 +1,16 @@
 
-import io.milvus.client.MilvusClient;
+import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.FlushResponse;
-import io.milvus.grpc.MutationResult;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.DeleteParam;
-import io.milvus.param.InsertParam;
-import io.milvus.param.R;
+import io.milvus.grpc.*;
+import io.milvus.param.*;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.ByteBuffer;
+import java.util.*;
 
-public class DMLTest {
+public class DMLExample {
 
-    public static MilvusClient milvusClient;
+    public static MilvusServiceClient milvusClient;
 
     static {
         ConnectParam connectParam = ConnectParam.Builder.newBuilder()
@@ -27,7 +21,7 @@ public class DMLTest {
     }
 
     @Test
-    public void insert(){
+    public void insert() {
         // save two vectors : id=101,value=[101,103,107,108] ; id=102,value=[111,112,113,114]
         // primary field's name is xp , vector field name is vector
         // collection name is test
@@ -88,11 +82,37 @@ public class DMLTest {
     }
 
     @Test
-    public void delete(){
+    public void delete() {
         DeleteParam build = DeleteParam.Builder.nweBuilder().setCollectionName("test")
                 .setPartitionName("pT")
                 .build();
         R<MutationResult> delete = milvusClient.delete(build);
         System.out.println(delete.getData());
+    }
+
+    @Test
+    public void search() {
+        SearchRequest.Builder builder = SearchRequest.newBuilder();
+
+        List<Float> vectors = Arrays.asList(0.5271567582442388f, 0.5931217080837329f, 0.8344559910613274f, 0.34260289743736394f);
+
+        HashMap<String, String> params = new HashMap<String, String>(){{
+            put("params","{\"nprobe\":10}");
+        }};
+        SearchParam searchParam = SearchParam.Builder.newBuilder()
+                .setCollectionName("hello_milvus")
+                .setMetricType(MetricType.L2)
+                .setOutFields(Arrays.asList("count", "random_value"))
+                .setTopK(5)
+                .setVectors(Collections.singletonList(vectors))
+                .setVectorFieldName("float_vector")
+                .setDslType(DslType.BoolExprV1)
+                .setDsl("count > 100")
+                .setParams(params)
+                .build();
+
+
+        R<SearchResults> search = milvusClient.search(searchParam);
+        System.out.println(search);
     }
 }
