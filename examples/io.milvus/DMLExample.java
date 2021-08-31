@@ -1,4 +1,3 @@
-package io.milvus;
 
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
