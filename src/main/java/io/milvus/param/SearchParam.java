@@ -2,8 +2,6 @@ package io.milvus.param;
 
 import com.google.common.collect.Lists;
 import io.milvus.grpc.DslType;
-import io.milvus.grpc.KeyValuePair;
-import org.json.JSONObject;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
