@@ -213,6 +213,75 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return R.success(search);
     }
 
+    @Override
+    public R<QueryResults> query(QueryParam queryParam) {
+        QueryRequest queryRequest = QueryRequest.newBuilder()
+                .setDbName(queryParam.getDbName())
+                .setCollectionName(queryParam.getCollectionName())
+                .addAllPartitionNames(queryParam.getPartitionNames())
+                .addAllOutputFields(queryParam.getOutFields())
+                .setExpr(queryParam.getExpr())
+                .build();
+
+        QueryResults query;
+        try {
+            query = this.blockingStub().query(queryRequest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return R.failed(e);
+        }
+        return R.success(query);
+    }
+
+    @Override
+    public R<CalcDistanceResults> calcDistance(CalcDistanceParam calcDistanceParam) {
+        List<Float> vector1 = calcDistanceParam.getVector1();
+        List<Float> vector2 = calcDistanceParam.getVector2();
+
+        CalcDistanceRequest calcDistanceRequest = CalcDistanceRequest.newBuilder()
+                .setOpLeft(
+                        VectorsArray.newBuilder()
+                                .setDataArray(
+                                        VectorField.newBuilder()
+                                                .setFloatVector(
+                                                        FloatArray.newBuilder()
+                                                                .addAllData(vector1)
+                                                                .build())
+                                                .setDim(vector1.size())
+                                                .build()
+                                )
+                                .build()
+                )
+                .setOpRight(
+                        VectorsArray.newBuilder()
+                                .setDataArray(
+                                        VectorField.newBuilder()
+                                                .setFloatVector(
+                                                        FloatArray.newBuilder()
+                                                                .addAllData(vector2)
+                                                                .build())
+                                                .setDim(vector2.size())
+                                                .build()
+                                )
+                                .build()
+                )
+                .addParams(
+                        KeyValuePair.newBuilder()
+                                .setKey("metric")
+                                .setValue(calcDistanceParam.getMetricType().name())
+                                .build()
+                )
+                .build();
+        CalcDistanceResults calcDistanceResults;
+        try {
+            calcDistanceResults = blockingStub().calcDistance(calcDistanceRequest);
+        } catch (Exception e) {
+            logger.error("[milvus] calDistance rpc request error:{}", e.getMessage());
+            return R.failed(e);
+        }
+        return R.success(calcDistanceResults);
+    }
+
     private FieldData genFieldData(String fieldName, DataType dataType, List<?> objects) {
         if (objects == null) {
             throw new ParamException("params is null");

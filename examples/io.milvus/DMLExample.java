@@ -12,9 +12,14 @@ public class DMLExample {
 
     public static MilvusServiceClient milvusClient;
 
+    //vector1
+    List<Float> vector1 = Arrays.asList(101f, 103f, 107f, 108f);
+    // vector2
+    List<Float> vector2 = Arrays.asList(111f, 112f, 113f, 114f);
+
     static {
         ConnectParam connectParam = ConnectParam.Builder.newBuilder()
-                .withHost("10.2.58.130")
+                .withHost("localhost")
                 .withPort(19530)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
@@ -27,34 +32,16 @@ public class DMLExample {
         // collection name is test
 
         String collectionName = "test";
+        String partitionName = "pT";
 
         List<String> fieldNames = Arrays.asList("xp", "vector");
         List<DataType> dataTypes = Arrays.asList(DataType.Int64, DataType.FloatVector);
 
         // primaryKey ids
-        List<Long> ids = new ArrayList<Long>() {{
-            add(101L);
-            add(102L);
-        }};
+        List<Long> ids = Arrays.asList(101L, 102L);
 
         // vectors' list
         List<List<Float>> vectors = new ArrayList<>();
-
-        //vector1
-        List<Float> vector1 = new ArrayList<Float>() {{
-            add(101f);
-            add(103f);
-            add(107f);
-            add(108f);
-        }};
-
-        // vector2
-        List<Float> vector2 = new ArrayList<Float>() {{
-            add(100f);
-            add(107f);
-            add(107f);
-            add(108f);
-        }};
 
         vectors.add(vector1);
         vectors.add(vector2);
@@ -64,10 +51,11 @@ public class DMLExample {
         result.add(ids);
         result.add(vectors);
 
-        InsertParam insertParam = InsertParam.Builder.nweBuilder(collectionName)
-                .setFieldNum(2)
+        InsertParam insertParam = InsertParam.Builder
+                .nweBuilder(collectionName)
+                .setFieldNum(fieldNames.size())
                 .setFieldNames(fieldNames)
-                .setPartitionName("pT")
+                .setPartitionName(partitionName)
                 .setDataTypes(dataTypes)
                 .setFieldValues(result)
                 .build();
@@ -83,8 +71,11 @@ public class DMLExample {
 
     @Test
     public void delete() {
-        DeleteParam build = DeleteParam.Builder.nweBuilder().setCollectionName("test")
-                .setPartitionName("pT")
+        String collectionName = "test";
+        String partitionName = "pT";
+        DeleteParam build = DeleteParam.Builder.nweBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionName(partitionName)
                 .build();
         R<MutationResult> delete = milvusClient.delete(build);
         System.out.println(delete.getData());
@@ -92,27 +83,44 @@ public class DMLExample {
 
     @Test
     public void search() {
-        SearchRequest.Builder builder = SearchRequest.newBuilder();
+        String collectionName = "test";
+        String fieldName = "vector";
+        List<String> outFields = Collections.singletonList("xp");
 
-        List<Float> vectors = Arrays.asList(0.5271567582442388f, 0.5931217080837329f, 0.8344559910613274f, 0.34260289743736394f);
-
-        HashMap<String, String> params = new HashMap<String, String>(){{
-            put("params","{\"nprobe\":10}");
+        HashMap<String, String> params = new HashMap<String, String>() {{
+            put("params", "{\"nprobe\":10}");
         }};
         SearchParam searchParam = SearchParam.Builder.newBuilder()
-                .setCollectionName("hello_milvus")
+                .setCollectionName(collectionName)
                 .setMetricType(MetricType.L2)
-                .setOutFields(Arrays.asList("count", "random_value"))
+                .setOutFields(outFields)
                 .setTopK(5)
-                .setVectors(Collections.singletonList(vectors))
-                .setVectorFieldName("float_vector")
+                .setVectors(Collections.singletonList(vector1))
+                .setVectorFieldName(fieldName)
                 .setDslType(DslType.BoolExprV1)
-                .setDsl("count > 100")
+                .setDsl("xp > 100")
                 .setParams(params)
                 .build();
 
 
         R<SearchResults> search = milvusClient.search(searchParam);
         System.out.println(search);
+    }
+
+    @Test
+    public void calDistance() {
+        CalcDistanceParam calcDistanceParam = new CalcDistanceParam(vector1, vector2, MetricType.L2);
+        R<CalcDistanceResults> calcDistanceResultsR = milvusClient.calcDistance(calcDistanceParam);
+        System.out.println(calcDistanceResultsR);
+    }
+
+    @Test
+    public void query() {
+        String collectionName = "test";
+        QueryParam test = QueryParam.Builder.newBuilder("xp in [ 101, 102]")
+                .setCollectionName(collectionName)
+                .build();
+        R<QueryResults> query = milvusClient.query(test);
+        System.out.println(query);
     }
 }
