@@ -158,7 +158,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         // this value $0 from python client: pymilvus.client.prepare line 602
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
-                .setTag("$0")
+                .setTag(Constant.vectorTag)
                 .setType(PlaceholderType.FloatVector);
         byteStrings.forEach(pldBuilder::addValues);
 
@@ -170,26 +170,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         builder.addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey("anns_field")
+                                .setKey(Constant.vectorFiled)
                                 .setValue(searchParam.getVectorFieldName())
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey("topk")
+                                .setKey(Constant.topK)
                                 .setValue(String.valueOf(searchParam.getTopK()))
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey("metric_type")
+                                .setKey(Constant.metricType)
                                 .setValue(searchParam.getMetricType().name())
                                 .build());
 
-        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get("params")
-                && !searchParam.getParams().get("params").isEmpty()) {
+        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get(Constant.parmas)
+                && !searchParam.getParams().get(Constant.parmas).isEmpty()) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
-                            .setKey("params")
-                            .setValue(searchParam.getParams().get("params"))
+                            .setKey(Constant.parmas)
+                            .setValue(searchParam.getParams().get(Constant.parmas))
                             .build());
         }
 
