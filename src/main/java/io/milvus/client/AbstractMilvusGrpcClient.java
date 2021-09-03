@@ -79,6 +79,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 .setBase(MsgBase.newBuilder().setMsgType(MsgType.Delete).build())
                 .setCollectionName(deleteParam.getCollectionName())
                 .setPartitionName(deleteParam.getPartitionName())
+                .setExpr(deleteParam.getExpr())
                 .build();
 
         MutationResult delete = null;
@@ -104,11 +105,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         Integer dTypeSize = Optional.ofNullable(dataTypes).map(List::size).orElse(0);
         int fieldValueSize = Optional.ofNullable(fieldValues).map(List::size).orElse(0);
         if (fieldNum != fieldValueSize || fieldNum != filedNameSize || fieldNum != dTypeSize) {
-            throw new ParamException("size is illegal");
+            throw new ParamException(String.format("input field size is %s,input fieldNameSize is %s, " +
+                    "inputValueSize is %s, input DataTypeSize is %s", fieldNum, filedNameSize, fieldValueSize, dTypeSize));
         }
 
         //2、need to DDL request to get collection meta schema and check vector dim;
-        // whether the collection schema needs to be cached locally todo
+        // whether the collection schema needs to be cached locally todo throw params detail exception
         assert fieldValues != null;
         int numRow = fieldValues.get(0).size();
 
@@ -147,13 +149,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         List<List<Float>> vectors = searchParam.getVectors();
         List<ByteString> byteStrings = vectors.stream().map(vector -> {
-            ByteBuffer allocate1 = ByteBuffer.allocate(16);
+            ByteBuffer allocate1 = ByteBuffer.allocate(4 * vector.size());
             vector.forEach(allocate1::putFloat);
             byte[] array = allocate1.array();
             return ByteString.copyFrom(array);
         }).collect(Collectors.toList());
 
 
+        // this value $0 from python client: pymilvus.client.prepare line 602
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
                 .setTag("$0")
                 .setType(PlaceholderType.FloatVector);
@@ -296,7 +299,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         List list = (List) object;
                         list.forEach(o -> floats.add((Float) o));
                     } else {
-                        throw new ParamException("参数有问题");
+                        throw new ParamException("vectors should be legal");
                     }
                 }
                 int dim = floats.size() / objects.size();

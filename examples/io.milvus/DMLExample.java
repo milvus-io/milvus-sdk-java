@@ -1,11 +1,9 @@
 
-import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class DMLExample {
@@ -52,7 +50,7 @@ public class DMLExample {
         result.add(vectors);
 
         InsertParam insertParam = InsertParam.Builder
-                .nweBuilder(collectionName)
+                .newBuilder(collectionName)
                 .setFieldNum(fieldNames.size())
                 .setFieldNames(fieldNames)
                 .setPartitionName(partitionName)

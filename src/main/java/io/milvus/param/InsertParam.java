@@ -68,7 +68,7 @@ public class InsertParam {
             this.collectionName = collectionName;
         }
 
-        public static Builder nweBuilder(@Nonnull String collectionName) {
+        public static Builder newBuilder(@Nonnull String collectionName) {
             return new Builder(collectionName);
         }
 
