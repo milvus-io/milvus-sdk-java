@@ -1,4 +1,4 @@
-package src.io.milvus;
+package io.milvus;
 
 import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
