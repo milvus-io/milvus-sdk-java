@@ -1,4 +1,4 @@
-package src.io.milvus;
+package io.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
