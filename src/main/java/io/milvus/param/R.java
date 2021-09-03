@@ -102,7 +102,8 @@ public class R<T> {
         RpcError(-1),
         ClientNotConnected(-2),
         Unknown(-3),
-        VersionMismatch(-4);
+        VersionMismatch(-4),
+        ParamError(-5);
 
         private final int code;
 
@@ -119,5 +120,22 @@ public class R<T> {
         public int getCode() {
             return code;
         }
+    }
+
+    @Override
+    public String toString() {
+        if(exception != null){
+            return "R{" +
+                    "exception=" + exception.getMessage() +
+                    ", status=" + status +
+                    ", data=" + data +
+                    '}';
+        }else{
+            return "R{" +
+                    "status=" + status +
+                    ", data=" + data +
+                    '}';
+        }
+
     }
 }
