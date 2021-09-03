@@ -1,6 +1,7 @@
-package io.milvus.param;
+package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.MetricType;
 
 import javax.annotation.Nonnull;
 import java.util.List;
