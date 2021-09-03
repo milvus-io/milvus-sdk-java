@@ -60,11 +60,6 @@ public class R<T> {
         return r;
     }
 
-    @Override
-    public String toString() {
-        return String.format("status:%s,\n" +
-                "data:%s", status, data.toString());
-    }
     /** Represents server and client side status code */
     public enum Status {
         // Server side error

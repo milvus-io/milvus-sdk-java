@@ -1,4 +1,4 @@
-package io.milvus.param;
+package io.milvus.param.dml;
 
 import javax.annotation.Nonnull;
 

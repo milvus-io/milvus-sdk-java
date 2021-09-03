@@ -20,7 +20,6 @@
 package io.milvus.client;
 
 import io.milvus.grpc.*;
-import io.milvus.param.*;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
@@ -39,6 +38,7 @@ import io.milvus.param.collection.HasCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.collection.ShowCollectionParam;
+import io.milvus.param.dml.*;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.index.DropIndexParam;

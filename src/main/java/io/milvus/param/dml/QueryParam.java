@@ -1,13 +1,10 @@
-package io.milvus.param;
+package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
-import io.milvus.grpc.DslType;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class QueryParam {
     private final String dbName;

@@ -1,7 +1,9 @@
+package src.io.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
+import io.milvus.param.dml.*;
 import org.junit.Test;
 
 import java.util.*;

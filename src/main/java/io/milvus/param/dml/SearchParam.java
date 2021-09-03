@@ -1,7 +1,8 @@
-package io.milvus.param;
+package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
 import io.milvus.grpc.DslType;
+import io.milvus.param.MetricType;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
