@@ -131,6 +131,5 @@ public class R<T> {
                     ", data=" + data +
                     '}';
         }
-
     }
 }

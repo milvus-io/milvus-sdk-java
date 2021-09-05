@@ -21,12 +21,16 @@ package io.milvus.client;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.*;
 import io.milvus.param.ConnectParam;
+import io.milvus.param.Control.GetMetricsRequestParam;
+import io.milvus.param.Control.GetPersistentSegmentInfoParam;
+import io.milvus.param.Control.GetQuerySegmentInfoParam;
 import io.milvus.param.R;
-import io.milvus.param.collection.HasCollectionParam;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
@@ -74,21 +78,25 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     }
 
-
-
     public static void main(String[] args) {
         ConnectParam build = ConnectParam.Builder.newBuilder()
-                .withHost("localhost")
+                .withHost("192.168.182.132")
                 .withPort(19530)
                 .build();
 
         MilvusServiceClient milvusServiceClient = new MilvusServiceClient(build);
 
-        R<Boolean> chuwutest = milvusServiceClient.hasCollection(HasCollectionParam.Builder.newBuilder().withCollectionName("czc1").build());
+        //R<Boolean> chuwutest = milvusServiceClient.hasCollection("chuwutest");
+        //GetPersistentSegmentInfoParam test = new GetPersistentSegmentInfoParam(GetPersistentSegmentInfoParam.Builder.newBuilder().withCollectionName("hello_milvus"));
+        //R<GetPersistentSegmentInfoResponse> zhaoTest = milvusServiceClient.getPersistentSegmentInfo(test);
+        
+        //GetQuerySegmentInfoParam test = new GetQuerySegmentInfoParam(GetQuerySegmentInfoParam.Builder.newBuilder().withCollectionName("hello_milvus"));
+        //R<GetQuerySegmentInfoResponse> zhaoTest = milvusServiceClient.getQuerySegmentInfo(test);
 
-        System.out.println(chuwutest);
+        GetMetricsRequestParam test = new GetMetricsRequestParam(GetMetricsRequestParam.Builder.newBuilder().withCollectionName("{zhao:1}"));
+        R<GetMetricsResponse> zhaoTest = milvusServiceClient.getMetrics(test);
+        System.out.println(zhaoTest);
     }
-
 
 }
 
