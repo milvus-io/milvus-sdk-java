@@ -71,7 +71,5 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     public void close(long maxWaitSeconds) {
 
     }
-
-
 }
 

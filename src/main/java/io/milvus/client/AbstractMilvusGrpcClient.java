@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.client;
 
 import com.google.protobuf.ByteString;
@@ -12,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
-import io.grpc.StatusRuntimeException;
 import io.milvus.grpc.BoolResponse;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.CreateCollectionRequest;
@@ -91,8 +109,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
 
     protected abstract boolean maybeAvailable();
-
-
 
     @Override
     public R<FlushResponse> flush(String collectionName, String dbName) {
@@ -221,7 +237,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         builder.addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.vectorFiled)
+                                .setKey(Constant.vectorField)
                                 .setValue(searchParam.getVectorFieldName())
                                 .build())
                 .addSearchParams(
@@ -235,12 +251,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                                 .setValue(searchParam.getMetricType().name())
                                 .build());
 
-        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get(Constant.parmas)
-                && !searchParam.getParams().get(Constant.parmas).isEmpty()) {
+        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get(Constant.params)
+                && !searchParam.getParams().get(Constant.params).isEmpty()) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
-                            .setKey(Constant.parmas)
-                            .setValue(searchParam.getParams().get(Constant.parmas))
+                            .setKey(Constant.params)
+                            .setValue(searchParam.getParams().get(Constant.params))
                             .build());
         }
 
@@ -466,7 +482,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         // Construct CollectionSchema Params
         CollectionSchema.Builder collectionSchemaBuilder = CollectionSchema.newBuilder();
         collectionSchemaBuilder.setName(requestParam.getCollectionName())
-                               .setDescription(requestParam.getDescription());
+                .setDescription(requestParam.getDescription());
 
 
         for (FieldType fieldType : requestParam.getFieldTypes()) {

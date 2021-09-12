@@ -59,29 +59,29 @@ import java.util.concurrent.TimeUnit;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-  default void close() {
-    close(TimeUnit.MINUTES.toSeconds(1));
-  }
+    default void close() {
+        close(TimeUnit.MINUTES.toSeconds(1));
+    }
 
-  void close(long maxWaitSeconds);
+    void close(long maxWaitSeconds);
 
-  R<MutationResult> insert(InsertParam insertParam);
+    R<MutationResult> insert(InsertParam insertParam);
 
-  R<FlushResponse> flush(String collectionName,String dbName);
+    R<FlushResponse> flush(String collectionName, String dbName);
 
-  R<FlushResponse> flush(String collectionName);
+    R<FlushResponse> flush(String collectionName);
 
-  R<FlushResponse> flush(List<String> collectionNames);
+    R<FlushResponse> flush(List<String> collectionNames);
 
-  R<FlushResponse> flush(List<String> collectionNames, String dbName);
+    R<FlushResponse> flush(List<String> collectionNames, String dbName);
 
-  R<MutationResult> delete(DeleteParam deleteParam);
+    R<MutationResult> delete(DeleteParam deleteParam);
 
-  R<SearchResults> search(SearchParam searchParam);
+    R<SearchResults> search(SearchParam searchParam);
 
-  R<QueryResults> query(QueryParam queryParam);
+    R<QueryResults> query(QueryParam queryParam);
 
-  R<CalcDistanceResults> calcDistance(CalcDistanceParam calcDistanceParam);
+    R<CalcDistanceResults> calcDistance(CalcDistanceParam calcDistanceParam);
 
     /**
      * Check if a collection exists.
@@ -192,7 +192,7 @@ public interface MilvusClient {
      * Show the statistics information of a partition.
      *
      * @param requestParam {@link GetPartitionStatisticsParam}
-     * @return  {status:result code,data:GetPartitionStatisticsResponse{status,stats}}
+     * @return {status:result code,data:GetPartitionStatisticsResponse{status,stats}}
      */
     R<GetPartitionStatisticsResponse> getPartitionStatistics(GetPartitionStatisticsParam requestParam);
 
