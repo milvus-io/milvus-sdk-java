@@ -122,7 +122,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<FlushResponse> flush(List<String> collectionNames) {
         return flush(collectionNames, "");
-
     }
 
     @Override
@@ -267,8 +266,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         SearchRequest searchRequest = builder.build();
-
-
         SearchResults search;
         try {
             search = this.blockingStub().search(searchRequest);
