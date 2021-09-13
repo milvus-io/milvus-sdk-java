@@ -21,9 +21,9 @@ package io.milvus.param;
 
 public class Constant {
     // default value for search key
-    public static final String vectorTag = "$0";
-    public static final String vectorField = "anns_field";
-    public static final String topK = "topk";
-    public static final String metricType = "metric_type";
-    public static final String params = "params";
+    public static final String VECTOR_TAG = "$0";
+    public static final String VECTOR_FIELD = "anns_field";
+    public static final String TOP_K = "topk";
+    public static final String METRIC_TYPE = "metric_type";
+    public static final String PARAMS = "params";
 }

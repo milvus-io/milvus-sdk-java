@@ -19,10 +19,11 @@
 
 package io.milvus.client;
 
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import io.milvus.grpc.*;
 import io.milvus.param.*;
-
-import java.util.List;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
@@ -53,8 +54,6 @@ import io.milvus.param.partition.HasPartitionParam;
 import io.milvus.param.partition.LoadPartitionsParam;
 import io.milvus.param.partition.ReleasePartitionsParam;
 import io.milvus.param.partition.ShowPartitionParam;
-
-import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {

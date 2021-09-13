@@ -41,7 +41,6 @@ public class CreateIndexParam {
         return extraParam;
     }
 
-
     public CreateIndexParam(Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
