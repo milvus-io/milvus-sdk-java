@@ -1,5 +1,6 @@
 package io.milvus.param;
 
+import io.milvus.grpc.ErrorCode;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -32,10 +33,18 @@ public class R<T> {
         this.data = data;
     }
 
+;
     public static <T> R<T> failed(Exception exception){
         R<T> r = new R<>();
         r.setStatus(Status.Unknown.getCode());
         r.setException(exception);
+        return r;
+    }
+
+    public static <T> R<T> failed(ErrorCode errorCode) {
+        R<T> r = new R<>();
+        r.setStatus(errorCode.ordinal());
+        r.setException(new Exception(errorCode.name()));
         return r;
     }
 

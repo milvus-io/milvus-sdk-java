@@ -19,6 +19,10 @@
 
 package io.milvus.client;
 
+import io.milvus.grpc.*;
+import io.milvus.param.*;
+
+import java.util.List;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
@@ -27,7 +31,6 @@ import io.milvus.grpc.GetIndexStateResponse;
 import io.milvus.grpc.GetPartitionStatisticsResponse;
 import io.milvus.grpc.ShowCollectionsResponse;
 import io.milvus.grpc.ShowPartitionsResponse;
-import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
@@ -37,6 +40,7 @@ import io.milvus.param.collection.HasCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.collection.ShowCollectionParam;
+import io.milvus.param.dml.*;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.index.DropIndexParam;
@@ -55,11 +59,29 @@ import java.util.concurrent.TimeUnit;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
-    default void close() {
+  default void close() {
     close(TimeUnit.MINUTES.toSeconds(1));
   }
 
-    void close(long maxWaitSeconds);
+  void close(long maxWaitSeconds);
+
+  R<MutationResult> insert(InsertParam insertParam);
+
+  R<FlushResponse> flush(String collectionName,String dbName);
+
+  R<FlushResponse> flush(String collectionName);
+
+  R<FlushResponse> flush(List<String> collectionNames);
+
+  R<FlushResponse> flush(List<String> collectionNames, String dbName);
+
+  R<MutationResult> delete(DeleteParam deleteParam);
+
+  R<SearchResults> search(SearchParam searchParam);
+
+  R<QueryResults> query(QueryParam queryParam);
+
+  R<CalcDistanceResults> calcDistance(CalcDistanceParam calcDistanceParam);
 
     /**
      * Check if a collection exists.
