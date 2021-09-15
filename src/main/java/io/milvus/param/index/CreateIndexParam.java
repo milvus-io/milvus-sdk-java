@@ -27,7 +27,7 @@ import java.util.Map;
 public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
-    private final Map<String,String> extraParam;
+    private final Map<String, String> extraParam;
 
     public String getCollectionName() {
         return collectionName;
@@ -37,10 +37,9 @@ public class CreateIndexParam {
         return fieldName;
     }
 
-    public Map<String,String> getExtraParam() {
+    public Map<String, String> getExtraParam() {
         return extraParam;
     }
-
 
     public CreateIndexParam(Builder builder) {
         this.collectionName = builder.collectionName;
@@ -51,7 +50,7 @@ public class CreateIndexParam {
     public static final class Builder {
         private String collectionName;
         private String fieldName;
-        private Map<String,String> extraParam;
+        private Map<String, String> extraParam;
 
         private Builder() {
         }
@@ -70,7 +69,7 @@ public class CreateIndexParam {
             return this;
         }
 
-        public Builder withExtraParam(Map<String,String> extraParam) {
+        public Builder withExtraParam(Map<String, String> extraParam) {
             this.extraParam = extraParam;
             return this;
         }

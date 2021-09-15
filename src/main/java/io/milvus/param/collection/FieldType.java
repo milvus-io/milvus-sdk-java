@@ -16,8 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus.param.collection;
 
+package io.milvus.param.collection;
 
 import io.milvus.grpc.DataType;
 
