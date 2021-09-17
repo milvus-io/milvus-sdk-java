@@ -27,8 +27,8 @@ import java.util.List;
 /**
  * fieldNames,dataTypes, fieldValues' order must be consistent.
  * explain fieldValues:
- *    if dataType is scalar: ? is basic type, like Integer,Long...
- *    if dataType is FloatVector: ? is List<Float>
+ *     if dataType is scalar: ? is basic type, like Integer,Long...
+ *     if dataType is FloatVector: ? is List<Float>
  */
 public class InsertParam {
     private final String collectionName;
@@ -87,7 +87,7 @@ public class InsertParam {
             this.collectionName = collectionName;
         }
 
-        public static Builder nweBuilder(@Nonnull String collectionName) {
+        public static Builder newBuilder(@Nonnull String collectionName) {
             return new Builder(collectionName);
         }
 

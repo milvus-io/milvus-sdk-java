@@ -52,7 +52,7 @@ public class DeleteParam {
         private Builder() {
         }
 
-        public static Builder nweBuilder() {
+        public static Builder newBuilder() {
             return new Builder();
         }
 
