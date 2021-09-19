@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus;
 
 import io.milvus.client.MilvusServiceClient;
@@ -58,7 +77,7 @@ public class DDLExample {
     }
 
     @Test
-    public void createCollection(){
+    public void createCollection() {
         FieldType[] fieldTypes = new FieldType[2];
         FieldType fieldType1 = FieldType.Builder.newBuilder()
                 .withName("userID")
@@ -67,8 +86,8 @@ public class DDLExample {
                 .withAutoID(true)
                 .withPrimaryKey(true).build();
 
-        Map<String,String> typeParamsMap = new HashMap<>();
-        typeParamsMap.put("dim","512");
+        Map<String, String> typeParamsMap = new HashMap<>();
+        typeParamsMap.put("dim", "512");
         FieldType fieldType2 = FieldType.Builder.newBuilder()
                 .withName("vector1")
                 .withDescription("match Vector")
@@ -88,7 +107,7 @@ public class DDLExample {
     }
 
     @Test
-    public void dropCollection(){
+    public void dropCollection() {
         R<RpcStatus> dropCollection = milvusClient.dropCollection(DropCollectionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -97,7 +116,7 @@ public class DDLExample {
     }
 
     @Test
-    public void hasCollection(){
+    public void hasCollection() {
         R<Boolean> hasCollection = milvusClient.hasCollection(HasCollectionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -107,7 +126,7 @@ public class DDLExample {
     }
 
     @Test
-    public void loadCollection(){
+    public void loadCollection() {
         R<RpcStatus> loadCollection = milvusClient.loadCollection(LoadCollectionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -116,7 +135,7 @@ public class DDLExample {
     }
 
     @Test
-    public void releaseCollection(){
+    public void releaseCollection() {
         R<RpcStatus> releaseCollection = milvusClient.releaseCollection(ReleaseCollectionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -125,7 +144,7 @@ public class DDLExample {
     }
 
     @Test
-    public void describeCollection(){
+    public void describeCollection() {
         R<DescribeCollectionResponse> describeCollection = milvusClient.describeCollection(DescribeCollectionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -134,7 +153,7 @@ public class DDLExample {
     }
 
     @Test
-    public void getCollectionStatistics(){
+    public void getCollectionStatistics() {
         R<GetCollectionStatisticsResponse> getCollectionStatistics = milvusClient.getCollectionStatistics(GetCollectionStatisticsParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -143,7 +162,7 @@ public class DDLExample {
     }
 
     @Test
-    public void showCollections(){
+    public void showCollections() {
         String[] collectionNames = new String[]{"collection1"};
         R<ShowCollectionsResponse> showCollections = milvusClient.showCollections(ShowCollectionParam.Builder
                 .newBuilder()
@@ -154,7 +173,7 @@ public class DDLExample {
     }
 
     @Test
-    public void createPartition(){
+    public void createPartition() {
         R<RpcStatus> createPartition = milvusClient.createPartition(CreatePartitionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -165,7 +184,7 @@ public class DDLExample {
     }
 
     @Test
-    public void dropPartition(){
+    public void dropPartition() {
         R<RpcStatus> dropPartition = milvusClient.dropPartition(DropPartitionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -176,7 +195,7 @@ public class DDLExample {
     }
 
     @Test
-    public void hasPartition(){
+    public void hasPartition() {
         R<Boolean> hasPartition = milvusClient.hasPartition(HasPartitionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -187,7 +206,7 @@ public class DDLExample {
     }
 
     @Test
-    public void loadPartitions(){
+    public void loadPartitions() {
         String[] partitionNames = new String[]{"par1"};
         R<RpcStatus> loadPartition = milvusClient.loadPartitions(LoadPartitionsParam.Builder
                 .newBuilder()
@@ -199,7 +218,7 @@ public class DDLExample {
     }
 
     @Test
-    public void releasePartitions(){
+    public void releasePartitions() {
         String[] releaseNames = new String[]{"par1"};
         R<RpcStatus> releasePartition = milvusClient.releasePartitions(ReleasePartitionsParam.Builder
                 .newBuilder()
@@ -211,7 +230,7 @@ public class DDLExample {
     }
 
     @Test
-    public void getPartitionStatistics(){
+    public void getPartitionStatistics() {
         R<GetPartitionStatisticsResponse> getPartitionStatistics = milvusClient.getPartitionStatistics(GetPartitionStatisticsParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -222,7 +241,7 @@ public class DDLExample {
     }
 
     @Test
-    public void showPartitions(){
+    public void showPartitions() {
         R<ShowPartitionsResponse> showPartitionsResponse = milvusClient.showPartitions(ShowPartitionParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -231,11 +250,11 @@ public class DDLExample {
     }
 
     @Test
-    public void createIndex(){
-        Map<String,String> extraParam = new HashMap<>();
-        extraParam.put("index_type","IVF_FLAT");
+    public void createIndex() {
+        Map<String, String> extraParam = new HashMap<>();
+        extraParam.put("index_type", "IVF_FLAT");
         extraParam.put("metric_type", "IP");
-        extraParam.put("params","{\"nlist\":10}");
+        extraParam.put("params", "{\"nlist\":10}");
         R<RpcStatus> createIndex = milvusClient.createIndex(CreateIndexParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -246,7 +265,7 @@ public class DDLExample {
     }
 
     @Test
-    public void dropIndex(){
+    public void dropIndex() {
         R<RpcStatus> dropIndex = milvusClient.dropIndex(DropIndexParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -256,7 +275,7 @@ public class DDLExample {
     }
 
     @Test
-    public void describeIndex(){
+    public void describeIndex() {
         R<DescribeIndexResponse> describeIndex = milvusClient.describeIndex(DescribeIndexParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -266,7 +285,7 @@ public class DDLExample {
     }
 
     @Test
-    public void getIndexState(){
+    public void getIndexState() {
         R<GetIndexStateResponse> getIndexState = milvusClient.getIndexState(GetIndexStateParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")
@@ -276,7 +295,7 @@ public class DDLExample {
     }
 
     @Test
-    public void getIndexBuildProgress(){
+    public void getIndexBuildProgress() {
         R<GetIndexBuildProgressResponse> getIndexBuildProgress = milvusClient.getIndexBuildProgress(GetIndexBuildProgressParam.Builder
                 .newBuilder()
                 .withCollectionName("collection1")

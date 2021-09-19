@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
@@ -21,9 +40,9 @@ public class SearchParam {
     private final String dsl;
     private final List<String> outFields;
     private final List<List<Float>> vectors;
-    private final Map<String,String> params;
+    private final Map<String, String> params;
 
-    private SearchParam(@Nonnull Builder builder){
+    private SearchParam(@Nonnull Builder builder) {
         this.dbName = builder.dbName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -81,7 +100,7 @@ public class SearchParam {
         return params;
     }
 
-    public static class Builder{
+    public static class Builder {
         private String dbName = "";
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
@@ -92,26 +111,26 @@ public class SearchParam {
         private String dsl;
         private List<String> outFields = new ArrayList<>();
         private List<List<Float>> vectors;
-        private Map<String,String> params = new HashMap<>();
+        private Map<String, String> params = new HashMap<>();
 
-        private Builder(){
+        private Builder() {
         }
 
-        public static Builder newBuilder(){
+        public static Builder newBuilder() {
             return new Builder();
         }
 
-        public Builder setDbName(@Nonnull String dbName){
+        public Builder setDbName(@Nonnull String dbName) {
             this.dbName = dbName;
             return this;
         }
 
-        public Builder setCollectionName(@Nonnull String collectionName){
+        public Builder setCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder setPartitionNames(@Nonnull List<String> partitionNames){
+        public Builder setPartitionNames(@Nonnull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
@@ -157,9 +176,8 @@ public class SearchParam {
             return this;
         }
 
-        public SearchParam build(){
+        public SearchParam build() {
             return new SearchParam(this);
         }
     }
-
 }

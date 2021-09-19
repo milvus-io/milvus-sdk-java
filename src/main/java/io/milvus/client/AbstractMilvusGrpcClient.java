@@ -1,18 +1,42 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.client;
 
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.nio.ByteBuffer;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.dml.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.stream.Collectors;
-import io.grpc.StatusRuntimeException;
 import io.milvus.grpc.BoolResponse;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.CreateCollectionRequest;
@@ -75,13 +99,6 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
@@ -92,8 +109,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected abstract boolean maybeAvailable();
 
-
-
     @Override
     public R<FlushResponse> flush(String collectionName, String dbName) {
         return flush(Collections.singletonList(collectionName), dbName);
@@ -102,13 +117,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<FlushResponse> flush(String collectionName) {
         return flush(Collections.singletonList(collectionName), "");
-
     }
 
     @Override
     public R<FlushResponse> flush(List<String> collectionNames) {
         return flush(collectionNames, "");
-
     }
 
     @Override
@@ -187,7 +200,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             R.failed(e);
         }
         return R.success(insert);
-
     }
 
     @Override
@@ -209,7 +221,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
 
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
-                .setTag(Constant.vectorTag)
+                .setTag(Constant.VECTOR_TAG)
                 .setType(PlaceholderType.FloatVector);
         byteStrings.forEach(pldBuilder::addValues);
 
@@ -221,26 +233,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         builder.addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.vectorFiled)
+                                .setKey(Constant.VECTOR_FIELD)
                                 .setValue(searchParam.getVectorFieldName())
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.topK)
+                                .setKey(Constant.TOP_K)
                                 .setValue(String.valueOf(searchParam.getTopK()))
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.metricType)
+                                .setKey(Constant.METRIC_TYPE)
                                 .setValue(searchParam.getMetricType().name())
                                 .build());
 
-        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get(Constant.parmas)
-                && !searchParam.getParams().get(Constant.parmas).isEmpty()) {
+        if (!searchParam.getParams().isEmpty() && null != searchParam.getParams().get(Constant.PARAMS)
+                && !searchParam.getParams().get(Constant.PARAMS).isEmpty()) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
-                            .setKey(Constant.parmas)
-                            .setValue(searchParam.getParams().get(Constant.parmas))
+                            .setKey(Constant.PARAMS)
+                            .setValue(searchParam.getParams().get(Constant.PARAMS))
                             .build());
         }
 
@@ -254,8 +266,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         SearchRequest searchRequest = builder.build();
-
-
         SearchResults search;
         try {
             search = this.blockingStub().search(searchRequest);
@@ -350,7 +360,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         List list = (List) object;
                         list.forEach(o -> floats.add((Float) o));
                     } else {
-                        throw new ParamException("参数有问题");
+                        throw new ParamException("param type unsuitable");
                     }
                 }
                 int dim = floats.size() / objects.size();
@@ -359,14 +369,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return builder.setFieldName(fieldName).setType(DataType.FloatVector).setVectors(vectorField).build();
             } else if (dataType == DataType.BinaryVector) {
                 List<ByteBuffer> bytes = objects.stream().map(p -> (ByteBuffer) p).collect(Collectors.toList());
-                ;
                 ByteString byteString = ByteString.copyFrom((ByteBuffer) bytes);
                 int dim = objects.size();
                 VectorField vectorField = VectorField.newBuilder().setDim(dim).setBinaryVector(byteString).build();
                 return builder.setFieldName(fieldName).setType(DataType.BinaryVector).setVectors(vectorField).build();
             }
-
-
         } else {
             switch (dataType) {
                 case None:
@@ -406,6 +413,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField6).build();
             }
         }
+
         return null;
     }
 
@@ -434,19 +442,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             response = blockingStub().hasCollection(hasCollectionRequest);
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
                 logInfo("Has collection check successfully!\n{}", requestParam.toString());
-                Boolean aBoolean = Optional.ofNullable(response)
+                Boolean value = Optional.of(response)
                         .map(BoolResponse::getValue)
                         .orElse(false);
-                return R.success(aBoolean);
+                return R.success(value);
             } else {
                 return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
             }
-
         } catch (StatusRuntimeException e) {
             logger.error("[milvus] hasCollection:{} request error: {}", requestParam.getCollectionName(), e.getMessage());
             return R.failed(e);
         }
-
     }
 
 
@@ -466,8 +472,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         // Construct CollectionSchema Params
         CollectionSchema.Builder collectionSchemaBuilder = CollectionSchema.newBuilder();
         collectionSchemaBuilder.setName(requestParam.getCollectionName())
-                               .setDescription(requestParam.getDescription());
-
+                .setDescription(requestParam.getDescription());
 
         for (FieldType fieldType : requestParam.getFieldTypes()) {
             FieldSchema.Builder fieldSchemaBuilder = FieldSchema.newBuilder()
@@ -501,7 +506,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 .build();
 
         Status response;
-
         try {
             response = blockingStub().createCollection(createCollectionRequest);
 
