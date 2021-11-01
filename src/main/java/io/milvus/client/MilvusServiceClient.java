@@ -69,7 +69,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public void close(long maxWaitSeconds) {
-
+        channel.shutdownNow();
     }
 }
 

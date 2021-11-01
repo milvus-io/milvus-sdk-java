@@ -463,10 +463,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         // Check whether the parameters are correct or not
-        if (requestParam == null || StringUtils.isBlank(requestParam.getCollectionName())
-                || requestParam.getShardsNum() <= 0
-                || requestParam.getFieldTypes().length == 0) {
-            return R.failed(R.Status.ParamError);
+        if (requestParam == null) {
+            return R.failed(new ParamException("Request param can not be null"));
+        }
+
+        if (StringUtils.isBlank(requestParam.getCollectionName())) {
+            return R.failed(new ParamException("Table name can not be Empty"));
+        }
+
+        if (requestParam.getFieldTypes().length <= 0) {
+            return R.failed(new ParamException("Field numbers must not be larger than 0"));
         }
 
         // Construct CollectionSchema Params
@@ -510,13 +516,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             response = blockingStub().createCollection(createCollectionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("Created collection successfully!\n{}", requestParam.toString());
+                logInfo("Created collection "  + requestParam.getCollectionName() +  " successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
+                logInfo("Created collection " + requestParam.getCollectionName() + " failed!\n{}", response);
                 return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
             }
         } catch (StatusRuntimeException e) {
-            logError("createCollection RPC failed:\n{}", e.getStatus().toString());
+            logError("createCollection " +  requestParam.getCollectionName() +  " RPC failed:\n{}", e.getStatus().toString());
             return R.failed(e);
         }
     }

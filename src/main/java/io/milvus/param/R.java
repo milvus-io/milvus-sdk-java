@@ -20,7 +20,7 @@
 package io.milvus.param;
 
 import io.milvus.grpc.ErrorCode;
-
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -55,6 +55,7 @@ public class R<T> {
 
     public static <T> R<T> failed(Exception exception) {
         R<T> r = new R<>();
+        //TODO set status based on exception type
         r.setStatus(Status.Unknown.getCode());
         r.setException(exception);
         return r;
@@ -151,7 +152,7 @@ public class R<T> {
     public String toString() {
         if (exception != null) {
             return "R{" +
-                    "exception=" + exception.getMessage() +
+                    "exception=" + ExceptionUtils.getMessage(exception) +
                     ", status=" + status +
                     ", data=" + data +
                     '}';

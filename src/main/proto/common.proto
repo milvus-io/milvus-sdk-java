@@ -70,8 +70,8 @@ message Blob {
 }
 
 message Address {
-  string ip = 1;
-  int64 port = 2;
+    string ip = 1;
+    int64 port = 2;
 }
 
 enum MsgType {
@@ -157,5 +157,5 @@ enum DslType {
 
 // Don't Modify This. @czs
 message MsgHeader {
-    MsgBase base = 1;
+    common.MsgBase base = 1;
 }
