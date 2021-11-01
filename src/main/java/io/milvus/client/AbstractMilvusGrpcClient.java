@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -126,6 +127,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     @Override
     public R<FlushResponse> flush(List<String> collectionNames, String dbName) {
+        for (String collectionName : collectionNames) {
+            if (collectionName == null || StringUtils.isBlank(collectionName)) {
+                return R.failed(R.Status.ParamError,
+                        "Collection name cannot be empty");
+            }
+        }
+
         MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
         FlushRequest.Builder builder = FlushRequest.newBuilder().setBase(msgBase).setDbName(dbName);
         collectionNames.forEach(builder::addCollectionNames);
@@ -232,10 +240,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         builder.setPlaceholderGroup(placeholderGroup.toByteString());
 
         builder.addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.VECTOR_FIELD)
-                                .setValue(searchParam.getVectorFieldName())
-                                .build())
+                KeyValuePair.newBuilder()
+                        .setKey(Constant.VECTOR_FIELD)
+                        .setValue(searchParam.getVectorFieldName())
+                        .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.TOP_K)
@@ -425,12 +433,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<Boolean> hasCollection(HasCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Server is not available");
         }
 
         HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
@@ -447,7 +455,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         .orElse(false);
                 return R.success(value);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logger.error("[milvus] hasCollection:{} request error: {}", requestParam.getCollectionName(), e.getMessage());
@@ -459,14 +468,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> createCollection(CreateCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // Check whether the parameters are correct or not
         if (requestParam == null || StringUtils.isBlank(requestParam.getCollectionName())
                 || requestParam.getShardsNum() <= 0
+                || requestParam.getFieldTypes() == null
                 || requestParam.getFieldTypes().length == 0) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError,
+                    "Collection name cannot be empty and at least one field. Shards number must greater than zero.");
         }
 
         // Construct CollectionSchema Params
@@ -475,6 +486,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 .setDescription(requestParam.getDescription());
 
         for (FieldType fieldType : requestParam.getFieldTypes()) {
+            if (fieldType == null) {
+                return R.failed(R.Status.ParamError,
+                        "Collection field cannot be null");
+            }
+
             FieldSchema.Builder fieldSchemaBuilder = FieldSchema.newBuilder()
                     .setFieldID(fieldType.getFieldID())
                     .setName(fieldType.getName())
@@ -513,7 +529,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Created collection successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("createCollection RPC failed:\n{}", e.getStatus().toString());
@@ -524,12 +540,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> dropCollection(DropCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Inllegal input");
         }
 
         DropCollectionRequest dropCollectionRequest = DropCollectionRequest.newBuilder()
@@ -543,7 +559,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Drop collection successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("dropCollectionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -555,12 +571,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> loadCollection(LoadCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Inllegal input");
         }
 
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
@@ -575,7 +591,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Load collection successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("loadCollectionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -586,12 +602,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Inllegal input");
         }
 
         ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
@@ -606,7 +622,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Release collection successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("releaseCollectionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -618,12 +634,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<DescribeCollectionResponse> describeCollection(DescribeCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Inllegal input");
         }
 
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
@@ -638,7 +654,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Describe collection successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("describeCollectionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -649,12 +666,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<GetCollectionStatisticsResponse> getCollectionStatistics(GetCollectionStatisticsParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name is empty or not
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Inllegal input");
         }
 
         GetCollectionStatisticsRequest getCollectionStatisticsRequest = GetCollectionStatisticsRequest.newBuilder()
@@ -669,7 +686,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Get collection statistics successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("getCollectionStatisticsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -680,13 +698,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<ShowCollectionsResponse> showCollections(ShowCollectionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
         ShowCollectionsRequest.Builder showCollectionRequestBuilder = ShowCollectionsRequest.newBuilder();
 
         String[] collectionNames = requestParam.getCollectionNames();
         if (collectionNames == null || collectionNames.length <= 0) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name not specified");
         }
 
         // add collectionNames
@@ -703,7 +721,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Show collection successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("showCollectionsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -714,12 +733,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> createPartition(CreatePartitionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name or partition name is empty or not
         if (checkPartitionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
 
         CreatePartitionRequest createPartitionRequest = CreatePartitionRequest.newBuilder()
@@ -735,7 +754,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Create partition successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("createPartitionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -746,12 +765,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> dropPartition(DropPartitionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name or partition name is empty or not
         if (checkPartitionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
 
         DropPartitionRequest dropPartitionRequest = DropPartitionRequest.newBuilder()
@@ -767,7 +786,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Drop partition successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("createPartitionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -778,12 +797,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<Boolean> hasPartition(HasPartitionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name or partition name is empty or not
         if (checkPartitionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
 
         HasPartitionRequest hasPartitionRequest = HasPartitionRequest.newBuilder()
@@ -804,7 +823,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
                 return R.success(result);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("hasPartitionRequest RPC failed:\n{}", e.getStatus().toString());
@@ -815,14 +835,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> loadPartitions(LoadPartitionsParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check requestParam
         if (requestParam == null || StringUtils.isEmpty(requestParam.getCollectionName())
                 || requestParam.getPartitionNames() == null
                 || requestParam.getPartitionNames().length == 0) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
         LoadPartitionsRequest.Builder loadPartitionsRequestBuilder = LoadPartitionsRequest.newBuilder();
 
@@ -841,7 +861,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Load partition successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("loadPartitionsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -852,14 +872,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> releasePartitions(ReleasePartitionsParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check requestParam
         if (requestParam == null || StringUtils.isEmpty(requestParam.getCollectionName())
                 || requestParam.getPartitionNames() == null
                 || requestParam.getPartitionNames().length == 0) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
 
         ReleasePartitionsRequest.Builder releasePartitionsRequestBuilder = ReleasePartitionsRequest.newBuilder();
@@ -879,7 +899,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Release partition successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("releasePartitionsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -890,12 +910,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<GetPartitionStatisticsResponse> getPartitionStatistics(GetPartitionStatisticsParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if collection name or partition name is empty or not
         if (checkPartitionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or partition name cannot be empty");
         }
 
         GetPartitionStatisticsRequest getPartitionStatisticsRequest = GetPartitionStatisticsRequest.newBuilder()
@@ -911,7 +931,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Get partition statistics successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("getPartitionStatisticsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -922,11 +943,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<ShowPartitionsResponse> showPartitions(ShowPartitionParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         if (checkCollectionParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name cannot be empty");
         }
 
         ShowPartitionsRequest showPartitionsRequest = ShowPartitionsRequest.newBuilder()
@@ -941,7 +962,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Show partition successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("showPartitionsRequest RPC failed:\n{}", e.getStatus().toString());
@@ -952,14 +974,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> createIndex(CreateIndexParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // check whether if create index param is valid or not
         if (requestParam == null || StringUtils.isEmpty(requestParam.getCollectionName())
                 || StringUtils.isEmpty(requestParam.getFieldName())
                 || MapUtils.isEmpty(requestParam.getExtraParam())) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or field name cannot be empty");
         }
 
         CreateIndexRequest.Builder createIndexRequestBuilder = CreateIndexRequest.newBuilder();
@@ -980,7 +1002,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Create index successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("createIndex RPC failed:\n{}", e.getStatus().toString());
@@ -991,11 +1013,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<RpcStatus> dropIndex(DropIndexParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         if (checkIndexParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or field name cannot be empty");
         }
 
         DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
@@ -1011,7 +1033,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Drop index successfully!\n{}", requestParam.toString());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("dropIndex RPC failed:\n{}", e.getStatus().toString());
@@ -1022,11 +1044,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<DescribeIndexResponse> describeIndex(DescribeIndexParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         if (checkIndexParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or field name cannot be empty");
         }
 
         DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
@@ -1042,7 +1064,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Describe index successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("describeIndex RPC failed:\n{}", e.getStatus().toString());
@@ -1053,11 +1076,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<GetIndexStateResponse> getIndexState(GetIndexStateParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         if (checkIndexParam(requestParam)) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name or field name cannot be empty");
         }
 
         GetIndexStateRequest getIndexStateRequest = GetIndexStateRequest.newBuilder()
@@ -1074,7 +1097,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Get index state successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("getIndexState RPC failed:\n{}", e.getStatus().toString());
@@ -1085,12 +1109,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Override
     public R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam) {
         if (checkServerConnection()) {
-            return R.failed(R.Status.ConnectFailed);
+            return R.failed(R.Status.ConnectFailed, "Server is not available");
         }
 
         // indexName is required in this rpc
         if (checkIndexParam(requestParam) || StringUtils.isEmpty(requestParam.getIndexName())) {
-            return R.failed(R.Status.ParamError);
+            return R.failed(R.Status.ParamError, "Collection name, field name, index name cannot be empty");
         }
 
         GetIndexBuildProgressRequest getIndexBuildProgressRequest = GetIndexBuildProgressRequest.newBuilder()
@@ -1108,7 +1132,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 logInfo("Get index build progress successfully!\n{}", requestParam.toString());
                 return R.success(response);
             } else {
-                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()));
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
             }
         } catch (StatusRuntimeException e) {
             logError("getIndexBuildProgress RPC failed:\n{}", e.getStatus().toString());

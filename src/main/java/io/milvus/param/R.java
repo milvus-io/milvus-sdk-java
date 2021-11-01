@@ -37,6 +37,8 @@ public class R<T> {
         this.exception = exception;
     }
 
+    public String getMessage() { return exception.getMessage(); }
+
     public Integer getStatus() {
         return status;
     }
@@ -60,17 +62,17 @@ public class R<T> {
         return r;
     }
 
-    public static <T> R<T> failed(ErrorCode errorCode) {
+    public static <T> R<T> failed(ErrorCode errorCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(errorCode.ordinal());
-        r.setException(new Exception(errorCode.name()));
+        r.setException(new Exception(msg));
         return r;
     }
 
-    public static <T> R<T> failed(Status statusCode) {
+    public static <T> R<T> failed(Status statusCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(statusCode.getCode());
-        r.setException(new Exception(statusCode.name()));
+        r.setException(new Exception(msg));
         return r;
     }
 

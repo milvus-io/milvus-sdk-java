@@ -59,8 +59,8 @@ public class CreateCollectionParam {
 
     public static final class Builder {
         private String collectionName;
-        private int shardsNum;
-        private String description;
+        private int shardsNum = 2;
+        private String description = "";
         private FieldType[] fieldTypes;
 
         private Builder() {
