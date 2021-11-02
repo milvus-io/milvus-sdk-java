@@ -1,0 +1,28 @@
+# This workflow will generate Javadoc using Maven and then publish it to GitHub packages when a release is created.
+
+name: Generate and update Javadoc
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  generateJavadoc:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Java 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: Generate javadoc
+      run: mvn javadoc:javadoc
+    - name: Deploy on milvus-io.github.io
+      uses: peaceiris/actions-gh-pages@v3
+      with: 
+        deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        external_repository: milvus-io/milvus-io.github.io
+        publish_branch: master  # default: gh-pages
+        publish_dir: ./target/site/apidocs
+        destination_dir: milvus-sdk-java/javadoc/${{github.event.release.tag_name}}
