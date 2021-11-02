@@ -65,13 +65,18 @@ message KeyValuePair {
     string value = 2;
 }
 
+message KeyDataPair {
+    string key = 1;
+    bytes data = 2;
+}
+
 message Blob {
     bytes value = 1;
 }
 
 message Address {
-  string ip = 1;
-  int64 port = 2;
+    string ip = 1;
+    int64 port = 2;
 }
 
 enum MsgType {
@@ -85,6 +90,10 @@ enum MsgType {
     GetSystemConfigs = 105;
     LoadCollection = 106;
     ReleaseCollection = 107;
+    CreateAlias = 108;
+    DropAlias = 109;
+    AlterAlias = 110;
+
 
     /* DEFINITION REQUESTS: PARTITION */
     CreatePartition = 200;
@@ -126,6 +135,7 @@ enum MsgType {
     RemoveDmChannels = 509;
     WatchQueryChannels = 510;
     RemoveQueryChannels = 511;
+    SealedSegmentsChangeInfo = 512;
 
     /* DATA SERVICE */
     SegmentInfo = 600;
@@ -157,5 +167,11 @@ enum DslType {
 
 // Don't Modify This. @czs
 message MsgHeader {
-    MsgBase base = 1;
+    common.MsgBase base = 1;
+}
+
+// Don't Modify This. @czs
+message DMLMsgHeader {
+    common.MsgBase base = 1;
+    string shardName = 2;
 }
