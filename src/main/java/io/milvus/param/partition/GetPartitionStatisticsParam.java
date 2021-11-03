@@ -19,6 +19,11 @@
 
 package io.milvus.param.partition;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
+import javax.annotation.Nonnull;
+
 /**
  * Params for get partition statistics RPC operation
  *
@@ -28,17 +33,17 @@ public class GetPartitionStatisticsParam {
     private final String collectionName;
     private final String partitionName;
 
+    private GetPartitionStatisticsParam(@Nonnull Builder builder) {
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+    }
+
     public String getCollectionName() {
         return collectionName;
     }
 
     public String getPartitionName() {
         return partitionName;
-    }
-
-    public GetPartitionStatisticsParam(Builder builder) {
-        this.collectionName = builder.collectionName;
-        this.partitionName = builder.partitionName;
     }
 
     public static final class Builder {
@@ -52,17 +57,20 @@ public class GetPartitionStatisticsParam {
             return new Builder();
         }
 
-        public Builder withCollectionName(String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(String partitionName) {
+        public Builder withPartitionName(@Nonnull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public GetPartitionStatisticsParam build() {
+        public GetPartitionStatisticsParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+            ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
+
             return new GetPartitionStatisticsParam(this);
         }
     }

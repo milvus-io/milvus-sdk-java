@@ -19,6 +19,11 @@
 
 package io.milvus.param.partition;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
+import javax.annotation.Nonnull;
+
 /**
  * Params for load partitions RPC operation
  *
@@ -28,17 +33,17 @@ public class LoadPartitionsParam {
     private final String collectionName;
     private final String[] partitionNames;
 
+    private LoadPartitionsParam(@Nonnull Builder builder) {
+        this.collectionName = builder.collectionName;
+        this.partitionNames = builder.partitionNames;
+    }
+
     public String getCollectionName() {
         return collectionName;
     }
 
     public String[] getPartitionNames() {
         return partitionNames;
-    }
-
-    public LoadPartitionsParam(Builder builder) {
-        this.collectionName = builder.collectionName;
-        this.partitionNames = builder.partitionNames;
     }
 
     public static final class Builder {
@@ -52,17 +57,27 @@ public class LoadPartitionsParam {
             return new Builder();
         }
 
-        public Builder withCollectionName(String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionNames(String[] partitionNames) {
+        public Builder withPartitionNames(@Nonnull String[] partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public LoadPartitionsParam build() {
+        public LoadPartitionsParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+
+            if (partitionNames == null || partitionNames.length == 0) {
+                throw new ParamException("Partition names cannot be empty");
+            }
+
+            for (String name : partitionNames) {
+                ParamUtils.CheckNullEmptyString(name, "Partition name");
+            }
+
             return new LoadPartitionsParam(this);
         }
     }

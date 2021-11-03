@@ -20,37 +20,42 @@
 package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
-import io.milvus.grpc.DslType;
+import io.milvus.exception.ParamException;
 import io.milvus.param.MetricType;
+import io.milvus.param.ParamUtils;
 
 import javax.annotation.Nonnull;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * SearchParam.vectors:
+ * if is FloatVector: vectors is List<List<Float>>
+ * if is BinaryVector: vectors is List<ByteBuffer>
+ */
 public class SearchParam {
     private final String dbName;
     private final String collectionName;
     private final List<String> partitionNames;
-    private final MetricType metricType;
+    private final String metricType;
     private final String vectorFieldName;
     private final Integer topK;
-    private final DslType dslType;
-    private final String dsl;
+    private final String expr;
     private final List<String> outFields;
-    private final List<List<Float>> vectors;
-    private final Map<String, String> params;
+    private final List<?> vectors;
+    private final String params;
 
     private SearchParam(@Nonnull Builder builder) {
         this.dbName = builder.dbName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
-        this.metricType = builder.metricType;
+        this.metricType = builder.metricType.name();
         this.vectorFieldName = builder.vectorFieldName;
         this.topK = builder.topK;
-        this.dslType = builder.dslType;
-        this.dsl = builder.dsl;
+        this.expr = builder.expr;
         this.outFields = builder.outFields;
         this.vectors = builder.vectors;
         this.params = builder.params;
@@ -68,7 +73,7 @@ public class SearchParam {
         return partitionNames;
     }
 
-    public MetricType getMetricType() {
+    public String getMetricType() {
         return metricType;
     }
 
@@ -80,38 +85,33 @@ public class SearchParam {
         return topK;
     }
 
-    public DslType getDslType() {
-        return dslType;
-    }
-
-    public String getDsl() {
-        return dsl;
+    public String getExpr() {
+        return expr;
     }
 
     public List<String> getOutFields() {
         return outFields;
     }
 
-    public List<List<Float>> getVectors() {
+    public List<?> getVectors() {
         return vectors;
     }
 
-    public Map<String, String> getParams() {
+    public String getParams() {
         return params;
     }
 
     public static class Builder {
-        private String dbName = "";
+        private String dbName = ""; // reserved
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.L2;
         private String vectorFieldName;
         private Integer topK;
-        private DslType dslType = DslType.BoolExprV1;
-        private String dsl;
+        private String expr;
         private List<String> outFields = new ArrayList<>();
-        private List<List<Float>> vectors;
-        private Map<String, String> params = new HashMap<>();
+        private List<?> vectors;
+        private String params;
 
         private Builder() {
         }
@@ -120,63 +120,92 @@ public class SearchParam {
             return new Builder();
         }
 
-        public Builder setDbName(@Nonnull String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        public Builder setCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder setPartitionNames(@Nonnull List<String> partitionNames) {
+        public Builder withPartitionNames(@Nonnull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder setMetricType(@Nonnull MetricType metricType) {
+        public Builder withMetricType(@Nonnull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder setVectorFieldName(@Nonnull String vectorFieldName) {
+        public Builder withVectorFieldName(@Nonnull String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
-        public Builder setTopK(@Nonnull Integer topK) {
+        public Builder withTopK(@Nonnull Integer topK) {
             this.topK = topK;
             return this;
         }
 
-        public Builder setDslType(@Nonnull DslType dslType) {
-            this.dslType = dslType;
+        public Builder withExpr(@Nonnull String expr) {
+            this.expr = expr;
             return this;
         }
 
-        public Builder setDsl(@Nonnull String dsl) {
-            this.dsl = dsl;
-            return this;
-        }
-
-        public Builder setOutFields(@Nonnull List<String> outFields) {
+        public Builder withOutFields(@Nonnull List<String> outFields) {
             this.outFields = outFields;
             return this;
         }
 
-        public Builder setVectors(@Nonnull List<List<Float>> vectors) {
+        public Builder withVectors(@Nonnull List<?> vectors) {
             this.vectors = vectors;
             return this;
         }
 
 
-        public Builder setParams(@Nonnull Map<String, String> params) {
+        public Builder withParams(@Nonnull String params) {
             this.params = params;
             return this;
         }
 
-        public SearchParam build() {
+        public SearchParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+            ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
+
+            if (metricType == MetricType.INVALID) {
+                throw new ParamException("Metric type is illegal");
+            }
+
+            if (vectors == null || vectors.isEmpty()) {
+                throw new ParamException("Target vectors can not be empty");
+            }
+
+            if (vectors.get(0) instanceof List) {
+                // float vectors
+                List first = (List) vectors.get(0);
+                if (!(first.get(0) instanceof Float)) {
+                    throw new ParamException("Float vector field's value must be Lst<Float>");
+                }
+
+                int dim = first.size();
+                for (int i = 1; i < vectors.size(); ++i) {
+                    List temp = (List) vectors.get(i);
+                    if (dim != temp.size()) {
+                        throw new ParamException("Target vector dimension must be equal");
+                    }
+                }
+            } else if (vectors.get(0) instanceof ByteBuffer) {
+                // binary vectors
+                ByteBuffer first = (ByteBuffer) vectors.get(0);
+                int dim = first.position();
+                for (int i = 1; i < vectors.size(); ++i) {
+                    ByteBuffer temp = (ByteBuffer) vectors.get(i);
+                    if (dim != temp.position()) {
+                        throw new ParamException("Target vector dimension must be equal");
+                    }
+                }
+            } else {
+                throw new ParamException("Target vector type must be Lst<Float> or ByteBuffer");
+            }
+
             return new SearchParam(this);
         }
     }

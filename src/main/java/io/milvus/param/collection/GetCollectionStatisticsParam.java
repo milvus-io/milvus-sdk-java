@@ -19,6 +19,11 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
+import javax.annotation.Nonnull;
+
 /**
  * Params for create collection RPC operation
  *
@@ -27,12 +32,12 @@ package io.milvus.param.collection;
 public class GetCollectionStatisticsParam {
     private final String collectionName;
 
-    public String getCollectionName() {
-        return collectionName;
+    private GetCollectionStatisticsParam(@Nonnull Builder builder) {
+        this.collectionName = builder.collectionName;
     }
 
-    public GetCollectionStatisticsParam(Builder builder) {
-        this.collectionName = builder.collectionName;
+    public String getCollectionName() {
+        return collectionName;
     }
 
     public static final class Builder {
@@ -45,12 +50,14 @@ public class GetCollectionStatisticsParam {
             return new Builder();
         }
 
-        public Builder withCollectionName(String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public GetCollectionStatisticsParam build() {
+        public GetCollectionStatisticsParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+
             return new GetCollectionStatisticsParam(this);
         }
     }

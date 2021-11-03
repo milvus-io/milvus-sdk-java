@@ -19,36 +19,27 @@
 
 package io.milvus.param.index;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
+import javax.annotation.Nonnull;
+
 /**
  * @author changzechuan
  */
 public class GetIndexBuildProgressParam {
     private final String collectionName;
-    private final String fieldName;
-    private final String indexName;
+
+    private GetIndexBuildProgressParam(@Nonnull Builder builder) {
+        this.collectionName = builder.collectionName;
+    }
 
     public String getCollectionName() {
         return collectionName;
     }
 
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public String getIndexName() {
-        return indexName;
-    }
-
-    public GetIndexBuildProgressParam(Builder builder) {
-        this.collectionName = builder.collectionName;
-        this.fieldName = builder.fieldName;
-        this.indexName = builder.indexName;
-    }
-
     public static final class Builder {
         private String collectionName;
-        private String fieldName;
-        private String indexName;
 
         private Builder() {
         }
@@ -57,22 +48,14 @@ public class GetIndexBuildProgressParam {
             return new Builder();
         }
 
-        public Builder withCollectionName(String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withFieldName(String fieldName) {
-            this.fieldName = fieldName;
-            return this;
-        }
+        public GetIndexBuildProgressParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-        public Builder withIndexName(String indexName) {
-            this.indexName = indexName;
-            return this;
-        }
-
-        public GetIndexBuildProgressParam build() {
             return new GetIndexBuildProgressParam(this);
         }
     }

@@ -20,6 +20,8 @@
 package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -61,46 +63,43 @@ public class QueryParam {
     }
 
     public static class Builder {
-        private String dbName = "";
+        private String dbName = ""; // reserved
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
         private List<String> outFields = new ArrayList<>();
         private String expr;
 
-        private Builder(@Nonnull String expr) {
-            this.expr = expr;
+        private Builder() {
         }
 
-        public static Builder newBuilder(@Nonnull String expr) {
-            return new Builder(expr);
+        public static Builder newBuilder() {
+            return new Builder();
         }
 
-        public Builder setDbName(@Nonnull String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        public Builder setCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder setPartitionNames(@Nonnull List<String> partitionNames) {
+        public Builder withPartitionNames(@Nonnull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder setOutFields(List<String> outFields) {
+        public Builder withOutFields(@Nonnull List<String> outFields) {
             this.outFields = outFields;
             return this;
         }
 
-        public Builder setExpr(String expr) {
+        public Builder withExpr(@Nonnull String expr) {
             this.expr = expr;
             return this;
         }
 
-        public QueryParam build() {
+        public QueryParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+            ParamUtils.CheckNullEmptyString(expr, "Expression");
+
             return new QueryParam(this);
         }
     }

@@ -20,40 +20,93 @@
 package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
- * only support two vectors cal
+ * currently only support float vectors calculation
  */
 public class CalcDistanceParam {
-    private final List<Float> vector1;
-    private final List<Float> vector2;
-    private final MetricType metricType;
+    private final List<List<Float>> vectors_left;
+    private final List<List<Float>> vectors_right;
+    private final String metricType;
 
-    public CalcDistanceParam(@Nonnull List<Float> vector1,
-                             @Nonnull List<Float> vector2,
-                             @Nonnull MetricType metricType) {
-        if (vector1.size() != vector2.size()) {
-            throw new ParamException("size is not equal");
+    private CalcDistanceParam(@Nonnull Builder builder) {
+        this.vectors_left = builder.vectors_left;
+        this.vectors_right = builder.vectors_right;
+        this.metricType = builder.metricType.name();
+    }
+
+    public List<List<Float>> getVectorsLeft() {
+        return vectors_left;
+    }
+
+    public List<List<Float>> getVectorsRight() {
+        return vectors_right;
+    }
+
+    public String getMetricType() {
+        return metricType;
+    }
+
+    public static class Builder {
+        private List<List<Float>> vectors_left;
+        private List<List<Float>> vectors_right;
+        private MetricType metricType;
+
+        private Builder() {
         }
 
-        this.vector1 = vector1;
-        this.vector2 = vector2;
-        this.metricType = metricType;
-    }
+        public static Builder newBuilder() {
+            return new Builder();
+        }
 
-    public List<Float> getVector1() {
-        return vector1;
-    }
+        public Builder withVectorsLeft(@Nonnull List<List<Float>> vectors) {
+            this.vectors_left = vectors;
+            return this;
+        }
 
-    public List<Float> getVector2() {
-        return vector2;
-    }
+        public Builder withVectorsRight(@Nonnull List<List<Float>> vectors) {
+            this.vectors_right = vectors;
+            return this;
+        }
 
-    public MetricType getMetricType() {
-        return metricType;
+        public Builder withMetricType(MetricType metricType) {
+            this.metricType = metricType;
+            return this;
+        }
+
+        public CalcDistanceParam build() throws ParamException {
+            if (metricType == MetricType.INVALID) {
+                throw new ParamException("Metric type is illegal");
+            }
+
+            if (vectors_left == null || vectors_left.isEmpty()) {
+                throw new ParamException("Left vectors can not be empty");
+            }
+
+            int count = vectors_left.get(0).size();
+            for (List<Float> vector : vectors_left) {
+                if (vector.size() != count) {
+                    throw new ParamException("Left vector's dimension must be equal");
+                }
+            }
+
+            if (vectors_right == null || vectors_right.isEmpty()) {
+                throw new ParamException("Right vectors can not be empty");
+            }
+
+            count = vectors_right.get(0).size();
+            for (List<Float> vector : vectors_right) {
+                if (vector.size() != count) {
+                    throw new ParamException("Right vector's dimension must be equal");
+                }
+            }
+
+            return new CalcDistanceParam(this);
+        }
     }
 }

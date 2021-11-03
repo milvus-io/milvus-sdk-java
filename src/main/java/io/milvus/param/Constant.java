@@ -19,11 +19,18 @@
 
 package io.milvus.param;
 
+import io.milvus.grpc.DataType;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class Constant {
     // default value for search key
     public static final String VECTOR_TAG = "$0";
     public static final String VECTOR_FIELD = "anns_field";
+    public static final String VECTOR_DIM = "dim";
     public static final String TOP_K = "topk";
+    public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";
     public static final String PARAMS = "params";
 }

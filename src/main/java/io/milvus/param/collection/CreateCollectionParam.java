@@ -19,6 +19,9 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
 import javax.annotation.Nonnull;
 import java.util.Arrays;
 
@@ -56,7 +59,6 @@ public class CreateCollectionParam {
         return fieldTypes;
     }
 
-
     public static final class Builder {
         private String collectionName;
         private int shardsNum = 2;
@@ -70,7 +72,7 @@ public class CreateCollectionParam {
             return new Builder();
         }
 
-        public Builder withCollectionName(String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
@@ -80,17 +82,33 @@ public class CreateCollectionParam {
             return this;
         }
 
-        public Builder withDescription(String description) {
+        public Builder withDescription(@Nonnull String description) {
             this.description = description;
             return this;
         }
 
-        public Builder withFieldTypes(FieldType[] fieldTypes) {
+        public Builder withFieldTypes(@Nonnull FieldType[] fieldTypes) {
             this.fieldTypes = fieldTypes;
             return this;
         }
 
-        public CreateCollectionParam build() {
+        public CreateCollectionParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+
+            if (shardsNum <= 0) {
+                throw new ParamException("ShardNum must be larger than 0");
+            }
+
+            if (fieldTypes == null || fieldTypes.length <= 0) {
+                throw new ParamException("Field numbers must be larger than 0");
+            }
+
+            for (FieldType fieldType : fieldTypes) {
+                if (fieldType == null) {
+                    throw new ParamException("Collection field cannot be null");
+                }
+            }
+
             return new CreateCollectionParam(this);
         }
     }
