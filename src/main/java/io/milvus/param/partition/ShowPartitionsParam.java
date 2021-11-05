@@ -25,30 +25,23 @@ import io.milvus.param.ParamUtils;
 import javax.annotation.Nonnull;
 
 /**
- * Params for create partition RPC operation
+ * Params for show partition RPC operation
  *
  * @author changzechuan
  */
-public class CreatePartitionParam {
+public class ShowPartitionsParam {
     private final String collectionName;
-    private final String partitionName;
 
-    private CreatePartitionParam(@Nonnull Builder builder) {
+    private ShowPartitionsParam(@Nonnull Builder builder) {
         this.collectionName = builder.collectionName;
-        this.partitionName = builder.partitionName;
     }
 
     public String getCollectionName() {
         return collectionName;
     }
 
-    public String getPartitionName() {
-        return partitionName;
-    }
-
     public static final class Builder {
         private String collectionName;
-        private String partitionName;
 
         private Builder() {
         }
@@ -62,16 +55,10 @@ public class CreatePartitionParam {
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
-            this.partitionName = partitionName;
-            return this;
-        }
-
-        public CreatePartitionParam build() throws ParamException {
+        public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-            ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
 
-            return new CreatePartitionParam(this);
+            return new ShowPartitionsParam(this);
         }
     }
 }

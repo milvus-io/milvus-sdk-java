@@ -19,10 +19,13 @@
 
 package io.milvus.client;
 
+import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.milvus.param.ConnectParam;
+import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.R;
 
 import java.util.concurrent.TimeUnit;
 
@@ -56,20 +59,19 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
-    protected boolean maybeAvailable() {
-        switch (channel.getState(false)) {
-            case IDLE:
-            case CONNECTING:
-            case READY:
-                return true;
-            default:
+    protected boolean clientIsReady() {
+        ConnectivityState state = channel.getState(false);
+        switch (state) {
+            case SHUTDOWN:
                 return false;
+            default:
+                return true;
         }
     }
 
     @Override
     public void close(long maxWaitSeconds) {
-
+        channel.shutdownNow();
     }
 }
 

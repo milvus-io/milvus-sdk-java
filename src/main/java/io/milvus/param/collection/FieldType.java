@@ -19,9 +19,14 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
+import io.milvus.param.Constant;
+import io.milvus.param.ParamUtils;
 
 import javax.annotation.Nonnull;
+import javax.xml.crypto.Data;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,7 +41,6 @@ public class FieldType {
     private final String description;
     private final DataType dataType;
     private final Map<String,String> typeParams;
-    private final Map<String,String> indexParams;
     private final boolean autoID;
 
     private FieldType(@Nonnull Builder builder){
@@ -46,7 +50,6 @@ public class FieldType {
         this.description = builder.description;
         this.dataType = builder.dataType;
         this.typeParams = builder.typeParams;
-        this.indexParams = builder.indexParams;
         this.autoID = builder.autoID;
     }
 
@@ -74,10 +77,6 @@ public class FieldType {
         return typeParams;
     }
 
-    public Map<String, String> getIndexParams() {
-        return indexParams;
-    }
-
     public boolean isAutoID() {
         return autoID;
     }
@@ -89,7 +88,6 @@ public class FieldType {
         private String description;
         private DataType dataType;
         private Map<String,String> typeParams;
-        private Map<String,String> indexParams;
         private boolean autoID;
 
         private Builder() {
@@ -104,7 +102,7 @@ public class FieldType {
             return this;
         }
 
-        public Builder withName(String name) {
+        public Builder withName(@Nonnull String name) {
             this.name = name;
             return this;
         }
@@ -114,7 +112,7 @@ public class FieldType {
             return this;
         }
 
-        public Builder withDescription(String description) {
+        public Builder withDescription(@Nonnull String description) {
             this.description = description;
             return this;
         }
@@ -129,8 +127,12 @@ public class FieldType {
             return this;
         }
 
-        public Builder withIndexParams(Map<String, String> indexParams) {
-            this.indexParams = indexParams;
+        // for vector field, for easy use
+        public Builder withDimension(Integer dimension) {
+            if (this.typeParams == null) {
+                this.typeParams = new HashMap<>();
+            }
+            this.typeParams.put(Constant.VECTOR_DIM, dimension.toString());
             return this;
         }
 
@@ -139,7 +141,19 @@ public class FieldType {
             return this;
         }
 
-        public FieldType build() {
+        public FieldType build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(name, "Field name");
+
+            if (dataType == null || dataType == DataType.None) {
+                throw new ParamException("Field data type is illegal");
+            }
+
+            if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
+                if (typeParams == null || !typeParams.containsKey(Constant.VECTOR_DIM)) {
+                    throw new ParamException("Vector field dimension must be larger than zero");
+                }
+            }
+
             return new FieldType(this);
         }
     }

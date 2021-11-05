@@ -19,17 +19,22 @@
 
 package io.milvus.param.dml;
 
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
 import javax.annotation.Nonnull;
 
 public class DeleteParam {
     private final String dbName;
     private final String collectionName;
     private final String partitionName;
+    private final String expr;
 
     private DeleteParam(@Nonnull Builder builder) {
         this.dbName = builder.dbName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+        this.expr = builder.expr;
     }
 
     public String getDbName() {
@@ -44,10 +49,15 @@ public class DeleteParam {
         return partitionName;
     }
 
+    public String getExpr() {
+        return expr;
+    }
+
     public static class Builder {
-        private String dbName = "";
+        private String dbName = ""; // reserved
         private String collectionName;
-        private String partitionName;
+        private String partitionName = "";
+        private String expr;
 
         private Builder() {
         }
@@ -56,22 +66,25 @@ public class DeleteParam {
             return new Builder();
         }
 
-        public Builder setPartitionName(@Nonnull String partitionName) {
-            this.partitionName = partitionName;
-            return this;
-        }
-
-        public Builder setDbName(@Nonnull String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        public Builder setCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@Nonnull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public DeleteParam build() {
+        public Builder withPartitionName(@Nonnull String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public Builder withExpr(@Nonnull String expr) {
+            this.expr = expr;
+            return this;
+        }
+
+        public DeleteParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+            ParamUtils.CheckNullEmptyString(expr, "Expression");
+
             return new DeleteParam(this);
         }
     }

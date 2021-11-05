@@ -21,8 +21,8 @@ package io.milvus.exception;
 
 import io.milvus.param.R;
 
-public class ParamException extends MilvusException {
-    public ParamException(String msg) {
-        super(msg, R.Status.ParamError.getCode());
+public class ClientNotConnectedException extends MilvusException {
+    public ClientNotConnectedException(String msg) {
+        super(msg, R.Status.ClientNotConnected.getCode());
     }
 }

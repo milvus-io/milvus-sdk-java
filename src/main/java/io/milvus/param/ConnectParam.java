@@ -19,6 +19,8 @@
 
 package io.milvus.param;
 
+import io.milvus.exception.ParamException;
+
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 
@@ -145,7 +147,7 @@ public class ConnectParam {
             return this;
         }
 
-        public ConnectParam build() {
+        public ConnectParam build() throws ParamException {
             return new ConnectParam(this);
         }
     }

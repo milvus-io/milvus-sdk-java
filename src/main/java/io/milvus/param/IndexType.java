@@ -17,12 +17,19 @@
  * under the License.
  */
 
-package io.milvus.exception;
+package io.milvus.param;
 
-import io.milvus.param.R;
-
-public class ParamException extends MilvusException {
-    public ParamException(String msg) {
-        super(msg, R.Status.ParamError.getCode());
-    }
+public enum IndexType {
+    INVALID,
+    IVF_FLAT,
+    IVF_PQ,
+    IVF_SQ8,
+    HNSW,
+    RHNSW_FLAT,
+    RHNSW_PQ,
+    RHNSW_SQ,
+    ANNOY,
+    //Only supported for byte vectors
+    BIN_IVF_FLAT,
+    ;
 }

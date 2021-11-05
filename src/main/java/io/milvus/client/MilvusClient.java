@@ -19,41 +19,19 @@
 
 package io.milvus.client;
 
+import io.milvus.grpc.*;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.collection.*;
+import io.milvus.param.dml.*;
+import io.milvus.param.index.*;
+import io.milvus.param.partition.*;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import io.milvus.grpc.*;
-import io.milvus.param.*;
-import io.milvus.grpc.DescribeCollectionResponse;
-import io.milvus.grpc.DescribeIndexResponse;
-import io.milvus.grpc.GetCollectionStatisticsResponse;
-import io.milvus.grpc.GetIndexBuildProgressResponse;
-import io.milvus.grpc.GetIndexStateResponse;
-import io.milvus.grpc.GetPartitionStatisticsResponse;
-import io.milvus.grpc.ShowCollectionsResponse;
-import io.milvus.grpc.ShowPartitionsResponse;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DescribeCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.GetCollectionStatisticsParam;
-import io.milvus.param.collection.HasCollectionParam;
-import io.milvus.param.collection.LoadCollectionParam;
-import io.milvus.param.collection.ReleaseCollectionParam;
-import io.milvus.param.collection.ShowCollectionParam;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.CreateIndexParam;
-import io.milvus.param.index.DescribeIndexParam;
-import io.milvus.param.index.DropIndexParam;
-import io.milvus.param.index.GetIndexBuildProgressParam;
-import io.milvus.param.index.GetIndexStateParam;
-import io.milvus.param.partition.CreatePartitionParam;
-import io.milvus.param.partition.DropPartitionParam;
-import io.milvus.param.partition.GetPartitionStatisticsParam;
-import io.milvus.param.partition.HasPartitionParam;
-import io.milvus.param.partition.LoadPartitionsParam;
-import io.milvus.param.partition.ReleasePartitionsParam;
-import io.milvus.param.partition.ShowPartitionParam;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {
@@ -142,10 +120,10 @@ public interface MilvusClient {
     /**
      * List all collections or get collection loading status.
      *
-     * @param requestParam {@link ShowCollectionParam}
+     * @param requestParam {@link ShowCollectionsParam}
      * @return {status:result code, data: ShowCollectionsResponse{status,collection_names,collection_ids,created_timestamps,created_utc_timestamps}}
      */
-    R<ShowCollectionsResponse> showCollections(ShowCollectionParam requestParam);
+    R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
 
     /**
      * Create a partition in a collection.
@@ -198,10 +176,34 @@ public interface MilvusClient {
     /**
      * Show all partitions in a collection.
      *
-     * @param requestParam {@link ShowPartitionParam}
+     * @param requestParam {@link ShowPartitionsParam}
      * @return {status:result code,data:ShowPartitionsResponse{partition_names,partitionIDs,created_timestamps,created_utc_timestamps}}
      */
-    R<ShowPartitionsResponse> showPartitions(ShowPartitionParam requestParam);
+    R<ShowPartitionsResponse> showPartitions(ShowPartitionsParam requestParam);
+
+    /**
+     * Create alias for a collection.
+     *
+     * @param requestParam {@link CreateAliasParam}
+     * @return {status:result code,data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createAlias(CreateAliasParam requestParam);
+
+    /**
+     * Drop an alias.
+     *
+     * @param requestParam {@link DropAliasParam}
+     * @return {status:result code,data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> dropAlias(DropAliasParam requestParam);
+
+    /**
+     * Alter alias from a collection to another.
+     *
+     * @param requestParam {@link AlterAliasParam}
+     * @return {status:result code,data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> alterAlias(AlterAliasParam requestParam);
 
     /**
      * Create an index on a vector field. Note that index building is an async progress.

@@ -19,7 +19,9 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.ShowType;
+import io.milvus.param.ParamUtils;
 
 import javax.annotation.Nonnull;
 
@@ -28,9 +30,14 @@ import javax.annotation.Nonnull;
  *
  * @author changzechuan
  */
-public class ShowCollectionParam {
+public class ShowCollectionsParam {
     private final String[] collectionNames;
     private final ShowType showType;
+
+    private ShowCollectionsParam(@Nonnull Builder builder) {
+        this.collectionNames = builder.collectionNames;
+        this.showType = builder.showType;
+    }
 
     public String[] getCollectionNames() {
         return collectionNames;
@@ -40,14 +47,12 @@ public class ShowCollectionParam {
         return showType;
     }
 
-    public ShowCollectionParam(@Nonnull Builder builder) {
-        this.collectionNames = builder.collectionNames;
-        this.showType = builder.showType;
-    }
-
     public static final class Builder {
         private String[] collectionNames;
-        private ShowType showType;
+        // showType:
+        //   default showType = ShowType.All
+        //   if collectionNames is not empty, set showType = ShowType.InMemory
+        private ShowType showType = ShowType.All;
 
         private Builder() {
         }
@@ -56,18 +61,20 @@ public class ShowCollectionParam {
             return new Builder();
         }
 
-        public Builder withCollectionNames(String[] collectionNames) {
+        public Builder withCollectionNames(@Nonnull String[] collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
-        public Builder withShowType(ShowType showType) {
-            this.showType = showType;
-            return this;
-        }
+        public ShowCollectionsParam build() throws ParamException {
+            if (collectionNames != null && collectionNames.length != 0) {
+                for (String collectionName : collectionNames) {
+                    ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+                }
+                this.showType = ShowType.InMemory;
+            }
 
-        public ShowCollectionParam build() {
-            return new ShowCollectionParam(this);
+            return new ShowCollectionsParam(this);
         }
     }
 }

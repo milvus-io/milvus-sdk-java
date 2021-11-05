@@ -17,42 +17,21 @@
  * under the License.
  */
 
-package io.milvus.param.partition;
+package io.milvus.exception;
 
-/**
- * Params for show partition RPC operation
- *
- * @author changzechuan
- */
-public class ShowPartitionParam {
-    private final String collectionName;
+public abstract class MilvusException extends RuntimeException {
+    protected Integer status;
 
-    public String getCollectionName() {
-        return collectionName;
+    public MilvusException(String msg, Integer status) {
+        super(msg);
+        this.status = status;
     }
 
-
-    public ShowPartitionParam(Builder builder) {
-        this.collectionName = builder.collectionName;
+    public Integer getStatus() {
+        return status;
     }
 
-    public static final class Builder {
-        private String collectionName;
-
-        private Builder() {
-        }
-
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(String collectionName) {
-            this.collectionName = collectionName;
-            return this;
-        }
-
-        public ShowPartitionParam build() {
-            return new ShowPartitionParam(this);
-        }
+    public void setStatus(Integer status) {
+        this.status = status;
     }
 }
