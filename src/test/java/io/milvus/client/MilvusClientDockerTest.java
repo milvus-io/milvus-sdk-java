@@ -19,15 +19,17 @@
 
 package io.milvus.client;
 
+import io.milvus.Response.GetCollStatResponseWrapper;
+import io.milvus.Response.SearchResultsWrapper;
 import io.milvus.grpc.DataType;
-import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.SearchResults;
-import io.milvus.param.*;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.MetricType;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import org.apache.commons.text.RandomStringGenerator;
@@ -38,7 +40,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -46,7 +50,7 @@ public class MilvusClientDockerTest {
     private static final Logger logger = LogManager.getLogger("MilvusClientTest");
     private static MilvusClient client;
     private static RandomStringGenerator generator;
-    private int dimension = 128;
+    private static final int dimension = 128;
     private static final Boolean useDockerCompose = Boolean.FALSE;
 
     private static void startDockerContainer() {
@@ -105,7 +109,7 @@ public class MilvusClientDockerTest {
             logger.error("Clean up volume directory of Docker");
             FileUtils.deleteDirectory("volumes");
         } catch (Throwable t) {
-            logger.error("Failed to remove docker com", t);
+            logger.error("Failed to remove docker compose volume", t);
         }
     }
 
@@ -132,13 +136,21 @@ public class MilvusClientDockerTest {
     }
 
     private static ConnectParam.Builder connectParamBuilder(String host, int port) {
-        return ConnectParam.Builder.newBuilder().withHost(host).withPort(port);
+        return ConnectParam.newBuilder().withHost(host).withPort(port);
     }
 
-    private static void checkR(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            logger.error("Error code: {}" + r.getMessage(), r.getStatus());
+    private List<List<Float>> generateFloatVectors(int nq) {
+        Random ran = new Random();
+        List<List<Float>> vectors = new ArrayList<>();
+        for (int n = 0; n < nq; ++n) {
+            List<Float> vector = new ArrayList<>();
+            for (int i = 0; i < dimension; ++i) {
+                vector.add(ran.nextFloat());
+            }
+            vectors.add(vector);
         }
+
+        return vectors;
     }
 
     @Test
@@ -148,15 +160,16 @@ public class MilvusClientDockerTest {
         // collection schema
         String field1Name = "field1";
         String field2Name = "field2";
-        FieldType[] fieldTypes = new FieldType[2];
-        fieldTypes[0] = FieldType.Builder.newBuilder().withFieldID(0l)
+        FieldType field1 = FieldType.newBuilder()
+                .withFieldID(0L)
                 .withPrimaryKey(true)
                 .withDataType(DataType.Int64)
                 .withName(field1Name)
                 .withDescription("hello")
                 .build();
 
-        fieldTypes[1] = FieldType.Builder.newBuilder().withFieldID(1l)
+        FieldType field2 = FieldType.newBuilder()
+                .withFieldID(1L)
                 .withDataType(DataType.FloatVector)
                 .withName(field2Name)
                 .withDescription("world")
@@ -164,79 +177,93 @@ public class MilvusClientDockerTest {
                 .build();
 
         // create collection
-        CreateCollectionParam createParam = CreateCollectionParam.Builder.newBuilder()
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldTypes)
+                .addFieldType(field1)
+                .addFieldType(field2)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
         assertEquals(createR.getStatus().intValue(), R.Status.Success.getCode());
 
         // insert data
+        int rowCount = 10000;
         List<Long> ids = new ArrayList<>();
-        List<List<Float>> vectors = new ArrayList<>();
-
-        Random ran=new Random();
-        for (Long i = 0L; i < 10000; ++i) {
-            ids.add(i + 100L);
-            List<Float> vector = new ArrayList<>();
-            for (int d = 0; d < dimension; ++d) {
-                vector.add(ran.nextFloat());
-            }
-            vectors.add(vector);
+        for (long i = 0L; i < rowCount; ++i) {
+            ids.add(i);
         }
+        List<List<Float>> vectors = generateFloatVectors(rowCount);
 
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(field1Name, DataType.Int64, ids));
         fields.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
 
-        InsertParam insertParam = InsertParam.Builder
-                .newBuilder()
+        InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withFields(fields)
                 .build();
 
         R<MutationResult> insertR = client.insert(insertParam);
         assertEquals(insertR.getStatus().intValue(), R.Status.Success.getCode());
+//        System.out.println(insertR.getData());
 
-        // flush
-        R<FlushResponse> flushR = client.flush(randomCollectionName);
-        assertEquals(flushR.getStatus().intValue(), R.Status.Success.getCode());
+        // get collection statistics
+        R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
+                .newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFlush(true)
+                .build());
+        assertEquals(statR.getStatus().intValue(), R.Status.Success.getCode());
+
+        GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
+        System.out.println("Collection row count: " + stat.GetRowCount());
 
         // load collection
-        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.Builder
-                .newBuilder()
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build());
         assertEquals(loadR.getStatus().intValue(), R.Status.Success.getCode());
 
-        // search
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < 2; ++i) {
-            vector.add(ran.nextFloat());
+        // pick some vectors to search
+        int nq = 5;
+        List<Long> targetVectorIDs = new ArrayList<>();
+        List<List<Float>> targetVectors = new ArrayList<>();
+        Random ran = new Random();
+        for (int i = 0; i < nq; ++i) {
+            int randomIndex = ran.nextInt(rowCount);
+            targetVectorIDs.add(ids.get(randomIndex));
+            targetVectors.add(vectors.get(randomIndex));
         }
 
-        List<String> outFields = Collections.singletonList(field1Name);
-        SearchParam searchParam = SearchParam.Builder.newBuilder()
+        int topK = 5;
+        SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
-                .withOutFields(outFields)
-                .withTopK(5)
-                .withVectors(Collections.singletonList(vector))
+                .withTopK(topK)
+                .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
                 .build();
 
-
         R<SearchResults> searchR = client.search(searchParam);
+//        System.out.println(searchR);
         assertEquals(searchR.getStatus().intValue(), R.Status.Success.getCode());
 
+        // verify the search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        for (int i = 0; i < targetVectors.size(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = results.GetIDScore(i);
+            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+            System.out.println(scores);
+            assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+        }
+
         // drop collection
-        DropCollectionParam dropParam = DropCollectionParam.Builder.newBuilder()
+        DropCollectionParam dropParam = DropCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build();
 
-        R<RpcStatus> deleteR = client.dropCollection(dropParam);
-        assertEquals(deleteR.getStatus().intValue(), R.Status.Success.getCode());
+        R<RpcStatus> dropR = client.dropCollection(dropParam);
+        assertEquals(dropR.getStatus().intValue(), R.Status.Success.getCode());
     }
 }

@@ -22,20 +22,22 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * @author changzechuan
  */
+@Getter
 public class GetIndexBuildProgressParam {
     private final String collectionName;
 
-    private GetIndexBuildProgressParam(@Nonnull Builder builder) {
+    private GetIndexBuildProgressParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -44,11 +46,7 @@ public class GetIndexBuildProgressParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
@@ -58,5 +56,12 @@ public class GetIndexBuildProgressParam {
 
             return new GetIndexBuildProgressParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetIndexBuildProgressParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 }

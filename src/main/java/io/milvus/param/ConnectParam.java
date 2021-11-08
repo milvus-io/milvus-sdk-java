@@ -21,7 +21,7 @@ package io.milvus.param;
 
 import io.milvus.exception.ParamException;
 
-import javax.annotation.Nonnull;
+import lombok.NonNull;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,7 +36,7 @@ public class ConnectParam {
     private final boolean keepAliveWithoutCalls;
     private final long idleTimeoutMs;
 
-    private ConnectParam(@Nonnull Builder builder) {
+    private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
         this.connectTimeoutMs = builder.connectTimeoutMs;
@@ -74,6 +74,10 @@ public class ConnectParam {
         return idleTimeoutMs;
     }
 
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
     /**
      * Builder for <code>ConnectParam</code>
      */
@@ -89,11 +93,7 @@ public class ConnectParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withHost(@Nonnull String host) {
+        public Builder withHost(@NonNull String host) {
             this.host = host;
             return this;
         }
@@ -106,7 +106,7 @@ public class ConnectParam {
             return this;
         }
 
-        public Builder withConnectTimeout(long connectTimeout, @Nonnull TimeUnit timeUnit)
+        public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit)
                 throws IllegalArgumentException {
             if (connectTimeout <= 0L) {
                 throw new IllegalArgumentException("Connect timeout must be positive!");
@@ -115,7 +115,7 @@ public class ConnectParam {
             return this;
         }
 
-        public Builder withKeepAliveTime(long keepAliveTime, @Nonnull TimeUnit timeUnit)
+        public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit)
                 throws IllegalArgumentException {
             if (keepAliveTime <= 0L) {
                 throw new IllegalArgumentException("Keepalive time must be positive!");
@@ -124,7 +124,7 @@ public class ConnectParam {
             return this;
         }
 
-        public Builder withKeepAliveTimeout(long keepAliveTimeout, @Nonnull TimeUnit timeUnit)
+        public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit)
                 throws IllegalArgumentException {
             if (keepAliveTimeout <= 0L) {
                 throw new IllegalArgumentException("Keepalive timeout must be positive!");
@@ -138,7 +138,7 @@ public class ConnectParam {
             return this;
         }
 
-        public Builder withIdleTimeout(long idleTimeout, @Nonnull TimeUnit timeUnit)
+        public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit)
                 throws IllegalArgumentException {
             if (idleTimeout <= 0L) {
                 throw new IllegalArgumentException("Idle timeout must be positive!");
@@ -150,5 +150,13 @@ public class ConnectParam {
         public ConnectParam build() throws ParamException {
             return new ConnectParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectParam{" +
+                "host='" + host + '\'' +
+                ", port='" + port +
+                '}';
     }
 }

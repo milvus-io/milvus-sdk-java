@@ -20,57 +20,46 @@
 package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.util.List;
 
 /**
  * currently only support float vectors calculation
  */
+@Getter
 public class CalcDistanceParam {
-    private final List<List<Float>> vectors_left;
-    private final List<List<Float>> vectors_right;
+    private final List<List<Float>> vectorsLeft;
+    private final List<List<Float>> vectorsRight;
     private final String metricType;
 
-    private CalcDistanceParam(@Nonnull Builder builder) {
-        this.vectors_left = builder.vectors_left;
-        this.vectors_right = builder.vectors_right;
+    private CalcDistanceParam(@NonNull Builder builder) {
+        this.vectorsLeft = builder.vectorsLeft;
+        this.vectorsRight = builder.vectorsRight;
         this.metricType = builder.metricType.name();
     }
 
-    public List<List<Float>> getVectorsLeft() {
-        return vectors_left;
-    }
-
-    public List<List<Float>> getVectorsRight() {
-        return vectors_right;
-    }
-
-    public String getMetricType() {
-        return metricType;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder {
-        private List<List<Float>> vectors_left;
-        private List<List<Float>> vectors_right;
+        private List<List<Float>> vectorsLeft;
+        private List<List<Float>> vectorsRight;
         private MetricType metricType;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withVectorsLeft(@Nonnull List<List<Float>> vectors) {
-            this.vectors_left = vectors;
+        public Builder withVectorsLeft(@NonNull List<List<Float>> vectors) {
+            this.vectorsLeft = vectors;
             return this;
         }
 
-        public Builder withVectorsRight(@Nonnull List<List<Float>> vectors) {
-            this.vectors_right = vectors;
+        public Builder withVectorsRight(@NonNull List<List<Float>> vectors) {
+            this.vectorsRight = vectors;
             return this;
         }
 
@@ -84,23 +73,23 @@ public class CalcDistanceParam {
                 throw new ParamException("Metric type is illegal");
             }
 
-            if (vectors_left == null || vectors_left.isEmpty()) {
+            if (vectorsLeft == null || vectorsLeft.isEmpty()) {
                 throw new ParamException("Left vectors can not be empty");
             }
 
-            int count = vectors_left.get(0).size();
-            for (List<Float> vector : vectors_left) {
+            int count = vectorsLeft.get(0).size();
+            for (List<Float> vector : vectorsLeft) {
                 if (vector.size() != count) {
                     throw new ParamException("Left vector's dimension must be equal");
                 }
             }
 
-            if (vectors_right == null || vectors_right.isEmpty()) {
+            if (vectorsRight == null || vectorsRight.isEmpty()) {
                 throw new ParamException("Right vectors can not be empty");
             }
 
-            count = vectors_right.get(0).size();
-            for (List<Float> vector : vectors_right) {
+            count = vectorsRight.get(0).size();
+            for (List<Float> vector : vectorsRight) {
                 if (vector.size() != count) {
                     throw new ParamException("Right vector's dimension must be equal");
                 }
@@ -108,5 +97,11 @@ public class CalcDistanceParam {
 
             return new CalcDistanceParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CalcDistanceParam{" +
+                '}';
     }
 }

@@ -64,6 +64,7 @@ public class R<T> {
             r.setStatus(e.getStatus());
         } else {
             r.setStatus(Status.Unknown.getCode());
+            r.exception = exception;
         }
         r.setException(exception);
         return r;
@@ -137,7 +138,8 @@ public class R<T> {
         ClientNotConnected(-2),
         Unknown(-3),
         VersionMismatch(-4),
-        ParamError(-5);
+        ParamError(-5),
+        IllegalResponse(-6);
 
         private final int code;
 

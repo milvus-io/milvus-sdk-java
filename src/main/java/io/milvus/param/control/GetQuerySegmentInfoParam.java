@@ -17,26 +17,28 @@
  * under the License.
  */
 
-package io.milvus.param.Control;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * @author:weilongzhao
  * @time:2021/9/4 23:01
  */
+@Getter
 public class GetQuerySegmentInfoParam {
     private final String collectionName;
 
-    private GetQuerySegmentInfoParam(@Nonnull GetQuerySegmentInfoParam.Builder builder) {
+    private GetQuerySegmentInfoParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -45,11 +47,7 @@ public class GetQuerySegmentInfoParam {
         private Builder() {
         }
 
-        public static GetQuerySegmentInfoParam.Builder newBuilder() {
-            return new GetQuerySegmentInfoParam.Builder();
-        }
-
-        public GetQuerySegmentInfoParam.Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
@@ -59,5 +57,12 @@ public class GetQuerySegmentInfoParam {
 
             return new GetQuerySegmentInfoParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetQuerySegmentInfoParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 }

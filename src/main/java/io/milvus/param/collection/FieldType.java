@@ -24,8 +24,8 @@ import io.milvus.grpc.DataType;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
-import javax.xml.crypto.Data;
+import lombok.Getter;
+import lombok.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +34,7 @@ import java.util.Map;
  *
  * @author changzechuan
  */
+@Getter
 public class FieldType {
     private final long fieldID;
     private final String name;
@@ -43,7 +44,7 @@ public class FieldType {
     private final Map<String,String> typeParams;
     private final boolean autoID;
 
-    private FieldType(@Nonnull Builder builder){
+    private FieldType(@NonNull Builder builder){
         this.fieldID = builder.fieldID;
         this.name = builder.name;
         this.primaryKey = builder.primaryKey;
@@ -53,32 +54,8 @@ public class FieldType {
         this.autoID = builder.autoID;
     }
 
-    public long getFieldID() {
-        return fieldID;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean isPrimaryKey() {
-        return primaryKey;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public DataType getDataType() {
-        return dataType;
-    }
-
-    public Map<String, String> getTypeParams() {
-        return typeParams;
-    }
-
-    public boolean isAutoID() {
-        return autoID;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -93,16 +70,12 @@ public class FieldType {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
         public Builder withFieldID(long fieldID) {
             this.fieldID = fieldID;
             return this;
         }
 
-        public Builder withName(@Nonnull String name) {
+        public Builder withName(@NonNull String name) {
             this.name = name;
             return this;
         }
@@ -112,7 +85,7 @@ public class FieldType {
             return this;
         }
 
-        public Builder withDescription(@Nonnull String description) {
+        public Builder withDescription(@NonNull String description) {
             this.description = description;
             return this;
         }

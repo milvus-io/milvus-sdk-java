@@ -22,39 +22,26 @@ package io.milvus.param.dml;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
+@Getter
 public class DeleteParam {
-    private final String dbName;
     private final String collectionName;
     private final String partitionName;
     private final String expr;
 
-    private DeleteParam(@Nonnull Builder builder) {
-        this.dbName = builder.dbName;
+    private DeleteParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.expr = builder.expr;
     }
 
-    public String getDbName() {
-        return dbName;
-    }
-
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getPartitionName() {
-        return partitionName;
-    }
-
-    public String getExpr() {
-        return expr;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder {
-        private String dbName = ""; // reserved
         private String collectionName;
         private String partitionName = "";
         private String expr;
@@ -62,21 +49,17 @@ public class DeleteParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
+        public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public Builder withExpr(@Nonnull String expr) {
+        public Builder withExpr(@NonNull String expr) {
             this.expr = expr;
             return this;
         }
@@ -87,5 +70,14 @@ public class DeleteParam {
 
             return new DeleteParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", expr='" + expr + '\'' +
+                '}';
     }
 }

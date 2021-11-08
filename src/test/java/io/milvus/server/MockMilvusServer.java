@@ -31,9 +31,9 @@ public class MockMilvusServer {
     private static final Logger logger = LoggerFactory.getLogger(MockMilvusServer.class.getName());
 
     private Server rpcServer;
-    private int serverPort;
+    private final int serverPort;
 
-    private MilvusServiceGrpc.MilvusServiceImplBase serviceImpl;
+    private final MilvusServiceGrpc.MilvusServiceImplBase serviceImpl;
 
     public MockMilvusServer(int port, MilvusServiceGrpc.MilvusServiceImplBase impl) {
         serverPort = port;
@@ -52,19 +52,14 @@ public class MockMilvusServer {
         }
 
         logger.info("Server started on port: " + serverPort);
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                MockMilvusServer.this.stop();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(MockMilvusServer.this::stop));
     }
 
     public void stop() {
         if (rpcServer != null) {
             logger.info("RPC server is shutting down...");
             try {
-                rpcServer.shutdown().awaitTermination(1, TimeUnit.SECONDS);
+                rpcServer.shutdown().awaitTermination(10, TimeUnit.SECONDS);
             } catch (Exception e) {
                 logger.error("Failed to shutdown RPC server");
             }

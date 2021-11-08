@@ -3,23 +3,21 @@ package io.milvus.param.alias;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
+@Getter
 public class CreateAliasParam {
     private final String collectionName;
     private final String alias;
 
-    private CreateAliasParam(@Nonnull CreateAliasParam.Builder builder) {
+    private CreateAliasParam(@NonNull CreateAliasParam.Builder builder) {
         this.collectionName = builder.collectionName;
         this.alias = builder.alias;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getAlias() {
-        return alias;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -29,16 +27,12 @@ public class CreateAliasParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withAlias(@Nonnull String alias) {
+        public Builder withAlias(@NonNull String alias) {
             this.alias = alias;
             return this;
         }
@@ -49,5 +43,13 @@ public class CreateAliasParam {
 
             return new CreateAliasParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CreateAliasParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", alias='" + alias + '\'' +
+                '}';
     }
 }

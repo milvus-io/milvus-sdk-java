@@ -22,22 +22,24 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Params for create collection RPC operation
  *
  * @author changzechuan
  */
+@Getter
 public class DropCollectionParam {
     private final String collectionName;
 
-    private DropCollectionParam(@Nonnull Builder builder) {
+    private DropCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -46,11 +48,7 @@ public class DropCollectionParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
@@ -60,5 +58,11 @@ public class DropCollectionParam {
 
             return new DropCollectionParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DropCollectionParam{" +
+                "collectionName='" + collectionName + '\'' + '}';
     }
 }

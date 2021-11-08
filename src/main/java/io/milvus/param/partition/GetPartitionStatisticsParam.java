@@ -22,28 +22,26 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Params for get partition statistics RPC operation
  *
  * @author changzechuan
  */
+@Getter
 public class GetPartitionStatisticsParam {
     private final String collectionName;
     private final String partitionName;
 
-    private GetPartitionStatisticsParam(@Nonnull Builder builder) {
+    private GetPartitionStatisticsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getPartitionName() {
-        return partitionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -53,16 +51,12 @@ public class GetPartitionStatisticsParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
+        public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
@@ -73,5 +67,13 @@ public class GetPartitionStatisticsParam {
 
             return new GetPartitionStatisticsParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetPartitionStatisticsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
     }
 }

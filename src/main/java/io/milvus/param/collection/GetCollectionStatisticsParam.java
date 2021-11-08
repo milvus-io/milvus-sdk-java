@@ -22,36 +22,42 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Params for create collection RPC operation
  *
  * @author changzechuan
  */
+@Getter
 public class GetCollectionStatisticsParam {
     private final String collectionName;
+    private final boolean flushCollection;
 
-    private GetCollectionStatisticsParam(@Nonnull Builder builder) {
+    private GetCollectionStatisticsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.flushCollection = builder.flushCollection;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
         private String collectionName;
+        private Boolean flushCollection = Boolean.TRUE;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
+            return this;
         }
 
-        public Builder withCollectionName(@Nonnull String collectionName) {
-            this.collectionName = collectionName;
+        public Builder withFlush(@NonNull Boolean flush) {
+            this.flushCollection = flush;
             return this;
         }
 
@@ -60,5 +66,13 @@ public class GetCollectionStatisticsParam {
 
             return new GetCollectionStatisticsParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetCollectionStatisticsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                " flush=" + flushCollection +
+                '}';
     }
 }

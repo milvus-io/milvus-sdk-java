@@ -23,32 +23,32 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.ShowType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Params for ShowCollections RPC operation
  *
  * @author changzechuan
  */
+@Getter
 public class ShowCollectionsParam {
-    private final String[] collectionNames;
+    private final List<String> collectionNames;
     private final ShowType showType;
 
-    private ShowCollectionsParam(@Nonnull Builder builder) {
+    private ShowCollectionsParam(@NonNull Builder builder) {
         this.collectionNames = builder.collectionNames;
         this.showType = builder.showType;
     }
 
-    public String[] getCollectionNames() {
-        return collectionNames;
-    }
-
-    public ShowType getShowType() {
-        return showType;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
-        private String[] collectionNames;
+        private List<String> collectionNames = new ArrayList<>();
         // showType:
         //   default showType = ShowType.All
         //   if collectionNames is not empty, set showType = ShowType.InMemory
@@ -57,17 +57,18 @@ public class ShowCollectionsParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionNames(@Nonnull String[] collectionNames) {
+        public Builder withCollectionNames(@NonNull List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
+        public Builder addCollectionName(@NonNull String collectionName) {
+            this.collectionNames.add(collectionName);
+            return this;
+        }
+
         public ShowCollectionsParam build() throws ParamException {
-            if (collectionNames != null && collectionNames.length != 0) {
+            if (collectionNames != null && !collectionNames.isEmpty()) {
                 for (String collectionName : collectionNames) {
                     ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
                 }
@@ -76,5 +77,13 @@ public class ShowCollectionsParam {
 
             return new ShowCollectionsParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ShowCollectionsParam{" +
+                "collectionNames='" + collectionNames.toString() + '\'' +
+                ", showType=" + showType.toString() +
+                '}';
     }
 }

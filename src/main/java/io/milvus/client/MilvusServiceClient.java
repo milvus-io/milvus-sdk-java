@@ -22,11 +22,10 @@ package io.milvus.client;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
-import io.milvus.param.R;
 
+import lombok.NonNull;
 import java.util.concurrent.TimeUnit;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
@@ -35,7 +34,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
-    public MilvusServiceClient(ConnectParam connectParam) {
+    public MilvusServiceClient(@NonNull ConnectParam connectParam) {
         channel = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                 .usePlaintext()
                 .maxInboundMessageSize(Integer.MAX_VALUE)
@@ -61,17 +60,13 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     @Override
     protected boolean clientIsReady() {
         ConnectivityState state = channel.getState(false);
-        switch (state) {
-            case SHUTDOWN:
-                return false;
-            default:
-                return true;
-        }
+        return state != ConnectivityState.SHUTDOWN;
     }
 
     @Override
-    public void close(long maxWaitSeconds) {
+    public void close(long maxWaitSeconds) throws InterruptedException {
         channel.shutdownNow();
+        channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
     }
 }
 

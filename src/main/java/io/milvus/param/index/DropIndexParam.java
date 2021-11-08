@@ -22,26 +22,24 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * @author changzechuan
  */
+@Getter
 public class DropIndexParam {
     private final String collectionName;
     private final String fieldName;
 
-    private DropIndexParam(@Nonnull Builder builder) {
+    private DropIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -51,16 +49,12 @@ public class DropIndexParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withFieldName(@Nonnull String fieldName) {
+        public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
@@ -71,5 +65,13 @@ public class DropIndexParam {
 
             return new DropIndexParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DropIndexParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                '}';
     }
 }
