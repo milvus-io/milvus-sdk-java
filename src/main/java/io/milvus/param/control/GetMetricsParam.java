@@ -17,47 +17,54 @@
  * under the License.
  */
 
-package io.milvus.param.Control;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * @author:weilongzhao
- * @time:2021/9/4 22:20
+ * @time:2021/9/4 23:15
  */
-public class GetPersistentSegmentInfoParam {
-    private final String collectionName;
+@Getter
+public class GetMetricsParam {
+    private final String request;
 
-    private GetPersistentSegmentInfoParam(@Nonnull Builder builder) {
-        this.collectionName = builder.collectionName;
+    private GetMetricsParam(@NonNull Builder builder) {
+        this.request = builder.request;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
-        private String collectionName;
+        private String request;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
-            this.collectionName = collectionName;
+        public Builder withRequest(@NonNull String request) {
+            this.request = request;
             return this;
         }
 
-        public GetPersistentSegmentInfoParam build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+        public GetMetricsParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(request, "Request string");
 
-            return new GetPersistentSegmentInfoParam(this);
+            // TODO: check the request string is json format
+
+            return new GetMetricsParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetMetricsParam{" +
+                "request='" + request + '\'' +
+                '}';
     }
 }

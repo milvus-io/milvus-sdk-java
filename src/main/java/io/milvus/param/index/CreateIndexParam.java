@@ -19,27 +19,27 @@
 
 package io.milvus.param.index;
 
-import com.google.api.Context;
-import com.google.api.Metric;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author changzechuan
  */
+@Getter
 public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
     private final Map<String, String> extraParam = new HashMap<>();
 
-    private CreateIndexParam(@Nonnull Builder builder) {
+    private CreateIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
@@ -47,16 +47,8 @@ public class CreateIndexParam {
         this.extraParam.put(Constant.PARAMS, builder.extraParam);
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public Map<String, String> getExtraParam() {
-        return extraParam;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -69,31 +61,27 @@ public class CreateIndexParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withFieldName(@Nonnull String fieldName) {
+        public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder withIndexType(@Nonnull IndexType indexType) {
+        public Builder withIndexType(@NonNull IndexType indexType) {
             this.indexType = indexType;
             return this;
         }
 
-        public Builder withMetricType(@Nonnull MetricType metricType) {
+        public Builder withMetricType(@NonNull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder withExtraParam(@Nonnull String extraParam) {
+        public Builder withExtraParam(@NonNull String extraParam) {
             this.extraParam = extraParam;
             return this;
         }
@@ -114,5 +102,14 @@ public class CreateIndexParam {
 
             return new CreateIndexParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CreateIndexParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                ", params='" + extraParam.toString() + '\'' +
+                '}';
     }
 }

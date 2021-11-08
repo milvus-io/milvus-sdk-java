@@ -26,39 +26,25 @@ import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
+import io.milvus.param.control.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
     default void close() {
-        close(TimeUnit.MINUTES.toSeconds(1));
+        try {
+            close(TimeUnit.MINUTES.toSeconds(1));
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted during shutdown Milvus client!");
+        }
     }
 
-    void close(long maxWaitSeconds);
-
-    R<MutationResult> insert(InsertParam insertParam);
-
-    R<FlushResponse> flush(String collectionName, String dbName);
-
-    R<FlushResponse> flush(String collectionName);
-
-    R<FlushResponse> flush(List<String> collectionNames);
-
-    R<FlushResponse> flush(List<String> collectionNames, String dbName);
-
-    R<MutationResult> delete(DeleteParam deleteParam);
-
-    R<SearchResults> search(SearchParam searchParam);
-
-    R<QueryResults> query(QueryParam queryParam);
-
-    R<CalcDistanceResults> calcDistance(CalcDistanceParam calcDistanceParam);
+    void close(long maxWaitSeconds) throws InterruptedException;
 
     /**
      * Check if a collection exists.
@@ -124,6 +110,15 @@ public interface MilvusClient {
      * @return {status:result code, data: ShowCollectionsResponse{status,collection_names,collection_ids,created_timestamps,created_utc_timestamps}}
      */
     R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
+
+//    /**
+//     * Flush collections.
+//     * Currently we don't allow client call this method since server side has no compaction function
+//     *
+//     * @param requestParam {@link FlushParam}
+//     * @return {status:result code,data: FlushResponse{flush segment ids}}
+//     */
+//    R<FlushResponse> flush(FlushParam requestParam);
 
     /**
      * Create a partition in a collection.
@@ -244,4 +239,68 @@ public interface MilvusClient {
      * @return {status:result code,data:GetIndexStateResponse{status,indexed_rows}}
      */
     R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam);
+
+    /**
+     * Insert entities into collection.
+     *
+     * @param requestParam {@link InsertParam}
+     * @return {status:result code,data: MutationResult{insert results}}
+     */
+    R<MutationResult> insert(InsertParam requestParam);
+
+    /**
+     * Delete entities by expression.
+     *
+     * @param requestParam {@link DeleteParam}
+     * @return {status:result code,data: MutationResult{delete results}}
+     */
+    R<MutationResult> delete(DeleteParam requestParam);
+
+    /**
+     * ANN search.
+     *
+     * @param requestParam {@link SearchParam}
+     * @return {status:result code,data: SearchResults{topK results}}
+     */
+    R<SearchResults> search(SearchParam requestParam);
+
+    /**
+     * Query entities by expression.
+     *
+     * @param requestParam {@link QueryParam}
+     * @return {status:result code,data: QueryResults{filter results}}
+     */
+    R<QueryResults> query(QueryParam requestParam);
+
+    /**
+     * Calculate distance between specified vectors.
+     *
+     * @param requestParam {@link CalcDistanceParam}
+     * @return {status:result code,data: CalcDistanceResults{distances}}
+     */
+    R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam);
+
+    /**
+     * Get metrics.
+     *
+     * @param requestParam {@link GetMetricsParam}
+     * @return {status:result code,data:GetMetricsResponse{status,metrics}}
+     */
+    R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam);
+
+    /**
+     * Get persistent segment info.
+     *
+     * @param requestParam {@link GetPersistentSegmentInfoParam}
+     * @return {status:result code,data:GetPersistentSegmentInfoResponse{status,info}}
+     */
+    R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam);
+
+    /**
+     * Get query segment info.
+     *
+     * @param requestParam {@link GetQuerySegmentInfoParam}
+     * @return {status:result code,data:GetQuerySegmentInfoResponse{status,info}}
+     */
+    R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam);
 }

@@ -3,17 +3,19 @@ package io.milvus.param.alias;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
+@Getter
 public class DropAliasParam {
     private final String alias;
 
-    private DropAliasParam(@Nonnull Builder builder) {
+    private DropAliasParam(@NonNull Builder builder) {
         this.alias = builder.alias;
     }
 
-    public String getAlias() {
-        return alias;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
@@ -22,11 +24,7 @@ public class DropAliasParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withAlias(@Nonnull String alias) {
+        public Builder withAlias(@NonNull String alias) {
             this.alias = alias;
             return this;
         }
@@ -36,5 +34,12 @@ public class DropAliasParam {
 
             return new DropAliasParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "DropAliasParam{" +
+                ", alias='" + alias + '\'' +
+                '}';
     }
 }

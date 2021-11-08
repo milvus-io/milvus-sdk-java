@@ -17,49 +17,52 @@
  * under the License.
  */
 
-package io.milvus.param.Control;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * @author:weilongzhao
- * @time:2021/9/4 23:15
+ * @time:2021/9/4 22:20
  */
-public class GetMetricsRequestParam {
-    private final String request;
+@Getter
+public class GetPersistentSegmentInfoParam {
+    private final String collectionName;
 
-    private GetMetricsRequestParam(@Nonnull Builder builder) {
-        this.request = builder.request;
+    private GetPersistentSegmentInfoParam(@NonNull Builder builder) {
+        this.collectionName = builder.collectionName;
     }
 
-    public String getRequest() {
-        return request;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
-        private String request;
+        private String collectionName;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String request) {
-            this.request = request;
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
             return this;
         }
 
-        public GetMetricsRequestParam build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(request, "Request string");
+        public GetPersistentSegmentInfoParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            // TODO: check the request string is json format
-
-            return new GetMetricsRequestParam(this);
+            return new GetPersistentSegmentInfoParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "GetPersistentSegmentInfoParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 }

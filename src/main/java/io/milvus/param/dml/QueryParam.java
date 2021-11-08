@@ -23,75 +23,54 @@ import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class QueryParam {
-    private final String dbName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final List<String> outFields;
     private final String expr;
 
-    private QueryParam(@Nonnull Builder builder) {
-        this.dbName = builder.dbName;
+    private QueryParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.outFields = builder.outFields;
         this.expr = builder.expr;
     }
 
-    public String getDbName() {
-        return dbName;
-    }
-
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public List<String> getPartitionNames() {
-        return partitionNames;
-    }
-
-    public List<String> getOutFields() {
-        return outFields;
-    }
-
-    public String getExpr() {
-        return expr;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static class Builder {
-        private String dbName = ""; // reserved
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
         private List<String> outFields = new ArrayList<>();
-        private String expr;
+        private String expr = "";
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionNames(@Nonnull List<String> partitionNames) {
+        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder withOutFields(@Nonnull List<String> outFields) {
+        public Builder withOutFields(@NonNull List<String> outFields) {
             this.outFields = outFields;
             return this;
         }
 
-        public Builder withExpr(@Nonnull String expr) {
+        public Builder withExpr(@NonNull String expr) {
             this.expr = expr;
             return this;
         }
@@ -102,5 +81,14 @@ public class QueryParam {
 
             return new QueryParam(this);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "QueryParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionNames='" + partitionNames.toString() + '\'' +
+                ", expr='" + expr + '\'' +
+                '}';
     }
 }

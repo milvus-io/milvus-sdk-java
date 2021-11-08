@@ -22,57 +22,44 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
-import java.util.Arrays;
+import lombok.Getter;
+import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * request for create collection
  *
  * @author changzechuan
  */
+@Getter
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
     private final String description;
-    private final FieldType[] fieldTypes;
+    private final List<FieldType> fieldTypes;
 
-    private CreateCollectionParam(@Nonnull Builder builder) {
+    private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public int getShardsNum() {
-        return shardsNum;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public FieldType[] getFieldTypes() {
-        return fieldTypes;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
     public static final class Builder {
         private String collectionName;
         private int shardsNum = 2;
         private String description = "";
-        private FieldType[] fieldTypes;
+        private List<FieldType> fieldTypes = new ArrayList<>();
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
@@ -82,13 +69,18 @@ public class CreateCollectionParam {
             return this;
         }
 
-        public Builder withDescription(@Nonnull String description) {
+        public Builder withDescription(@NonNull String description) {
             this.description = description;
             return this;
         }
 
-        public Builder withFieldTypes(@Nonnull FieldType[] fieldTypes) {
+        public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
             this.fieldTypes = fieldTypes;
+            return this;
+        }
+
+        public Builder addFieldType(@NonNull FieldType fieldType) {
+            this.fieldTypes.add(fieldType);
             return this;
         }
 
@@ -99,7 +91,7 @@ public class CreateCollectionParam {
                 throw new ParamException("ShardNum must be larger than 0");
             }
 
-            if (fieldTypes == null || fieldTypes.length <= 0) {
+            if (fieldTypes == null || fieldTypes.isEmpty()) {
                 throw new ParamException("Field numbers must be larger than 0");
             }
 
@@ -119,7 +111,7 @@ public class CreateCollectionParam {
                 "collectionName='" + collectionName + '\'' +
                 ", shardsNum=" + shardsNum +
                 ", description='" + description + '\'' +
-                ", fieldTypes=" + Arrays.toString(fieldTypes) +
+                ", field count=" + fieldTypes.size() +
                 '}';
     }
 }
