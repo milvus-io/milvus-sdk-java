@@ -19,6 +19,9 @@
 
 package io.milvus.exception;
 
+/**
+ * Base class of Milvus exceptions.
+ */
 public abstract class MilvusException extends RuntimeException {
     protected Integer status;
 

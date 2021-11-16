@@ -22,6 +22,10 @@ package io.milvus.exception;
 
 import io.milvus.param.R;
 
+/**
+ * Some interfaces including <code>search</code>/<code>search</code>/<code>loadCollection</code> can throw this exception
+ * when server return illegal response, this may indicate a bug of server.
+ */
 public class IllegalResponseException extends MilvusException {
     public IllegalResponseException(String msg) {
         super(msg, R.Status.IllegalResponse.getCode());

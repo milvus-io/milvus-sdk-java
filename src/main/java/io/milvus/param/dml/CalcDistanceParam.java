@@ -27,7 +27,8 @@ import lombok.NonNull;
 import java.util.List;
 
 /**
- * currently only support float vectors calculation
+ * Parameters for <code>calcDistance</code> interface.
+ * Note that currently only support float vectors calculation.
  */
 @Getter
 public class CalcDistanceParam {
@@ -45,6 +46,9 @@ public class CalcDistanceParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>CalcDistanceParam</code> class.
+     */
     public static class Builder {
         private List<List<Float>> vectorsLeft;
         private List<List<Float>> vectorsRight;
@@ -53,24 +57,51 @@ public class CalcDistanceParam {
         private Builder() {
         }
 
+        /**
+         * Set a list of left side vectors. The list cannot be null or empty, each vector list cannot be null or empty.
+         *
+         * @param vectors a list of float list, each float list is a vector.
+         * @return <code>Builder</code>
+         */
         public Builder withVectorsLeft(@NonNull List<List<Float>> vectors) {
             this.vectorsLeft = vectors;
             return this;
         }
 
+        /**
+         * Set a list of right side vectors. The list cannot be null or empty, each vector list cannot be null or empty.
+         *
+         * @param vectors a list of float list, each float list is a vector.
+         * @return <code>Builder</code>
+         */
         public Builder withVectorsRight(@NonNull List<List<Float>> vectors) {
             this.vectorsRight = vectors;
             return this;
         }
 
+        /**
+         * Set metric type of calculation. Note that currently only support L2 and IP.
+         *
+         * @param metricType metric type
+         * @return <code>Builder</code>
+         */
         public Builder withMetricType(MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>CalcDistanceParam</code> instance.
+         *
+         * @return <code>CalcDistanceParam</code>
+         */
         public CalcDistanceParam build() throws ParamException {
             if (metricType == MetricType.INVALID) {
                 throw new ParamException("Metric type is illegal");
+            }
+
+            if (metricType != MetricType.L2 && metricType != MetricType.IP) {
+                throw new ParamException("Only support L2 or IP metric type now!");
             }
 
             if (vectorsLeft == null || vectorsLeft.isEmpty()) {
@@ -99,9 +130,15 @@ public class CalcDistanceParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>CalcDistanceParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
-        return "CalcDistanceParam{" +
+        return "CalcDistanceParam{ left vector count:" + vectorsLeft.size() +
+                " right vector count:" + vectorsRight.size() +
                 '}';
     }
 }

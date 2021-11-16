@@ -19,6 +19,10 @@
 
 package io.milvus.param;
 
+/**
+ * Represents available index types.
+ * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
+ */
 public enum IndexType {
     INVALID,
     IVF_FLAT,
@@ -29,7 +33,7 @@ public enum IndexType {
     RHNSW_PQ,
     RHNSW_SQ,
     ANNOY,
-    //Only supported for byte vectors
+    //Only supported for binary vectors
     BIN_IVF_FLAT,
     ;
 }

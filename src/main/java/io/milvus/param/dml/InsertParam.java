@@ -29,10 +29,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * InsertParam.Field.values:
- * if dataType is scalar: values is List<Integer>, List<Long>...
- * if dataType is FloatVector: values is List<List<Float>>
- * if dataType is BinaryVector: values is List<ByteBuffer>
+ * Parameters for <code>insert</code> interface.
  */
 @Getter
 public class InsertParam {
@@ -53,6 +50,9 @@ public class InsertParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>InsertParam</code> class.
+     */
     public static class Builder {
         private String collectionName;
         private String partitionName = "_default";
@@ -62,21 +62,45 @@ public class InsertParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Optional. Set partition name.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Set insert data. The fields list cannot be empty.
+         * @see InsertParam.Field
+         *
+         * @param fields insert data
+         * @return <code>Builder</code>
+         */
         public Builder withFields(@NonNull List<InsertParam.Field> fields) {
             this.fields = fields;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>InsertParam</code> instance.
+         *
+         * @return <code>InsertParam</code>
+         */
         @java.lang.SuppressWarnings("unchecked")
         public InsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -159,6 +183,11 @@ public class InsertParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>InsertParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "InsertParam{" +
@@ -168,6 +197,12 @@ public class InsertParam {
                 '}';
     }
 
+    /**
+     * Internal class for insert data.
+     * if dataType is scalar(bool/int/float/double): values is List<Integer>, List<Long>...
+     * if dataType is FloatVector: values is List<List<Float>>
+     * if dataType is BinaryVector: values is List<ByteBuffer>
+     */
     public static class Field {
         private final String name;
         private final DataType type;

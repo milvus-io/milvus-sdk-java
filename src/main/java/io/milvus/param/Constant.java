@@ -19,6 +19,9 @@
 
 package io.milvus.param;
 
+/**
+ * Constant/static values for internal usage.
+ */
 public class Constant {
     // default value for search key
     public static final String VECTOR_TAG = "$0";

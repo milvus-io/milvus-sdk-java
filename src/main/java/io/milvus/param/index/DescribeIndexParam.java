@@ -26,7 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * @author changzechuan
+ * Parameters for <code>describeIndex</code> interface.
  */
 @Getter
 public class DescribeIndexParam {
@@ -42,6 +42,9 @@ public class DescribeIndexParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>DescribeIndexParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String fieldName;
@@ -49,16 +52,33 @@ public class DescribeIndexParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set target field name. Field name cannot be empty or null.
+         *
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
         public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>DescribeIndexParam</code> instance.
+         *
+         * @return <code>DescribeIndexParam</code>
+         */
         public DescribeIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");
@@ -67,6 +87,11 @@ public class DescribeIndexParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>DescribeIndexParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "DescribeIndexParam{" +

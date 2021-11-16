@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * request for create collection
- *
- * @author changzechuan
+ * Parameters for <code>createCollection</code> interface.
  */
 @Getter
 public class CreateCollectionParam {
@@ -50,6 +48,9 @@ public class CreateCollectionParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>CreateCollectionParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private int shardsNum = 2;
@@ -59,31 +60,68 @@ public class CreateCollectionParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set shards number, the number must be larger than zero, default value is 2.
+         *
+         * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
+         * @return <code>Builder</code>
+         */
         public Builder withShardsNum(int shardsNum) {
             this.shardsNum = shardsNum;
             return this;
         }
 
+        /**
+         * Set collection description, description can be empty, default is "".
+         *
+         * @param description description of the collection
+         * @return <code>Builder</code>
+         */
         public Builder withDescription(@NonNull String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Set schema of the collection, schema cannot be empty or null.
+         * @see FieldType
+         *
+         * @param fieldTypes a <code>List</code> of <code>FieldType</code>
+         * @return <code>Builder</code>
+         */
         public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
             this.fieldTypes = fieldTypes;
             return this;
         }
 
+        /**
+         * Add a field schema.
+         * @see FieldType
+         *
+         * @param fieldType a <code>FieldType</code> object
+         * @return <code>Builder</code>
+         */
         public Builder addFieldType(@NonNull FieldType fieldType) {
             this.fieldTypes.add(fieldType);
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>CreateCollectionParam</code> instance.
+         *
+         * @return <code>CreateCollectionParam</code>
+         */
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -105,6 +143,11 @@ public class CreateCollectionParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>CreateCollectionParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "CreateCollectionParam{" +

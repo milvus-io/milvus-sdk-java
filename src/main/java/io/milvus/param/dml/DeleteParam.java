@@ -25,6 +25,9 @@ import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
 
+/**
+ * Parameters for <code>delete</code> interface.
+ */
 @Getter
 public class DeleteParam {
     private final String collectionName;
@@ -41,6 +44,9 @@ public class DeleteParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>DeleteParam</code> class.
+     */
     public static class Builder {
         private String collectionName;
         private String partitionName = "";
@@ -49,21 +55,45 @@ public class DeleteParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Optional. Set partition name.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Set expr to filter out entities to be deleted.
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
+         *
+         * @param expr filtering expression
+         * @return <code>Builder</code>
+         */
         public Builder withExpr(@NonNull String expr) {
             this.expr = expr;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>DeleteParam</code> instance.
+         *
+         * @return <code>DeleteParam</code>
+         */
         public DeleteParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(expr, "Expression");
@@ -72,6 +102,11 @@ public class DeleteParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>DeleteParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "DeleteParam{" +

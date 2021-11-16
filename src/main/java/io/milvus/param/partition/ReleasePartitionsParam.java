@@ -28,9 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Params release partitions RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>releasePartition</code> interface.
  */
 @Getter
 public class ReleasePartitionsParam {
@@ -46,6 +44,9 @@ public class ReleasePartitionsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>ReleasePartitionsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
@@ -53,21 +54,44 @@ public class ReleasePartitionsParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set partition names list. Partition names list cannot be null or empty.
+         *
+         * @param partitionNames partition names list
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
+        /**
+         * Add a partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder addPartitionName(@NonNull String partitionName) {
             this.partitionNames.add(partitionName);
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>ReleasePartitionsParam</code> instance.
+         *
+         * @return <code>ReleasePartitionsParam</code>
+         */
         public ReleasePartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -83,6 +107,11 @@ public class ReleasePartitionsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>ReleasePartitionsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "ReleasePartitionsParam{" +

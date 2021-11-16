@@ -26,9 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Params for has partition RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>hasPartition</code> interface.
  */
 @Getter
 public class HasPartitionParam {
@@ -44,6 +42,9 @@ public class HasPartitionParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>HasPartitionParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String partitionName;
@@ -51,16 +52,33 @@ public class HasPartitionParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>HasPartitionParam</code> instance.
+         *
+         * @return <code>HasPartitionParam</code>
+         */
         public HasPartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
@@ -69,6 +87,11 @@ public class HasPartitionParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>HasPartitionParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "HasPartitionParam{" +

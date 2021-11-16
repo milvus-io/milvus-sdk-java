@@ -26,9 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Params for create collection RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>dropCollection</code> interface.
  */
 @Getter
 public class DropCollectionParam {
@@ -42,17 +40,31 @@ public class DropCollectionParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>DropCollectionParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
 
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>DropCollectionParam</code> instance.
+         *
+         * @return <code>DropCollectionParam</code>
+         */
         public DropCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -60,6 +72,11 @@ public class DropCollectionParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>DropCollectionParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "DropCollectionParam{" +

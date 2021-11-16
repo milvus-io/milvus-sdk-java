@@ -9,6 +9,10 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Parameters for <code>flush</code> interface.
+ * Note that the flush interface is not exposed currently.
+ */
 @Getter
 public class FlushParam {
     private final List<String> collectionNames;
@@ -27,6 +31,9 @@ public class FlushParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>FlushParam</code> class.
+     */
     public static final class Builder {
         private List<String> collectionNames = new ArrayList<String>();
 
@@ -47,31 +54,73 @@ public class FlushParam {
         private Builder() {
         }
 
+        /**
+         * Set a list of collections to be flushed.
+         *
+         * @param collectionNames a list of collections
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionNames(@NonNull List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
+        /**
+         * Add a collections to be flushed.
+         *
+         * @param collectionName name of the collections
+         * @return <code>Builder</code>
+         */
         public Builder addCollectionName(@NonNull String collectionName) {
             this.collectionNames.add(collectionName);
             return this;
         }
 
+        /**
+         * Set flush action to sync mode.
+         * With sync mode, the client side will keep waiting until all segments of the collection successfully flushed.
+         *
+         * If not sync mode, client will return at once after the flush() is called.
+         *
+         * @param syncFlush <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @return <code>Builder</code>
+         */
         public Builder withSyncFlush(@NonNull Boolean syncFlush) {
             this.syncFlush = syncFlush;
             return this;
         }
 
+        /**
+         * Set waiting interval in sync mode. In sync mode, the client will constantly check segments state by interval.
+         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_FLUSHING_INTERVAL.
+         * @see Constant
+         *
+         * @param milliseconds interval
+         * @return <code>Builder</code>
+         */
         public Builder withSyncFlushWaitingInterval(@NonNull Long milliseconds) {
             this.syncFlushWaitingInterval = milliseconds;
             return this;
         }
 
+        /**
+         * Set time out value for sync mode.
+         * Time out value must be larger than zero, and cannot be larger than Constant.MAX_WAITING_FLUSHING_TIMEOUT.
+         * @see Constant
+         *
+         * @param seconds time out value for sync mode
+         * @return <code>Builder</code>
+         */
         public Builder withSyncFlushWaitingTimeout(@NonNull Long seconds) {
             this.syncFlushWaitingTimeout = seconds;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>FlushParam</code> instance.
+         *
+         * @return <code>FlushParam</code>
+         */
         public FlushParam build() throws ParamException {
             if (collectionNames == null || collectionNames.isEmpty()) {
                 throw new ParamException("CollectionNames can not be empty");
@@ -85,14 +134,14 @@ public class FlushParam {
                 if (syncFlushWaitingInterval <= 0) {
                     throw new ParamException("Sync flush waiting interval must be larger than zero");
                 } else if (syncFlushWaitingInterval > Constant.MAX_WAITING_FLUSHING_INTERVAL) {
-                    throw new ParamException("Sync flush waiting interval must be small than "
+                    throw new ParamException("Sync flush waiting interval cannot be larger than "
                             + Constant.MAX_WAITING_FLUSHING_INTERVAL.toString() + " milliseconds");
                 }
 
                 if (syncFlushWaitingTimeout <= 0) {
                     throw new ParamException("Sync flush waiting timeout must be larger than zero");
                 } else if (syncFlushWaitingTimeout > Constant.MAX_WAITING_FLUSHING_TIMEOUT) {
-                    throw new ParamException("Sync flush waiting timeout must be small than "
+                    throw new ParamException("Sync flush waiting timeout cannot be larger than "
                             + Constant.MAX_WAITING_FLUSHING_TIMEOUT.toString() + " seconds");
                 }
             }
@@ -101,6 +150,11 @@ public class FlushParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>FlushParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "FlushParam{" +

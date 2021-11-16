@@ -29,9 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Params for show partition RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>showPartition</code> interface.
  */
 @Getter
 public class ShowPartitionsParam {
@@ -49,6 +47,9 @@ public class ShowPartitionsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>ShowPartitionsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
@@ -61,21 +62,44 @@ public class ShowPartitionsParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set partition names list. Partition names list cannot be null or empty.
+         *
+         * @param partitionNames partition names list
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
+        /**
+         * Add a partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder addPartitionName(@NonNull String partitionName) {
             this.partitionNames.add(partitionName);
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>ShowPartitionsParam</code> instance.
+         *
+         * @return <code>ShowPartitionsParam</code>
+         */
         public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -90,6 +114,11 @@ public class ShowPartitionsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>ShowPartitionsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "ShowPartitionsParam{" +

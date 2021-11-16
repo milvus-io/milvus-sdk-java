@@ -29,9 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Params for ShowCollections RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>showCollections</code> interface.
  */
 @Getter
 public class ShowCollectionsParam {
@@ -47,6 +45,9 @@ public class ShowCollectionsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>ShowCollectionsParam</code> class.
+     */
     public static final class Builder {
         private List<String> collectionNames = new ArrayList<>();
         // showType:
@@ -57,16 +58,33 @@ public class ShowCollectionsParam {
         private Builder() {
         }
 
+        /**
+         * Set a list of collection names, name cannot be empty or null.
+         *
+         * @param collectionNames list of collection names
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionNames(@NonNull List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
+        /**
+         * Add a collection name, name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder addCollectionName(@NonNull String collectionName) {
             this.collectionNames.add(collectionName);
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>ShowCollectionsParam</code> instance.
+         *
+         * @return <code>ShowCollectionsParam</code>
+         */
         public ShowCollectionsParam build() throws ParamException {
             if (collectionNames != null && !collectionNames.isEmpty()) {
                 for (String collectionName : collectionNames) {
@@ -79,6 +97,11 @@ public class ShowCollectionsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>ShowCollectionsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "ShowCollectionsParam{" +

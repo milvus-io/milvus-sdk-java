@@ -36,6 +36,7 @@ import java.util.concurrent.TimeUnit;
 /** The Milvus Client Interface */
 public interface MilvusClient {
 
+    /** Close Milvus client channel, timeout: 1 minute */
     default void close() {
         try {
             close(TimeUnit.MINUTES.toSeconds(1));
@@ -44,13 +45,18 @@ public interface MilvusClient {
         }
     }
 
+    /**
+     * Close Milvus client channel.
+     *
+     * @param maxWaitSeconds timeout unit: second
+     */
     void close(long maxWaitSeconds) throws InterruptedException;
 
     /**
      * Check if a collection exists.
      *
      * @param requestParam {@link HasCollectionParam}
-     * @return {status:result code,data: boolean, whether if has collection or not}
+     * @return {status:result code, data: boolean, whether if has collection or not}
      */
     R<Boolean> hasCollection(HasCollectionParam requestParam);
 
@@ -58,7 +64,7 @@ public interface MilvusClient {
      * Create a collection in Milvus.
      *
      * @param requestParam {@link CreateCollectionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> createCollection(CreateCollectionParam requestParam);
 
@@ -66,15 +72,15 @@ public interface MilvusClient {
      * Drop a collection. Note that this drops all data in the collection.
      *
      * @param requestParam {@link DropCollectionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> dropCollection(DropCollectionParam requestParam);
 
     /**
-     * Load collection to cache before search.
+     * Load collection to cache before search/query.
      *
      * @param requestParam {@link LoadCollectionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> loadCollection(LoadCollectionParam requestParam);
 
@@ -83,7 +89,7 @@ public interface MilvusClient {
      * search while the corresponding collection is unloaded.
      *
      * @param requestParam {@link ReleaseCollectionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam);
 
@@ -91,7 +97,7 @@ public interface MilvusClient {
      * Show the details of a collection, e.g. name, schema.
      *
      * @param requestParam {@link DescribeCollectionParam}
-     * @return {status:result code,data:DescribeCollectionResponse{schema,collectionID}}
+     * @return {status:result code, data:DescribeCollectionResponse{schema,collectionID}}
      */
     R<DescribeCollectionResponse> describeCollection(DescribeCollectionParam requestParam);
 
@@ -124,7 +130,7 @@ public interface MilvusClient {
      * Create a partition in a collection.
      *
      * @param requestParam {@link CreatePartitionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> createPartition(CreatePartitionParam requestParam);
 
@@ -132,7 +138,7 @@ public interface MilvusClient {
      * To drop a partition will drop all data in this partition and the _default partition cannot be dropped.
      *
      * @param requestParam {@link DropPartitionParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> dropPartition(DropPartitionParam requestParam);
 
@@ -140,7 +146,7 @@ public interface MilvusClient {
      * Check if a partition exists in a collection.
      *
      * @param requestParam {@link HasPartitionParam}
-     * @return {status:result code,data: boolean, whether if has collection or not}
+     * @return {status:result code, data: boolean, whether if has collection or not}
      */
     R<Boolean> hasPartition(HasPartitionParam requestParam);
 
@@ -148,7 +154,7 @@ public interface MilvusClient {
      * Load a partition into cache.
      *
      * @param requestParam {@link LoadPartitionsParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> loadPartitions(LoadPartitionsParam requestParam);
 
@@ -156,7 +162,7 @@ public interface MilvusClient {
      * Release a partition from cache.
      *
      * @param requestParam {@link ReleasePartitionsParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> releasePartitions(ReleasePartitionsParam requestParam);
 
@@ -172,15 +178,16 @@ public interface MilvusClient {
      * Show all partitions in a collection.
      *
      * @param requestParam {@link ShowPartitionsParam}
-     * @return {status:result code,data:ShowPartitionsResponse{partition_names,partitionIDs,created_timestamps,created_utc_timestamps}}
+     * @return {status:result code, data:ShowPartitionsResponse{partition_names,partitionIDs,created_timestamps,created_utc_timestamps}}
      */
     R<ShowPartitionsResponse> showPartitions(ShowPartitionsParam requestParam);
 
     /**
-     * Create alias for a collection.
+     * Create an alias for a collection.
+     * Alias can be used in search/query to replace collection name
      *
      * @param requestParam {@link CreateAliasParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> createAlias(CreateAliasParam requestParam);
 
@@ -188,7 +195,7 @@ public interface MilvusClient {
      * Drop an alias.
      *
      * @param requestParam {@link DropAliasParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> dropAlias(DropAliasParam requestParam);
 
@@ -196,7 +203,7 @@ public interface MilvusClient {
      * Alter alias from a collection to another.
      *
      * @param requestParam {@link AlterAliasParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> alterAlias(AlterAliasParam requestParam);
 
@@ -204,7 +211,7 @@ public interface MilvusClient {
      * Create an index on a vector field. Note that index building is an async progress.
      *
      * @param requestParam {@link CreateIndexParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> createIndex(CreateIndexParam requestParam);
 
@@ -212,7 +219,7 @@ public interface MilvusClient {
      * Drop an index.
      *
      * @param requestParam {@link DropIndexParam}
-     * @return {status:result code,data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> dropIndex(DropIndexParam requestParam);
 
@@ -220,52 +227,52 @@ public interface MilvusClient {
      * Show index information. Current release of Milvus only supports showing latest built index.
      *
      * @param requestParam {@link DescribeIndexParam}
-     * @return {status:result code,data:DescribeIndexResponse{status,index_descriptions}}
+     * @return {status:result code, data:DescribeIndexResponse{status,index_descriptions}}
      */
     R<DescribeIndexResponse> describeIndex(DescribeIndexParam requestParam);
 
     /**
-     * Show index building state.
+     * Show index building state(in-progress/finished/failed), failed reason.
      *
      * @param requestParam {@link GetIndexStateParam}
-     * @return {status:result code,data:GetIndexStateResponse{status,state}}
+     * @return {status:result code, data:GetIndexStateResponse{status,state}}
      */
     R<GetIndexStateResponse> getIndexState(GetIndexStateParam requestParam);
 
     /**
-     * Show index building progress.
+     * Show index building progress, such as how many rows are indexed.
      *
      * @param requestParam {@link GetIndexBuildProgressParam}
-     * @return {status:result code,data:GetIndexStateResponse{status,indexed_rows}}
+     * @return {status:result code, data:GetIndexBuildProgressResponse{status,indexed_rows}}
      */
     R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam);
 
     /**
-     * Insert entities into collection.
+     * Insert entities into collection. Note that you don't need to input values for auto-id field.
      *
      * @param requestParam {@link InsertParam}
-     * @return {status:result code,data: MutationResult{insert results}}
+     * @return {status:result code, data: MutationResult{insert results}}
      */
     R<MutationResult> insert(InsertParam requestParam);
 
     /**
-     * Delete entities by expression.
+     * Delete entities by expression. Currently release of Milvus only support expression like "xxx in [1, 2, ...]"
      *
      * @param requestParam {@link DeleteParam}
-     * @return {status:result code,data: MutationResult{delete results}}
+     * @return {status:result code, data: MutationResult{delete results}}
      */
     R<MutationResult> delete(DeleteParam requestParam);
 
     /**
-     * ANN search.
+     * Do ANN search base on a vector field. Use expression to do filtering before search.
      *
      * @param requestParam {@link SearchParam}
-     * @return {status:result code,data: SearchResults{topK results}}
+     * @return {status:result code, data: SearchResults{topK results}}
      */
     R<SearchResults> search(SearchParam requestParam);
 
     /**
-     * Query entities by expression.
+     * Query entities by expression. Note that the returned entities sequence cannot be guaranteed.
      *
      * @param requestParam {@link QueryParam}
      * @return {status:result code,data: QueryResults{filter results}}
@@ -276,31 +283,31 @@ public interface MilvusClient {
      * Calculate distance between specified vectors.
      *
      * @param requestParam {@link CalcDistanceParam}
-     * @return {status:result code,data: CalcDistanceResults{distances}}
+     * @return {status:result code, data: CalcDistanceResults{distances}}
      */
     R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam);
 
     /**
-     * Get metrics.
+     * Get runtime metrics information of Milvus, return in json format.
      *
      * @param requestParam {@link GetMetricsParam}
-     * @return {status:result code,data:GetMetricsResponse{status,metrics}}
+     * @return {status:result code, data:GetMetricsResponse{status,metrics}}
      */
     R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam);
 
     /**
-     * Get persistent segment info.
+     * Get information of persistent segments, including row count, persist state(growing or flushed), etc.
      *
      * @param requestParam {@link GetPersistentSegmentInfoParam}
-     * @return {status:result code,data:GetPersistentSegmentInfoResponse{status,info}}
+     * @return {status:result code, data:GetPersistentSegmentInfoResponse{status,info}}
      */
     R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam);
 
     /**
-     * Get query segment info.
+     * Get query information of segments in a collection, including row count, mem size, index name, etc.
      *
      * @param requestParam {@link GetQuerySegmentInfoParam}
-     * @return {status:result code,data:GetQuerySegmentInfoResponse{status,info}}
+     * @return {status:result code, data:GetQuerySegmentInfoResponse{status,info}}
      */
     R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam);
 }

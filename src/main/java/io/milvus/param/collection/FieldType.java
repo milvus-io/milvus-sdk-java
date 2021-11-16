@@ -30,9 +30,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Field schema for collection
- *
- * @author changzechuan
+ * Parameters for a collection field.
+ * @see CreateCollectionParam
  */
 @Getter
 public class FieldType {
@@ -56,10 +55,13 @@ public class FieldType {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>FieldType</code> class.
+     */
     public static final class Builder {
         private String name;
         private boolean primaryKey = false;
-        private String description;
+        private String description = "";
         private DataType dataType;
         private Map<String,String> typeParams;
         private boolean autoID = false;
@@ -72,27 +74,57 @@ public class FieldType {
             return this;
         }
 
+        /**
+         * Set field to be primary key.
+         * Note that currently Milvus version only support <code>Long</code> data type as primary key.
+         *
+         * @param primaryKey true is primary key, false is not
+         * @return <code>Builder</code>
+         */
         public Builder withPrimaryKey(boolean primaryKey) {
             this.primaryKey = primaryKey;
             return this;
         }
 
+        /**
+         * Set field description, description can be empty, default is "".
+         *
+         * @param description description of the field
+         * @return <code>Builder</code>
+         */
         public Builder withDescription(@NonNull String description) {
             this.description = description;
             return this;
         }
 
+        /**
+         * Set data type for field.
+         *
+         * @param dataType data type of the field
+         * @return <code>Builder</code>
+         */
         public Builder withDataType(DataType dataType) {
             this.dataType = dataType;
             return this;
         }
 
+        /**
+         * Set more parameters for field.
+         *
+         * @param typeParams parameters of the field
+         * @return <code>Builder</code>
+         */
         public Builder withTypeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
             return this;
         }
 
-        // for vector field, for easy use
+        /**
+         * Set dimension of a vector field. Dimension value must be larger than zero.
+         *
+         * @param dimension dimension of the field
+         * @return <code>Builder</code>
+         */
         public Builder withDimension(Integer dimension) {
             if (this.typeParams == null) {
                 this.typeParams = new HashMap<>();
@@ -101,11 +133,26 @@ public class FieldType {
             return this;
         }
 
+        /**
+         * Set the field to be auto-id. Note that only primary key field can be set as auto-id.
+         * If auto-id is enabled, Milvus will automatically generated unique id for each entities,
+         * user no need to provide values for this field during insert action.
+         *
+         * If auto-id is disabled, user need to provide values for this field during insert action.
+         *
+         * @param autoID true enable auto-id, false disable auto-id
+         * @return <code>Builder</code>
+         */
         public Builder withAutoID(boolean autoID) {
             this.autoID = autoID;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>FieldType</code> instance.
+         *
+         * @return <code>FieldType</code>
+         */
         public FieldType build() throws ParamException {
             ParamUtils.CheckNullEmptyString(name, "Field name");
 
@@ -115,7 +162,16 @@ public class FieldType {
 
             if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
                 if (typeParams == null || !typeParams.containsKey(Constant.VECTOR_DIM)) {
-                    throw new ParamException("Vector field dimension must be larger than zero");
+                    throw new ParamException("Vector field dimension must be specified");
+                }
+
+                try {
+                    Integer dim = Integer.valueOf(typeParams.get(Constant.VECTOR_DIM));
+                    if (dim <= 0) {
+                        throw new ParamException("Vector field dimension must be larger than zero");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new ParamException("Vector field dimension must be an integer number");
                 }
             }
 

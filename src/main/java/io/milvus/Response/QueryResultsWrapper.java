@@ -11,7 +11,9 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * Util class to wrap response of <code>query</code> interface.
+ */
 public class QueryResultsWrapper {
     private final QueryResults results;
 
@@ -19,6 +21,12 @@ public class QueryResultsWrapper {
         this.results = results;
     }
 
+    /**
+     * Get {@link FieldDataWrapper} for a field.
+     * Throws {@link ParamException} if the field doesn't exist.
+     *
+     * @return <code>FieldDataWrapper</code>
+     */
     public FieldDataWrapper getFieldWrapper(@NonNull String fieldName) throws ParamException {
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {

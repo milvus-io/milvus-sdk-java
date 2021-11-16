@@ -26,6 +26,9 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Util class to wrap gpc response and exceptions.
+ */
 public class R<T> {
     private Exception exception;
     private Integer status;
@@ -57,6 +60,12 @@ public class R<T> {
         this.data = data;
     }
 
+    /**
+     * Wrap an exception for failure.
+     *
+     * @param exception exception object
+     * @return <code>R</code>
+     */
     public static <T> R<T> failed(Exception exception) {
         R<T> r = new R<>();
         if (exception instanceof MilvusException) {
@@ -70,6 +79,13 @@ public class R<T> {
         return r;
     }
 
+    /**
+     * Wrap an error code and error message for failure.
+     *
+     * @param errorCode rpc error code
+     * @param msg error message
+     * @return <code>R</code>
+     */
     public static <T> R<T> failed(ErrorCode errorCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(errorCode.ordinal());
@@ -77,6 +93,13 @@ public class R<T> {
         return r;
     }
 
+    /**
+     * Wrap a status code and error message for failure.
+     *
+     * @param statusCode status code
+     * @param msg error message
+     * @return <code>R</code>
+     */
     public static <T> R<T> failed(Status statusCode, String msg) {
         R<T> r = new R<>();
         r.setStatus(statusCode.getCode());
@@ -84,13 +107,23 @@ public class R<T> {
         return r;
     }
 
+    /**
+     * Direct return a succeed status.
+     *
+     * @return <code>R</code>
+     */
     public static <T> R<T> success() {
         R<T> r = new R<>();
         r.setStatus(Status.Success.getCode());
         return r;
     }
 
-
+    /**
+     * Wrap a succeed rpc response object.
+     *
+     * @param data rpc response object
+     * @return <code>R</code>
+     */
     public static <T> R<T> success(T data) {
         R<T> r = new R<>();
         r.setStatus(Status.Success.getCode());
@@ -158,6 +191,11 @@ public class R<T> {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>R</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         if (exception != null) {

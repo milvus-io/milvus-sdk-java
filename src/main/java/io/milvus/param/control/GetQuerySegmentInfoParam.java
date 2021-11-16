@@ -26,8 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * @author:weilongzhao
- * @time:2021/9/4 23:01
+ * Parameters for <code>getQuerySegmentInfo</code> interface.
  */
 @Getter
 public class GetQuerySegmentInfoParam {
@@ -41,17 +40,31 @@ public class GetQuerySegmentInfoParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>GetPersistentSegmentInfoParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
 
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>GetQuerySegmentInfoParam</code> instance.
+         *
+         * @return <code>GetQuerySegmentInfoParam</code>
+         */
         public GetQuerySegmentInfoParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -59,6 +72,11 @@ public class GetQuerySegmentInfoParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>GetQuerySegmentInfoParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "GetQuerySegmentInfoParam{" +

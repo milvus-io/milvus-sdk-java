@@ -26,8 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * @author:weilongzhao
- * @time:2021/9/4 23:15
+ * Parameters for <code>getMetric</code> interface.
  */
 @Getter
 public class GetMetricsParam {
@@ -41,17 +40,32 @@ public class GetMetricsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>GetMetricsParam</code> class.
+     */
     public static final class Builder {
         private String request;
 
         private Builder() {
         }
 
+        /**
+         * Set request in json format to retrieve metric information from server.
+         * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
+         *
+         * @param request request string in json format
+         * @return <code>Builder</code>
+         */
         public Builder withRequest(@NonNull String request) {
             this.request = request;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>GetMetricsParam</code> instance.
+         *
+         * @return <code>GetMetricsParam</code>
+         */
         public GetMetricsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(request, "Request string");
 
@@ -61,6 +75,11 @@ public class GetMetricsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>GetMetricsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "GetMetricsParam{" +

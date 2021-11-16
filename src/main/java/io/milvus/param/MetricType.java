@@ -19,11 +19,15 @@
 
 package io.milvus.param;
 
+/**
+ * Represents available metric types.
+ * For more information: @see <a href="https://milvus.io/docs/v2.0.0/metric.md">Similarity Metrics</a>
+ */
 public enum MetricType {
     INVALID,
     L2,
     IP,
-    //Only supported for byte vectors
+    // Only supported for binary vectors
     HAMMING,
     JACCARD,
     TANIMOTO,

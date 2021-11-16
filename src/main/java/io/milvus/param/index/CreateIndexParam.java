@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author changzechuan
+ * Parameters for <code>createIndex</code> interface.
  */
 @Getter
 public class CreateIndexParam {
@@ -51,6 +51,9 @@ public class CreateIndexParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>CreateIndexParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String fieldName;
@@ -61,31 +64,69 @@ public class CreateIndexParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set target field name. Field name cannot be empty or null.
+         *
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
         public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Set index type of the index.
+         *
+         * @param indexType index type
+         * @return <code>Builder</code>
+         */
         public Builder withIndexType(@NonNull IndexType indexType) {
             this.indexType = indexType;
             return this;
         }
 
+        /**
+         * Set metric type of the index.
+         *
+         * @param metricType metric type
+         * @return <code>Builder</code>
+         */
         public Builder withMetricType(@NonNull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
+        /**
+         * Set extra index parameters according to index type.
+         *
+         * For example: IVF index, the extra parameters can be "{\"nlist\":1024}"
+         * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
+         *
+         * @param extraParam extra parameters in json format
+         * @return <code>Builder</code>
+         */
         public Builder withExtraParam(@NonNull String extraParam) {
             this.extraParam = extraParam;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>CreateIndexParam</code> instance.
+         *
+         * @return <code>CreateIndexParam</code>
+         */
         public CreateIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");
@@ -104,6 +145,11 @@ public class CreateIndexParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>CreateIndexParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "CreateIndexParam{" +

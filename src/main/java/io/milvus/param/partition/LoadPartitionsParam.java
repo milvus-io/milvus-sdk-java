@@ -30,9 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Params for load partitions RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>loadPartition</code> interface.
  */
 @Getter
 public class LoadPartitionsParam {
@@ -54,6 +52,9 @@ public class LoadPartitionsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>LoadPartitionsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
@@ -75,36 +76,84 @@ public class LoadPartitionsParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set partition names list. Partition names list cannot be null or empty.
+         *
+         * @param partitionNames partition names list
+         * @return <code>Builder</code>
+         */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
+        /**
+         * Add a partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
         public Builder addPartitionName(@NonNull String partitionName) {
             this.partitionNames.add(partitionName);
             return this;
         }
 
+        /**
+         * Set load action to sync mode.
+         * With sync mode, the client side will keep waiting until all segments of the partition successfully loaded.
+         *
+         * If not sync mode, client will return at once after the loadPartitions() is called.
+         *
+         * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @return <code>Builder</code>
+         */
         public Builder withSyncLoad(@NonNull Boolean syncLoad) {
             this.syncLoad = syncLoad;
             return this;
         }
 
+        /**
+         * Set waiting interval in sync mode. In sync mode, the client will constantly check partition load state by interval.
+         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_INTERVAL.
+         * @see Constant
+         *
+         * @param milliseconds interval
+         * @return <code>Builder</code>
+         */
         public Builder withSyncLoadWaitingInterval(@NonNull Long milliseconds) {
             this.syncLoadWaitingInterval = milliseconds;
             return this;
         }
 
+        /**
+         * Set time out value for sync mode.
+         * Time out value must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_TIMEOUT.
+         * @see Constant
+         *
+         * @param seconds time out value for sync mode
+         * @return <code>Builder</code>
+         */
         public Builder withSyncLoadWaitingTimeout(@NonNull Long seconds) {
             this.syncLoadWaitingTimeout = seconds;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>LoadPartitionsParam</code> instance.
+         *
+         * @return <code>LoadPartitionsParam</code>
+         */
         public LoadPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -120,14 +169,14 @@ public class LoadPartitionsParam {
                 if (syncLoadWaitingInterval <= 0) {
                     throw new ParamException("Sync load waiting interval must be larger than zero");
                 } else if (syncLoadWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {
-                    throw new ParamException("Sync load waiting interval must be small than "
+                    throw new ParamException("Sync load waiting interval cannot be larger than "
                             + Constant.MAX_WAITING_LOADING_INTERVAL.toString() + " milliseconds");
                 }
 
                 if (syncLoadWaitingTimeout <= 0) {
                     throw new ParamException("Sync load waiting interval must be larger than zero");
                 } else if (syncLoadWaitingTimeout > Constant.MAX_WAITING_LOADING_TIMEOUT) {
-                    throw new ParamException("Sync load waiting interval must be small than "
+                    throw new ParamException("Sync load waiting interval cannot be larger than "
                             + Constant.MAX_WAITING_LOADING_TIMEOUT.toString() + " seconds");
                 }
             }
@@ -136,6 +185,11 @@ public class LoadPartitionsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>LoadPartitionsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "LoadPartitionsParam{" +

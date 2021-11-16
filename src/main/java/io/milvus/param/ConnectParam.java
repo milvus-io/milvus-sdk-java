@@ -25,7 +25,7 @@ import lombok.NonNull;
 import java.util.concurrent.TimeUnit;
 
 /**
- * connectParam, timeUnit:ms
+ * Parameters for client connection.
  */
 public class ConnectParam {
     private final String host;
@@ -93,65 +93,124 @@ public class ConnectParam {
         private Builder() {
         }
 
+        /**
+         * Set host name/address.
+         *
+         * @param host host name/address
+         * @return <code>Builder</code>
+         */
         public Builder withHost(@NonNull String host) {
             this.host = host;
             return this;
         }
 
-        public Builder withPort(int port) throws IllegalArgumentException {
-            if (port < 0 || port > 0xFFFF) {
-                throw new IllegalArgumentException("Port is out of range!");
-            }
+        /**
+         * Set connection port. Port value must be larger than zero and less than 65536.
+         *
+         * @param port port value
+         * @return <code>Builder</code>
+         */
+        public Builder withPort(int port)  {
             this.port = port;
             return this;
         }
 
-        public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit)
-                throws IllegalArgumentException {
-            if (connectTimeout <= 0L) {
-                throw new IllegalArgumentException("Connect timeout must be positive!");
-            }
+        /**
+         * Set connect time out value of client channel. The time out value must be larger than zero.
+         *
+         * @param connectTimeout time out value
+         * @param timeUnit time out unit
+         * @return <code>Builder</code>
+         */
+        public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
             this.connectTimeoutMs = timeUnit.toMillis(connectTimeout);
             return this;
         }
 
-        public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit)
-                throws IllegalArgumentException {
-            if (keepAliveTime <= 0L) {
-                throw new IllegalArgumentException("Keepalive time must be positive!");
-            }
+        /**
+         * Set keep alive time value of client channel. The time out value must be larger than zero.
+         *
+         * @param keepAliveTime time out value
+         * @param timeUnit time out unit
+         * @return <code>Builder</code>
+         */
+        public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
             this.keepAliveTimeMs = timeUnit.toMillis(keepAliveTime);
             return this;
         }
 
-        public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit)
-                throws IllegalArgumentException {
-            if (keepAliveTimeout <= 0L) {
-                throw new IllegalArgumentException("Keepalive timeout must be positive!");
-            }
+        /**
+         * Set keep alive time out value of client channel. The time out value must be larger than zero.
+         *
+         * @param keepAliveTimeout time out value
+         * @param timeUnit time out unit
+         * @return <code>Builder</code>
+         */
+        public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
             this.keepAliveTimeoutMs = timeUnit.toNanos(keepAliveTimeout);
             return this;
         }
 
+        /**
+         * Set client channel keep alive.
+         *
+         * @param enable true keep alive
+         * @return <code>Builder</code>
+         */
         public Builder keepAliveWithoutCalls(boolean enable) {
             keepAliveWithoutCalls = enable;
             return this;
         }
 
-        public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit)
-                throws IllegalArgumentException {
-            if (idleTimeout <= 0L) {
-                throw new IllegalArgumentException("Idle timeout must be positive!");
-            }
+        /**
+         * Set idle time out value of client channel. The time out value must be larger than zero.
+         *
+         * @param idleTimeout time out value
+         * @param timeUnit time out unit
+         * @return <code>Builder</code>
+         */
+        public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
             this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>ConnectParam</code> instance.
+         *
+         * @return <code>ShowCollectionsParam</code>
+         */
         public ConnectParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(host, "Host name");
+
+            if (port < 0 || port > 0xFFFF) {
+                throw new ParamException("Port is out of range!");
+            }
+
+            if (keepAliveTimeMs <= 0L) {
+                throw new IllegalArgumentException("Keep alive time must be positive!");
+            }
+
+            if (connectTimeoutMs <= 0L) {
+                throw new IllegalArgumentException("Connect timeout must be positive!");
+            }
+
+            if (keepAliveTimeoutMs <= 0L) {
+                throw new ParamException("Keep alive timeout must be positive!");
+            }
+
+            if (idleTimeoutMs <= 0L) {
+                throw new ParamException("Idle timeout must be positive!");
+            }
+
             return new ConnectParam(this);
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>ConnectParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "ConnectParam{" +

@@ -26,9 +26,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Params for create collection RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>getCollectionStatistics</code> interface.
  */
 @Getter
 public class GetCollectionStatisticsParam {
@@ -44,6 +42,9 @@ public class GetCollectionStatisticsParam {
         return new Builder();
     }
 
+    /**
+     * Builder for <code>GetCollectionStatisticsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
 
@@ -54,16 +55,33 @@ public class GetCollectionStatisticsParam {
         private Builder() {
         }
 
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Require a flush action before retrieving collection statistics.
+         *
+         * @param flush <code>Boolean.TRUE</code> require a flush action
+         * @return <code>Builder</code>
+         */
         public Builder withFlush(@NonNull Boolean flush) {
             this.flushCollection = flush;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>GetCollectionStatisticsParam</code> instance.
+         *
+         * @return <code>GetCollectionStatisticsParam</code>
+         */
         public GetCollectionStatisticsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -71,6 +89,11 @@ public class GetCollectionStatisticsParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>GetCollectionStatisticsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "GetCollectionStatisticsParam{" +
