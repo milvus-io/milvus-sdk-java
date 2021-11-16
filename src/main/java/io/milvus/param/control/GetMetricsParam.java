@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.param.collection;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
@@ -26,14 +26,14 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>hasCollection</code> interface.
+ * Parameters for <code>getMetric</code> interface.
  */
 @Getter
-public class HasCollectionParam {
-    private final String collectionName;
+public class GetMetricsParam {
+    private final String request;
 
-    private HasCollectionParam(@NonNull Builder builder) {
-        this.collectionName = builder.collectionName;
+    private GetMetricsParam(@NonNull Builder builder) {
+        this.request = builder.request;
     }
 
     public static Builder newBuilder() {
@@ -41,45 +41,49 @@ public class HasCollectionParam {
     }
 
     /**
-     * Builder for <code>HasCollectionParam</code> class.
+     * Builder for <code>GetMetricsParam</code> class.
      */
     public static final class Builder {
-        private String collectionName;
+        private String request;
 
         private Builder() {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Set request in json format to retrieve metric information from server.
+         * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
          *
-         * @param collectionName collection name
+         * @param request request string in json format
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
-            this.collectionName = collectionName;
+        public Builder withRequest(@NonNull String request) {
+            this.request = request;
             return this;
         }
 
         /**
-         * Verify parameters and create a new <code>HasCollectionParam</code> instance.
+         * Verify parameters and create a new <code>GetMetricsParam</code> instance.
          *
-         * @return <code>HasCollectionParam</code>
+         * @return <code>GetMetricsParam</code>
          */
-        public HasCollectionParam build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+        public GetMetricsParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(request, "Request string");
 
-            return new HasCollectionParam(this);
+            // TODO: check the request string is json format
+
+            return new GetMetricsParam(this);
         }
     }
 
     /**
-     * Construct a <code>String</code> by <code>HasCollectionParam</code> instance.
+     * Construct a <code>String</code> by <code>GetMetricsParam</code> instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "HasCollectionParam{" +
-                "collectionName='" + collectionName + '\'' + '}';
+        return "GetMetricsParam{" +
+                "request='" + request + '\'' +
+                '}';
     }
 }

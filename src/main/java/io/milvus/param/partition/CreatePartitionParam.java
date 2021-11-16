@@ -22,30 +22,29 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * Params for create partition RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>createPartition</code> interface.
  */
+@Getter
 public class CreatePartitionParam {
     private final String collectionName;
     private final String partitionName;
 
-    private CreatePartitionParam(@Nonnull Builder builder) {
+    private CreatePartitionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getPartitionName() {
-        return partitionName;
-    }
-
+    /**
+     * Builder for <code>CreatePartitionParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String partitionName;
@@ -53,25 +52,51 @@ public class CreatePartitionParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
+        /**
+         * Set partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>CreatePartitionParam</code> instance.
+         *
+         * @return <code>CreatePartitionParam</code>
+         */
         public CreatePartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
 
             return new CreatePartitionParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>CreatePartitionParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "CreatePartitionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
     }
 }

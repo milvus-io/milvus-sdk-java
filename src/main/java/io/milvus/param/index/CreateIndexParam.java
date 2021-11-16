@@ -19,27 +19,27 @@
 
 package io.milvus.param.index;
 
-import com.google.api.Context;
-import com.google.api.Metric;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author changzechuan
+ * Parameters for <code>createIndex</code> interface.
  */
+@Getter
 public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
     private final Map<String, String> extraParam = new HashMap<>();
 
-    private CreateIndexParam(@Nonnull Builder builder) {
+    private CreateIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
@@ -47,18 +47,13 @@ public class CreateIndexParam {
         this.extraParam.put(Constant.PARAMS, builder.extraParam);
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public Map<String, String> getExtraParam() {
-        return extraParam;
-    }
-
+    /**
+     * Builder for <code>CreateIndexParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String fieldName;
@@ -69,35 +64,69 @@ public class CreateIndexParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withFieldName(@Nonnull String fieldName) {
+        /**
+         * Set target field name. Field name cannot be empty or null.
+         *
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
+        public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder withIndexType(@Nonnull IndexType indexType) {
+        /**
+         * Set index type of the index.
+         *
+         * @param indexType index type
+         * @return <code>Builder</code>
+         */
+        public Builder withIndexType(@NonNull IndexType indexType) {
             this.indexType = indexType;
             return this;
         }
 
-        public Builder withMetricType(@Nonnull MetricType metricType) {
+        /**
+         * Set metric type of the index.
+         *
+         * @param metricType metric type
+         * @return <code>Builder</code>
+         */
+        public Builder withMetricType(@NonNull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder withExtraParam(@Nonnull String extraParam) {
+        /**
+         * Set extra index parameters according to index type.
+         *
+         * For example: IVF index, the extra parameters can be "{\"nlist\":1024}"
+         * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
+         *
+         * @param extraParam extra parameters in json format
+         * @return <code>Builder</code>
+         */
+        public Builder withExtraParam(@NonNull String extraParam) {
             this.extraParam = extraParam;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>CreateIndexParam</code> instance.
+         *
+         * @return <code>CreateIndexParam</code>
+         */
         public CreateIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");
@@ -114,5 +143,19 @@ public class CreateIndexParam {
 
             return new CreateIndexParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>CreateIndexParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "CreateIndexParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                ", params='" + extraParam.toString() + '\'' +
+                '}';
     }
 }

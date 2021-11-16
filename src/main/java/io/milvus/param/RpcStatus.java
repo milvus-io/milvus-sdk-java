@@ -20,9 +20,7 @@
 package io.milvus.param;
 
 /**
- * Extend partial DDL rpc invoke result
- *
- * @author changzechuan
+ * Util class to wrap a message.
  */
 public class RpcStatus {
     public static final String SUCCESS_MSG = "Success";
@@ -37,6 +35,11 @@ public class RpcStatus {
         this.msg = msg;
     }
 
+    /**
+     * Construct a <code>String</code> by <code>RpcStatus</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "RpcStatus{" +

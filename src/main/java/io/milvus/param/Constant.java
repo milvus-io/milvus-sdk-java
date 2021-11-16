@@ -19,11 +19,9 @@
 
 package io.milvus.param;
 
-import io.milvus.grpc.DataType;
-
-import java.util.HashSet;
-import java.util.Set;
-
+/**
+ * Constant/static values for internal usage.
+ */
 public class Constant {
     // default value for search key
     public static final String VECTOR_TAG = "$0";
@@ -32,5 +30,18 @@ public class Constant {
     public static final String TOP_K = "topk";
     public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";
+    public static final String ROUND_DECIMAL = "round_decimal";
     public static final String PARAMS = "params";
+
+    // max value for waiting loading collection/partition interval, unit: millisecond
+    public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;
+
+    // max value for waiting loading collection/partition timeout,  unit: second
+    public static final Long MAX_WAITING_LOADING_TIMEOUT = 300L;
+
+    // max value for waiting flushing collection/partition interval, unit: millisecond
+    public static final Long MAX_WAITING_FLUSHING_INTERVAL = 2000L;
+
+    // max value for waiting flushing collection/partition timeout,  unit: second
+    public static final Long MAX_WAITING_FLUSHING_TIMEOUT = 300L;
 }

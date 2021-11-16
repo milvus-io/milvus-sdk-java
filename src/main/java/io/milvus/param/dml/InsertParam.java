@@ -23,74 +23,85 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * InsertParam.Field.values:
- * if dataType is scalar: values is List<Integer>, List<Long>...
- * if dataType is FloatVector: values is List<List<Float>>
- * if dataType is BinaryVector: values is List<ByteBuffer>
+ * Parameters for <code>insert</code> interface.
  */
+@Getter
 public class InsertParam {
     private final List<Field> fields;
 
     private final String collectionName;
     private final String partitionName;
-    private final int row_count;
+    private final int rowCount;
 
-    private InsertParam(@Nonnull Builder builder) {
+    private InsertParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.fields = builder.fields;
-        this.row_count = builder.row_count;
+        this.rowCount = builder.rowCount;
     }
 
-    public List<Field> getFields() {
-        return fields;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getPartitionName() {
-        return partitionName;
-    }
-
-    public int getRowCount() {
-        return row_count;
-    }
-
+    /**
+     * Builder for <code>InsertParam</code> class.
+     */
     public static class Builder {
         private String collectionName;
         private String partitionName = "_default";
         private List<InsertParam.Field> fields;
-        private int row_count;
+        private int rowCount;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
+        /**
+         * Optional. Set partition name.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public Builder withFields(@Nonnull List<InsertParam.Field> fields) {
+        /**
+         * Set insert data. The fields list cannot be empty.
+         * @see InsertParam.Field
+         *
+         * @param fields insert data
+         * @return <code>Builder</code>
+         */
+        public Builder withFields(@NonNull List<InsertParam.Field> fields) {
             this.fields = fields;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>InsertParam</code> instance.
+         *
+         * @return <code>InsertParam</code>
+         */
+        @java.lang.SuppressWarnings("unchecked")
         public InsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -100,13 +111,15 @@ public class InsertParam {
 
             for (InsertParam.Field field : fields) {
                 if (field == null) {
-                    throw new ParamException("Field cannot be null");
+                    throw new ParamException("Field cannot be null." +
+                            " If the field is auto-id, just ignore it from withFields()");
                 }
 
                 ParamUtils.CheckNullEmptyString(field.getName(), "Field name");
 
                 if (field.getValues() == null || field.getValues().isEmpty()) {
-                    throw new ParamException("Field value cannot be empty");
+                    throw new ParamException("Field value cannot be empty." +
+                            " If the field is auto-id, just ignore it from withFields()");
                 }
             }
 
@@ -117,7 +130,7 @@ public class InsertParam {
                     throw new ParamException("Row count of fields must be equal");
                 }
             }
-            this.row_count = count;
+            this.rowCount = count;
 
             if (count == 0) {
                 throw new ParamException("Row count is zero");
@@ -127,24 +140,32 @@ public class InsertParam {
             for (InsertParam.Field field : fields) {
                 List<?> values = field.getValues();
                 if (field.getType() == DataType.FloatVector) {
-                    if (!(values.get(0) instanceof List)) {
-                        throw new ParamException("Float vector field's value must be Lst<Float>");
-                    }
-                    List first = (List) values.get(0);
-                    if (!(first.get(0) instanceof Float)) {
-                        throw new ParamException("Float vector field's value must be Lst<Float>");
+                    for (Object obj : values) {
+                        if (!(obj instanceof List)) {
+                            throw new ParamException("Float vector field's value must be Lst<Float>");
+                        }
+
+                        List<?> temp = (List<?>)obj;
+                        for (Object v : temp) {
+                            if (!(v instanceof Float)) {
+                                throw new ParamException("Float vector's value type must be Float");
+                            }
+                        }
                     }
 
+                    List<Float> first = (List<Float>) values.get(0);
                     int dim = first.size();
                     for (int i = 1; i < values.size(); ++i) {
-                        List temp = (List) values.get(i);
+                        List<Float> temp = (List<Float>) values.get(i);
                         if (dim != temp.size()) {
                             throw new ParamException("Vector dimension must be equal");
                         }
                     }
                 } else if (field.getType() == DataType.BinaryVector) {
-                    if (!(values.get(0) instanceof ByteBuffer)) {
-                        throw new ParamException("Binary vector field's value must be ByteBuffer");
+                    for (Object obj : values) {
+                        if (!(obj instanceof ByteBuffer)) {
+                            throw new ParamException("Binary vector's type must be ByteBuffer");
+                        }
                     }
 
                     ByteBuffer first = (ByteBuffer) values.get(0);
@@ -162,6 +183,26 @@ public class InsertParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>InsertParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "InsertParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", row_count=" + rowCount +
+                '}';
+    }
+
+    /**
+     * Internal class for insert data.
+     * if dataType is scalar(bool/int/float/double): values is List<Integer>, List<Long>...
+     * if dataType is FloatVector: values is List<List<Float>>
+     * if dataType is BinaryVector: values is List<ByteBuffer>
+     */
     public static class Field {
         private final String name;
         private final DataType type;

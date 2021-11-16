@@ -17,21 +17,17 @@
  * under the License.
  */
 
-package io.milvus.param;
+
+package io.milvus.exception;
+
+import io.milvus.param.R;
 
 /**
- * Represents available metric types.
- * For more information: @see <a href="https://milvus.io/docs/v2.0.0/metric.md">Similarity Metrics</a>
+ * Some interfaces including <code>search</code>/<code>search</code>/<code>loadCollection</code> can throw this exception
+ * when server return illegal response, this may indicate a bug of server.
  */
-public enum MetricType {
-    INVALID,
-    L2,
-    IP,
-    // Only supported for binary vectors
-    HAMMING,
-    JACCARD,
-    TANIMOTO,
-    SUBSTRUCTURE,
-    SUPERSTRUCTURE,
-    ;
+public class IllegalResponseException extends MilvusException {
+    public IllegalResponseException(String msg) {
+        super(msg, R.Status.IllegalResponse.getCode());
+    }
 }

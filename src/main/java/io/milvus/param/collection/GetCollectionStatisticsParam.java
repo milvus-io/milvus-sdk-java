@@ -22,43 +22,83 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * Params for create collection RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>getCollectionStatistics</code> interface.
  */
+@Getter
 public class GetCollectionStatisticsParam {
     private final String collectionName;
+    private final boolean flushCollection;
 
-    private GetCollectionStatisticsParam(@Nonnull Builder builder) {
+    private GetCollectionStatisticsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.flushCollection = builder.flushCollection;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
+    /**
+     * Builder for <code>GetCollectionStatisticsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
+
+        // if flushCollection is true, getCollectionStatistics() firstly call flush() and wait flush() finish
+        // Note: use default interval and timeout to wait flush()
+        private Boolean flushCollection = Boolean.TRUE;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Require a flush action before retrieving collection statistics.
+         *
+         * @param flush <code>Boolean.TRUE</code> require a flush action
+         * @return <code>Builder</code>
+         */
+        public Builder withFlush(@NonNull Boolean flush) {
+            this.flushCollection = flush;
+            return this;
+        }
+
+        /**
+         * Verify parameters and create a new <code>GetCollectionStatisticsParam</code> instance.
+         *
+         * @return <code>GetCollectionStatisticsParam</code>
+         */
         public GetCollectionStatisticsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
             return new GetCollectionStatisticsParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>GetCollectionStatisticsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "GetCollectionStatisticsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                " flush=" + flushCollection +
+                '}';
     }
 }

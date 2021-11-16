@@ -21,6 +21,9 @@ package io.milvus.exception;
 
 import io.milvus.param.R;
 
+/**
+ * Milvus client api throws this exception when client channel is closed.
+ */
 public class ClientNotConnectedException extends MilvusException {
     public ClientNotConnectedException(String msg) {
         super(msg, R.Status.ClientNotConnected.getCode());

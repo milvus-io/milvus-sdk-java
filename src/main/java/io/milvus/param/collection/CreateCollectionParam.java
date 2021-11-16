@@ -22,76 +22,106 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
-import java.util.Arrays;
+import lombok.Getter;
+import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * request for create collection
- *
- * @author changzechuan
+ * Parameters for <code>createCollection</code> interface.
  */
+@Getter
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
     private final String description;
-    private final FieldType[] fieldTypes;
+    private final List<FieldType> fieldTypes;
 
-    private CreateCollectionParam(@Nonnull Builder builder) {
+    private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public int getShardsNum() {
-        return shardsNum;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public FieldType[] getFieldTypes() {
-        return fieldTypes;
-    }
-
+    /**
+     * Builder for <code>CreateCollectionParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private int shardsNum = 2;
         private String description = "";
-        private FieldType[] fieldTypes;
+        private List<FieldType> fieldTypes = new ArrayList<>();
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set shards number, the number must be larger than zero, default value is 2.
+         *
+         * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
+         * @return <code>Builder</code>
+         */
         public Builder withShardsNum(int shardsNum) {
             this.shardsNum = shardsNum;
             return this;
         }
 
-        public Builder withDescription(@Nonnull String description) {
+        /**
+         * Set collection description, description can be empty, default is "".
+         *
+         * @param description description of the collection
+         * @return <code>Builder</code>
+         */
+        public Builder withDescription(@NonNull String description) {
             this.description = description;
             return this;
         }
 
-        public Builder withFieldTypes(@Nonnull FieldType[] fieldTypes) {
+        /**
+         * Set schema of the collection, schema cannot be empty or null.
+         * @see FieldType
+         *
+         * @param fieldTypes a <code>List</code> of <code>FieldType</code>
+         * @return <code>Builder</code>
+         */
+        public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
             this.fieldTypes = fieldTypes;
             return this;
         }
 
+        /**
+         * Add a field schema.
+         * @see FieldType
+         *
+         * @param fieldType a <code>FieldType</code> object
+         * @return <code>Builder</code>
+         */
+        public Builder addFieldType(@NonNull FieldType fieldType) {
+            this.fieldTypes.add(fieldType);
+            return this;
+        }
+
+        /**
+         * Verify parameters and create a new <code>CreateCollectionParam</code> instance.
+         *
+         * @return <code>CreateCollectionParam</code>
+         */
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -99,7 +129,7 @@ public class CreateCollectionParam {
                 throw new ParamException("ShardNum must be larger than 0");
             }
 
-            if (fieldTypes == null || fieldTypes.length <= 0) {
+            if (fieldTypes == null || fieldTypes.isEmpty()) {
                 throw new ParamException("Field numbers must be larger than 0");
             }
 
@@ -113,13 +143,18 @@ public class CreateCollectionParam {
         }
     }
 
+    /**
+     * Construct a <code>String</code> by <code>CreateCollectionParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
     @Override
     public String toString() {
         return "CreateCollectionParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", shardsNum=" + shardsNum +
                 ", description='" + description + '\'' +
-                ", fieldTypes=" + Arrays.toString(fieldTypes) +
+                ", field count=" + fieldTypes.size() +
                 '}';
     }
 }

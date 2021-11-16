@@ -20,45 +20,111 @@
 package io.milvus.param.partition;
 
 import io.milvus.exception.ParamException;
+import io.milvus.grpc.ShowType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Params for show partition RPC operation
- *
- * @author changzechuan
+ * Parameters for <code>showPartition</code> interface.
  */
+@Getter
 public class ShowPartitionsParam {
     private final String collectionName;
+    private final List<String> partitionNames;
+    private final ShowType showType;
 
-    private ShowPartitionsParam(@Nonnull Builder builder) {
+    private ShowPartitionsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.partitionNames = builder.partitionNames;
+        this.showType = builder.showType;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
+    /**
+     * Builder for <code>ShowPartitionsParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
+        private List<String> partitionNames = new ArrayList<>();
+
+        // showType:
+        //   default showType = ShowType.All
+        //   if partitionNames is not empty, set showType = ShowType.InMemory
+        private ShowType showType = ShowType.All;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Set partition names list. Partition names list cannot be null or empty.
+         *
+         * @param partitionNames partition names list
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+            this.partitionNames = partitionNames;
+            return this;
+        }
+
+        /**
+         * Add a partition name. Partition name cannot be empty or null.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder addPartitionName(@NonNull String partitionName) {
+            this.partitionNames.add(partitionName);
+            return this;
+        }
+
+        /**
+         * Verify parameters and create a new <code>ShowPartitionsParam</code> instance.
+         *
+         * @return <code>ShowPartitionsParam</code>
+         */
         public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
+            if (partitionNames != null && !partitionNames.isEmpty()) {
+                for (String partitionName : partitionNames) {
+                    ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
+                }
+                this.showType = ShowType.InMemory;
+            }
+
             return new ShowPartitionsParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>ShowPartitionsParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "ShowPartitionsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionNames='" + partitionNames.toString() + '\'' +
+                ", showType=" + showType.toString() +
+                '}';
     }
 }

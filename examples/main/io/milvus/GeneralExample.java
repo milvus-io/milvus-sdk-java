@@ -26,38 +26,36 @@ import io.milvus.param.collection.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.Response.*;
 
 import java.util.*;
-import java.util.Random;
 
 public class GeneralExample {
-
-    public static MilvusServiceClient milvusClient;
+    private static MilvusServiceClient milvusClient;
 
     static {
-        ConnectParam connectParam = ConnectParam.Builder.newBuilder()
+        ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
 
-    public static final String COLLECTION_NAME = "TEST";
-    public static final String ID_FIELD = "userID";
-    public static final String VECTOR_FIELD = "userFace";
-    public static final Integer VECTOR_DIM = 64;
+    private static final String COLLECTION_NAME = "TEST";
+    private static final String ID_FIELD = "userID";
+    private static final String VECTOR_FIELD = "userFace";
+    private static final Integer VECTOR_DIM = 64;
 
-    public static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
-    public static final String INDEX_PARAM = "{\"nlist\":128}";
-    public static final MetricType METRIC_TYPE = MetricType.IP;
+    private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
+    private static final String INDEX_PARAM = "{\"nlist\":128}";
+    private static final MetricType METRIC_TYPE = MetricType.IP;
 
-    public static final Integer SEARCH_K = 5;
-    public static final String SEARCH_PARAM = "{\"nprobe\":10}";
+    private static final Integer SEARCH_K = 5;
+    private static final String SEARCH_PARAM = "{\"nprobe\":10}";
 
-    public R<RpcStatus> createCollection() {
+    private R<RpcStatus> createCollection() {
         System.out.println("========== createCollection() ==========");
-        FieldType[] fieldTypes = new FieldType[2];
-        FieldType fieldType1 = FieldType.Builder.newBuilder()
+        FieldType fieldType1 = FieldType.newBuilder()
                 .withName(ID_FIELD)
                 .withDescription("user identification")
                 .withDataType(DataType.Int64)
@@ -65,20 +63,19 @@ public class GeneralExample {
                 .withPrimaryKey(true)
                 .build();
 
-        FieldType fieldType2 = FieldType.Builder.newBuilder()
+        FieldType fieldType2 = FieldType.newBuilder()
                 .withName(VECTOR_FIELD)
                 .withDescription("face embedding")
                 .withDataType(DataType.FloatVector)
                 .withDimension(VECTOR_DIM)
                 .build();
-        fieldTypes[0] = fieldType1;
-        fieldTypes[1] = fieldType2;
 
-        CreateCollectionParam createCollectionReq = CreateCollectionParam.Builder.newBuilder()
+        CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
                 .withShardsNum(2)
-                .withFieldTypes(fieldTypes)
+                .addFieldType(fieldType1)
+                .addFieldType(fieldType2)
                 .build();
         R<RpcStatus> response = milvusClient.createCollection(createCollectionReq);
 
@@ -86,20 +83,18 @@ public class GeneralExample {
         return response;
     }
 
-    public R<RpcStatus> dropCollection() {
+    private R<RpcStatus> dropCollection() {
         System.out.println("========== dropCollection() ==========");
-        R<RpcStatus> response = milvusClient.dropCollection(DropCollectionParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.dropCollection(DropCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<Boolean> hasCollection() {
+    private R<Boolean> hasCollection() {
         System.out.println("========== hasCollection() ==========");
-        R<Boolean> response = milvusClient.hasCollection(HasCollectionParam.Builder
-                .newBuilder()
+        R<Boolean> response = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
 
@@ -107,61 +102,55 @@ public class GeneralExample {
         return response;
     }
 
-    public R<RpcStatus> loadCollection() {
+    private R<RpcStatus> loadCollection() {
         System.out.println("========== loadCollection() ==========");
-        R<RpcStatus> response = milvusClient.loadCollection(LoadCollectionParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<RpcStatus> releaseCollection() {
+    private R<RpcStatus> releaseCollection() {
         System.out.println("========== releaseCollection() ==========");
-        R<RpcStatus> response = milvusClient.releaseCollection(ReleaseCollectionParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<DescribeCollectionResponse> describeCollection() {
+    private R<DescribeCollectionResponse> describeCollection() {
         System.out.println("========== describeCollection() ==========");
-        R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.Builder
-                .newBuilder()
+        R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<GetCollectionStatisticsResponse> getCollectionStatistics() {
+    private R<GetCollectionStatisticsResponse> getCollectionStatistics() {
         System.out.println("========== getCollectionStatistics() ==========");
-        R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(GetCollectionStatisticsParam.Builder
-                .newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .build());
-        System.out.println(response);
+        R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(
+                GetCollectionStatisticsParam.newBuilder()
+                        .withCollectionName(COLLECTION_NAME)
+                        .build());
+        GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(response.getData());
+        System.out.println("Collection row count: " + wrapper.GetRowCount());
         return response;
     }
 
-    public R<ShowCollectionsResponse> showCollections() {
+    private R<ShowCollectionsResponse> showCollections() {
         System.out.println("========== showCollections() ==========");
-        String[] collectionNames = new String[]{COLLECTION_NAME};
-        R<ShowCollectionsResponse> response = milvusClient.showCollections(ShowCollectionsParam.Builder
-                .newBuilder()
-                .withCollectionNames(collectionNames)
+        R<ShowCollectionsResponse> response = milvusClient.showCollections(ShowCollectionsParam.newBuilder()
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<RpcStatus> createPartition(String partitionName) {
+    private R<RpcStatus> createPartition(String partitionName) {
         System.out.println("========== createPartition() ==========");
-        R<RpcStatus> response = milvusClient.createPartition(CreatePartitionParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.createPartition(CreatePartitionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
@@ -170,10 +159,9 @@ public class GeneralExample {
         return response;
     }
 
-    public R<RpcStatus> dropPartition(String partitionName) {
+    private R<RpcStatus> dropPartition(String partitionName) {
         System.out.println("========== dropPartition() ==========");
-        R<RpcStatus> response = milvusClient.dropPartition(DropPartitionParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.dropPartition(DropPartitionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
@@ -182,10 +170,9 @@ public class GeneralExample {
         return response;
     }
 
-    public R<Boolean> hasPartition(String partitionName) {
+    private R<Boolean> hasPartition(String partitionName) {
         System.out.println("========== hasPartition() ==========");
-        R<Boolean> response = milvusClient.hasPartition(HasPartitionParam.Builder
-                .newBuilder()
+        R<Boolean> response = milvusClient.hasPartition(HasPartitionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
@@ -194,58 +181,29 @@ public class GeneralExample {
         return response;
     }
 
-    public R<RpcStatus> loadPartition(String partitionName) {
-        System.out.println("========== loadPartition() ==========");
-        String[] partitionNames = new String[]{partitionName};
-        R<RpcStatus> response = milvusClient.loadPartitions(LoadPartitionsParam.Builder
-                .newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withPartitionNames(partitionNames)
-                .build());
-
-        System.out.println(response);
-        return response;
-    }
-
-    public R<RpcStatus> releasePartition(String partitionName) {
+    private R<RpcStatus> releasePartition(String partitionName) {
         System.out.println("========== releasePartition() ==========");
-        String[] releaseNames = new String[]{partitionName};
-        R<RpcStatus> response = milvusClient.releasePartitions(ReleasePartitionsParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.releasePartitions(ReleasePartitionsParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withPartitionNames(releaseNames)
+                .addPartitionName(partitionName)
                 .build());
 
         System.out.println(response);
         return response;
     }
 
-    public R<GetPartitionStatisticsResponse> getPartitionStatistics(String partitionName) {
-        System.out.println("========== getPartitionStatistics() ==========");
-        R<GetPartitionStatisticsResponse> response = milvusClient.getPartitionStatistics(GetPartitionStatisticsParam.Builder
-                .newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withPartitionName(partitionName)
-                .build());
-
-        System.out.println(response);
-        return response;
-    }
-
-    public R<ShowPartitionsResponse> showPartitions() {
+    private R<ShowPartitionsResponse> showPartitions() {
         System.out.println("========== showPartitions() ==========");
-        R<ShowPartitionsResponse> response = milvusClient.showPartitions(ShowPartitionsParam.Builder
-                .newBuilder()
+        R<ShowPartitionsResponse> response = milvusClient.showPartitions(ShowPartitionsParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         System.out.println(response);
         return response;
     }
 
-    public R<RpcStatus> createIndex() {
+    private R<RpcStatus> createIndex() {
         System.out.println("========== createIndex() ==========");
-        R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .withIndexType(INDEX_TYPE)
@@ -256,10 +214,9 @@ public class GeneralExample {
         return response;
     }
 
-    public R<RpcStatus> dropIndex() {
+    private R<RpcStatus> dropIndex() {
         System.out.println("========== dropIndex() ==========");
-        R<RpcStatus> response = milvusClient.dropIndex(DropIndexParam.Builder
-                .newBuilder()
+        R<RpcStatus> response = milvusClient.dropIndex(DropIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
@@ -267,10 +224,9 @@ public class GeneralExample {
         return response;
     }
 
-    public R<DescribeIndexResponse> describeIndex() {
+    private R<DescribeIndexResponse> describeIndex() {
         System.out.println("========== describeIndex() ==========");
-        R<DescribeIndexResponse> response = milvusClient.describeIndex(DescribeIndexParam.Builder
-                .newBuilder()
+        R<DescribeIndexResponse> response = milvusClient.describeIndex(DescribeIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
@@ -278,10 +234,9 @@ public class GeneralExample {
         return response;
     }
 
-    public R<GetIndexStateResponse> getIndexState() {
+    private R<GetIndexStateResponse> getIndexState() {
         System.out.println("========== getIndexState() ==========");
-        R<GetIndexStateResponse> response = milvusClient.getIndexState(GetIndexStateParam.Builder
-                .newBuilder()
+        R<GetIndexStateResponse> response = milvusClient.getIndexState(GetIndexStateParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
@@ -289,23 +244,107 @@ public class GeneralExample {
         return response;
     }
 
-    public R<GetIndexBuildProgressResponse> getIndexBuildProgress() {
+    private R<GetIndexBuildProgressResponse> getIndexBuildProgress() {
         System.out.println("========== getIndexBuildProgress() ==========");
-        R<GetIndexBuildProgressResponse> response = milvusClient.getIndexBuildProgress(GetIndexBuildProgressParam.Builder
-                .newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .build());
+        R<GetIndexBuildProgressResponse> response = milvusClient.getIndexBuildProgress(
+                GetIndexBuildProgressParam.newBuilder()
+                        .withCollectionName(COLLECTION_NAME)
+                        .build());
         System.out.println(response);
         return response;
     }
 
-    public R<MutationResult> insert(String partitionName, Long count) {
+    private R<MutationResult> delete(String partitionName, String expr) {
+        System.out.println("========== delete() ==========");
+        DeleteParam build = DeleteParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withPartitionName(partitionName)
+                .withExpr(expr)
+                .build();
+        R<MutationResult> response = milvusClient.delete(build);
+        System.out.println(response.getData());
+        return response;
+    }
+
+    private R<SearchResults> search(String expr) {
+        System.out.println("========== search() ==========");
+        List<String> outFields = Collections.singletonList(ID_FIELD);
+
+        Random ran=new Random();
+        int nq = 5;
+        List<List<Float>> vectors = new ArrayList<>();
+        for (int i = 0; i < nq; ++i) {
+            List<Float> vector = new ArrayList<>();
+            for (int d = 0; d < VECTOR_DIM; ++d) {
+                vector.add(ran.nextFloat());
+            }
+            vectors.add(vector);
+        }
+
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withMetricType(MetricType.L2)
+                .withOutFields(outFields)
+                .withTopK(SEARCH_K)
+                .withVectors(vectors)
+                .withVectorFieldName(VECTOR_FIELD)
+                .withExpr(expr)
+                .withParams(SEARCH_PARAM)
+                .build();
+
+
+        R<SearchResults> response = milvusClient.search(searchParam);
+
+        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData());
+        for (int i = 0; i < vectors.size(); ++i) {
+            System.out.println("Search result of No." + i);
+            List<SearchResultsWrapper.IDScore> scores = wrapper.GetIDScore(i);
+            System.out.println(scores);
+        }
+
+        return response;
+    }
+
+    private R<CalcDistanceResults> calDistance() {
+        System.out.println("========== calDistance() ==========");
+        Random ran=new Random();
+        List<Float> vector1 = new ArrayList<>();
+        List<Float> vector2 = new ArrayList<>();
+        for (int d = 0; d < VECTOR_DIM; ++d) {
+            vector1.add(ran.nextFloat());
+            vector2.add(ran.nextFloat());
+        }
+
+        CalcDistanceParam calcDistanceParam = CalcDistanceParam.newBuilder()
+                .withVectorsLeft(Collections.singletonList(vector1))
+                .withVectorsRight(Collections.singletonList(vector2))
+                .withMetricType(MetricType.L2)
+                .build();
+        R<CalcDistanceResults> response = milvusClient.calcDistance(calcDistanceParam);
+        System.out.println(response);
+        return response;
+    }
+
+    private R<QueryResults> query(String expr) {
+        System.out.println("========== query() ==========");
+        List<String> fields = Arrays.asList(ID_FIELD, VECTOR_FIELD);
+        QueryParam test = QueryParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withExpr(expr)
+                .withOutFields(fields)
+                .build();
+        R<QueryResults> response = milvusClient.query(test);
+        System.out.println(response);
+        return response;
+    }
+
+    private R<MutationResult> insert(String partitionName, Long count) {
         System.out.println("========== insert() ==========");
         List<Long> ids = new ArrayList<>();
         List<List<Float>> vectors = new ArrayList<>();
 
         Random ran=new Random();
-        for (Long i = 0L; i < count; ++i) {
+        for (long i = 0L; i < count; ++i) {
             ids.add(i + 100L);
             List<Float> vector = new ArrayList<>();
             for (int d = 0; d < VECTOR_DIM; ++d) {
@@ -318,95 +357,19 @@ public class GeneralExample {
         fields.add(new InsertParam.Field(ID_FIELD, DataType.Int64, ids));
         fields.add(new InsertParam.Field(VECTOR_FIELD, DataType.FloatVector, vectors));
 
-        InsertParam insertParam = InsertParam.Builder
-                .newBuilder()
+        InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .withFields(fields)
                 .build();
 
         R<MutationResult> response = milvusClient.insert(insertParam);
-        System.out.println(response);
-
-        R<FlushResponse> ret = milvusClient.flush(COLLECTION_NAME);
-        System.out.println(ret.getData());
+//        System.out.println(response);
 
         return response;
     }
 
-    public R<MutationResult> delete(String partitionName, String expr) {
-        System.out.println("========== delete() ==========");
-        DeleteParam build = DeleteParam.Builder.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withPartitionName(partitionName)
-                .withExpr(expr)
-                .build();
-        R<MutationResult> response = milvusClient.delete(build);
-        System.out.println(response.getData());
-        return response;
-    }
-
-    public R<SearchResults> search(String expr) {
-        System.out.println("========== search() ==========");
-        List<String> outFields = Collections.singletonList(ID_FIELD);
-
-        Random ran=new Random();
-        List<Float> vector = new ArrayList<>();
-        for (int d = 0; d < VECTOR_DIM; ++d) {
-            vector.add(ran.nextFloat());
-        }
-
-        SearchParam searchParam = SearchParam.Builder.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withMetricType(MetricType.L2)
-                .withOutFields(outFields)
-                .withTopK(SEARCH_K)
-                .withVectors(Collections.singletonList(vector))
-                .withVectorFieldName(VECTOR_FIELD)
-                .withExpr(expr)
-                .withParams(SEARCH_PARAM)
-                .build();
-
-
-        R<SearchResults> response = milvusClient.search(searchParam);
-        System.out.println(response);
-        return response;
-    }
-
-    public R<CalcDistanceResults> calDistance() {
-        System.out.println("========== calDistance() ==========");
-        Random ran=new Random();
-        List<Float> vector1 = new ArrayList<>();
-        List<Float> vector2 = new ArrayList<>();
-        for (int d = 0; d < VECTOR_DIM; ++d) {
-            vector1.add(ran.nextFloat());
-            vector2.add(ran.nextFloat());
-        }
-
-        CalcDistanceParam calcDistanceParam = CalcDistanceParam.Builder.newBuilder()
-                .withVectorsLeft(Collections.singletonList(vector1))
-                .withVectorsRight(Collections.singletonList(vector2))
-                .withMetricType(MetricType.L2)
-                .build();
-        R<CalcDistanceResults> response = milvusClient.calcDistance(calcDistanceParam);
-        System.out.println(response);
-        return response;
-    }
-
-    public R<QueryResults> query(String expr) {
-        System.out.println("========== query() ==========");
-        List<String> fields = Arrays.asList(ID_FIELD, VECTOR_FIELD);
-        QueryParam test = QueryParam.Builder.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withExpr(expr)
-                .withOutFields(fields)
-                .build();
-        R<QueryResults> response = milvusClient.query(test);
-        System.out.println(response);
-        return response;
-    }
-
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         GeneralExample example = new GeneralExample();
 
         example.dropCollection();
@@ -415,17 +378,16 @@ public class GeneralExample {
         example.describeCollection();
         example.showCollections();
         example.loadCollection();
-        example.getCollectionStatistics();
 
         final String partitionName = "p1";
         example.createPartition(partitionName);
         example.hasPartition(partitionName);
         example.showPartitions();
-        example.loadPartition(partitionName);
-        example.getPartitionStatistics(partitionName);
 
         final Long row_count = 10000L;
         example.insert(partitionName, row_count);
+        example.getCollectionStatistics();
+
         example.createIndex();
         example.describeIndex();
         example.getIndexBuildProgress();

@@ -17,47 +17,70 @@
  * under the License.
  */
 
-package io.milvus.param.Control;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * @author:weilongzhao
- * @time:2021/9/4 22:20
+ * Parameters for <code>getPersistentSegmentInfo</code> interface.
  */
+@Getter
 public class GetPersistentSegmentInfoParam {
     private final String collectionName;
 
-    private GetPersistentSegmentInfoParam(@Nonnull Builder builder) {
+    private GetPersistentSegmentInfoParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
+    /**
+     * Builder for <code>GetPersistentSegmentInfoParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
 
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>GetPersistentSegmentInfoParam</code> instance.
+         *
+         * @return <code>GetPersistentSegmentInfoParam</code>
+         */
         public GetPersistentSegmentInfoParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
             return new GetPersistentSegmentInfoParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>GetPersistentSegmentInfoParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "GetPersistentSegmentInfoParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 }

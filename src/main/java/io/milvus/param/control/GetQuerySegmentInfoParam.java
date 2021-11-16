@@ -17,47 +17,70 @@
  * under the License.
  */
 
-package io.milvus.param.Control;
+package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * @author:weilongzhao
- * @time:2021/9/4 23:01
+ * Parameters for <code>getQuerySegmentInfo</code> interface.
  */
+@Getter
 public class GetQuerySegmentInfoParam {
     private final String collectionName;
 
-    private GetQuerySegmentInfoParam(@Nonnull GetQuerySegmentInfoParam.Builder builder) {
+    private GetQuerySegmentInfoParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
+    /**
+     * Builder for <code>GetPersistentSegmentInfoParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
 
         private Builder() {
         }
 
-        public static GetQuerySegmentInfoParam.Builder newBuilder() {
-            return new GetQuerySegmentInfoParam.Builder();
-        }
-
-        public GetQuerySegmentInfoParam.Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>GetQuerySegmentInfoParam</code> instance.
+         *
+         * @return <code>GetQuerySegmentInfoParam</code>
+         */
         public GetQuerySegmentInfoParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
             return new GetQuerySegmentInfoParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>GetQuerySegmentInfoParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "GetQuerySegmentInfoParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 }

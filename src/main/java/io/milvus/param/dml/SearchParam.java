@@ -24,32 +24,29 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * SearchParam.vectors:
- * if is FloatVector: vectors is List<List<Float>>
- * if is BinaryVector: vectors is List<ByteBuffer>
+ * Parameters for <code>search</code> interface.
  */
+@Getter
 public class SearchParam {
-    private final String dbName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final String metricType;
     private final String vectorFieldName;
-    private final Integer topK;
+    private final int topK;
     private final String expr;
     private final List<String> outFields;
     private final List<?> vectors;
+    private final int roundDecimal;
     private final String params;
 
-    private SearchParam(@Nonnull Builder builder) {
-        this.dbName = builder.dbName;
+    private SearchParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.metricType = builder.metricType.name();
@@ -58,114 +55,153 @@ public class SearchParam {
         this.expr = builder.expr;
         this.outFields = builder.outFields;
         this.vectors = builder.vectors;
+        this.roundDecimal = builder.roundDecimal;
         this.params = builder.params;
     }
 
-    public String getDbName() {
-        return dbName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public List<String> getPartitionNames() {
-        return partitionNames;
-    }
-
-    public String getMetricType() {
-        return metricType;
-    }
-
-    public String getVectorFieldName() {
-        return vectorFieldName;
-    }
-
-    public Integer getTopK() {
-        return topK;
-    }
-
-    public String getExpr() {
-        return expr;
-    }
-
-    public List<String> getOutFields() {
-        return outFields;
-    }
-
-    public List<?> getVectors() {
-        return vectors;
-    }
-
-    public String getParams() {
-        return params;
-    }
-
+    /**
+     * Builder for <code>SearchParam</code> class.
+     */
     public static class Builder {
-        private String dbName = ""; // reserved
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.L2;
         private String vectorFieldName;
         private Integer topK;
-        private String expr;
+        private String expr = "";
         private List<String> outFields = new ArrayList<>();
         private List<?> vectors;
-        private String params;
+        private Integer roundDecimal = -1;
+        private String params = "{}";
 
-        private Builder() {
+       Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionNames(@Nonnull List<String> partitionNames) {
+        /**
+         * Optional. Set partition names list to specify search scope.
+         *
+         * @param partitionNames partition names list
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder withMetricType(@Nonnull MetricType metricType) {
+        /**
+         * Set metric type of ANN searching.
+         *
+         * @param metricType metric type
+         * @return <code>Builder</code>
+         */
+        public Builder withMetricType(@NonNull MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder withVectorFieldName(@Nonnull String vectorFieldName) {
+        /**
+         * Set target vector field name. Field name cannot be empty or null.
+         *
+         * @param vectorFieldName vector field name
+         * @return <code>Builder</code>
+         */
+        public Builder withVectorFieldName(@NonNull String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
-        public Builder withTopK(@Nonnull Integer topK) {
+        /**
+         * Set topK value of ANN search.
+         *
+         * @param topK topK value
+         * @return <code>Builder</code>
+         */
+        public Builder withTopK(@NonNull Integer topK) {
             this.topK = topK;
             return this;
         }
 
-        public Builder withExpr(@Nonnull String expr) {
+        /**
+         * Optional. Set expression to filter out entities before searching.
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
+         *
+         * @param expr filtering expression
+         * @return <code>Builder</code>
+         */
+        public Builder withExpr(@NonNull String expr) {
             this.expr = expr;
             return this;
         }
 
-        public Builder withOutFields(@Nonnull List<String> outFields) {
+        /**
+         * Optional. Specify output fields.
+         *
+         * @param outFields output fields
+         * @return <code>Builder</code>
+         */
+        public Builder withOutFields(@NonNull List<String> outFields) {
             this.outFields = outFields;
             return this;
         }
 
-        public Builder withVectors(@Nonnull List<?> vectors) {
+        /**
+         * Set target vectors.
+         *
+         * @param vectors list of target vectors
+         *                If vector type is FloatVector: vectors is List<List<Float>>
+         *                If vector type is BinaryVector: vectors is List<ByteBuffer>
+         * @return <code>Builder</code>
+         */
+        public Builder withVectors(@NonNull List<?> vectors) {
             this.vectors = vectors;
             return this;
         }
 
+        /**
+         * Specify how many digits after the decimal point for returned results.
+         *
+         * @param decimal how many digits after the decimal point
+         * @return <code>Builder</code>
+         */
+        public Builder withRoundDecimal(@NonNull Integer decimal) {
+            this.roundDecimal = decimal;
+            return this;
+        }
 
-        public Builder withParams(@Nonnull String params) {
+        /**
+         * Set extra search parameters according to index type.
+         *
+         * For example: IVF index, the extra parameters can be "{\"nprobe\":10}"
+         * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
+         *
+         * @param params extra parameters in json format
+         * @return <code>Builder</code>
+         */
+        public Builder withParams(@NonNull String params) {
             this.params = params;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>SearchParam</code> instance.
+         *
+         * @return <code>SearchParam</code>
+         */
         public SearchParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
@@ -208,5 +244,24 @@ public class SearchParam {
 
             return new SearchParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>SearchParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "SearchParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionNames='" + partitionNames.toString() + '\'' +
+                ", metricType=" + metricType.toString() +
+                ", target vectors count=" + vectors.size() +
+                ", vectorFieldName='" + vectorFieldName + '\'' +
+                ", topK=" + topK +
+                ", expr='" + expr + '\'' +
+                ", params='" + params + '\'' +
+                '}';
     }
 }

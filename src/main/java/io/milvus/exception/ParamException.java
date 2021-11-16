@@ -21,6 +21,9 @@ package io.milvus.exception;
 
 import io.milvus.param.R;
 
+/**
+ * Exception for caller input illegal parameters.
+ */
 public class ParamException extends MilvusException {
     public ParamException(String msg) {
         super(msg, R.Status.ParamError.getCode());

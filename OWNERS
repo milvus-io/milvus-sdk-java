@@ -1,0 +1,9 @@
+filters:
+  ".*":
+    reviewers:
+      - xiaofan-luan
+      - yhmo
+    approvers:
+      - xiaofan-luan
+      - yhmo
+

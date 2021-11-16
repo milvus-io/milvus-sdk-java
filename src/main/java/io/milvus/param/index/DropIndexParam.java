@@ -22,28 +22,29 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
 /**
- * @author changzechuan
+ * Parameters for <code>dropIndex</code> interface.
  */
+@Getter
 public class DropIndexParam {
     private final String collectionName;
     private final String fieldName;
 
-    private DropIndexParam(@Nonnull Builder builder) {
+    private DropIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
     }
 
-    public String getCollectionName() {
-        return collectionName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getFieldName() {
-        return fieldName;
-    }
-
+    /**
+     * Builder for <code>DropIndexParam</code> class.
+     */
     public static final class Builder {
         private String collectionName;
         private String fieldName;
@@ -51,25 +52,51 @@ public class DropIndexParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withFieldName(@Nonnull String fieldName) {
+        /**
+         * Set target field name. Field name cannot be empty or null.
+         *
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
+        public Builder withFieldName(@NonNull String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>DropIndexParam</code> instance.
+         *
+         * @return <code>DropIndexParam</code>
+         */
         public DropIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");
 
             return new DropIndexParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>DropIndexParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "DropIndexParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                '}';
     }
 }

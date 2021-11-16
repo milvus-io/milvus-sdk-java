@@ -22,39 +22,32 @@ package io.milvus.param.dml;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import javax.annotation.Nonnull;
+import lombok.Getter;
+import lombok.NonNull;
 
+/**
+ * Parameters for <code>delete</code> interface.
+ */
+@Getter
 public class DeleteParam {
-    private final String dbName;
     private final String collectionName;
     private final String partitionName;
     private final String expr;
 
-    private DeleteParam(@Nonnull Builder builder) {
-        this.dbName = builder.dbName;
+    private DeleteParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.expr = builder.expr;
     }
 
-    public String getDbName() {
-        return dbName;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public String getPartitionName() {
-        return partitionName;
-    }
-
-    public String getExpr() {
-        return expr;
-    }
-
+    /**
+     * Builder for <code>DeleteParam</code> class.
+     */
     public static class Builder {
-        private String dbName = ""; // reserved
         private String collectionName;
         private String partitionName = "";
         private String expr;
@@ -62,30 +55,64 @@ public class DeleteParam {
         private Builder() {
         }
 
-        public static Builder newBuilder() {
-            return new Builder();
-        }
-
-        public Builder withCollectionName(@Nonnull String collectionName) {
+        /**
+         * Set collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder withPartitionName(@Nonnull String partitionName) {
+        /**
+         * Optional. Set partition name.
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public Builder withExpr(@Nonnull String expr) {
+        /**
+         * Set expr to filter out entities to be deleted.
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
+         *
+         * @param expr filtering expression
+         * @return <code>Builder</code>
+         */
+        public Builder withExpr(@NonNull String expr) {
             this.expr = expr;
             return this;
         }
 
+        /**
+         * Verify parameters and create a new <code>DeleteParam</code> instance.
+         *
+         * @return <code>DeleteParam</code>
+         */
         public DeleteParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(expr, "Expression");
 
             return new DeleteParam(this);
         }
+    }
+
+    /**
+     * Construct a <code>String</code> by <code>DeleteParam</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "DeleteParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", expr='" + expr + '\'' +
+                '}';
     }
 }
