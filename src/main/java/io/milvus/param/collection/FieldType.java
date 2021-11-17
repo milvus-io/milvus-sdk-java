@@ -166,7 +166,7 @@ public class FieldType {
                 }
 
                 try {
-                    Integer dim = Integer.valueOf(typeParams.get(Constant.VECTOR_DIM));
+                    int dim = Integer.parseInt(typeParams.get(Constant.VECTOR_DIM));
                     if (dim <= 0) {
                         throw new ParamException("Vector field dimension must be larger than zero");
                     }

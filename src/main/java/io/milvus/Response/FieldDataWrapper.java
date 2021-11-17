@@ -4,7 +4,6 @@ import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
 
-import io.milvus.param.Constant;
 import lombok.NonNull;
 
 import java.nio.ByteBuffer;

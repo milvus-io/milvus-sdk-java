@@ -185,8 +185,8 @@ public class InsertParam {
                 } else if (field.getType() == DataType.Int32 || field.getType() == DataType.Int16
                         || field.getType() == DataType.Int8 ) {
                     for (Object obj : values) {
-                        if (!(obj instanceof Integer)) {
-                            throw new ParamException("Int32/Int16/Int8 field value type must be Integer");
+                        if (!(obj instanceof Integer) && !(obj instanceof Short)) {
+                            throw new ParamException("Int32/Int16/Int8 field value type must be Integer or Short");
                         }
                     }
                 } else if (field.getType() == DataType.Float) {

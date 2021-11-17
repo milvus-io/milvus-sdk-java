@@ -1,14 +1,10 @@
 package io.milvus.Response;
 
-import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
-import io.milvus.param.dml.InsertParam;
 
-import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
