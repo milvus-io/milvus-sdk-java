@@ -122,12 +122,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 case UNRECOGNIZED:
                     throw new ParamException("Cannot support this dataType:" + dataType);
                 case Int64:
-                case Int32:
-                case Int16:
                     List<Long> longs = objects.stream().map(p -> (Long) p).collect(Collectors.toList());
                     LongArray longArray = LongArray.newBuilder().addAllData(longs).build();
                     ScalarField scalarField1 = ScalarField.newBuilder().setLongData(longArray).build();
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField1).build();
+                case Int32:
+                case Int16:
                 case Int8:
                     List<Integer> integers = objects.stream().map(p -> (Integer) p).collect(Collectors.toList());
                     IntArray intArray = IntArray.newBuilder().addAllData(integers).build();
@@ -329,6 +329,47 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 }
             }
         });
+    }
+
+    private R<Boolean> waitForIndex(String collectionName, String fieldName, long waitingInterval, long timeout) {
+        // This method use getIndexState() to check index state.
+        // If all index state become Finished, then we say the sync index action is finished.
+        // If waiting time exceed timeout, exist the circle
+        long tsBegin = System.currentTimeMillis();
+        while (true) {
+            long tsNow = System.currentTimeMillis();
+            if ((tsNow - tsBegin) >= timeout*1000) {
+                String msg = "Waiting index thread is timeout, index process may not be finished";
+                logWarning(msg);
+                return R.failed(R.Status.Success, msg);
+            }
+
+            GetIndexStateRequest request = GetIndexStateRequest.newBuilder()
+                    .setCollectionName(collectionName)
+                    .setFieldName(fieldName)
+                    .build();
+
+            GetIndexStateResponse response = blockingStub().getIndexState(request);
+            if (response.getState() == IndexState.Finished) {
+                break;
+            } else if (response.getState() == IndexState.Failed) {
+                String msg = "Index failed: " + response.getFailReason();
+                logError(msg);
+                return R.failed(R.Status.UnexpectedError, msg);
+            }
+
+            try {
+                String msg = "Waiting index, interval: " + waitingInterval + "ms. ";
+                logInfo(msg);
+                TimeUnit.MILLISECONDS.sleep(waitingInterval);
+            } catch (InterruptedException e) {
+                String msg = "Waiting index thread is interrupted, index process may not be finished";
+                logWarning(msg);
+                return R.failed(R.Status.Success, msg);
+            }
+        }
+
+        return R.failed(R.Status.Success, "Waiting index thread exist");
     }
 
     ///////////////////// API implementation //////////////////////
@@ -1067,15 +1108,25 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().createIndex(createIndexRequest);
 
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("CreateIndexRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                logError("CreateIndexRequest failed! Collection name:{}\n{}",
-                        requestParam.getCollectionName(), response.getReason());
+            if (response.getErrorCode() != ErrorCode.Success) {
+                logError("CreateIndexRequest failed! Collection name:{} Field name:{}\n{}",
+                        requestParam.getCollectionName(), requestParam.getFieldName(), response.getReason());
                 return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
             }
+
+            if (requestParam.isSyncMode()) {
+                R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getFieldName(),
+                        requestParam.getSyncWaitingInterval(), requestParam.getSyncWaitingTimeout());
+                if (res.getStatus() != R.Status.Success.getCode()) {
+                    logError("CreateIndexRequest failed in sync mode! Collection name:{} Field name:{}\n{}",
+                            requestParam.getCollectionName(), requestParam.getFieldName(), response.getReason());
+                    return R.failed(R.Status.valueOf(res.getStatus()), res.getMessage());
+                }
+            }
+
+            logInfo("CreateIndexRequest successfully! Collection name:{} Field name:{}",
+                    requestParam.getCollectionName(), requestParam.getFieldName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("CreateIndexRequest RPC failed! Collection name:{}\n{}",
                     requestParam.getCollectionName(), e.getStatus().toString());

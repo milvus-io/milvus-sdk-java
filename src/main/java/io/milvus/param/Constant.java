@@ -44,4 +44,7 @@ public class Constant {
 
     // max value for waiting flushing collection/partition timeout,  unit: second
     public static final Long MAX_WAITING_FLUSHING_TIMEOUT = 300L;
+
+    // max value for waiting create index interval, unit: millisecond
+    public static final Long MAX_WAITING_INDEX_INTERVAL = 2000L;
 }

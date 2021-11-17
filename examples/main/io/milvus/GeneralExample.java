@@ -31,7 +31,7 @@ import io.milvus.Response.*;
 import java.util.*;
 
 public class GeneralExample {
-    private static MilvusServiceClient milvusClient;
+    private static final MilvusServiceClient milvusClient;
 
     static {
         ConnectParam connectParam = ConnectParam.newBuilder()
@@ -45,6 +45,7 @@ public class GeneralExample {
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 64;
+    private static final String AGE_FIELD = "userAge";
 
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
     private static final String INDEX_PARAM = "{\"nlist\":128}";
@@ -59,8 +60,8 @@ public class GeneralExample {
                 .withName(ID_FIELD)
                 .withDescription("user identification")
                 .withDataType(DataType.Int64)
-                .withAutoID(false)
                 .withPrimaryKey(true)
+                .withAutoID(true)
                 .build();
 
         FieldType fieldType2 = FieldType.newBuilder()
@@ -70,12 +71,19 @@ public class GeneralExample {
                 .withDimension(VECTOR_DIM)
                 .build();
 
+        FieldType fieldType3 = FieldType.newBuilder()
+                .withName(AGE_FIELD)
+                .withDescription("user age")
+                .withDataType(DataType.Int8)
+                .build();
+
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
                 .withShardsNum(2)
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
+                .addFieldType(fieldType3)
                 .build();
         R<RpcStatus> response = milvusClient.createCollection(createCollectionReq);
 
@@ -209,6 +217,7 @@ public class GeneralExample {
                 .withIndexType(INDEX_TYPE)
                 .withMetricType(METRIC_TYPE)
                 .withExtraParam(INDEX_PARAM)
+                .withSyncMode(Boolean.TRUE)
                 .build());
         System.out.println(response);
         return response;
@@ -295,7 +304,7 @@ public class GeneralExample {
 
         R<SearchResults> response = milvusClient.search(searchParam);
 
-        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData());
+        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
             List<SearchResultsWrapper.IDScore> scores = wrapper.GetIDScore(i);
@@ -327,35 +336,38 @@ public class GeneralExample {
 
     private R<QueryResults> query(String expr) {
         System.out.println("========== query() ==========");
-        List<String> fields = Arrays.asList(ID_FIELD, VECTOR_FIELD);
+        List<String> fields = Arrays.asList(ID_FIELD, AGE_FIELD);
         QueryParam test = QueryParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withExpr(expr)
                 .withOutFields(fields)
                 .build();
         R<QueryResults> response = milvusClient.query(test);
-        System.out.println(response);
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(response.getData());
+        System.out.println(ID_FIELD + ":" + wrapper.getFieldWrapper(ID_FIELD).getFieldData().toString());
+        System.out.println(AGE_FIELD + ":" + wrapper.getFieldWrapper(AGE_FIELD).getFieldData().toString());
+        System.out.println("Query row count: " + wrapper.getFieldWrapper(ID_FIELD).getRowCount());
         return response;
     }
 
     private R<MutationResult> insert(String partitionName, Long count) {
         System.out.println("========== insert() ==========");
-        List<Long> ids = new ArrayList<>();
         List<List<Float>> vectors = new ArrayList<>();
+        List<Integer> ages = new ArrayList<>();
 
         Random ran=new Random();
         for (long i = 0L; i < count; ++i) {
-            ids.add(i + 100L);
             List<Float> vector = new ArrayList<>();
             for (int d = 0; d < VECTOR_DIM; ++d) {
                 vector.add(ran.nextFloat());
             }
             vectors.add(vector);
+            ages.add(ran.nextInt(99));
         }
 
         List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(ID_FIELD, DataType.Int64, ids));
         fields.add(new InsertParam.Field(VECTOR_FIELD, DataType.FloatVector, vectors));
+        fields.add(new InsertParam.Field(AGE_FIELD, DataType.Int8, ages));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
@@ -385,7 +397,14 @@ public class GeneralExample {
         example.showPartitions();
 
         final Long row_count = 10000L;
-        example.insert(partitionName, row_count);
+        List<Long> deleteIds = new ArrayList<>();
+        Random ran = new Random();
+        for (int i = 0; i < 100; ++i) {
+            R<MutationResult> result = example.insert(partitionName, row_count);
+            InsertResultWrapper wrapper = new InsertResultWrapper(result.getData());
+            List<Long> ids = wrapper.getLongIDs();
+            deleteIds.add(ids.get(ran.nextInt(row_count.intValue())));
+        }
         example.getCollectionStatistics();
 
         example.createIndex();
@@ -393,8 +412,10 @@ public class GeneralExample {
         example.getIndexBuildProgress();
         example.getIndexState();
 
-        example.delete(partitionName, ID_FIELD + " in [105, 106, 107]");
-        example.query(ID_FIELD + " in [101, 102]");
+        String deleteExpr = ID_FIELD + " in " + deleteIds.toString();
+        example.delete(partitionName, deleteExpr);
+        String queryExpr = AGE_FIELD + " == 60";
+        example.query(queryExpr);
         example.search("");
         example.calDistance();
 

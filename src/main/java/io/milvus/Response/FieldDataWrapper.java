@@ -41,6 +41,53 @@ public class FieldDataWrapper {
     }
 
     /**
+     * Get row count of a field.
+     * * Throws {@link IllegalResponseException} if the field type is illegal.
+     *
+     * @return <code>long</code> row count of the field
+     */
+    public long getRowCount() throws IllegalResponseException {
+        DataType dt = fieldData.getType();
+        switch (dt) {
+            case FloatVector: {
+                int dim = getDim();
+                System.out.println(fieldData.getVectors().getFloatVector().getDataCount());
+                List<Float> data = fieldData.getVectors().getFloatVector().getDataList();
+                if (data.size() % dim != 0) {
+                    throw new IllegalResponseException("Returned float vector field data array size doesn't match dimension");
+                }
+
+                return data.size()/dim;
+            }
+            case BinaryVector: {
+                int dim = getDim();
+                ByteString data = fieldData.getVectors().getBinaryVector();
+                if (data.size() % dim != 0) {
+                    throw new IllegalResponseException("Returned binary vector field data array size doesn't match dimension");
+                }
+
+                return data.size()/dim;
+            }
+            case Int64:
+            case Int32:
+            case Int16:
+                return fieldData.getScalars().getLongData().getDataList().size();
+            case Int8:
+                return fieldData.getScalars().getIntData().getDataList().size();
+            case Bool:
+                return fieldData.getScalars().getBoolData().getDataList().size();
+            case Float:
+                return fieldData.getScalars().getFloatData().getDataList().size();
+            case Double:
+                return fieldData.getScalars().getDoubleData().getDataList().size();
+            case String:
+                return fieldData.getScalars().getStringData().getDataList().size();
+            default:
+                throw new IllegalResponseException("Unsupported data type returned by FieldData");
+        }
+    }
+
+    /**
      * Return field data according to its type:
      *      float vector field return List<List<Float>>
      *      binary vector field return List<ByteBuffer>

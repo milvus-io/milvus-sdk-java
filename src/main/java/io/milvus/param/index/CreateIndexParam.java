@@ -25,6 +25,7 @@ import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.HashMap;
@@ -38,6 +39,9 @@ public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
     private final Map<String, String> extraParam = new HashMap<>();
+    private final boolean syncMode;
+    private final long syncWaitingInterval;
+    private final long syncWaitingTimeout;
 
     private CreateIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -45,6 +49,9 @@ public class CreateIndexParam {
         this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
         this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
         this.extraParam.put(Constant.PARAMS, builder.extraParam);
+        this.syncMode = builder.syncMode;
+        this.syncWaitingInterval = builder.syncWaitingInterval;
+        this.syncWaitingTimeout = builder.syncWaitingTimeout;
     }
 
     public static Builder newBuilder() {
@@ -60,6 +67,20 @@ public class CreateIndexParam {
         private IndexType indexType;
         private MetricType metricType;
         private String extraParam;
+
+        // syncMode:
+        //   Default behavior is sync mode, createIndex() return after the index successfully created.
+        private Boolean syncMode = Boolean.TRUE;
+
+        // syncWaitingDuration:
+        //   When syncMode is ture, createIndex() return after the index successfully created.
+        //   this value control the waiting interval. Unit: millisecond. Default value: 500 milliseconds.
+        private Long syncWaitingInterval = 500L;
+
+        // syncWaitingTimeout:
+        //   When syncMode is ture, createIndex() return after the index successfully created.
+        //   this value control the waiting timeout. Unit: second. Default value: 600 seconds.
+        private Long syncWaitingTimeout = 600L;
 
         private Builder() {
         }
@@ -123,6 +144,46 @@ public class CreateIndexParam {
         }
 
         /**
+         * Set to sync mode.
+         * With sync mode, the client side will keep waiting until all segments of the collection successfully indexed.
+         *
+         * If not sync mode, client will return at once after the createIndex() is called.
+         *
+         * @param syncMode <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withSyncMode(@NonNull Boolean syncMode) {
+            this.syncMode = syncMode;
+            return this;
+        }
+
+        /**
+         * Set waiting interval in sync mode. In sync mode, the client will constantly check index state by interval.
+         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_INDEX_INTERVAL.
+         * @see Constant
+         *
+         * @param milliseconds interval
+         * @return <code>Builder</code>
+         */
+        public Builder withSyncWaitingInterval(@NonNull Long milliseconds) {
+            this.syncWaitingInterval = milliseconds;
+            return this;
+        }
+
+        /**
+         * Set time out value for sync mode.
+         * Time out value must be larger than zero. No upper limit. Default value is 600 seconds.
+         * @see Constant
+         *
+         * @param seconds time out value for sync mode
+         * @return <code>Builder</code>
+         */
+        public Builder withSyncWaitingTimeout(@NonNull Long seconds) {
+            this.syncWaitingTimeout = seconds;
+            return this;
+        }
+
+        /**
          * Verify parameters and create a new <code>CreateIndexParam</code> instance.
          *
          * @return <code>CreateIndexParam</code>
@@ -137,6 +198,19 @@ public class CreateIndexParam {
 
             if (metricType == MetricType.INVALID) {
                 throw new ParamException("Metric type is required");
+            }
+
+            if (syncMode == Boolean.TRUE) {
+                if (syncWaitingInterval <= 0) {
+                    throw new ParamException("Sync index waiting interval must be larger than zero");
+                } else if (syncWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {
+                    throw new ParamException("Sync index waiting interval cannot be larger than "
+                            + Constant.MAX_WAITING_LOADING_INTERVAL.toString() + " milliseconds");
+                }
+
+                if (syncWaitingTimeout <= 0) {
+                    throw new ParamException("Sync index waiting timeout must be larger than zero");
+                }
             }
 
             ParamUtils.CheckNullEmptyString(extraParam, "Index extra param");

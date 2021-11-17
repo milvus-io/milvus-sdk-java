@@ -164,7 +164,7 @@ public class InsertParam {
                 } else if (field.getType() == DataType.BinaryVector) {
                     for (Object obj : values) {
                         if (!(obj instanceof ByteBuffer)) {
-                            throw new ParamException("Binary vector's type must be ByteBuffer");
+                            throw new ParamException("Binary vector field's type must be ByteBuffer");
                         }
                     }
 
@@ -174,6 +174,43 @@ public class InsertParam {
                         ByteBuffer temp = (ByteBuffer) values.get(i);
                         if (dim != temp.position()) {
                             throw new ParamException("Vector dimension must be equal");
+                        }
+                    }
+                } else if (field.getType() == DataType.Int64) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof Long)) {
+                            throw new ParamException("Int64 field value type must be Long");
+                        }
+                    }
+                } else if (field.getType() == DataType.Int32 || field.getType() == DataType.Int16
+                        || field.getType() == DataType.Int8 ) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof Integer)) {
+                            throw new ParamException("Int32/Int16/Int8 field value type must be Integer");
+                        }
+                    }
+                } else if (field.getType() == DataType.Float) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof Float)) {
+                            throw new ParamException("Float field value type must be Float");
+                        }
+                    }
+                } else if (field.getType() == DataType.Double) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof Double)) {
+                            throw new ParamException("Double field value type must be Double");
+                        }
+                    }
+                } else if (field.getType() == DataType.Bool) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof Boolean)) {
+                            throw new ParamException("Bool field value type must be Boolean");
+                        }
+                    }
+                } else if (field.getType() == DataType.String) {
+                    for (Object obj : values) {
+                        if (!(obj instanceof String)) {
+                            throw new ParamException("String field value type must be String");
                         }
                     }
                 }
