@@ -6,6 +6,7 @@ option java_package = "io.milvus.grpc";
 option java_outer_classname = "CommonProto";
 option java_generate_equals_and_hash = true;
 
+
 enum ErrorCode {
     Success = 0;
     UnexpectedError = 1;
@@ -53,6 +54,7 @@ enum SegmentState {
     Sealed = 3;
     Flushed = 4;
     Flushing = 5;
+    Dropped = 6;
 }
 
 message Status {
@@ -75,8 +77,8 @@ message Blob {
 }
 
 message Address {
-    string ip = 1;
-    int64 port = 2;
+  string ip = 1;
+  int64 port = 2;
 }
 
 enum MsgType {
@@ -136,9 +138,11 @@ enum MsgType {
     WatchQueryChannels = 510;
     RemoveQueryChannels = 511;
     SealedSegmentsChangeInfo = 512;
+    WatchDeltaChannels = 513;
 
     /* DATA SERVICE */
     SegmentInfo = 600;
+    SystemInfo = 601;
 
     /* SYSTEM CONTROL */
     TimeTick = 1200;
@@ -174,4 +178,10 @@ message MsgHeader {
 message DMLMsgHeader {
     common.MsgBase base = 1;
     string shardName = 2;
+}
+
+enum CompactionState {
+  UndefiedState = 0;
+  Executing = 1;
+  Completed = 2;
 }

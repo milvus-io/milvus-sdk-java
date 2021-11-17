@@ -67,6 +67,7 @@ class MilvusServiceClientTest {
         return new MilvusServiceClient(connectParam);
     }
 
+    @SuppressWarnings("unchecked")
     private <T, P> void testFuncByName(String funcName, T param) {
         try {
             Class<?> clientClass = MilvusServiceClient.class;
