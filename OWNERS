@@ -3,7 +3,9 @@ filters:
     reviewers:
       - xiaofan-luan
       - yhmo
+      - scsven
     approvers:
       - xiaofan-luan
       - yhmo
+      - scsven
 

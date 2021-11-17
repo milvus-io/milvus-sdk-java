@@ -2,7 +2,7 @@ pull_request_rules:
   - name: Test passed for code changed
     conditions:
       - base=master
-      - "status-success=Java CI with Maven / build (pull_request)"
+      - "status-success=Java CI with Maven / Build with Maven"
     actions:
       label:
         add:
@@ -11,7 +11,7 @@ pull_request_rules:
   - name: Remove ci-passed when code check failed
     conditions:
       - base=master
-      - "check-failure=Java CI with Maven / build (pull_request)"
+      - "check-failure=Java CI with Maven / Build with Maven"
     actions:
       label:
         remove:
