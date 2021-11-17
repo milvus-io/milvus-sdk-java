@@ -87,7 +87,7 @@ public class LoadCollectionParam {
          *
          * If not sync mode, client will return at once after the loadCollection() is called.
          *
-         * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
         public Builder withSyncLoad(@NonNull Boolean syncLoad) {

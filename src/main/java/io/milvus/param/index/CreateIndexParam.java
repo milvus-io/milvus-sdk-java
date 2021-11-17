@@ -25,7 +25,6 @@ import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.HashMap;
@@ -149,7 +148,7 @@ public class CreateIndexParam {
          *
          * If not sync mode, client will return at once after the createIndex() is called.
          *
-         * @param syncMode <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
         public Builder withSyncMode(@NonNull Boolean syncMode) {

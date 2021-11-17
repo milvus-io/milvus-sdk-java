@@ -216,14 +216,14 @@ public class SearchParam {
 
             if (vectors.get(0) instanceof List) {
                 // float vectors
-                List first = (List) vectors.get(0);
+                List<?> first = (List<?>) vectors.get(0);
                 if (!(first.get(0) instanceof Float)) {
                     throw new ParamException("Float vector field's value must be Lst<Float>");
                 }
 
                 int dim = first.size();
                 for (int i = 1; i < vectors.size(); ++i) {
-                    List temp = (List) vectors.get(i);
+                    List<?> temp = (List<?>) vectors.get(i);
                     if (dim != temp.size()) {
                         throw new ParamException("Target vector dimension must be equal");
                     }
@@ -256,7 +256,7 @@ public class SearchParam {
         return "SearchParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionNames='" + partitionNames.toString() + '\'' +
-                ", metricType=" + metricType.toString() +
+                ", metricType=" + metricType +
                 ", target vectors count=" + vectors.size() +
                 ", vectorFieldName='" + vectorFieldName + '\'' +
                 ", topK=" + topK +

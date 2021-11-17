@@ -112,6 +112,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
                 }
 
+                assert totalBuf != null;
                 ByteString byteString = ByteString.copyFrom(totalBuf.array());
                 VectorField vectorField = VectorField.newBuilder().setDim(dim).setBinaryVector(byteString).build();
                 return builder.setFieldName(fieldName).setType(DataType.BinaryVector).setVectors(vectorField).build();
@@ -129,7 +130,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 case Int32:
                 case Int16:
                 case Int8:
-                    List<Integer> integers = objects.stream().map(p -> (Integer) p).collect(Collectors.toList());
+                    List<Integer> integers = objects.stream().map(p -> p instanceof Short ? ((Short)p).intValue() :(Integer) p).collect(Collectors.toList());
                     IntArray intArray = IntArray.newBuilder().addAllData(integers).build();
                     ScalarField scalarField2 = ScalarField.newBuilder().setIntData(intArray).build();
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField2).build();

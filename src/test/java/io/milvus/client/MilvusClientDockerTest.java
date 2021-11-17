@@ -203,7 +203,7 @@ public class MilvusClientDockerTest {
                 .build());
 
         fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Int32)
+                .withDataType(DataType.Int8)
                 .withName(field5Name)
                 .withDescription("age")
                 .build());
@@ -223,12 +223,12 @@ public class MilvusClientDockerTest {
         List<Long> ids = new ArrayList<>();
         List<Boolean> genders = new ArrayList<>();
         List<Double> weights = new ArrayList<>();
-        List<Integer> ages = new ArrayList<>();
+        List<Short> ages = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
             genders.add(i%3 == 0 ? Boolean.TRUE : Boolean.FALSE);
             weights.add((double) (i / 100));
-            ages.add((int)i%99);
+            ages.add((short)(i%99));
         }
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 

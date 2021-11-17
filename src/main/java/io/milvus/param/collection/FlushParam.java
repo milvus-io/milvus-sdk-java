@@ -23,8 +23,8 @@ public class FlushParam {
     private FlushParam(@NonNull Builder builder) {
         this.collectionNames = builder.collectionNames;
         this.syncFlush = builder.syncFlush;
-        this.syncFlushWaitingInterval = builder.syncFlushWaitingInterval.longValue();
-        this.syncFlushWaitingTimeout = builder.syncFlushWaitingTimeout.longValue();
+        this.syncFlushWaitingInterval = builder.syncFlushWaitingInterval;
+        this.syncFlushWaitingTimeout = builder.syncFlushWaitingTimeout;
     }
 
     public static Builder newBuilder() {
@@ -35,7 +35,7 @@ public class FlushParam {
      * Builder for <code>FlushParam</code> class.
      */
     public static final class Builder {
-        private List<String> collectionNames = new ArrayList<String>();
+        private List<String> collectionNames = new ArrayList<>();
 
         // syncFlush:
         //   Default behavior is sync flushing, flush() return after collection finish flushing.

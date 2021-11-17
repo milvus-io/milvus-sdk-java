@@ -534,7 +534,7 @@ class MilvusServiceClientTest {
         );
 
         assertThrows(ParamException.class, () -> FlushParam.newBuilder()
-                .addCollectionName("collection1")
+                .withCollectionNames(Collections.singletonList("collection1"))
                 .withSyncFlush(Boolean.TRUE)
                 .withSyncFlushWaitingInterval(Constant.MAX_WAITING_FLUSHING_INTERVAL + 1)
                 .build()
@@ -1490,6 +1490,7 @@ class MilvusServiceClientTest {
                 .withTopK(5)
                 .withVectors(vectors)
                 .withExpr("dummy")
+                .withRoundDecimal(5)
                 .build();
         R<SearchResults> resp = client.search(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());

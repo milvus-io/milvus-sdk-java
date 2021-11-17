@@ -23,7 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
@@ -115,7 +114,7 @@ public class LoadPartitionsParam {
          *
          * If not sync mode, client will return at once after the loadPartitions() is called.
          *
-         * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
         public Builder withSyncLoad(@NonNull Boolean syncLoad) {

@@ -1,6 +1,5 @@
 package io.milvus.Response;
 
-import io.milvus.exception.IllegalResponseException;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
 import lombok.NonNull;

@@ -85,7 +85,7 @@ public class ConnectParam {
         private String host = "localhost";
         private int port = 19530;
         private long connectTimeoutMs = 10000;
-        private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keepalive
+        private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
