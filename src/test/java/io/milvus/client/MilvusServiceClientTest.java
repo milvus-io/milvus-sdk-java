@@ -36,6 +36,8 @@ import io.milvus.server.MockMilvusServer;
 import io.milvus.server.MockMilvusServerImpl;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +65,35 @@ class MilvusServiceClientTest {
                 .withPort(testPort)
                 .build();
         return new MilvusServiceClient(connectParam);
+    }
+
+    private <T, P> void testFuncByName(String funcName, T param) {
+        try {
+            Class<?> clientClass = MilvusServiceClient.class;
+            Method testFunc = clientClass.getMethod(funcName, param.getClass());
+
+            // start mock server
+            MockMilvusServer server = startServer();
+            MilvusServiceClient client = startClient();
+
+            // test return ok with correct input
+            R<P> resp = (R<P>) testFunc.invoke(client, param);
+            assertEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // stop mock server
+            server.stop();
+
+            // test return error without server
+            resp = (R<P>) testFunc.invoke(client, param);
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error when client channel is shutdown
+            client.close();
+            resp = (R<P>) testFunc.invoke(client, param);
+            assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            System.out.println(e.toString());
+        }
     }
 
     @Test
@@ -180,25 +211,7 @@ class MilvusServiceClientTest {
                 .addFieldType(fieldType1)
                 .build();
 
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
-        // test return ok with correct input
-        R<RpcStatus> resp = client.createCollection(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.createCollection(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.createCollection(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("createCollection", param);
     }
 
     @Test
@@ -213,29 +226,11 @@ class MilvusServiceClientTest {
 
     @Test
     void describeCollection() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DescribeCollectionParam param = DescribeCollectionParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<DescribeCollectionResponse> resp = client.describeCollection(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.describeCollection(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.describeCollection(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("describeCollection", param);
     }
 
     @Test
@@ -250,29 +245,11 @@ class MilvusServiceClientTest {
 
     @Test
     void dropCollection() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DropCollectionParam param = DropCollectionParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.dropCollection(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.dropCollection(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.dropCollection(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("dropCollection", param);
     }
 
     @Test
@@ -298,7 +275,7 @@ class MilvusServiceClientTest {
                 .build();
 
         // test return ok with correct input
-        final Long segmentID = 2021L;
+        final long segmentID = 2021L;
         mockServerImpl.setFlushResponse(FlushResponse.newBuilder()
                 .putCollSegIDs(collectionName, LongArray.newBuilder().addData(segmentID).build())
                 .build());
@@ -311,8 +288,9 @@ class MilvusServiceClientTest {
 
         new Thread(() -> {
             try {
-                    TimeUnit.SECONDS.sleep(1);
+                TimeUnit.SECONDS.sleep(1);
             } catch (InterruptedException e) {
+                System.out.println(e.toString());
             }
             mockServerImpl.setGetPersistentSegmentInfoResponse(GetPersistentSegmentInfoResponse.newBuilder()
                     .addInfos(PersistentSegmentInfo.newBuilder()
@@ -350,29 +328,11 @@ class MilvusServiceClientTest {
 
     @Test
     void hasCollection() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         HasCollectionParam param = HasCollectionParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<Boolean> resp = client.hasCollection(param);
-        assertFalse(resp.getData());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.hasCollection(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.hasCollection(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("hasCollection", param);
     }
 
     @Test
@@ -505,29 +465,11 @@ class MilvusServiceClientTest {
 
     @Test
     void releaseCollection() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         ReleaseCollectionParam param = ReleaseCollectionParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.releaseCollection(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.releaseCollection(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.releaseCollection(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("releaseCollection", param);
     }
 
     @Test
@@ -560,30 +502,12 @@ class MilvusServiceClientTest {
 
     @Test
     void showCollections() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         ShowCollectionsParam param = ShowCollectionsParam.newBuilder()
                 .addCollectionName("collection1")
                 .addCollectionName("collection2")
                 .build();
 
-        // test return ok with correct input
-        R<ShowCollectionsResponse> resp = client.showCollections(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.showCollections(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.showCollections(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("showCollections", param);
     }
 
     @Test
@@ -655,30 +579,12 @@ class MilvusServiceClientTest {
 
     @Test
     void createPartition() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         CreatePartitionParam param = CreatePartitionParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.createPartition(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.createPartition(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.createPartition(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("createPartition", param);
     }
 
     @Test
@@ -699,30 +605,12 @@ class MilvusServiceClientTest {
 
     @Test
     void dropPartition() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DropPartitionParam param = DropPartitionParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.dropPartition(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.dropPartition(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.dropPartition(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("dropPartition", param);
     }
 
     @Test
@@ -743,30 +631,12 @@ class MilvusServiceClientTest {
 
     @Test
     void hasPartition() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         HasPartitionParam param = HasPartitionParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .build();
 
-        // test return ok with correct input
-        R<Boolean> resp = client.hasPartition(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.hasPartition(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.hasPartition(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("hasPartition", param);
     }
 
     @Test
@@ -930,30 +800,12 @@ class MilvusServiceClientTest {
 
     @Test
     void releasePartitions() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         ReleasePartitionsParam param = ReleasePartitionsParam.newBuilder()
                 .withCollectionName("collection1")
                 .addPartitionName("partition1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.releasePartitions(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.releasePartitions(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.releasePartitions(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("releasePartitions", param);
     }
 
     @Test
@@ -974,30 +826,12 @@ class MilvusServiceClientTest {
 
     @Test
     void getPartitionStatistics() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetPartitionStatisticsParam param = GetPartitionStatisticsParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .build();
 
-        // test return ok with correct input
-        R<GetPartitionStatisticsResponse> resp = client.getPartitionStatistics(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getPartitionStatistics(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getPartitionStatistics(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getPartitionStatistics", param);
     }
 
     @Test
@@ -1038,29 +872,11 @@ class MilvusServiceClientTest {
 
     @Test
     void showPartitions() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         ShowPartitionsParam param = ShowPartitionsParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<ShowPartitionsResponse> resp = client.showPartitions(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.showPartitions(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.showPartitions(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("showPartitions", param);
     }
 
     @Test
@@ -1081,30 +897,12 @@ class MilvusServiceClientTest {
 
     @Test
     void createAlias() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         CreateAliasParam param = CreateAliasParam.newBuilder()
                 .withCollectionName("collection1")
                 .withAlias("alias1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.createAlias(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.createAlias(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.createAlias(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("createAlias", param);
     }
 
     @Test
@@ -1118,29 +916,11 @@ class MilvusServiceClientTest {
 
     @Test
     void dropAlias() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DropAliasParam param = DropAliasParam.newBuilder()
                 .withAlias("alias1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.dropAlias(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.dropAlias(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.dropAlias(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("dropAlias", param);
     }
 
     @Test
@@ -1161,30 +941,12 @@ class MilvusServiceClientTest {
 
     @Test
     void alterAlias() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         AlterAliasParam param = AlterAliasParam.newBuilder()
                 .withCollectionName("collection1")
                 .withAlias("alias1")
                 .build();
 
-        // test return ok with correct input
-        R<RpcStatus> resp = client.alterAlias(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.alterAlias(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.alterAlias(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("alterAlias", param);
     }
 
     @Test
@@ -1242,12 +1004,33 @@ class MilvusServiceClientTest {
         MockMilvusServer server = startServer();
         MilvusServiceClient client = startClient();
 
+        // test return ok for sync mode loading
+        mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
+                .setState(IndexState.InProgress)
+                .build());
+
+        new Thread(() -> {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+                mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
+                        .setState(IndexState.Finished)
+                        .build());
+            } catch (InterruptedException e) {
+                mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
+                        .setState(IndexState.Finished)
+                        .build());
+            }
+        }, "RefreshIndexState").start();
+
         CreateIndexParam param = CreateIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
                 .withExtraParam("dummy")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(2L)
                 .build();
 
         // test return ok with correct input
@@ -1285,30 +1068,12 @@ class MilvusServiceClientTest {
 
     @Test
     void describeIndex() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DescribeIndexParam param = DescribeIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .build();
 
-        // test return ok with correct input
-        R<DescribeIndexResponse> resp = client.describeIndex(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.describeIndex(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.describeIndex(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("describeIndex", param);
     }
 
     @Test
@@ -1329,30 +1094,12 @@ class MilvusServiceClientTest {
 
     @Test
     void getIndexState() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetIndexStateParam param = GetIndexStateParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .build();
 
-        // test return ok with correct input
-        R<GetIndexStateResponse> resp = client.getIndexState(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getIndexState(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getIndexState(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getIndexState", param);
     }
 
     @Test
@@ -1366,29 +1113,11 @@ class MilvusServiceClientTest {
 
     @Test
     void getIndexBuildProgress() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetIndexBuildProgressParam param = GetIndexBuildProgressParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<GetIndexBuildProgressResponse> resp = client.getIndexBuildProgress(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getIndexBuildProgress(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getIndexBuildProgress(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getIndexBuildProgress", param);
     }
 
     @Test
@@ -1409,29 +1138,12 @@ class MilvusServiceClientTest {
 
     @Test
     void dropIndex() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DropIndexParam param = DropIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .build();
-        // test return ok with correct input
-        R<RpcStatus> resp = client.dropIndex(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.dropIndex(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.dropIndex(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("dropIndex", param);
     }
 
     @Test
@@ -1549,10 +1261,6 @@ class MilvusServiceClientTest {
 
     @Test
     void insert() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         List<InsertParam.Field> fields = new ArrayList<>();
         List<Long> ids = new ArrayList<>();
         List<Integer> nVal = new ArrayList<>();
@@ -1590,21 +1298,7 @@ class MilvusServiceClientTest {
                 .withFields(fields)
                 .build();
 
-        // test return ok with correct input
-        R<MutationResult> resp = client.insert(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.insert(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.insert(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("insert", param);
     }
 
     @Test
@@ -1625,31 +1319,13 @@ class MilvusServiceClientTest {
 
     @Test
     void delete() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         DeleteParam param = DeleteParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .withExpr("dummy")
                 .build();
 
-        // test return ok with correct input
-        R<MutationResult> resp = client.delete(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.delete(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.delete(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("delete", param);
     }
 
     @Test
@@ -1833,6 +1509,7 @@ class MilvusServiceClientTest {
                 .withVectors(bVectors)
                 .withExpr("dummy")
                 .build();
+
         resp = client.search(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
@@ -1873,10 +1550,6 @@ class MilvusServiceClientTest {
 
     @Test
     void query() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         List<String> partitions = Collections.singletonList("partition1");
         List<String> outputFields = Collections.singletonList("field2");
         QueryParam param = QueryParam.newBuilder()
@@ -1885,21 +1558,8 @@ class MilvusServiceClientTest {
                 .withOutFields(outputFields)
                 .withExpr("dummy")
                 .build();
-        // test return ok with correct input
-        R<QueryResults> resp = client.query(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.query(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.query(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("query", param);
     }
 
     @Test
@@ -1961,10 +1621,6 @@ class MilvusServiceClientTest {
 
     @Test
     void calcDistance() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         List<List<Float>> vectorsLeft = new ArrayList<>();
         List<List<Float>> vectorsRight = new ArrayList<>();
         List<Float> vector1 = Collections.singletonList(0.1F);
@@ -1977,21 +1633,7 @@ class MilvusServiceClientTest {
                 .withMetricType(MetricType.L2)
                 .build();
 
-        // test return ok with correct input
-        R<CalcDistanceResults> resp = client.calcDistance(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.calcDistance(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.calcDistance(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("calcDistance", param);
     }
 
     @Test
@@ -2005,29 +1647,11 @@ class MilvusServiceClientTest {
 
     @Test
     void getMetrics() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetMetricsParam param = GetMetricsParam.newBuilder()
                 .withRequest("{}")
                 .build();
 
-        // test return ok with correct input
-        R<GetMetricsResponse> resp = client.getMetrics(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getMetrics(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getMetrics(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getMetrics", param);
     }
 
     @Test
@@ -2041,29 +1665,11 @@ class MilvusServiceClientTest {
 
     @Test
     void getPersistentSegmentInfo() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetPersistentSegmentInfoParam param = GetPersistentSegmentInfoParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<GetPersistentSegmentInfoResponse> resp = client.getPersistentSegmentInfo(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getPersistentSegmentInfo(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getPersistentSegmentInfo(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getPersistentSegmentInfo", param);
     }
 
     @Test
@@ -2078,28 +1684,10 @@ class MilvusServiceClientTest {
 
     @Test
     void getQuerySegmentInfo() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         GetQuerySegmentInfoParam param = GetQuerySegmentInfoParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        // test return ok with correct input
-        R<GetQuerySegmentInfoResponse> resp = client.getQuerySegmentInfo(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.getQuerySegmentInfo(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getQuerySegmentInfo(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("getQuerySegmentInfo", param);
     }
 }

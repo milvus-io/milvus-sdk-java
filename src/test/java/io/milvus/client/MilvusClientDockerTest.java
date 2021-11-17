@@ -21,15 +21,13 @@ package io.milvus.client;
 
 import io.milvus.Response.*;
 import io.milvus.grpc.*;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.MetricType;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
+import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 
+import io.milvus.param.index.CreateIndexParam;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -171,10 +169,11 @@ public class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "int_field";
+        String field1Name = "long_field";
         String field2Name = "vec_field";
         String field3Name = "bool_field";
         String field4Name = "double_field";
+        String field5Name = "int_field";
         List<FieldType> fieldsSchema = new ArrayList<>();
         fieldsSchema.add(FieldType.newBuilder()
                 .withPrimaryKey(true)
@@ -203,6 +202,12 @@ public class MilvusClientDockerTest {
                 .withDescription("weight")
                 .build());
 
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.Int32)
+                .withName(field5Name)
+                .withDescription("age")
+                .build());
+
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -218,10 +223,12 @@ public class MilvusClientDockerTest {
         List<Long> ids = new ArrayList<>();
         List<Boolean> genders = new ArrayList<>();
         List<Double> weights = new ArrayList<>();
+        List<Integer> ages = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
             genders.add(i%3 == 0 ? Boolean.TRUE : Boolean.FALSE);
             weights.add((double) (i / 100));
+            ages.add((int)i%99);
         }
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
@@ -230,6 +237,7 @@ public class MilvusClientDockerTest {
         fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
         fieldsInsert.add(new InsertParam.Field(field3Name, DataType.Bool, genders));
         fieldsInsert.add(new InsertParam.Field(field4Name, DataType.Double, weights));
+        fieldsInsert.add(new InsertParam.Field(field5Name, DataType.Int8, ages));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -251,6 +259,21 @@ public class MilvusClientDockerTest {
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.GetRowCount());
 
+        // create index
+        CreateIndexParam param = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("{\"nlist\":64}")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(param);
+        assertEquals(createIndexR.getStatus().intValue(), R.Status.Success.getCode());
+
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -270,7 +293,7 @@ public class MilvusClientDockerTest {
             compareWeights.add(weights.get(randomIndex));
         }
         String expr = field1Name + " in " + queryIDs.toString();
-        List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name);
+        List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field4Name);
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -278,14 +301,14 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<QueryResults> queryR= client.query(queryParam);
-//        System.out.println(queryR);
         assertEquals(queryR.getStatus().intValue(), R.Status.Success.getCode());
 
         // verify query result
         QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
         for (String fieldName : outputFields) {
-            System.out.println("Query data of " + fieldName);
-            System.out.println(queryResultsWrapper.getFieldWrapper(fieldName).getFieldData());
+            FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
+            System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
+            System.out.println(wrapper.getFieldData());
         }
 
         if (outputFields.contains(field1Name)) {
@@ -340,6 +363,7 @@ public class MilvusClientDockerTest {
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
+                .withParams("{\"nprobe\":8}")
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
