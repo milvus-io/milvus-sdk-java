@@ -35,7 +35,7 @@ public class FlushParam {
      * Builder for <code>FlushParam</code> class.
      */
     public static final class Builder {
-        private List<String> collectionNames = new ArrayList<>();
+        private final List<String> collectionNames = new ArrayList<>();
 
         // syncFlush:
         //   Default behavior is sync flushing, flush() return after collection finish flushing.
@@ -61,7 +61,7 @@ public class FlushParam {
          * @return <code>Builder</code>
          */
         public Builder withCollectionNames(@NonNull List<String> collectionNames) {
-            this.collectionNames = collectionNames;
+            this.collectionNames.addAll(collectionNames);
             return this;
         }
 
@@ -122,7 +122,7 @@ public class FlushParam {
          * @return <code>FlushParam</code>
          */
         public FlushParam build() throws ParamException {
-            if (collectionNames == null || collectionNames.isEmpty()) {
+            if (collectionNames.isEmpty()) {
                 throw new ParamException("CollectionNames can not be empty");
             }
 

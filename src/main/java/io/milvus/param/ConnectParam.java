@@ -187,11 +187,11 @@ public class ConnectParam {
             }
 
             if (keepAliveTimeMs <= 0L) {
-                throw new IllegalArgumentException("Keep alive time must be positive!");
+                throw new ParamException("Keep alive time must be positive!");
             }
 
             if (connectTimeoutMs <= 0L) {
-                throw new IllegalArgumentException("Connect timeout must be positive!");
+                throw new ParamException("Connect timeout must be positive!");
             }
 
             if (keepAliveTimeoutMs <= 0L) {

@@ -310,4 +310,36 @@ public interface MilvusClient {
      * @return {status:result code, data:GetQuerySegmentInfoResponse{status,info}}
      */
     R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam);
+
+    /**
+     * Move segment from a query node to another, to keep load balance.
+     *
+     * @param requestParam {@link LoadBalanceParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> loadBalance(LoadBalanceParam requestParam);
+
+    /**
+     * Get compaction action state by id.
+     *
+     * @param requestParam {@link GetCompactionStateParam}
+     * @return {status:result code, data:GetCompactionStateResponse{status,info}}
+     */
+    R<GetCompactionStateResponse> getCompactionState(GetCompactionStateParam requestParam);
+
+    /**
+     * Ask server to perform a compaction action.
+     *
+     * @param requestParam {@link ManualCompactionParam}
+     * @return {status:result code, data:ManualCompactionResponse{status,info}}
+     */
+    R<ManualCompactionResponse> manualCompaction(ManualCompactionParam requestParam);
+
+    /**
+     * Get compaction action state with its plan.
+     *
+     * @param requestParam {@link GetCompactionPlansParam}
+     * @return {status:result code, data:GetCompactionPlansResponse{status,info}}
+     */
+    R<GetCompactionPlansResponse> getCompactionStateWithPlans(GetCompactionPlansParam requestParam);
 }

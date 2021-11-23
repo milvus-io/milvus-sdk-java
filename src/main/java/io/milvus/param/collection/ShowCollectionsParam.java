@@ -49,7 +49,7 @@ public class ShowCollectionsParam {
      * Builder for <code>ShowCollectionsParam</code> class.
      */
     public static final class Builder {
-        private List<String> collectionNames = new ArrayList<>();
+        private final List<String> collectionNames = new ArrayList<>();
         // showType:
         //   default showType = ShowType.All
         //   if collectionNames is not empty, set showType = ShowType.InMemory
@@ -65,7 +65,7 @@ public class ShowCollectionsParam {
          * @return <code>Builder</code>
          */
         public Builder withCollectionNames(@NonNull List<String> collectionNames) {
-            this.collectionNames = collectionNames;
+            collectionNames.forEach(this::addCollectionName);
             return this;
         }
 
@@ -76,7 +76,9 @@ public class ShowCollectionsParam {
          * @return <code>Builder</code>
          */
         public Builder addCollectionName(@NonNull String collectionName) {
-            this.collectionNames.add(collectionName);
+            if (!this.collectionNames.contains(collectionName)) {
+                this.collectionNames.add(collectionName);
+            }
             return this;
         }
 
@@ -86,7 +88,7 @@ public class ShowCollectionsParam {
          * @return <code>ShowCollectionsParam</code>
          */
         public ShowCollectionsParam build() throws ParamException {
-            if (collectionNames != null && !collectionNames.isEmpty()) {
+            if (!collectionNames.isEmpty()) {
                 for (String collectionName : collectionNames) {
                     ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
                 }

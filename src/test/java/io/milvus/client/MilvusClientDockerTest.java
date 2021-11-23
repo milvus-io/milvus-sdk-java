@@ -322,6 +322,7 @@ public class MilvusClientDockerTest {
 
         // Note: the query() return vectors are not in same sequence to the input
         // here we cannot compare vector one by one
+        // the boolean also cannot be compared
         if (outputFields.contains(field2Name)) {
             assertTrue(queryResultsWrapper.getFieldWrapper(field2Name).isVectorField());
             List<?> out = queryResultsWrapper.getFieldWrapper(field2Name).getFieldData();
@@ -331,10 +332,6 @@ public class MilvusClientDockerTest {
         if (outputFields.contains(field3Name)) {
             List<?> out = queryResultsWrapper.getFieldWrapper(field3Name).getFieldData();
             assertEquals(out.size(), nq);
-            for (Object o : out) {
-                boolean b = (Boolean)o;
-                assertTrue(compareGenders.contains(b));
-            }
         }
 
         if (outputFields.contains(field4Name)) {

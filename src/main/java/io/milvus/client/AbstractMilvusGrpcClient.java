@@ -32,9 +32,7 @@ import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
-import io.milvus.param.control.GetMetricsParam;
-import io.milvus.param.control.GetPersistentSegmentInfoParam;
-import io.milvus.param.control.GetQuerySegmentInfoParam;
+import io.milvus.param.control.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -1684,6 +1682,135 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("GetQuerySegmentInfoRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> loadBalance(LoadBalanceParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            LoadBalanceRequest loadBalanceRequest = LoadBalanceRequest.newBuilder()
+                    .setSrcNodeID(requestParam.getSrcNodeID())
+                    .addAllDstNodeIDs(requestParam.getDestNodeIDs())
+                    .addAllSealedSegmentIDs(requestParam.getSegmentIDs())
+                    .build();
+
+            Status response = blockingStub().loadBalance(loadBalanceRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logInfo("LoadBalanceRequest successfully!");
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                logError("LoadBalanceRequest failed! \n{}", response.getReason());
+                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("LoadBalanceRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("LoadBalanceRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetCompactionStateResponse> getCompactionState(GetCompactionStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetCompactionStateRequest getCompactionStateRequest = GetCompactionStateRequest.newBuilder()
+                    .setCompactionID(requestParam.getCompactionID())
+                    .build();
+
+            GetCompactionStateResponse response = blockingStub().getCompactionState(getCompactionStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("GetCompactionStateRequest successfully!");
+                return R.success(response);
+            } else {
+                logError("GetCompactionStateRequest failed:\n{}", response.getStatus().getReason());
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetCompactionStateRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetCompactionStateRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ManualCompactionResponse> manualCompaction(ManualCompactionParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            ManualCompactionRequest manualCompactionRequest = ManualCompactionRequest.newBuilder()
+                    .setCollectionID(requestParam.getCollectionID())
+                    .build();
+
+            ManualCompactionResponse response = blockingStub().manualCompaction(manualCompactionRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("ManualCompactionRequest successfully!");
+                return R.success(response);
+            } else {
+                logError("ManualCompactionRequest failed:\n{}", response.getStatus().getReason());
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("ManualCompactionRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ManualCompactionRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetCompactionPlansResponse> getCompactionStateWithPlans(GetCompactionPlansParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetCompactionPlansRequest getCompactionPlansRequest = GetCompactionPlansRequest.newBuilder()
+                    .setCompactionID(requestParam.getCompactionID())
+                    .build();
+
+            GetCompactionPlansResponse response = blockingStub().getCompactionStateWithPlans(getCompactionPlansRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("GetCompactionPlansRequest successfully!");
+                return R.success(response);
+            } else {
+                logError("GetCompactionPlansRequest failed:\n{}", response.getStatus().getReason());
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetCompactionPlansRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetCompactionPlansRequest failed:\n{}", e.getMessage());
             return R.failed(e);
         }
     }
