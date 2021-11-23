@@ -63,7 +63,7 @@ public class FieldType {
         private boolean primaryKey = false;
         private String description = "";
         private DataType dataType;
-        private Map<String,String> typeParams;
+        private final Map<String,String> typeParams = new HashMap<>();
         private boolean autoID = false;
 
         private Builder() {
@@ -103,8 +103,20 @@ public class FieldType {
          * @param dataType data type of the field
          * @return <code>Builder</code>
          */
-        public Builder withDataType(DataType dataType) {
+        public Builder withDataType(@NonNull DataType dataType) {
             this.dataType = dataType;
+            return this;
+        }
+
+        /**
+         * Add a parameter pair for field.
+         *
+         * @param key parameter key
+         * @param value parameter value
+         * @return <code>Builder</code>
+         */
+        public Builder addTypeParam(@NonNull String key, @NonNull String value) {
+            this.typeParams.put(key, value);
             return this;
         }
 
@@ -114,8 +126,8 @@ public class FieldType {
          * @param typeParams parameters of the field
          * @return <code>Builder</code>
          */
-        public Builder withTypeParams(Map<String, String> typeParams) {
-            this.typeParams = typeParams;
+        public Builder withTypeParams(@NonNull Map<String, String> typeParams) {
+            typeParams.forEach(this.typeParams::put);
             return this;
         }
 
@@ -125,10 +137,7 @@ public class FieldType {
          * @param dimension dimension of the field
          * @return <code>Builder</code>
          */
-        public Builder withDimension(Integer dimension) {
-            if (this.typeParams == null) {
-                this.typeParams = new HashMap<>();
-            }
+        public Builder withDimension(@NonNull Integer dimension) {
             this.typeParams.put(Constant.VECTOR_DIM, dimension.toString());
             return this;
         }
@@ -161,7 +170,7 @@ public class FieldType {
             }
 
             if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
-                if (typeParams == null || !typeParams.containsKey(Constant.VECTOR_DIM)) {
+                if (!typeParams.containsKey(Constant.VECTOR_DIM)) {
                     throw new ParamException("Vector field dimension must be specified");
                 }
 

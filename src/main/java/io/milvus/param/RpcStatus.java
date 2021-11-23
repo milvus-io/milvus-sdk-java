@@ -43,7 +43,7 @@ public class RpcStatus {
     @Override
     public String toString() {
         return "RpcStatus{" +
-                "msg='" + msg + '\'' +
+                "msg='" + getMsg() + '\'' +
                 '}';
     }
 }

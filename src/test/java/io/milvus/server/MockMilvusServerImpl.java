@@ -58,6 +58,11 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.GetQuerySegmentInfoResponse respGetQuerySegmentInfo;
     private io.milvus.grpc.GetMetricsResponse respGetMetrics;
 
+    private io.milvus.grpc.Status respLoadBalance;
+    private io.milvus.grpc.GetCompactionStateResponse respGetCompactionState;
+    private io.milvus.grpc.ManualCompactionResponse respManualCompaction;
+    private io.milvus.grpc.GetCompactionPlansResponse respGetCompactionPlans;
+
     public MockMilvusServerImpl() {
     }
 
@@ -475,5 +480,57 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     public void setGetMetricsResponse(io.milvus.grpc.GetMetricsResponse resp) {
         respGetMetrics = resp;
+    }
+
+    @Override
+    public void loadBalance(io.milvus.grpc.LoadBalanceRequest request,
+                            io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
+        logger.info("getMetrics() call");
+
+        responseObserver.onNext(respLoadBalance);
+        responseObserver.onCompleted();
+    }
+
+    public void setLoadBalanceResponse(io.milvus.grpc.Status resp) {
+        respLoadBalance = resp;
+    }
+
+    @Override
+    public void getCompactionState(io.milvus.grpc.GetCompactionStateRequest request,
+                                   io.grpc.stub.StreamObserver<io.milvus.grpc.GetCompactionStateResponse> responseObserver) {
+        logger.info("getMetrics() call");
+
+        responseObserver.onNext(respGetCompactionState);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetCompactionStateResponse(io.milvus.grpc.GetCompactionStateResponse resp) {
+        respGetCompactionState = resp;
+    }
+
+    @Override
+    public void manualCompaction(io.milvus.grpc.ManualCompactionRequest request,
+                                 io.grpc.stub.StreamObserver<io.milvus.grpc.ManualCompactionResponse> responseObserver) {
+        logger.info("getMetrics() call");
+
+        responseObserver.onNext(respManualCompaction);
+        responseObserver.onCompleted();
+    }
+
+    public void setManualCompactionResponse(io.milvus.grpc.ManualCompactionResponse resp) {
+        respManualCompaction = resp;
+    }
+
+    @Override
+    public void getCompactionStateWithPlans(io.milvus.grpc.GetCompactionPlansRequest request,
+                                            io.grpc.stub.StreamObserver<io.milvus.grpc.GetCompactionPlansResponse> responseObserver) {
+        logger.info("getMetrics() call");
+
+        responseObserver.onNext(respGetCompactionPlans);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetCompactionPlansResponse(io.milvus.grpc.GetCompactionPlansResponse resp) {
+        respGetCompactionPlans = resp;
     }
 }

@@ -56,7 +56,7 @@ public class LoadPartitionsParam {
      */
     public static final class Builder {
         private String collectionName;
-        private List<String> partitionNames = new ArrayList<>();
+        private final List<String> partitionNames = new ArrayList<>();
 
         // syncLoad:
         //   Default behavior is sync loading, loadPartition() return after partition finish loading.
@@ -93,7 +93,7 @@ public class LoadPartitionsParam {
          * @return <code>Builder</code>
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
-            this.partitionNames = partitionNames;
+            partitionNames.forEach(this::addPartitionName);
             return this;
         }
 
@@ -104,7 +104,9 @@ public class LoadPartitionsParam {
          * @return <code>Builder</code>
          */
         public Builder addPartitionName(@NonNull String partitionName) {
-            this.partitionNames.add(partitionName);
+            if (!this.partitionNames.contains(partitionName)) {
+                this.partitionNames.add(partitionName);
+            }
             return this;
         }
 
@@ -156,7 +158,7 @@ public class LoadPartitionsParam {
         public LoadPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (partitionNames == null || partitionNames.isEmpty()) {
+            if (partitionNames.isEmpty()) {
                 throw new ParamException("Partition names cannot be empty");
             }
 

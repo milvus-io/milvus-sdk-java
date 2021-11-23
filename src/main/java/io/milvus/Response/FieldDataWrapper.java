@@ -68,9 +68,9 @@ public class FieldDataWrapper {
                 return data.size()/dim;
             }
             case Int64:
+                return fieldData.getScalars().getLongData().getDataList().size();
             case Int32:
             case Int16:
-                return fieldData.getScalars().getLongData().getDataList().size();
             case Int8:
                 return fieldData.getScalars().getIntData().getDataList().size();
             case Bool:
@@ -125,14 +125,16 @@ public class FieldDataWrapper {
                 List<ByteBuffer> packData = new ArrayList<>();
                 int count = data.size() / dim;
                 for (int i = 0; i < count; ++i) {
-                    packData.add(data.substring(i * dim, (i + 1) * dim).asReadOnlyByteBuffer());
+                    ByteBuffer bf = ByteBuffer.allocate(dim);
+                    bf.put(data.substring(i * dim, (i + 1) * dim).toByteArray());
+                    packData.add(bf);
                 }
                 return packData;
             }
             case Int64:
+                return fieldData.getScalars().getLongData().getDataList();
             case Int32:
             case Int16:
-                return fieldData.getScalars().getLongData().getDataList();
             case Int8:
                 return fieldData.getScalars().getIntData().getDataList();
             case Bool:

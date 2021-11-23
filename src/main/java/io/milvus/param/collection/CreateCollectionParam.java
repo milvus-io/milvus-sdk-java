@@ -55,7 +55,7 @@ public class CreateCollectionParam {
         private String collectionName;
         private int shardsNum = 2;
         private String description = "";
-        private List<FieldType> fieldTypes = new ArrayList<>();
+        private final List<FieldType> fieldTypes = new ArrayList<>();
 
         private Builder() {
         }
@@ -101,7 +101,7 @@ public class CreateCollectionParam {
          * @return <code>Builder</code>
          */
         public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
-            this.fieldTypes = fieldTypes;
+            this.fieldTypes.addAll(fieldTypes);
             return this;
         }
 

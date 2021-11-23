@@ -80,7 +80,7 @@ public class ShowPartitionsParam {
          * @return <code>Builder</code>
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
-            this.partitionNames = partitionNames;
+            partitionNames.forEach(this::addPartitionName);
             return this;
         }
 
@@ -91,7 +91,9 @@ public class ShowPartitionsParam {
          * @return <code>Builder</code>
          */
         public Builder addPartitionName(@NonNull String partitionName) {
-            this.partitionNames.add(partitionName);
+            if (!this.partitionNames.contains(partitionName)) {
+                this.partitionNames.add(partitionName);
+            }
             return this;
         }
 

@@ -45,6 +45,15 @@ public class SearchResultsWrapper {
      */
     public List<IDScore> GetIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         List<Long> kList = results.getTopksList();
+
+        // if the server didn't return separate topK, use same topK value
+        if (kList.isEmpty()) {
+            kList = new ArrayList<>();
+            for (long i = 0; i < results.getNumQueries(); ++i) {
+                kList.add(results.getTopK());
+            }
+        }
+
         if (indexOfTarget < 0 || indexOfTarget >= kList.size()) {
             throw new ParamException("Illegal index of target: " + indexOfTarget);
         }
