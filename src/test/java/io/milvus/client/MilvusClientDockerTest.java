@@ -218,6 +218,13 @@ public class MilvusClientDockerTest {
         R<RpcStatus> createR = client.createCollection(createParam);
         assertEquals(createR.getStatus().intValue(), R.Status.Success.getCode());
 
+        R<DescribeCollectionResponse> response = client.describeCollection(DescribeCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+
+        DescCollResponseWrapper desc = new DescCollResponseWrapper(response.getData());
+        System.out.println(desc.toString());
+
         // insert data
         int rowCount = 10000;
         List<Long> ids = new ArrayList<>();

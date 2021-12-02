@@ -143,7 +143,8 @@ public class GeneralExample {
         R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        System.out.println(response);
+        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(response.getData());
+        System.out.println(wrapper.toString());
         return response;
     }
 

@@ -187,4 +187,20 @@ public class FieldType {
             return new FieldType(this);
         }
     }
+
+    /**
+     * Construct a <code>String</code> by <code>FieldType</code> instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "FieldType{" +
+                "name='" + name + '\'' +
+                ", type='" + dataType.name() + '\'' +
+                ", primaryKey=" + primaryKey +
+                ", autoID=" + autoID +
+                ", params=" + typeParams.toString() +
+                '}';
+    }
 }
