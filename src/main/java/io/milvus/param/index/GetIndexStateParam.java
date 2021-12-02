@@ -53,7 +53,7 @@ public class GetIndexStateParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -64,7 +64,7 @@ public class GetIndexStateParam {
         }
 
         /**
-         * Set target field name. Field name cannot be empty or null.
+         * Sets the target field name. Field name cannot be empty or null.
          *
          * @param fieldName field name
          * @return <code>Builder</code>
@@ -75,7 +75,7 @@ public class GetIndexStateParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetIndexStateParam</code> instance.
+         * Verifies parameters and creates a new <code>GetIndexStateParam</code> instance.
          *
          * @return <code>GetIndexStateParam</code>
          */
@@ -88,7 +88,7 @@ public class GetIndexStateParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetIndexStateParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetIndexStateParam</code> instance.
      *
      * @return <code>String</code>
      */

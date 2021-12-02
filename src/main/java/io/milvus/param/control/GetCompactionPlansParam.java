@@ -22,7 +22,7 @@ public class GetCompactionPlansParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetCompactionPlansParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetCompactionPlansParam</code> instance.
      *
      * @return <code>String</code>
      */
@@ -43,7 +43,7 @@ public class GetCompactionPlansParam {
         }
 
         /**
-         * Set compaction action id to get plans.
+         * Sets compaction action id to get the plans.
          *
          * @param compactionID compaction action id
          * @return <code>Builder</code>
@@ -54,7 +54,7 @@ public class GetCompactionPlansParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetCompactionPlansParam</code> instance.
+         * Verifies parameters and creates a new <code>GetCompactionPlansParam</code> instance.
          *
          * @return <code>GetCompactionPlansParam</code>
          */

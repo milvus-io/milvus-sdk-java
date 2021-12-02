@@ -94,7 +94,7 @@ public class ConnectParam {
         }
 
         /**
-         * Set host name/address.
+         * Sets the host name/address.
          *
          * @param host host name/address
          * @return <code>Builder</code>
@@ -105,7 +105,7 @@ public class ConnectParam {
         }
 
         /**
-         * Set connection port. Port value must be larger than zero and less than 65536.
+         * Sets the connection port. Port value must be greater than zero and less than 65536.
          *
          * @param port port value
          * @return <code>Builder</code>
@@ -116,10 +116,10 @@ public class ConnectParam {
         }
 
         /**
-         * Set connect time out value of client channel. The time out value must be larger than zero.
+         * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
-         * @param connectTimeout time out value
-         * @param timeUnit time out unit
+         * @param connectTimeout timeout value
+         * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
@@ -128,10 +128,10 @@ public class ConnectParam {
         }
 
         /**
-         * Set keep alive time value of client channel. The time out value must be larger than zero.
+         * Sets the keep-alive time value of client channel. The keep-alive value must be greater than zero.
          *
-         * @param keepAliveTime time out value
-         * @param timeUnit time out unit
+         * @param keepAliveTime keep-alive value
+         * @param timeUnit keep-alive unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
@@ -140,10 +140,10 @@ public class ConnectParam {
         }
 
         /**
-         * Set keep alive time out value of client channel. The time out value must be larger than zero.
+         * Sets the keep-alive timeout value of client channel. The timeout value must be greater than zero.
          *
-         * @param keepAliveTimeout time out value
-         * @param timeUnit time out unit
+         * @param keepAliveTimeout timeout value
+         * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
@@ -152,9 +152,9 @@ public class ConnectParam {
         }
 
         /**
-         * Set client channel keep alive.
+         * Enables the keep-alive function for client channel.
          *
-         * @param enable true keep alive
+         * @param enable true keep-alive
          * @return <code>Builder</code>
          */
         public Builder keepAliveWithoutCalls(boolean enable) {
@@ -163,10 +163,10 @@ public class ConnectParam {
         }
 
         /**
-         * Set idle time out value of client channel. The time out value must be larger than zero.
+         * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
-         * @param idleTimeout time out value
-         * @param timeUnit time out unit
+         * @param idleTimeout timeout value
+         * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
@@ -175,7 +175,7 @@ public class ConnectParam {
         }
 
         /**
-         * Verify parameters and create a new <code>ConnectParam</code> instance.
+         * Verifies parameters and creates a new <code>ConnectParam</code> instance.
          *
          * @return <code>ShowCollectionsParam</code>
          */
@@ -207,7 +207,7 @@ public class ConnectParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ConnectParam</code> instance.
+     * Constructs a <code>String</code> by <code>ConnectParam</code> instance.
      *
      * @return <code>String</code>
      */

@@ -55,7 +55,7 @@ public class FlushParam {
         }
 
         /**
-         * Set a list of collections to be flushed.
+         * Sets a list of collections to be flushed.
          *
          * @param collectionNames a list of collections
          * @return <code>Builder</code>
@@ -66,7 +66,7 @@ public class FlushParam {
         }
 
         /**
-         * Add a collections to be flushed.
+         * Adds a collection to be flushed.
          *
          * @param collectionName name of the collections
          * @return <code>Builder</code>
@@ -77,10 +77,10 @@ public class FlushParam {
         }
 
         /**
-         * Set flush action to sync mode.
-         * With sync mode, the client side will keep waiting until all segments of the collection successfully flushed.
+         * Sets the flush function to sync mode.
+         * With sync mode enabled, the client keeps waiting until all segments of the collection successfully flushed.
          *
-         * If not sync mode, client will return at once after the flush() is called.
+         * If sync mode disabled, client returns at once after the flush() is called.
          *
          * @param syncFlush <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
          * @return <code>Builder</code>
@@ -91,8 +91,8 @@ public class FlushParam {
         }
 
         /**
-         * Set waiting interval in sync mode. In sync mode, the client will constantly check segments state by interval.
-         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_FLUSHING_INTERVAL.
+         * Sets waiting interval in sync mode. With sync mode enabled, the client will constantly check segments state by interval.
+         * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_INTERVAL.
          * @see Constant
          *
          * @param milliseconds interval
@@ -104,8 +104,8 @@ public class FlushParam {
         }
 
         /**
-         * Set time out value for sync mode.
-         * Time out value must be larger than zero, and cannot be larger than Constant.MAX_WAITING_FLUSHING_TIMEOUT.
+         * Sets timeout value for sync mode.
+         * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_TIMEOUT.
          * @see Constant
          *
          * @param seconds time out value for sync mode
@@ -117,7 +117,7 @@ public class FlushParam {
         }
 
         /**
-         * Verify parameters and create a new <code>FlushParam</code> instance.
+         * Verifies parameters and creates a new <code>FlushParam</code> instance.
          *
          * @return <code>FlushParam</code>
          */
@@ -151,7 +151,7 @@ public class FlushParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>FlushParam</code> instance.
+     * Constructs a <code>String</code> by <code>FlushParam</code> instance.
      *
      * @return <code>String</code>
      */

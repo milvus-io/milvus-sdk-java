@@ -56,7 +56,7 @@ public class GetCollectionStatisticsParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -67,7 +67,7 @@ public class GetCollectionStatisticsParam {
         }
 
         /**
-         * Require a flush action before retrieving collection statistics.
+         * Requires a flush action before retrieving collection statistics.
          *
          * @param flush <code>Boolean.TRUE</code> require a flush action
          * @return <code>Builder</code>
@@ -78,7 +78,7 @@ public class GetCollectionStatisticsParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetCollectionStatisticsParam</code> instance.
+         * Verifies parameters and creates a new <code>GetCollectionStatisticsParam</code> instance.
          *
          * @return <code>GetCollectionStatisticsParam</code>
          */
@@ -90,7 +90,7 @@ public class GetCollectionStatisticsParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetCollectionStatisticsParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetCollectionStatisticsParam</code> instance.
      *
      * @return <code>String</code>
      */

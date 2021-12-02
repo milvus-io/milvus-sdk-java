@@ -53,7 +53,7 @@ public class HasPartitionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -64,7 +64,7 @@ public class HasPartitionParam {
         }
 
         /**
-         * Set partition name. Partition name cannot be empty or null.
+         * Sets the partition name. Partition name cannot be empty or null.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -75,7 +75,7 @@ public class HasPartitionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>HasPartitionParam</code> instance.
+         * Verifies parameters and creates a new <code>HasPartitionParam</code> instance.
          *
          * @return <code>HasPartitionParam</code>
          */
@@ -88,7 +88,7 @@ public class HasPartitionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>HasPartitionParam</code> instance.
+     * Constructs a <code>String</code> by <code>HasPartitionParam</code> instance.
      *
      * @return <code>String</code>
      */

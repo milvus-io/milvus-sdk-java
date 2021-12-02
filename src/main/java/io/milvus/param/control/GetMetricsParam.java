@@ -50,7 +50,7 @@ public class GetMetricsParam {
         }
 
         /**
-         * Set request in json format to retrieve metric information from server.
+         * Sets request in .json format to retrieve metric information from server.
          * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
          *
          * @param request request string in json format
@@ -62,7 +62,7 @@ public class GetMetricsParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetMetricsParam</code> instance.
+         * Verifies parameters and creates a new <code>GetMetricsParam</code> instance.
          *
          * @return <code>GetMetricsParam</code>
          */
@@ -76,7 +76,7 @@ public class GetMetricsParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetMetricsParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetMetricsParam</code> instance.
      *
      * @return <code>String</code>
      */

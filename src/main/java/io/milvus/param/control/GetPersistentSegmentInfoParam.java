@@ -50,7 +50,7 @@ public class GetPersistentSegmentInfoParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -61,7 +61,7 @@ public class GetPersistentSegmentInfoParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetPersistentSegmentInfoParam</code> instance.
+         * Verifies parameters and creates a new <code>GetPersistentSegmentInfoParam</code> instance.
          *
          * @return <code>GetPersistentSegmentInfoParam</code>
          */
@@ -73,7 +73,7 @@ public class GetPersistentSegmentInfoParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetPersistentSegmentInfoParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetPersistentSegmentInfoParam</code> instance.
      *
      * @return <code>String</code>
      */

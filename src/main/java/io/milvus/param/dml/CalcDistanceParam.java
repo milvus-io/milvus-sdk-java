@@ -28,7 +28,7 @@ import java.util.List;
 
 /**
  * Parameters for <code>calcDistance</code> interface.
- * Note that currently only support float vectors calculation.
+ * Note that current release of Milvus only supports float vectors calculation.
  */
 @Getter
 public class CalcDistanceParam {
@@ -58,7 +58,7 @@ public class CalcDistanceParam {
         }
 
         /**
-         * Set a list of left side vectors. The list cannot be null or empty, each vector list cannot be null or empty.
+         * Sets a list of left side vectors. The list cannot be null or empty, and each vector cannot be null or empty.
          *
          * @param vectors a list of float list, each float list is a vector.
          * @return <code>Builder</code>
@@ -69,7 +69,7 @@ public class CalcDistanceParam {
         }
 
         /**
-         * Set a list of right side vectors. The list cannot be null or empty, each vector list cannot be null or empty.
+         * Sets a list of right side vectors. The list cannot be null or empty, and each vector cannot be null or empty.
          *
          * @param vectors a list of float list, each float list is a vector.
          * @return <code>Builder</code>
@@ -80,7 +80,7 @@ public class CalcDistanceParam {
         }
 
         /**
-         * Set metric type of calculation. Note that currently only support L2 and IP.
+         * Sets metric type of calculation. Note that the current release of Milvus only support L2 and IP.
          *
          * @param metricType metric type
          * @return <code>Builder</code>
@@ -91,7 +91,7 @@ public class CalcDistanceParam {
         }
 
         /**
-         * Verify parameters and create a new <code>CalcDistanceParam</code> instance.
+         * Verifies parameters and creates a new <code>CalcDistanceParam</code> instance.
          *
          * @return <code>CalcDistanceParam</code>
          */
@@ -131,7 +131,7 @@ public class CalcDistanceParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>CalcDistanceParam</code> instance.
+     * Constructs a <code>String</code> by <code>CalcDistanceParam</code> instance.
      *
      * @return <code>String</code>
      */

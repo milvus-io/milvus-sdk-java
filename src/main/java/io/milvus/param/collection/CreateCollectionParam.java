@@ -61,7 +61,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -72,7 +72,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Set shards number, the number must be larger than zero, default value is 2.
+         * Sets the shards number. The number must be greater than zero. The default value is 2.
          *
          * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
          * @return <code>Builder</code>
@@ -83,7 +83,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Set collection description, description can be empty, default is "".
+         * Sets the collection description. The description can be empty. The default is "".
          *
          * @param description description of the collection
          * @return <code>Builder</code>
@@ -94,7 +94,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Set schema of the collection, schema cannot be empty or null.
+         * Sets the schema of the collection. The schema cannot be empty or null.
          * @see FieldType
          *
          * @param fieldTypes a <code>List</code> of <code>FieldType</code>
@@ -106,7 +106,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Add a field schema.
+         * Adds a field schema.
          * @see FieldType
          *
          * @param fieldType a <code>FieldType</code> object
@@ -118,7 +118,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>CreateCollectionParam</code> instance.
+         * Verifies parameters and creates a new <code>CreateCollectionParam</code> instance.
          *
          * @return <code>CreateCollectionParam</code>
          */
@@ -144,7 +144,7 @@ public class CreateCollectionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>CreateCollectionParam</code> instance.
+     * Constructs a <code>String</code> by <code>CreateCollectionParam</code> instance.
      *
      * @return <code>String</code>
      */

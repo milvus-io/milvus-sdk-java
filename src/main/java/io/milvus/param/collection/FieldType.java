@@ -75,8 +75,8 @@ public class FieldType {
         }
 
         /**
-         * Set field to be primary key.
-         * Note that currently Milvus version only support <code>Long</code> data type as primary key.
+         * Sets the field as the primary key field.
+         * Note that the current release of Milvus only support <code>Long</code> data type as primary key.
          *
          * @param primaryKey true is primary key, false is not
          * @return <code>Builder</code>
@@ -87,7 +87,7 @@ public class FieldType {
         }
 
         /**
-         * Set field description, description can be empty, default is "".
+         * Sets the field description. The description can be empty. The default is "".
          *
          * @param description description of the field
          * @return <code>Builder</code>
@@ -98,7 +98,7 @@ public class FieldType {
         }
 
         /**
-         * Set data type for field.
+         * Sets the data type for the field.
          *
          * @param dataType data type of the field
          * @return <code>Builder</code>
@@ -109,7 +109,7 @@ public class FieldType {
         }
 
         /**
-         * Add a parameter pair for field.
+         * Adds a parameter pair for the field.
          *
          * @param key parameter key
          * @param value parameter value
@@ -121,7 +121,7 @@ public class FieldType {
         }
 
         /**
-         * Set more parameters for field.
+         * Sets more parameters for the field.
          *
          * @param typeParams parameters of the field
          * @return <code>Builder</code>
@@ -132,7 +132,7 @@ public class FieldType {
         }
 
         /**
-         * Set dimension of a vector field. Dimension value must be larger than zero.
+         * Sets the dimension of a vector field. Dimension value must be greater than zero.
          *
          * @param dimension dimension of the field
          * @return <code>Builder</code>
@@ -143,11 +143,11 @@ public class FieldType {
         }
 
         /**
-         * Set the field to be auto-id. Note that only primary key field can be set as auto-id.
-         * If auto-id is enabled, Milvus will automatically generated unique id for each entities,
-         * user no need to provide values for this field during insert action.
+         * Enables auto-id function for the field. Note that the auto-id function can only be enabled on primary key field.
+         * If auto-id function is enabled, Milvus will automatically generate unique ID for each entity,
+         * thus you do not need to provide values for the primary key field when inserting.
          *
-         * If auto-id is disabled, user need to provide values for this field during insert action.
+         * If auto-id is disabled, you need to provide values for the primary key field when inserting.
          *
          * @param autoID true enable auto-id, false disable auto-id
          * @return <code>Builder</code>
@@ -158,7 +158,7 @@ public class FieldType {
         }
 
         /**
-         * Verify parameters and create a new <code>FieldType</code> instance.
+         * Verifies parameters and creates a new <code>FieldType</code> instance.
          *
          * @return <code>FieldType</code>
          */

@@ -50,7 +50,7 @@ public class GetIndexBuildProgressParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -61,7 +61,7 @@ public class GetIndexBuildProgressParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetIndexBuildProgressParam</code> instance.
+         * Verifies parameters and creates a new <code>GetIndexBuildProgressParam</code> instance.
          *
          * @return <code>GetIndexBuildProgressParam</code>
          */
@@ -73,7 +73,7 @@ public class GetIndexBuildProgressParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetIndexBuildProgressParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetIndexBuildProgressParam</code> instance.
      *
      * @return <code>String</code>
      */

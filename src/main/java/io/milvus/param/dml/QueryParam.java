@@ -62,7 +62,7 @@ public class QueryParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -73,7 +73,7 @@ public class QueryParam {
         }
 
         /**
-         * Optional. Set partition names list to specify query scope.
+         * Sets partition names list to specify query scope (Optional).
          *
          * @param partitionNames partition names list
          * @return <code>Builder</code>
@@ -84,7 +84,7 @@ public class QueryParam {
         }
 
         /**
-         * Optional. Specify output fields.
+         * Specifies output fields (Optional).
          *
          * @param outFields output fields
          * @return <code>Builder</code>
@@ -95,7 +95,7 @@ public class QueryParam {
         }
 
         /**
-         * Set expression to filter out entities to be queried.
+         * Sets the expression to query entities.
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
@@ -107,7 +107,7 @@ public class QueryParam {
         }
 
         /**
-         * Verify parameters and create a new <code>QueryParam</code> instance.
+         * Verifies parameters and creates a new <code>QueryParam</code> instance.
          *
          * @return <code>QueryParam</code>
          */
@@ -120,7 +120,7 @@ public class QueryParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>QueryParam</code> instance.
+     * Constructs a <code>String</code> by <code>QueryParam</code> instance.
      *
      * @return <code>String</code>
      */

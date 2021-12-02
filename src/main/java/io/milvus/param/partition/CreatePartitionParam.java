@@ -53,7 +53,7 @@ public class CreatePartitionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -64,7 +64,7 @@ public class CreatePartitionParam {
         }
 
         /**
-         * Set partition name. Partition name cannot be empty or null.
+         * Sets the partition name. Partition name cannot be empty or null.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -75,7 +75,7 @@ public class CreatePartitionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>CreatePartitionParam</code> instance.
+         * Verifies parameters and creates a new <code>CreatePartitionParam</code> instance.
          *
          * @return <code>CreatePartitionParam</code>
          */
@@ -88,7 +88,7 @@ public class CreatePartitionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>CreatePartitionParam</code> instance.
+     * Constructs a <code>String</code> by <code>CreatePartitionParam</code> instance.
      *
      * @return <code>String</code>
      */

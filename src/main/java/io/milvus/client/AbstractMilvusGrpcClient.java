@@ -690,8 +690,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     /**
-     * Currently we don't allow client call this method since server side has no compaction function
-     * Now this method is only internally used by getCollectionStatistics()
+     * Currently we do not support this method on client since compaction is not supported on server.
+     * Now it is only for internal use of getCollectionStatistics().
      */
 //    @Override
     private R<FlushResponse> flush(@NonNull FlushParam requestParam) {

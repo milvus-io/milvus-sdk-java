@@ -7,7 +7,7 @@ import lombok.NonNull;
 import java.util.List;
 
 /**
- * Util class to wrap response of <code>getCollectionStatistics</code> interface.
+ * Utility class to wrap response of <code>getCollectionStatistics</code> interface.
  */
 public class GetCollStatResponseWrapper {
     private final GetCollectionStatisticsResponse stat;
@@ -17,7 +17,7 @@ public class GetCollStatResponseWrapper {
     }
 
     /**
-     * Get row count of this field.
+     * Gets the row count of a field.
      * Throw {@link NumberFormatException} if the row count is not a number.
      *
      * @return <code>int</code> dimension of the vector field

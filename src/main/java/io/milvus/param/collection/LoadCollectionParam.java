@@ -71,7 +71,7 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -82,10 +82,10 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Set load action to sync mode.
-         * With sync mode, the client side will keep waiting until all segments of the collection successfully loaded.
+         * Enable sync mode for load action.
+         * With sync mode enabled, the client keeps waiting until all segments of the collection successfully loaded.
          *
-         * If not sync mode, client will return at once after the loadCollection() is called.
+         * If sync mode disabled, client returns at once after the loadCollection() is called.
          *
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
@@ -96,8 +96,8 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Set waiting interval in sync mode. In sync mode, the client will constantly check collection load state by interval.
-         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_INTERVAL.
+         * Sets waiting interval in sync mode. With sync mode enabled, the client will constantly check collection load state by interval.
+         * Interval must be greater than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_INTERVAL.
          * @see Constant
          *
          * @param milliseconds interval
@@ -109,8 +109,8 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Set time out value for sync mode.
-         * Time out value must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_TIMEOUT.
+         * Sets timeout value for the sync mode.
+         * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_LOADING_TIMEOUT.
          * @see Constant
          *
          * @param seconds time out value for sync mode
@@ -122,7 +122,7 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>LoadCollectionParam</code> instance.
+         * Verifies parameters and creates a new <code>LoadCollectionParam</code> instance.
          *
          * @return <code>LoadCollectionParam</code>
          */
@@ -150,7 +150,7 @@ public class LoadCollectionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>LoadCollectionParam</code> instance.
+     * Constructs a <code>String</code> by <code>LoadCollectionParam</code> instance.
      *
      * @return <code>String</code>
      */

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Util class to wrap response of <code>search</code> interface.
+ * Utility class to wrap response of <code>search</code> interface.
  */
 public class SearchResultsWrapper {
     private final SearchResultData results;
@@ -20,7 +20,7 @@ public class SearchResultsWrapper {
     }
 
     /**
-     * Get {@link FieldDataWrapper} for a field.
+     * Gets {@link FieldDataWrapper} for a field.
      * Throws {@link ParamException} if the field doesn't exist.
      *
      * @return <code>FieldDataWrapper</code>
@@ -37,11 +37,11 @@ public class SearchResultsWrapper {
     }
 
     /**
-     * Get id-score pairs returned by search interface.
-     * Throw {@link ParamException} if the indexOfTarget is illegal.
-     * Throw {@link IllegalResponseException} if the returned results is illegal.
+     * Gets ID-score pairs returned by search interface.
+     * Throws {@link ParamException} if the indexOfTarget is illegal.
+     * Throws {@link IllegalResponseException} if the returned results is illegal.
      *
-     * @return <code>List<IDScore></code> id-score pairs returned by search interface
+     * @return <code>List<IDScore></code> ID-score pairs returned by search interface
      */
     public List<IDScore> GetIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         List<Long> kList = results.getTopksList();
@@ -97,7 +97,7 @@ public class SearchResultsWrapper {
     }
 
     /**
-     * Internal use class to wrap response of <code>search</code> interface.
+     * Internal-use class to wrap response of <code>search</code> interface.
      */
     @Getter
     public static final class IDScore {

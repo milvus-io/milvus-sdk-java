@@ -63,7 +63,7 @@ public class ShowPartitionsParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -74,7 +74,7 @@ public class ShowPartitionsParam {
         }
 
         /**
-         * Set partition names list. Partition names list cannot be null or empty.
+         * Sets the partition names list. Partition names list cannot be null or empty.
          *
          * @param partitionNames partition names list
          * @return <code>Builder</code>
@@ -85,7 +85,7 @@ public class ShowPartitionsParam {
         }
 
         /**
-         * Add a partition name. Partition name cannot be empty or null.
+         * Adds a partition by name. Partition name cannot be empty or null.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -98,7 +98,7 @@ public class ShowPartitionsParam {
         }
 
         /**
-         * Verify parameters and create a new <code>ShowPartitionsParam</code> instance.
+         * Verifies parameters and creates a new <code>ShowPartitionsParam</code> instance.
          *
          * @return <code>ShowPartitionsParam</code>
          */
@@ -117,7 +117,7 @@ public class ShowPartitionsParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ShowPartitionsParam</code> instance.
+     * Constructs a <code>String</code> by <code>ShowPartitionsParam</code> instance.
      *
      * @return <code>String</code>
      */

@@ -22,7 +22,7 @@ package io.milvus.exception;
 import io.milvus.param.R;
 
 /**
- * Milvus client api throws this exception when client channel is closed.
+ * Milvus client API throws this exception when not connected to the Milvus server.
  */
 public class ClientNotConnectedException extends MilvusException {
     public ClientNotConnectedException(String msg) {

@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 /**
- * Util class to wrap gpc response and exceptions.
+ * Utility class to wrap gpc response and exceptions.
  */
 public class R<T> {
     private Exception exception;
@@ -61,7 +61,7 @@ public class R<T> {
     }
 
     /**
-     * Wrap an exception for failure.
+     * Wraps an exception for failure.
      *
      * @param exception exception object
      * @return <code>R</code>
@@ -80,7 +80,7 @@ public class R<T> {
     }
 
     /**
-     * Wrap an error code and error message for failure.
+     * Wraps an error code and error message for failure.
      *
      * @param errorCode rpc error code
      * @param msg error message
@@ -94,7 +94,7 @@ public class R<T> {
     }
 
     /**
-     * Wrap a status code and error message for failure.
+     * Wraps a status code and error message for failure.
      *
      * @param statusCode status code
      * @param msg error message
@@ -108,7 +108,7 @@ public class R<T> {
     }
 
     /**
-     * Direct return a succeed status.
+     * Returns a succeed status.
      *
      * @return <code>R</code>
      */
@@ -119,7 +119,7 @@ public class R<T> {
     }
 
     /**
-     * Wrap a succeed rpc response object.
+     * Wraps a succeed rpc response object.
      *
      * @param data rpc response object
      * @return <code>R</code>
@@ -192,7 +192,7 @@ public class R<T> {
     }
 
     /**
-     * Construct a <code>String</code> by <code>R</code> instance.
+     * Constructs a <code>String</code> by <code>R</code> instance.
      *
      * @return <code>String</code>
      */

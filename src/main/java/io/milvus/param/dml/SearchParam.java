@@ -82,7 +82,7 @@ public class SearchParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -93,7 +93,7 @@ public class SearchParam {
         }
 
         /**
-         * Optional. Set partition names list to specify search scope.
+         * Sets partition names list to specify search scope (Optional).
          *
          * @param partitionNames partition names list
          * @return <code>Builder</code>
@@ -104,7 +104,7 @@ public class SearchParam {
         }
 
         /**
-         * Set metric type of ANN searching.
+         * Sets metric type of ANN searching.
          *
          * @param metricType metric type
          * @return <code>Builder</code>
@@ -115,7 +115,7 @@ public class SearchParam {
         }
 
         /**
-         * Set target vector field name. Field name cannot be empty or null.
+         * Sets target vector field by name. Field name cannot be empty or null.
          *
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
@@ -126,7 +126,7 @@ public class SearchParam {
         }
 
         /**
-         * Set topK value of ANN search.
+         * Sets topK value of ANN search.
          *
          * @param topK topK value
          * @return <code>Builder</code>
@@ -137,7 +137,7 @@ public class SearchParam {
         }
 
         /**
-         * Optional. Set expression to filter out entities before searching.
+         * Sets expression to filter out entities before searching (Optional).
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
@@ -149,7 +149,7 @@ public class SearchParam {
         }
 
         /**
-         * Optional. Specify output fields.
+         * Specifies output fields (Optional).
          *
          * @param outFields output fields
          * @return <code>Builder</code>
@@ -160,7 +160,7 @@ public class SearchParam {
         }
 
         /**
-         * Set target vectors.
+         * Sets the target vectors.
          *
          * @param vectors list of target vectors
          *                If vector type is FloatVector: vectors is List<List<Float>>
@@ -173,7 +173,7 @@ public class SearchParam {
         }
 
         /**
-         * Specify how many digits after the decimal point for returned results.
+         * Specifies the decimal place of the returned results.
          *
          * @param decimal how many digits after the decimal point
          * @return <code>Builder</code>
@@ -184,9 +184,9 @@ public class SearchParam {
         }
 
         /**
-         * Set extra search parameters according to index type.
+         * Sets the search parameters specific to the index type.
          *
-         * For example: IVF index, the extra parameters can be "{\"nprobe\":10}"
+         * For example: IVF index, the search parameters can be "{\"nprobe\":10}"
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
          * @param params extra parameters in json format
@@ -198,7 +198,7 @@ public class SearchParam {
         }
 
         /**
-         * Verify parameters and create a new <code>SearchParam</code> instance.
+         * Verifies parameters and creates a new <code>SearchParam</code> instance.
          *
          * @return <code>SearchParam</code>
          */
@@ -247,7 +247,7 @@ public class SearchParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>SearchParam</code> instance.
+     * Constructs a <code>String</code> by <code>SearchParam</code> instance.
      *
      * @return <code>String</code>
      */

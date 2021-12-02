@@ -50,7 +50,7 @@ public class DropCollectionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -61,7 +61,7 @@ public class DropCollectionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>DropCollectionParam</code> instance.
+         * Verifies parameters and creates a new <code>DropCollectionParam</code> instance.
          *
          * @return <code>DropCollectionParam</code>
          */
@@ -73,7 +73,7 @@ public class DropCollectionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DropCollectionParam</code> instance.
+     * Constructs a <code>String</code> by <code>DropCollectionParam</code> instance.
      *
      * @return <code>String</code>
      */

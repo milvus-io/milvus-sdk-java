@@ -34,7 +34,7 @@ public class CreateAliasParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -45,7 +45,7 @@ public class CreateAliasParam {
         }
 
         /**
-         * Set alias, alias cannot be empty or null.
+         * Sets the collection alias. Collection alias cannot be empty or null.
          *
          * @param alias alias of the collection
          * @return <code>Builder</code>
@@ -56,7 +56,7 @@ public class CreateAliasParam {
         }
 
         /**
-         * Verify parameters and create a new <code>CreateAliasParam</code> instance.
+         * Verifies parameters and creates a new <code>CreateAliasParam</code> instance.
          *
          * @return <code>CreateAliasParam</code>
          */
@@ -69,7 +69,7 @@ public class CreateAliasParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>CreateAliasParam</code> instance.
+     * Constructs a <code>String</code> by <code>CreateAliasParam</code> instance.
      *
      * @return <code>String</code>
      */

@@ -63,7 +63,7 @@ public class InsertParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -74,7 +74,7 @@ public class InsertParam {
         }
 
         /**
-         * Optional. Set partition name.
+         * Set partition name (Optional).
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -85,7 +85,7 @@ public class InsertParam {
         }
 
         /**
-         * Set insert data. The fields list cannot be empty.
+         * Sets the data to insert. The field list cannot be empty.
          * @see InsertParam.Field
          *
          * @param fields insert data
@@ -97,7 +97,7 @@ public class InsertParam {
         }
 
         /**
-         * Verify parameters and create a new <code>InsertParam</code> instance.
+         * Verifies parameters and creates a new <code>InsertParam</code> instance.
          *
          * @return <code>InsertParam</code>
          */
@@ -221,7 +221,7 @@ public class InsertParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>InsertParam</code> instance.
+     * Constructs a <code>String</code> by <code>InsertParam</code> instance.
      *
      * @return <code>String</code>
      */

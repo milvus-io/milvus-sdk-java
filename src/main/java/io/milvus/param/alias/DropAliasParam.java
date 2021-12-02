@@ -31,7 +31,7 @@ public class DropAliasParam {
         }
 
         /**
-         * Set alias, alias cannot be empty or null.
+         * Sets collection alias. Collection alias cannot be empty or null.
          *
          * @param alias alias of the collection
          * @return <code>Builder</code>
@@ -42,7 +42,7 @@ public class DropAliasParam {
         }
 
         /**
-         * Verify parameters and create a new <code>DropAliasParam</code> instance.
+         * Verifies parameters and creates a new <code>DropAliasParam</code> instance.
          *
          * @return <code>DropAliasParam</code>
          */
@@ -54,7 +54,7 @@ public class DropAliasParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DropAliasParam</code> instance.
+     * Constructs a <code>String</code> by <code>DropAliasParam</code> instance.
      *
      * @return <code>String</code>
      */
