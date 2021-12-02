@@ -154,7 +154,7 @@ public class CreateCollectionParam {
                 "collectionName='" + collectionName + '\'' +
                 ", shardsNum=" + shardsNum +
                 ", description='" + description + '\'' +
-                ", field count=" + fieldTypes.size() +
+                ", fields=" + fieldTypes.toString() +
                 '}';
     }
 }
