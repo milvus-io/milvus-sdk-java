@@ -8,7 +8,7 @@ import lombok.NonNull;
 import java.util.List;
 
 /**
- * Util class to wrap response of <code>query</code> interface.
+ * Utility class to wrap response of <code>query</code> interface.
  */
 public class QueryResultsWrapper {
     private final QueryResults results;
@@ -18,7 +18,7 @@ public class QueryResultsWrapper {
     }
 
     /**
-     * Get {@link FieldDataWrapper} for a field.
+     * Gets {@link FieldDataWrapper} for a field.
      * Throws {@link ParamException} if the field doesn't exist.
      *
      * @return <code>FieldDataWrapper</code>

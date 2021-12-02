@@ -50,7 +50,7 @@ public class GetQuerySegmentInfoParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -61,7 +61,7 @@ public class GetQuerySegmentInfoParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetQuerySegmentInfoParam</code> instance.
+         * Verifies parameters and creates a new <code>GetQuerySegmentInfoParam</code> instance.
          *
          * @return <code>GetQuerySegmentInfoParam</code>
          */
@@ -73,7 +73,7 @@ public class GetQuerySegmentInfoParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetQuerySegmentInfoParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetQuerySegmentInfoParam</code> instance.
      *
      * @return <code>String</code>
      */

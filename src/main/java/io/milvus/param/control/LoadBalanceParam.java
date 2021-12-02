@@ -48,7 +48,7 @@ public class LoadBalanceParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>LoadBalanceParam</code> instance.
+     * Constructs a <code>String</code> by <code>LoadBalanceParam</code> instance.
      *
      * @return <code>String</code>
      */
@@ -73,7 +73,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Set source query node id in which the sealed segments were loaded.
+         * Sets the source query node by ID in which the sealed segments were loaded.
          *
          * @param srcNodeID source query node id
          * @return <code>Builder</code>
@@ -84,7 +84,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Add destination query node id to which the sealed segments will be balance.
+         * Adds the destination query node by ID to which the sealed segments will be balanced.
          *
          * @param destNodeID destination query node id
          * @return <code>Builder</code>
@@ -98,7 +98,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Set destination query node id array to which the sealed segments will be balance.
+         * Sets the destination query node by ID array to which the sealed segments will be balance.
          *
          * @param destNodeIDs destination query node id array
          * @return <code>Builder</code>
@@ -109,7 +109,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Add a sealed segments id to be balanced.
+         * Adds a sealed segments by ID to be balanced.
          *
          * @param segmentID sealed segment id
          * @return <code>Builder</code>
@@ -123,7 +123,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Set sealed segments id array to be balanced.
+         * Sets a sealed segments by ID array to be balanced.
          *
          * @param segmentIDs sealed segments id array
          * @return <code>Builder</code>
@@ -134,7 +134,7 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Verify parameters and create a new <code>LoadBalanceParam</code> instance.
+         * Verifies parameters and creates a new <code>LoadBalanceParam</code> instance.
          *
          * @return <code>LoadBalanceParam</code>
          */

@@ -85,7 +85,7 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Set the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -96,7 +96,7 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set target field name. Field name cannot be empty or null.
+         * Sets the target field name. Field name cannot be empty or null.
          *
          * @param fieldName field name
          * @return <code>Builder</code>
@@ -107,7 +107,7 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set index type of the index.
+         * Sets the index type.
          *
          * @param indexType index type
          * @return <code>Builder</code>
@@ -118,7 +118,7 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set metric type of the index.
+         * Sets the metric type.
          *
          * @param metricType metric type
          * @return <code>Builder</code>
@@ -129,12 +129,12 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set extra index parameters according to index type.
+         * Sets the specific index parameters according to index type.
          *
          * For example: IVF index, the extra parameters can be "{\"nlist\":1024}"
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
-         * @param extraParam extra parameters in json format
+         * @param extraParam extra parameters in .json format
          * @return <code>Builder</code>
          */
         public Builder withExtraParam(@NonNull String extraParam) {
@@ -143,10 +143,10 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set to sync mode.
-         * With sync mode, the client side will keep waiting until all segments of the collection successfully indexed.
+         * Enables to sync mode.
+         * With sync mode enabled, the client keeps waiting until all segments of the collection are successfully indexed.
          *
-         * If not sync mode, client will return at once after the createIndex() is called.
+         * With sync mode disabled, client returns at once after the createIndex() is called.
          *
          * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
@@ -157,8 +157,8 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set waiting interval in sync mode. In sync mode, the client will constantly check index state by interval.
-         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_INDEX_INTERVAL.
+         * Sets the waiting interval in sync mode. With sync mode enabled, the client constantly checks index state by interval.
+         * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_INDEX_INTERVAL.
          * @see Constant
          *
          * @param milliseconds interval
@@ -170,8 +170,8 @@ public class CreateIndexParam {
         }
 
         /**
-         * Set time out value for sync mode.
-         * Time out value must be larger than zero. No upper limit. Default value is 600 seconds.
+         * Sets the timeout value for sync mode. 
+         * Timeout value must be greater than zero and with No upper limit. Default value is 600.
          * @see Constant
          *
          * @param seconds time out value for sync mode
@@ -183,7 +183,7 @@ public class CreateIndexParam {
         }
 
         /**
-         * Verify parameters and create a new <code>CreateIndexParam</code> instance.
+         * Verifies parameters and creates a new <code>CreateIndexParam</code> instance.
          *
          * @return <code>CreateIndexParam</code>
          */
@@ -219,7 +219,7 @@ public class CreateIndexParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>CreateIndexParam</code> instance.
+     * Constructs a <code>String</code> by <code>CreateIndexParam</code> instance.
      *
      * @return <code>String</code>
      */

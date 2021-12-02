@@ -8,7 +8,7 @@ import java.util.List;
 import lombok.NonNull;
 
 /**
- * Util class to wrap response of <code>insert</code> interface.
+ * Utility class to wrap response of <code>insert</code> interface.
  */
 public class InsertResultWrapper {
     private final MutationResult result;
@@ -18,19 +18,19 @@ public class InsertResultWrapper {
     }
 
     /**
-     * Get inserted count.
+     * Gets the row count of the inserted entities.
      *
-     * @return <code>int</code> inserted count
+     * @return <code>int</code> row count of the inserted entities
      */
     public long getInsertCount() {
         return result.getInsertCnt();
     }
 
     /**
-     * Get long id array returned by insert interface.
+     * Gets the long ID array returned by insert interface.
      * Throw {@link ParamException} if the primary key type is not int64 type.
      *
-     * @return <code>List<Long></code> id array returned by insert interface
+     * @return <code>List<Long></code> ID array returned by insert interface
      */
     public List<Long> getLongIDs() throws ParamException {
         if (result.getIDs().hasIntId()) {
@@ -41,11 +41,11 @@ public class InsertResultWrapper {
     }
 
     /**
-     * Get string id array returned by insert interface.
+     * Gets the string ID array returned by insert interface.
      * Throw {@link ParamException} if the primary key type is not string type.
-     * Note that currently Milvus doesn't support string type field, this method is reserved.
+     * Note that current release of Milvus doesn't support string type field, thus this method is reserved.
      *
-     * @return <code>List<String></code> id array returned by insert interface
+     * @return <code>List<String></code> ID array returned by insert interface
      */
     public List<String> getStringIDs() throws ParamException {
         if (result.getIDs().hasStrId()) {

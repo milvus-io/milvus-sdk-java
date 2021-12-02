@@ -50,7 +50,7 @@ public class ReleaseCollectionParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -61,7 +61,7 @@ public class ReleaseCollectionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>ReleaseCollectionParam</code> instance.
+         * Verifies parameters and creates a new <code>ReleaseCollectionParam</code> instance.
          *
          * @return <code>ReleaseCollectionParam</code>
          */
@@ -73,7 +73,7 @@ public class ReleaseCollectionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ReleaseCollectionParam</code> instance.
+     * Constructs a <code>String</code> by <code>ReleaseCollectionParam</code> instance.
      *
      * @return <code>String</code>
      */

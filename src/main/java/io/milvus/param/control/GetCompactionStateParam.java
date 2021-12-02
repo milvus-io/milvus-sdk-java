@@ -23,7 +23,7 @@ public class GetCompactionStateParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>GetCompactionStateParam</code> instance.
+     * Constructs a <code>String</code> by <code>GetCompactionStateParam</code> instance.
      *
      * @return <code>String</code>
      */
@@ -44,7 +44,7 @@ public class GetCompactionStateParam {
         }
 
         /**
-         * Set compaction action id to get state.
+         * Sets the compaction action id to get state.
          *
          * @param compactionID compaction action id
          * @return <code>Builder</code>
@@ -55,7 +55,7 @@ public class GetCompactionStateParam {
         }
 
         /**
-         * Verify parameters and create a new <code>GetCompactionStateParam</code> instance.
+         * Verifies parameters and creates a new <code>GetCompactionStateParam</code> instance.
          *
          * @return <code>GetCompactionStateParam</code>
          */

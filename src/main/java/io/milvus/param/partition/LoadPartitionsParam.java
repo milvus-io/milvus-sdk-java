@@ -76,7 +76,7 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -87,7 +87,7 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Set partition names list. Partition names list cannot be null or empty.
+         * Sets the partition names list. Partition names list cannot be null or empty.
          *
          * @param partitionNames partition names list
          * @return <code>Builder</code>
@@ -98,7 +98,7 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Add a partition name. Partition name cannot be empty or null.
+         * Adds a partition by name. Partition name cannot be empty or null.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -111,10 +111,10 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Set load action to sync mode.
-         * With sync mode, the client side will keep waiting until all segments of the partition successfully loaded.
+         * Enables sync mode for load action.
+         * With sync mode enabled, the client keeps waiting until all segments of the partition are successfully loaded.
          *
-         * If not sync mode, client will return at once after the loadPartitions() is called.
+         * Without sync mode disabled, client returns at once after the loadPartitions() is called.
          *
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
@@ -125,8 +125,8 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Set waiting interval in sync mode. In sync mode, the client will constantly check partition load state by interval.
-         * Interval must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_INTERVAL.
+         * Sets the waiting interval for sync mode. In sync mode, the client constantly checks partition load state by interval.
+         * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_LOADING_INTERVAL.
          * @see Constant
          *
          * @param milliseconds interval
@@ -138,8 +138,8 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Set time out value for sync mode.
-         * Time out value must be larger than zero, and cannot be larger than Constant.MAX_WAITING_LOADING_TIMEOUT.
+         * Sets the timeout value for sync mode.
+         * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_LOADING_TIMEOUT.
          * @see Constant
          *
          * @param seconds time out value for sync mode
@@ -151,7 +151,7 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Verify parameters and create a new <code>LoadPartitionsParam</code> instance.
+         * Verifies parameters and creates a new <code>LoadPartitionsParam</code> instance.
          *
          * @return <code>LoadPartitionsParam</code>
          */
@@ -187,7 +187,7 @@ public class LoadPartitionsParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>LoadPartitionsParam</code> instance.
+     * Constructs a <code>String</code> by <code>LoadPartitionsParam</code> instance.
      *
      * @return <code>String</code>
      */

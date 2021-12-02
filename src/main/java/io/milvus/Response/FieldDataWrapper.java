@@ -13,7 +13,7 @@ import java.util.List;
 import com.google.protobuf.ByteString;
 
 /**
- * Util class to wrap response of <code>query/search</code> interface.
+ * Utility class to wrap response of <code>query/search</code> interface.
  */
 public class FieldDataWrapper {
     private final FieldData fieldData;
@@ -27,7 +27,7 @@ public class FieldDataWrapper {
     }
 
     /**
-     * Get dimension of a vector field.
+     * Gets the dimension value of a vector field.
      * Throw {@link IllegalResponseException} if the field is not a vector filed.
      *
      * @return <code>int</code> dimension of the vector field
@@ -40,7 +40,7 @@ public class FieldDataWrapper {
     }
 
     /**
-     * Get row count of a field.
+     * Gets the row count of a field.
      * * Throws {@link IllegalResponseException} if the field type is illegal.
      *
      * @return <code>long</code> row count of the field
@@ -87,7 +87,7 @@ public class FieldDataWrapper {
     }
 
     /**
-     * Return field data according to its type:
+     * Returns the field data according to its type:
      *      float vector field return List<List<Float>>
      *      binary vector field return List<ByteBuffer>
      *      int64 field return List<Long>

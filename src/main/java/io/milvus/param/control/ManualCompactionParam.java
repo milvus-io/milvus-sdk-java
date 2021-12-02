@@ -22,7 +22,7 @@ public class ManualCompactionParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ManualCompactionParam</code> instance.
+     * Constructs a <code>String</code> by <code>ManualCompactionParam</code> instance.
      *
      * @return <code>String</code>
      */
@@ -43,7 +43,7 @@ public class ManualCompactionParam {
         }
 
         /**
-         * Ask server to compact a collection.
+         * Compacts a collection.
          *
          * @param collectionID target collection id
          * @return <code>Builder</code>
@@ -54,7 +54,7 @@ public class ManualCompactionParam {
         }
 
         /**
-         * Verify parameters and create a new <code>ManualCompactionParam</code> instance.
+         * Verifies parameters and creates a new <code>ManualCompactionParam</code> instance.
          *
          * @return <code>ManualCompactionParam</code>
          */

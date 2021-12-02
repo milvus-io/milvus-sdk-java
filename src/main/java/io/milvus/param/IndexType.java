@@ -20,7 +20,7 @@
 package io.milvus.param;
 
 /**
- * Represents available index types.
+ * Represents the available index types.
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
  */
 public enum IndexType {

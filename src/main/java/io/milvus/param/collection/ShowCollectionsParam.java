@@ -59,7 +59,7 @@ public class ShowCollectionsParam {
         }
 
         /**
-         * Set a list of collection names, name cannot be empty or null.
+         * Sets a list of collection names. Collection name cannot be empty or null.
          *
          * @param collectionNames list of collection names
          * @return <code>Builder</code>
@@ -70,7 +70,7 @@ public class ShowCollectionsParam {
         }
 
         /**
-         * Add a collection name, name cannot be empty or null.
+         * Adds a collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -83,7 +83,7 @@ public class ShowCollectionsParam {
         }
 
         /**
-         * Verify parameters and create a new <code>ShowCollectionsParam</code> instance.
+         * Verifies parameters and creates a new <code>ShowCollectionsParam</code> instance.
          *
          * @return <code>ShowCollectionsParam</code>
          */
@@ -100,7 +100,7 @@ public class ShowCollectionsParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ShowCollectionsParam</code> instance.
+     * Constructs a <code>String</code> by <code>ShowCollectionsParam</code> instance.
      *
      * @return <code>String</code>
      */

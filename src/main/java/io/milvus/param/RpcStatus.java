@@ -20,7 +20,7 @@
 package io.milvus.param;
 
 /**
- * Util class to wrap a message.
+ * Utility class to wrap a message.
  */
 public class RpcStatus {
     public static final String SUCCESS_MSG = "Success";
@@ -36,7 +36,7 @@ public class RpcStatus {
     }
 
     /**
-     * Construct a <code>String</code> by <code>RpcStatus</code> instance.
+     * Constructs a <code>String</code> by <code>RpcStatus</code> instance.
      *
      * @return <code>String</code>
      */

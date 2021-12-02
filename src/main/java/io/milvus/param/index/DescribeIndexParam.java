@@ -53,7 +53,7 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -64,7 +64,7 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Set target field name. Field name cannot be empty or null.
+         * Sets the target field name. Field name cannot be empty or null.
          *
          * @param fieldName field name
          * @return <code>Builder</code>
@@ -75,7 +75,7 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Verify parameters and create a new <code>DescribeIndexParam</code> instance.
+         * Verifies parameters and creates a new <code>DescribeIndexParam</code> instance.
          *
          * @return <code>DescribeIndexParam</code>
          */
@@ -88,7 +88,7 @@ public class DescribeIndexParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DescribeIndexParam</code> instance.
+     * Constructs a <code>String</code> by <code>DescribeIndexParam</code> instance.
      *
      * @return <code>String</code>
      */

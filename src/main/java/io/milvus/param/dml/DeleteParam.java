@@ -56,7 +56,7 @@ public class DeleteParam {
         }
 
         /**
-         * Set collection name. Collection name cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -67,7 +67,7 @@ public class DeleteParam {
         }
 
         /**
-         * Optional. Set partition name.
+         * Sets the partition name (Optional).
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
@@ -78,7 +78,7 @@ public class DeleteParam {
         }
 
         /**
-         * Set expr to filter out entities to be deleted.
+         * Sets the expression to filter out entities to be deleted.
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
@@ -90,7 +90,7 @@ public class DeleteParam {
         }
 
         /**
-         * Verify parameters and create a new <code>DeleteParam</code> instance.
+         * Verifies parameters and creates a new <code>DeleteParam</code> instance.
          *
          * @return <code>DeleteParam</code>
          */
@@ -103,7 +103,7 @@ public class DeleteParam {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DeleteParam</code> instance.
+     * Constructs a <code>String</code> by <code>DeleteParam</code> instance.
      *
      * @return <code>String</code>
      */
