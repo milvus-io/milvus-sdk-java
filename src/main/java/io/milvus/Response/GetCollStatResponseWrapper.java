@@ -22,7 +22,7 @@ public class GetCollStatResponseWrapper {
      *
      * @return <code>int</code> dimension of the vector field
      */
-    public long GetRowCount() throws NumberFormatException {
+    public long getRowCount() throws NumberFormatException {
         List<KeyValuePair> stats = stat.getStatsList();
         for (KeyValuePair kv : stats) {
             if (kv.getKey().compareTo("row_count") == 0) {

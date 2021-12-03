@@ -24,7 +24,7 @@ public class ShowCollResponseWrapper {
      *
      * @return <code>List<CollectionInfo></code> information array of the collections
      */
-    public List<CollectionInfo> GetCollectionsInfo() throws IllegalResponseException {
+    public List<CollectionInfo> getCollectionsInfo() throws IllegalResponseException {
         if (response.getCollectionNamesCount() != response.getCollectionIdsCount()
             || response.getCollectionNamesCount() != response.getCreatedUtcTimestampsCount()) {
             throw new IllegalResponseException("Collection information count doesn't match");
@@ -48,7 +48,7 @@ public class ShowCollResponseWrapper {
      *
      * @return <code>CollectionInfo</code> information of the collection
      */
-    public CollectionInfo GetCollectionInfo(@NonNull String name) {
+    public CollectionInfo getCollectionInfo(@NonNull String name) {
         for (int i = 0; i < response.getCollectionNamesCount(); ++i) {
             if ( name.compareTo(response.getCollectionNames(i)) == 0) {
                 CollectionInfo info = new CollectionInfo(response.getCollectionNames(i), response.getCollectionIds(i),
@@ -85,8 +85,8 @@ public class ShowCollResponseWrapper {
 
         @Override
         public String toString() {
-            return "(name: " + name + " id: " + id + " utcTimestamp: " + utcTimestamp + " inMemoryPercentage: "
-                    + inMemoryPercentage + ")";
+            return "(name: " + getName() + " id: " + getId() + " utcTimestamp: " + getUtcTimestamp() +
+                    " inMemoryPercentage: " + getInMemoryPercentage() + ")";
         }
     }
 
@@ -98,7 +98,7 @@ public class ShowCollResponseWrapper {
     @Override
     public String toString() {
         return "Collections{" +
-                GetCollectionsInfo().toString() +
+                getCollectionsInfo().toString() +
                 '}';
     }
 }

@@ -1971,17 +1971,17 @@ class MilvusServiceClientTest {
                 .addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("invalid").build())
                 .build();
         GetCollStatResponseWrapper invalidWrapper = new GetCollStatResponseWrapper(response);
-        assertThrows(NumberFormatException.class, invalidWrapper::GetRowCount);
+        assertThrows(NumberFormatException.class, invalidWrapper::getRowCount);
 
         response = GetCollectionStatisticsResponse.newBuilder()
                 .addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build())
                 .build();
         GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(response);
-        assertEquals(10, wrapper.GetRowCount());
+        assertEquals(10, wrapper.getRowCount());
 
         response = GetCollectionStatisticsResponse.newBuilder().build();
         wrapper = new GetCollStatResponseWrapper(response);
-        assertEquals(0, wrapper.GetRowCount());
+        assertEquals(0, wrapper.getRowCount());
     }
 
     @Test
@@ -2068,12 +2068,12 @@ class MilvusServiceClientTest {
                 .build();
 
         SearchResultsWrapper intWrapper = new SearchResultsWrapper(results);
-        assertNotNull(intWrapper.GetFieldData(fieldName));
-        assertNull(intWrapper.GetFieldData("invalid"));
+        assertNotNull(intWrapper.getFieldData(fieldName));
+        assertNull(intWrapper.getFieldData("invalid"));
 
-        List<SearchResultsWrapper.IDScore> idScores = intWrapper.GetIDScore(1);
+        List<SearchResultsWrapper.IDScore> idScores = intWrapper.getIDScore(1);
         assertEquals(idScores.size(), topK);
-        assertThrows(ParamException.class, () -> intWrapper.GetIDScore((int) numQueries));
+        assertThrows(ParamException.class, () -> intWrapper.getIDScore((int) numQueries));
 
         // for string id
         results = SearchResultData.newBuilder()
@@ -2090,7 +2090,7 @@ class MilvusServiceClientTest {
                 .build();
 
         SearchResultsWrapper strWrapper = new SearchResultsWrapper(results);
-        idScores = strWrapper.GetIDScore(0);
+        idScores = strWrapper.getIDScore(0);
         assertEquals(idScores.size(), topK);
     }
 }
