@@ -459,7 +459,7 @@ public class GeneralExample {
         Random ran = new Random();
         for (int i = 0; i < 100; ++i) {
             R<MutationResult> result = example.insert(partitionName, row_count);
-            InsertResultWrapper wrapper = new InsertResultWrapper(result.getData());
+            MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
             List<Long> ids = wrapper.getLongIDs();
             deleteIds.add(ids.get(ran.nextInt(row_count)));
         }

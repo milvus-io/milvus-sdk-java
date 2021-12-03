@@ -1982,21 +1982,22 @@ class MilvusServiceClientTest {
         response = GetCollectionStatisticsResponse.newBuilder().build();
         wrapper = new GetCollStatResponseWrapper(response);
         assertEquals(0, wrapper.GetRowCount());
-
     }
 
     @Test
-    void InsertResultWrapper() {
+    void MutationResultWrapper() {
         List<Long> nID = Arrays.asList(1L, 2L, 3L);
         MutationResult results = MutationResult.newBuilder()
                 .setInsertCnt(nID.size())
+                .setDeleteCnt(nID.size())
                 .setIDs(IDs.newBuilder()
                         .setIntId(LongArray.newBuilder()
                                 .addAllData(nID)
                                 .build()))
                 .build();
-        InsertResultWrapper longWrapper = new InsertResultWrapper(results);
+        MutationResultWrapper longWrapper = new MutationResultWrapper(results);
         assertEquals(nID.size(), longWrapper.getInsertCount());
+        assertEquals(nID.size(), longWrapper.getDeleteCount());
         assertThrows(ParamException.class, longWrapper::getStringIDs);
 
         List<Long> longIDs = longWrapper.getLongIDs();
@@ -2013,7 +2014,7 @@ class MilvusServiceClientTest {
                                 .addAllData(sID)
                                 .build()))
                 .build();
-        InsertResultWrapper strWrapper = new InsertResultWrapper(results);
+        MutationResultWrapper strWrapper = new MutationResultWrapper(results);
         assertEquals(sID.size(), strWrapper.getInsertCount());
         assertThrows(ParamException.class, strWrapper::getLongIDs);
 

@@ -922,6 +922,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
+            // flush collection if client command to do it(some times user may want to know the newest row count)
+            if (requestParam.isFlushCollection()) {
+                R<FlushResponse> response = flush(FlushParam.newBuilder()
+                        .addCollectionName(requestParam.getCollectionName())
+                        .withSyncFlush(Boolean.TRUE)
+                        .build());
+                if (response.getStatus() != R.Status.Success.getCode()) {
+                    return R.failed(R.Status.valueOf(response.getStatus()), response.getMessage());
+                }
+            }
+
             GetPartitionStatisticsRequest getPartitionStatisticsRequest = GetPartitionStatisticsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setPartitionName(requestParam.getPartitionName())

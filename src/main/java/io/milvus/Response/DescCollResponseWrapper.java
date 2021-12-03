@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Util class to wrap response of <code>DescribeCollection</code> interface.
+ * Util class to wrap response of <code>describeCollection</code> interface.
  */
 public class DescCollResponseWrapper {
     private final DescribeCollectionResponse response;

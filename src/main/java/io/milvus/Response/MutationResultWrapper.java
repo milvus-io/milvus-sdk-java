@@ -8,12 +8,12 @@ import java.util.List;
 import lombok.NonNull;
 
 /**
- * Utility class to wrap response of <code>insert</code> interface.
+ * Utility class to wrap response of <code>insert/delete</code> interface.
  */
-public class InsertResultWrapper {
+public class MutationResultWrapper {
     private final MutationResult result;
 
-    public InsertResultWrapper(@NonNull MutationResult result) {
+    public MutationResultWrapper(@NonNull MutationResult result) {
         this.result = result;
     }
 
@@ -53,5 +53,14 @@ public class InsertResultWrapper {
         } else {
             throw new ParamException("The primary key is not string type, please try getLongIDs()");
         }
+    }
+
+    /**
+     * Gets the row count of the deleted entities. Currently this value is always equal to input row count
+     *
+     * @return <code>int</code> row count of the deleted entities
+     */
+    public long getDeleteCount() {
+        return result.getDeleteCnt();
     }
 }
