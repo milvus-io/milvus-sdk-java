@@ -48,7 +48,7 @@ public class ShowCollResponseWrapper {
      *
      * @return <code>CollectionInfo</code> information of the collection
      */
-    public CollectionInfo getCollectionInfo(@NonNull String name) {
+    public CollectionInfo getCollectionInfoByName(@NonNull String name) {
         for (int i = 0; i < response.getCollectionNamesCount(); ++i) {
             if ( name.compareTo(response.getCollectionNames(i)) == 0) {
                 CollectionInfo info = new CollectionInfo(response.getCollectionNames(i), response.getCollectionIds(i),

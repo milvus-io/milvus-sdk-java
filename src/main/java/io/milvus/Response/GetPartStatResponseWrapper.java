@@ -2,6 +2,7 @@ package io.milvus.Response;
 
 import io.milvus.grpc.GetPartitionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.Constant;
 import lombok.NonNull;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class GetPartStatResponseWrapper {
     public long getRowCount() throws NumberFormatException {
         List<KeyValuePair> stats = stat.getStatsList();
         for (KeyValuePair kv : stats) {
-            if (kv.getKey().compareTo("row_count") == 0) {
+            if (kv.getKey().compareTo(Constant.ROW_COUNT) == 0) {
                 return Long.parseLong(kv.getValue());
             }
         }

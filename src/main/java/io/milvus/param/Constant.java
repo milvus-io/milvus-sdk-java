@@ -32,6 +32,7 @@ public class Constant {
     public static final String METRIC_TYPE = "metric_type";
     public static final String ROUND_DECIMAL = "round_decimal";
     public static final String PARAMS = "params";
+    public static final String ROW_COUNT = "row_count";
 
     // max value for waiting loading collection/partition interval, unit: millisecond
     public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;

@@ -51,6 +51,14 @@ public class FieldType {
         this.autoID = builder.autoID;
     }
 
+    public int getDimension() {
+        if (typeParams.containsKey(Constant.VECTOR_DIM)) {
+            return Integer.valueOf(typeParams.get(Constant.VECTOR_DIM));
+        }
+
+        return 0;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
