@@ -267,7 +267,7 @@ public class MilvusClientDockerTest {
         assertEquals(statR.getStatus().intValue(), R.Status.Success.getCode());
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
-        System.out.println("Collection row count: " + stat.GetRowCount());
+        System.out.println("Collection row count: " + stat.getRowCount());
 
         // get partition statistics
         R<GetPartitionStatisticsResponse> statPartR = client.getPartitionStatistics(GetPartitionStatisticsParam
@@ -279,7 +279,7 @@ public class MilvusClientDockerTest {
         assertEquals(statPartR.getStatus().intValue(), R.Status.Success.getCode());
 
         GetPartStatResponseWrapper statPart = new GetPartStatResponseWrapper(statPartR.getData());
-        System.out.println("Partition row count: " + statPart.GetRowCount());
+        System.out.println("Partition row count: " + statPart.getRowCount());
 
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
@@ -420,7 +420,7 @@ public class MilvusClientDockerTest {
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
-            List<SearchResultsWrapper.IDScore> scores = results.GetIDScore(i);
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
@@ -498,7 +498,7 @@ public class MilvusClientDockerTest {
         assertEquals(statR.getStatus().intValue(), R.Status.Success.getCode());
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
-        System.out.println("Collection row count: " + stat.GetRowCount());
+        System.out.println("Collection row count: " + stat.getRowCount());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
@@ -533,7 +533,7 @@ public class MilvusClientDockerTest {
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
-            List<SearchResultsWrapper.IDScore> scores = results.GetIDScore(i);
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());

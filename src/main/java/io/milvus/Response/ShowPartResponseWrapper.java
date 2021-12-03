@@ -24,7 +24,7 @@ public class ShowPartResponseWrapper {
      *
      * @return <code>List<PartitionInfo></code> information array of the partitions
      */
-    public List<PartitionInfo> GetPartitionsInfo() throws IllegalResponseException {
+    public List<PartitionInfo> getPartitionsInfo() throws IllegalResponseException {
         if (response.getPartitionNamesCount() != response.getPartitionIDsCount()
                 || response.getPartitionNamesCount() != response.getCreatedUtcTimestampsCount()) {
             throw new IllegalResponseException("Partition information count doesn't match");
@@ -35,7 +35,7 @@ public class ShowPartResponseWrapper {
             PartitionInfo info = new PartitionInfo(response.getPartitionNames(i), response.getPartitionIDs(i),
                     response.getCreatedUtcTimestamps(i));
             if (response.getInMemoryPercentagesCount() > i) {
-                info.SetInMemoryPercentage(response.getInMemoryPercentages(i));
+                info.setInMemoryPercentage(response.getInMemoryPercentages(i));
             }
             results.add(info);
         }
@@ -48,13 +48,13 @@ public class ShowPartResponseWrapper {
      *
      * @return <code>PartitionInfo</code> information of the partition
      */
-    public PartitionInfo GetPartitionInfo(@NonNull String name) {
+    public PartitionInfo getPartitionInfoByName(@NonNull String name) {
         for (int i = 0; i < response.getPartitionNamesCount(); ++i) {
             if ( name.compareTo(response.getPartitionNames(i)) == 0) {
                 PartitionInfo info = new PartitionInfo(response.getPartitionNames(i), response.getPartitionIDs(i),
                         response.getCreatedUtcTimestamps(i));
                 if (response.getInMemoryPercentagesCount() > i) {
-                    info.SetInMemoryPercentage(response.getInMemoryPercentages(i));
+                    info.setInMemoryPercentage(response.getInMemoryPercentages(i));
                 }
                 return info;
             }
@@ -79,14 +79,14 @@ public class ShowPartResponseWrapper {
             this.utcTimestamp = utcTimestamp;
         }
 
-        public void SetInMemoryPercentage(long inMemoryPercentage) {
+        public void setInMemoryPercentage(long inMemoryPercentage) {
             this.inMemoryPercentage = inMemoryPercentage;
         }
 
         @Override
         public String toString() {
-            return "(name: " + name + " id: " + id + " utcTimestamp: " + utcTimestamp + " inMemoryPercentage: "
-                    + inMemoryPercentage + ")";
+            return "(name: " + getName() + " id: " + getId() + " utcTimestamp: " + getUtcTimestamp() +
+                    " inMemoryPercentage: " + getInMemoryPercentage() + ")";
         }
     }
 
@@ -98,7 +98,7 @@ public class ShowPartResponseWrapper {
     @Override
     public String toString() {
         return "Partitions{" +
-                GetPartitionsInfo().toString() +
+                getPartitionsInfo().toString() +
                 '}';
     }
 }

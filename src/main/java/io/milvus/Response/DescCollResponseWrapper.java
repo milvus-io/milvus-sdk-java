@@ -27,7 +27,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>String</code> name of the collection
      */
-    public String GetCollectionName() {
+    public String getCollectionName() {
         CollectionSchema schema = response.getSchema();
         return schema.getName();
     }
@@ -37,7 +37,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>String</code> description of the collection
      */
-    public String GetCollectionDescription() {
+    public String getCollectionDescription() {
         CollectionSchema schema = response.getSchema();
         return schema.getDescription();
     }
@@ -47,7 +47,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>long</code> internal id of the collection
      */
-    public long GetCollectionID() {
+    public long getCollectionID() {
         return response.getCollectionID();
     }
 
@@ -56,7 +56,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>int</code> shard number of the collection
      */
-    public int GetShardNumber() {
+    public int getShardNumber() {
         return response.getShardsNum();
     }
 
@@ -65,7 +65,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>long</code> utc timestamp when collection created
      */
-    public long GetCreatedUtcTimestamp() {
+    public long getCreatedUtcTimestamp() {
         return response.getCreatedUtcTimestamp();
     }
 
@@ -74,7 +74,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>List<String></String></code> aliases of the collection
      */
-    public List<String> GetAliases() {
+    public List<String> getAliases() {
         List<String> aliases = new ArrayList<>();
         for (int i = 0; i < response.getAliasesCount(); ++i) {
             aliases.add(response.getAliases(i));
@@ -88,7 +88,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>List<FieldType></code> schema of the collection's fields
      */
-    public List<FieldType> GetFields() {
+    public List<FieldType> getFields() {
         List<FieldType> results = new ArrayList<>();
         CollectionSchema schema = response.getSchema();
         List<FieldSchema> fields = schema.getFieldsList();
@@ -103,7 +103,7 @@ public class DescCollResponseWrapper {
      *
      * @return <code>FieldType</code> schema of the field
      */
-    public FieldType GetField(@NonNull String name) {
+    public FieldType getFieldByName(@NonNull String name) {
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
             FieldSchema field = schema.getFields(i);
@@ -142,13 +142,13 @@ public class DescCollResponseWrapper {
     @Override
     public String toString() {
         return "Collection Description{" +
-                "name:'" + GetCollectionName() + '\'' +
-                ", description:'" + GetCollectionDescription() + '\'' +
-                ", id:" + GetCollectionID() +
-                ", shardNumber:" + GetShardNumber() +
-                ", createdUtcTimestamp:" + GetCreatedUtcTimestamp() +
-                ", aliases:" + GetAliases() +
-                ", fields:" + GetFields().toString() +
+                "name:'" + getCollectionName() + '\'' +
+                ", description:'" + getCollectionDescription() + '\'' +
+                ", id:" + getCollectionID() +
+                ", shardNumber:" + getShardNumber() +
+                ", createdUtcTimestamp:" + getCreatedUtcTimestamp() +
+                ", aliases:" + getAliases() +
+                ", fields:" + getFields().toString() +
                 '}';
     }
 }

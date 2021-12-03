@@ -155,7 +155,7 @@ public class GeneralExample {
                         .withCollectionName(COLLECTION_NAME)
                         .build());
         GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(response.getData());
-        System.out.println("Collection row count: " + wrapper.GetRowCount());
+        System.out.println("Collection row count: " + wrapper.getRowCount());
         return response;
     }
 
@@ -309,10 +309,10 @@ public class GeneralExample {
         SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
-            List<SearchResultsWrapper.IDScore> scores = wrapper.GetIDScore(i);
+            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
             System.out.println(scores);
         }
-        System.out.println(wrapper.GetFieldData(AGE_FIELD).getFieldData());
+        System.out.println(wrapper.getFieldData(AGE_FIELD).getFieldData());
 
         return response;
     }
@@ -340,11 +340,11 @@ public class GeneralExample {
         SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
-            List<SearchResultsWrapper.IDScore> scores = wrapper.GetIDScore(i);
+            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
             System.out.println(scores);
         }
 
-        System.out.println(wrapper.GetFieldData(AGE_FIELD).getFieldData());
+        System.out.println(wrapper.getFieldData(AGE_FIELD).getFieldData());
 
         return response;
     }

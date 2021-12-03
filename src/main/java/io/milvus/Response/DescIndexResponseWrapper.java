@@ -3,6 +3,9 @@ package io.milvus.Response;
 import io.milvus.grpc.IndexDescription;
 import io.milvus.grpc.DescribeIndexResponse;
 
+import io.milvus.param.Constant;
+import io.milvus.param.IndexType;
+import io.milvus.param.MetricType;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -26,12 +29,12 @@ public class DescIndexResponseWrapper {
      *
      * @return <code>List<IndexDesc></code> index description of fields
      */
-    public List<IndexDesc> GetIndexDescriptions() {
+    public List<IndexDesc> getIndexDescriptions() {
         List<IndexDesc> results = new ArrayList<>();
         List<IndexDescription> descriptions = response.getIndexDescriptionsList();
         descriptions.forEach((desc)->{
             IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
-            desc.getParamsList().forEach((kv)-> res.AddParam(kv.getKey(), kv.getValue()));
+            desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
             results.add(res);
         });
 
@@ -44,12 +47,12 @@ public class DescIndexResponseWrapper {
      *
      * @return <code>IndexDesc</code> description of the index
      */
-    public IndexDesc GetIndexDescByFieldName(@NonNull String name) {
+    public IndexDesc getIndexDescByFieldName(@NonNull String name) {
         for (int i = 0; i < response.getIndexDescriptionsCount(); ++i) {
             IndexDescription desc = response.getIndexDescriptions(i);
             if (name.compareTo(desc.getFieldName()) == 0) {
                 IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
-                desc.getParamsList().forEach((kv)-> res.AddParam(kv.getKey(), kv.getValue()));
+                desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
                 return res;
             }
         }
@@ -67,20 +70,48 @@ public class DescIndexResponseWrapper {
         private final long id;
         private final Map<String, String> params = new HashMap<>();
 
-        public IndexDesc(@NonNull String fieldName, String indexName, long id) {
+        public IndexDesc(@NonNull String fieldName, @NonNull String indexName, long id) {
             this.fieldName = fieldName;
             this.indexName = indexName;
             this.id = id;
         }
 
-        public void AddParam(@NonNull String key, @NonNull String value) {
+        public void addParam(@NonNull String key, @NonNull String value) {
             this.params.put(key, value);
+        }
+
+        public IndexType getIndexType() {
+            if (this.params.containsKey(Constant.INDEX_TYPE)) {
+                // may throw IllegalArgumentException
+                return IndexType.valueOf(params.get(Constant.INDEX_TYPE));
+            }
+
+            return IndexType.INVALID;
+        }
+
+        public MetricType getMetricType() {
+            if (this.params.containsKey(Constant.METRIC_TYPE)) {
+                // may throw IllegalArgumentException
+                return MetricType.valueOf(params.get(Constant.METRIC_TYPE));
+            }
+
+            return MetricType.INVALID;
+        }
+
+        public String getExtraParam() {
+            if (this.params.containsKey(Constant.PARAMS)) {
+                // may throw IllegalArgumentException
+                return params.get(Constant.PARAMS);
+            }
+
+            return "";
         }
 
         @Override
         public String toString() {
-            return "(fieldName: " + fieldName + " indexName: " + indexName + " id: " + id + " params: " +
-                    params.toString() + ")";
+            return "IndexDesc(fieldName: " + getFieldName() + " indexName: " + getIndexName() +
+                    " id: " + getId() + " indexType: " + getIndexType().name() + " metricType: " +
+                    getMetricType().name() + " extraParam: " + getExtraParam() + ")";
         }
     }
 
@@ -92,7 +123,7 @@ public class DescIndexResponseWrapper {
     @Override
     public String toString() {
         return "Index description{" +
-                GetIndexDescriptions().toString() +
+                getIndexDescriptions().toString() +
                 '}';
     }
 }

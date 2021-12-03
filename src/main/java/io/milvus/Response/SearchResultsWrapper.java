@@ -25,7 +25,7 @@ public class SearchResultsWrapper {
      *
      * @return <code>FieldDataWrapper</code>
      */
-    public FieldDataWrapper GetFieldData(@NonNull String fieldName) {
+    public FieldDataWrapper getFieldData(@NonNull String fieldName) {
         for (int i = 0; i < results.getFieldsDataCount(); ++i) {
             FieldData data = results.getFieldsData(i);
             if (fieldName.compareTo(data.getFieldName()) == 0) {
@@ -43,7 +43,7 @@ public class SearchResultsWrapper {
      *
      * @return <code>List<IDScore></code> ID-score pairs returned by search interface
      */
-    public List<IDScore> GetIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
+    public List<IDScore> getIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         List<Long> kList = results.getTopksList();
 
         // if the server didn't return separate topK, use same topK value
