@@ -28,6 +28,9 @@ import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 
 import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DescribeIndexParam;
+import io.milvus.param.partition.GetPartitionStatisticsParam;
+import io.milvus.param.partition.ShowPartitionsParam;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -266,8 +269,20 @@ public class MilvusClientDockerTest {
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.GetRowCount());
 
+        // get partition statistics
+        R<GetPartitionStatisticsResponse> statPartR = client.getPartitionStatistics(GetPartitionStatisticsParam
+                .newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withPartitionName("_default") // each collection has '_default' partition
+                .withFlush(true)
+                .build());
+        assertEquals(statPartR.getStatus().intValue(), R.Status.Success.getCode());
+
+        GetPartStatResponseWrapper statPart = new GetPartStatResponseWrapper(statPartR.getData());
+        System.out.println("Partition row count: " + statPart.GetRowCount());
+
         // create index
-        CreateIndexParam param = CreateIndexParam.newBuilder()
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withFieldName(field2Name)
                 .withIndexType(IndexType.IVF_FLAT)
@@ -278,14 +293,42 @@ public class MilvusClientDockerTest {
                 .withSyncWaitingTimeout(30L)
                 .build();
 
-        R<RpcStatus> createIndexR = client.createIndex(param);
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
         assertEquals(createIndexR.getStatus().intValue(), R.Status.Success.getCode());
+
+        // get index description
+        DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .build();
+        R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
+        assertEquals(descIndexR.getStatus().intValue(), R.Status.Success.getCode());
+
+        DescIndexResponseWrapper indexDesc = new DescIndexResponseWrapper(descIndexR.getData());
+        System.out.println("Index description: " + indexDesc.toString());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build());
         assertEquals(loadR.getStatus().intValue(), R.Status.Success.getCode());
+
+        // show collections
+        R<ShowCollectionsResponse> showR = client.showCollections(ShowCollectionsParam.newBuilder()
+                .addCollectionName(randomCollectionName)
+                .build());
+        assertEquals(showR.getStatus().intValue(), R.Status.Success.getCode());
+        ShowCollResponseWrapper info = new ShowCollResponseWrapper(showR.getData());
+        System.out.println("Collection info: " + info.toString());
+
+        // show partitions
+        R<ShowPartitionsResponse> showPartR = client.showPartitions(ShowPartitionsParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .addPartitionName("_default") // each collection has a '_default' partition
+                .build());
+        assertEquals(showPartR.getStatus().intValue(), R.Status.Success.getCode());
+        ShowPartResponseWrapper infoPart = new ShowPartResponseWrapper(showPartR.getData());
+        System.out.println("Partition info: " + infoPart.toString());
 
         // query vectors to verify
         List<Long> queryIDs = new ArrayList<>();
@@ -441,7 +484,7 @@ public class MilvusClientDockerTest {
         R<MutationResult> insertR = client.insert(insertParam);
         assertEquals(insertR.getStatus().intValue(), R.Status.Success.getCode());
 //        System.out.println(insertR.getData());
-        InsertResultWrapper insertResultWrapper = new InsertResultWrapper(insertR.getData());
+        MutationResultWrapper insertResultWrapper = new MutationResultWrapper(insertR.getData());
         System.out.println(insertResultWrapper.getInsertCount() + " rows inserted");
         List<Long> ids = insertResultWrapper.getLongIDs();
 //        System.out.println("Auto-generated ids: " + ids);

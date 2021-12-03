@@ -32,10 +32,12 @@ import lombok.NonNull;
 public class GetPartitionStatisticsParam {
     private final String collectionName;
     private final String partitionName;
+    private final boolean flushCollection;
 
     private GetPartitionStatisticsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+        this.flushCollection = builder.flushCollection;
     }
 
     public static Builder newBuilder() {
@@ -48,6 +50,10 @@ public class GetPartitionStatisticsParam {
     public static final class Builder {
         private String collectionName;
         private String partitionName;
+
+        // if flushCollection is true, getCollectionStatistics() firstly call flush() and wait flush() finish
+        // Note: use default interval and timeout to wait flush()
+        private Boolean flushCollection = Boolean.TRUE;
 
         private Builder() {
         }
@@ -64,13 +70,24 @@ public class GetPartitionStatisticsParam {
         }
 
         /**
-         * Sets thep artition name. Partition name cannot be empty or null.
+         * Sets the partition name. Partition name cannot be empty or null.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
         public Builder withPartitionName(@NonNull String partitionName) {
             this.partitionName = partitionName;
+            return this;
+        }
+
+        /**
+         * Requires a flush action before retrieving partition statistics.
+         *
+         * @param flush <code>Boolean.TRUE</code> require a flush action
+         * @return <code>Builder</code>
+         */
+        public Builder withFlush(@NonNull Boolean flush) {
+            this.flushCollection = flush;
             return this;
         }
 
@@ -97,6 +114,7 @@ public class GetPartitionStatisticsParam {
         return "GetPartitionStatisticsParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
+                ", flush=" + flushCollection +
                 '}';
     }
 }
