@@ -747,6 +747,11 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        assertThrows(ParamException.class, () -> LoadPartitionsParam.newBuilder()
+                .withCollectionName("collection1")
+                .build()
+        );
+
         List<String> names = new ArrayList<>();
         names.add(null);
         assertThrows(NullPointerException.class, () -> LoadPartitionsParam.newBuilder()
@@ -882,6 +887,11 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        assertThrows(ParamException.class, () -> ReleasePartitionsParam.newBuilder()
+                .withCollectionName("collection1")
+                .build()
+        );
+
         List<String> names = new ArrayList<>();
         names.add(null);
         assertThrows(NullPointerException.class, () -> ReleasePartitionsParam.newBuilder()
@@ -907,12 +917,14 @@ class MilvusServiceClientTest {
         assertThrows(ParamException.class, () -> GetPartitionStatisticsParam.newBuilder()
                 .withCollectionName("")
                 .withPartitionName("partition1")
+                .withFlush(true)
                 .build()
         );
 
         assertThrows(ParamException.class, () -> GetPartitionStatisticsParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("")
+                .withFlush(false)
                 .build()
         );
     }
@@ -1287,10 +1299,10 @@ class MilvusServiceClientTest {
 
         // field row count not equal
         fields.clear();
-        ids.add(1L);
-        fields.add(new InsertParam.Field("field1", DataType.Int64, ids));
-        List<List<Float>> vectors = new ArrayList<>();
-        fields.add(new InsertParam.Field("field2", DataType.FloatVector, vectors));
+        List<Long> ages = Arrays.asList(1L, 2L);
+        fields.add(new InsertParam.Field("field1", DataType.Int64, ages));
+        List<Integer> ports = Arrays.asList(1, 2, 3);
+        fields.add(new InsertParam.Field("field2", DataType.Int32, ports));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
@@ -1299,7 +1311,7 @@ class MilvusServiceClientTest {
 
         // wrong type
         fields.clear();
-        List<String> fakeVectors1 = new ArrayList<>();
+        List<String> fakeVectors1 = Arrays.asList("1", "2", "3");
         fields.add(new InsertParam.Field("field2", DataType.FloatVector, fakeVectors1));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1309,6 +1321,7 @@ class MilvusServiceClientTest {
 
         fields.clear();
         List<List<String>> fakeVectors2 = new ArrayList<>();
+        fakeVectors2.add(Arrays.asList("1", "2", "3"));
         fields.add(new InsertParam.Field("field2", DataType.FloatVector, fakeVectors2));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1316,8 +1329,22 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        List<DataType> testTypes = Arrays.asList(DataType.Int64, DataType.Int32, DataType.Int16, DataType.Int8,
+                DataType.Float, DataType.Double, DataType.Bool, DataType.BinaryVector);
+        testTypes.forEach((tp)->{
+            fields.clear();
+            List<String> fakeVectors3 = Arrays.asList("1", "2", "3");
+            fields.add(new InsertParam.Field("field3", tp, fakeVectors3));
+            assertThrows(ParamException.class, () -> InsertParam.newBuilder()
+                    .withCollectionName("collection1")
+                    .withFields(fields)
+                    .build()
+            );
+        });
+
         fields.clear();
-        fields.add(new InsertParam.Field("field2", DataType.BinaryVector, fakeVectors1));
+        List<Long> fakeVectors4 = Arrays.asList(1L, 2L, 3L);
+        fields.add(new InsertParam.Field("field4", DataType.String, fakeVectors4));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
@@ -1328,8 +1355,7 @@ class MilvusServiceClientTest {
         fields.clear();
         List<Float> vector1 = Arrays.asList(0.1F, 0.2F, 0.3F);
         List<Float> vector2 = Arrays.asList(0.1F, 0.2F);
-        vectors.add(vector1);
-        vectors.add(vector2);
+        List<List<Float>> vectors = Arrays.asList(vector1, vector2);
         fields.add(new InsertParam.Field("field1", DataType.FloatVector, vectors));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1473,7 +1499,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.INVALID)
                 .withTopK(5)
                 .withVectors(vectors)
@@ -1486,7 +1512,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(0)
                 .withVectors(vectors)
@@ -1501,7 +1527,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
                 .withVectors(fakeVectors1)
@@ -1515,7 +1541,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
                 .withVectors(fakeVectors2)
@@ -1531,7 +1557,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
                 .withVectors(vectors)
@@ -1550,7 +1576,7 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
-                .withVectorFieldName("")
+                .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
                 .withVectors(binVectors)
