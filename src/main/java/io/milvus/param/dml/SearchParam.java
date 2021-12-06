@@ -206,6 +206,10 @@ public class SearchParam {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
 
+            if (topK <= 0) {
+                throw new ParamException("TopK value is illegal");
+            }
+
             if (metricType == MetricType.INVALID) {
                 throw new ParamException("Metric type is illegal");
             }
