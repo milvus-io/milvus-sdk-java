@@ -2219,6 +2219,7 @@ class MilvusServiceClientTest {
         assertNull(intWrapper.getFieldData("invalid"));
 
         List<SearchResultsWrapper.IDScore> idScores = intWrapper.getIDScore(1);
+        assertFalse(idScores.toString().isEmpty());
         assertEquals(idScores.size(), topK);
         assertThrows(ParamException.class, () -> intWrapper.getIDScore((int) numQueries));
 
@@ -2238,6 +2239,7 @@ class MilvusServiceClientTest {
 
         SearchResultsWrapper strWrapper = new SearchResultsWrapper(results);
         idScores = strWrapper.getIDScore(0);
+        assertFalse(idScores.toString().isEmpty());
         assertEquals(idScores.size(), topK);
 
         idScores.forEach((score)->assertFalse(score.toString().isEmpty()));

@@ -114,9 +114,9 @@ public class SearchResultsWrapper {
         @Override
         public String toString() {
             if (strID.isEmpty()) {
-                return "(ID: " + longID + " Score: " + score + ")";
+                return "(ID: " + getLongID() + " Score: " + getScore() + ")";
             } else {
-                return "(ID: '" + strID + "' Score: " + score + ")";
+                return "(ID: '" + getStrID() + "' Score: " + getScore() + ")";
             }
         }
     }
