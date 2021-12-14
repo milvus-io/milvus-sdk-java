@@ -1,5 +1,11 @@
 # Changelog   
 
+## milvus-sdk-java 1.1.1 (2021-12-14)
+
+### Improvement
+
+- \#238 - Upgrade log4j version to 2.15.0 for high severity vulnerability(CVE-2021-44228)
+
 ## milvus-sdk-java 1.1.0 (2021-04-23)
 
 ### Feature
