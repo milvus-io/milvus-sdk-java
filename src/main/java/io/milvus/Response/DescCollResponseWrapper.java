@@ -101,13 +101,14 @@ public class DescCollResponseWrapper {
      * Get schema of a field by name.
      * Return null if the field doesn't exist
      *
+     * @param fieldName field name to get field description
      * @return <code>FieldType</code> schema of the field
      */
-    public FieldType getFieldByName(@NonNull String name) {
+    public FieldType getFieldByName(@NonNull String fieldName) {
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
             FieldSchema field = schema.getFields(i);
-            if (name.compareTo(field.getName()) == 0) {
+            if (fieldName.compareTo(field.getName()) == 0) {
                 return convertField(field);
             }
         }

@@ -23,6 +23,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.partition.LoadPartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.nio.ByteBuffer;
