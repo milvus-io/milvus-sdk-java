@@ -99,7 +99,20 @@ public class SearchParam {
          * @return <code>Builder</code>
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
-            this.partitionNames = partitionNames;
+            partitionNames.forEach(this::addPartitionName);
+            return this;
+        }
+
+        /**
+         * Adds a partition to specify search scope (Optional).
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder addPartitionName(@NonNull String partitionName) {
+            if (!this.partitionNames.contains(partitionName)) {
+                this.partitionNames.add(partitionName);
+            }
             return this;
         }
 
@@ -156,6 +169,19 @@ public class SearchParam {
          */
         public Builder withOutFields(@NonNull List<String> outFields) {
             this.outFields = outFields;
+            return this;
+        }
+
+        /**
+         * Specifies an output field (Optional).
+         *
+         * @param fieldName filed name
+         * @return <code>Builder</code>
+         */
+        public Builder addOutField(@NonNull String fieldName) {
+            if (!this.outFields.contains(fieldName)) {
+                this.outFields.add(fieldName);
+            }
             return this;
         }
 

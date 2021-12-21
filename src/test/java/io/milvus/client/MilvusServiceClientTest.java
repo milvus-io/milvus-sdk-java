@@ -101,11 +101,11 @@ class MilvusServiceClientTest {
         String msg = "error";
         R<RpcStatus> r = R.failed(ErrorCode.UnexpectedError, msg);
         Exception e = r.getException();
-        assertEquals(msg.compareTo(e.getMessage()), 0);
+        assertEquals(0, msg.compareTo(e.getMessage()));
         System.out.println(r.toString());
 
         r = R.success();
-        assertEquals(r.getStatus(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), r.getStatus());
         System.out.println(r.toString());
     }
 
@@ -131,13 +131,13 @@ class MilvusServiceClientTest {
                 .build();
         System.out.println(connectParam.toString());
 
-        assertEquals(host.compareTo(connectParam.getHost()), 0);
-        assertEquals(connectParam.getPort(), port);
-        assertEquals(connectParam.getConnectTimeoutMs(), connectTimeoutMs);
-        assertEquals(connectParam.getKeepAliveTimeMs(), keepAliveTimeMs);
-        assertEquals(connectParam.getKeepAliveTimeoutMs(), keepAliveTimeoutMs);
+        assertEquals(0, host.compareTo(connectParam.getHost()));
+        assertEquals(port, connectParam.getPort());
+        assertEquals(connectTimeoutMs, connectParam.getConnectTimeoutMs());
+        assertEquals(keepAliveTimeMs, connectParam.getKeepAliveTimeMs());
+        assertEquals(keepAliveTimeoutMs, connectParam.getKeepAliveTimeoutMs());
         assertTrue(connectParam.isKeepAliveWithoutCalls());
-        assertEquals(connectParam.getIdleTimeoutMs(), idleTimeoutMs);
+        assertEquals(idleTimeoutMs, connectParam.getIdleTimeoutMs());
 
         assertThrows(ParamException.class, () ->
                 ConnectParam.newBuilder()
@@ -581,12 +581,12 @@ class MilvusServiceClientTest {
         // verify internal param
         ShowCollectionsParam param = ShowCollectionsParam.newBuilder()
                 .build();
-        assertEquals(param.getShowType(), ShowType.All);
+        assertEquals(ShowType.All, param.getShowType());
 
         param = ShowCollectionsParam.newBuilder()
                 .addCollectionName("collection1")
                 .build();
-        assertEquals(param.getShowType(), ShowType.InMemory);
+        assertEquals(ShowType.InMemory, param.getShowType());
     }
 
     @Test
@@ -966,13 +966,13 @@ class MilvusServiceClientTest {
         ShowPartitionsParam param = ShowPartitionsParam.newBuilder()
                 .withCollectionName("collection1`")
                 .build();
-        assertEquals(param.getShowType(), ShowType.All);
+        assertEquals(ShowType.All, param.getShowType());
 
         param = ShowPartitionsParam.newBuilder()
                 .withCollectionName("collection1`")
                 .addPartitionName("partition1")
                 .build();
-        assertEquals(param.getShowType(), ShowType.InMemory);
+        assertEquals(ShowType.InMemory, param.getShowType());
     }
 
     @Test
@@ -2193,13 +2193,18 @@ class MilvusServiceClientTest {
         List<Long> longIDs = new ArrayList<>();
         List<String> strIDs = new ArrayList<>();
         List<Float> scores = new ArrayList<>();
+        List<Double> outputField = new ArrayList<>();
         for (long i = 0; i < topK * numQueries; ++i) {
             longIDs.add(i);
             strIDs.add(String.valueOf(i));
             scores.add((float) i);
+            outputField.add((double) i);
         }
 
         // for long id
+        DoubleArray.Builder doubleArrayBuilder = DoubleArray.newBuilder();
+        outputField.forEach(doubleArrayBuilder::addData);
+
         String fieldName = "test";
         SearchResultData results = SearchResultData.newBuilder()
                 .setTopK(topK)
@@ -2211,16 +2216,20 @@ class MilvusServiceClientTest {
                 .addAllScores(scores)
                 .addFieldsData(FieldData.newBuilder()
                         .setFieldName(fieldName)
-                        .build())
+                        .setType(DataType.Double)
+                        .setScalars(ScalarField.newBuilder()
+                                .setDoubleData(doubleArrayBuilder.build())
+                                .build()))
                 .build();
 
         SearchResultsWrapper intWrapper = new SearchResultsWrapper(results);
-        assertNotNull(intWrapper.getFieldData(fieldName));
-        assertNull(intWrapper.getFieldData("invalid"));
+        assertThrows(ParamException.class, () -> intWrapper.getFieldData(fieldName, -1));
+        assertThrows(ParamException.class, () -> intWrapper.getFieldData("invalid", 0));
+        assertEquals(topK, intWrapper.getFieldData(fieldName, (int)numQueries-1).size());
 
         List<SearchResultsWrapper.IDScore> idScores = intWrapper.getIDScore(1);
         assertFalse(idScores.toString().isEmpty());
-        assertEquals(idScores.size(), topK);
+        assertEquals(topK, idScores.size());
         assertThrows(ParamException.class, () -> intWrapper.getIDScore((int) numQueries));
 
         // for string id
@@ -2240,7 +2249,7 @@ class MilvusServiceClientTest {
         SearchResultsWrapper strWrapper = new SearchResultsWrapper(results);
         idScores = strWrapper.getIDScore(0);
         assertFalse(idScores.toString().isEmpty());
-        assertEquals(idScores.size(), topK);
+        assertEquals(topK, idScores.size());
 
         idScores.forEach((score)->assertFalse(score.toString().isEmpty()));
     }
@@ -2264,7 +2273,7 @@ class MilvusServiceClientTest {
 
         for (int i = 0; i < 2; ++i) {
             ShowCollResponseWrapper.CollectionInfo info = wrapper.getCollectionInfoByName(names.get(i));
-            assertEquals(names.get(i).compareTo(info.getName()), 0);
+            assertEquals(0, names.get(i).compareTo(info.getName()));
             assertEquals(ids.get(i), info.getId());
             assertEquals(ts.get(i), info.getUtcTimestamp());
             assertEquals(inMemory.get(i), info.getInMemoryPercentage());
@@ -2292,7 +2301,7 @@ class MilvusServiceClientTest {
 
         for (int i = 0; i < 2; ++i) {
             ShowPartResponseWrapper.PartitionInfo info = wrapper.getPartitionInfoByName(names.get(i));
-            assertEquals(names.get(i).compareTo(info.getName()), 0);
+            assertEquals(0, names.get(i).compareTo(info.getName()));
             assertEquals(ids.get(i), info.getId());
             assertEquals(ts.get(i), info.getUtcTimestamp());
             assertEquals(inMemory.get(i), info.getInMemoryPercentage());

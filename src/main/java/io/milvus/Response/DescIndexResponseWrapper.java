@@ -45,12 +45,13 @@ public class DescIndexResponseWrapper {
      * Get index description by field name.
      * Return null if the field doesn't exist
      *
+     * @param fieldName field name to get index description
      * @return <code>IndexDesc</code> description of the index
      */
-    public IndexDesc getIndexDescByFieldName(@NonNull String name) {
+    public IndexDesc getIndexDescByFieldName(@NonNull String fieldName) {
         for (int i = 0; i < response.getIndexDescriptionsCount(); ++i) {
             IndexDescription desc = response.getIndexDescriptions(i);
-            if (name.compareTo(desc.getFieldName()) == 0) {
+            if (fieldName.compareTo(desc.getFieldName()) == 0) {
                 IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
                 desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
                 return res;

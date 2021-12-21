@@ -28,8 +28,14 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.Response.*;
 
-import java.nio.ByteBuffer;
 import java.util.*;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Note:
+// Due do a technical limitation, the Milvus 2.0 not allow to create multi-vector-fields within a collection.
+// So this example only create a single vector field in the collection, but we suppose the next version
+// should support this function.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public class GeneralExample {
     private static final MilvusServiceClient milvusClient;
@@ -47,8 +53,8 @@ public class GeneralExample {
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 64;
     private static final String AGE_FIELD = "userAge";
-    private static final String PROFILE_FIELD = "userProfile";
-    private static final Integer BINARY_DIM = 128;
+//    private static final String PROFILE_FIELD = "userProfile";
+//    private static final Integer BINARY_DIM = 128;
 
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
     private static final String INDEX_PARAM = "{\"nlist\":128}";
@@ -79,12 +85,12 @@ public class GeneralExample {
                 .withDataType(DataType.Int8)
                 .build();
 
-        FieldType fieldType4 = FieldType.newBuilder()
-                .withName(PROFILE_FIELD)
-                .withDescription("user profile")
-                .withDataType(DataType.BinaryVector)
-                .withDimension(BINARY_DIM)
-                .build();
+//        FieldType fieldType4 = FieldType.newBuilder()
+//                .withName(PROFILE_FIELD)
+//                .withDescription("user profile")
+//                .withDataType(DataType.BinaryVector)
+//                .withDimension(BINARY_DIM)
+//                .build();
 
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
@@ -93,7 +99,7 @@ public class GeneralExample {
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
-                .addFieldType(fieldType4)
+//                .addFieldType(fieldType4)
                 .build();
         R<RpcStatus> response = milvusClient.createCollection(createCollectionReq);
 
@@ -311,43 +317,44 @@ public class GeneralExample {
             System.out.println("Search result of No." + i);
             List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
             System.out.println(scores);
+            System.out.println("Output field data for No." + i);
+            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
         }
-        System.out.println(wrapper.getFieldData(AGE_FIELD).getFieldData());
 
         return response;
     }
 
-    private R<SearchResults> searchProfile(String expr) {
-        System.out.println("========== searchProfile() ==========");
-
-        List<String> outFields = Collections.singletonList(AGE_FIELD);
-        List<ByteBuffer> vectors = generateBinaryVectors(5);
-
-        SearchParam searchParam = SearchParam.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withMetricType(MetricType.HAMMING)
-                .withOutFields(outFields)
-                .withTopK(SEARCH_K)
-                .withVectors(vectors)
-                .withVectorFieldName(PROFILE_FIELD)
-                .withExpr(expr)
-                .withParams(SEARCH_PARAM)
-                .build();
-
-
-        R<SearchResults> response = milvusClient.search(searchParam);
-
-        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-        for (int i = 0; i < vectors.size(); ++i) {
-            System.out.println("Search result of No." + i);
-            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-            System.out.println(scores);
-        }
-
-        System.out.println(wrapper.getFieldData(AGE_FIELD).getFieldData());
-
-        return response;
-    }
+//    private R<SearchResults> searchProfile(String expr) {
+//        System.out.println("========== searchProfile() ==========");
+//
+//        List<String> outFields = Collections.singletonList(AGE_FIELD);
+//        List<ByteBuffer> vectors = generateBinaryVectors(5);
+//
+//        SearchParam searchParam = SearchParam.newBuilder()
+//                .withCollectionName(COLLECTION_NAME)
+//                .withMetricType(MetricType.HAMMING)
+//                .withOutFields(outFields)
+//                .withTopK(SEARCH_K)
+//                .withVectors(vectors)
+//                .withVectorFieldName(PROFILE_FIELD)
+//                .withExpr(expr)
+//                .withParams(SEARCH_PARAM)
+//                .build();
+//
+//
+//        R<SearchResults> response = milvusClient.search(searchParam);
+//
+//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
+//        for (int i = 0; i < vectors.size(); ++i) {
+//            System.out.println("Search result of No." + i);
+//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+//            System.out.println(scores);
+//            System.out.println("Output field data for No." + i);
+//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
+//        }
+//
+//        return response;
+//    }
 
     private R<CalcDistanceResults> calDistance() {
         System.out.println("========== calDistance() ==========");
@@ -388,7 +395,7 @@ public class GeneralExample {
     private R<MutationResult> insert(String partitionName, int count) {
         System.out.println("========== insert() ==========");
         List<List<Float>> vectors = generateFloatVectors(count);
-        List<ByteBuffer> profiles = generateBinaryVectors(count);
+//        List<ByteBuffer> profiles = generateBinaryVectors(count);
 
         Random ran = new Random();
         List<Integer> ages = new ArrayList<>();
@@ -398,7 +405,7 @@ public class GeneralExample {
 
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(VECTOR_FIELD, DataType.FloatVector, vectors));
-        fields.add(new InsertParam.Field(PROFILE_FIELD, DataType.BinaryVector, profiles));
+//        fields.add(new InsertParam.Field(PROFILE_FIELD, DataType.BinaryVector, profiles));
         fields.add(new InsertParam.Field(AGE_FIELD, DataType.Int8, ages));
 
         InsertParam insertParam = InsertParam.newBuilder()
@@ -424,20 +431,20 @@ public class GeneralExample {
         return vectors;
     }
 
-    private List<ByteBuffer> generateBinaryVectors(int count) {
-        Random ran = new Random();
-        List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = BINARY_DIM/8;
-        for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-            for (int i = 0; i < byteCount; ++i) {
-                vector.put((byte)ran.nextInt(Byte.MAX_VALUE));
-            }
-            vectors.add(vector);
-        }
-        return vectors;
-
-    }
+//    private List<ByteBuffer> generateBinaryVectors(int count) {
+//        Random ran = new Random();
+//        List<ByteBuffer> vectors = new ArrayList<>();
+//        int byteCount = BINARY_DIM/8;
+//        for (int n = 0; n < count; ++n) {
+//            ByteBuffer vector = ByteBuffer.allocate(byteCount);
+//            for (int i = 0; i < byteCount; ++i) {
+//                vector.put((byte)ran.nextInt(Byte.MAX_VALUE));
+//            }
+//            vectors.add(vector);
+//        }
+//        return vectors;
+//
+//    }
 
     public static void main(String[] args) {
         GeneralExample example = new GeneralExample();
@@ -476,8 +483,8 @@ public class GeneralExample {
         example.query(queryExpr);
         String searchExpr = AGE_FIELD + " > 50";
         example.searchFace(searchExpr);
-        searchExpr = AGE_FIELD + " <= 30";
-        example.searchProfile(searchExpr);
+//        searchExpr = AGE_FIELD + " <= 30";
+//        example.searchProfile(searchExpr);
         example.calDistance();
 
         example.releasePartition(partitionName);

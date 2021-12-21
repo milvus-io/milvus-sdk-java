@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.partition.LoadPartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
@@ -79,7 +80,20 @@ public class QueryParam {
          * @return <code>Builder</code>
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
-            this.partitionNames = partitionNames;
+            partitionNames.forEach(this::addPartitionName);
+            return this;
+        }
+
+        /**
+         * Adds a partition to specify query scope (Optional).
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder addPartitionName(@NonNull String partitionName) {
+            if (!this.partitionNames.contains(partitionName)) {
+                this.partitionNames.add(partitionName);
+            }
             return this;
         }
 
@@ -90,7 +104,20 @@ public class QueryParam {
          * @return <code>Builder</code>
          */
         public Builder withOutFields(@NonNull List<String> outFields) {
-            this.outFields = outFields;
+            outFields.forEach(this::addOutField);
+            return this;
+        }
+
+        /**
+         * Specifies an output field (Optional).
+         *
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
+        public Builder addOutField(@NonNull String fieldName) {
+            if (!this.outFields.contains(fieldName)) {
+                this.outFields.add(fieldName);
+            }
             return this;
         }
 

@@ -20,20 +20,37 @@ public class SearchResultsWrapper {
     }
 
     /**
-     * Gets {@link FieldDataWrapper} for a field.
+     * Gets data for an output field which is specified by search request.
      * Throws {@link ParamException} if the field doesn't exist.
+     * Throws {@link ParamException} if the indexOfTarget is illegal.
      *
+     * @param fieldName field name to get output data
+     * @param indexOfTarget which target vector the field data belongs to
      * @return <code>FieldDataWrapper</code>
      */
-    public FieldDataWrapper getFieldData(@NonNull String fieldName) {
+    public List<?> getFieldData(@NonNull String fieldName, int indexOfTarget) {
+        FieldDataWrapper wrapper = null;
         for (int i = 0; i < results.getFieldsDataCount(); ++i) {
             FieldData data = results.getFieldsData(i);
             if (fieldName.compareTo(data.getFieldName()) == 0) {
-                return new FieldDataWrapper(data);
+                wrapper = new FieldDataWrapper(data);
             }
         }
 
-        return null;
+        if (wrapper == null) {
+            throw new ParamException("Illegal field name: " + fieldName);
+        }
+
+        Position position = getOffsetByIndex(indexOfTarget);
+        long offset = position.getOffset();
+        long k = position.getK();
+
+        List<?> allData = wrapper.getFieldData();
+        if (offset + k > allData.size()) {
+            throw new IllegalResponseException("Field data row count is wrong");
+        }
+
+        return allData.subList((int)offset, (int)offset + (int)k);
     }
 
     /**
@@ -41,29 +58,14 @@ public class SearchResultsWrapper {
      * Throws {@link ParamException} if the indexOfTarget is illegal.
      * Throws {@link IllegalResponseException} if the returned results is illegal.
      *
+     * @param indexOfTarget which target vector the result belongs to
      * @return <code>List<IDScore></code> ID-score pairs returned by search interface
      */
     public List<IDScore> getIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
-        List<Long> kList = results.getTopksList();
+        Position position = getOffsetByIndex(indexOfTarget);
 
-        // if the server didn't return separate topK, use same topK value
-        if (kList.isEmpty()) {
-            kList = new ArrayList<>();
-            for (long i = 0; i < results.getNumQueries(); ++i) {
-                kList.add(results.getTopK());
-            }
-        }
-
-        if (indexOfTarget < 0 || indexOfTarget >= kList.size()) {
-            throw new ParamException("Illegal index of target: " + indexOfTarget);
-        }
-
-        int offset = 0;
-        for (int i = 0; i < indexOfTarget; ++i) {
-            offset += kList.get(i);
-        }
-
-        long k = kList.get(indexOfTarget);
+        long offset = position.getOffset();
+        long k = position.getK();
         if (offset + k > results.getScoresCount()) {
             throw new IllegalResponseException("Result scores count is wrong");
         }
@@ -78,7 +80,7 @@ public class SearchResultsWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScore.add(new IDScore("", longIDs.getData(offset + n), results.getScores(offset + n)));
+                idScore.add(new IDScore("", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
@@ -87,13 +89,47 @@ public class SearchResultsWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScore.add(new IDScore(strIDs.getData(offset + n), 0, results.getScores(offset + n)));
+                idScore.add(new IDScore(strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
             }
         } else {
             throw new IllegalResponseException("Result ids is illegal");
         }
 
         return idScore;
+    }
+
+    @Getter
+    private static final class Position {
+        private final long offset;
+        private final long k;
+
+        public Position(long offset, long k) {
+            this.offset = offset;
+            this.k = k;
+        }
+    }
+    private Position getOffsetByIndex(int indexOfTarget) {
+        List<Long> kList = results.getTopksList();
+
+        // if the server didn't return separate topK, use same topK value
+        if (kList.isEmpty()) {
+            kList = new ArrayList<>();
+            for (long i = 0; i < results.getNumQueries(); ++i) {
+                kList.add(results.getTopK());
+            }
+        }
+
+        if (indexOfTarget < 0 || indexOfTarget >= kList.size()) {
+            throw new ParamException("Illegal index of target: " + indexOfTarget);
+        }
+
+        long offset = 0;
+        for (int i = 0; i < indexOfTarget; ++i) {
+            offset += kList.get(i);
+        }
+
+        long k = kList.get(indexOfTarget);
+        return new Position(offset, k);
     }
 
     /**

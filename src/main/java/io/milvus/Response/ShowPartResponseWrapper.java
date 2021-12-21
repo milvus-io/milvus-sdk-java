@@ -46,11 +46,12 @@ public class ShowPartResponseWrapper {
     /**
      * Get information of one partition by name.
      *
+     * @param partitionName partition name to get information
      * @return <code>PartitionInfo</code> information of the partition
      */
-    public PartitionInfo getPartitionInfoByName(@NonNull String name) {
+    public PartitionInfo getPartitionInfoByName(@NonNull String partitionName) {
         for (int i = 0; i < response.getPartitionNamesCount(); ++i) {
-            if ( name.compareTo(response.getPartitionNames(i)) == 0) {
+            if ( partitionName.compareTo(response.getPartitionNames(i)) == 0) {
                 PartitionInfo info = new PartitionInfo(response.getPartitionNames(i), response.getPartitionIDs(i),
                         response.getCreatedUtcTimestamps(i));
                 if (response.getInMemoryPercentagesCount() > i) {

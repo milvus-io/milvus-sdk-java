@@ -46,11 +46,12 @@ public class ShowCollResponseWrapper {
     /**
      * Get information of one collection by name.
      *
+     * @param collectionName collection name to get information
      * @return <code>CollectionInfo</code> information of the collection
      */
-    public CollectionInfo getCollectionInfoByName(@NonNull String name) {
+    public CollectionInfo getCollectionInfoByName(@NonNull String collectionName) {
         for (int i = 0; i < response.getCollectionNamesCount(); ++i) {
-            if ( name.compareTo(response.getCollectionNames(i)) == 0) {
+            if ( collectionName.compareTo(response.getCollectionNames(i)) == 0) {
                 CollectionInfo info = new CollectionInfo(response.getCollectionNames(i), response.getCollectionIds(i),
                         response.getCreatedUtcTimestamps(i));
                 if (response.getInMemoryPercentagesCount() > i) {

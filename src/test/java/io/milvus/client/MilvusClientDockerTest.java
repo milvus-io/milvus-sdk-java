@@ -168,6 +168,7 @@ public class MilvusClientDockerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testFloatVectors() {
         String randomCollectionName = generator.generate(10);
 
@@ -219,7 +220,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
-        assertEquals(createR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
 
         R<DescribeCollectionResponse> response = client.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -229,7 +230,7 @@ public class MilvusClientDockerTest {
         System.out.println(desc.toString());
 
         // insert data
-        int rowCount = 10000;
+        int rowCount = 10;
         List<Long> ids = new ArrayList<>();
         List<Boolean> genders = new ArrayList<>();
         List<Double> weights = new ArrayList<>();
@@ -237,8 +238,8 @@ public class MilvusClientDockerTest {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
             genders.add(i%3 == 0 ? Boolean.TRUE : Boolean.FALSE);
-            weights.add((double) (i / 100));
-            ages.add((short)(i%99));
+            weights.add( ((double)(i + 1) / 100));
+            ages.add((short)((i + 1)%99));
         }
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
@@ -255,7 +256,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<MutationResult> insertR = client.insert(insertParam);
-        assertEquals(insertR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 //        System.out.println(insertR.getData());
 
         // get collection statistics
@@ -264,7 +265,7 @@ public class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withFlush(true)
                 .build());
-        assertEquals(statR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), statR.getStatus().intValue());
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
@@ -276,7 +277,7 @@ public class MilvusClientDockerTest {
                 .withPartitionName("_default") // each collection has '_default' partition
                 .withFlush(true)
                 .build());
-        assertEquals(statPartR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), statPartR.getStatus().intValue());
 
         GetPartStatResponseWrapper statPart = new GetPartStatResponseWrapper(statPartR.getData());
         System.out.println("Partition row count: " + statPart.getRowCount());
@@ -294,7 +295,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<RpcStatus> createIndexR = client.createIndex(indexParam);
-        assertEquals(createIndexR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
         // get index description
         DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
@@ -302,7 +303,7 @@ public class MilvusClientDockerTest {
                 .withFieldName(field2Name)
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
-        assertEquals(descIndexR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
         DescIndexResponseWrapper indexDesc = new DescIndexResponseWrapper(descIndexR.getData());
         System.out.println("Index description: " + indexDesc.toString());
@@ -311,13 +312,13 @@ public class MilvusClientDockerTest {
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build());
-        assertEquals(loadR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // show collections
         R<ShowCollectionsResponse> showR = client.showCollections(ShowCollectionsParam.newBuilder()
                 .addCollectionName(randomCollectionName)
                 .build());
-        assertEquals(showR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), showR.getStatus().intValue());
         ShowCollResponseWrapper info = new ShowCollResponseWrapper(showR.getData());
         System.out.println("Collection info: " + info.toString());
 
@@ -326,21 +327,19 @@ public class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .addPartitionName("_default") // each collection has a '_default' partition
                 .build());
-        assertEquals(showPartR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), showPartR.getStatus().intValue());
         ShowPartResponseWrapper infoPart = new ShowPartResponseWrapper(showPartR.getData());
         System.out.println("Partition info: " + infoPart.toString());
 
         // query vectors to verify
         List<Long> queryIDs = new ArrayList<>();
-        List<Boolean> compareGenders = new ArrayList<>();
         List<Double> compareWeights = new ArrayList<>();
         int nq = 5;
         Random ran = new Random();
-        for (int i = 0; i < nq; ++i) {
-            int randomIndex = ran.nextInt(rowCount);
-            queryIDs.add(ids.get(randomIndex));
-            compareGenders.add(genders.get(randomIndex));
-            compareWeights.add(weights.get(randomIndex));
+        int randomIndex = ran.nextInt(rowCount - nq);
+        for (int i = randomIndex; i < randomIndex + nq; ++i) {
+            queryIDs.add(ids.get(i));
+            compareWeights.add(weights.get(i));
         }
         String expr = field1Name + " in " + queryIDs.toString();
         List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field4Name);
@@ -351,7 +350,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<QueryResults> queryR= client.query(queryParam);
-        assertEquals(queryR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
 
         // verify query result
         QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
@@ -359,14 +358,15 @@ public class MilvusClientDockerTest {
             FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
             System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
             System.out.println(wrapper.getFieldData());
-        }
+            assertEquals(nq, wrapper.getFieldData().size());
 
-        if (outputFields.contains(field1Name)) {
-            List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
-            assertEquals(out.size(), nq);
-            for (Object o : out) {
-                long id = (Long) o;
-                assertTrue(queryIDs.contains(id));
+            if (fieldName.compareTo(field1Name) == 0) {
+                List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
+                assertEquals(nq, out.size());
+                for (Object o : out) {
+                    long id = (Long) o;
+                    assertTrue(queryIDs.contains(id));
+                }
             }
         }
 
@@ -376,17 +376,17 @@ public class MilvusClientDockerTest {
         if (outputFields.contains(field2Name)) {
             assertTrue(queryResultsWrapper.getFieldWrapper(field2Name).isVectorField());
             List<?> out = queryResultsWrapper.getFieldWrapper(field2Name).getFieldData();
-            assertEquals(out.size(), nq);
+            assertEquals(nq, out.size());
         }
 
         if (outputFields.contains(field3Name)) {
             List<?> out = queryResultsWrapper.getFieldWrapper(field3Name).getFieldData();
-            assertEquals(out.size(), nq);
+            assertEquals(nq, out.size());
         }
 
         if (outputFields.contains(field4Name)) {
             List<?> out = queryResultsWrapper.getFieldWrapper(field4Name).getFieldData();
-            assertEquals(out.size(), nq);
+            assertEquals(nq, out.size());
             for (Object o : out) {
                 double d = (Double)o;
                 assertTrue(compareWeights.contains(d));
@@ -397,10 +397,9 @@ public class MilvusClientDockerTest {
         // pick some vectors to search
         List<Long> targetVectorIDs = new ArrayList<>();
         List<List<Float>> targetVectors = new ArrayList<>();
-        for (int i = 0; i < nq; ++i) {
-            int randomIndex = ran.nextInt(rowCount);
-            targetVectorIDs.add(ids.get(randomIndex));
-            targetVectors.add(vectors.get(randomIndex));
+        for (int i = randomIndex; i < randomIndex + nq; ++i) {
+            targetVectorIDs.add(ids.get(i));
+            targetVectors.add(vectors.get(i));
         }
 
         int topK = 5;
@@ -411,11 +410,12 @@ public class MilvusClientDockerTest {
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
                 .withParams("{\"nprobe\":8}")
+                .addOutField(field4Name)
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
 //        System.out.println(searchR);
-        assertEquals(searchR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
 
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
@@ -426,13 +426,18 @@ public class MilvusClientDockerTest {
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
         }
 
+        List<?> fieldData = results.getFieldData(field4Name, 0);
+        assertEquals(topK, fieldData.size());
+        fieldData = results.getFieldData(field4Name, nq - 1);
+        assertEquals(topK, fieldData.size());
+
         // drop collection
         DropCollectionParam dropParam = DropCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build();
 
         R<RpcStatus> dropR = client.dropCollection(dropParam);
-        assertEquals(dropR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 
     @Test
@@ -466,7 +471,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
-        assertEquals(createR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
 
         // insert data
         int rowCount = 10000;
@@ -482,7 +487,7 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<MutationResult> insertR = client.insert(insertParam);
-        assertEquals(insertR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 //        System.out.println(insertR.getData());
         MutationResultWrapper insertResultWrapper = new MutationResultWrapper(insertR.getData());
         System.out.println(insertResultWrapper.getInsertCount() + " rows inserted");
@@ -495,7 +500,7 @@ public class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withFlush(true)
                 .build());
-        assertEquals(statR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), statR.getStatus().intValue());
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
@@ -504,17 +509,17 @@ public class MilvusClientDockerTest {
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build());
-        assertEquals(loadR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // pick some vectors to search
         int nq = 5;
         List<Long> targetVectorIDs = new ArrayList<>();
         List<ByteBuffer> targetVectors = new ArrayList<>();
         Random ran = new Random();
-        for (int i = 0; i < nq; ++i) {
-            int randomIndex = ran.nextInt(rowCount);
-            targetVectorIDs.add(ids.get(randomIndex));
-            targetVectors.add(vectors.get(randomIndex));
+        int randomIndex = ran.nextInt(rowCount - nq);
+        for (int i = randomIndex; i < randomIndex + nq; ++i) {
+            targetVectorIDs.add(ids.get(i));
+            targetVectors.add(vectors.get(i));
         }
 
         int topK = 5;
@@ -528,7 +533,7 @@ public class MilvusClientDockerTest {
 
         R<SearchResults> searchR = client.search(searchParam);
 //        System.out.println(searchR);
-        assertEquals(searchR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
 
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
@@ -545,6 +550,6 @@ public class MilvusClientDockerTest {
                 .build();
 
         R<RpcStatus> dropR = client.dropCollection(dropParam);
-        assertEquals(dropR.getStatus().intValue(), R.Status.Success.getCode());
+        assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 }
