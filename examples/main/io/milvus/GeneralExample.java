@@ -23,6 +23,7 @@ import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.control.ManualCompactionParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -61,6 +62,12 @@ public class GeneralExample {
 
     private static final Integer SEARCH_K = 5;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
+
+    private void handleResponseStatus(R<?> r) {
+        if (r.getStatus() != R.Status.Success.getCode()) {
+            throw new RuntimeException(r.getMessage());
+        }
+    }
 
     private R<RpcStatus> createCollection() {
         System.out.println("========== createCollection() ==========");
@@ -102,7 +109,7 @@ public class GeneralExample {
 //                .addFieldType(fieldType4)
                 .build();
         R<RpcStatus> response = milvusClient.createCollection(createCollectionReq);
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -121,7 +128,7 @@ public class GeneralExample {
         R<Boolean> response = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -131,6 +138,7 @@ public class GeneralExample {
         R<RpcStatus> response = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -140,6 +148,7 @@ public class GeneralExample {
         R<RpcStatus> response = milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -149,6 +158,7 @@ public class GeneralExample {
         R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
+        handleResponseStatus(response);
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(response.getData());
         System.out.println(wrapper.toString());
         return response;
@@ -160,6 +170,7 @@ public class GeneralExample {
                 GetCollectionStatisticsParam.newBuilder()
                         .withCollectionName(COLLECTION_NAME)
                         .build());
+        handleResponseStatus(response);
         GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(response.getData());
         System.out.println("Collection row count: " + wrapper.getRowCount());
         return response;
@@ -169,6 +180,7 @@ public class GeneralExample {
         System.out.println("========== showCollections() ==========");
         R<ShowCollectionsResponse> response = milvusClient.showCollections(ShowCollectionsParam.newBuilder()
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -179,7 +191,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -190,7 +202,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -201,7 +213,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -212,7 +224,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .addPartitionName(partitionName)
                 .build());
-
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -222,6 +234,7 @@ public class GeneralExample {
         R<ShowPartitionsResponse> response = milvusClient.showPartitions(ShowPartitionsParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -236,6 +249,7 @@ public class GeneralExample {
                 .withExtraParam(INDEX_PARAM)
                 .withSyncMode(Boolean.TRUE)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -246,6 +260,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -256,6 +271,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -266,6 +282,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -276,6 +293,7 @@ public class GeneralExample {
                 GetIndexBuildProgressParam.newBuilder()
                         .withCollectionName(COLLECTION_NAME)
                         .build());
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -288,6 +306,7 @@ public class GeneralExample {
                 .withExpr(expr)
                 .build();
         R<MutationResult> response = milvusClient.delete(build);
+        handleResponseStatus(response);
         System.out.println(response.getData());
         return response;
     }
@@ -309,9 +328,8 @@ public class GeneralExample {
                 .withParams(SEARCH_PARAM)
                 .build();
 
-
         R<SearchResults> response = milvusClient.search(searchParam);
-
+        handleResponseStatus(response);
         SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
@@ -343,7 +361,7 @@ public class GeneralExample {
 //
 //
 //        R<SearchResults> response = milvusClient.search(searchParam);
-//
+//        handleResponseStatus(response);
 //        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
 //        for (int i = 0; i < vectors.size(); ++i) {
 //            System.out.println("Search result of No." + i);
@@ -372,6 +390,7 @@ public class GeneralExample {
                 .withMetricType(MetricType.L2)
                 .build();
         R<CalcDistanceResults> response = milvusClient.calcDistance(calcDistanceParam);
+        handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -385,10 +404,20 @@ public class GeneralExample {
                 .withOutFields(fields)
                 .build();
         R<QueryResults> response = milvusClient.query(test);
+        handleResponseStatus(response);
         QueryResultsWrapper wrapper = new QueryResultsWrapper(response.getData());
         System.out.println(ID_FIELD + ":" + wrapper.getFieldWrapper(ID_FIELD).getFieldData().toString());
         System.out.println(AGE_FIELD + ":" + wrapper.getFieldWrapper(AGE_FIELD).getFieldData().toString());
         System.out.println("Query row count: " + wrapper.getFieldWrapper(ID_FIELD).getRowCount());
+        return response;
+    }
+
+    private R<ManualCompactionResponse> compact() {
+        System.out.println("========== compact() ==========");
+        R<ManualCompactionResponse> response = milvusClient.manualCompaction(ManualCompactionParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .build());
+        handleResponseStatus(response);
         return response;
     }
 
@@ -414,7 +443,9 @@ public class GeneralExample {
                 .withFields(fields)
                 .build();
 
-        return milvusClient.insert(insertParam);
+        R<MutationResult> response = milvusClient.insert(insertParam);
+        handleResponseStatus(response);
+        return response;
     }
 
     private List<List<Float>> generateFloatVectors(int count) {
@@ -443,7 +474,6 @@ public class GeneralExample {
 //            vectors.add(vector);
 //        }
 //        return vectors;
-//
 //    }
 
     public static void main(String[] args) {
@@ -486,8 +516,10 @@ public class GeneralExample {
 //        searchExpr = AGE_FIELD + " <= 30";
 //        example.searchProfile(searchExpr);
         example.calDistance();
+        example.compact();
+        example.getCollectionStatistics();
 
-        example.releasePartition(partitionName);
+//        example.releasePartition(partitionName); // releasing partitions after loading collection is not supported currently
         example.releaseCollection();
         example.dropPartition(partitionName);
         example.dropIndex();
