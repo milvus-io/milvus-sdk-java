@@ -1,6 +1,8 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+import io.milvus.param.collection.DropCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -11,10 +13,10 @@ import lombok.NonNull;
  */
 @Getter
 public class ManualCompactionParam {
-    private final Long collectionID;
+    private final String collectionName;
 
     private ManualCompactionParam(@NonNull Builder builder) {
-        this.collectionID = builder.collectionID;
+        this.collectionName = builder.collectionName;
     }
 
     public static Builder newBuilder() {
@@ -29,7 +31,7 @@ public class ManualCompactionParam {
     @Override
     public String toString() {
         return "ManualCompactionParam{" +
-                "collectionID='" + collectionID + '\'' +
+                "collectionName='" + collectionName + '\'' +
                 '}';
     }
 
@@ -37,19 +39,19 @@ public class ManualCompactionParam {
      * Builder for <code>ManualCompactionParam</code> class.
      */
     public static final class Builder {
-        private Long collectionID;
+        private String collectionName;
 
         private Builder() {
         }
 
         /**
-         * Compacts a collection.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
-         * @param collectionID target collection id
+         * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionID(@NonNull Long collectionID) {
-            this.collectionID = collectionID;
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
             return this;
         }
 
@@ -59,6 +61,8 @@ public class ManualCompactionParam {
          * @return <code>ManualCompactionParam</code>
          */
         public ManualCompactionParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+
             return new ManualCompactionParam(this);
         }
     }

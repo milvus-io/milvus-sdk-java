@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
+import io.milvus.Response.DescCollResponseWrapper;
 import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
@@ -1771,8 +1772,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
+            R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
+                    .withCollectionName(requestParam.getCollectionName())
+                    .build());
+            if (descResp.getStatus() != R.Status.Success.getCode()) {
+                logInfo("ManualCompactionRequest successfully!");
+                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+            }
+
             ManualCompactionRequest manualCompactionRequest = ManualCompactionRequest.newBuilder()
-                    .setCollectionID(requestParam.getCollectionID())
+                    .setCollectionID(descResp.getData().getCollectionID())
                     .build();
 
             ManualCompactionResponse response = blockingStub().manualCompaction(manualCompactionRequest);

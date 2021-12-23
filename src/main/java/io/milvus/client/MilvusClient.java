@@ -302,7 +302,7 @@ public interface MilvusClient {
     R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam);
 
     /**
-     * Gets the information of persistent segments, including row count, 
+     * Gets the information of persistent segments from data node, including row count,
      * persistence state(growing or flushed), etc.
      *
      * @param requestParam {@link GetPersistentSegmentInfoParam}
@@ -311,7 +311,7 @@ public interface MilvusClient {
     R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam);
 
     /**
-     * Gets the query information of segments in a collection, including row count, 
+     * Gets the query information of segments in a collection from query node, including row count,
      * memory usage size, index name, etc.
      *
      * @param requestParam {@link GetQuerySegmentInfoParam}

@@ -1854,7 +1854,7 @@ class MilvusServiceClientTest {
     @Test
     void manualCompaction() {
         ManualCompactionParam param = ManualCompactionParam.newBuilder()
-                .withCollectionID(1L)
+                .withCollectionName("collection1")
                 .build();
 
         testFuncByName("manualCompaction", param);
