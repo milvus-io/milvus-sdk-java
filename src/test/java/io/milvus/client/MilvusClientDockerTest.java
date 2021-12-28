@@ -41,6 +41,7 @@ import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -255,7 +256,7 @@ public class MilvusClientDockerTest {
                 .withFields(fieldsInsert)
                 .build();
 
-        R<MutationResult> insertR = client.insert(insertParam);
+        R<MutationResult> insertR = client.withTimeout(10, TimeUnit.SECONDS).insert(insertParam);
         assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 //        System.out.println(insertR.getData());
 

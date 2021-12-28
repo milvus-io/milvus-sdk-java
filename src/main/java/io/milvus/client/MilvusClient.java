@@ -35,6 +35,13 @@ import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
 public interface MilvusClient {
+    /**
+     * Timeout setting for rpc call.
+     *
+     * @param timeout set time waiting for a rpc call.
+     * @param timeoutUnit time unit
+     */
+    MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
     /** Disconnects from a Milvus server with timeout of 1 minute */
     default void close() {

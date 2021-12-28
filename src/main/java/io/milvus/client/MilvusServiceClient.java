@@ -19,9 +19,7 @@
 
 package io.milvus.client;
 
-import io.grpc.ConnectivityState;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.*;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
@@ -67,6 +65,57 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     public void close(long maxWaitSeconds) throws InterruptedException {
         channel.shutdownNow();
         channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
+    }
+
+    private static class TimeoutInterceptor implements ClientInterceptor {
+        private long timeoutMillis;
+
+        TimeoutInterceptor(long timeoutMillis) {
+            this.timeoutMillis = timeoutMillis;
+        }
+
+        @Override
+        public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(
+                MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+            return next.newCall(method, callOptions.withDeadlineAfter(timeoutMillis, TimeUnit.MILLISECONDS));
+        }
+    }
+
+    @Override
+    public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
+        final long timeoutMillis = timeoutUnit.toMillis(timeout);
+        final TimeoutInterceptor timeoutInterceptor = new TimeoutInterceptor(timeoutMillis);
+        final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStubTimeout =
+                this.blockingStub.withInterceptors(timeoutInterceptor);
+        final MilvusServiceGrpc.MilvusServiceFutureStub futureStubTimeout =
+                this.futureStub.withInterceptors(timeoutInterceptor);
+
+        return new AbstractMilvusGrpcClient() {
+            @Override
+            protected boolean clientIsReady() {
+                return MilvusServiceClient.this.clientIsReady();
+            }
+
+            @Override
+            protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub() {
+                return blockingStubTimeout;
+            }
+
+            @Override
+            protected MilvusServiceGrpc.MilvusServiceFutureStub futureStub() {
+                return futureStubTimeout;
+            }
+
+            @Override
+            public void close(long maxWaitSeconds) throws InterruptedException {
+                MilvusServiceClient.this.close(maxWaitSeconds);
+            }
+
+            @Override
+            public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
+                return MilvusServiceClient.this.withTimeout(timeout, timeoutUnit);
+            }
+        };
     }
 }
 
