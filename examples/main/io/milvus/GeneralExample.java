@@ -30,6 +30,7 @@ import io.milvus.param.partition.*;
 import io.milvus.Response.*;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Note:
@@ -69,7 +70,7 @@ public class GeneralExample {
         }
     }
 
-    private R<RpcStatus> createCollection() {
+    private R<RpcStatus> createCollection(long timeoutMiliseconds) {
         System.out.println("========== createCollection() ==========");
         FieldType fieldType1 = FieldType.newBuilder()
                 .withName(ID_FIELD)
@@ -108,7 +109,8 @@ public class GeneralExample {
                 .addFieldType(fieldType3)
 //                .addFieldType(fieldType4)
                 .build();
-        R<RpcStatus> response = milvusClient.createCollection(createCollectionReq);
+        R<RpcStatus> response = milvusClient.withTimeout(timeoutMiliseconds, TimeUnit.MILLISECONDS)
+                                            .createCollection(createCollectionReq);
         handleResponseStatus(response);
         System.out.println(response);
         return response;
@@ -480,7 +482,7 @@ public class GeneralExample {
         GeneralExample example = new GeneralExample();
 
         example.dropCollection();
-        example.createCollection();
+        example.createCollection(10);
         example.hasCollection();
         example.describeCollection();
         example.showCollections();
