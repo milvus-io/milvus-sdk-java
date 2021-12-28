@@ -54,6 +54,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.FlushResponse respFlush;
     private io.milvus.grpc.QueryResults respQuery;
     private io.milvus.grpc.CalcDistanceResults respCalcDistance;
+    private io.milvus.grpc.GetFlushStateResponse respGetFlushState;
     private io.milvus.grpc.GetPersistentSegmentInfoResponse respGetPersistentSegmentInfo;
     private io.milvus.grpc.GetQuerySegmentInfoResponse respGetQuerySegmentInfo;
     private io.milvus.grpc.GetMetricsResponse respGetMetrics;
@@ -441,6 +442,19 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     public void setCalcDistanceResponse(io.milvus.grpc.CalcDistanceResults resp) {
         respCalcDistance = resp;
+    }
+
+    @Override
+    public void getFlushState(io.milvus.grpc.GetFlushStateRequest request,
+                                         io.grpc.stub.StreamObserver<io.milvus.grpc.GetFlushStateResponse> responseObserver) {
+        logger.info("getFlushState() call");
+
+        responseObserver.onNext(respGetFlushState);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetFlushStateResponse(io.milvus.grpc.GetFlushStateResponse resp) {
+        respGetFlushState = resp;
     }
 
     @Override

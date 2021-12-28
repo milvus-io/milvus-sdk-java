@@ -21,7 +21,6 @@ package io.milvus.client;
 
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
-import io.milvus.Response.DescCollResponseWrapper;
 import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
@@ -285,7 +284,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     private void waitForFlush(FlushResponse flushResponse, long waitingInterval, long timeout) {
         // The rpc api flush() return FlushResponse, but the returned segment ids maybe not yet persisted.
-        // This method use getPersistentSegmentInfo() to check segment state.
+        // This method use getFlushState() to check segment state.
         // If all segments state become Flushed, then we say the sync flush action is finished.
         // If waiting time exceed timeout, exist the circle
         long tsBegin = System.currentTimeMillis();
@@ -298,29 +297,19 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     break;
                 }
 
-                GetPersistentSegmentInfoRequest getSegInfoRequest = GetPersistentSegmentInfoRequest.newBuilder()
-                        .setCollectionName(collectionName)
+                GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
+                        .addAllSegmentIDs(segmentIDs.getDataList())
                         .build();
-                GetPersistentSegmentInfoResponse response = blockingStub().getPersistentSegmentInfo(getSegInfoRequest);
-                List<PersistentSegmentInfo> segmentInfoArray = response.getInfosList();
-                int flushedCount = 0;
-                for (int i = 0; i < segmentIDs.getDataCount(); ++i) {
-                    for (PersistentSegmentInfo info : segmentInfoArray) {
-                        if (info.getSegmentID() == segmentIDs.getData(i) && info.getState() == SegmentState.Flushed) {
-                            flushedCount++;
-                            break;
-                        }
-                    }
-                }
-
-                // if all segment of this collection has been flushed, break this circle and check next collection
-                if (flushedCount == segmentIDs.getDataCount()) {
+                GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
+                if(response.getFlushed()) {
+                    // if all segment of this collection has been flushed, break this circle and check next collection
+                    String msg = segmentIDs.getDataCount() + " segments of " + collectionName + " has been flushed.";
+                    logInfo(msg);
                     break;
                 }
 
                 try {
-                    String msg = "Waiting flush, interval: " + waitingInterval + "ms. " + flushedCount +
-                            " of " + segmentIDs.getDataCount() + " segments flushed.";
+                    String msg = "Waiting flush for " + collectionName + ", interval: " + waitingInterval + "ms. ";
                     logInfo(msg);
                     TimeUnit.MILLISECONDS.sleep(waitingInterval);
                 } catch (InterruptedException e) {
@@ -1630,6 +1619,38 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("GetMetricsRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetFlushStateResponse> getFlushState(@NonNull GetFlushStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
+                    .addAllSegmentIDs(requestParam.getSegmentIDs())
+                    .build();
+
+            GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("GetFlushState successfully!");
+                return R.success(response);
+            } else {
+                logError("GetFlushState failed:\n{}", response.getStatus().getReason());
+                return R.failed(R.Status.valueOf(response.getStatus().getErrorCode().getNumber()),
+                        response.getStatus().getReason());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetFlushState RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetFlushState failed:\n{}", e.getMessage());
             return R.failed(e);
         }
     }

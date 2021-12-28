@@ -482,7 +482,7 @@ public class GeneralExample {
         GeneralExample example = new GeneralExample();
 
         example.dropCollection();
-        example.createCollection(10);
+        example.createCollection(2000);
         example.hasCollection();
         example.describeCollection();
         example.showCollections();

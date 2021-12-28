@@ -169,7 +169,6 @@ public class MilvusClientDockerTest {
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     public void testFloatVectors() {
         String randomCollectionName = generator.generate(10);
 

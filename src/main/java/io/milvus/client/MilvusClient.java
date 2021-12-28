@@ -309,6 +309,14 @@ public interface MilvusClient {
     R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam);
 
     /**
+     * Get flush state of specified segments.
+     *
+     * @param requestParam {@link GetFlushStateParam}
+     * @return {status:result code, data:GetMetricsResponse{status,metrics}}
+     */
+    R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam);
+
+    /**
      * Gets the information of persistent segments from data node, including row count,
      * persistence state(growing or flushed), etc.
      *
