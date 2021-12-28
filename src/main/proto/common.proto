@@ -6,7 +6,6 @@ option java_package = "io.milvus.grpc";
 option java_outer_classname = "CommonProto";
 option java_generate_equals_and_hash = true;
 
-
 enum ErrorCode {
     Success = 0;
     UnexpectedError = 1;
@@ -143,6 +142,7 @@ enum MsgType {
     /* DATA SERVICE */
     SegmentInfo = 600;
     SystemInfo = 601;
+    GetRecoveryInfo = 602;
 
     /* SYSTEM CONTROL */
     TimeTick = 1200;
@@ -184,4 +184,12 @@ enum CompactionState {
   UndefiedState = 0;
   Executing = 1;
   Completed = 2;
+}
+
+enum ConsistencyLevel {
+    Strong = 0;
+    Session = 1; // default in PyMilvus
+    Bounded = 2;
+    Eventually = 3;
+    Customized = 4; // Users pass their own `guarantee_timestamp`.
 }

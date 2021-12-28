@@ -7,7 +7,6 @@ option java_multiple_files = true;
 option java_package = "io.milvus.grpc";
 option java_outer_classname = "MilvusProto";
 option java_generate_equals_and_hash = true;
-
 package milvus.proto.milvus;
 
 service MilvusService {
@@ -45,6 +44,7 @@ service MilvusService {
   rpc Query(QueryRequest) returns (QueryResults) {}
   rpc CalcDistance(CalcDistanceRequest) returns (CalcDistanceResults) {}
 
+  rpc GetFlushState(GetFlushStateRequest) returns (GetFlushStateResponse) {}
   rpc GetPersistentSegmentInfo(GetPersistentSegmentInfoRequest) returns (GetPersistentSegmentInfoResponse) {}
   rpc GetQuerySegmentInfo(GetQuerySegmentInfoRequest) returns (GetQuerySegmentInfoResponse) {}
 
@@ -96,6 +96,8 @@ message CreateCollectionRequest {
   // Once set, no modification is allowed (Optional)
   // https://github.com/milvus-io/milvus/issues/6690
   int32 shards_num = 5;
+  // The consistency level that the collection used, modification is not supported now.
+  common.ConsistencyLevel consistency_level = 6;
 }
 
 /**
@@ -175,6 +177,8 @@ message DescribeCollectionResponse {
   repeated string aliases = 9;
   // The message ID/posititon when collection is created
   repeated common.KeyDataPair start_positions = 10;
+  // The consistency level that the collection used, modification is not supported now.
+  common.ConsistencyLevel consistency_level = 11;
 }
 
 /**
@@ -406,6 +410,7 @@ message DescribeSegmentResponse {
   int64 indexID = 2;
   int64 buildID = 3;
   bool enable_index = 4;
+  int64 fieldID = 5;
 }
 
 message ShowSegmentsRequest {
@@ -766,6 +771,15 @@ message GetCompactionPlansResponse {
 message CompactionMergeInfo {
   repeated int64 sources = 1;
   int64 target = 2;
+}
+
+message GetFlushStateRequest {
+  repeated int64 segmentIDs = 1;
+}
+
+message GetFlushStateResponse {
+  common.Status status = 1;
+  bool flushed = 2;
 }
 
 service ProxyService {

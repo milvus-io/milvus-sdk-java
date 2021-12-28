@@ -368,11 +368,8 @@ class MilvusServiceClientTest {
         mockServerImpl.setFlushResponse(FlushResponse.newBuilder()
                 .putCollSegIDs(collectionName, LongArray.newBuilder().addData(segmentID).build())
                 .build());
-        mockServerImpl.setGetPersistentSegmentInfoResponse(GetPersistentSegmentInfoResponse.newBuilder()
-                .addInfos(PersistentSegmentInfo.newBuilder()
-                        .setSegmentID(segmentID)
-                        .setState(SegmentState.Flushing)
-                        .build())
+        mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
+                .setFlushed(false)
                 .build());
 
         new Thread(() -> {
@@ -381,13 +378,10 @@ class MilvusServiceClientTest {
             } catch (InterruptedException e) {
                 System.out.println(e.toString());
             }
-            mockServerImpl.setGetPersistentSegmentInfoResponse(GetPersistentSegmentInfoResponse.newBuilder()
-                    .addInfos(PersistentSegmentInfo.newBuilder()
-                            .setSegmentID(segmentID)
-                            .setState(SegmentState.Flushed)
-                            .build())
+            mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
+                    .setFlushed(true)
                     .build());
-        },"RefreshMemState").start();
+        },"RefreshFlushState").start();
 
         R<GetCollectionStatisticsResponse> resp = client.getCollectionStatistics(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
@@ -1772,6 +1766,25 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("getMetrics", param);
+    }
+
+    @Test
+    void getFlushStateParam() {
+        // test throw exception with illegal input
+        assertThrows(ParamException.class, () -> GetFlushStateParam.newBuilder()
+                .build()
+        );
+    }
+
+    @Test
+    void getFlushState() {
+        List<Long> ids = Arrays.asList(1L, 2L);
+        GetFlushStateParam param = GetFlushStateParam.newBuilder()
+                .addSegmentID(1L)
+                .withSegmentIDs(ids)
+                .build();
+
+        testFuncByName("getFlushState", param);
     }
 
     @Test
