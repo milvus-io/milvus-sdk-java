@@ -23,7 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.param.ParamUtils;
 
-import io.milvus.param.partition.LoadPartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.nio.ByteBuffer;
@@ -237,9 +236,9 @@ public class InsertParam {
 
     /**
      * Internal class for insert data.
-     * if dataType is scalar(bool/int/float/double): values is List<Integer>, List<Long>...
-     * if dataType is FloatVector: values is List<List<Float>>
-     * if dataType is BinaryVector: values is List<ByteBuffer>
+     * If dataType is scalar(bool/int/float/double), values is List&lt;Integer&gt;, List&lt;Long&gt;, etc.
+     * If dataType is FloatVector, values is List&lt;Float&gt;.
+     * If dataType is BinaryVector, values is List&lt;ByteBuffer&gt;.
      */
     public static class Field {
         private final String name;
@@ -252,14 +251,29 @@ public class InsertParam {
             this.values = values;
         }
 
+        /**
+         * Return name of the field.
+         *
+         * @return <code>String</code>
+         */
         public String getName() {
             return name;
         }
 
+        /**
+         * Return data type of the field.
+         *
+         * @return <code>String</code>
+         */
         public DataType getType() {
             return type;
         }
 
+        /**
+         * Return data of the field, in column-base.
+         *
+         * @return <code>List</code>
+         */
         public List<?> getValues() {
             return values;
         }

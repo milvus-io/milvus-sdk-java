@@ -52,7 +52,7 @@ public class ShowPartitionsParam {
      */
     public static final class Builder {
         private String collectionName;
-        private List<String> partitionNames = new ArrayList<>();
+        private final List<String> partitionNames = new ArrayList<>();
 
         // showType:
         //   default showType = ShowType.All

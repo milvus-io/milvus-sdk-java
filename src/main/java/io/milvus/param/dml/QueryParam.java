@@ -22,10 +22,9 @@ package io.milvus.param.dml;
 import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.partition.LoadPartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +54,8 @@ public class QueryParam {
      */
     public static class Builder {
         private String collectionName;
-        private List<String> partitionNames = Lists.newArrayList();
-        private List<String> outFields = new ArrayList<>();
+        private final List<String> partitionNames = Lists.newArrayList();
+        private final List<String> outFields = new ArrayList<>();
         private String expr = "";
 
         private Builder() {

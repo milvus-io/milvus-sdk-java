@@ -82,7 +82,7 @@ public class FlushParam {
          *
          * If sync mode disabled, client returns at once after the flush() is called.
          *
-         * @param syncFlush <code>Boolean.TRUE</code> is sync mode, Bollean.FALSE is not
+         * @param syncFlush <code>Boolean.TRUE</code> is sync mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
         public Builder withSyncFlush(@NonNull Boolean syncFlush) {

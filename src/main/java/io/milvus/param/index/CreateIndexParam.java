@@ -202,9 +202,9 @@ public class CreateIndexParam {
             if (syncMode == Boolean.TRUE) {
                 if (syncWaitingInterval <= 0) {
                     throw new ParamException("Sync index waiting interval must be larger than zero");
-                } else if (syncWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {
+                } else if (syncWaitingInterval > Constant.MAX_WAITING_INDEX_INTERVAL) {
                     throw new ParamException("Sync index waiting interval cannot be larger than "
-                            + Constant.MAX_WAITING_LOADING_INTERVAL.toString() + " milliseconds");
+                            + Constant.MAX_WAITING_INDEX_INTERVAL.toString() + " milliseconds");
                 }
 
                 if (syncWaitingTimeout <= 0) {

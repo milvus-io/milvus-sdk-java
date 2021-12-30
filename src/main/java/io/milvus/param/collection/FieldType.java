@@ -53,7 +53,7 @@ public class FieldType {
 
     public int getDimension() {
         if (typeParams.containsKey(Constant.VECTOR_DIM)) {
-            return Integer.valueOf(typeParams.get(Constant.VECTOR_DIM));
+            return Integer.parseInt(typeParams.get(Constant.VECTOR_DIM));
         }
 
         return 0;
