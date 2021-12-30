@@ -88,14 +88,15 @@ public class FieldDataWrapper {
 
     /**
      * Returns the field data according to its type:
-     *      float vector field return List<List<Float>>
-     *      binary vector field return List<ByteBuffer>
-     *      int64 field return List<Long>
-     *      boolean field return List<Boolean>
+     *      float vector field return List&lt;List&lt;Float&gt;&gt;,
+     *      binary vector field return List&lt;ByteBuffer&gt;,
+     *      int64 field return List&lt;Long&gt;,
+     *      boolean field return List&lt;Boolean&gt;,
+     *      etc.
      *
      * Throws {@link IllegalResponseException} if the field type is illegal.
      *
-     * @return <code>List<?></?></code>
+     * @return <code>List</code>
      */
     public List<?> getFieldData() throws IllegalResponseException {
         DataType dt = fieldData.getType();

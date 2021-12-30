@@ -2,7 +2,6 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.collection.DropCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 

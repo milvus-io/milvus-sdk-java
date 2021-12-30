@@ -68,7 +68,7 @@ public class SearchParam {
      */
     public static class Builder {
         private String collectionName;
-        private List<String> partitionNames = Lists.newArrayList();
+        private final List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.L2;
         private String vectorFieldName;
         private Integer topK;
@@ -188,9 +188,9 @@ public class SearchParam {
         /**
          * Sets the target vectors.
          *
-         * @param vectors list of target vectors
-         *                If vector type is FloatVector: vectors is List<List<Float>>
-         *                If vector type is BinaryVector: vectors is List<ByteBuffer>
+         * @param vectors list of target vectors:
+         *                if vector type is FloatVector, vectors is List&lt;List&lt;Float&gt;&gt;;
+         *                if vector type is BinaryVector, vectors is List&lt;ByteBuffer&gt;;
          * @return <code>Builder</code>
          */
         public Builder withVectors(@NonNull List<?> vectors) {

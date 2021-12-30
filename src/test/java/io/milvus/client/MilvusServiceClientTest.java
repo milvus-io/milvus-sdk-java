@@ -1445,11 +1445,12 @@ class MilvusServiceClientTest {
     void searchParam() {
         // test throw exception with illegal input
         List<String> partitions = Collections.singletonList("partition1");
-        List<String> outputFields = Collections.singletonList("field2");
+        List<String> outputFields = Collections.singletonList("field1");
         List<List<Float>> vectors = new ArrayList<>();
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
+                .addPartitionName("p2")
                 .withParams("dummy")
                 .withOutFields(outputFields)
                 .withVectorFieldName("field1")
@@ -1644,11 +1645,13 @@ class MilvusServiceClientTest {
     void queryParam() {
         // test throw exception with illegal input
         List<String> partitions = Collections.singletonList("partition1");
-        List<String> outputFields = Collections.singletonList("field2");
+        List<String> outputFields = Collections.singletonList("field1");
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("")
                 .withPartitionNames(partitions)
+                .addPartitionName("p2")
                 .withOutFields(outputFields)
+                .addOutField("f2")
                 .withExpr("dummy")
                 .build()
         );

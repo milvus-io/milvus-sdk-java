@@ -129,7 +129,7 @@ public class CreateCollectionParam {
                 throw new ParamException("ShardNum must be larger than 0");
             }
 
-            if (fieldTypes == null || fieldTypes.isEmpty()) {
+            if (fieldTypes.isEmpty()) {
                 throw new ParamException("Field numbers must be larger than 0");
             }
 
