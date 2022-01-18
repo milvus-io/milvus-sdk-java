@@ -212,7 +212,7 @@ public class CreateIndexParam {
                 }
             }
 
-            ParamUtils.CheckNullEmptyString(extraParam, "Index extra param");
+//            ParamUtils.CheckNullEmptyString(extraParam, "Index extra param");
 
             return new CreateIndexParam(this);
         }

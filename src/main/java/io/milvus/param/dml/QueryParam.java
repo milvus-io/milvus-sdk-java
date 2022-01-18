@@ -21,6 +21,7 @@ package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,12 +38,16 @@ public class QueryParam {
     private final List<String> partitionNames;
     private final List<String> outFields;
     private final String expr;
+    private final long travelTimestamp;
+    private final long guaranteeTimestamp;
 
     private QueryParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.outFields = builder.outFields;
         this.expr = builder.expr;
+        this.travelTimestamp = builder.travelTimestamp;
+        this.guaranteeTimestamp = builder.guaranteeTimestamp;
     }
 
     public static Builder newBuilder() {
@@ -57,6 +62,8 @@ public class QueryParam {
         private final List<String> partitionNames = Lists.newArrayList();
         private final List<String> outFields = new ArrayList<>();
         private String expr = "";
+        private Long travelTimestamp = 0L;
+        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
 
         private Builder() {
         }
@@ -133,6 +140,37 @@ public class QueryParam {
         }
 
         /**
+         * Specify an absolute timestamp in a query to get results based on a data view at a specified point in time.
+         * Default value is 0, server executes query on a full data view.
+         *
+         * @param ts a timestamp value
+         * @return <code>Builder</code>
+         */
+        public Builder withTravelTimestamp(@NonNull Long ts) {
+            this.travelTimestamp = ts;
+            return this;
+        }
+
+        /**
+         * Instructs server to see insert/delete operations performed before a provided timestamp.
+         * If no such timestamp is specified, the server will wait for the latest operation to finish and query.
+         *
+         * Note: The timestamp is not an absolute timestamp, it is a hybrid value combined by UTC time and internal flags.
+         *  We call it TSO, for more information please refer to: https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md
+         *  You can get a TSO from insert/delete operations, see the <code>MutationResultWrapper</code> class.
+         *  Use an operation's TSO to set this parameter, the server will execute query after this operation is finished.
+         *
+         * Default value is GUARANTEE_EVENTUALLY_TS, query executes query immediately.
+         *
+         * @param ts a timestamp value
+         * @return <code>Builder</code>
+         */
+        public Builder withGuaranteeTimestamp(@NonNull Long ts) {
+            this.guaranteeTimestamp = ts;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new <code>QueryParam</code> instance.
          *
          * @return <code>QueryParam</code>
@@ -140,6 +178,14 @@ public class QueryParam {
         public QueryParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(expr, "Expression");
+
+            if (travelTimestamp < 0) {
+                throw new ParamException("The travel timestamp must be greater than 0");
+            }
+
+            if (guaranteeTimestamp < 0) {
+                throw new ParamException("The guarantee timestamp must be greater than 0");
+            }
 
             return new QueryParam(this);
         }

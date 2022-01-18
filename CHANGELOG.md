@@ -1,4 +1,16 @@
-# Changelog   
+# Changelog
+
+## milvus-sdk-java 2.0.1 (2021-01-18)
+
+### Improvement
+
+- \#248 - Pass travel timestamp and guarantee timestamp for query/search interface
+
+## milvus-sdk-java 2.0.0 (2021-12-31)
+
+### Feature
+
+- \#183 - java sdk for milvus 2.0
 
 ## milvus-sdk-java 0.8.5 (2020-08-26)
 

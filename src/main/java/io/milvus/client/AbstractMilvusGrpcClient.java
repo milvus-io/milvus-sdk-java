@@ -1462,6 +1462,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 builder.setDsl(requestParam.getExpr());
             }
 
+            builder.setTravelTimestamp(requestParam.getTravelTimestamp());
+            builder.setGuaranteeTimestamp(requestParam.getGuaranteeTimestamp());
+
             SearchRequest searchRequest = builder.build();
             SearchResults response = this.blockingStub().search(searchRequest);
 
@@ -1499,6 +1502,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .addAllPartitionNames(requestParam.getPartitionNames())
                     .addAllOutputFields(requestParam.getOutFields())
                     .setExpr(requestParam.getExpr())
+                    .setTravelTimestamp(requestParam.getTravelTimestamp())
+                    .setGuaranteeTimestamp(requestParam.getGuaranteeTimestamp())
                     .build();
 
             QueryResults response = this.blockingStub().query(queryRequest);
