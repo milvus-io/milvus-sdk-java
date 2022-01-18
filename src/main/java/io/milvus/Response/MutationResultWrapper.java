@@ -63,4 +63,16 @@ public class MutationResultWrapper {
     public long getDeleteCount() {
         return result.getDeleteCnt();
     }
+
+    /**
+     * Get timestamp of the operation marked by server. You can use this timestamp as for guarantee timestamp of query/search api.
+     *
+     * Note: the timestamp is not an absolute timestamp, it is a hybrid value combined by UTC time and internal flags.
+     *  We call it TSO, for more information please refer to: https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md
+     *
+     * @return <code>int</code> row count of the deleted entities
+     */
+    public long getOperationTs() {
+        return result.getTimestamp();
+    }
 }

@@ -70,7 +70,7 @@ public class GeneralExample {
         }
     }
 
-    private R<RpcStatus> createCollection(long timeoutMiliseconds) {
+    private R<RpcStatus> createCollection(long timeoutMilliseconds) {
         System.out.println("========== createCollection() ==========");
         FieldType fieldType1 = FieldType.newBuilder()
                 .withName(ID_FIELD)
@@ -109,7 +109,7 @@ public class GeneralExample {
                 .addFieldType(fieldType3)
 //                .addFieldType(fieldType4)
                 .build();
-        R<RpcStatus> response = milvusClient.withTimeout(timeoutMiliseconds, TimeUnit.MILLISECONDS)
+        R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                                             .createCollection(createCollectionReq);
         handleResponseStatus(response);
         System.out.println(response);
@@ -315,6 +315,7 @@ public class GeneralExample {
 
     private R<SearchResults> searchFace(String expr) {
         System.out.println("========== searchFace() ==========");
+        long begin = System.currentTimeMillis();
 
         List<String> outFields = Collections.singletonList(AGE_FIELD);
         List<List<Float>> vectors = generateFloatVectors(5);
@@ -328,9 +329,14 @@ public class GeneralExample {
                 .withVectorFieldName(VECTOR_FIELD)
                 .withExpr(expr)
                 .withParams(SEARCH_PARAM)
+                .withGuaranteeTimestamp(Constant.GUARANTEE_EVENTUALLY_TS)
                 .build();
 
         R<SearchResults> response = milvusClient.search(searchParam);
+        long end = System.currentTimeMillis();
+        long cost = (end - begin);
+        System.out.println("Search time cost: " + cost + "ms");
+
         handleResponseStatus(response);
         SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
@@ -346,6 +352,7 @@ public class GeneralExample {
 
 //    private R<SearchResults> searchProfile(String expr) {
 //        System.out.println("========== searchProfile() ==========");
+//        long begin = System.currentTimeMillis();
 //
 //        List<String> outFields = Collections.singletonList(AGE_FIELD);
 //        List<ByteBuffer> vectors = generateBinaryVectors(5);
@@ -363,6 +370,10 @@ public class GeneralExample {
 //
 //
 //        R<SearchResults> response = milvusClient.search(searchParam);
+//        long end = System.currentTimeMillis();
+//        long cost = (end - begin);
+//        System.out.println("Search time cost: " + cost + "ms");
+//
 //        handleResponseStatus(response);
 //        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
 //        for (int i = 0; i < vectors.size(); ++i) {

@@ -44,7 +44,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class MilvusServiceClientTest {
     private final int testPort = 53019;
@@ -1092,7 +1091,28 @@ class MilvusServiceClientTest {
                 .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(-1L)
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("field1")
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(Constant.MAX_WAITING_INDEX_INTERVAL + 1L)
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("field1")
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingTimeout(0L)
                 .build()
         );
     }
@@ -1461,6 +1481,36 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .addPartitionName("p2")
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.IP)
+                .withTopK(5)
+                .withVectors(vectors)
+                .withExpr("dummy")
+                .withTravelTimestamp(-1L)
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .addPartitionName("p2")
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.IP)
+                .withTopK(5)
+                .withVectors(vectors)
+                .withExpr("dummy")
+                .withGuaranteeTimestamp(-1L)
+                .build()
+        );
+
         List<Float> vector1 = Collections.singletonList(0.1F);
         vectors.add(vector1);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
@@ -1598,12 +1648,15 @@ class MilvusServiceClientTest {
                 .withPartitionNames(partitions)
                 .withParams("dummy")
                 .withOutFields(outputFields)
+                .addOutField("f2")
                 .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
                 .withVectors(vectors)
                 .withExpr("dummy")
                 .withRoundDecimal(5)
+                .withTravelTimestamp(1L)
+                .withGuaranteeTimestamp(1L)
                 .build();
         R<SearchResults> resp = client.search(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
@@ -1663,6 +1716,24 @@ class MilvusServiceClientTest {
                 .withExpr("")
                 .build()
         );
+
+        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .withExpr("dummy")
+                .withTravelTimestamp(-1L)
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .withExpr("dummy")
+                .withGuaranteeTimestamp(-1L)
+                .build()
+        );
     }
 
     @Test
@@ -1673,7 +1744,10 @@ class MilvusServiceClientTest {
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
                 .withOutFields(outputFields)
+                .addOutField("d1")
                 .withExpr("dummy")
+                .withTravelTimestamp(0L)
+                .withGuaranteeTimestamp(1L)
                 .build();
 
         testFuncByName("query", param);
@@ -2157,8 +2231,10 @@ class MilvusServiceClientTest {
                         .setIntId(LongArray.newBuilder()
                                 .addAllData(nID)
                                 .build()))
+                .setTimestamp(1000)
                 .build();
         MutationResultWrapper longWrapper = new MutationResultWrapper(results);
+        assertEquals(1000, longWrapper.getOperationTs());
         assertEquals(nID.size(), longWrapper.getInsertCount());
         assertEquals(nID.size(), longWrapper.getDeleteCount());
         assertThrows(ParamException.class, longWrapper::getStringIDs);
