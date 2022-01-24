@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.0.1 (2021-01-24)
+
+### Improvement
+
+- \#250 - Upgrade log4j-core to 2.17.1
+
+
 ## milvus-sdk-java 2.0.1 (2021-01-18)
 
 ### Improvement
