@@ -43,7 +43,7 @@ public class GetCollectionStatisticsParam {
     }
 
     /**
-     * Builder for <code>GetCollectionStatisticsParam</code> class.
+     * Builder for {@link GetCollectionStatisticsParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -78,9 +78,9 @@ public class GetCollectionStatisticsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetCollectionStatisticsParam</code> instance.
+         * Verifies parameters and creates a new {@link GetCollectionStatisticsParam} instance.
          *
-         * @return <code>GetCollectionStatisticsParam</code>
+         * @return {@link GetCollectionStatisticsParam}
          */
         public GetCollectionStatisticsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -90,7 +90,7 @@ public class GetCollectionStatisticsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetCollectionStatisticsParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetCollectionStatisticsParam} instance.
      *
      * @return <code>String</code>
      */

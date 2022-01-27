@@ -41,7 +41,7 @@ public class GetIndexBuildProgressParam {
     }
 
     /**
-     * Builder for <code>GetIndexBuildProgressParam</code> class.
+     * Builder for {@link GetIndexBuildProgressParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class GetIndexBuildProgressParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetIndexBuildProgressParam</code> instance.
+         * Verifies parameters and creates a new {@link GetIndexBuildProgressParam} instance.
          *
-         * @return <code>GetIndexBuildProgressParam</code>
+         * @return {@link GetIndexBuildProgressParam}
          */
         public GetIndexBuildProgressParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class GetIndexBuildProgressParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetIndexBuildProgressParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetIndexBuildProgressParam} instance.
      *
      * @return <code>String</code>
      */

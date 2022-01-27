@@ -41,7 +41,7 @@ public class HasCollectionParam {
     }
 
     /**
-     * Builder for <code>HasCollectionParam</code> class.
+     * Builder for {@link HasCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class HasCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>HasCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link HasCollectionParam} instance.
          *
-         * @return <code>HasCollectionParam</code>
+         * @return {@link HasCollectionParam}
          */
         public HasCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class HasCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>HasCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link HasCollectionParam} instance.
      *
      * @return <code>String</code>
      */

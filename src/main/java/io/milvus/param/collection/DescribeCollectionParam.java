@@ -41,7 +41,7 @@ public class DescribeCollectionParam {
     }
 
     /**
-     * Builder for <code>DescribeCollectionParam</code> class.
+     * Builder for {@link DescribeCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class DescribeCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DescribeCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link DescribeCollectionParam} instance.
          *
-         * @return <code>DescribeCollectionParam</code>
+         * @return {@link DescribeCollectionParam}
          */
         public DescribeCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class DescribeCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DescribeCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link DescribeCollectionParam} instance.
      *
      * @return <code>String</code>
      */

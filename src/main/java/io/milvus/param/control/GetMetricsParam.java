@@ -41,7 +41,7 @@ public class GetMetricsParam {
     }
 
     /**
-     * Builder for <code>GetMetricsParam</code> class.
+     * Builder for {@link GetMetricsParam} class.
      */
     public static final class Builder {
         private String request;
@@ -62,9 +62,9 @@ public class GetMetricsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetMetricsParam</code> instance.
+         * Verifies parameters and creates a new {@link GetMetricsParam} instance.
          *
-         * @return <code>GetMetricsParam</code>
+         * @return {@link GetMetricsParam}
          */
         public GetMetricsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(request, "Request string");
@@ -76,7 +76,7 @@ public class GetMetricsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetMetricsParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetMetricsParam} instance.
      *
      * @return <code>String</code>
      */

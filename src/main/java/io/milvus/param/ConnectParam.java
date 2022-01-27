@@ -21,6 +21,7 @@ package io.milvus.param;
 
 import io.milvus.exception.ParamException;
 
+import io.milvus.param.partition.ShowPartitionsParam;
 import lombok.NonNull;
 import java.util.concurrent.TimeUnit;
 
@@ -79,7 +80,7 @@ public class ConnectParam {
     }
 
     /**
-     * Builder for <code>ConnectParam</code>
+     * Builder for {@link ConnectParam}
      */
     public static class Builder {
         private String host = "localhost";
@@ -175,9 +176,9 @@ public class ConnectParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ConnectParam</code> instance.
+         * Verifies parameters and creates a new {@link ConnectParam} instance.
          *
-         * @return <code>ShowCollectionsParam</code>
+         * @return {@link ConnectParam}
          */
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
@@ -207,7 +208,7 @@ public class ConnectParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ConnectParam</code> instance.
+     * Constructs a <code>String</code> by {@link ConnectParam} instance.
      *
      * @return <code>String</code>
      */

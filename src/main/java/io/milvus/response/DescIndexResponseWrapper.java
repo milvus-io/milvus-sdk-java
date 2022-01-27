@@ -27,7 +27,7 @@ public class DescIndexResponseWrapper {
     /**
      * Get index description of fields.
      *
-     * @return <code>List<IndexDesc></code> index description of fields
+     * @return List&lt;IndexDesc&gt; index description of fields
      */
     public List<IndexDesc> getIndexDescriptions() {
         List<IndexDesc> results = new ArrayList<>();
@@ -46,7 +46,7 @@ public class DescIndexResponseWrapper {
      * Return null if the field doesn't exist
      *
      * @param fieldName field name to get index description
-     * @return <code>IndexDesc</code> description of the index
+     * @return {@link IndexDesc} description of the index
      */
     public IndexDesc getIndexDescByFieldName(@NonNull String fieldName) {
         for (int i = 0; i < response.getIndexDescriptionsCount(); ++i) {
@@ -117,7 +117,7 @@ public class DescIndexResponseWrapper {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DescIndexResponseWrapper</code> instance.
+     * Construct a <code>String</code> by {@link DescIndexResponseWrapper} instance.
      *
      * @return <code>String</code>
      */

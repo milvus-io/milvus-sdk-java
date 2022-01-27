@@ -8,7 +8,7 @@ import lombok.NonNull;
 /**
  * Parameters for <code>getCompactionState</code> interface.
  *
- * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Metric function design</a>
+ * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
 @Getter
 public class GetCompactionStateParam {
@@ -23,7 +23,7 @@ public class GetCompactionStateParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetCompactionStateParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetCompactionStateParam} instance.
      *
      * @return <code>String</code>
      */
@@ -35,7 +35,7 @@ public class GetCompactionStateParam {
     }
 
     /**
-     * Builder for <code>GetCompactionStateParam</code> class.
+     * Builder for {@link GetCompactionStateParam} class.
      */
     public static final class Builder {
         private Long compactionID;
@@ -55,9 +55,9 @@ public class GetCompactionStateParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetCompactionStateParam</code> instance.
+         * Verifies parameters and creates a new {@link GetCompactionStateParam} instance.
          *
-         * @return <code>GetCompactionStateParam</code>
+         * @return {@link GetCompactionStateParam}
          */
         public GetCompactionStateParam build() throws ParamException {
             return new GetCompactionStateParam(this);

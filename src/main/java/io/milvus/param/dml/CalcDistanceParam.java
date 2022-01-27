@@ -22,6 +22,7 @@ package io.milvus.param.dml;
 import io.milvus.exception.ParamException;
 import io.milvus.param.MetricType;
 
+import io.milvus.param.control.ManualCompactionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.List;
@@ -47,7 +48,7 @@ public class CalcDistanceParam {
     }
 
     /**
-     * Builder for <code>CalcDistanceParam</code> class.
+     * Builder for {@link CalcDistanceParam} class.
      */
     public static class Builder {
         private List<List<Float>> vectorsLeft;
@@ -91,9 +92,9 @@ public class CalcDistanceParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>CalcDistanceParam</code> instance.
+         * Verifies parameters and creates a new {@link CalcDistanceParam} instance.
          *
-         * @return <code>CalcDistanceParam</code>
+         * @return {@link CalcDistanceParam}
          */
         public CalcDistanceParam build() throws ParamException {
             if (metricType == MetricType.INVALID) {
@@ -131,7 +132,7 @@ public class CalcDistanceParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>CalcDistanceParam</code> instance.
+     * Constructs a <code>String</code> by {@link CalcDistanceParam} instance.
      *
      * @return <code>String</code>
      */

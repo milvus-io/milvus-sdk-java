@@ -22,6 +22,7 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.alias.DropAliasParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class CreateCollectionParam {
     }
 
     /**
-     * Builder for <code>CreateCollectionParam</code> class.
+     * Builder for {@link CreateCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -97,7 +98,7 @@ public class CreateCollectionParam {
          * Sets the schema of the collection. The schema cannot be empty or null.
          * @see FieldType
          *
-         * @param fieldTypes a <code>List</code> of <code>FieldType</code>
+         * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
          */
         public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
@@ -109,7 +110,7 @@ public class CreateCollectionParam {
          * Adds a field schema.
          * @see FieldType
          *
-         * @param fieldType a <code>FieldType</code> object
+         * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
          */
         public Builder addFieldType(@NonNull FieldType fieldType) {
@@ -118,9 +119,9 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>CreateCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link CreateCollectionParam} instance.
          *
-         * @return <code>CreateCollectionParam</code>
+         * @return {@link CreateCollectionParam}
          */
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -144,7 +145,7 @@ public class CreateCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>CreateCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link CreateCollectionParam} instance.
      *
      * @return <code>String</code>
      */

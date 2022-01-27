@@ -26,7 +26,7 @@ public class SearchResultsWrapper {
      *
      * @param fieldName field name to get output data
      * @param indexOfTarget which target vector the field data belongs to
-     * @return <code>FieldDataWrapper</code>
+     * @return {@link FieldDataWrapper}
      */
     public List<?> getFieldData(@NonNull String fieldName, int indexOfTarget) {
         FieldDataWrapper wrapper = null;
@@ -59,7 +59,7 @@ public class SearchResultsWrapper {
      * Throws {@link IllegalResponseException} if the returned results is illegal.
      *
      * @param indexOfTarget which target vector the result belongs to
-     * @return <code>List<IDScore></code> ID-score pairs returned by search interface
+     * @return List&lt;IDScore&gt; ID-score pairs returned by search interface
      */
     public List<IDScore> getIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         Position position = getOffsetByIndex(indexOfTarget);

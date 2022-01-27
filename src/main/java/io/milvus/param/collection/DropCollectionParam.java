@@ -41,7 +41,7 @@ public class DropCollectionParam {
     }
 
     /**
-     * Builder for <code>DropCollectionParam</code> class.
+     * Builder for {@link DropCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class DropCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DropCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link DropCollectionParam} instance.
          *
-         * @return <code>DropCollectionParam</code>
+         * @return {@link DropCollectionParam}
          */
         public DropCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class DropCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DropCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link DropCollectionParam} instance.
      *
      * @return <code>String</code>
      */

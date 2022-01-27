@@ -51,7 +51,7 @@ public class InsertParam {
     }
 
     /**
-     * Builder for <code>InsertParam</code> class.
+     * Builder for {@link InsertParam} class.
      */
     public static class Builder {
         private String collectionName;
@@ -97,9 +97,9 @@ public class InsertParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>InsertParam</code> instance.
+         * Verifies parameters and creates a new {@link InsertParam} instance.
          *
-         * @return <code>InsertParam</code>
+         * @return {@link InsertParam}
          */
         @java.lang.SuppressWarnings("unchecked")
         public InsertParam build() throws ParamException {
@@ -221,7 +221,7 @@ public class InsertParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>InsertParam</code> instance.
+     * Constructs a <code>String</code> by {@link InsertParam} instance.
      *
      * @return <code>String</code>
      */

@@ -55,7 +55,7 @@ public class QueryParam {
     }
 
     /**
-     * Builder for <code>QueryParam</code> class.
+     * Builder for {@link QueryParam} class.
      */
     public static class Builder {
         private String collectionName;
@@ -171,9 +171,9 @@ public class QueryParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>QueryParam</code> instance.
+         * Verifies parameters and creates a new {@link QueryParam} instance.
          *
-         * @return <code>QueryParam</code>
+         * @return {@link QueryParam}
          */
         public QueryParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -192,7 +192,7 @@ public class QueryParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>QueryParam</code> instance.
+     * Constructs a <code>String</code> by {@link QueryParam} instance.
      *
      * @return <code>String</code>
      */

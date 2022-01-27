@@ -48,7 +48,7 @@ public class LoadBalanceParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>LoadBalanceParam</code> instance.
+     * Constructs a <code>String</code> by {@link LoadBalanceParam} instance.
      *
      * @return <code>String</code>
      */
@@ -62,7 +62,7 @@ public class LoadBalanceParam {
     }
 
     /**
-     * Builder for <code>LoadBalanceParam</code> class.
+     * Builder for {@link LoadBalanceParam} class.
      */
     public static final class Builder {
         private final List<Long> destNodeIDs = new ArrayList<>();
@@ -134,9 +134,9 @@ public class LoadBalanceParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>LoadBalanceParam</code> instance.
+         * Verifies parameters and creates a new {@link LoadBalanceParam} instance.
          *
-         * @return <code>LoadBalanceParam</code>
+         * @return {@link LoadBalanceParam}
          */
         public LoadBalanceParam build() throws ParamException {
             if (segmentIDs.isEmpty()) {

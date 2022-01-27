@@ -36,7 +36,7 @@ public class RpcStatus {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>RpcStatus</code> instance.
+     * Constructs a <code>String</code> by {@link RpcStatus} instance.
      *
      * @return <code>String</code>
      */

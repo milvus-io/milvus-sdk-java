@@ -43,7 +43,7 @@ public class HasPartitionParam {
     }
 
     /**
-     * Builder for <code>HasPartitionParam</code> class.
+     * Builder for {@link HasPartitionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +75,9 @@ public class HasPartitionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>HasPartitionParam</code> instance.
+         * Verifies parameters and creates a new {@link HasPartitionParam} instance.
          *
-         * @return <code>HasPartitionParam</code>
+         * @return {@link HasPartitionParam}
          */
         public HasPartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +88,7 @@ public class HasPartitionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>HasPartitionParam</code> instance.
+     * Constructs a <code>String</code> by {@link HasPartitionParam} instance.
      *
      * @return <code>String</code>
      */

@@ -52,7 +52,7 @@ public class LoadPartitionsParam {
     }
 
     /**
-     * Builder for <code>LoadPartitionsParam</code> class.
+     * Builder for {@link LoadPartitionsParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -151,9 +151,9 @@ public class LoadPartitionsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>LoadPartitionsParam</code> instance.
+         * Verifies parameters and creates a new {@link LoadPartitionsParam} instance.
          *
-         * @return <code>LoadPartitionsParam</code>
+         * @return {@link LoadPartitionsParam}
          */
         public LoadPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -187,7 +187,7 @@ public class LoadPartitionsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>LoadPartitionsParam</code> instance.
+     * Constructs a <code>String</code> by {@link LoadPartitionsParam} instance.
      *
      * @return <code>String</code>
      */

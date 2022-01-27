@@ -22,7 +22,7 @@ public class QueryResultsWrapper {
      * Throws {@link ParamException} if the field doesn't exist.
      *
      * @param fieldName field name to get output data
-     * @return <code>FieldDataWrapper</code>
+     * @return {@link FieldDataWrapper}
      */
     public FieldDataWrapper getFieldWrapper(@NonNull String fieldName) throws ParamException {
         List<FieldData> fields = results.getFieldsDataList();

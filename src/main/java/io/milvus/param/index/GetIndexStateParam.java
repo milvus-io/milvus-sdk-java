@@ -43,7 +43,7 @@ public class GetIndexStateParam {
     }
 
     /**
-     * Builder for <code>GetIndexStateParam</code> class.
+     * Builder for {@link GetIndexStateParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +75,9 @@ public class GetIndexStateParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetIndexStateParam</code> instance.
+         * Verifies parameters and creates a new {@link GetIndexStateParam} instance.
          *
-         * @return <code>GetIndexStateParam</code>
+         * @return {@link GetIndexStateParam}
          */
         public GetIndexStateParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +88,7 @@ public class GetIndexStateParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetIndexStateParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetIndexStateParam} instance.
      *
      * @return <code>String</code>
      */

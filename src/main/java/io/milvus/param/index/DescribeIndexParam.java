@@ -43,7 +43,7 @@ public class DescribeIndexParam {
     }
 
     /**
-     * Builder for <code>DescribeIndexParam</code> class.
+     * Builder for {@link DescribeIndexParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +75,9 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DescribeIndexParam</code> instance.
+         * Verifies parameters and creates a new {@link DescribeIndexParam} instance.
          *
-         * @return <code>DescribeIndexParam</code>
+         * @return {@link DescribeIndexParam}
          */
         public DescribeIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +88,7 @@ public class DescribeIndexParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DescribeIndexParam</code> instance.
+     * Constructs a <code>String</code> by {@link DescribeIndexParam} instance.
      *
      * @return <code>String</code>
      */

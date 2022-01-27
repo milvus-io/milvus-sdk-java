@@ -1,13 +1,14 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.collection.ShowCollectionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 
 /**
  * Parameters for <code>getCompactionStateWithPlans</code> interface.
  *
- * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Metric function design</a>
+ * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
 @Getter
 public class GetCompactionPlansParam {
@@ -22,7 +23,7 @@ public class GetCompactionPlansParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetCompactionPlansParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetCompactionPlansParam} instance.
      *
      * @return <code>String</code>
      */
@@ -34,7 +35,7 @@ public class GetCompactionPlansParam {
     }
 
     /**
-     * Builder for <code>GetCompactionPlansParam</code> class.
+     * Builder for {@link GetCompactionPlansParam} class.
      */
     public static final class Builder {
         private Long compactionID;
@@ -54,9 +55,9 @@ public class GetCompactionPlansParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetCompactionPlansParam</code> instance.
+         * Verifies parameters and creates a new {@link GetCompactionPlansParam} instance.
          *
-         * @return <code>GetCompactionPlansParam</code>
+         * @return {@link GetCompactionPlansParam}
          */
         public GetCompactionPlansParam build() throws ParamException {
             return new GetCompactionPlansParam(this);

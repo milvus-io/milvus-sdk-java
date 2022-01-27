@@ -22,7 +22,7 @@ public class DropAliasParam {
     }
 
     /**
-     * Builder for <code>DropAliasParam</code> class.
+     * Builder for {@link DropAliasParam} class.
      */
     public static final class Builder {
         private String alias;
@@ -42,9 +42,9 @@ public class DropAliasParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DropAliasParam</code> instance.
+         * Verifies parameters and creates a new {@link DropAliasParam} instance.
          *
-         * @return <code>DropAliasParam</code>
+         * @return {@link DropAliasParam}
          */
         public DropAliasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(alias, "Alias");
@@ -54,7 +54,7 @@ public class DropAliasParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DropAliasParam</code> instance.
+     * Constructs a <code>String</code> by {@link DropAliasParam} instance.
      *
      * @return <code>String</code>
      */
