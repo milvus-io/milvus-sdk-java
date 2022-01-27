@@ -1,4 +1,4 @@
-package io.milvus.Response;
+package io.milvus.response;
 
 import io.milvus.grpc.GetPartitionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;

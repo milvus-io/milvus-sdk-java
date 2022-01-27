@@ -20,7 +20,7 @@
 package io.milvus.client;
 
 import com.google.protobuf.ByteString;
-import io.milvus.Response.*;
+import io.milvus.response.*;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;

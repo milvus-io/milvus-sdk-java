@@ -27,7 +27,7 @@ import io.milvus.param.control.ManualCompactionParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
-import io.milvus.Response.*;
+import io.milvus.response.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;

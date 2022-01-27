@@ -1,4 +1,4 @@
-package io.milvus.Response;
+package io.milvus.response;
 
 import io.milvus.grpc.IndexDescription;
 import io.milvus.grpc.DescribeIndexResponse;
