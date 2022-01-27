@@ -1,6 +1,12 @@
 # Changelog
 
-## milvus-sdk-java 2.0.1 (2021-01-24)
+## milvus-sdk-java 2.0.3 (2021-01-27)
+
+### Improvement
+
+- \#255 - Rename io.milvus.Response to io.milvus.response
+
+## milvus-sdk-java 2.0.2 (2021-01-24)
 
 ### Improvement
 
