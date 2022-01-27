@@ -1,4 +1,4 @@
-package io.milvus.Response;
+package io.milvus.response;
 
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;

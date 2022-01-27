@@ -19,7 +19,7 @@
 
 package io.milvus.client;
 
-import io.milvus.Response.*;
+import io.milvus.response.*;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -230,7 +230,7 @@ public class MilvusClientDockerTest {
         System.out.println(desc.toString());
 
         // insert data
-        int rowCount = 10;
+        int rowCount = 10000;
         List<Long> ids = new ArrayList<>();
         List<Boolean> genders = new ArrayList<>();
         List<Double> weights = new ArrayList<>();
@@ -288,7 +288,7 @@ public class MilvusClientDockerTest {
                 .withFieldName(field2Name)
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("{\"nlist\":64}")
+                .withExtraParam("{\"nlist\":256}")
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(30L)

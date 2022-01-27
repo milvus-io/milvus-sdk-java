@@ -7,4 +7,4 @@ io.milvus.param.control
 io.milvus.param.dml
 io.milvus.param.index
 io.milvus.param.partition
-io.milvus.Response
+io.milvus.response
