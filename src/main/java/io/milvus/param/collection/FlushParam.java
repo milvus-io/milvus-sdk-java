@@ -32,7 +32,7 @@ public class FlushParam {
     }
 
     /**
-     * Builder for <code>FlushParam</code> class.
+     * Builder for {@link FlushParam} class.
      */
     public static final class Builder {
         private final List<String> collectionNames = new ArrayList<>();
@@ -117,9 +117,9 @@ public class FlushParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>FlushParam</code> instance.
+         * Verifies parameters and creates a new {@link FlushParam} instance.
          *
-         * @return <code>FlushParam</code>
+         * @return {@link FlushParam}
          */
         public FlushParam build() throws ParamException {
             if (collectionNames.isEmpty()) {
@@ -151,7 +151,7 @@ public class FlushParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>FlushParam</code> instance.
+     * Constructs a <code>String</code> by {@link FlushParam} instance.
      *
      * @return <code>String</code>
      */

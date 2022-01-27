@@ -43,7 +43,7 @@ public class DropPartitionParam {
     }
 
     /**
-     * Builder for <code>DropPartitionParam</code> class.
+     * Builder for {@link DropPartitionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +75,9 @@ public class DropPartitionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DropPartitionParam</code> instance.
+         * Verifies parameters and creates a new {@link DropPartitionParam} instance.
          *
-         * @return <code>DropPartitionParam</code>
+         * @return {@link DropPartitionParam}
          */
         public DropPartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +88,7 @@ public class DropPartitionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DropPartitionParam</code> instance.
+     * Constructs a <code>String</code> by {@link DropPartitionParam} instance.
      *
      * @return <code>String</code>
      */

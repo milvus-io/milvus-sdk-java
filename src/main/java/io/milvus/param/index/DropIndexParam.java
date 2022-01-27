@@ -43,7 +43,7 @@ public class DropIndexParam {
     }
 
     /**
-     * Builder for <code>DropIndexParam</code> class.
+     * Builder for {@link DropIndexParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +75,9 @@ public class DropIndexParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DropIndexParam</code> instance.
+         * Verifies parameters and creates a new {@link DropIndexParam} instance.
          *
-         * @return <code>DropIndexParam</code>
+         * @return {@link DropIndexParam}
          */
         public DropIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +88,7 @@ public class DropIndexParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DropIndexParam</code> instance.
+     * Constructs a <code>String</code> by {@link DropIndexParam} instance.
      *
      * @return <code>String</code>
      */

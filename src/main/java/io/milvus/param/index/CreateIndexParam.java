@@ -25,6 +25,7 @@ import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.dml.SearchParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.HashMap;
@@ -58,7 +59,7 @@ public class CreateIndexParam {
     }
 
     /**
-     * Builder for <code>CreateIndexParam</code> class.
+     * Builder for {@link CreateIndexParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -183,9 +184,9 @@ public class CreateIndexParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>CreateIndexParam</code> instance.
+         * Verifies parameters and creates a new {@link CreateIndexParam} instance.
          *
-         * @return <code>CreateIndexParam</code>
+         * @return {@link CreateIndexParam}
          */
         public CreateIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -219,7 +220,7 @@ public class CreateIndexParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>CreateIndexParam</code> instance.
+     * Constructs a <code>String</code> by {@link CreateIndexParam} instance.
      *
      * @return <code>String</code>
      */

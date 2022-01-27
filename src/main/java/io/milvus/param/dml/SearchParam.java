@@ -68,7 +68,7 @@ public class SearchParam {
     }
 
     /**
-     * Builder for <code>SearchParam</code> class.
+     * Builder for {@link SearchParam} class.
      */
     public static class Builder {
         private String collectionName;
@@ -261,9 +261,9 @@ public class SearchParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>SearchParam</code> instance.
+         * Verifies parameters and creates a new {@link SearchParam} instance.
          *
-         * @return <code>SearchParam</code>
+         * @return {@link SearchParam}
          */
         public SearchParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -322,7 +322,7 @@ public class SearchParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>SearchParam</code> instance.
+     * Constructs a <code>String</code> by {@link SearchParam} instance.
      *
      * @return <code>String</code>
      */

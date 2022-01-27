@@ -23,7 +23,7 @@ public class GetFlushStateParam {
     }
 
     /**
-     * Builder for <code>GetFlushStateParam</code> class.
+     * Builder for {@link GetFlushStateParam} class.
      */
     public static final class Builder {
         private final List<Long> segmentIDs = new ArrayList<>();
@@ -54,9 +54,9 @@ public class GetFlushStateParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetFlushStateParam</code> instance.
+         * Verifies parameters and creates a new {@link GetFlushStateParam} instance.
          *
-         * @return <code>GetFlushStateParam</code>
+         * @return {@link GetFlushStateParam}
          */
         public GetFlushStateParam build() throws ParamException {
             if (segmentIDs.isEmpty()) {
@@ -68,7 +68,7 @@ public class GetFlushStateParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetFlushStateParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetFlushStateParam} instance.
      *
      * @return <code>String</code>
      */

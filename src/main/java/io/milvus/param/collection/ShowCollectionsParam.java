@@ -46,7 +46,7 @@ public class ShowCollectionsParam {
     }
 
     /**
-     * Builder for <code>ShowCollectionsParam</code> class.
+     * Builder for {@link ShowCollectionsParam} class.
      */
     public static final class Builder {
         private final List<String> collectionNames = new ArrayList<>();
@@ -83,9 +83,9 @@ public class ShowCollectionsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ShowCollectionsParam</code> instance.
+         * Verifies parameters and creates a new {@link ShowCollectionsParam} instance.
          *
-         * @return <code>ShowCollectionsParam</code>
+         * @return {@link ShowCollectionsParam}
          */
         public ShowCollectionsParam build() throws ParamException {
             if (!collectionNames.isEmpty()) {
@@ -100,7 +100,7 @@ public class ShowCollectionsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ShowCollectionsParam</code> instance.
+     * Constructs a <code>String</code> by {@link ShowCollectionsParam} instance.
      *
      * @return <code>String</code>
      */

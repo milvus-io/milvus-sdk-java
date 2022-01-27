@@ -22,7 +22,7 @@ public class ShowPartResponseWrapper {
     /**
      * Get information of the partitions.
      *
-     * @return <code>List<PartitionInfo></code> information array of the partitions
+     * @return List&lt;PartitionInfo&gt; information array of the partitions
      */
     public List<PartitionInfo> getPartitionsInfo() throws IllegalResponseException {
         if (response.getPartitionNamesCount() != response.getPartitionIDsCount()
@@ -47,7 +47,7 @@ public class ShowPartResponseWrapper {
      * Get information of one partition by name.
      *
      * @param partitionName partition name to get information
-     * @return <code>PartitionInfo</code> information of the partition
+     * @return {@link PartitionInfo} information of the partition
      */
     public PartitionInfo getPartitionInfoByName(@NonNull String partitionName) {
         for (int i = 0; i < response.getPartitionNamesCount(); ++i) {
@@ -65,7 +65,7 @@ public class ShowPartResponseWrapper {
     }
 
     /**
-     * Internal-use class to wrap response of <code>ShowPartitions</code> interface.
+     * Internal-use class to wrap response of <code>showPartitions</code> interface.
      */
     @Getter
     public static final class PartitionInfo {
@@ -92,7 +92,7 @@ public class ShowPartResponseWrapper {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ShowPartResponseWrapper</code> instance.
+     * Construct a <code>String</code> by {@link ShowPartResponseWrapper} instance.
      *
      * @return <code>String</code>
      */

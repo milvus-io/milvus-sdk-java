@@ -24,7 +24,7 @@ public class AlterAliasParam {
     }
 
     /**
-     * Builder for <code>AlterAliasParam</code> class.
+     * Builder for {@link AlterAliasParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -56,9 +56,9 @@ public class AlterAliasParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>AlterAliasParam</code> instance.
+         * Verifies parameters and creates a new {@link AlterAliasParam} instance.
          *
-         * @return <code>AlterAliasParam</code>
+         * @return {@link AlterAliasParam}
          */
         public AlterAliasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -69,7 +69,7 @@ public class AlterAliasParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>AlterAliasParam</code> instance.
+     * Constructs a <code>String</code> by {@link AlterAliasParam} instance.
      *
      * @return <code>String</code>
      */

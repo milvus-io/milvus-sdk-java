@@ -45,7 +45,7 @@ public class ReleasePartitionsParam {
     }
 
     /**
-     * Builder for <code>ReleasePartitionsParam</code> class.
+     * Builder for {@link ReleasePartitionsParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -90,9 +90,9 @@ public class ReleasePartitionsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ReleasePartitionsParam</code> instance.
+         * Verifies parameters and creates a new {@link ReleasePartitionsParam} instance.
          *
-         * @return <code>ReleasePartitionsParam</code>
+         * @return {@link ReleasePartitionsParam}
          */
         public ReleasePartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -110,7 +110,7 @@ public class ReleasePartitionsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ReleasePartitionsParam</code> instance.
+     * Constructs a <code>String</code> by {@link ReleasePartitionsParam} instance.
      *
      * @return <code>String</code>
      */

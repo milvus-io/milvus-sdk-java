@@ -2,6 +2,7 @@ package io.milvus.response;
 
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.FieldType;
 
 import io.milvus.grpc.CollectionSchema;
@@ -72,7 +73,7 @@ public class DescCollResponseWrapper {
     /**
      * Get aliases of the collection.
      *
-     * @return <code>List<String></String></code> aliases of the collection
+     * @return List&lt;String&gt; aliases of the collection
      */
     public List<String> getAliases() {
         List<String> aliases = new ArrayList<>();
@@ -86,7 +87,7 @@ public class DescCollResponseWrapper {
     /**
      * Get schema of the collection's fields.
      *
-     * @return <code>List<FieldType></code> schema of the collection's fields
+     * @return List&lt;FieldType&gt; schema of the collection's fields
      */
     public List<FieldType> getFields() {
         List<FieldType> results = new ArrayList<>();
@@ -102,7 +103,7 @@ public class DescCollResponseWrapper {
      * Return null if the field doesn't exist
      *
      * @param fieldName field name to get field description
-     * @return <code>FieldType</code> schema of the field
+     * @return {@link FieldType} schema of the field
      */
     public FieldType getFieldByName(@NonNull String fieldName) {
         CollectionSchema schema = response.getSchema();
@@ -119,7 +120,7 @@ public class DescCollResponseWrapper {
     /**
      * Convert a grpc field schema to client schema
      *
-     * @return <code>FieldType</code> schema of the field
+     * @return {@link FieldType} schema of the field
      */
     private FieldType convertField(@NonNull FieldSchema field) {
         FieldType.Builder builder = FieldType.newBuilder()
@@ -136,7 +137,7 @@ public class DescCollResponseWrapper {
     }
 
     /**
-     * Construct a <code>String</code> by <code>DescCollResponseWrapper</code> instance.
+     * Construct a <code>String</code> by {@link DescCollResponseWrapper} instance.
      *
      * @return <code>String</code>
      */

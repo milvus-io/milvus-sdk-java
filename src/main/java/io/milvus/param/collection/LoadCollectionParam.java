@@ -48,7 +48,7 @@ public class LoadCollectionParam {
     }
 
     /**
-     * Builder for <code>LoadCollectionParam</code> class.
+     * Builder for {@link LoadCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -122,9 +122,9 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>LoadCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link LoadCollectionParam} instance.
          *
-         * @return <code>LoadCollectionParam</code>
+         * @return {@link LoadCollectionParam}
          */
         public LoadCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -150,7 +150,7 @@ public class LoadCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>LoadCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link LoadCollectionParam} instance.
      *
      * @return <code>String</code>
      */

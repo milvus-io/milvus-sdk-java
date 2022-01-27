@@ -8,7 +8,7 @@ import lombok.NonNull;
 /**
  * Parameters for <code>manualCompaction</code> interface.
  *
- * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Metric function design</a>
+ * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
 @Getter
 public class ManualCompactionParam {
@@ -23,7 +23,7 @@ public class ManualCompactionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ManualCompactionParam</code> instance.
+     * Constructs a <code>String</code> by {@link ManualCompactionParam} instance.
      *
      * @return <code>String</code>
      */
@@ -35,7 +35,7 @@ public class ManualCompactionParam {
     }
 
     /**
-     * Builder for <code>ManualCompactionParam</code> class.
+     * Builder for {@link ManualCompactionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -55,9 +55,9 @@ public class ManualCompactionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ManualCompactionParam</code> instance.
+         * Verifies parameters and creates a new {@link ManualCompactionParam} instance.
          *
-         * @return <code>ManualCompactionParam</code>
+         * @return {@link ManualCompactionParam}
          */
         public ManualCompactionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");

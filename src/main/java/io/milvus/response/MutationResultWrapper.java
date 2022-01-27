@@ -30,7 +30,7 @@ public class MutationResultWrapper {
      * Gets the long ID array returned by insert interface.
      * Throw {@link ParamException} if the primary key type is not int64 type.
      *
-     * @return <code>List<Long></code> ID array returned by insert interface
+     * @return List&lt;Long&gt; ID array returned by insert interface
      */
     public List<Long> getLongIDs() throws ParamException {
         if (result.getIDs().hasIntId()) {
@@ -45,7 +45,7 @@ public class MutationResultWrapper {
      * Throw {@link ParamException} if the primary key type is not string type.
      * Note that current release of Milvus doesn't support string type field, thus this method is reserved.
      *
-     * @return <code>List<String></code> ID array returned by insert interface
+     * @return List&lt;String&gt; ID array returned by insert interface
      */
     public List<String> getStringIDs() throws ParamException {
         if (result.getIDs().hasStrId()) {
@@ -68,7 +68,7 @@ public class MutationResultWrapper {
      * Get timestamp of the operation marked by server. You can use this timestamp as for guarantee timestamp of query/search api.
      *
      * Note: the timestamp is not an absolute timestamp, it is a hybrid value combined by UTC time and internal flags.
-     *  We call it TSO, for more information please refer to: https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md
+     *  We call it TSO, for more information: @see <a href="https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md">Hybrid Timestamp in Milvus</a>
      *
      * @return <code>int</code> row count of the deleted entities
      */

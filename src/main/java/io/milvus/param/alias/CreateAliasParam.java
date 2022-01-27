@@ -24,7 +24,7 @@ public class CreateAliasParam {
     }
 
     /**
-     * Builder for <code>CreateAliasParam</code> class.
+     * Builder for {@link CreateAliasParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -56,9 +56,9 @@ public class CreateAliasParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>CreateAliasParam</code> instance.
+         * Verifies parameters and creates a new {@link CreateAliasParam} instance.
          *
-         * @return <code>CreateAliasParam</code>
+         * @return {@link CreateAliasParam}
          */
         public CreateAliasParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -69,7 +69,7 @@ public class CreateAliasParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>CreateAliasParam</code> instance.
+     * Constructs a <code>String</code> by {@link CreateAliasParam} instance.
      *
      * @return <code>String</code>
      */

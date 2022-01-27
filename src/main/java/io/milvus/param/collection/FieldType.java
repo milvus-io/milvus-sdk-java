@@ -64,7 +64,7 @@ public class FieldType {
     }
 
     /**
-     * Builder for <code>FieldType</code> class.
+     * Builder for {@link FieldType} class.
      */
     public static final class Builder {
         private String name;
@@ -166,9 +166,9 @@ public class FieldType {
         }
 
         /**
-         * Verifies parameters and creates a new <code>FieldType</code> instance.
+         * Verifies parameters and creates a new {@link FieldType} instance.
          *
-         * @return <code>FieldType</code>
+         * @return {@link FieldType}
          */
         public FieldType build() throws ParamException {
             ParamUtils.CheckNullEmptyString(name, "Field name");
@@ -197,7 +197,7 @@ public class FieldType {
     }
 
     /**
-     * Construct a <code>String</code> by <code>FieldType</code> instance.
+     * Construct a <code>String</code> by {@link FieldType} instance.
      *
      * @return <code>String</code>
      */

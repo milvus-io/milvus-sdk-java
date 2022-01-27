@@ -22,6 +22,7 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.index.GetIndexStateParam;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -43,7 +44,7 @@ public class CreatePartitionParam {
     }
 
     /**
-     * Builder for <code>CreatePartitionParam</code> class.
+     * Builder for {@link CreatePartitionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -75,9 +76,9 @@ public class CreatePartitionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>CreatePartitionParam</code> instance.
+         * Verifies parameters and creates a new {@link CreatePartitionParam} instance.
          *
-         * @return <code>CreatePartitionParam</code>
+         * @return {@link CreatePartitionParam}
          */
         public CreatePartitionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -88,7 +89,7 @@ public class CreatePartitionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>CreatePartitionParam</code> instance.
+     * Constructs a <code>String</code> by {@link CreatePartitionParam} instance.
      *
      * @return <code>String</code>
      */

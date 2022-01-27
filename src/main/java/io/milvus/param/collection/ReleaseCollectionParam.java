@@ -41,7 +41,7 @@ public class ReleaseCollectionParam {
     }
 
     /**
-     * Builder for <code>ReleaseCollectionParam</code> class.
+     * Builder for {@link ReleaseCollectionParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class ReleaseCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ReleaseCollectionParam</code> instance.
+         * Verifies parameters and creates a new {@link ReleaseCollectionParam} instance.
          *
-         * @return <code>ReleaseCollectionParam</code>
+         * @return {@link ReleaseCollectionParam}
          */
         public ReleaseCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class ReleaseCollectionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ReleaseCollectionParam</code> instance.
+     * Constructs a <code>String</code> by {@link ReleaseCollectionParam} instance.
      *
      * @return <code>String</code>
      */

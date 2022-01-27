@@ -22,7 +22,7 @@ public class ShowCollResponseWrapper {
     /**
      * Get information of the collections.
      *
-     * @return <code>List<CollectionInfo></code> information array of the collections
+     * @return List&lt;CollectionInfo&gt; information array of the collections
      */
     public List<CollectionInfo> getCollectionsInfo() throws IllegalResponseException {
         if (response.getCollectionNamesCount() != response.getCollectionIdsCount()
@@ -47,7 +47,7 @@ public class ShowCollResponseWrapper {
      * Get information of one collection by name.
      *
      * @param collectionName collection name to get information
-     * @return <code>CollectionInfo</code> information of the collection
+     * @return {@link CollectionInfo} information of the collection
      */
     public CollectionInfo getCollectionInfoByName(@NonNull String collectionName) {
         for (int i = 0; i < response.getCollectionNamesCount(); ++i) {
@@ -65,7 +65,7 @@ public class ShowCollResponseWrapper {
     }
 
     /**
-     * Internal-use class to wrap response of <code>ShowCollections</code> interface.
+     * Internal-use class to wrap response of <code>showCollections</code> interface.
      */
     @Getter
     public static final class CollectionInfo {
@@ -92,7 +92,7 @@ public class ShowCollResponseWrapper {
     }
 
     /**
-     * Construct a <code>String</code> by <code>ShowCollResponseWrapper</code> instance.
+     * Construct a <code>String</code> by {@link ShowCollResponseWrapper} instance.
      *
      * @return <code>String</code>
      */

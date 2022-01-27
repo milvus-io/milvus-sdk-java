@@ -41,7 +41,7 @@ public class GetQuerySegmentInfoParam {
     }
 
     /**
-     * Builder for <code>GetPersistentSegmentInfoParam</code> class.
+     * Builder for {@link GetQuerySegmentInfoParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -61,9 +61,9 @@ public class GetQuerySegmentInfoParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetQuerySegmentInfoParam</code> instance.
+         * Verifies parameters and creates a new {@link GetQuerySegmentInfoParam} instance.
          *
-         * @return <code>GetQuerySegmentInfoParam</code>
+         * @return {@link GetQuerySegmentInfoParam}
          */
         public GetQuerySegmentInfoParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -73,7 +73,7 @@ public class GetQuerySegmentInfoParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetQuerySegmentInfoParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetQuerySegmentInfoParam} instance.
      *
      * @return <code>String</code>
      */

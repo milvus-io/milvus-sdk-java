@@ -48,7 +48,7 @@ public class ShowPartitionsParam {
     }
 
     /**
-     * Builder for <code>ShowPartitionsParam</code> class.
+     * Builder for {@link ShowPartitionsParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -98,9 +98,9 @@ public class ShowPartitionsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>ShowPartitionsParam</code> instance.
+         * Verifies parameters and creates a new {@link ShowPartitionsParam} instance.
          *
-         * @return <code>ShowPartitionsParam</code>
+         * @return {@link ShowPartitionsParam}
          */
         public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -117,7 +117,7 @@ public class ShowPartitionsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>ShowPartitionsParam</code> instance.
+     * Constructs a <code>String</code> by {@link ShowPartitionsParam} instance.
      *
      * @return <code>String</code>
      */

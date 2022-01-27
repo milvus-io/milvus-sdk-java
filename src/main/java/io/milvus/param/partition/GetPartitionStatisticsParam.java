@@ -45,7 +45,7 @@ public class GetPartitionStatisticsParam {
     }
 
     /**
-     * Builder for <code>GetPartitionStatisticsParam</code> class.
+     * Builder for {@link GetPartitionStatisticsParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -92,9 +92,9 @@ public class GetPartitionStatisticsParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>GetPartitionStatisticsParam</code> instance.
+         * Verifies parameters and creates a new {@link GetPartitionStatisticsParam} instance.
          *
-         * @return <code>GetPartitionStatisticsParam</code>
+         * @return {@link GetPartitionStatisticsParam}
          */
         public GetPartitionStatisticsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -105,7 +105,7 @@ public class GetPartitionStatisticsParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>GetPartitionStatisticsParam</code> instance.
+     * Constructs a <code>String</code> by {@link GetPartitionStatisticsParam} instance.
      *
      * @return <code>String</code>
      */

@@ -45,7 +45,7 @@ public class DeleteParam {
     }
 
     /**
-     * Builder for <code>DeleteParam</code> class.
+     * Builder for {@link DeleteParam} class.
      */
     public static class Builder {
         private String collectionName;
@@ -90,9 +90,9 @@ public class DeleteParam {
         }
 
         /**
-         * Verifies parameters and creates a new <code>DeleteParam</code> instance.
+         * Verifies parameters and creates a new {@link DeleteParam} instance.
          *
-         * @return <code>DeleteParam</code>
+         * @return {@link DeleteParam}
          */
         public DeleteParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
@@ -103,7 +103,7 @@ public class DeleteParam {
     }
 
     /**
-     * Constructs a <code>String</code> by <code>DeleteParam</code> instance.
+     * Constructs a <code>String</code> by {@link DeleteParam} instance.
      *
      * @return <code>String</code>
      */
