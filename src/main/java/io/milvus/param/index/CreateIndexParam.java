@@ -24,10 +24,9 @@ import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.dml.SearchParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.HashMap;
 import java.util.Map;
 

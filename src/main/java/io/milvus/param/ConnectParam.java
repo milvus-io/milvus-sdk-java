@@ -20,9 +20,8 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
-
-import io.milvus.param.partition.ShowPartitionsParam;
 import lombok.NonNull;
+
 import java.util.concurrent.TimeUnit;
 
 /**

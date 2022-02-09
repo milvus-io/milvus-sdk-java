@@ -21,10 +21,9 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.alias.DropAliasParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -19,18 +19,18 @@
 
 package io.milvus.client;
 
-import io.milvus.response.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
-
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
+import io.milvus.response.*;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +40,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -153,14 +157,29 @@ public class MilvusClientDockerTest {
         return vectors;
     }
 
+    private List<List<Float>> normalizeFloatVectors(List<List<Float>> src) {
+        for (List<Float> vector : src) {
+            double total = 0.0;
+            for (Float val : vector) {
+                total = total + val * val;
+            }
+            float squre = (float) Math.sqrt(total);
+            for (int i = 0; i < vector.size(); ++i) {
+                vector.set(i, vector.get(i) / squre);
+            }
+        }
+
+        return src;
+    }
+
     private List<ByteBuffer> generateBinaryVectors(int count) {
         Random ran = new Random();
         List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = dimension/8;
+        int byteCount = dimension / 8;
         for (int n = 0; n < count; ++n) {
             ByteBuffer vector = ByteBuffer.allocate(byteCount);
             for (int i = 0; i < byteCount; ++i) {
-                vector.put((byte)ran.nextInt(Byte.MAX_VALUE));
+                vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
             }
             vectors.add(vector);
         }
@@ -237,9 +256,9 @@ public class MilvusClientDockerTest {
         List<Short> ages = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
-            genders.add(i%3 == 0 ? Boolean.TRUE : Boolean.FALSE);
-            weights.add( ((double)(i + 1) / 100));
-            ages.add((short)((i + 1)%99));
+            genders.add(i % 3 == 0 ? Boolean.TRUE : Boolean.FALSE);
+            weights.add(((double) (i + 1) / 100));
+            ages.add((short) ((i + 1) % 99));
         }
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
@@ -257,7 +276,7 @@ public class MilvusClientDockerTest {
 
         R<MutationResult> insertR = client.withTimeout(10, TimeUnit.SECONDS).insert(insertParam);
         assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-//        System.out.println(insertR.getData());
+        System.out.println(insertR.getData());
 
         // get collection statistics
         R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
@@ -349,7 +368,7 @@ public class MilvusClientDockerTest {
                 .withOutFields(outputFields)
                 .build();
 
-        R<QueryResults> queryR= client.query(queryParam);
+        R<QueryResults> queryR = client.query(queryParam);
         assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
 
         // verify query result
@@ -388,7 +407,7 @@ public class MilvusClientDockerTest {
             List<?> out = queryResultsWrapper.getFieldWrapper(field4Name).getFieldData();
             assertEquals(nq, out.size());
             for (Object o : out) {
-                double d = (Double)o;
+                double d = (Double) o;
                 assertTrue(compareWeights.contains(d));
             }
         }
@@ -542,6 +561,152 @@ public class MilvusClientDockerTest {
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+        }
+
+        // drop collection
+        DropCollectionParam dropParam = DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build();
+
+        R<RpcStatus> dropR = client.dropCollection(dropParam);
+        assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    public void testAsyncMethods() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "long_field";
+        String field2Name = "vec_field";
+        List<FieldType> fieldsSchema = new ArrayList<>();
+        fieldsSchema.add(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(true)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .withDescription("identity")
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDescription("face")
+                .withDimension(dimension)
+                .build());
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withDescription("test")
+                .withFieldTypes(fieldsSchema)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // insert async
+        List<ListenableFuture<R<MutationResult>>> futureResponses = new ArrayList<>();
+        int rowCount = 1000;
+        for (long i = 0L; i < 10; ++i) {
+            List<List<Float>> vectors = normalizeFloatVectors(generateFloatVectors(rowCount));
+            List<InsertParam.Field> fieldsInsert = new ArrayList<>();
+            fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
+
+            InsertParam insertParam = InsertParam.newBuilder()
+                    .withCollectionName(randomCollectionName)
+                    .withFields(fieldsInsert)
+                    .build();
+
+            ListenableFuture<R<MutationResult>> insertFuture = client.insertAsync(insertParam);
+            futureResponses.add(insertFuture);
+        }
+
+        // get insert result
+        List<Long> queryIDs = new ArrayList<>();
+        for (ListenableFuture<R<MutationResult>> response : futureResponses) {
+            try {
+                R<MutationResult> insertR = response.get();
+                assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+                MutationResultWrapper wrapper = new MutationResultWrapper(insertR.getData());
+                queryIDs.add(wrapper.getLongIDs().get(0));
+            } catch (ExecutionException | InterruptedException e) {
+                System.out.println("failed to insert:" + e.getMessage());
+                return;
+            }
+        }
+
+        // get collection statistics
+        R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
+                .newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFlush(true)
+                .build());
+        assertEquals(R.Status.Success.getCode(), statR.getStatus().intValue());
+
+        GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
+        System.out.println("Collection row count: " + stat.getRowCount());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // search async
+        List<List<Float>> targetVectors = normalizeFloatVectors(generateFloatVectors(2));
+        int topK = 5;
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.IP)
+                .withTopK(topK)
+                .withVectors(targetVectors)
+                .withVectorFieldName(field2Name)
+                .build();
+
+        ListenableFuture<R<SearchResults>> searchFuture = client.searchAsync(searchParam);
+
+        // query async
+        String expr = field1Name + " in " + queryIDs.toString();
+        List<String> outputFields = Arrays.asList(field1Name, field2Name);
+        QueryParam queryParam = QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(expr)
+                .withOutFields(outputFields)
+                .build();
+
+        ListenableFuture<R<QueryResults>> queryFuture = client.queryAsync(queryParam);
+
+        try {
+            // get search results
+            R<SearchResults> searchR = searchFuture.get();
+            assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+            // verify search result
+            SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+            System.out.println("Search results:");
+            for (int i = 0; i < targetVectors.size(); ++i) {
+                List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
+                assertEquals(topK, scores.size());
+                System.out.println(scores.toString());
+            }
+
+            // get query results
+            R<QueryResults> queryR = queryFuture.get();
+            assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+            // verify query result
+            QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+            for (String fieldName : outputFields) {
+                FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
+                System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
+                System.out.println(wrapper.getFieldData());
+                assertEquals(queryIDs.size(), wrapper.getFieldData().size());
+            }
+
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
 
         // drop collection

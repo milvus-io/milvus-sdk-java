@@ -105,7 +105,7 @@ public class ShowPartitionsParam {
         public ShowPartitionsParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (partitionNames != null && !partitionNames.isEmpty()) {
+            if (!partitionNames.isEmpty()) {
                 for (String partitionName : partitionNames) {
                     ParamUtils.CheckNullEmptyString(partitionName, "Partition name");
                 }
