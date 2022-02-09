@@ -19,8 +19,8 @@
 
 package io.milvus.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
-import io.milvus.response.*;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -33,6 +33,7 @@ import io.milvus.param.control.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.response.*;
 import io.milvus.server.MockMilvusServer;
 import io.milvus.server.MockMilvusServerImpl;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -90,6 +92,49 @@ class MilvusServiceClientTest {
             client.close();
             resp = (R<P>) testFunc.invoke(client, param);
             assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            System.out.println(e.toString());
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T, P> void testAsyncFuncByName(String funcName, T param) {
+        try {
+            Class<?> clientClass = MilvusServiceClient.class;
+            Method testFunc = clientClass.getMethod(funcName, param.getClass());
+
+            // start mock server
+            MockMilvusServer server = startServer();
+            MilvusServiceClient client = startClient();
+
+            // test return ok with correct input
+            try {
+                ListenableFuture<R<P>> respFuture = (ListenableFuture<R<P>>) testFunc.invoke(client, param);
+                R<P> response = respFuture.get();
+                assertEquals(R.Status.Success.getCode(), response.getStatus());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            // stop mock server
+            server.stop();
+
+            // test return error without server
+            assertThrows(ExecutionException.class, () -> {
+                ListenableFuture<R<P>> respFuture = (ListenableFuture<R<P>>) testFunc.invoke(client, param);
+                R<P> response = respFuture.get();
+                assertNotEquals(R.Status.Success.getCode(), response.getStatus());
+            });
+
+            // test return error when client channel is shutdown
+            client.close();
+            try {
+                ListenableFuture<R<P>> respFuture = (ListenableFuture<R<P>>) testFunc.invoke(client, param);
+                R<P> response = respFuture.get();
+                assertEquals(R.Status.ClientNotConnected.getCode(), response.getStatus());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             System.out.println(e.toString());
         }
@@ -645,6 +690,17 @@ class MilvusServiceClientTest {
                 .withSyncFlushWaitingTimeout(Constant.MAX_WAITING_FLUSHING_TIMEOUT + 1)
                 .build()
         );
+    }
+
+    @Test
+    void flush() {
+        FlushParam param = FlushParam.newBuilder()
+                .addCollectionName("collection1")
+                .withSyncFlush(Boolean.TRUE)
+                .withSyncFlushWaitingTimeout(1L)
+                .build();
+
+        testFuncByName("flush", param);
     }
 
     @Test
@@ -1432,6 +1488,7 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("insert", param);
+        testAsyncFuncByName("insertAsync", param);
     }
 
     @Test
@@ -1632,14 +1689,9 @@ class MilvusServiceClientTest {
 
     @Test
     void search() {
-        // start mock server
-        MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
-
         List<String> partitions = Collections.singletonList("partition1");
         List<String> outputFields = Collections.singletonList("field2");
 
-        // test return ok with correct input
         List<List<Float>> vectors = new ArrayList<>();
         List<Float> vector1 = Arrays.asList(0.1f, 0.2f);
         vectors.add(vector1);
@@ -1658,8 +1710,7 @@ class MilvusServiceClientTest {
                 .withTravelTimestamp(1L)
                 .withGuaranteeTimestamp(1L)
                 .build();
-        R<SearchResults> resp = client.search(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
+        testFuncByName("search", param);
 
         List<ByteBuffer> bVectors = new ArrayList<>();
         ByteBuffer buf = ByteBuffer.allocate(2);
@@ -1678,20 +1729,8 @@ class MilvusServiceClientTest {
                 .withExpr("dummy")
                 .build();
 
-        resp = client.search(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // stop mock server
-        server.stop();
-
-        // test return error without server
-        resp = client.search(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
-
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.search(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        testFuncByName("search", param);
+        testAsyncFuncByName("searchAsync", param);
     }
 
     @Test
@@ -1751,6 +1790,7 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("query", param);
+        testAsyncFuncByName("queryAsync", param);
     }
 
     @Test

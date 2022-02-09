@@ -21,10 +21,9 @@ package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.MetricType;
-
-import io.milvus.param.control.ManualCompactionParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.List;
 
 /**

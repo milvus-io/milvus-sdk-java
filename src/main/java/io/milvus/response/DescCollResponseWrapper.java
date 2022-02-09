@@ -1,13 +1,10 @@
 package io.milvus.response;
 
-import io.milvus.grpc.FieldSchema;
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.FieldType;
-
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DescribeCollectionResponse;
-
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
 
 import java.util.ArrayList;

@@ -31,6 +31,7 @@ import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
@@ -124,14 +125,14 @@ public interface MilvusClient {
      */
     R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
 
-//    /**
-//     * Flushes collections.
-//     * Currently we do not support this method on client since compaction is not supported on server.
-//     *
-//     * @param requestParam {@link FlushParam}
-//     * @return {status:result code,data: FlushResponse{flush segment ids}}
-//     */
-//    R<FlushResponse> flush(FlushParam requestParam);
+    /**
+     * Flushes collections.
+     * Currently we do not support this method on client since compaction is not supported on server.
+     *
+     * @param requestParam {@link FlushParam}
+     * @return {status:result code,data: FlushResponse{flush segment ids}}
+     */
+    R<FlushResponse> flush(FlushParam requestParam);
 
     /**
      * Creates a partition in the specified collection.
@@ -258,13 +259,22 @@ public interface MilvusClient {
     R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam);
 
     /**
-     * Inserts entities into a specified collection. Note that you don't need to 
+     * Inserts entities into a specified collection . Note that you don't need to
      * input primary key field if auto_id is enabled.
      *
      * @param requestParam {@link InsertParam}
      * @return {status:result code, data: MutationResult{insert results}}
      */
     R<MutationResult> insert(InsertParam requestParam);
+
+    /**
+     * Inserts entities into a specified collection asynchronously. Note that you don't need to
+     * input primary key field if auto_id is enabled.
+     *
+     * @param requestParam {@link InsertParam}
+     * @return a <code>ListenableFuture</code> object which holds the object {status:result code, data: MutationResult{insert results}}
+     */
+    ListenableFuture<R<MutationResult>> insertAsync(InsertParam requestParam);
 
     /**
      * Deletes entity(s) based on primary key(s) filtered by boolean expression. Current release 
@@ -284,6 +294,14 @@ public interface MilvusClient {
     R<SearchResults> search(SearchParam requestParam);
 
     /**
+     * Conducts ANN search on a vector field asynchronously. Use expression to do filtering before search.
+     *
+     * @param requestParam {@link SearchParam}
+     * @return a <code>ListenableFuture</code> object which holds the object {status:result code, data: SearchResults{topK results}}
+     */
+    ListenableFuture<R<SearchResults>> searchAsync(SearchParam requestParam);
+
+    /**
      * Queries entity(s) based on scalar field(s) filtered by boolean expression. 
      * Note that the order of the returned entities cannot be guaranteed.
      *
@@ -291,6 +309,15 @@ public interface MilvusClient {
      * @return {status:result code,data: QueryResults{filter results}}
      */
     R<QueryResults> query(QueryParam requestParam);
+
+    /**
+     * Queries entity(s) asynchronously based on scalar field(s) filtered by boolean expression.
+     * Note that the order of the returned entities cannot be guaranteed.
+     *
+     * @param requestParam {@link QueryParam}
+     * @return {status:result code,data: QueryResults{filter results}}
+     */
+    ListenableFuture<R<QueryResults>> queryAsync(QueryParam requestParam);
 
     /**
      * Calculates the distance between the specified vectors.

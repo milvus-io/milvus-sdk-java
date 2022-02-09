@@ -68,7 +68,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     private static class TimeoutInterceptor implements ClientInterceptor {
-        private long timeoutMillis;
+        private final long timeoutMillis;
 
         TimeoutInterceptor(long timeoutMillis) {
             this.timeoutMillis = timeoutMillis;

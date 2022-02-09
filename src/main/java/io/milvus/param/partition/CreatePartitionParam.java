@@ -21,8 +21,6 @@ package io.milvus.param.partition;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.index.GetIndexStateParam;
 import lombok.Getter;
 import lombok.NonNull;
 
