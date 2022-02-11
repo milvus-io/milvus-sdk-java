@@ -35,9 +35,10 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.plexus.util.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class MilvusClientDockerTest {
+class MilvusClientDockerTest {
     private static final Logger logger = LogManager.getLogger("MilvusClientTest");
     private static MilvusClient client;
     private static RandomStringGenerator generator;
@@ -124,7 +125,7 @@ public class MilvusClientDockerTest {
         }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         startDockerContainer();
 
@@ -133,7 +134,7 @@ public class MilvusClientDockerTest {
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         if (client != null) {
             client.close();
@@ -195,7 +196,7 @@ public class MilvusClientDockerTest {
     }
 
     @Test
-    public void testFloatVectors() {
+    void testFloatVectors() {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
@@ -467,7 +468,7 @@ public class MilvusClientDockerTest {
     }
 
     @Test
-    public void testBinaryVectors() {
+    void testBinaryVectors() {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
@@ -580,7 +581,7 @@ public class MilvusClientDockerTest {
     }
 
     @Test
-    public void testAsyncMethods() {
+    void testAsyncMethods() {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
