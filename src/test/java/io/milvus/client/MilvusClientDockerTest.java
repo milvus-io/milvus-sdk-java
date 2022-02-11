@@ -55,7 +55,7 @@ public class MilvusClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
     private static final int dimension = 128;
-    private static final Boolean useDockerCompose = Boolean.FALSE;
+    private static final Boolean useDockerCompose = Boolean.TRUE;
 
     private static void startDockerContainer() {
         if (!useDockerCompose) {
@@ -73,6 +73,11 @@ public class MilvusClientDockerTest {
             if (status != 0) {
                 logger.error("Failed to start docker compose, status " + status);
             }
+
+            // here stop 10 seconds, reason: although milvus container is alive, it is still in initializing,
+            // connection will failed and get error "proxy not health".
+            TimeUnit.SECONDS.sleep(10);
+            logger.debug("Milvus service started");
         } catch (Throwable t) {
             logger.error("Failed to execute docker compose up", t);
         }
@@ -88,6 +93,8 @@ public class MilvusClientDockerTest {
         String bashCommand = "docker-compose down";
 
         try {
+            logger.debug("Milvus service stopping...");
+            TimeUnit.SECONDS.sleep(5);
             logger.debug(bashCommand);
             Process pro = runtime.exec(bashCommand);
             int status = pro.waitFor();
