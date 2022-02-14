@@ -1,19 +1,26 @@
 # Changelog
 
-## milvus-sdk-java 2.0.3 (2021-01-27)
+## milvus-sdk-java 2.0.4 (2022-02-14)
+
+### Feature
+
+- \#260 - Implement async interfaces for insert/search/query
+- Expose flush() interface
+
+## milvus-sdk-java 2.0.3 (2022-01-27)
 
 ### Improvement
 
 - \#255 - Rename io.milvus.Response to io.milvus.response
 
-## milvus-sdk-java 2.0.2 (2021-01-24)
+## milvus-sdk-java 2.0.2 (2022-01-24)
 
 ### Improvement
 
 - \#250 - Upgrade log4j-core to 2.17.1
 
 
-## milvus-sdk-java 2.0.1 (2021-01-18)
+## milvus-sdk-java 2.0.1 (2022-01-18)
 
 ### Improvement
 
