@@ -1487,8 +1487,93 @@ class MilvusServiceClientTest {
                 .withFields(fields)
                 .build();
 
-        testFuncByName("insert", param);
-        testAsyncFuncByName("insertAsync", param);
+        CollectionSchema.Builder colBuilder = CollectionSchema.newBuilder();
+        for (int i = fields.size() - 1; i >= 0; i--) {
+            InsertParam.Field field = fields.get(i);
+            boolean primaryKey = field.getName().equals("field1");
+            FieldType.Builder builder = FieldType.newBuilder()
+                    .withName(field.getName())
+                    .withDataType(field.getType())
+                    .withAutoID(false)
+                    .withPrimaryKey(primaryKey);
+            if (field.getType() == DataType.BinaryVector) {
+                builder.withDimension(16);
+            } else if (field.getType() == DataType.FloatVector) {
+                builder.withDimension(2);
+            }
+
+            colBuilder.addFields(ParamUtils.ConvertField(builder.build()));
+        }
+
+        {
+            // start mock server
+            MockMilvusServer server = startServer();
+            MilvusServiceClient client = startClient();
+
+            mockServerImpl.setDescribeCollectionResponse(DescribeCollectionResponse.newBuilder()
+                    .setCollectionID(1L)
+                    .setShardsNum(2)
+                    .setSchema(colBuilder.build())
+                    .build());
+
+            // test return ok with correct input
+            R<MutationResult> resp = client.insert(param);
+            assertEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            server.stop();
+
+            // test return error without server
+            resp = client.insert(param);
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error when client channel is shutdown
+            client.close();
+            resp = client.insert(param);
+            assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+
+            // stop mock server
+            server.stop();
+        }
+
+        {
+            // start mock server
+            MockMilvusServer server = startServer();
+            MilvusServiceClient client = startClient();
+
+            // test return ok with insertAsync
+            try {
+                ListenableFuture<R<MutationResult>> respFuture = client.insertAsync(param);
+                R<MutationResult> response = respFuture.get();
+                assertEquals(R.Status.Success.getCode(), response.getStatus());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            // stop mock server
+            server.stop();
+
+            // test return error without server
+            try {
+                ListenableFuture<R<MutationResult>> respFuture = client.insertAsync(param);
+                R<MutationResult> response = respFuture.get();
+                assertNotEquals(R.Status.Success.getCode(), response.getStatus());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            // test return error when client channel is shutdown
+            client.close();
+            try {
+                ListenableFuture<R<MutationResult>> respFuture = client.insertAsync(param);
+                R<MutationResult> response = respFuture.get();
+                assertNotEquals(R.Status.Success.getCode(), response.getStatus());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            // stop mock server
+            server.stop();
+        }
     }
 
     @Test

@@ -3,6 +3,7 @@ package io.milvus.param;
 import com.google.protobuf.ByteString;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
@@ -11,10 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -38,9 +36,11 @@ public class ParamUtils {
      * Convert {@link InsertParam} to proto type InsertRequest.
      *
      * @param requestParam {@link InsertParam} object
+     * @param fieldTypes {@link FieldType} object to validate the requestParam
      * @return a <code>InsertRequest</code> object
      */
-    public static InsertRequest ConvertInsertParam(@NonNull InsertParam requestParam) {
+    public static InsertRequest ConvertInsertParam(@NonNull InsertParam requestParam,
+                                                   @NonNull List<FieldType> fieldTypes) {
         String collectionName = requestParam.getCollectionName();
         String partitionName = requestParam.getPartitionName();
         List<InsertParam.Field> fields = requestParam.getFields();
@@ -54,9 +54,30 @@ public class ParamUtils {
                 .setNumRows(requestParam.getRowCount());
 
         // gen fieldData
-        // TODO: check field type(use DescribeCollection get schema to compare)
-        for (InsertParam.Field field : fields) {
-            insertBuilder.addFieldsData(genFieldData(field.getName(), field.getType(), field.getValues()));
+        // make sure the field order must be consist with collection schema
+        for (FieldType fieldType : fieldTypes) {
+            boolean found = false;
+            for (InsertParam.Field field : fields) {
+                if (field.getName().equals(fieldType.getName())) {
+                    if (fieldType.isAutoID()) {
+                        String msg = "The primary key: " + fieldType.getName() + " is auto generated, no need to input.";
+                        throw new ParamException(msg);
+                    }
+                    if (fieldType.getDataType() != field.getType()) {
+                        String msg = "The field: " + fieldType.getName() + " data type doesn't match the collection schema.";
+                        throw new ParamException(msg);
+                    }
+
+                    found = true;
+                    insertBuilder.addFieldsData(genFieldData(field.getName(), field.getType(), field.getValues()));
+                    break;
+                }
+
+            }
+            if (!found && !fieldType.isAutoID()) {
+                String msg = "The field: " + fieldType.getName() + " is not provided.";
+                throw new ParamException(msg);
+            }
         }
 
         // gen request
@@ -271,5 +292,45 @@ public class ParamUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Convert a grpc field schema to client field schema
+     *
+     * @param field FieldSchema object
+     * @return {@link FieldType} schema of the field
+     */
+    public static FieldType ConvertField(@NonNull FieldSchema field) {
+        FieldType.Builder builder = FieldType.newBuilder()
+                .withName(field.getName())
+                .withDescription(field.getDescription())
+                .withPrimaryKey(field.getIsPrimaryKey())
+                .withAutoID(field.getAutoID())
+                .withDataType(field.getDataType());
+
+        List<KeyValuePair> keyValuePairs = field.getTypeParamsList();
+        keyValuePairs.forEach((kv) -> builder.addTypeParam(kv.getKey(), kv.getValue()));
+
+        return builder.build();
+    }
+
+    /**
+     * Convert a client field schema to grpc field schema
+     *
+     * @param field {@link FieldType} object
+     * @return {@link FieldSchema} schema of the field
+     */
+    public static FieldSchema ConvertField(@NonNull FieldType field) {
+        FieldSchema.Builder builder = FieldSchema.newBuilder()
+                .setIsPrimaryKey(field.isPrimaryKey())
+                .setAutoID(field.isAutoID())
+                .setName(field.getName())
+                .setDescription(field.getDescription())
+                .setDataType(field.getDataType());
+        Map<String, String> params = field.getTypeParams();
+        params.forEach((key, value) -> builder.addTypeParams(KeyValuePair.newBuilder()
+                .setKey(key).setValue(value).build()));
+
+        return builder.build();
     }
 }

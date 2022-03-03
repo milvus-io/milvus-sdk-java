@@ -272,10 +272,10 @@ class MilvusClientDockerTest {
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(field1Name, DataType.Int64, ids));
-        fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
-        fieldsInsert.add(new InsertParam.Field(field3Name, DataType.Bool, genders));
-        fieldsInsert.add(new InsertParam.Field(field4Name, DataType.Double, weights));
         fieldsInsert.add(new InsertParam.Field(field5Name, DataType.Int8, ages));
+        fieldsInsert.add(new InsertParam.Field(field4Name, DataType.Double, weights));
+        fieldsInsert.add(new InsertParam.Field(field3Name, DataType.Bool, genders));
+        fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -284,7 +284,9 @@ class MilvusClientDockerTest {
 
         R<MutationResult> insertR = client.withTimeout(10, TimeUnit.SECONDS).insert(insertParam);
         assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-        System.out.println(insertR.getData());
+
+        MutationResultWrapper insertResultWrapper = new MutationResultWrapper(insertR.getData());
+        System.out.println(insertResultWrapper.getInsertCount() + " rows inserted");
 
         // get collection statistics
         R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam

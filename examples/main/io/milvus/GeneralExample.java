@@ -446,9 +446,9 @@ public class GeneralExample {
         }
 
         List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field(AGE_FIELD, DataType.Int8, ages));
         fields.add(new InsertParam.Field(VECTOR_FIELD, DataType.FloatVector, vectors));
 //        fields.add(new InsertParam.Field(PROFILE_FIELD, DataType.BinaryVector, profiles));
-        fields.add(new InsertParam.Field(AGE_FIELD, DataType.Int8, ages));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
