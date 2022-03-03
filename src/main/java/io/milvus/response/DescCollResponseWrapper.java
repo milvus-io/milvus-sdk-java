@@ -4,6 +4,7 @@ import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
 
@@ -90,7 +91,7 @@ public class DescCollResponseWrapper {
         List<FieldType> results = new ArrayList<>();
         CollectionSchema schema = response.getSchema();
         List<FieldSchema> fields = schema.getFieldsList();
-        fields.forEach((field) -> results.add(convertField(field)));
+        fields.forEach((field) -> results.add(ParamUtils.ConvertField(field)));
 
         return results;
     }
@@ -107,30 +108,11 @@ public class DescCollResponseWrapper {
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
             FieldSchema field = schema.getFields(i);
             if (fieldName.compareTo(field.getName()) == 0) {
-                return convertField(field);
+                return ParamUtils.ConvertField(field);
             }
         }
 
         return null;
-    }
-
-    /**
-     * Convert a grpc field schema to client schema
-     *
-     * @return {@link FieldType} schema of the field
-     */
-    private FieldType convertField(@NonNull FieldSchema field) {
-        FieldType.Builder builder = FieldType.newBuilder()
-                .withName(field.getName())
-                .withDescription(field.getDescription())
-                .withPrimaryKey(field.getIsPrimaryKey())
-                .withAutoID(field.getAutoID())
-                .withDataType(field.getDataType());
-
-        List<KeyValuePair> keyValuePairs = field.getTypeParamsList();
-        keyValuePairs.forEach((kv) -> builder.addTypeParam(kv.getKey(), kv.getValue()));
-
-        return builder.build();
     }
 
     /**
@@ -146,7 +128,7 @@ public class DescCollResponseWrapper {
                 ", id:" + getCollectionID() +
                 ", shardNumber:" + getShardNumber() +
                 ", createdUtcTimestamp:" + getCreatedUtcTimestamp() +
-                ", aliases:" + getAliases() +
+                ", aliases:" + getAliases().toString() +
                 ", fields:" + getFields().toString() +
                 '}';
     }
