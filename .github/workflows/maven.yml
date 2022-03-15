@@ -22,5 +22,9 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
           cache: maven
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Update submodule
+        run: git submodule update --init
       - name: Build with Maven
         run: mvn --batch-mode --update-snapshots verify
