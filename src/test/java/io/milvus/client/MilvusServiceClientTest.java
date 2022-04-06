@@ -248,31 +248,31 @@ class MilvusServiceClientTest {
     void createCollectionParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            FieldType.newBuilder()
-                    .withName("")
-                    .withDataType(DataType.Int64)
-                    .build()
+                FieldType.newBuilder()
+                        .withName("")
+                        .withDataType(DataType.Int64)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            FieldType.newBuilder()
-                    .withName("userID")
-                    .build()
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            FieldType.newBuilder()
-                    .withName("userID")
-                    .withDataType(DataType.FloatVector)
-                    .build()
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .withDataType(DataType.FloatVector)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            CreateCollectionParam
-                    .newBuilder()
-                    .withCollectionName("collection1")
-                    .withShardsNum(2)
-                    .build()
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .withShardsNum(2)
+                        .build()
         );
 
         FieldType fieldType1 = FieldType.newBuilder()
@@ -284,12 +284,12 @@ class MilvusServiceClientTest {
                 .build();
 
         assertThrows(ParamException.class, () ->
-            CreateCollectionParam
-                    .newBuilder()
-                    .withCollectionName("")
-                    .withShardsNum(2)
-                    .addFieldType(fieldType1)
-                    .build()
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("")
+                        .withShardsNum(2)
+                        .addFieldType(fieldType1)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
@@ -298,7 +298,7 @@ class MilvusServiceClientTest {
                         .withCollectionName("collection1")
                         .withShardsNum(0)
                         .addFieldType(fieldType1)
-                    .build()
+                        .build()
         );
 
         List<FieldType> fields = Collections.singletonList(null);
@@ -370,9 +370,9 @@ class MilvusServiceClientTest {
     void dropCollectionParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            DropCollectionParam.newBuilder()
-                    .withCollectionName("")
-                    .build()
+                DropCollectionParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
         );
     }
 
@@ -389,9 +389,9 @@ class MilvusServiceClientTest {
     void getCollectionStatisticsParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            GetCollectionStatisticsParam.newBuilder()
-                    .withCollectionName("")
-                    .build()
+                GetCollectionStatisticsParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
         );
     }
 
@@ -425,7 +425,7 @@ class MilvusServiceClientTest {
             mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
                     .setFlushed(true)
                     .build());
-        },"RefreshFlushState").start();
+        }, "RefreshFlushState").start();
 
         R<GetCollectionStatisticsResponse> resp = client.getCollectionStatistics(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
@@ -447,9 +447,9 @@ class MilvusServiceClientTest {
     void hasCollectionParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            HasCollectionParam.newBuilder()
-                    .withCollectionName("")
-                    .build()
+                HasCollectionParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
         );
     }
 
@@ -466,33 +466,33 @@ class MilvusServiceClientTest {
     void loadCollectionParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            LoadCollectionParam.newBuilder()
-                    .withCollectionName("")
-                    .build()
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            LoadCollectionParam.newBuilder()
-                    .withCollectionName("collection1")
-                    .withSyncLoad(Boolean.TRUE)
-                    .withSyncLoadWaitingInterval(0L)
-                    .build()
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName("collection1")
+                        .withSyncLoad(Boolean.TRUE)
+                        .withSyncLoadWaitingInterval(0L)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            LoadCollectionParam.newBuilder()
-                    .withCollectionName("collection1")
-                    .withSyncLoad(Boolean.TRUE)
-                    .withSyncLoadWaitingInterval(-1L)
-                    .build()
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName("collection1")
+                        .withSyncLoad(Boolean.TRUE)
+                        .withSyncLoadWaitingInterval(-1L)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
-            LoadCollectionParam.newBuilder()
-                    .withCollectionName("collection1")
-                    .withSyncLoad(Boolean.TRUE)
-                    .withSyncLoadWaitingInterval(Constant.MAX_WAITING_LOADING_INTERVAL + 1)
-                    .build()
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName("collection1")
+                        .withSyncLoad(Boolean.TRUE)
+                        .withSyncLoadWaitingInterval(Constant.MAX_WAITING_LOADING_INTERVAL + 1)
+                        .build()
         );
 
         assertThrows(ParamException.class, () ->
@@ -557,7 +557,7 @@ class MilvusServiceClientTest {
                         .addInMemoryPercentages(100)
                         .build());
             }
-        },"RefreshMemState").start();
+        }, "RefreshMemState").start();
 
         param = LoadCollectionParam.newBuilder()
                 .withCollectionName(collectionName)
@@ -584,9 +584,9 @@ class MilvusServiceClientTest {
     void releaseCollectionParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () ->
-            ReleaseCollectionParam.newBuilder()
-                    .withCollectionName("")
-                    .build()
+                ReleaseCollectionParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
         );
     }
 
@@ -611,9 +611,9 @@ class MilvusServiceClientTest {
         );
 
         assertThrows(ParamException.class, () ->
-            ShowCollectionsParam.newBuilder()
-                    .addCollectionName("")
-                    .build()
+                ShowCollectionsParam.newBuilder()
+                        .addCollectionName("")
+                        .build()
         );
 
         // verify internal param
@@ -888,7 +888,7 @@ class MilvusServiceClientTest {
                     TimeUnit.MILLISECONDS.sleep(100);
                     mockServerImpl.setShowPartitionsResponse(ShowPartitionsResponse.newBuilder()
                             .addPartitionNames(partitionName)
-                            .addInMemoryPercentages(i*10)
+                            .addInMemoryPercentages(i * 10)
                             .build());
                 }
             } catch (InterruptedException e) {
@@ -897,7 +897,7 @@ class MilvusServiceClientTest {
                         .addInMemoryPercentages(100)
                         .build());
             }
-        },"RefreshMemState").start();
+        }, "RefreshMemState").start();
 
         param = LoadPartitionsParam.newBuilder()
                 .withCollectionName(collectionName)
@@ -1401,7 +1401,7 @@ class MilvusServiceClientTest {
 
         List<DataType> testTypes = Arrays.asList(DataType.Int64, DataType.Int32, DataType.Int16, DataType.Int8,
                 DataType.Float, DataType.Double, DataType.Bool, DataType.BinaryVector);
-        testTypes.forEach((tp)->{
+        testTypes.forEach((tp) -> {
             fields.clear();
             List<String> fakeVectors3 = Arrays.asList("1", "2", "3");
             fields.add(new InsertParam.Field("field3", tp, fakeVectors3));
@@ -1460,15 +1460,15 @@ class MilvusServiceClientTest {
         List<ByteBuffer> bVectors = new ArrayList<>();
         List<List<Float>> fVectors = new ArrayList<>();
         for (int i = 0; i < 3; ++i) {
-            ids.add((long)i);
+            ids.add((long) i);
             nVal.add(i);
             bVal.add(Boolean.TRUE);
             fVal.add(0.5f);
             dVal.add(1.0);
             sVal.add(String.valueOf(i));
             ByteBuffer buf = ByteBuffer.allocate(2);
-            buf.put((byte)1);
-            buf.put((byte)2);
+            buf.put((byte) 1);
+            buf.put((byte) 2);
             bVectors.add(buf);
             List<Float> vec = Arrays.asList(0.1f, 0.2f);
             fVectors.add(vec);
@@ -1601,6 +1601,30 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("delete", param);
+    }
+
+    @Test
+    void import_() {
+        List<String> files = Collections.singletonList("f1");
+        ImportParam param = ImportParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionName("partition1")
+                .withRowBased(true)
+                .addFile("dummy.json")
+                .withFiles(files)
+                .withBucket("myBucket")
+                .build();
+
+        testFuncByName("importData", param);
+    }
+
+    @Test
+    void getImportState() {
+        GetImportStateParam param = GetImportStateParam.newBuilder()
+                .withTaskID(100L)
+                .build();
+
+        testFuncByName("getImportState", param);
     }
 
     @Test
@@ -1799,8 +1823,8 @@ class MilvusServiceClientTest {
 
         List<ByteBuffer> bVectors = new ArrayList<>();
         ByteBuffer buf = ByteBuffer.allocate(2);
-        buf.put((byte)1);
-        buf.put((byte)2);
+        buf.put((byte) 1);
+        buf.put((byte) 2);
         bVectors.add(buf);
         param = SearchParam.newBuilder()
                 .withCollectionName("collection1")
@@ -2442,7 +2466,7 @@ class MilvusServiceClientTest {
         SearchResultsWrapper intWrapper = new SearchResultsWrapper(results);
         assertThrows(ParamException.class, () -> intWrapper.getFieldData(fieldName, -1));
         assertThrows(ParamException.class, () -> intWrapper.getFieldData("invalid", 0));
-        assertEquals(topK, intWrapper.getFieldData(fieldName, (int)numQueries-1).size());
+        assertEquals(topK, intWrapper.getFieldData(fieldName, (int) numQueries - 1).size());
 
         List<SearchResultsWrapper.IDScore> idScores = intWrapper.getIDScore(1);
         assertFalse(idScores.toString().isEmpty());
@@ -2468,7 +2492,7 @@ class MilvusServiceClientTest {
         assertFalse(idScores.toString().isEmpty());
         assertEquals(topK, idScores.size());
 
-        idScores.forEach((score)->assertFalse(score.toString().isEmpty()));
+        idScores.forEach((score) -> assertFalse(score.toString().isEmpty()));
     }
 
     @Test
@@ -2525,5 +2549,36 @@ class MilvusServiceClientTest {
 
             assertFalse(info.toString().isEmpty());
         }
+    }
+
+    @Test
+    void testGetImportStateWrapper() {
+        long count = 1000;
+        long id = 88;
+        ImportState state = ImportState.ImportStarted;
+        String reason = "unexpected error";
+        String files = "1.json";
+        GetImportStateResponse reso = GetImportStateResponse.newBuilder()
+                .setState(state)
+                .setRowCount(count)
+                .addIdList(id)
+                .addInfos(KeyValuePair.newBuilder()
+                        .setKey(Constant.FAILED_REASON)
+                        .setValue(reason)
+                        .build())
+                .addInfos(KeyValuePair.newBuilder()
+                        .setKey(Constant.IMPORT_FILES)
+                        .setValue(files)
+                        .build())
+                .build();
+
+        GetImportStateWrapper wrapper = new GetImportStateWrapper(reso);
+        assertEquals(count, wrapper.getImportedCount());
+        assertEquals(1, wrapper.getAutoGeneratedIDs().size());
+        assertEquals(id, wrapper.getAutoGeneratedIDs().get(0));
+        assertEquals(reason, wrapper.getFailedReason());
+        assertEquals(files, wrapper.getFiles());
+
+        assertFalse(wrapper.toString().isEmpty());
     }
 }

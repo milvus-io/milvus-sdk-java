@@ -33,6 +33,9 @@ public class Constant {
     public static final String ROUND_DECIMAL = "round_decimal";
     public static final String PARAMS = "params";
     public static final String ROW_COUNT = "row_count";
+    public static final String BUCKET = "bucket";
+    public static final String FAILED_REASON = "failed_reason";
+    public static final String IMPORT_FILES = "files";
 
     // max value for waiting loading collection/partition interval, unit: millisecond
     public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;

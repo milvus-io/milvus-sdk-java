@@ -1187,6 +1187,72 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<ImportResponse> importData(@NonNull ImportParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            ImportRequest.Builder builder = ImportRequest.newBuilder();
+            builder.setCollectionName(requestParam.getCollectionName())
+                    .setPartitionName(requestParam.getPartitionName())
+                    .setRowBased(requestParam.isRowBased());
+            requestParam.getFiles().forEach(builder::addFiles);
+            List<KeyValuePair> options = assembleKvPair(requestParam.getOptions());
+            if (CollectionUtils.isNotEmpty(options)) {
+                options.forEach(builder::addOptions);
+            }
+
+            ImportRequest importRequest = builder.build();
+            ImportResponse response = blockingStub().import_(importRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("ImportRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("ImportRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("ImportRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ImportRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetImportStateRequest importRequest = GetImportStateRequest.newBuilder()
+                    .setTask(requestParam.getTaskID())
+                    .build();
+            GetImportStateResponse response = blockingStub().getImportState(importRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("GetImportStateRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("GetImportStateRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetImportStateRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetImportStateRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<MutationResult> insert(@NonNull InsertParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
