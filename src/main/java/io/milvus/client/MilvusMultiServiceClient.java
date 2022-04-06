@@ -285,6 +285,19 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<ImportResponse> importData(@NonNull ImportParam requestParam) {
+        List<R<ImportResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().importData(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getImportState(requestParam);
+    }
+
+    @Override
     public R<SearchResults> search(SearchParam requestParam) {
         return this.clusterFactory.getMaster().getClient().search(requestParam);
     }

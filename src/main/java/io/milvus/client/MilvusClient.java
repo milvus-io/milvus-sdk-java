@@ -286,6 +286,22 @@ public interface MilvusClient {
     R<MutationResult> delete(DeleteParam requestParam);
 
     /**
+     * Import data from external files, currently support JSON/Numpy format
+     *
+     * @param requestParam {@link ImportParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<ImportResponse> importData(ImportParam requestParam);
+
+    /**
+     * Import data from external files, currently support JSON/Numpy format
+     *
+     * @param requestParam {@link GetImportStateParam}
+     * @return {status:result code, data:GetImportStateResponse{status,state}}
+     */
+    R<GetImportStateResponse> getImportState(GetImportStateParam requestParam);
+
+    /**
      * Conducts ANN search on a vector field. Use expression to do filtering before search.
      *
      * @param requestParam {@link SearchParam}

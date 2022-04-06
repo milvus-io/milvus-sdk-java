@@ -208,7 +208,7 @@ public class FieldType {
                 ", type='" + dataType.name() + '\'' +
                 ", primaryKey=" + primaryKey +
                 ", autoID=" + autoID +
-                ", params=" + typeParams.toString() +
+                ", params=" + typeParams +
                 '}';
     }
 }
