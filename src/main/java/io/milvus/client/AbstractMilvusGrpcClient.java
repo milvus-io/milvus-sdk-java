@@ -1253,6 +1253,33 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<ListImportTasksResponse> listImportTasks(@NonNull ListImportTasksParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            ListImportTasksRequest listRequest = ListImportTasksRequest.newBuilder().build();
+            ListImportTasksResponse response = blockingStub().listImportTasks(listRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("ListImportTasksRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("ListImportTasksRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("ListImportTasksRequest RPC failed! \n{}", e.getMessage());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ListImportTasksRequest failed! \n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<MutationResult> insert(@NonNull InsertParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));

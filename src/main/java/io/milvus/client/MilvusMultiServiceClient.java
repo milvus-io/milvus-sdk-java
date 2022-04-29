@@ -298,6 +298,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<ListImportTasksResponse> listImportTasks(@NonNull ListImportTasksParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listImportTasks(requestParam);
+    }
+
+    @Override
     public R<SearchResults> search(SearchParam requestParam) {
         return this.clusterFactory.getMaster().getClient().search(requestParam);
     }

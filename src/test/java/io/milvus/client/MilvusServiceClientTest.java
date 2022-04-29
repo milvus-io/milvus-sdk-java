@@ -1604,7 +1604,7 @@ class MilvusServiceClientTest {
     }
 
     @Test
-    void import_() {
+    void importData() {
         List<String> files = Collections.singletonList("f1");
         ImportParam param = ImportParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1625,6 +1625,13 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("getImportState", param);
+    }
+
+    @Test
+    void listImportTasks() {
+        ListImportTasksParam param = ListImportTasksParam.newBuilder().build();
+
+        testFuncByName("listImportTasks", param);
     }
 
     @Test
