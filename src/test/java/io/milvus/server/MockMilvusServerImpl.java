@@ -52,6 +52,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.MutationResult respDelete;
     private io.milvus.grpc.ImportResponse respImport;
     private io.milvus.grpc.GetImportStateResponse respImportState;
+    private io.milvus.grpc.ListImportTasksResponse respListImportTasks;
     private io.milvus.grpc.SearchResults respSearch;
     private io.milvus.grpc.FlushResponse respFlush;
     private io.milvus.grpc.QueryResults respQuery;
@@ -405,6 +406,15 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         logger.info("getImportState() call");
 
         responseObserver.onNext(respImportState);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void listImportTasks(io.milvus.grpc.ListImportTasksRequest request,
+                               io.grpc.stub.StreamObserver<io.milvus.grpc.ListImportTasksResponse> responseObserver) {
+        logger.info("listImportTasks() call");
+
+        responseObserver.onNext(respListImportTasks);
         responseObserver.onCompleted();
     }
 

@@ -302,6 +302,14 @@ public interface MilvusClient {
     R<GetImportStateResponse> getImportState(GetImportStateParam requestParam);
 
     /**
+     * List all import tasks
+     *
+     * @param requestParam {@link ListImportTasksParam}
+     * @return {status:result code, data:ListImportTasksResponse{status,state}}
+     */
+    R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam);
+
+    /**
      * Conducts ANN search on a vector field. Use expression to do filtering before search.
      *
      * @param requestParam {@link SearchParam}
