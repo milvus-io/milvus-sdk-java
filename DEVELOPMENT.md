@@ -8,9 +8,21 @@ This document will help to setup your development environment and running tests 
     -   Apache Maven
 
 ## Building Milvus java SDK
+fetch proto files from submodule project
+```shell
+  git submodule update --init
+```
+
 call the following command to generate protobuf related code
 ```shell
   mvn install
+```
+
+## Update Milvus proto files
+Milvus proto files are managed by a submodule project under the directory: src/main/milvus-proto
+Before developing a new interfaces, you need to get latest proto files by the following commands:
+```shell
+  git submodule update --remote
 ```
 
 ## Building Milvus
