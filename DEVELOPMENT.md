@@ -20,7 +20,7 @@ call the following command to generate protobuf related code
 
 ## Update Milvus proto files
 Milvus proto files are managed by a submodule project under the directory: src/main/milvus-proto
-Before developing a new interfaces, you need to get latest proto files by the following commands:
+Before developing new interfaces, you need to get the latest proto files by the following command:
 ```shell
   git submodule update --remote
 ```
