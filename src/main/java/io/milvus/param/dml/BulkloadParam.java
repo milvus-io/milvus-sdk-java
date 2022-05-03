@@ -32,17 +32,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Parameters for <code>importData</code> interface.
+ * Parameters for <code>bulkload</code> interface.
  */
 @Getter
-public class ImportParam {
+public class BulkloadParam {
     private final String collectionName;
     private final String partitionName;
     private final boolean rowBased;
     private final List<String> files;
     private final Map<String, String> options = new HashMap<>();
 
-    private ImportParam(@NonNull Builder builder) {
+    private BulkloadParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.rowBased = builder.rowBased;
@@ -55,7 +55,7 @@ public class ImportParam {
     }
 
     /**
-     * Builder for {@link ImportParam} class.
+     * Builder for {@link BulkloadParam} class.
      */
     public static class Builder {
         private String collectionName;
@@ -137,25 +137,25 @@ public class ImportParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link ImportParam} instance.
+         * Verifies parameters and creates a new {@link BulkloadParam} instance.
          *
-         * @return {@link ImportParam}
+         * @return {@link BulkloadParam}
          */
-        public ImportParam build() throws ParamException {
+        public BulkloadParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            return new ImportParam(this);
+            return new BulkloadParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link ImportParam} instance.
+     * Constructs a <code>String</code> by {@link BulkloadParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "ImportParam{" +
+        return "BulkloadParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 ", files='" + files.toString() + '\'' +

@@ -5,13 +5,13 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>getImportState</code> interface.
+ * Parameters for <code>getBulkloadState</code> interface.
  */
 @Getter
-public class GetImportStateParam {
+public class GetBulkloadStateParam {
     private final long taskID;
 
-    private GetImportStateParam(@NonNull Builder builder) {
+    private GetBulkloadStateParam(@NonNull Builder builder) {
         this.taskID = builder.taskID;
     }
 
@@ -20,7 +20,7 @@ public class GetImportStateParam {
     }
 
     /**
-     * Builder for {@link GetImportStateParam} class.
+     * Builder for {@link GetBulkloadStateParam} class.
      */
     public static class Builder {
         private Long taskID;
@@ -29,7 +29,7 @@ public class GetImportStateParam {
         }
 
         /**
-         * Sets an import task id. The id is returned from importData() interface.
+         * Sets an import task id. The id is returned from bulkload() interface.
          *
          * @param taskID id of the task
          * @return <code>Builder</code>
@@ -40,27 +40,27 @@ public class GetImportStateParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link GetImportStateParam} instance.
+         * Verifies parameters and creates a new {@link GetBulkloadStateParam} instance.
          *
-         * @return {@link GetImportStateParam}
+         * @return {@link GetBulkloadStateParam}
          */
-        public GetImportStateParam build() throws ParamException {
+        public GetBulkloadStateParam build() throws ParamException {
             if (this.taskID == null) {
                 throw new ParamException("Task ID not specified");
             }
 
-            return new GetImportStateParam(this);
+            return new GetBulkloadStateParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link GetImportStateParam} instance.
+     * Constructs a <code>String</code> by {@link GetBulkloadStateParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "GetImportStateParam{" +
+        return "GetBulkloadStateParam{" +
                 "taskID='" + taskID + '\'' +
                 '}';
     }

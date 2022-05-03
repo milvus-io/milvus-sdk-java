@@ -1187,7 +1187,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<ImportResponse> importData(@NonNull ImportParam requestParam) {
+    public R<ImportResponse> bulkload(@NonNull BulkloadParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1224,7 +1224,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
+    public R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1253,7 +1253,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<ListImportTasksResponse> listImportTasks(@NonNull ListImportTasksParam requestParam) {
+    public R<ListImportTasksResponse> listBulkloadTasks(@NonNull ListBulkloadTasksParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
