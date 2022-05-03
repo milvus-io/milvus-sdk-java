@@ -288,26 +288,26 @@ public interface MilvusClient {
     /**
      * Import data from external files, currently support JSON/Numpy format
      *
-     * @param requestParam {@link ImportParam}
+     * @param requestParam {@link BulkloadParam}
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    R<ImportResponse> importData(ImportParam requestParam);
+    R<ImportResponse> bulkload(BulkloadParam requestParam);
 
     /**
-     * Import data from external files, currently support JSON/Numpy format
+     * Get state of bulk a load task
      *
-     * @param requestParam {@link GetImportStateParam}
+     * @param requestParam {@link GetBulkloadStateParam}
      * @return {status:result code, data:GetImportStateResponse{status,state}}
      */
-    R<GetImportStateResponse> getImportState(GetImportStateParam requestParam);
+    R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam);
 
     /**
-     * List all import tasks
+     * List all bulk load tasks
      *
-     * @param requestParam {@link ListImportTasksParam}
+     * @param requestParam {@link ListBulkloadTasksParam}
      * @return {status:result code, data:ListImportTasksResponse{status,state}}
      */
-    R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam);
+    R<ListImportTasksResponse> listBulkloadTasks(ListBulkloadTasksParam requestParam);
 
     /**
      * Conducts ANN search on a vector field. Use expression to do filtering before search.

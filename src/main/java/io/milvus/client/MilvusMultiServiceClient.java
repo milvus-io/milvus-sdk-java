@@ -285,21 +285,21 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
-    public R<ImportResponse> importData(@NonNull ImportParam requestParam) {
+    public R<ImportResponse> bulkload(@NonNull BulkloadParam requestParam) {
         List<R<ImportResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
-                .map(serverSetting -> serverSetting.getClient().importData(requestParam))
+                .map(serverSetting -> serverSetting.getClient().bulkload(requestParam))
                 .collect(Collectors.toList());
         return handleResponse(response);
     }
 
     @Override
-    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().getImportState(requestParam);
+    public R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getBulkloadState(requestParam);
     }
 
     @Override
-    public R<ListImportTasksResponse> listImportTasks(@NonNull ListImportTasksParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().listImportTasks(requestParam);
+    public R<ListImportTasksResponse> listBulkloadTasks(@NonNull ListBulkloadTasksParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listBulkloadTasks(requestParam);
     }
 
     @Override
