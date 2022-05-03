@@ -994,7 +994,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
-                    .setFieldName(requestParam.getFieldName()).build();
+                    .setFieldName(requestParam.getFieldName())
+                    .setIndexName(requestParam.getIndexName())
+                    .build();
 
             Status response = blockingStub().createIndex(createIndexRequest);
 
