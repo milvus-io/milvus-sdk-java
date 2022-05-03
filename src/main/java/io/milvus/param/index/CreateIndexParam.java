@@ -26,6 +26,7 @@ import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,6 +38,7 @@ import java.util.Map;
 public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
+    private final String indexName;
     private final Map<String, String> extraParam = new HashMap<>();
     private final boolean syncMode;
     private final long syncWaitingInterval;
@@ -45,6 +47,7 @@ public class CreateIndexParam {
     private CreateIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
+        this.indexName = builder.indexName;
         this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
         this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
         this.extraParam.put(Constant.PARAMS, builder.extraParam);
@@ -64,6 +67,7 @@ public class CreateIndexParam {
         private String collectionName;
         private String fieldName;
         private IndexType indexType;
+        private String indexName;
         private MetricType metricType;
         private String extraParam;
 
@@ -114,6 +118,18 @@ public class CreateIndexParam {
          */
         public Builder withIndexType(@NonNull IndexType indexType) {
             this.indexType = indexType;
+            return this;
+        }
+
+        /**
+         * The name of index which will be created. Then you can use the index name to check the state of index.
+         * If no index name is specified, the default index name("_default_idx") is used.
+         *
+         * @param indexName index name
+         * @return <code>Builder</code>
+         */
+        public Builder withIndexName(@NonNull String indexName) {
+            this.indexName = indexName;
             return this;
         }
 
@@ -190,6 +206,10 @@ public class CreateIndexParam {
         public CreateIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(fieldName, "Field name");
+
+            if (indexName == null || StringUtils.isBlank(indexName)) {
+                indexName = Constant.DEFAULT_INDEX_NAME;
+            }
 
             if (indexType == IndexType.INVALID) {
                 throw new ParamException("Index type is required");
