@@ -23,6 +23,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
+import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ public class LoadPartitionsParam {
     private final boolean syncLoad;
     private final long syncLoadWaitingInterval;
     private final long syncLoadWaitingTimeout;
+    private final int replicaNumber;
 
     private LoadPartitionsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -45,6 +47,7 @@ public class LoadPartitionsParam {
         this.syncLoad = builder.syncLoad;
         this.syncLoadWaitingInterval = builder.syncLoadWaitingInterval;
         this.syncLoadWaitingTimeout = builder.syncLoadWaitingTimeout;
+        this.replicaNumber = builder.replicaNumber;
     }
 
     public static Builder newBuilder() {
@@ -71,6 +74,10 @@ public class LoadPartitionsParam {
         //   When syncLoad is ture, loadPartition() will wait until partition finish loading,
         //   this value control the waiting timeout. Unit: second. Default value: 60 seconds.
         private Long syncLoadWaitingTimeout = 60L;
+
+        // replicaNumber:
+        //   The replica number to load, default by 1
+        private Integer replicaNumber = 1;
 
         private Builder() {
         }
@@ -147,6 +154,17 @@ public class LoadPartitionsParam {
          */
         public Builder withSyncLoadWaitingTimeout(@NonNull Long seconds) {
             this.syncLoadWaitingTimeout = seconds;
+            return this;
+        }
+
+        /**
+         * Specify replica number to load
+         *
+         * @param replicaNumber replica number
+         * @return <code>Builder</code>
+         */
+        public Builder withReplicaNumber(@NonNull Integer replicaNumber) {
+            this.replicaNumber = replicaNumber;
             return this;
         }
 
