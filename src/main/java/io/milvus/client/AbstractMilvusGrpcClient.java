@@ -421,6 +421,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
+                    .setReplicaNumber(requestParam.getReplicaNumber())
                     .build();
 
             Status response = blockingStub().loadCollection(loadCollectionRequest);
@@ -736,6 +737,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             LoadPartitionsRequest loadPartitionsRequest = LoadPartitionsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
+                    .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
                     .build();
 
@@ -841,7 +843,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             logError("GetPartitionStatisticsRequest RPC failed:\n{}", e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetQuerySegmentInfoRequest failed:\n{}", e.getMessage());
+            logError("GetPartitionStatisticsRequest failed:\n{}", e.getMessage());
             return R.failed(e);
         }
     }
