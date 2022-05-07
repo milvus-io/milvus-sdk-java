@@ -386,6 +386,14 @@ public interface MilvusClient {
     R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam);
 
     /**
+     * Returns the collection's replica information
+     *
+     * @param requestParam {@link GetReplicasParam}
+     * @return {status:result code, data:GetReplicasResponse{status,info}}
+     */
+    R<GetReplicasResponse> getReplicas(GetReplicasParam requestParam);
+
+    /**
      * Moves segment from a query node to another to keep the load balanced.
      *
      * @param requestParam {@link LoadBalanceParam}

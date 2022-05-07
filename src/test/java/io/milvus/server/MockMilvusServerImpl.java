@@ -60,6 +60,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.GetFlushStateResponse respGetFlushState;
     private io.milvus.grpc.GetPersistentSegmentInfoResponse respGetPersistentSegmentInfo;
     private io.milvus.grpc.GetQuerySegmentInfoResponse respGetQuerySegmentInfo;
+    private io.milvus.grpc.GetReplicasResponse respGetReplicas;
     private io.milvus.grpc.GetMetricsResponse respGetMetrics;
 
     private io.milvus.grpc.Status respLoadBalance;
@@ -511,6 +512,19 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     public void setGetQuerySegmentInfoResponse(io.milvus.grpc.GetQuerySegmentInfoResponse resp) {
         respGetQuerySegmentInfo = resp;
+    }
+
+    @Override
+    public void getReplicas(io.milvus.grpc.GetReplicasRequest request,
+                                    io.grpc.stub.StreamObserver<io.milvus.grpc.GetReplicasResponse> responseObserver) {
+        logger.info("getReplicas() call");
+
+        responseObserver.onNext(respGetReplicas);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetReplicasResponse(io.milvus.grpc.GetReplicasResponse resp) {
+        respGetReplicas = resp;
     }
 
     @Override

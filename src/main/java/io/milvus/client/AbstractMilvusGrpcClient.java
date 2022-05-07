@@ -1296,7 +1296,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withCollectionName(requestParam.getCollectionName())
                     .build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logInfo("Failed to describe collection: {}", requestParam.getCollectionName());
+                logError("Failed to describe collection: {}", requestParam.getCollectionName());
                 return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
             }
 
@@ -1719,6 +1719,45 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<GetReplicasResponse> getReplicas(GetReplicasParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
+                    .withCollectionName(requestParam.getCollectionName())
+                    .build());
+            if (descResp.getStatus() != R.Status.Success.getCode()) {
+                logError("Failed to describe collection: {}", requestParam.getCollectionName());
+                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+            }
+
+            GetReplicasRequest getReplicasRequest = GetReplicasRequest.newBuilder()
+                    .setCollectionID(descResp.getData().getCollectionID())
+                    .setWithShardNodes(requestParam.isWithShardNodes())
+                    .build();
+
+            GetReplicasResponse response = blockingStub().getReplicas(getReplicasRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logInfo("GetReplicasRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("GetReplicasRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetReplicasRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetReplicasRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<RpcStatus> loadBalance(LoadBalanceParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -1793,7 +1832,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withCollectionName(requestParam.getCollectionName())
                     .build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logInfo("ManualCompactionRequest successfully!");
+                logError("Failed to describe collection: {}", requestParam.getCollectionName());
                 return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
             }
 
