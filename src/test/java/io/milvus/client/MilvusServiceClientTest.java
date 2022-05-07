@@ -2058,6 +2058,25 @@ class MilvusServiceClientTest {
     }
 
     @Test
+    void getReplicasParam() {
+        // test throw exception with illegal input
+        assertThrows(ParamException.class, () -> GetQuerySegmentInfoParam
+                .newBuilder()
+                .withCollectionName("")
+                .build()
+        );
+    }
+
+    @Test
+    void getReplicas() {
+        GetReplicasParam param = GetReplicasParam.newBuilder()
+                .withCollectionName("collection1")
+                .build();
+
+        testFuncByName("getReplicas", param);
+    }
+
+    @Test
     void loadBalanceParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () -> LoadBalanceParam

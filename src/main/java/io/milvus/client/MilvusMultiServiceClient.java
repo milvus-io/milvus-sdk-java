@@ -348,6 +348,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<GetReplicasResponse> getReplicas(GetReplicasParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getReplicas(requestParam);
+    }
+
+    @Override
     public R<RpcStatus> loadBalance(LoadBalanceParam requestParam) {
         List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .map(serverSetting -> serverSetting.getClient().loadBalance(requestParam))
