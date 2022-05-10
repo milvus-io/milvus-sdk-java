@@ -19,7 +19,8 @@
 
 package io.milvus.server;
 
-import io.milvus.grpc.MilvusServiceGrpc;
+import io.grpc.stub.StreamObserver;
+import io.milvus.grpc.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,6 +68,11 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.GetCompactionStateResponse respGetCompactionState;
     private io.milvus.grpc.ManualCompactionResponse respManualCompaction;
     private io.milvus.grpc.GetCompactionPlansResponse respGetCompactionPlans;
+
+    private io.milvus.grpc.Status respCreateCredential;
+    private io.milvus.grpc.Status respUpdateCredential;
+    private io.milvus.grpc.Status respDeleteCredential;
+    private io.milvus.grpc.ListCredUsersResponse respListCredUsers;
 
     public MockMilvusServerImpl() {
     }
@@ -586,6 +592,54 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
         responseObserver.onNext(respGetCompactionPlans);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void createCredential(CreateCredentialRequest request, StreamObserver<Status> responseObserver) {
+        logger.info("createCredential() call");
+
+        responseObserver.onNext(respCreateCredential);
+        responseObserver.onCompleted();
+    }
+
+    public void setRespCreateCredential(Status respCreateCredential) {
+        this.respCreateCredential = respCreateCredential;
+    }
+
+    @Override
+    public void updateCredential(UpdateCredentialRequest request, StreamObserver<Status> responseObserver) {
+        logger.info("updateCredential() call");
+
+        responseObserver.onNext(respUpdateCredential);
+        responseObserver.onCompleted();
+    }
+
+    public void setRespUpdateCredential(Status respUpdateCredential) {
+        this.respUpdateCredential = respUpdateCredential;
+    }
+
+    @Override
+    public void deleteCredential(DeleteCredentialRequest request, StreamObserver<Status> responseObserver) {
+        logger.info("deleteCredential() call");
+
+        responseObserver.onNext(respDeleteCredential);
+        responseObserver.onCompleted();
+    }
+
+    public void setRespDeleteCredential(Status respDeleteCredential) {
+        this.respDeleteCredential = respDeleteCredential;
+    }
+
+    @Override
+    public void listCredUsers(ListCredUsersRequest request, StreamObserver<ListCredUsersResponse> responseObserver) {
+        logger.info("listCredUsers() call");
+
+        responseObserver.onNext(respListCredUsers);
+        responseObserver.onCompleted();
+    }
+
+    public void setRespListCredUsers(ListCredUsersResponse respListCredUsers) {
+        this.respListCredUsers = respListCredUsers;
     }
 
     public void setGetCompactionPlansResponse(io.milvus.grpc.GetCompactionPlansResponse resp) {

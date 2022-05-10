@@ -22,6 +22,8 @@ package io.milvus.param;
 import io.milvus.exception.ParamException;
 import lombok.NonNull;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -35,6 +37,7 @@ public class ConnectParam {
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
     private final long idleTimeoutMs;
+    private final String authorization;
 
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
@@ -44,6 +47,7 @@ public class ConnectParam {
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
         this.idleTimeoutMs = builder.idleTimeoutMs;
+        this.authorization = builder.authorization;
     }
 
     public String getHost() {
@@ -74,6 +78,10 @@ public class ConnectParam {
         return idleTimeoutMs;
     }
 
+    public String getAuthorization() {
+        return authorization;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -89,6 +97,7 @@ public class ConnectParam {
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
+        private String authorization = "";
 
         private Builder() {
         }
@@ -171,6 +180,27 @@ public class ConnectParam {
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
             this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
+            return this;
+        }
+
+        /**
+         * Sets the username and password for this connection
+         * @param username current user
+         * @param password password
+         * @return <code>Builder</code>
+         */
+        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
+            this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
+            return this;
+        }
+
+        /**
+         * Sets the authorization for this connection
+         * @param authorization the authorization info that has included the encoded username and password info
+         * @return <code>Builder</code>
+         */
+        public Builder withAuthorization(@NonNull String authorization) {
+            this.authorization = authorization;
             return this;
         }
 

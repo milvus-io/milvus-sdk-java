@@ -27,6 +27,7 @@ import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
+import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -424,4 +425,39 @@ public interface MilvusClient {
      * @return {status:result code, data:GetCompactionPlansResponse{status,info}}
      */
     R<GetCompactionPlansResponse> getCompactionStateWithPlans(GetCompactionPlansParam requestParam);
+
+    /**
+     * Create credential using the given user and password.
+     *
+     * @param requestParam {@link CreateCredentialParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createCredential(CreateCredentialParam requestParam);
+
+    /**
+     * Update credential using the given user and password.
+     * You must provide the original password to check if the operation is valid.
+     * Note: after this operation, client won't change the related header of this connection.
+     * So if you update credential for this connection, the connection may be invalid.
+     *
+     * @param requestParam {@link UpdateCredentialParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> updateCredential(UpdateCredentialParam requestParam);
+
+    /**
+     * Delete credential corresponding to the user.
+     *
+     * @param requestParam {@link DeleteCredentialParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> deleteCredential(DeleteCredentialParam requestParam);
+
+    /**
+     * List all user names.
+     *
+     * @param requestParam {@link ListCredUsersParam}
+     * @return {status:result code, data:ListCredUsersResponse{status,info}}
+     */
+    R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam);
 }

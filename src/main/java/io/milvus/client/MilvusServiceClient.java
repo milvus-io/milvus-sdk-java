@@ -20,6 +20,7 @@
 package io.milvus.client;
 
 import io.grpc.*;
+import io.grpc.stub.MetadataUtils;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
@@ -33,6 +34,9 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
     public MilvusServiceClient(@NonNull ConnectParam connectParam) {
+        Metadata metadata = new Metadata();
+        metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
+
         channel = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                 .usePlaintext()
                 .maxInboundMessageSize(Integer.MAX_VALUE)
@@ -40,6 +44,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                 .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
                 .build();
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);

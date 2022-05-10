@@ -126,7 +126,7 @@ class MilvusMultiClientDockerTest {
     public static void setUp() throws InterruptedException {
         startDockerContainer();
 
-        MultiConnectParam connectParam = multiConnectParamBuilder().build();
+        MultiConnectParam connectParam = multiConnectParamBuilder().withAuthorization("root", "Milvus").build();
         client = new MilvusMultiServiceClient(connectParam);
 //        TimeUnit.SECONDS.sleep(10);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();

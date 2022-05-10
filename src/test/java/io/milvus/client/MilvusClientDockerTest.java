@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
+//import io.milvus.param.credential.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
@@ -129,7 +130,7 @@ class MilvusClientDockerTest {
     public static void setUp() {
         startDockerContainer();
 
-        ConnectParam connectParam = connectParamBuilder().build();
+        ConnectParam connectParam = connectParamBuilder().withAuthorization("root", "Milvus").build();
         client = new MilvusServiceClient(connectParam);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     }
@@ -726,5 +727,41 @@ class MilvusClientDockerTest {
 
         R<RpcStatus> dropR = client.dropCollection(dropParam);
         assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    // this case can be executed when the milvus image of version 2.1 is published.
+    @Test
+    void testCredential() {
+        /*
+        R<ListCredUsersResponse> responseList = client.listCredUsers(ListCredUsersParam.newBuilder().build());
+        assertEquals(R.Status.Success.getCode(), responseList.getStatus().intValue());
+        int originSize = responseList.getData().getUsernamesList().size();
+
+        String username = "java_test";
+
+        R<RpcStatus> createR = client.createCredential(CreateCredentialParam
+                .newBuilder()
+                .withUsername(username)
+                .withPassword("123456")
+                .build());
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        R<RpcStatus> updateR = client.updateCredential(UpdateCredentialParam
+                .newBuilder()
+                .withUsername(username)
+                .withOldPassword("123456")
+                .withNewPassword("100000")
+                .build());
+        assertEquals(R.Status.Success.getCode(), updateR.getStatus().intValue());
+
+        R<ListCredUsersResponse> responseList2 = client.listCredUsers(ListCredUsersParam.newBuilder().build());
+        assertEquals(R.Status.Success.getCode(), responseList2.getStatus().intValue());
+        assertEquals(originSize + 1, responseList2.getData().getUsernamesList().size());
+
+        R<RpcStatus> deleteR = client.deleteCredential(DeleteCredentialParam
+                .newBuilder()
+                .withUsername(username)
+                .build());
+        assertEquals(R.Status.Success.getCode(), deleteR.getStatus().intValue());*/
     }
 }
