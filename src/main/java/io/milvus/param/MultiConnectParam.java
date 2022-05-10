@@ -4,6 +4,8 @@ import io.milvus.exception.ParamException;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +20,7 @@ public class MultiConnectParam {
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
     private final long idleTimeoutMs;
+    private final String authorization;
 
     private MultiConnectParam(@NonNull Builder builder) {
         this.hosts = builder.hosts;
@@ -27,6 +30,7 @@ public class MultiConnectParam {
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
         this.idleTimeoutMs = builder.idleTimeoutMs;
+        this.authorization = builder.authorization;
     }
 
     public List<ServerAddress> getHosts() {
@@ -57,6 +61,10 @@ public class MultiConnectParam {
         return idleTimeoutMs;
     }
 
+    public String getAuthorization() {
+        return authorization;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -72,6 +80,7 @@ public class MultiConnectParam {
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
+        private String authorization = "";
 
         private Builder() {
         }
@@ -154,6 +163,17 @@ public class MultiConnectParam {
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
             this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
+            return this;
+        }
+
+        /**
+         * Sets the username and password for this connection
+         * @param username current user
+         * @param password password
+         * @return <code>Builder</code>
+         */
+        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
+            this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
             return this;
         }
 

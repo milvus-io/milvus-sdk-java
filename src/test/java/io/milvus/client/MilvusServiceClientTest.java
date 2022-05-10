@@ -30,6 +30,7 @@ import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
+import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -2132,6 +2133,97 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("getCompactionStateWithPlans", param);
+    }
+
+    @Test
+    void createCredentialParam() {
+        assertThrows(ParamException.class, () -> CreateCredentialParam
+                .newBuilder()
+                .withUsername(" ")
+                .withPassword("password")
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> CreateCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .withPassword(" ")
+                .build()
+        );
+    }
+
+    @Test
+    void createCredential() {
+        testFuncByName("createCredential", CreateCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .withPassword("password")
+                .build()
+        );
+    }
+
+    @Test
+    void updateCredentialParam() {
+        assertThrows(ParamException.class, () -> UpdateCredentialParam
+                .newBuilder()
+                .withUsername("  ")
+                .withOldPassword("oldPassword")
+                .withNewPassword("newPassword")
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> UpdateCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .withOldPassword("  ")
+                .withNewPassword("newPassword")
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> UpdateCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .withOldPassword("oldPassword")
+                .withNewPassword("  ")
+                .build()
+        );
+    }
+
+    @Test
+    void updateCredential() {
+        testFuncByName("updateCredential", UpdateCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .withOldPassword("oldPassword")
+                .withNewPassword("newPassword")
+                .build()
+        );
+    }
+
+    @Test
+    void deleteCredentialParam() {
+        assertThrows(ParamException.class, () -> DeleteCredentialParam
+                .newBuilder()
+                .withUsername(" ")
+                .build()
+        );
+    }
+
+    @Test
+    void deleteCredential() {
+        testFuncByName("deleteCredential", DeleteCredentialParam
+                .newBuilder()
+                .withUsername("username")
+                .build()
+        );
+    }
+
+    @Test
+    void listCredUsers() {
+        testFuncByName("listCredUsers", ListCredUsersParam
+                .newBuilder()
+                .build()
+        );
     }
 
     ////////////////////////////////////////////////////////////////////////////////////

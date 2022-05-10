@@ -36,6 +36,7 @@ import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
+import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -47,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -1885,6 +1887,134 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             logError("GetCompactionPlansRequest failed:\n{}", e.getMessage());
             return R.failed(e);
         }
+    }
+
+    @Override
+    public R<RpcStatus> createCredential(CreateCredentialParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            CreateCredentialRequest createCredentialRequest = CreateCredentialRequest.newBuilder()
+                    .setUsername(requestParam.getUsername())
+                    .setPassword(getBase64EncodeString(requestParam.getPassword()))
+                    .build();
+
+            Status response = blockingStub().createCredential(createCredentialRequest);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("CreateCredential", response);
+            }
+
+            logInfo("CreateCredential successfully! Username:{}, password:{}",
+                    requestParam.getUsername(), requestParam.getPassword());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("CreateCredential RPC failed! Username:{}, password:{}\n{}",
+                    requestParam.getUsername(), requestParam.getPassword(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CreateCredential failed! Username:{}, password:{}\n{}",
+                    requestParam.getUsername(), requestParam.getPassword(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> updateCredential(UpdateCredentialParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
+                    .setUsername(requestParam.getUsername())
+                    .setOldPassword(getBase64EncodeString(requestParam.getOldPassword()))
+                    .setNewPassword(getBase64EncodeString(requestParam.getNewPassword()))
+                    .build();
+
+            Status response = blockingStub().updateCredential(updateCredentialRequest);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("UpdateCredential", response);
+            }
+
+            logInfo("UpdateCredential successfully! Username:{}, oldPassword:{}, newPassword:{}",
+                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("UpdateCredential RPC failed! Username:{}, oldPassword:{}, newPassword:{}\n{}",
+                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("UpdateCredential failed! Username:{}, oldPassword:{}, newPassword:{}\n{}",
+                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> deleteCredential(DeleteCredentialParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            DeleteCredentialRequest deleteCredentialRequest = DeleteCredentialRequest.newBuilder()
+                    .setUsername(requestParam.getUsername())
+                    .build();
+
+            Status response = blockingStub().deleteCredential(deleteCredentialRequest);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("DeleteCredential", response);
+            }
+
+            logInfo("DeleteCredential successfully! Username:{}", requestParam.getUsername());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("DeleteCredential RPC failed! Username:{}\n{}", requestParam.getUsername(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DeleteCredential failed! Username:{}\n{}", requestParam.getUsername(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            ListCredUsersRequest listCredUsersRequest = ListCredUsersRequest.newBuilder()
+                    .build();
+
+            ListCredUsersResponse response = blockingStub().listCredUsers(listCredUsersRequest);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("ListCredUsers", response.getStatus());
+            }
+
+            logInfo("ListCredUsers successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("ListCredUsers RPC failed! \n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DeleteCredential failed! \n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    private String getBase64EncodeString(String str) {
+        return Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));
     }
 
     ///////////////////// Log Functions//////////////////////

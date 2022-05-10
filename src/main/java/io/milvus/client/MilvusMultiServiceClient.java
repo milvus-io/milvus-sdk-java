@@ -29,6 +29,7 @@ import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
+import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -52,9 +53,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
         List<ServerSetting> serverSettings = multiConnectParam.getHosts().stream()
                 .map(host -> {
 
-                    MilvusClient milvusClient = buildMilvusClient(host, multiConnectParam.getConnectTimeoutMs(),
-                            multiConnectParam.getKeepAliveTimeMs(), multiConnectParam.getKeepAliveTimeoutMs(),
-                            multiConnectParam.isKeepAliveWithoutCalls(), multiConnectParam.getIdleTimeoutMs());
+                    MilvusClient milvusClient = buildMilvusClient(host, multiConnectParam);
 
                     return ServerSetting.newBuilder()
                             .withHost(host)
@@ -71,8 +70,13 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .build();
     }
 
-    private MilvusClient buildMilvusClient(ServerAddress host, long connectTimeoutMsm, long keepAliveTimeMs,
-                                           long keepAliveTimeoutMs, boolean keepAliveWithoutCalls, long idleTimeoutMs) {
+    private MilvusClient buildMilvusClient(ServerAddress host, MultiConnectParam multiConnectParam) {
+        long connectTimeoutMsm = multiConnectParam.getConnectTimeoutMs();
+        long keepAliveTimeMs = multiConnectParam.getKeepAliveTimeMs();
+        long keepAliveTimeoutMs = multiConnectParam.getKeepAliveTimeoutMs();
+        boolean keepAliveWithoutCalls = multiConnectParam.isKeepAliveWithoutCalls();
+        long idleTimeoutMs = multiConnectParam.getIdleTimeoutMs();
+
         ConnectParam clusterConnectParam = ConnectParam.newBuilder()
                 .withHost(host.getHost())
                 .withPort(host.getPort())
@@ -81,6 +85,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .withKeepAliveTimeout(keepAliveTimeoutMs, TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(keepAliveWithoutCalls)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
+                .withAuthorization(multiConnectParam.getAuthorization())
                 .build();
         return new MilvusServiceClient(clusterConnectParam);
     }
@@ -373,6 +378,26 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<GetCompactionPlansResponse> getCompactionStateWithPlans(GetCompactionPlansParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getCompactionStateWithPlans(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> createCredential(CreateCredentialParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().createCredential(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> updateCredential(UpdateCredentialParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().updateCredential(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> deleteCredential(DeleteCredentialParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().deleteCredential(requestParam);
+    }
+
+    @Override
+    public R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listCredUsers(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {
