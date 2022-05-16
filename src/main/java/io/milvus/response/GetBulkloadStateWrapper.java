@@ -72,6 +72,24 @@ public class GetBulkloadStateWrapper {
         return getInfo(Constant.IMPORT_FILES);
     }
 
+    /**
+     * A flag indicating (heuristically) whether import data are queryable (i.e. loaded in query nodes).
+     *
+     * @return boolean whether import data are queryable(heuristically)
+     */
+    public boolean HeuristicQueryable() {
+        return response.getHeuristicDataQueryable();
+    }
+
+    /**
+     * A flag indicating (heuristically) whether import data are indexed.
+     *
+     * @return boolean whether import data are queryable(heuristically)
+     */
+    public boolean HeuristicIndexed() {
+        return response.getHeuristicDataQueryable();
+    }
+
     private String getInfo(@NonNull String key) {
         List<KeyValuePair> infos = response.getInfosList();
         for (KeyValuePair kv : infos) {
