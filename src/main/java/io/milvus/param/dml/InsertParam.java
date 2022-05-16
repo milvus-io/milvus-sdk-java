@@ -207,7 +207,7 @@ public class InsertParam {
                             throw new ParamException("Bool field value type must be Boolean");
                         }
                     }
-                } else if (field.getType() == DataType.String) {
+                } else if (field.getType() == DataType.String || field.getType() == DataType.VarChar) {
                     for (Object obj : values) {
                         if (!(obj instanceof String)) {
                             throw new ParamException("String field value type must be String");

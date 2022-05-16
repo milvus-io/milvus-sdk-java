@@ -284,6 +284,7 @@ public class ParamUtils {
                     ScalarField scalarField5 = ScalarField.newBuilder().setDoubleData(doubleArray).build();
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField5).build();
                 case String:
+                case VarChar:
                     List<String> strings = objects.stream().map(p -> (String) p).collect(Collectors.toList());
                     StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
                     ScalarField scalarField6 = ScalarField.newBuilder().setStringData(stringArray).build();

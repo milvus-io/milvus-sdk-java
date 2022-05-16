@@ -59,6 +59,14 @@ public class FieldType {
         return 0;
     }
 
+    public int getMaxLength() {
+        if (typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
+            return Integer.parseInt(typeParams.get(Constant.VARCHAR_MAX_LENGTH));
+        }
+
+        return 0;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -151,6 +159,17 @@ public class FieldType {
         }
 
         /**
+         * Sets the max length of a varchar field. The value must be greater than zero.
+         *
+         * @param maxLength max length of a varchar field
+         * @return <code>Builder</code>
+         */
+        public Builder withMaxLength(@NonNull Integer maxLength) {
+            this.typeParams.put(Constant.VARCHAR_MAX_LENGTH, maxLength.toString());
+            return this;
+        }
+
+        /**
          * Enables auto-id function for the field. Note that the auto-id function can only be enabled on primary key field.
          * If auto-id function is enabled, Milvus will automatically generate unique ID for each entity,
          * thus you do not need to provide values for the primary key field when inserting.
@@ -189,6 +208,21 @@ public class FieldType {
                     }
                 } catch (NumberFormatException e) {
                     throw new ParamException("Vector field dimension must be an integer number");
+                }
+            }
+
+            if (dataType == DataType.VarChar || dataType == DataType.String) {
+                if (!typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
+                    throw new ParamException("Varchar field max length must be specified");
+                }
+
+                try {
+                    int len = Integer.parseInt(typeParams.get(Constant.VARCHAR_MAX_LENGTH));
+                    if (len <= 0) {
+                        throw new ParamException("Varchar field max length must be larger than zero");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new ParamException("Varchar field max length must be an integer number");
                 }
             }
 
