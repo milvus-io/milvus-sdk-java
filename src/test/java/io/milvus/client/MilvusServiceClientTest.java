@@ -1479,7 +1479,7 @@ class MilvusServiceClientTest {
         fields.add(new InsertParam.Field("field3", DataType.Bool, bVal));
         fields.add(new InsertParam.Field("field4", DataType.Float, fVal));
         fields.add(new InsertParam.Field("field5", DataType.Double, dVal));
-        fields.add(new InsertParam.Field("field6", DataType.String, sVal));
+        fields.add(new InsertParam.Field("field6", DataType.VarChar, sVal));
         fields.add(new InsertParam.Field("field7", DataType.FloatVector, fVectors));
         fields.add(new InsertParam.Field("field8", DataType.BinaryVector, bVectors));
         InsertParam param = InsertParam.newBuilder()
@@ -1501,6 +1501,8 @@ class MilvusServiceClientTest {
                 builder.withDimension(16);
             } else if (field.getType() == DataType.FloatVector) {
                 builder.withDimension(2);
+            } else if (field.getType() == DataType.VarChar) {
+                builder.withMaxLength(20);
             }
 
             colBuilder.addFields(ParamUtils.ConvertField(builder.build()));
@@ -2449,7 +2451,7 @@ class MilvusServiceClientTest {
             strBuilder.addData(String.valueOf(i));
         }
         testScalarField(ScalarField.newBuilder().setStringData(strBuilder).build(),
-                DataType.String, dim);
+                DataType.VarChar, dim);
     }
 
     @Test

@@ -84,7 +84,7 @@ public class SearchResultsWrapper {
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
-            if (offset + k >= strIDs.getDataCount()) {
+            if (offset + k > strIDs.getDataCount()) {
                 throw new IllegalResponseException("Result ids count is wrong");
             }
 

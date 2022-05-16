@@ -79,6 +79,7 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getFloatData().getDataList().size();
             case Double:
                 return fieldData.getScalars().getDoubleData().getDataList().size();
+            case VarChar:
             case String:
                 return fieldData.getScalars().getStringData().getDataList().size();
             default:
@@ -144,6 +145,7 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getFloatData().getDataList();
             case Double:
                 return fieldData.getScalars().getDoubleData().getDataList();
+            case VarChar:
             case String:
                 return fieldData.getScalars().getStringData().getDataList();
             default:
