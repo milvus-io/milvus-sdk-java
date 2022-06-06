@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Parameters for <code>flush</code> interface.
@@ -131,7 +130,7 @@ public class FlushParam {
                 ParamUtils.CheckNullEmptyString(name, "Collection name");
             }
 
-            if (Objects.equals(syncFlush, Boolean.TRUE)) {
+            if (syncFlush == Boolean.TRUE) {
                 if (syncFlushWaitingInterval <= 0) {
                     throw new ParamException("Sync flush waiting interval must be larger than zero");
                 } else if (syncFlushWaitingInterval > Constant.MAX_WAITING_FLUSHING_INTERVAL) {

@@ -608,7 +608,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
             FlushResponse response = blockingStub().flush(flushRequest);
 
-            if (Objects.equals(requestParam.getSyncFlush(), Boolean.TRUE)) {
+            if (requestParam.getSyncFlush() == Boolean.TRUE) {
                 waitForFlush(response, requestParam.getSyncFlushWaitingInterval(),
                         requestParam.getSyncFlushWaitingTimeout());
             }
@@ -994,10 +994,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             if (CollectionUtils.isNotEmpty(extraParamList)) {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
-
-            FlushRequest flushRequest = FlushRequest.newBuilder()
-                    .addCollectionNames(requestParam.getCollectionName()).build();
-            blockingStub().flush(flushRequest);
 
             CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
