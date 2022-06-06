@@ -1000,6 +1000,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
             blockingStub().flush(flushRequest);
 
+
             CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
                     .setIndexName(requestParam.getIndexName())
