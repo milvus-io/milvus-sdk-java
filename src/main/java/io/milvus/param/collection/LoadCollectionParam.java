@@ -22,9 +22,10 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
+
+import java.util.Objects;
 
 /**
  * Parameters for <code>loadCollection</code> interface.
@@ -146,7 +147,7 @@ public class LoadCollectionParam {
         public LoadCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (syncLoad == Boolean.TRUE) {
+            if (Objects.equals(syncLoad, Boolean.TRUE)) {
                 if (syncLoadWaitingInterval <= 0) {
                     throw new ParamException("Sync load waiting interval must be larger than zero");
                 } else if (syncLoadWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {

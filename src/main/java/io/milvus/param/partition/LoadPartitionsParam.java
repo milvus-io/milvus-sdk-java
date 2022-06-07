@@ -22,12 +22,12 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parameters for <code>loadPartition</code> interface.
@@ -184,7 +184,7 @@ public class LoadPartitionsParam {
                 ParamUtils.CheckNullEmptyString(name, "Partition name");
             }
 
-            if (syncLoad == Boolean.TRUE) {
+            if (Objects.equals(syncLoad, Boolean.TRUE)) {
                 if (syncLoadWaitingInterval <= 0) {
                     throw new ParamException("Sync load waiting interval must be larger than zero");
                 } else if (syncLoadWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {
