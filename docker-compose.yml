@@ -31,7 +31,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-test-standalone
-    image: milvusdb/milvus-dev:master-20220515-338edcd3
+    image: milvusdb/milvus-dev:master-20220607-b5c11a21
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
