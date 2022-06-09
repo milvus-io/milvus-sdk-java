@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Parameters for <code>loadPartition</code> interface.
@@ -120,7 +121,7 @@ public class LoadPartitionsParam {
         /**
          * Enables sync mode for load action.
          * With sync mode enabled, the client keeps waiting until all segments of the partition are successfully loaded.
-         *
+         * <p>
          * Without sync mode disabled, client returns at once after the loadPartitions() is called.
          *
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
@@ -134,10 +135,10 @@ public class LoadPartitionsParam {
         /**
          * Sets the waiting interval for sync mode. In sync mode, the client constantly checks partition load state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_LOADING_INTERVAL.
-         * @see Constant
          *
          * @param milliseconds interval
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncLoadWaitingInterval(@NonNull Long milliseconds) {
             this.syncLoadWaitingInterval = milliseconds;
@@ -147,10 +148,10 @@ public class LoadPartitionsParam {
         /**
          * Sets the timeout value for sync mode.
          * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_LOADING_TIMEOUT.
-         * @see Constant
          *
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncLoadWaitingTimeout(@NonNull Long seconds) {
             this.syncLoadWaitingTimeout = seconds;
@@ -184,7 +185,7 @@ public class LoadPartitionsParam {
                 ParamUtils.CheckNullEmptyString(name, "Partition name");
             }
 
-            if (syncLoad == Boolean.TRUE) {
+            if (Objects.equals(syncLoad, Boolean.TRUE)) {
                 if (syncLoadWaitingInterval <= 0) {
                     throw new ParamException("Sync load waiting interval must be larger than zero");
                 } else if (syncLoadWaitingInterval > Constant.MAX_WAITING_LOADING_INTERVAL) {
