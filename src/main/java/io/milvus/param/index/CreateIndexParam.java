@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Parameters for <code>createIndex</code> interface.
@@ -219,7 +220,7 @@ public class CreateIndexParam {
                 throw new ParamException("Metric type is required");
             }
 
-            if (syncMode == Boolean.TRUE) {
+            if (Objects.equals(syncMode, Boolean.TRUE)) {
                 if (syncWaitingInterval <= 0) {
                     throw new ParamException("Sync index waiting interval must be larger than zero");
                 } else if (syncWaitingInterval > Constant.MAX_WAITING_INDEX_INTERVAL) {
