@@ -286,29 +286,29 @@ public interface MilvusClient {
      */
     R<MutationResult> delete(DeleteParam requestParam);
 
-    /**
-     * Import data from external files, currently support JSON/Numpy format
-     *
-     * @param requestParam {@link BulkloadParam}
-     * @return {status:result code, data:RpcStatus{msg: result message}}
-     */
-    R<ImportResponse> bulkload(BulkloadParam requestParam);
-
-    /**
-     * Get state of bulk a load task
-     *
-     * @param requestParam {@link GetBulkloadStateParam}
-     * @return {status:result code, data:GetImportStateResponse{status,state}}
-     */
-    R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam);
-
-    /**
-     * List all bulk load tasks
-     *
-     * @param requestParam {@link ListBulkloadTasksParam}
-     * @return {status:result code, data:ListImportTasksResponse{status,state}}
-     */
-    R<ListImportTasksResponse> listBulkloadTasks(ListBulkloadTasksParam requestParam);
+//    /**
+//     * Import data from external files, currently support JSON/Numpy format
+//     *
+//     * @param requestParam {@link BulkloadParam}
+//     * @return {status:result code, data:RpcStatus{msg: result message}}
+//     */
+//    R<ImportResponse> bulkload(BulkloadParam requestParam);
+//
+//    /**
+//     * Get state of bulk a load task
+//     *
+//     * @param requestParam {@link GetBulkloadStateParam}
+//     * @return {status:result code, data:GetImportStateResponse{status,state}}
+//     */
+//    R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam);
+//
+//    /**
+//     * List all bulk load tasks
+//     *
+//     * @param requestParam {@link ListBulkloadTasksParam}
+//     * @return {status:result code, data:ListImportTasksResponse{status,state}}
+//     */
+//    R<ListImportTasksResponse> listBulkloadTasks(ListBulkloadTasksParam requestParam);
 
     /**
      * Conducts ANN search on a vector field. Use expression to do filtering before search.
