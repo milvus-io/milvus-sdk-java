@@ -20,6 +20,7 @@
 package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
@@ -47,6 +48,8 @@ public class SearchParam {
     private final String params;
     private final long travelTimestamp;
     private final long guaranteeTimestamp;
+    private final Long gracefulTime;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private SearchParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -61,6 +64,8 @@ public class SearchParam {
         this.params = builder.params;
         this.travelTimestamp = builder.travelTimestamp;
         this.guaranteeTimestamp = builder.guaranteeTimestamp;
+        this.gracefulTime = builder.gracefulTime;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -83,6 +88,8 @@ public class SearchParam {
         private String params = "{}";
         private Long travelTimestamp = 0L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
+        private Long gracefulTime = 5000L;
+        private ConsistencyLevelEnum consistencyLevel;
 
        Builder() {
         }
@@ -106,6 +113,28 @@ public class SearchParam {
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             partitionNames.forEach(this::addPartitionName);
+            return this;
+        }
+
+        /**
+         * ConsistencyLevel of consistency level.
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
+            return this;
+        }
+
+        /**
+         *  Graceful time for BOUNDED Consistency Level
+         *
+         * @param gracefulTime graceful time
+         * @return <code>Builder</code>
+         */
+        public Builder withGracefulTime(Long gracefulTime) {
+            this.gracefulTime = gracefulTime;
             return this;
         }
 

@@ -75,6 +75,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
         long keepAliveTimeMs = multiConnectParam.getKeepAliveTimeMs();
         long keepAliveTimeoutMs = multiConnectParam.getKeepAliveTimeoutMs();
         boolean keepAliveWithoutCalls = multiConnectParam.isKeepAliveWithoutCalls();
+        boolean secure = multiConnectParam.isSecure();
         long idleTimeoutMs = multiConnectParam.getIdleTimeoutMs();
 
         ConnectParam clusterConnectParam = ConnectParam.newBuilder()
@@ -84,6 +85,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .withKeepAliveTime(keepAliveTimeMs, TimeUnit.MILLISECONDS)
                 .withKeepAliveTimeout(keepAliveTimeoutMs, TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(keepAliveWithoutCalls)
+                .secure(secure)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
                 .withAuthorization(multiConnectParam.getAuthorization())
                 .build();

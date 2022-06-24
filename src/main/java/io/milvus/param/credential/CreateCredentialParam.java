@@ -8,6 +8,7 @@ import lombok.NonNull;
 @Getter
 public class CreateCredentialParam {
     private final String username;
+
     private final String password;
 
     private CreateCredentialParam(@NonNull CreateCredentialParam.Builder builder) {
@@ -72,8 +73,7 @@ public class CreateCredentialParam {
     @Override
     public String toString() {
         return "CreateCredentialParam{" +
-                "username='" + username + '\'' +
-                ", password='" + password + '\'' +
+                "username='" + username +
                 '}';
     }
 }
