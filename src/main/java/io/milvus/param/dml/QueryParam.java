@@ -20,6 +20,7 @@
 package io.milvus.param.dml;
 
 import com.google.common.collect.Lists;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
@@ -40,6 +41,8 @@ public class QueryParam {
     private final String expr;
     private final long travelTimestamp;
     private final long guaranteeTimestamp;
+    private final Long gracefulTime;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private QueryParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -48,6 +51,8 @@ public class QueryParam {
         this.expr = builder.expr;
         this.travelTimestamp = builder.travelTimestamp;
         this.guaranteeTimestamp = builder.guaranteeTimestamp;
+        this.consistencyLevel = builder.consistencyLevel;
+        this.gracefulTime = builder.gracefulTime;
     }
 
     public static Builder newBuilder() {
@@ -63,7 +68,9 @@ public class QueryParam {
         private final List<String> outFields = new ArrayList<>();
         private String expr = "";
         private Long travelTimestamp = 0L;
+        private Long gracefulTime = 5000L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
+        private ConsistencyLevelEnum consistencyLevel;
 
         private Builder() {
         }
@@ -80,6 +87,17 @@ public class QueryParam {
         }
 
         /**
+         * ConsistencyLevel of consistency level.
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
+            return this;
+        }
+
+        /**
          * Sets partition names list to specify query scope (Optional).
          *
          * @param partitionNames partition names list
@@ -87,6 +105,17 @@ public class QueryParam {
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             partitionNames.forEach(this::addPartitionName);
+            return this;
+        }
+
+        /**
+         *  Graceful time for BOUNDED Consistency Level
+         *
+         * @param gracefulTime graceful time
+         * @return <code>Builder</code>
+         */
+        public Builder withGracefulTime(Long gracefulTime) {
+            this.gracefulTime = gracefulTime;
             return this;
         }
 
@@ -202,6 +231,7 @@ public class QueryParam {
                 "collectionName='" + collectionName + '\'' +
                 ", partitionNames='" + partitionNames.toString() + '\'' +
                 ", expr='" + expr + '\'' +
+                ", consistencyLevel='" + consistencyLevel + '\'' +
                 '}';
     }
 }

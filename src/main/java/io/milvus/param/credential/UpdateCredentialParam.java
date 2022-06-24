@@ -87,9 +87,7 @@ public class UpdateCredentialParam {
     @Override
     public String toString() {
         return "UpdateCredentialParam{" +
-                "username='" + username + '\'' +
-                ", oldPassword='" + oldPassword + '\'' +
-                ", newPassword='" + newPassword + '\'' +
+                "username='" + username +
                 '}';
     }
 }

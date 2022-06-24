@@ -1914,16 +1914,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("CreateCredential", response);
             }
 
-            logInfo("CreateCredential successfully! Username:{}, password:{}",
-                    requestParam.getUsername(), requestParam.getPassword());
+            logInfo("CreateCredential successfully! Username:{}",
+                    requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateCredential RPC failed! Username:{}, password:{}\n{}",
-                    requestParam.getUsername(), requestParam.getPassword(), e.getStatus().toString());
+            logError("CreateCredential RPC failed! Username:{}\n{}",
+                    requestParam.getUsername(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateCredential failed! Username:{}, password:{}\n{}",
-                    requestParam.getUsername(), requestParam.getPassword(), e.getMessage());
+            logError("CreateCredential failed! Username:{},\n{}",
+                    requestParam.getUsername(), e.getMessage());
             return R.failed(e);
         }
     }
@@ -1948,16 +1948,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("UpdateCredential", response);
             }
 
-            logInfo("UpdateCredential successfully! Username:{}, oldPassword:{}, newPassword:{}",
-                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword());
+            logInfo("UpdateCredential successfully! Username:{}", requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("UpdateCredential RPC failed! Username:{}, oldPassword:{}, newPassword:{}\n{}",
-                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword(), e.getStatus().toString());
+            logError("UpdateCredential RPC failed! Username:{}\n{}",
+                    requestParam.getUsername(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("UpdateCredential failed! Username:{}, oldPassword:{}, newPassword:{}\n{}",
-                    requestParam.getUsername(), requestParam.getOldPassword(), requestParam.getNewPassword(), e.getMessage());
+            logError("UpdateCredential failed! Username:{}\n{}",
+                    requestParam.getUsername(), e.getMessage());
             return R.failed(e);
         }
     }

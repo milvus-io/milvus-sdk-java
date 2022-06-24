@@ -37,15 +37,20 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
 
-        channel = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
+        ManagedChannelBuilder builder = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                 .usePlaintext()
                 .maxInboundMessageSize(Integer.MAX_VALUE)
                 .keepAliveTime(connectParam.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
                 .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                 .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata))
-                .build();
+                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+
+        if(connectParam.isSecure()){
+            builder.useTransportSecurity();
+        }
+        channel = builder.build();
+
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);
     }
