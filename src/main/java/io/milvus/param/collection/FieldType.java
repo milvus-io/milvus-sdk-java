@@ -196,6 +196,10 @@ public class FieldType {
                 throw new ParamException("Field data type is illegal");
             }
 
+            if (dataType == DataType.String) {
+                throw new ParamException("String type is not supported, use VarChar instead");
+            }
+
             if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
                 if (!typeParams.containsKey(Constant.VECTOR_DIM)) {
                     throw new ParamException("Vector field dimension must be specified");
@@ -211,7 +215,7 @@ public class FieldType {
                 }
             }
 
-            if (dataType == DataType.VarChar || dataType == DataType.String) {
+            if (dataType == DataType.VarChar) {
                 if (!typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
                     throw new ParamException("Varchar field max length must be specified");
                 }

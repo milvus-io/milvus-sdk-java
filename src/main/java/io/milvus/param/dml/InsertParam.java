@@ -246,6 +246,10 @@ public class InsertParam {
         private final List<?> values;
 
         public Field(String name, DataType type, List<?> values) {
+            if (type == DataType.String) {
+                throw new ParamException("String type is not supported, use VarChar instead");
+            }
+
             this.name = name;
             this.type = type;
             this.values = values;

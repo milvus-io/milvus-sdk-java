@@ -1415,7 +1415,7 @@ class MilvusServiceClientTest {
 
         fields.clear();
         List<Long> fakeVectors4 = Arrays.asList(1L, 2L, 3L);
-        fields.add(new InsertParam.Field("field4", DataType.String, fakeVectors4));
+        fields.add(new InsertParam.Field("field4", DataType.VarChar, fakeVectors4));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
