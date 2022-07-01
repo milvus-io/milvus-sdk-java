@@ -67,9 +67,9 @@ public class CreateIndexParam {
     public static final class Builder {
         private String collectionName;
         private String fieldName;
-        private IndexType indexType;
+        private IndexType indexType = IndexType.INVALID;
         private String indexName;
-        private MetricType metricType;
+        private MetricType metricType = MetricType.INVALID;
         private String extraParam;
 
         // syncMode:

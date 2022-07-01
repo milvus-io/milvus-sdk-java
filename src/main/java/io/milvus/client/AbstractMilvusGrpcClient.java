@@ -997,6 +997,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
 
+            // keep consistence behavior with python sdk, if the index type is flat, return succeed with a warning
+            // TODO: call dropIndex if the index type is flat
+            // TODO: call describeCollection to check field name
+            if (requestParam.getIndexName() == "FLAT" || requestParam.getIndexName() == "BIN_FLAT") {
+                return R.success(new RpcStatus("Warning: It is not necessary to build index with index_type: FLAT"));
+            }
+
+            // keep consistence behavior with python sdk, flush before creating index
             FlushRequest flushRequest = FlushRequest.newBuilder()
                     .addCollectionNames(requestParam.getCollectionName())
                     .build();

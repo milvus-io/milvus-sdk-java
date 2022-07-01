@@ -25,15 +25,18 @@ package io.milvus.param;
  */
 public enum IndexType {
     INVALID,
+    FLAT,
     IVF_FLAT,
     IVF_PQ,
     IVF_SQ8,
+    IVF_HNSW,
     HNSW,
     RHNSW_FLAT,
     RHNSW_PQ,
     RHNSW_SQ,
     ANNOY,
     //Only supported for binary vectors
+    BIN_FLAT,
     BIN_IVF_FLAT,
     ;
 }
