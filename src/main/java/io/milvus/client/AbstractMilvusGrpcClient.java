@@ -1482,11 +1482,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             QueryRequest queryRequest = ParamUtils.ConvertQueryParam(requestParam);
             QueryResults response = this.blockingStub().query(queryRequest);
-
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
                 logInfo("QueryRequest successfully!");
                 return R.success(response);
             } else {
+                // Server side behavior: if a query expression could not filter out any result,
+                // or collection is empty, the server return ErrorCode.EmptyCollection.
+                // Here we give a general message for this case.
+                if (response.getStatus().getErrorCode() == ErrorCode.EmptyCollection) {
+                    logError("QueryRequest returns nothing: empty collection or improper expression");
+                    return R.failed(ErrorCode.EmptyCollection, "empty collection or improper expression");
+                }
                 return failedStatus("QueryRequest", response.getStatus());
             }
         } catch (StatusRuntimeException e) {
