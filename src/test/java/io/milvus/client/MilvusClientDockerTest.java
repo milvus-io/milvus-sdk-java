@@ -372,7 +372,7 @@ class MilvusClientDockerTest {
             compareWeights.add(weights.get(i));
         }
         String expr = field1Name + " in " + queryIDs.toString();
-        List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field4Name);
+        List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field5Name);
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
