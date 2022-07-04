@@ -209,6 +209,9 @@ public class ParamUtils {
 
     private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
                                               long guaranteeTimestamp, Long gracefulTime){
+        if(consistencyLevel == null){
+            return guaranteeTimestamp;
+        }
         switch (consistencyLevel){
             case STRONG:
                 guaranteeTimestamp = 0L;

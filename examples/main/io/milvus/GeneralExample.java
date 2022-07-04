@@ -46,6 +46,7 @@ public class GeneralExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("in01-d7e11fe45ffb98a.ap-southeast-1-aws.vdc-test.zilliz.com")
                 .withPort(19530)
+
                 .withAuthorization("root","1qaz@WSX")
                 .withSecure(true)
                 .build();
