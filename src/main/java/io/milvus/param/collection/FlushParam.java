@@ -162,6 +162,7 @@ public class FlushParam {
                 "collectionNames='" + collectionNames + '\'' +
                 ", syncFlush=" + syncFlush.toString() +
                 ", syncFlushWaitingInterval=" + syncFlushWaitingInterval +
+                ", syncFlushWaitingTimeout=" + syncFlushWaitingTimeout +
                 '}';
     }
 }

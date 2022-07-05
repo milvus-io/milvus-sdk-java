@@ -179,6 +179,7 @@ public class LoadCollectionParam {
                 "collectionName='" + collectionName + '\'' +
                 ", syncLoad=" + syncLoad +
                 ", syncLoadWaitingInterval=" + syncLoadWaitingInterval +
+                ", syncLoadWaitingTimeout=" + syncLoadWaitingTimeout +
                 '}';
     }
 }

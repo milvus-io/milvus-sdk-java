@@ -325,7 +325,7 @@ class MilvusMultiClientDockerTest {
         // get index description
         DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withIndexName(indexParam.getIndexName())
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
