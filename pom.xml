@@ -25,7 +25,7 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>2.1.0</version>
+    <version>2.1.0-beta</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
@@ -55,26 +55,12 @@
         <url>https://github.com/milvus-io/milvus-sdk-java</url>
     </scm>
 
-    <!--    <distributionManagement>-->
-    <!--        <snapshotRepository>-->
-    <!--            <id>ossrh</id>-->
-    <!--            <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
-    <!--        </snapshotRepository>-->
-    <!--    </distributionManagement>-->
 
     <!-- 使用分发管理将本项目打成jar包，直接上传到指定服务器 -->
     <distributionManagement>
-        <!--正式版本-->
-        <repository>
-            <!-- nexus服务器中用户名：在settings.xml中<server>的id-->
-            <id>nexus-releases</id>
-            <name>Releases repository</name>
-            <url>http://10.13.0.84:9081/repository/nexus-releases/</url>
-        </repository>
         <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <name>Snapshots repository</name>
-            <url>http://10.13.0.84:9081/repository/nexus-snapshots/</url>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -103,11 +89,6 @@
     </dependencyManagement>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.apache.maven.plugins</groupId>-->
-<!--            <artifactId>maven-gpg-plugin</artifactId>-->
-<!--            <version>1.6</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
@@ -138,11 +119,6 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
-            <version>${protobuf.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
         </dependency>
         <dependency>
@@ -229,20 +205,20 @@
                             </execution>
                         </executions>
                     </plugin>
-<!--                    <plugin>-->
-<!--                        <groupId>org.apache.maven.plugins</groupId>-->
-<!--                        <artifactId>maven-gpg-plugin</artifactId>-->
-<!--                        <version>1.6</version>-->
-<!--                        <executions>-->
-<!--                            <execution>-->
-<!--                                <id>sign-artifacts</id>-->
-<!--                                <phase>verify</phase>-->
-<!--                                <goals>-->
-<!--                                    <goal>sign</goal>-->
-<!--                                </goals>-->
-<!--                            </execution>-->
-<!--                        </executions>-->
-<!--                    </plugin>-->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -263,17 +239,17 @@
             </extension>
         </extensions>
         <plugins>
-            <!--            <plugin>-->
-            <!--                <groupId>org.sonatype.plugins</groupId>-->
-            <!--                <artifactId>nexus-staging-maven-plugin</artifactId>-->
-            <!--                <version>1.6.8</version>-->
-            <!--                <extensions>true</extensions>-->
-            <!--                <configuration>-->
-            <!--                    <serverId>ossrh</serverId>-->
-            <!--                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>-->
-            <!--                    <autoReleaseAfterClose>true</autoReleaseAfterClose>-->
-            <!--                </configuration>-->
-            <!--            </plugin>-->
+                        <plugin>
+                            <groupId>org.sonatype.plugins</groupId>
+                            <artifactId>nexus-staging-maven-plugin</artifactId>
+                            <version>1.6.8</version>
+                            <extensions>true</extensions>
+                            <configuration>
+                                <serverId>ossrh</serverId>
+                                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                                <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            </configuration>
+                        </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -325,23 +301,6 @@
             <!-- JUnit5 tests are not running with maven 3.6.x
             https://dzone.com/articles/why-your-junit-5-tests-are-not-running-under-maven
             -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>${versio.maven.deploy.plugin}</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${versio.maven.source.plugin}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
