@@ -19,6 +19,7 @@ public class MultiConnectParam {
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
+    private final boolean secure;
     private final long idleTimeoutMs;
     private final String authorization;
 
@@ -29,6 +30,7 @@ public class MultiConnectParam {
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
+        this.secure = builder.secure;
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.authorization = builder.authorization;
     }
@@ -57,6 +59,10 @@ public class MultiConnectParam {
         return keepAliveWithoutCalls;
     }
 
+    public boolean isSecure() {
+        return secure;
+    }
+
     public long getIdleTimeoutMs() {
         return idleTimeoutMs;
     }
@@ -79,6 +85,7 @@ public class MultiConnectParam {
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
+        private boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = "";
 
@@ -151,6 +158,27 @@ public class MultiConnectParam {
          */
         public Builder keepAliveWithoutCalls(boolean enable) {
             keepAliveWithoutCalls = enable;
+            return this;
+        }
+
+        /**
+         * Enables the secure for client channel.
+         *
+         * @param enable true keep-alive
+         * @return <code>Builder</code>
+         */
+        public Builder secure(boolean enable) {
+            secure = enable;
+            return this;
+        }
+
+        /**
+         * Sets secure the authorization for this connection
+         * @param secure boolean
+         * @return <code>Builder</code>
+         */
+        public Builder withSecure(boolean secure) {
+            this.secure = secure;
             return this;
         }
 

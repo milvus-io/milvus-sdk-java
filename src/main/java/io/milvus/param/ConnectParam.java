@@ -36,6 +36,7 @@ public class ConnectParam {
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
+    private final boolean secure;
     private final long idleTimeoutMs;
     private final String authorization;
 
@@ -47,6 +48,7 @@ public class ConnectParam {
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
         this.idleTimeoutMs = builder.idleTimeoutMs;
+        this.secure = builder.secure;
         this.authorization = builder.authorization;
     }
 
@@ -74,6 +76,10 @@ public class ConnectParam {
         return keepAliveWithoutCalls;
     }
 
+    public boolean isSecure() {
+        return secure;
+    }
+
     public long getIdleTimeoutMs() {
         return idleTimeoutMs;
     }
@@ -96,6 +102,7 @@ public class ConnectParam {
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
+        private boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = "";
 
@@ -172,6 +179,17 @@ public class ConnectParam {
         }
 
         /**
+         * Enables the secure for client channel.
+         *
+         * @param enable true keep-alive
+         * @return <code>Builder</code>
+         */
+        public Builder secure(boolean enable) {
+            secure = enable;
+            return this;
+        }
+
+        /**
          * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
          * @param idleTimeout timeout value
@@ -195,7 +213,17 @@ public class ConnectParam {
         }
 
         /**
-         * Sets the authorization for this connection
+         * Sets secure the authorization for this connection
+         * @param secure boolean
+         * @return <code>Builder</code>
+         */
+        public Builder withSecure(boolean secure) {
+            this.secure = secure;
+            return this;
+        }
+
+        /**
+         * Sets the secure for this connection
          * @param authorization the authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */

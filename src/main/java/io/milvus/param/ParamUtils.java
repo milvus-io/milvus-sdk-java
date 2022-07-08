@@ -1,6 +1,7 @@
 package io.milvus.param;
 
 import com.google.protobuf.ByteString;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.collection.FieldType;
@@ -180,8 +181,10 @@ public class ParamUtils {
             builder.setDsl(requestParam.getExpr());
         }
 
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
+                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
         builder.setTravelTimestamp(requestParam.getTravelTimestamp());
-        builder.setGuaranteeTimestamp(requestParam.getGuaranteeTimestamp());
+        builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         return builder.build();
     }
@@ -192,14 +195,35 @@ public class ParamUtils {
      * @return a <code>QueryRequest</code> object
      */
     public static QueryRequest ConvertQueryParam(@NonNull QueryParam requestParam) {
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
+                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
         return QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
                 .addAllOutputFields(requestParam.getOutFields())
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
-                .setGuaranteeTimestamp(requestParam.getGuaranteeTimestamp())
+                .setGuaranteeTimestamp(guaranteeTimestamp)
                 .build();
+    }
+
+    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
+                                              long guaranteeTimestamp, Long gracefulTime){
+        if(consistencyLevel == null){
+            return guaranteeTimestamp;
+        }
+        switch (consistencyLevel){
+            case STRONG:
+                guaranteeTimestamp = 0L;
+                break;
+            case BOUNDED:
+                guaranteeTimestamp = (new Date()).getTime() - gracefulTime;
+                break;
+            case EVENTUALLY:
+                guaranteeTimestamp = 1L;
+                break;
+        }
+        return guaranteeTimestamp;
     }
 
 

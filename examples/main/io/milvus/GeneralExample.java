@@ -46,6 +46,8 @@ public class GeneralExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
+                .withAuthorization("root","Milvus")
+                .withSecure(true)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
@@ -350,42 +352,42 @@ public class GeneralExample {
         return response;
     }
 
-//    private R<SearchResults> searchProfile(String expr) {
-//        System.out.println("========== searchProfile() ==========");
-//        long begin = System.currentTimeMillis();
-//
-//        List<String> outFields = Collections.singletonList(AGE_FIELD);
-//        List<ByteBuffer> vectors = generateBinaryVectors(5);
-//
-//        SearchParam searchParam = SearchParam.newBuilder()
-//                .withCollectionName(COLLECTION_NAME)
-//                .withMetricType(MetricType.HAMMING)
-//                .withOutFields(outFields)
-//                .withTopK(SEARCH_K)
-//                .withVectors(vectors)
-//                .withVectorFieldName(PROFILE_FIELD)
-//                .withExpr(expr)
-//                .withParams(SEARCH_PARAM)
-//                .build();
-//
-//
-//        R<SearchResults> response = milvusClient.search(searchParam);
-//        long end = System.currentTimeMillis();
-//        long cost = (end - begin);
-//        System.out.println("Search time cost: " + cost + "ms");
-//
-//        handleResponseStatus(response);
-//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-//        for (int i = 0; i < vectors.size(); ++i) {
-//            System.out.println("Search result of No." + i);
-//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-//            System.out.println(scores);
-//            System.out.println("Output field data for No." + i);
-//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
-//        }
-//
-//        return response;
-//    }
+    private R<SearchResults> searchProfile(String expr) {
+        System.out.println("========== searchProfile() ==========");
+        long begin = System.currentTimeMillis();
+
+        List<String> outFields = Collections.singletonList(AGE_FIELD);
+        List<ByteBuffer> vectors = generateBinaryVectors(5);
+
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withMetricType(MetricType.HAMMING)
+                .withOutFields(outFields)
+                .withTopK(SEARCH_K)
+                .withVectors(vectors)
+                .withVectorFieldName(PROFILE_FIELD)
+                .withExpr(expr)
+                .withParams(SEARCH_PARAM)
+                .build();
+
+
+        R<SearchResults> response = milvusClient.search(searchParam);
+        long end = System.currentTimeMillis();
+        long cost = (end - begin);
+        System.out.println("Search time cost: " + cost + "ms");
+
+        handleResponseStatus(response);
+        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
+        for (int i = 0; i < vectors.size(); ++i) {
+            System.out.println("Search result of No." + i);
+            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+            System.out.println(scores);
+            System.out.println("Output field data for No." + i);
+            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
+        }
+
+        return response;
+    }
 
     private R<CalcDistanceResults> calDistance() {
         System.out.println("========== calDistance() ==========");
