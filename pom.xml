@@ -169,6 +169,11 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.9</version>
         </dependency>
+        <dependency>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+            <version>3.0.20</version>
+        </dependency>
     </dependencies>
 
     <profiles>
