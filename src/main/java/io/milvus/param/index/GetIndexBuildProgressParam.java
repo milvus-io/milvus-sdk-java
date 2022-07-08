@@ -20,10 +20,12 @@
 package io.milvus.param.index;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>getIndexBuildProgress</code> interface.
@@ -31,9 +33,11 @@ import lombok.NonNull;
 @Getter
 public class GetIndexBuildProgressParam {
     private final String collectionName;
+    private final String indexName;
 
     private GetIndexBuildProgressParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.indexName = builder.indexName;
     }
 
     public static Builder newBuilder() {
@@ -45,6 +49,7 @@ public class GetIndexBuildProgressParam {
      */
     public static final class Builder {
         private String collectionName;
+        private String indexName = Constant.DEFAULT_INDEX_NAME;
 
         private Builder() {
         }
@@ -61,12 +66,28 @@ public class GetIndexBuildProgressParam {
         }
 
         /**
+         * The name of target index.
+         * If no index name is specified, the default index name("_default_idx") is used.
+         *
+         * @param indexName index name
+         * @return <code>Builder</code>
+         */
+        public Builder withIndexName(@NonNull String indexName) {
+            this.indexName = indexName;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link GetIndexBuildProgressParam} instance.
          *
          * @return {@link GetIndexBuildProgressParam}
          */
         public GetIndexBuildProgressParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+
+            if (indexName == null || StringUtils.isBlank(indexName)) {
+                indexName = Constant.DEFAULT_INDEX_NAME;
+            }
 
             return new GetIndexBuildProgressParam(this);
         }
@@ -81,6 +102,7 @@ public class GetIndexBuildProgressParam {
     public String toString() {
         return "GetIndexBuildProgressParam{" +
                 "collectionName='" + collectionName + '\'' +
+                ", indexName='" + indexName + '\'' +
                 '}';
     }
 }

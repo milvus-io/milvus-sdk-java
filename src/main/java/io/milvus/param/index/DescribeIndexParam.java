@@ -20,10 +20,12 @@
 package io.milvus.param.index;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>describeIndex</code> interface.
@@ -31,11 +33,11 @@ import lombok.NonNull;
 @Getter
 public class DescribeIndexParam {
     private final String collectionName;
-    private final String fieldName;
+    private final String indexName;
 
     private DescribeIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
-        this.fieldName = builder.fieldName;
+        this.indexName = builder.indexName;
     }
 
     public static Builder newBuilder() {
@@ -47,7 +49,7 @@ public class DescribeIndexParam {
      */
     public static final class Builder {
         private String collectionName;
-        private String fieldName;
+        private String indexName = Constant.DEFAULT_INDEX_NAME;
 
         private Builder() {
         }
@@ -64,13 +66,13 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Sets the target field name. Field name cannot be empty or null.
+         * Sets the target index name. Index name cannot be empty or null.
          *
-         * @param fieldName field name
+         * @param indexName field name
          * @return <code>Builder</code>
          */
-        public Builder withFieldName(@NonNull String fieldName) {
-            this.fieldName = fieldName;
+        public Builder withIndexName(@NonNull String indexName) {
+            this.indexName = indexName;
             return this;
         }
 
@@ -81,7 +83,10 @@ public class DescribeIndexParam {
          */
         public DescribeIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-            ParamUtils.CheckNullEmptyString(fieldName, "Field name");
+
+            if (indexName == null || StringUtils.isBlank(indexName)) {
+                indexName = Constant.DEFAULT_INDEX_NAME;
+            }
 
             return new DescribeIndexParam(this);
         }
@@ -96,7 +101,7 @@ public class DescribeIndexParam {
     public String toString() {
         return "DescribeIndexParam{" +
                 "collectionName='" + collectionName + '\'' +
-                ", fieldName='" + fieldName + '\'' +
+                ", indexName='" + indexName + '\'' +
                 '}';
     }
 }

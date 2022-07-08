@@ -1228,16 +1228,21 @@ class MilvusServiceClientTest {
 
     @Test
     void describeIndexParam() {
-        // test throw exception with illegal input
-        assertThrows(ParamException.class, () -> DescribeIndexParam.newBuilder()
+        DescribeIndexParam param = DescribeIndexParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("")
-                .build()
-        );
+                .withIndexName("")
+                .build();
+        assertEquals(Constant.DEFAULT_INDEX_NAME, param.getIndexName());
+
+        param = DescribeIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withIndexName("dummy")
+                .build();
+        assertEquals("dummy", param.getIndexName());
 
         assertThrows(ParamException.class, () -> DescribeIndexParam.newBuilder()
                 .withCollectionName("")
-                .withFieldName("field1")
+                .withIndexName("field1")
                 .build()
         );
     }
@@ -1246,7 +1251,7 @@ class MilvusServiceClientTest {
     void describeIndex() {
         DescribeIndexParam param = DescribeIndexParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("field1")
+                .withIndexName("idx")
                 .build();
 
         testFuncByName("describeIndex", param);
@@ -1255,15 +1260,21 @@ class MilvusServiceClientTest {
     @Test
     void getIndexStateParam() {
         // test throw exception with illegal input
-        assertThrows(ParamException.class, () -> GetIndexStateParam.newBuilder()
+        GetIndexStateParam param = GetIndexStateParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("")
-                .build()
-        );
+                .withIndexName("")
+                .build();
+        assertEquals(Constant.DEFAULT_INDEX_NAME, param.getIndexName());
+
+        param = GetIndexStateParam.newBuilder()
+                .withCollectionName("collection1")
+                .withIndexName("dummy")
+                .build();
+        assertEquals("dummy", param.getIndexName());
 
         assertThrows(ParamException.class, () -> GetIndexStateParam.newBuilder()
                 .withCollectionName("")
-                .withFieldName("field1")
+                .withIndexName("field1")
                 .build()
         );
     }
@@ -1272,7 +1283,7 @@ class MilvusServiceClientTest {
     void getIndexState() {
         GetIndexStateParam param = GetIndexStateParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("field1")
+                .withIndexName("idx")
                 .build();
 
         testFuncByName("getIndexState", param);
@@ -1299,15 +1310,21 @@ class MilvusServiceClientTest {
     @Test
     void dropIndexParam() {
         // test throw exception with illegal input
-        assertThrows(ParamException.class, () -> DropIndexParam.newBuilder()
+        DropIndexParam param = DropIndexParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("")
-                .build()
-        );
+                .withIndexName("")
+                .build();
+        assertEquals(Constant.DEFAULT_INDEX_NAME, param.getIndexName());
+
+        param = DropIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withIndexName("dummy")
+                .build();
+        assertEquals("dummy", param.getIndexName());
 
         assertThrows(ParamException.class, () -> DropIndexParam.newBuilder()
                 .withCollectionName("")
-                .withFieldName("field1")
+                .withIndexName("field1")
                 .build()
         );
     }
@@ -1316,7 +1333,7 @@ class MilvusServiceClientTest {
     void dropIndex() {
         DropIndexParam param = DropIndexParam.newBuilder()
                 .withCollectionName("collection1")
-                .withFieldName("field1")
+                .withIndexName("idx")
                 .build();
 
         testFuncByName("dropIndex", param);

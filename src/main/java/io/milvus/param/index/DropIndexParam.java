@@ -20,10 +20,12 @@
 package io.milvus.param.index;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>dropIndex</code> interface.
@@ -31,11 +33,11 @@ import lombok.NonNull;
 @Getter
 public class DropIndexParam {
     private final String collectionName;
-    private final String fieldName;
+    private final String indexName;
 
     private DropIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
-        this.fieldName = builder.fieldName;
+        this.indexName = builder.indexName;
     }
 
     public static Builder newBuilder() {
@@ -47,7 +49,7 @@ public class DropIndexParam {
      */
     public static final class Builder {
         private String collectionName;
-        private String fieldName;
+        private String indexName = Constant.DEFAULT_INDEX_NAME;
 
         private Builder() {
         }
@@ -64,13 +66,14 @@ public class DropIndexParam {
         }
 
         /**
-         * Sets the target field name. Field name cannot be empty or null.
+         * The name of index which will be dropped.
+         * If no index name is specified, the default index name("_default_idx") is used.
          *
-         * @param fieldName field name
+         * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withFieldName(@NonNull String fieldName) {
-            this.fieldName = fieldName;
+        public Builder withIndexName(@NonNull String indexName) {
+            this.indexName = indexName;
             return this;
         }
 
@@ -81,7 +84,10 @@ public class DropIndexParam {
          */
         public DropIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-            ParamUtils.CheckNullEmptyString(fieldName, "Field name");
+
+            if (indexName == null || StringUtils.isBlank(indexName)) {
+                indexName = Constant.DEFAULT_INDEX_NAME;
+            }
 
             return new DropIndexParam(this);
         }
@@ -96,7 +102,7 @@ public class DropIndexParam {
     public String toString() {
         return "DropIndexParam{" +
                 "collectionName='" + collectionName + '\'' +
-                ", fieldName='" + fieldName + '\'' +
+                ", indexName='" + indexName + '\'' +
                 '}';
     }
 }

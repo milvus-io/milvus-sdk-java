@@ -68,7 +68,7 @@ public class CreateIndexParam {
         private String collectionName;
         private String fieldName;
         private IndexType indexType = IndexType.INVALID;
-        private String indexName;
+        private String indexName = Constant.DEFAULT_INDEX_NAME;
         private MetricType metricType = MetricType.INVALID;
         private String extraParam;
 
@@ -176,6 +176,7 @@ public class CreateIndexParam {
         /**
          * Sets the waiting interval in sync mode. With sync mode enabled, the client constantly checks index state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_INDEX_INTERVAL.
+         * Default value is 500 milliseconds.
          * @see Constant
          *
          * @param milliseconds interval
@@ -188,7 +189,7 @@ public class CreateIndexParam {
 
         /**
          * Sets the timeout value for sync mode. 
-         * Timeout value must be greater than zero and with No upper limit. Default value is 600.
+         * Timeout value must be greater than zero and with No upper limit. Default value is 600 seconds.
          * @see Constant
          *
          * @param seconds time out value for sync mode
@@ -249,7 +250,11 @@ public class CreateIndexParam {
         return "CreateIndexParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", fieldName='" + fieldName + '\'' +
+                ", indexName='" + indexName + '\'' +
                 ", params='" + extraParam.toString() + '\'' +
+                ", syncMode=" + syncMode +
+                ", syncWaitingInterval=" + syncWaitingInterval +
+                ", syncWaitingTimeout=" + syncWaitingTimeout +
                 '}';
     }
 }

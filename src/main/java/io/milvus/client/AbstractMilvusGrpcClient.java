@@ -234,7 +234,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         });
     }
 
-    private R<Boolean> waitForIndex(String collectionName, String fieldName, long waitingInterval, long timeout) {
+    private R<Boolean> waitForIndex(String collectionName, String indexName,
+                                    long waitingInterval, long timeout) {
         // This method use getIndexState() to check index state.
         // If all index state become Finished, then we say the sync index action is finished.
         // If waiting time exceed timeout, exist the circle
@@ -249,14 +250,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             GetIndexStateRequest request = GetIndexStateRequest.newBuilder()
                     .setCollectionName(collectionName)
-                    .setFieldName(fieldName)
+                    .setIndexName(indexName)
                     .build();
 
             GetIndexStateResponse response = blockingStub().getIndexState(request);
             if (response.getState() == IndexState.Finished) {
                 break;
             } else if (response.getState() == IndexState.Failed) {
-                String msg = "Index failed: " + response.getFailReason();
+                String msg = "Get index state failed: " + response.toString();
                 logError(msg);
                 return R.failed(R.Status.UnexpectedError, msg);
             }
@@ -1023,7 +1024,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             if (requestParam.isSyncMode()) {
-                R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getFieldName(),
+                R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getIndexName(),
                         requestParam.getSyncWaitingInterval(), requestParam.getSyncWaitingTimeout());
                 if (res.getStatus() != R.Status.Success.getCode()) {
                     return failedStatus("CreateIndexRequest in sync mode", response);
@@ -1055,7 +1056,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setFieldName(requestParam.getFieldName())
+                    .setIndexName(requestParam.getIndexName())
                     .build();
 
             Status response = blockingStub().dropIndex(dropIndexRequest);
@@ -1089,7 +1090,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setFieldName(requestParam.getFieldName())
+                    .setIndexName(requestParam.getIndexName())
                     .build();
 
             DescribeIndexResponse response = blockingStub().describeIndex(describeIndexRequest);
@@ -1120,7 +1121,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             GetIndexStateRequest getIndexStateRequest = GetIndexStateRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setFieldName(requestParam.getFieldName())
+                    .setIndexName(requestParam.getIndexName())
                     .build();
 
             GetIndexStateResponse response = blockingStub().getIndexState(getIndexStateRequest);
@@ -1151,6 +1152,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             GetIndexBuildProgressRequest getIndexBuildProgressRequest = GetIndexBuildProgressRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
+                    .setIndexName(requestParam.getIndexName())
                     .build();
 
             GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(getIndexBuildProgressRequest);
