@@ -47,7 +47,6 @@ public class GeneralExample {
                 .withHost("localhost")
                 .withPort(19530)
                 .withAuthorization("root","Milvus")
-                .withSecure(true)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
@@ -60,6 +59,7 @@ public class GeneralExample {
 //    private static final String PROFILE_FIELD = "userProfile";
 //    private static final Integer BINARY_DIM = 128;
 
+    private static final String INDEX_NAME = "userFaceIndex";
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
     private static final String INDEX_PARAM = "{\"nlist\":128}";
 
@@ -127,14 +127,14 @@ public class GeneralExample {
         return response;
     }
 
-    private R<Boolean> hasCollection() {
+    private boolean hasCollection() {
         System.out.println("========== hasCollection() ==========");
         R<Boolean> response = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         handleResponseStatus(response);
         System.out.println(response);
-        return response;
+        return response.getData().booleanValue();
     }
 
     private R<RpcStatus> loadCollection() {
@@ -248,6 +248,7 @@ public class GeneralExample {
         R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
+                .withIndexName(INDEX_NAME)
                 .withIndexType(INDEX_TYPE)
                 .withMetricType(MetricType.L2)
                 .withExtraParam(INDEX_PARAM)
@@ -262,7 +263,7 @@ public class GeneralExample {
         System.out.println("========== dropIndex() ==========");
         R<RpcStatus> response = milvusClient.dropIndex(DropIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withFieldName(VECTOR_FIELD)
+                .withIndexName(INDEX_NAME)
                 .build());
         handleResponseStatus(response);
         System.out.println(response);
@@ -273,7 +274,7 @@ public class GeneralExample {
         System.out.println("========== describeIndex() ==========");
         R<DescribeIndexResponse> response = milvusClient.describeIndex(DescribeIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withFieldName(VECTOR_FIELD)
+                .withIndexName(INDEX_NAME)
                 .build());
         handleResponseStatus(response);
         System.out.println(response);
@@ -284,7 +285,7 @@ public class GeneralExample {
         System.out.println("========== getIndexState() ==========");
         R<GetIndexStateResponse> response = milvusClient.getIndexState(GetIndexStateParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withFieldName(VECTOR_FIELD)
+                .withIndexName(INDEX_NAME)
                 .build());
         handleResponseStatus(response);
         System.out.println(response);
@@ -296,6 +297,7 @@ public class GeneralExample {
         R<GetIndexBuildProgressResponse> response = milvusClient.getIndexBuildProgress(
                 GetIndexBuildProgressParam.newBuilder()
                         .withCollectionName(COLLECTION_NAME)
+                        .withIndexName(INDEX_NAME)
                         .build());
         handleResponseStatus(response);
         System.out.println(response);
@@ -352,63 +354,42 @@ public class GeneralExample {
         return response;
     }
 
-    private R<SearchResults> searchProfile(String expr) {
-        System.out.println("========== searchProfile() ==========");
-        long begin = System.currentTimeMillis();
-
-        List<String> outFields = Collections.singletonList(AGE_FIELD);
-        List<ByteBuffer> vectors = generateBinaryVectors(5);
-
-        SearchParam searchParam = SearchParam.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withMetricType(MetricType.HAMMING)
-                .withOutFields(outFields)
-                .withTopK(SEARCH_K)
-                .withVectors(vectors)
-                .withVectorFieldName(PROFILE_FIELD)
-                .withExpr(expr)
-                .withParams(SEARCH_PARAM)
-                .build();
-
-
-        R<SearchResults> response = milvusClient.search(searchParam);
-        long end = System.currentTimeMillis();
-        long cost = (end - begin);
-        System.out.println("Search time cost: " + cost + "ms");
-
-        handleResponseStatus(response);
-        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-        for (int i = 0; i < vectors.size(); ++i) {
-            System.out.println("Search result of No." + i);
-            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-            System.out.println(scores);
-            System.out.println("Output field data for No." + i);
-            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
-        }
-
-        return response;
-    }
-
-    private R<CalcDistanceResults> calDistance() {
-        System.out.println("========== calDistance() ==========");
-        Random ran=new Random();
-        List<Float> vector1 = new ArrayList<>();
-        List<Float> vector2 = new ArrayList<>();
-        for (int d = 0; d < VECTOR_DIM; ++d) {
-            vector1.add(ran.nextFloat());
-            vector2.add(ran.nextFloat());
-        }
-
-        CalcDistanceParam calcDistanceParam = CalcDistanceParam.newBuilder()
-                .withVectorsLeft(Collections.singletonList(vector1))
-                .withVectorsRight(Collections.singletonList(vector2))
-                .withMetricType(MetricType.L2)
-                .build();
-        R<CalcDistanceResults> response = milvusClient.calcDistance(calcDistanceParam);
-        handleResponseStatus(response);
-        System.out.println(response);
-        return response;
-    }
+//    private R<SearchResults> searchProfile(String expr) {
+//        System.out.println("========== searchProfile() ==========");
+//        long begin = System.currentTimeMillis();
+//
+//        List<String> outFields = Collections.singletonList(AGE_FIELD);
+//        List<ByteBuffer> vectors = generateBinaryVectors(5);
+//
+//        SearchParam searchParam = SearchParam.newBuilder()
+//                .withCollectionName(COLLECTION_NAME)
+//                .withMetricType(MetricType.HAMMING)
+//                .withOutFields(outFields)
+//                .withTopK(SEARCH_K)
+//                .withVectors(vectors)
+//                .withVectorFieldName(PROFILE_FIELD)
+//                .withExpr(expr)
+//                .withParams(SEARCH_PARAM)
+//                .build();
+//
+//
+//        R<SearchResults> response = milvusClient.search(searchParam);
+//        long end = System.currentTimeMillis();
+//        long cost = (end - begin);
+//        System.out.println("Search time cost: " + cost + "ms");
+//
+//        handleResponseStatus(response);
+//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
+//        for (int i = 0; i < vectors.size(); ++i) {
+//            System.out.println("Search result of No." + i);
+//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+//            System.out.println(scores);
+//            System.out.println("Output field data for No." + i);
+//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
+//        }
+//
+//        return response;
+//    }
 
     private R<QueryResults> query(String expr) {
         System.out.println("========== query() ==========");
@@ -494,7 +475,9 @@ public class GeneralExample {
     public static void main(String[] args) {
         GeneralExample example = new GeneralExample();
 
-        example.dropCollection();
+        if (example.hasCollection()) {
+            example.dropCollection();
+        }
         example.createCollection(2000);
         example.hasCollection();
         example.describeCollection();
@@ -530,7 +513,6 @@ public class GeneralExample {
         example.searchFace(searchExpr);
 //        searchExpr = AGE_FIELD + " <= 30";
 //        example.searchProfile(searchExpr);
-        example.calDistance();
         example.compact();
         example.getCollectionStatistics();
 
