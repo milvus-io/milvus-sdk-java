@@ -1054,9 +1054,21 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
+            DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName())
+                    .setIndexName(requestParam.getIndexName())
+                    .build();
+
+            DescribeIndexResponse descResp = blockingStub().describeIndex(describeIndexRequest);
+            if (descResp.getStatus().getErrorCode() != ErrorCode.Success || descResp.getIndexDescriptionsCount() == 0) {
+                logError("Index doesn't exist:\n{}", requestParam.getIndexName());
+                return R.failed(R.Status.IndexNotExist, "Index doesn't exist");
+            }
+
             DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setIndexName(requestParam.getIndexName())
+                    .setFieldName(descResp.getIndexDescriptions(0).getFieldName())
                     .build();
 
             Status response = blockingStub().dropIndex(dropIndexRequest);
