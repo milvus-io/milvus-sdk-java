@@ -34,13 +34,24 @@ public class ParamUtils {
     }
 
     /**
-     * Convert {@link InsertParam} to proto type InsertRequest.
+     * Checks if a metric is for float vector.
      *
-     * @param requestParam {@link InsertParam} object
-     * @param fieldTypes {@link FieldType} object to validate the requestParam
-     * @return a <code>InsertRequest</code> object
+     * @param metric metric type
      */
-    public static InsertRequest ConvertInsertParam(@NonNull InsertParam requestParam,
+    public static boolean IsFloatMetric(MetricType metric) {
+        return metric == MetricType.L2 || metric == MetricType.IP;
+    }
+
+    /**
+     * Checks if a metric is for binary vector.
+     *
+     * @param metric metric type
+     */
+    public static boolean IsBinaryMetric(MetricType metric) {
+        return !IsFloatMetric(metric);
+    }
+
+    public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
                                                    @NonNull List<FieldType> fieldTypes) {
         String collectionName = requestParam.getCollectionName();
         String partitionName = requestParam.getPartitionName();
@@ -85,14 +96,8 @@ public class ParamUtils {
         return insertBuilder.build();
     }
 
-    /**
-     * Convert {@link SearchParam} to proto type SearchRequest.
-     *
-     * @param requestParam {@link SearchParam} object
-     * @return a <code>SearchRequest</code> object
-     */
     @SuppressWarnings("unchecked")
-    public static SearchRequest ConvertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
+    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
                 .setDbName("")
                 .setCollectionName(requestParam.getCollectionName());
@@ -188,13 +193,8 @@ public class ParamUtils {
 
         return builder.build();
     }
-    /**
-     * Convert {@link QueryParam} to proto type QueryRequest.
-     *
-     * @param requestParam {@link QueryParam} object
-     * @return a <code>QueryRequest</code> object
-     */
-    public static QueryRequest ConvertQueryParam(@NonNull QueryParam requestParam) {
+
+    public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
         long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
                 requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
         return QueryRequest.newBuilder()
