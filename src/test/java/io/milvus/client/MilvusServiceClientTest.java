@@ -1685,6 +1685,8 @@ class MilvusServiceClientTest {
         List<String> partitions = Collections.singletonList("partition1");
         List<String> outputFields = Collections.singletonList("field1");
         List<List<Float>> vectors = new ArrayList<>();
+
+        // target vector is empty
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1699,6 +1701,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // travel timestamp must be greater than 0
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1714,6 +1717,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // guarantee timestamp must be greater than 0
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1729,6 +1733,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // collection name is empty
         List<Float> vector1 = Collections.singletonList(0.1F);
         vectors.add(vector1);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
@@ -1744,6 +1749,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // target field name is empty
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1757,6 +1763,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // metric type is invalid
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1770,6 +1777,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // illegal topk value
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1783,7 +1791,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        // vector type illegal
+        // target vector type must be Lst<Float> or ByteBuffer
         List<String> fakeVectors1 = Collections.singletonList("fake");
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1798,6 +1806,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // float vector field's value must be Lst<Float>
         List<List<String>> fakeVectors2 = Collections.singletonList(fakeVectors1);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1812,7 +1821,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        // vector dimension not equal
+        // float vector dimension not equal
         List<Float> vector2 = Arrays.asList(0.1F, 0.2F);
         vectors.add(vector2);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
@@ -1828,6 +1837,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // binary vector dimension not equal
         ByteBuffer buf1 = ByteBuffer.allocate(1);
         buf1.put((byte) 1);
         ByteBuffer buf2 = ByteBuffer.allocate(2);
@@ -1840,9 +1850,67 @@ class MilvusServiceClientTest {
                 .withParams("dummy")
                 .withOutFields(outputFields)
                 .withVectorFieldName("field1")
-                .withMetricType(MetricType.IP)
+                .withMetricType(MetricType.HAMMING)
                 .withTopK(5)
                 .withVectors(binVectors)
+                .withExpr("dummy")
+                .build()
+        );
+
+        // float vector metric type is illegal
+        List<List<Float>> vectors2 = Arrays.asList(vector2);
+        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.JACCARD)
+                .withTopK(5)
+                .withVectors(vectors2)
+                .withExpr("dummy")
+                .build()
+        );
+
+        // binary vector metric type is illegal
+        List<ByteBuffer> binVectors2 = Arrays.asList(buf2);
+        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.IP)
+                .withTopK(5)
+                .withVectors(binVectors2)
+                .withExpr("dummy")
+                .build()
+        );
+
+        // succeed float vector case
+        assertDoesNotThrow(() -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.L2)
+                .withTopK(5)
+                .withVectors(vectors2)
+                .withExpr("dummy")
+                .build()
+        );
+
+        // succeed binary vector case
+        assertDoesNotThrow(() -> SearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withParams("dummy")
+                .withOutFields(outputFields)
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.HAMMING)
+                .withTopK(5)
+                .withVectors(binVectors2)
                 .withExpr("dummy")
                 .build()
         );

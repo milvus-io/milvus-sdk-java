@@ -104,7 +104,7 @@ public class ConnectParam {
         private boolean keepAliveWithoutCalls = false;
         private boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
-        private String authorization = "";
+        private String authorization = Base64.getEncoder().encodeToString("root:milvus".getBytes(StandardCharsets.UTF_8));
 
         private Builder() {
         }

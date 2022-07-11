@@ -1331,7 +1331,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-            InsertRequest insertRequest = ParamUtils.ConvertInsertParam(requestParam, wrapper.getFields());
+            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
             MutationResult response = blockingStub().insert(insertRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
@@ -1372,7 +1372,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-        InsertRequest insertRequest = ParamUtils.ConvertInsertParam(requestParam, wrapper.getFields());
+        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
         ListenableFuture<MutationResult> response = futureStub().insert(insertRequest);
 
         Futures.addCallback(
@@ -1418,7 +1418,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            SearchRequest searchRequest = ParamUtils.ConvertSearchParam(requestParam);
+            SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
             SearchResults response = this.blockingStub().search(searchRequest);
 
             //TODO: truncate distance value by round decimal
@@ -1448,7 +1448,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         logInfo(requestParam.toString());
 
-        SearchRequest searchRequest = ParamUtils.ConvertSearchParam(requestParam);
+        SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
         ListenableFuture<SearchResults> response = this.futureStub().search(searchRequest);
 
         Futures.addCallback(
@@ -1494,7 +1494,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            QueryRequest queryRequest = ParamUtils.ConvertQueryParam(requestParam);
+            QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
             QueryResults response = this.blockingStub().query(queryRequest);
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
                 logInfo("QueryRequest successfully!");
@@ -1529,7 +1529,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         logInfo(requestParam.toString());
 
-        QueryRequest queryRequest = ParamUtils.ConvertQueryParam(requestParam);
+        QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
         ListenableFuture<QueryResults> response = this.futureStub().query(queryRequest);
 
         Futures.addCallback(
