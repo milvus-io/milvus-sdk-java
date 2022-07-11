@@ -1331,12 +1331,37 @@ class MilvusServiceClientTest {
 
     @Test
     void dropIndex() {
+        // start mock server
+        MockMilvusServer server = startServer();
+        MilvusServiceClient client = startClient();
+
         DropIndexParam param = DropIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withIndexName("idx")
                 .build();
 
-        testFuncByName("dropIndex", param);
+        // test return ok with correct input
+        mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
+                .addIndexDescriptions(IndexDescription.newBuilder()
+                        .setIndexName(param.getIndexName())
+                        .setFieldName("fff")
+                        .build())
+                .build());
+
+        R<RpcStatus> resp = client.dropIndex(param);
+        assertEquals(R.Status.Success.getCode(), resp.getStatus());
+
+        // stop mock server
+        server.stop();
+
+        // test return error without server
+        resp = client.dropIndex(param);
+        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+        // test return error when client channel is shutdown
+        client.close();
+        resp = client.dropIndex(param);
+        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
     }
 
     @Test
