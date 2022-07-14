@@ -1230,12 +1230,6 @@ class MilvusServiceClientTest {
     void describeIndexParam() {
         DescribeIndexParam param = DescribeIndexParam.newBuilder()
                 .withCollectionName("collection1")
-                .withIndexName("")
-                .build();
-        assertEquals(Constant.DEFAULT_INDEX_NAME, param.getIndexName());
-
-        param = DescribeIndexParam.newBuilder()
-                .withCollectionName("collection1")
                 .withIndexName("dummy")
                 .build();
         assertEquals("dummy", param.getIndexName());
@@ -2230,12 +2224,12 @@ class MilvusServiceClientTest {
     }
 
     @Test
-    void manualCompaction() {
-        ManualCompactionParam param = ManualCompactionParam.newBuilder()
+    void manualCompact() {
+        ManualCompactParam param = ManualCompactParam.newBuilder()
                 .withCollectionName("collection1")
                 .build();
 
-        testFuncByName("manualCompaction", param);
+        testFuncByName("manualCompact", param);
     }
 
     @Test

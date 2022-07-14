@@ -9,10 +9,7 @@ import io.milvus.param.MetricType;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Util class to wrap response of <code>describeIndex</code> interface.
@@ -84,7 +81,7 @@ public class DescIndexResponseWrapper {
         public IndexType getIndexType() {
             if (this.params.containsKey(Constant.INDEX_TYPE)) {
                 // may throw IllegalArgumentException
-                return IndexType.valueOf(params.get(Constant.INDEX_TYPE));
+                return IndexType.valueOf(params.get(Constant.INDEX_TYPE).toUpperCase(Locale.ROOT));
             }
 
             return IndexType.INVALID;

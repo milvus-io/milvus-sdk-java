@@ -6,15 +6,15 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>manualCompaction</code> interface.
+ * Parameters for <code>manualCompact</code> interface.
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
 @Getter
-public class ManualCompactionParam {
+public class ManualCompactParam {
     private final String collectionName;
 
-    private ManualCompactionParam(@NonNull Builder builder) {
+    private ManualCompactParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
@@ -23,7 +23,7 @@ public class ManualCompactionParam {
     }
 
     /**
-     * Constructs a <code>String</code> by {@link ManualCompactionParam} instance.
+     * Constructs a <code>String</code> by {@link ManualCompactParam} instance.
      *
      * @return <code>String</code>
      */
@@ -35,7 +35,7 @@ public class ManualCompactionParam {
     }
 
     /**
-     * Builder for {@link ManualCompactionParam} class.
+     * Builder for {@link ManualCompactParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -55,14 +55,14 @@ public class ManualCompactionParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link ManualCompactionParam} instance.
+         * Verifies parameters and creates a new {@link ManualCompactParam} instance.
          *
-         * @return {@link ManualCompactionParam}
+         * @return {@link ManualCompactParam}
          */
-        public ManualCompactionParam build() throws ParamException {
+        public ManualCompactParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            return new ManualCompactionParam(this);
+            return new ManualCompactParam(this);
         }
     }
 }

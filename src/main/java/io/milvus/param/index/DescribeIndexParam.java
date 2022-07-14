@@ -84,9 +84,7 @@ public class DescribeIndexParam {
         public DescribeIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (indexName == null || StringUtils.isBlank(indexName)) {
-                indexName = Constant.DEFAULT_INDEX_NAME;
-            }
+            // if indexName is empty, describeIndex will return all indexes information
 
             return new DescribeIndexParam(this);
         }

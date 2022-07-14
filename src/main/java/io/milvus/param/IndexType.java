@@ -27,16 +27,18 @@ public enum IndexType {
     INVALID,
     FLAT,
     IVF_FLAT,
-    IVF_PQ,
     IVF_SQ8,
-    IVF_HNSW,
+    IVF_PQ,
     HNSW,
+    ANNOY,
     RHNSW_FLAT,
     RHNSW_PQ,
     RHNSW_SQ,
-    ANNOY,
     //Only supported for binary vectors
     BIN_FLAT,
     BIN_IVF_FLAT,
+
+    //Only for varchar type field
+    TRIE,
     ;
 }

@@ -49,9 +49,15 @@ public class CreateIndexParam {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
-        this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
-        this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
-        this.extraParam.put(Constant.PARAMS, builder.extraParam);
+        if (builder.indexType != IndexType.INVALID) {
+            this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
+        }
+        if (builder.metricType != MetricType.INVALID) {
+            this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
+        }
+        if (builder.extraParam != null) {
+            this.extraParam.put(Constant.PARAMS, builder.extraParam);
+        }
         this.syncMode = builder.syncMode;
         this.syncWaitingInterval = builder.syncWaitingInterval;
         this.syncWaitingTimeout = builder.syncWaitingTimeout;
@@ -217,8 +223,10 @@ public class CreateIndexParam {
                 throw new ParamException("Index type is required");
             }
 
-            if (metricType == MetricType.INVALID) {
-                throw new ParamException("Metric type is required");
+            if (ParamUtils.IsVectorIndex(indexType)) {
+                if (metricType == MetricType.INVALID) {
+                    throw new ParamException("Metric type is required");
+                }
             }
 
             if (Objects.equals(syncMode, Boolean.TRUE)) {
