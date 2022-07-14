@@ -66,6 +66,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     ///////////////////// Internal Functions//////////////////////
     private List<KeyValuePair> assembleKvPair(Map<String, String> sourceMap) {
         List<KeyValuePair> result = new ArrayList<>();
+
         if (MapUtils.isNotEmpty(sourceMap)) {
             sourceMap.forEach((key, value) -> {
                 KeyValuePair kv = KeyValuePair.newBuilder()
@@ -993,7 +994,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             CreateIndexRequest.Builder createIndexRequestBuilder = CreateIndexRequest.newBuilder();
             List<KeyValuePair> extraParamList = assembleKvPair(requestParam.getExtraParam());
-
             if (CollectionUtils.isNotEmpty(extraParamList)) {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
@@ -1011,14 +1011,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
             blockingStub().flush(flushRequest);
 
-
             CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
                     .setIndexName(requestParam.getIndexName())
                     .build();
 
             Status response = blockingStub().createIndex(createIndexRequest);
-
             if (response.getErrorCode() != ErrorCode.Success) {
                 return failedStatus("CreateIndexRequest", response);
             }
@@ -1030,7 +1028,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     return failedStatus("CreateIndexRequest in sync mode", response);
                 }
             }
-
             logInfo("CreateIndexRequest successfully! Collection name:{} Field name:{}",
                     requestParam.getCollectionName(), requestParam.getFieldName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
@@ -1856,7 +1853,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<ManualCompactionResponse> manualCompaction(ManualCompactionParam requestParam) {
+    public R<ManualCompactionResponse> manualCompact(ManualCompactParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }

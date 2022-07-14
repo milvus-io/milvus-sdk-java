@@ -413,10 +413,10 @@ public interface MilvusClient {
     /**
      * Performs a manual compaction.
      *
-     * @param requestParam {@link ManualCompactionParam}
+     * @param requestParam {@link ManualCompactParam}
      * @return {status:result code, data:ManualCompactionResponse{status,info}}
      */
-    R<ManualCompactionResponse> manualCompaction(ManualCompactionParam requestParam);
+    R<ManualCompactionResponse> manualCompact(ManualCompactParam requestParam);
 
     /**
      * Gets compaction state with its plan.

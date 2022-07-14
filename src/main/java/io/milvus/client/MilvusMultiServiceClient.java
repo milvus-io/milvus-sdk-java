@@ -373,7 +373,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
-    public R<ManualCompactionResponse> manualCompaction(ManualCompactionParam requestParam) {
+    public R<ManualCompactionResponse> manualCompact(ManualCompactParam requestParam) {
         return null;
     }
 

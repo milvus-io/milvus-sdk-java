@@ -51,6 +51,15 @@ public class ParamUtils {
         return !IsFloatMetric(metric);
     }
 
+    /**
+     * Checks if a index type is for vector.
+     *
+     * @param idx index type
+     */
+    public static boolean IsVectorIndex(IndexType idx) {
+        return idx != IndexType.INVALID && idx != IndexType.TRIE;
+    }
+
     public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
                                                    @NonNull List<FieldType> fieldTypes) {
         String collectionName = requestParam.getCollectionName();

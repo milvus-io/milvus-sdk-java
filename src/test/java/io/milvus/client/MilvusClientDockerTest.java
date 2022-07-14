@@ -319,9 +319,9 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withFieldName(field2Name)
                 .withIndexName("abv")
-                .withIndexType(IndexType.IVF_FLAT)
+                .withIndexType(IndexType.HNSW)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("{\"nlist\":256}")
+                .withExtraParam("{\"M\":16,\"efConstruction\":64}")
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(30L)
@@ -442,7 +442,7 @@ class MilvusClientDockerTest {
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
-                .withParams("{\"nprobe\":8}")
+                .withParams("{\"ef\":64}")
                 .addOutField(field4Name)
                 .build();
 
@@ -895,6 +895,28 @@ class MilvusClientDockerTest {
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field3Name)
+                .withIndexName("stridx")
+                .withIndexType(IndexType.TRIE)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // get index description
+        DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withIndexName(indexParam.getIndexName())
+                .build();
+        R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
+        assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
