@@ -552,7 +552,48 @@ class MilvusClientDockerTest {
                 .build());
         assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
-        // pick some vectors to search
+        // search without index
+        List<ByteBuffer> oneVector = new ArrayList<>();
+        oneVector.add(vectors.get(0));
+
+        SearchParam searchOneParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.SUPERSTRUCTURE)
+                .withTopK(5)
+                .withVectors(oneVector)
+                .withVectorFieldName(field2Name)
+                .build();
+
+        R<SearchResults> searchOne = client.search(searchOneParam);
+        assertEquals(R.Status.Success.getCode(), searchOne.getStatus().intValue());
+
+        SearchResultsWrapper oneResult = new SearchResultsWrapper(searchOne.getData().getResults());
+        List<SearchResultsWrapper.IDScore> oneScores = oneResult.getIDScore(0);
+        System.out.println("The result of " + ids.get(0) + " with SUPERSTRUCTURE metric:");
+        System.out.println(oneScores);
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexName("abv")
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withMetricType(MetricType.HAMMING)
+                .withExtraParam("{\"nlist\":64}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // get index description
+        DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withIndexName(indexParam.getIndexName())
+                .build();
+        R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
+        assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
+
+        // pick some vectors to search with index
         int nq = 5;
         List<Long> targetVectorIDs = new ArrayList<>();
         List<ByteBuffer> targetVectors = new ArrayList<>();
@@ -570,6 +611,7 @@ class MilvusClientDockerTest {
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
+                .withParams("{\"nprobe\":8}")
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
