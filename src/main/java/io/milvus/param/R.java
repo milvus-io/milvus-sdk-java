@@ -88,7 +88,7 @@ public class R<T> {
      */
     public static <T> R<T> failed(ErrorCode errorCode, String msg) {
         R<T> r = new R<>();
-        r.setStatus(errorCode.ordinal());
+        r.setStatus(errorCode.getNumber());
         r.setException(new Exception(msg));
         return r;
     }
