@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Milvus Java SDK test Suite" parallel="classes" thread-count="1">
+    <!--folder-->
+    <test name="connection">
+        <packages>
+            <package name="com.zilliz.milvustest.connection" />
+        </packages>
+    </test>
+    <test name="collection">
+        <packages>
+            <package name="com.zilliz.milvustest.collection" />
+        </packages>
+     </test>
+    <test name="partition">
+        <packages>
+            <package name="com.zilliz.milvustest.partition" />
+        </packages>
+    </test>
+    <test name="Alias">
+        <packages>
+            <package name="com.zilliz.milvustest.alias" />
+        </packages>
+    </test>
+    <test name="index">
+        <packages>
+            <package name="com.zilliz.milvustest.index" />
+        </packages>
+    </test>
+    <test name="insert">
+        <packages>
+            <package name="com.zilliz.milvustest.insert" />
+        </packages>
+    </test>
+    <test name="load">
+        <packages>
+            <package name="com.zilliz.milvustest.load" />
+        </packages>
+    </test>
+    <test name="query">
+        <packages>
+            <package name="com.zilliz.milvustest.query" />
+        </packages>
+    </test>
+    <test name="search">
+        <packages>
+            <package name="com.zilliz.milvustest.search" />
+        </packages>
+    </test>
+    <test name="credential">
+        <packages>
+            <package name="com.zilliz.milvustest.credential" />
+        </packages>
+    </test>
+    <test name="other">
+        <packages>
+            <package name="com.zilliz.milvustest.other" />
+        </packages>
+    </test>
+    <test name="flush">
+        <packages>
+            <package name="com.zilliz.milvustest.flush" />
+        </packages>
+    </test>
+    <test name="compaction">
+        <packages>
+            <package name="com.zilliz.milvustest.compaction" />
+        </packages>
+    </test>
+    <test name="segment">
+        <packages>
+            <package name="com.zilliz.milvustest.segment" />
+        </packages>
+    </test>
+    <test name="businessflow">
+        <packages>
+            <package name="com.zilliz.milvustest.businessflow" />
+        </packages>
+    </test>
+
+    <!--
+    &lt;!&ndash;class&ndash;&gt;
+    <test name="collection test">
+         <classes>
+             <class name="com.zilliz.milvustest.collection.ShowCollectionsTest"/>
+             <class name="com.zilliz.milvustest.collection.HasCollectionTest"/>
+         </classes>
+     </test>
+     &lt;!&ndash;method&ndash;&gt;
+     <test name="collection test">
+         <classes>
+             <class name="com.zilliz.milvustest.collection.ShowCollectionsTest">
+                 <methods>
+                     <include name="showCollectionTest1"/>
+                 </methods>
+             </class>
+         </classes>
+     </test>-->
+    <listeners>
+        <listener class-name="com.zilliz.milvustest.service.ComstumerListener"/>
+    </listeners>
+</suite>

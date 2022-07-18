@@ -1,0 +1,90 @@
+package com.zilliz.milvustest.insert;
+
+import com.zilliz.milvustest.common.BaseTest;
+import com.zilliz.milvustest.common.CommonFunction;
+import com.zilliz.milvustest.util.MathUtil;
+import io.milvus.grpc.MutationResult;
+import io.milvus.param.R;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.partition.CreatePartitionParam;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import java.util.List;
+
+@Epic("Index")
+@Feature("Delete")
+public class DeleteTest extends BaseTest {
+  public String commonCollection;
+  public String commonPartition;
+
+  @BeforeClass(description = "Create collection before test")
+  public void provideCollectionName() {
+    commonCollection = CommonFunction.createNewCollection();
+    commonPartition = "partition_" + MathUtil.getRandomString(10);
+    milvusClient.createPartition(
+        CreatePartitionParam.newBuilder()
+            .withCollectionName(commonCollection)
+            .withPartitionName(commonPartition)
+            .build());
+    List<InsertParam.Field> fields = CommonFunction.generateData(2000);
+    milvusClient.insert(
+        InsertParam.newBuilder().withCollectionName(commonCollection).withPartitionName(commonPartition).withFields(fields).build());
+  }
+
+  @AfterClass(description = "delete collection after deleteDataTest")
+  public void deleteTestData() {
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(commonCollection).build());
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "delete data in expression ")
+  public void deleteData() {
+    R<MutationResult> mutationResultR =
+        milvusClient.delete(
+            DeleteParam.newBuilder()
+                .withCollectionName(commonCollection)
+                .withExpr("book_id in [1,2,3]")
+                .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 0);
+    Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "delete data in expression by partition ")
+  public void deleteDataByPartition() {
+    R<MutationResult> mutationResultR =
+        milvusClient.delete(
+            DeleteParam.newBuilder()
+                .withCollectionName(commonCollection)
+                .withPartitionName(commonPartition)
+                .withExpr("book_id in [1,2,3]")
+                .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 0);
+    Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "delete data with invalid expression ")
+  public void deleteDataInvalidExpression() {
+    R<MutationResult> mutationResultR =
+        milvusClient.delete(
+            DeleteParam.newBuilder()
+                .withCollectionName(commonCollection)
+                .withExpr("book_id not in  [1,2,3]")
+                .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
+    Assert.assertEquals(
+        mutationResultR.getException().getMessage(),
+        "invalid plan node type, only pk in [1, 2] supported");
+  }
+}
