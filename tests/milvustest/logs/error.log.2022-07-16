@@ -1,0 +1,44 @@
+2022-07-16 09:30:50 [ TestNG-test=collection-1:51336 ] - [ ERROR ] ========releaseCollectionTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:30:55 [ TestNG-test=collection-1:56357 ] - [ ERROR ] ========createBinaryVectorCollection测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:00 [ TestNG-test=collection-1:61370 ] - [ ERROR ] ========createCollectionSuccess测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:05 [ TestNG-test=collection-1:66384 ] - [ ERROR ] ========createStringPKCollection测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:20 [ TestNG-test=collection-1:81437 ] - [ ERROR ] ========getCollectionStatisticsInfo测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:25 [ TestNG-test=collection-1:86451 ] - [ ERROR ] ========getCollectionStatisticsWithFlushTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:30 [ TestNG-test=collection-1:91477 ] - [ ERROR ] ========describeCollectionTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:35 [ TestNG-test=collection-1:96497 ] - [ ERROR ] ========hasCollectionTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [true] but found [null]========
+2022-07-16 09:31:40 [ TestNG-test=collection-1:101506 ] - [ ERROR ] ========hasNoExistentCollectionTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [false] but found [null]========
+2022-07-16 09:31:45 [ TestNG-test=collection-1:106515 ] - [ ERROR ] ========loadCollection测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:50 [ TestNG-test=collection-1:111524 ] - [ ERROR ] ========loadCollectionWithAsync测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:31:55 [ TestNG-test=collection-1:116543 ] - [ ERROR ] ========dropCollectionSuccess测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:00 [ TestNG-test=collection-1:121560 ] - [ ERROR ] ========dropIllegalCollection测试失败,失败原因如下：
+java.lang.AssertionError: expected [1] but found [-2]========
+2022-07-16 09:32:05 [ TestNG-test=collection-1:126580 ] - [ ERROR ] ========showCollectionTest1测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:15 [ TestNG-test=partition-1:136612 ] - [ ERROR ] ========createPartitionSuccess测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:20 [ TestNG-test=partition-1:141620 ] - [ ERROR ] ========getNonexistentPartitionStatistics测试失败,失败原因如下：
+java.lang.AssertionError: expected [1] but found [-2]========
+2022-07-16 09:32:25 [ TestNG-test=partition-1:146627 ] - [ ERROR ] ========getPartitionStatistics测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:30 [ TestNG-test=partition-1:151639 ] - [ ERROR ] ========showPartitionTest测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:35 [ TestNG-test=partition-1:156651 ] - [ ERROR ] ========hasPartitionTest1测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:40 [ TestNG-test=partition-1:161655 ] - [ ERROR ] ========hasPartitionWithNonexistentName测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
+2022-07-16 09:32:45 [ TestNG-test=partition-1:166673 ] - [ ERROR ] ========loadNonexistentPartition测试失败,失败原因如下：
+java.lang.AssertionError: expected [1] but found [-2]========
+2022-07-16 09:32:50 [ TestNG-test=partition-1:171680 ] - [ ERROR ] ========loadPartitionSuccess测试失败,失败原因如下：
+java.lang.AssertionError: expected [0] but found [-2]========
