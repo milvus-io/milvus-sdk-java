@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Milvus Java SDK test Suite" parallel="classes" thread-count="3">
+    <!--folder-->
+    <test name="connection">
+        <packages>
+            <package name="com.zilliz.milvustest.connection" />
+        </packages>
+    </test>
+    <test name="collection">
+        <packages>
+            <package name="com.zilliz.milvustest.collection" />
+        </packages>
+    </test>
+</suite>
