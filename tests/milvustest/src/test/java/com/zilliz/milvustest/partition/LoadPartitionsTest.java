@@ -8,6 +8,7 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
 import io.milvus.param.partition.LoadPartitionsParam;
+import io.milvus.param.partition.ReleasePartitionsParam;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -19,19 +20,27 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Epic("Partition")
 @Feature("LoadPartitions")
 public class LoadPartitionsTest extends BaseTest {
   private String partition;
+  private String partition2;
 
   @BeforeClass(description = "init partition Name")
   public void createPartitionTest() {
     partition = "partition_" + MathUtil.getRandomString(10);
+    partition2 = "partition_" + MathUtil.getRandomString(10);
     milvusClient.createPartition(
         CreatePartitionParam.newBuilder()
             .withCollectionName(CommonData.defaultCollection)
             .withPartitionName(partition)
             .build());
+    milvusClient.createPartition(
+            CreatePartitionParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withPartitionName(partition2)
+                    .build());
   }
 
   @AfterClass(description = "delete partition after test")
@@ -41,15 +50,21 @@ public class LoadPartitionsTest extends BaseTest {
             .withCollectionName(CommonData.defaultCollection)
             .withPartitionName(partition)
             .build());
+    milvusClient.dropPartition(
+            DropPartitionParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withPartitionName(partition2)
+                    .build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "load partition")
-  public void loadPartitionSuccess() {
+  public void loadPartition() {
     List<String> partitionNames =
         new ArrayList<String>() {
           {
             add(partition);
+            add(partition2);
           }
         };
     R<RpcStatus> rpcStatusR =
@@ -82,5 +97,31 @@ public class LoadPartitionsTest extends BaseTest {
     Assert.assertEquals(
         rpcStatusR.getException().getMessage(),
         "partitionID of partitionName:" + nonexsitPartition + " can not be find");
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "load partition after release")
+  public void loadPartitionAfterRelease() {
+    // release first
+    milvusClient.releasePartitions(
+        ReleasePartitionsParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .addPartitionName(partition)
+            .build());
+    // load
+    List<String> partitionNames =
+        new ArrayList<String>() {
+          {
+            add(partition);
+          }
+        };
+    R<RpcStatus> rpcStatusR =
+        milvusClient.loadPartitions(
+            LoadPartitionsParam.newBuilder()
+                .withCollectionName(CommonData.defaultCollection)
+                .withPartitionNames(partitionNames)
+                .build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 }

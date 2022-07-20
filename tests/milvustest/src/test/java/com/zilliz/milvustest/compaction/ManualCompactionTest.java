@@ -13,6 +13,7 @@ import io.milvus.param.collection.FlushParam;
 import io.milvus.param.control.GetCompactionPlansParam;
 import io.milvus.param.control.GetCompactionStateParam;
 import io.milvus.param.control.ManualCompactParam;
+import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -58,7 +59,7 @@ public class ManualCompactionTest extends BaseTest {
     R<ManualCompactionResponse> responseR =
         milvusClient.manualCompact(
             ManualCompactParam.newBuilder()
-                .withCollectionName(CommonData.defaultCollection)
+                .withCollectionName(collection)
                 .build());
     Assert.assertEquals(responseR.getStatus().intValue(), 0);
     Assert.assertTrue(responseR.getData().getCompactionID() > 0);
@@ -67,11 +68,51 @@ public class ManualCompactionTest extends BaseTest {
             milvusClient.getCompactionState(
                     GetCompactionStateParam.newBuilder().withCompactionID(compactionID).build());
     Assert.assertEquals(GetCompactionStateResponse.getStatus().intValue(), 0);
-    Assert.assertEquals(GetCompactionStateResponse.getData().getState(), CompactionState.Completed);
+    Assert.assertEquals(GetCompactionStateResponse.getData().getState(), CompactionState.Executing);
     R<GetCompactionPlansResponse> GetCompactionPlansResponse =
             milvusClient.getCompactionStateWithPlans(
                     GetCompactionPlansParam.newBuilder().withCompactionID(compactionID).build());
     Assert.assertEquals(GetCompactionPlansResponse.getStatus().intValue(), 0);
-    Assert.assertEquals(GetCompactionPlansResponse.getData().getState(),CompactionState.Completed);
+    Assert.assertEquals(GetCompactionPlansResponse.getData().getState(),CompactionState.Executing);
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "manual compaction with nonexistent collection")
+  public void manualCompactionWithNonexistentCollection(){
+    R<ManualCompactionResponse> responseR =
+            milvusClient.manualCompact(
+                    ManualCompactParam.newBuilder()
+                            .withCollectionName("NonexistentCollection")
+                            .build());
+    Assert.assertEquals(responseR.getStatus().intValue(), 1);
+    Assert.assertTrue(responseR.getException().getMessage().contains("can't find collection"));
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "performs a manual compaction with data delete")
+  public void manualCompactionAfterDelete(){
+    milvusClient.delete(
+            DeleteParam.newBuilder()
+                    .withCollectionName(collection)
+                    .withExpr("book_id in [1,2,3]")
+                    .build());
+    R<ManualCompactionResponse> responseR =
+            milvusClient.manualCompact(
+                    ManualCompactParam.newBuilder()
+                            .withCollectionName(collection)
+                            .build());
+    Assert.assertEquals(responseR.getStatus().intValue(), 0);
+    Assert.assertTrue(responseR.getData().getCompactionID() > 0);
+    long compactionID = responseR.getData().getCompactionID();
+    R<GetCompactionStateResponse> GetCompactionStateResponse =
+            milvusClient.getCompactionState(
+                    GetCompactionStateParam.newBuilder().withCompactionID(compactionID).build());
+    Assert.assertEquals(GetCompactionStateResponse.getStatus().intValue(), 0);
+    Assert.assertEquals(GetCompactionStateResponse.getData().getState(), CompactionState.Executing);
+    R<GetCompactionPlansResponse> GetCompactionPlansResponse =
+            milvusClient.getCompactionStateWithPlans(
+                    GetCompactionPlansParam.newBuilder().withCompactionID(compactionID).build());
+    Assert.assertEquals(GetCompactionPlansResponse.getStatus().intValue(), 0);
+    Assert.assertEquals(GetCompactionPlansResponse.getData().getState(),CompactionState.Executing);
   }
 }

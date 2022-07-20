@@ -5,6 +5,7 @@ import com.zilliz.milvustest.common.CommonData;
 import io.milvus.grpc.GetQuerySegmentInfoResponse;
 import io.milvus.param.R;
 import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.control.GetQuerySegmentInfoParam;
 import io.qameta.allure.*;
 import org.testng.Assert;
@@ -34,5 +35,22 @@ public class GetQuerySegmentInfoTest extends BaseTest {
     System.out.println(responseR.getData());
     Assert.assertEquals(responseR.getStatus().intValue(), 0);
     Assert.assertEquals(responseR.getData().getInfos(0), 0);
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Gets the query information of segments without load")
+  public void getQuerySegmentInfoWithoutLoad() {
+    milvusClient.releaseCollection(
+        ReleaseCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .build());
+    R<GetQuerySegmentInfoResponse> responseR =
+        milvusClient.getQuerySegmentInfo(
+            GetQuerySegmentInfoParam.newBuilder()
+                .withCollectionName(CommonData.defaultCollection)
+                .build());
+    System.out.println(responseR.getData());
+    Assert.assertEquals(responseR.getStatus().intValue(), 1);
+    Assert.assertTrue(responseR.getException().getMessage().contains("getSegmentInfo: queryNode"));
   }
 }

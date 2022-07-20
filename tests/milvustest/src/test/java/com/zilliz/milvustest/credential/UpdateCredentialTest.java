@@ -78,4 +78,17 @@ public class UpdateCredentialTest extends BaseTest {
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), -3);
     Assert.assertEquals(rpcStatusR.getException().getMessage(), "found no credential:nonexistent");
   }
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Update credential using illegal password")
+  public void updateCredentialWithIllegalPassword() {
+    R<RpcStatus> rpcStatusR =
+            milvusClient.updateCredential(
+                    UpdateCredentialParam.newBuilder()
+                            .withUsername(username)
+                            .withOldPassword(password)
+                            .withNewPassword("#$%^&")
+                            .build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 5);
+    Assert.assertEquals(rpcStatusR.getException().getMessage(), "The length of password must be great than 6 and less than 256 characters.");
+  }
 }

@@ -60,7 +60,7 @@ public class DescribeIndexTest extends BaseTest {
         milvusClient.describeIndex(
             DescribeIndexParam.newBuilder()
                 .withCollectionName(collection)
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 0);
     DescIndexResponseWrapper descIndexResponseWrapper =
@@ -79,11 +79,51 @@ public class DescribeIndexTest extends BaseTest {
 
   @Severity(SeverityLevel.MINOR)
   @Test(
-      description = "Describe Index without field name",
+      description = "Describe Index without collection name",
       expectedExceptions = ParamException.class)
-  public void describeIndexWithoutField() {
+  public void describeIndexWithoutCollection() {
     R<DescribeIndexResponse> describeIndexResponseR =
         milvusClient.describeIndex(
-            DescribeIndexParam.newBuilder().withCollectionName(collection).build());
+            DescribeIndexParam.newBuilder().withIndexName(CommonData.defaultIndex).build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 0);
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Describe Index without index name")
+  public void describeIndexWithoutIndexNam() {
+    R<DescribeIndexResponse> describeIndexResponseR =
+        milvusClient.describeIndex(
+            DescribeIndexParam.newBuilder()
+                .withCollectionName(collection)
+                .build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
+    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("index not exist"));
+    }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Describe Index when collection does not create index")
+  public void describeIndexWhenCollectionNotCreateIndex() {
+    String newCollection = CommonFunction.createNewCollection();
+    R<DescribeIndexResponse> describeIndexResponseR =
+            milvusClient.describeIndex(
+                    DescribeIndexParam.newBuilder()
+                            .withCollectionName(newCollection)
+                            .build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
+    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("index not exist"));
+    milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Describe Index with nonexistent collection")
+  public void describeIndexWithNonexistentCollection() {
+    R<DescribeIndexResponse> describeIndexResponseR =
+            milvusClient.describeIndex(
+                    DescribeIndexParam.newBuilder()
+                            .withCollectionName("NonexistentCollection")
+                            .build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 1);
+    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("not found"));
+  }
+
 }

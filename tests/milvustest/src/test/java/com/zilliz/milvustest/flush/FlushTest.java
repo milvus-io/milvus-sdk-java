@@ -58,4 +58,23 @@ public class FlushTest extends BaseTest {
     Assert.assertEquals(flushResponseR.getStatus().intValue(), 0);
     Assert.assertTrue(flushResponseR.getData().containsCollSegIDs(CommonData.defaultCollection));
   }
+
+    @Severity(SeverityLevel.NORMAL)
+    @Test(description = "flush collection with nonexistent collection")
+    public void flushCollectionWithNonexistentCollection() {
+        List<String> collectionName =
+                new ArrayList<String>() {
+                    {
+                        add("NonexistentCollection");
+                    }
+                };
+        R<FlushResponse> flushResponseR =
+                milvusClient.flush(
+                        FlushParam.newBuilder()
+                                .withCollectionNames(collectionName)
+                                .build());
+        Assert.assertEquals(flushResponseR.getStatus().intValue(), 0);
+    Assert.assertTrue(
+        flushResponseR.getData().getStatus().getReason().contains("can\'t find collection"));
+    }
 }

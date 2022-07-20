@@ -26,17 +26,18 @@ public class GetIndexStateTest extends BaseTest {
   @BeforeClass(description = "Create collection and index for test")
   public void createCollectionAndIndex() {
     collection = CommonFunction.createNewCollection();
-    R<RpcStatus> indexR = milvusClient.createIndex(
+    R<RpcStatus> indexR =
+        milvusClient.createIndex(
             CreateIndexParam.newBuilder()
-                    .withCollectionName(collection)
-                    .withFieldName(CommonData.defaultVectorField)
-                    .withIndexName(CommonData.defaultIndex)
-                    .withMetricType(MetricType.L2)
-                    .withIndexType(IndexType.IVF_FLAT)
-                    .withExtraParam(CommonData.defaultExtraParam)
-                    .withSyncMode(Boolean.FALSE)
-                    .build());
-    softAssert.assertEquals(indexR.getStatus().intValue(),0);
+                .withCollectionName(collection)
+                .withFieldName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
+                .withMetricType(MetricType.L2)
+                .withIndexType(IndexType.IVF_FLAT)
+                .withExtraParam(CommonData.defaultExtraParam)
+                .withSyncMode(Boolean.FALSE)
+                .build());
+    softAssert.assertEquals(indexR.getStatus().intValue(), 0);
     softAssert.assertAll();
   }
 
@@ -63,5 +64,35 @@ public class GetIndexStateTest extends BaseTest {
                 .build());
     Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 0);
     Assert.assertEquals(getIndexStateResponseR.getData(), 0);
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Get index state with nonexistent collection")
+  public void getIndexStateWithNonexistentCollection() {
+    R<GetIndexStateResponse> getIndexStateResponseR =
+        milvusClient.getIndexState(
+            GetIndexStateParam.newBuilder()
+                .withCollectionName("NonexistentCollection")
+                .withIndexName(CommonData.defaultVectorField)
+                .build());
+    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
+    Assert.assertTrue(getIndexStateResponseR.getException().getMessage().contains("not found"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Get index state when collection does not create index")
+  public void getIndexStateWhenCollectionNotCreateIndex() {
+    String newCollection = CommonFunction.createNewCollection();
+    R<GetIndexStateResponse> getIndexStateResponseR =
+        milvusClient.getIndexState(
+            GetIndexStateParam.newBuilder()
+                .withCollectionName(newCollection)
+                .withIndexName(CommonData.defaultVectorField)
+                .build());
+    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
+    Assert.assertTrue(
+        getIndexStateResponseR.getException().getMessage().contains("index not found"));
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
   }
 }

@@ -55,6 +55,36 @@ public class CommonFunction {
     logger.info("create collection:" + collectionName);
     return collectionName;
   }
+  public static String createNewCollectionWithAutoPK() {
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(true)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultVectorField)
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(128)
+                    .build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .addFieldType(fieldType1)
+                    .addFieldType(fieldType2)
+                    .addFieldType(fieldType3)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    logger.info("create collection:" + collectionName);
+    return collectionName;
+  }
 
   // int PK,  binary vector collection
   public static String createBinaryCollection() {
@@ -229,6 +259,26 @@ public class CommonFunction {
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
+  public static List<InsertParam.Field> generateDataWithAutoPK(int num) {
+    Random ran = new Random();
+    List<Long> word_count_array = new ArrayList<>();
+    List<List<Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < num; ++i) {
+      word_count_array.add(i + 10000);
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      book_intro_array.add(vector);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
+    fields.add(
+            new InsertParam.Field(
+                    CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+    // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
+    return fields;
+  }
 
   public static void insertDataIntoCollection(String collection, List<InsertParam.Field> fields) {
     BaseTest.milvusClient.insert(
@@ -304,12 +354,12 @@ public class CommonFunction {
     return vectors;
   }
 
-  public static List<InsertParam.Field> generateStringData() {
+  public static List<InsertParam.Field> generateStringData(int num) {
     Random ran = new Random();
     List<String> book_name_array = new ArrayList<>();
     List<String> book_content_array = new ArrayList<>();
     List<List<Float>> book_intro_array = new ArrayList<>();
-    for (long i = 0L; i < 2000; ++i) {
+    for (long i = 0L; i < num; ++i) {
       book_name_array.add(MathUtil.genRandomStringAndChinese(10) + "-" + i);
       book_content_array.add(i + "-" + MathUtil.genRandomStringAndChinese(10));
       List<Float> vector = new ArrayList<>();

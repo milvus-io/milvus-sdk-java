@@ -34,7 +34,7 @@ public class GetCollectionStatisticsTest extends BaseTest {
     System.out.println(wrapperCollectionStatistics);
   }
 
-  @Severity(SeverityLevel.CRITICAL)
+  @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Shows the statistics information of a collection with flush")
   public void getCollectionStatisticsWithFlushTest() {
     R<GetCollectionStatisticsResponse> respCollectionStatistics =
@@ -49,5 +49,20 @@ public class GetCollectionStatisticsTest extends BaseTest {
         new GetCollStatResponseWrapper(respCollectionStatistics.getData());
     Assert.assertEquals(wrapperCollectionStatistics.getRowCount(), 2000);
     System.out.println(wrapperCollectionStatistics);
+  }
+
+  @Severity(SeverityLevel.MINOR)
+  @Test(description = "get the statistics information of nonexistent collection.")
+  public void getNonexistentCollectionStatisticsInfo() {
+    R<GetCollectionStatisticsResponse> respCollectionStatistics =
+            milvusClient
+                    .getCollectionStatistics( // Return the statistics information of the collection.
+                            GetCollectionStatisticsParam.newBuilder()
+                                    .withCollectionName("NonexistentCollection")
+                                    .withFlush(false)
+                                    .build());
+    Assert.assertEquals(respCollectionStatistics.getStatus().intValue(), 1);
+    Assert.assertTrue(respCollectionStatistics.getException().getMessage().contains("can't find collection"));
+
   }
 }
