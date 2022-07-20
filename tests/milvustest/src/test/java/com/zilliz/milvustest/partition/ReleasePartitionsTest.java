@@ -6,7 +6,6 @@ import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.QueryResults;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
@@ -56,7 +55,7 @@ public class ReleasePartitionsTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "release partition")
-  public void releasePartitionSuccess() {
+  public void releasePartition() {
     R<RpcStatus> rpcStatusR =
         milvusClient.releasePartitions(
             ReleasePartitionsParam.newBuilder()
@@ -69,7 +68,7 @@ public class ReleasePartitionsTest extends BaseTest {
 
   @Test(
           description = "query from partition after release ",
-          dependsOnMethods = "releasePartitionSuccess")
+          dependsOnMethods = "releasePartition")
   @Severity(SeverityLevel.NORMAL)
   public void queryAfterReleasePartition() {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
@@ -90,5 +89,18 @@ public class ReleasePartitionsTest extends BaseTest {
     R<QueryResults> queryResultsR = milvusClient.query(queryParam);
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 1);
     Assert.assertTrue(queryResultsR.getException().getMessage().contains("checkIfLoaded failed when query"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "release nonexistent partition")
+  public void releaseNonexistentPartition() {
+    R<RpcStatus> rpcStatusR =
+            milvusClient.releasePartitions(
+                    ReleasePartitionsParam.newBuilder()
+                            .withCollectionName(CommonData.defaultCollection)
+                            .addPartitionName("NonexistentPartition")
+                            .build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("partitionID of partitionName:NonexistentPartition can not be find"));
   }
 }

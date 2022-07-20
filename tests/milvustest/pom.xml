@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.6.7</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>com.zilliz</groupId>
     <artifactId>milvustest</artifactId>
@@ -18,8 +18,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <!--TestNg Aullre Report使用-->
-        <aspectj.version>1.9.2</aspectj.version> <!--AspectJ是一个基于Java语言的AOP框架-->
+        <!--TestNg Aullre Report Use-->
+        <aspectj.version>1.9.2</aspectj.version>
         <allure.version>2.13.2</allure.version>
         <xmlFileName>testng.xml</xmlFileName>
     </properties>
@@ -59,7 +59,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test</artifactId>
         </dependency>
-        <!-- Jackson序列化和反序列化 -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
@@ -80,14 +79,13 @@
             <artifactId>milvus-sdk-java</artifactId>
             <version>2.1.0-beta3</version>
         </dependency>
-        <!--Allure报告依赖包-->
+        <!--Allure-->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-testng</artifactId>
             <version>${allure.version}</version>
             <scope>test</scope>
         </dependency>
-        <!--Allure报告生成插件依赖包-->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
@@ -134,23 +132,20 @@
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                     </argLine>
-                    <!--生成allure-result的目录-->
+                    <!--generate allure-result-->
                     <systemProperties>
-                        <!--是否忽略html，解释见下图。与之后在reportNg报告上显示截图相关。当前已经使用allure了，这里可以直接去掉啦-->
                         <!--<org.uncommons.reportng.escape-output>false</org.uncommons.reportng.escape-output>-->
-                        <!--定义输出在项目 target 目录-->
                         <property>
                             <name>allure.results.directory</name>
                             <value>./target/allure-results</value>
                         </property>
                     </systemProperties>
-                    <!--测试失败后，是否忽略并继续测试-->
+                    <!--ignore test failure-->
                     <testFailureIgnore>true</testFailureIgnore>
                     <argLine>
                         -Dfile.encoding=UTF-8
                     </argLine>
                     <suiteXmlFiles>
-                        <!--该文件位于工程根目录时，直接填写名字，其它位置要加上路径-->
                         <suiteXmlFile>${xmlFileName}</suiteXmlFile>
                     </suiteXmlFiles>
                 </configuration>

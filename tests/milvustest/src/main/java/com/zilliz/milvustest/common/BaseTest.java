@@ -334,7 +334,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
                     .build());
 
     logger.info("insert data");
-    List<InsertParam.Field> fields = CommonFunction.generateStringData();
+    List<InsertParam.Field> fields = CommonFunction.generateStringData(2000);
     milvusClient.insert(
             InsertParam.newBuilder()
                     .withCollectionName(CommonData.defaultStringPKCollection)

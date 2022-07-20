@@ -42,4 +42,18 @@ public class GetPersistentSegmentInfoTest extends BaseTest {
     Assert.assertEquals(responseR.getData().getInfos(0).getState(), SegmentState.Flushed);
     System.out.println(responseR.getData());
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(
+          description =
+                  "Gets the information of persistent segments without flush")
+  public void getPersistentSegmentInfoWithoutFlush() {
+    R<GetPersistentSegmentInfoResponse> responseR =
+            milvusClient.getPersistentSegmentInfo(
+                    GetPersistentSegmentInfoParam.newBuilder()
+                            .withCollectionName(CommonData.defaultStringPKCollection)
+                            .build());
+    Assert.assertEquals(responseR.getStatus().intValue(), 0);
+    System.out.println(responseR.getData());
+  }
 }

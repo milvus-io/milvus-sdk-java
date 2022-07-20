@@ -3,6 +3,7 @@ package com.zilliz.milvustest.index;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.grpc.GetIndexBuildProgressResponse;
 import io.milvus.param.IndexType;
@@ -75,4 +76,24 @@ public class GetIndexBuildProgressTest extends BaseTest {
     Assert.assertEquals(indexBuildProgress.getStatus().intValue(), 0);
     Assert.assertEquals(indexBuildProgress.getData().getIndexedRows(), 0);
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Get Index Build Progress without index name")
+  public void getIndexBuildProgressWithoutIndexName() {
+    R<DescribeIndexResponse> describeIndexResponseR =
+        milvusClient.describeIndex(
+            DescribeIndexParam.newBuilder().withCollectionName(collection).build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
+    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("index not exist"));
+    }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Get Index Build Progress without collection",expectedExceptions = ParamException.class)
+  public void getIndexBuildProgressWithoutCollection() {
+    R<DescribeIndexResponse> describeIndexResponseR =
+            milvusClient.describeIndex(
+                    DescribeIndexParam.newBuilder().withIndexName(CommonData.defaultIndex).build());
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 1);
+  }
+
 }

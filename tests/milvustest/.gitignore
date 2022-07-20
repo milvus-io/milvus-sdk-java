@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 */.DS_Store
+logs/
+allure-results/
 ### STS ###
 .apt_generated
 .classpath

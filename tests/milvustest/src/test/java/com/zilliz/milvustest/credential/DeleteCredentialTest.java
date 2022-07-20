@@ -69,4 +69,16 @@ public class DeleteCredentialTest extends BaseTest {
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "create credential after delete",dependsOnMethods = "deleteCredential")
+  public void createCredentialAfterDelete() {
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createCredential(
+                    CreateCredentialParam.newBuilder()
+                            .withUsername(username)
+                            .withPassword(password)
+                            .build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+  }
 }

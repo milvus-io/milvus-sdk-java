@@ -29,15 +29,16 @@ public class GetMetricsTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(
-          description =
-                  "Gets the runtime metrics information of Milvus, returns the result in .json format.")
+  @Test(description = "Gets the runtime metrics information with illegal param")
   public void getMetricByNodeInfo() {
     String param = "{\"metric_type\": \"node_id\"}";
     R<GetMetricsResponse> getMetricsResponseR =
-            milvusClient.getMetrics(GetMetricsParam.newBuilder().withRequest(param).build());
-    Assert.assertEquals(getMetricsResponseR.getStatus().intValue(), 0);
-    System.out.println(getMetricsResponseR.getData());
-    Assert.assertTrue(getMetricsResponseR.getData().getResponse().contains("nodes_info"));
+        milvusClient.getMetrics(GetMetricsParam.newBuilder().withRequest(param).build());
+    Assert.assertEquals(getMetricsResponseR.getStatus().intValue(), 1);
+    Assert.assertTrue(
+        getMetricsResponseR
+            .getException()
+            .getMessage()
+            .contains("sorry, but this metric type is not implemented"));
   }
 }

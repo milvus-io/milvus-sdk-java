@@ -47,7 +47,7 @@ public class CreatePartitionTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Create partition")
-  public void createPartitionSuccess() {
+  public void createPartition() {
     CreatePartitionParam createPartitionParam =
         CreatePartitionParam.newBuilder()
             .withCollectionName(CommonData.defaultCollection)
@@ -58,9 +58,22 @@ public class CreatePartitionTest extends BaseTest {
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Create partition repeatedly",dependsOnMethods = "createPartition")
+  public void createPartitionRepeatedly() {
+    CreatePartitionParam createPartitionParam =
+            CreatePartitionParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withPartitionName(partition)
+                    .build();
+    R<RpcStatus> rpcStatusR = milvusClient.createPartition(createPartitionParam);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    Assert.assertEquals(rpcStatusR.getException().getMessage(),"CreatePartition failed: partition name = "+partition+" already exists");
+  }
+
   @Test(
       description = "query float vector from partition ",
-      dependsOnMethods = "createPartitionSuccess")
+      dependsOnMethods = "createPartition")
   @Severity(SeverityLevel.NORMAL)
   public void queryFromEmptyPartition() {
     milvusClient.loadCollection(
@@ -87,7 +100,7 @@ public class CreatePartitionTest extends BaseTest {
 
   @Test(
       description = "query float vector from partition AfterInsertData",
-      dependsOnMethods = {"createPartitionSuccess","queryFromEmptyPartition",})
+      dependsOnMethods = {"createPartition","queryFromEmptyPartition",})
   @Severity(SeverityLevel.NORMAL)
   public void queryFromPartitionAfterInsertData() throws InterruptedException {
     List<InsertParam.Field> fields = CommonFunction.generateData(100);

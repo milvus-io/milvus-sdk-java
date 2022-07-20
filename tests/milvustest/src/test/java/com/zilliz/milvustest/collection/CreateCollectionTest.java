@@ -47,6 +47,35 @@ public class CreateCollectionTest extends BaseTest {
     }
   }
 
+  @DataProvider(name = "dataTypeProvider")
+  public Object[][] provideDataType() {
+    Object[][] pk = new Object[][] {{DataType.Int64}, {DataType.VarChar}};
+    Object[][] filedType =
+        new Object[][] {
+          {DataType.Double},
+          {DataType.Float},
+          {DataType.Int64},
+          {DataType.Int8},
+          {DataType.Int16},
+          {DataType.Int32},
+          {DataType.VarChar}
+        };
+    Object[][] vectorType = new Object[][] {{DataType.FloatVector}, {DataType.BinaryVector}};
+    Object[][] dataType = new Object[pk.length * filedType.length * vectorType.length][3];
+    int a = 0;
+    for (int i = 0; i < pk.length; i++) {
+      for (int j = 0; j < filedType.length; j++) {
+        for (int k = 0; k < vectorType.length; k++) {
+          dataType[a][0] = pk[i][0];
+          dataType[a][1] = filedType[j][0];
+          dataType[a][2] = vectorType[k][0];
+          a++;
+        }
+      }
+    }
+    return dataType;
+  }
+
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Create collection success", dataProvider = "collectionByDataProvider")
   public void createCollectionSuccess(String collectionName) {
@@ -198,37 +227,81 @@ public class CreateCollectionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "Create String collection without max length", dataProvider = "collectionByDataProvider", expectedExceptions = ParamException.class)
+  @Test(
+      description = "Create String collection without max length",
+      dataProvider = "collectionByDataProvider",
+      expectedExceptions = ParamException.class)
   public void createStringPKCollectionWithoutMaxLength(String collectionName) {
     FieldType fieldType1 =
-            FieldType.newBuilder()
-                    .withName("book_name")
-                    .withDataType(DataType.VarChar)
-                    .withPrimaryKey(true)
-                    .withAutoID(false)
-                    .build();
+        FieldType.newBuilder()
+            .withName("book_name")
+            .withDataType(DataType.VarChar)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .build();
     FieldType fieldType2 =
-            FieldType.newBuilder()
-                    .withName("book_content")
-                    .withDataType(DataType.VarChar)
-                    .build();
+        FieldType.newBuilder().withName("book_content").withDataType(DataType.VarChar).build();
     FieldType fieldType3 =
-            FieldType.newBuilder()
-                    .withName("book_intro")
-                    .withDataType(DataType.FloatVector)
-                    .withDimension(128)
-                    .build();
+        FieldType.newBuilder()
+            .withName("book_intro")
+            .withDataType(DataType.FloatVector)
+            .withDimension(128)
+            .build();
     CreateCollectionParam createCollectionReq =
-            CreateCollectionParam.newBuilder()
-                    .withCollectionName(collectionName)
-                    .withDescription("Test " + collectionName + " search")
-                    .withShardsNum(2)
-                    .addFieldType(fieldType1)
-                    .addFieldType(fieldType2)
-                    .addFieldType(fieldType3)
-                    .build();
+        CreateCollectionParam.newBuilder()
+            .withCollectionName(collectionName)
+            .withDescription("Test " + collectionName + " search")
+            .withShardsNum(2)
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .build();
     R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
     Assert.assertEquals(collection.getStatus().toString(), "1");
-    Assert.assertEquals(collection.getData().getMsg(), "Varchar field max length must be specified");
+    Assert.assertEquals(
+        collection.getData().getMsg(), "Varchar field max length must be specified");
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(
+      description = "Float vector collection using each data type",
+      dataProvider = "dataTypeProvider")
+  public void createCollectionWithEachDataType(
+      DataType pk, DataType fieldType, DataType vectorType) {
+    String collectionName = "coll" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+        FieldType.newBuilder()
+            .withName("book_id")
+            .withDataType(pk)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .withMaxLength(10)
+            .build();
+    FieldType fieldType2 =
+        FieldType.newBuilder()
+            .withName("word_count")
+            .withDataType(fieldType)
+            .withMaxLength(10)
+            .build();
+    FieldType fieldType3 =
+        FieldType.newBuilder()
+            .withName("book_intro")
+            .withDataType(vectorType)
+            .withDimension(128)
+            .build();
+    CreateCollectionParam createCollectionReq =
+        CreateCollectionParam.newBuilder()
+            .withCollectionName(collectionName)
+            .withDescription("Test " + collectionName + " search")
+            .withShardsNum(2)
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(collectionName).build());
   }
 }
