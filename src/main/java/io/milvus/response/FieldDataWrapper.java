@@ -1,5 +1,6 @@
 package io.milvus.response;
 
+import com.google.protobuf.ProtocolStringList;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
@@ -50,7 +51,6 @@ public class FieldDataWrapper {
         switch (dt) {
             case FloatVector: {
                 int dim = getDim();
-                System.out.println(fieldData.getVectors().getFloatVector().getDataCount());
                 List<Float> data = fieldData.getVectors().getFloatVector().getDataList();
                 if (data.size() % dim != 0) {
                     throw new IllegalResponseException("Returned float vector field data array size doesn't match dimension");
@@ -89,10 +89,14 @@ public class FieldDataWrapper {
 
     /**
      * Returns the field data according to its type:
-     *      float vector field return List&lt;List&lt;Float&gt;&gt;,
-     *      binary vector field return List&lt;ByteBuffer&gt;,
-     *      int64 field return List&lt;Long&gt;,
-     *      boolean field return List&lt;Boolean&gt;,
+     *      float vector field return List of List Float,
+     *      binary vector field return List of ByteBuffer
+     *      int64 field return List of Long
+     *      int32/int16/int8 field return List of Integer
+     *      boolean field return List of Boolean
+     *      float field return List of Float
+     *      double field return List of Double
+     *      varchar field return List of String
      *      etc.
      *
      * Throws {@link IllegalResponseException} if the field type is illegal.
@@ -104,7 +108,6 @@ public class FieldDataWrapper {
         switch (dt) {
             case FloatVector: {
                 int dim = getDim();
-                System.out.println(fieldData.getVectors().getFloatVector().getDataCount());
                 List<Float> data = fieldData.getVectors().getFloatVector().getDataList();
                 if (data.size() % dim != 0) {
                     throw new IllegalResponseException("Returned float vector field data array size doesn't match dimension");
@@ -147,7 +150,8 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getDoubleData().getDataList();
             case VarChar:
             case String:
-                return fieldData.getScalars().getStringData().getDataList();
+                ProtocolStringList protoStrList = fieldData.getScalars().getStringData().getDataList();
+                return protoStrList.subList(0, protoStrList.size());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }

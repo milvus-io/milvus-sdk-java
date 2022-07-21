@@ -24,7 +24,7 @@ public class DescIndexResponseWrapper {
     /**
      * Get index description of fields.
      *
-     * @return List&lt;IndexDesc&gt; index description of fields
+     * @return List of IndexDesc, index description of fields
      */
     public List<IndexDesc> getIndexDescriptions() {
         List<IndexDesc> results = new ArrayList<>();

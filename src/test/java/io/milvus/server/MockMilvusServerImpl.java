@@ -80,7 +80,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void createCollection(io.milvus.grpc.CreateCollectionRequest request,
                                  io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("createCollection() call");
+        logger.info("MockServer receive createCollection() call");
 
         responseObserver.onNext(respCreateCollection);
         responseObserver.onCompleted();
@@ -93,7 +93,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void describeCollection(io.milvus.grpc.DescribeCollectionRequest request,
                                    io.grpc.stub.StreamObserver<io.milvus.grpc.DescribeCollectionResponse> responseObserver) {
-        logger.info("describeCollection() call");
+        logger.info("MockServer receive describeCollection() call");
 
         responseObserver.onNext(respDescribeCollection);
         responseObserver.onCompleted();
@@ -106,7 +106,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void dropCollection(io.milvus.grpc.DropCollectionRequest request,
                                io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("dropCollection() call");
+        logger.info("MockServer receive dropCollection() call");
 
         responseObserver.onNext(respDropCollection);
         responseObserver.onCompleted();
@@ -119,7 +119,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getCollectionStatistics(io.milvus.grpc.GetCollectionStatisticsRequest request,
                                         io.grpc.stub.StreamObserver<io.milvus.grpc.GetCollectionStatisticsResponse> responseObserver) {
-        logger.info("getCollectionStatistics() call");
+        logger.info("MockServer receive getCollectionStatistics() call");
 
         responseObserver.onNext(respGetCollectionStatisticsResponse);
         responseObserver.onCompleted();
@@ -132,7 +132,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void hasCollection(io.milvus.grpc.HasCollectionRequest request,
                               io.grpc.stub.StreamObserver<io.milvus.grpc.BoolResponse> responseObserver) {
-        logger.info("hasCollection() call");
+        logger.info("MockServer receive hasCollection() call");
 
         responseObserver.onNext(respHasCollection);
         responseObserver.onCompleted();
@@ -145,7 +145,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void loadCollection(io.milvus.grpc.LoadCollectionRequest request,
                                io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("loadCollection() call");
+        logger.info("MockServer receive loadCollection() call");
 
         responseObserver.onNext(respLoadCollection);
         responseObserver.onCompleted();
@@ -158,7 +158,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void releaseCollection(io.milvus.grpc.ReleaseCollectionRequest request,
                                   io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("releaseCollection() call");
+        logger.info("MockServer receive releaseCollection() call");
 
         responseObserver.onNext(respReleaseCollection);
         responseObserver.onCompleted();
@@ -171,7 +171,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void showCollections(io.milvus.grpc.ShowCollectionsRequest request,
                                 io.grpc.stub.StreamObserver<io.milvus.grpc.ShowCollectionsResponse> responseObserver) {
-        logger.info("showCollections() call");
+        logger.info("MockServer receive showCollections() call");
 
         responseObserver.onNext(respShowCollections);
         responseObserver.onCompleted();
@@ -184,7 +184,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void createPartition(io.milvus.grpc.CreatePartitionRequest request,
                                 io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("createPartition() call");
+        logger.info("MockServer receive createPartition() call");
 
         responseObserver.onNext(respCreatePartition);
         responseObserver.onCompleted();
@@ -197,7 +197,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void dropPartition(io.milvus.grpc.DropPartitionRequest request,
                               io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("dropPartition() call");
+        logger.info("MockServer receive dropPartition() call");
 
         responseObserver.onNext(respDropPartition);
         responseObserver.onCompleted();
@@ -210,7 +210,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void hasPartition(io.milvus.grpc.HasPartitionRequest request,
                              io.grpc.stub.StreamObserver<io.milvus.grpc.BoolResponse> responseObserver) {
-        logger.info("hasPartition() call");
+        logger.info("MockServer receive hasPartition() call");
 
         responseObserver.onNext(respHasPartition);
         responseObserver.onCompleted();
@@ -223,7 +223,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void loadPartitions(io.milvus.grpc.LoadPartitionsRequest request,
                                io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("loadPartitions() call");
+        logger.info("MockServer receive loadPartitions() call");
 
         responseObserver.onNext(respLoadPartitions);
         responseObserver.onCompleted();
@@ -236,7 +236,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void releasePartitions(io.milvus.grpc.ReleasePartitionsRequest request,
                                   io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("releasePartitions() call");
+        logger.info("MockServer receive releasePartitions() call");
 
         responseObserver.onNext(respReleasePartitions);
         responseObserver.onCompleted();
@@ -249,7 +249,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getPartitionStatistics(io.milvus.grpc.GetPartitionStatisticsRequest request,
                                        io.grpc.stub.StreamObserver<io.milvus.grpc.GetPartitionStatisticsResponse> responseObserver) {
-        logger.info("getPartitionStatistics() call");
+        logger.info("MockServer receive getPartitionStatistics() call");
 
         responseObserver.onNext(respGetPartitionStatistics);
         responseObserver.onCompleted();
@@ -262,7 +262,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void showPartitions(io.milvus.grpc.ShowPartitionsRequest request,
                                io.grpc.stub.StreamObserver<io.milvus.grpc.ShowPartitionsResponse> responseObserver) {
-        logger.info("showPartitions() call");
+        logger.info("MockServer receive showPartitions() call");
 
         responseObserver.onNext(respShowPartitions);
         responseObserver.onCompleted();
@@ -275,7 +275,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void createAlias(io.milvus.grpc.CreateAliasRequest request,
                             io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("createAlias() call");
+        logger.info("MockServer receive createAlias() call");
 
         responseObserver.onNext(respCreateAlias);
         responseObserver.onCompleted();
@@ -288,7 +288,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void dropAlias(io.milvus.grpc.DropAliasRequest request,
                           io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("dropAlias() call");
+        logger.info("MockServer receive dropAlias() call");
 
         responseObserver.onNext(respDropAlias);
         responseObserver.onCompleted();
@@ -301,7 +301,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void alterAlias(io.milvus.grpc.AlterAliasRequest request,
                            io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("alterAlias() call");
+        logger.info("MockServer receive alterAlias() call");
 
         responseObserver.onNext(respAlterAlias);
         responseObserver.onCompleted();
@@ -314,7 +314,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void createIndex(io.milvus.grpc.CreateIndexRequest request,
                             io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("createIndex() call");
+        logger.info("MockServer receive createIndex() call");
 
         responseObserver.onNext(respCreateIndex);
         responseObserver.onCompleted();
@@ -327,7 +327,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void describeIndex(io.milvus.grpc.DescribeIndexRequest request,
                               io.grpc.stub.StreamObserver<io.milvus.grpc.DescribeIndexResponse> responseObserver) {
-        logger.info("describeIndex() call");
+        logger.info("MockServer receive describeIndex() call");
 
         responseObserver.onNext(respDescribeIndex);
         responseObserver.onCompleted();
@@ -340,7 +340,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getIndexState(io.milvus.grpc.GetIndexStateRequest request,
                               io.grpc.stub.StreamObserver<io.milvus.grpc.GetIndexStateResponse> responseObserver) {
-        logger.info("getIndexState() call");
+        logger.info("MockServer receive getIndexState() call");
 
         responseObserver.onNext(respGetIndexState);
         responseObserver.onCompleted();
@@ -353,7 +353,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getIndexBuildProgress(io.milvus.grpc.GetIndexBuildProgressRequest request,
                                       io.grpc.stub.StreamObserver<io.milvus.grpc.GetIndexBuildProgressResponse> responseObserver) {
-        logger.info("getIndexBuildProgress() call");
+        logger.info("MockServer receive getIndexBuildProgress() call");
 
         responseObserver.onNext(respGetIndexBuildProgress);
         responseObserver.onCompleted();
@@ -366,7 +366,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void dropIndex(io.milvus.grpc.DropIndexRequest request,
                           io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("dropIndex() call");
+        logger.info("MockServer receive dropIndex() call");
 
         responseObserver.onNext(respDropIndex);
         responseObserver.onCompleted();
@@ -379,7 +379,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void insert(io.milvus.grpc.InsertRequest request,
                        io.grpc.stub.StreamObserver<io.milvus.grpc.MutationResult> responseObserver) {
-        logger.info("insert() call");
+        logger.info("MockServer receive insert() call");
 
         responseObserver.onNext(respInsert);
         responseObserver.onCompleted();
@@ -392,7 +392,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void delete(io.milvus.grpc.DeleteRequest request,
                        io.grpc.stub.StreamObserver<io.milvus.grpc.MutationResult> responseObserver) {
-        logger.info("delete() call");
+        logger.info("MockServer receive delete() call");
 
         responseObserver.onNext(respDelete);
         responseObserver.onCompleted();
@@ -401,7 +401,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void import_(io.milvus.grpc.ImportRequest request,
                        io.grpc.stub.StreamObserver<io.milvus.grpc.ImportResponse> responseObserver) {
-        logger.info("import() call");
+        logger.info("MockServer receive import() call");
 
         responseObserver.onNext(respImport);
         responseObserver.onCompleted();
@@ -410,7 +410,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getImportState(io.milvus.grpc.GetImportStateRequest request,
                         io.grpc.stub.StreamObserver<io.milvus.grpc.GetImportStateResponse> responseObserver) {
-        logger.info("getImportState() call");
+        logger.info("MockServer receive getImportState() call");
 
         responseObserver.onNext(respImportState);
         responseObserver.onCompleted();
@@ -419,7 +419,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void listImportTasks(io.milvus.grpc.ListImportTasksRequest request,
                                io.grpc.stub.StreamObserver<io.milvus.grpc.ListImportTasksResponse> responseObserver) {
-        logger.info("listImportTasks() call");
+        logger.info("MockServer receive listImportTasks() call");
 
         responseObserver.onNext(respListImportTasks);
         responseObserver.onCompleted();
@@ -432,7 +432,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void search(io.milvus.grpc.SearchRequest request,
                        io.grpc.stub.StreamObserver<io.milvus.grpc.SearchResults> responseObserver) {
-        logger.info("search() call");
+        logger.info("MockServer receive search() call");
 
         responseObserver.onNext(respSearch);
         responseObserver.onCompleted();
@@ -445,7 +445,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void flush(io.milvus.grpc.FlushRequest request,
                       io.grpc.stub.StreamObserver<io.milvus.grpc.FlushResponse> responseObserver) {
-        logger.info("flush() call");
+        logger.info("MockServer receive flush() call");
 
         responseObserver.onNext(respFlush);
         responseObserver.onCompleted();
@@ -458,7 +458,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void query(io.milvus.grpc.QueryRequest request,
                       io.grpc.stub.StreamObserver<io.milvus.grpc.QueryResults> responseObserver) {
-        logger.info("query() call");
+        logger.info("MockServer receive query() call");
 
         responseObserver.onNext(respQuery);
         responseObserver.onCompleted();
@@ -471,7 +471,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void calcDistance(io.milvus.grpc.CalcDistanceRequest request,
                              io.grpc.stub.StreamObserver<io.milvus.grpc.CalcDistanceResults> responseObserver) {
-        logger.info("calcDistance() call");
+        logger.info("MockServer receive calcDistance() call");
 
         responseObserver.onNext(respCalcDistance);
         responseObserver.onCompleted();
@@ -484,7 +484,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getFlushState(io.milvus.grpc.GetFlushStateRequest request,
                                          io.grpc.stub.StreamObserver<io.milvus.grpc.GetFlushStateResponse> responseObserver) {
-        logger.info("getFlushState() call");
+        logger.info("MockServer receive getFlushState() call");
 
         responseObserver.onNext(respGetFlushState);
         responseObserver.onCompleted();
@@ -497,7 +497,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getPersistentSegmentInfo(io.milvus.grpc.GetPersistentSegmentInfoRequest request,
                                          io.grpc.stub.StreamObserver<io.milvus.grpc.GetPersistentSegmentInfoResponse> responseObserver) {
-        logger.info("getPersistentSegmentInfo() call");
+        logger.info("MockServer receive getPersistentSegmentInfo() call");
 
         responseObserver.onNext(respGetPersistentSegmentInfo);
         responseObserver.onCompleted();
@@ -510,7 +510,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getQuerySegmentInfo(io.milvus.grpc.GetQuerySegmentInfoRequest request,
                                     io.grpc.stub.StreamObserver<io.milvus.grpc.GetQuerySegmentInfoResponse> responseObserver) {
-        logger.info("getQuerySegmentInfo() call");
+        logger.info("MockServer receive getQuerySegmentInfo() call");
 
         responseObserver.onNext(respGetQuerySegmentInfo);
         responseObserver.onCompleted();
@@ -523,7 +523,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getReplicas(io.milvus.grpc.GetReplicasRequest request,
                                     io.grpc.stub.StreamObserver<io.milvus.grpc.GetReplicasResponse> responseObserver) {
-        logger.info("getReplicas() call");
+        logger.info("MockServer receive getReplicas() call");
 
         responseObserver.onNext(respGetReplicas);
         responseObserver.onCompleted();
@@ -536,7 +536,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getMetrics(io.milvus.grpc.GetMetricsRequest request,
                            io.grpc.stub.StreamObserver<io.milvus.grpc.GetMetricsResponse> responseObserver) {
-        logger.info("getMetrics() call");
+        logger.info("MockServer receive getMetrics() call");
 
         responseObserver.onNext(respGetMetrics);
         responseObserver.onCompleted();
@@ -549,7 +549,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void loadBalance(io.milvus.grpc.LoadBalanceRequest request,
                             io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
-        logger.info("getMetrics() call");
+        logger.info("MockServer receive getMetrics() call");
 
         responseObserver.onNext(respLoadBalance);
         responseObserver.onCompleted();
@@ -562,7 +562,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getCompactionState(io.milvus.grpc.GetCompactionStateRequest request,
                                    io.grpc.stub.StreamObserver<io.milvus.grpc.GetCompactionStateResponse> responseObserver) {
-        logger.info("getMetrics() call");
+        logger.info("MockServer receive getMetrics() call");
 
         responseObserver.onNext(respGetCompactionState);
         responseObserver.onCompleted();
@@ -575,7 +575,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void manualCompaction(io.milvus.grpc.ManualCompactionRequest request,
                                  io.grpc.stub.StreamObserver<io.milvus.grpc.ManualCompactionResponse> responseObserver) {
-        logger.info("getMetrics() call");
+        logger.info("MockServer receive getMetrics() call");
 
         responseObserver.onNext(respManualCompaction);
         responseObserver.onCompleted();
@@ -588,7 +588,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     @Override
     public void getCompactionStateWithPlans(io.milvus.grpc.GetCompactionPlansRequest request,
                                             io.grpc.stub.StreamObserver<io.milvus.grpc.GetCompactionPlansResponse> responseObserver) {
-        logger.info("getMetrics() call");
+        logger.info("MockServer receive getMetrics() call");
 
         responseObserver.onNext(respGetCompactionPlans);
         responseObserver.onCompleted();
@@ -596,7 +596,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void createCredential(CreateCredentialRequest request, StreamObserver<Status> responseObserver) {
-        logger.info("createCredential() call");
+        logger.info("MockServer receive createCredential() call");
 
         responseObserver.onNext(respCreateCredential);
         responseObserver.onCompleted();
@@ -608,7 +608,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void updateCredential(UpdateCredentialRequest request, StreamObserver<Status> responseObserver) {
-        logger.info("updateCredential() call");
+        logger.info("MockServer receive updateCredential() call");
 
         responseObserver.onNext(respUpdateCredential);
         responseObserver.onCompleted();
@@ -620,7 +620,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void deleteCredential(DeleteCredentialRequest request, StreamObserver<Status> responseObserver) {
-        logger.info("deleteCredential() call");
+        logger.info("MockServer receive deleteCredential() call");
 
         responseObserver.onNext(respDeleteCredential);
         responseObserver.onCompleted();
@@ -632,7 +632,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void listCredUsers(ListCredUsersRequest request, StreamObserver<ListCredUsersResponse> responseObserver) {
-        logger.info("listCredUsers() call");
+        logger.info("MockServer receive listCredUsers() call");
 
         responseObserver.onNext(respListCredUsers);
         responseObserver.onCompleted();

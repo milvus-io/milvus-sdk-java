@@ -123,7 +123,7 @@ class MilvusMultiClientDockerTest {
     }
 
     @BeforeAll
-    public static void setUp() throws InterruptedException {
+    public static void setUp() {
         startDockerContainer();
 
         MultiConnectParam connectParam = multiConnectParamBuilder().withAuthorization("root", "Milvus").build();
@@ -267,11 +267,11 @@ class MilvusMultiClientDockerTest {
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-        fieldsInsert.add(new InsertParam.Field(field1Name, DataType.Int64, ids));
-        fieldsInsert.add(new InsertParam.Field(field5Name, DataType.Int8, ages));
-        fieldsInsert.add(new InsertParam.Field(field4Name, DataType.Double, weights));
-        fieldsInsert.add(new InsertParam.Field(field3Name, DataType.Bool, genders));
-        fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
+        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
+        fieldsInsert.add(new InsertParam.Field(field5Name, ages));
+        fieldsInsert.add(new InsertParam.Field(field4Name, weights));
+        fieldsInsert.add(new InsertParam.Field(field3Name, genders));
+        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -507,8 +507,8 @@ class MilvusMultiClientDockerTest {
 
         List<InsertParam.Field> fields = new ArrayList<>();
         // no need to provide id here since this field is auto_id
-        fields.add(new InsertParam.Field(field1Name, DataType.Int64, ids));
-        fields.add(new InsertParam.Field(field2Name, DataType.BinaryVector, vectors));
+        fields.add(new InsertParam.Field(field1Name, ids));
+        fields.add(new InsertParam.Field(field2Name, vectors));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -618,7 +618,7 @@ class MilvusMultiClientDockerTest {
         for (long i = 0L; i < 10; ++i) {
             List<List<Float>> vectors = normalizeFloatVectors(generateFloatVectors(rowCount));
             List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-            fieldsInsert.add(new InsertParam.Field(field2Name, DataType.FloatVector, vectors));
+            fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
 
             InsertParam insertParam = InsertParam.newBuilder()
                     .withCollectionName(randomCollectionName)

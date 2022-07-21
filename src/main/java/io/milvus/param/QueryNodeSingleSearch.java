@@ -99,8 +99,8 @@ public class QueryNodeSingleSearch {
          * Sets the target vectors.
          *
          * @param vectors list of target vectors:
-         *                if vector type is FloatVector, vectors is List&lt;List&lt;Float&gt;&gt;;
-         *                if vector type is BinaryVector, vectors is List&lt;ByteBuffer&gt;;
+         *                if vector type is FloatVector, vectors is List of List Float
+         *                if vector type is BinaryVector, vectors is List of ByteBuffer
          * @return <code>Builder</code>
          */
         public Builder withVectors(@NonNull List<?> vectors) {

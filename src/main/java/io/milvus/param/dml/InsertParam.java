@@ -20,12 +20,10 @@
 package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.DataType;
 import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
-import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
@@ -101,7 +99,6 @@ public class InsertParam {
          *
          * @return {@link InsertParam}
          */
-        @java.lang.SuppressWarnings("unchecked")
         public InsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
@@ -133,89 +130,10 @@ public class InsertParam {
             this.rowCount = count;
 
             if (count == 0) {
-                throw new ParamException("Row count is zero");
+                throw new ParamException("Zero row count is not allowed");
             }
 
-            // check value type and vector dimension
-            for (InsertParam.Field field : fields) {
-                List<?> values = field.getValues();
-                if (field.getType() == DataType.FloatVector) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof List)) {
-                            throw new ParamException("Float vector field's value must be Lst<Float>");
-                        }
-
-                        List<?> temp = (List<?>)obj;
-                        for (Object v : temp) {
-                            if (!(v instanceof Float)) {
-                                throw new ParamException("Float vector's value type must be Float");
-                            }
-                        }
-                    }
-
-                    List<Float> first = (List<Float>) values.get(0);
-                    int dim = first.size();
-                    for (int i = 1; i < values.size(); ++i) {
-                        List<Float> temp = (List<Float>) values.get(i);
-                        if (dim != temp.size()) {
-                            throw new ParamException("Vector dimension must be equal");
-                        }
-                    }
-                } else if (field.getType() == DataType.BinaryVector) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof ByteBuffer)) {
-                            throw new ParamException("Binary vector field's type must be ByteBuffer");
-                        }
-                    }
-
-                    ByteBuffer first = (ByteBuffer) values.get(0);
-                    int dim = first.position();
-                    for (int i = 1; i < values.size(); ++i) {
-                        ByteBuffer temp = (ByteBuffer) values.get(i);
-                        if (dim != temp.position()) {
-                            throw new ParamException("Vector dimension must be equal");
-                        }
-                    }
-                } else if (field.getType() == DataType.Int64) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof Long)) {
-                            throw new ParamException("Int64 field value type must be Long");
-                        }
-                    }
-                } else if (field.getType() == DataType.Int32 || field.getType() == DataType.Int16
-                        || field.getType() == DataType.Int8 ) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof Integer) && !(obj instanceof Short)) {
-                            throw new ParamException("Int32/Int16/Int8 field value type must be Integer or Short");
-                        }
-                    }
-                } else if (field.getType() == DataType.Float) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof Float)) {
-                            throw new ParamException("Float field value type must be Float");
-                        }
-                    }
-                } else if (field.getType() == DataType.Double) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof Double)) {
-                            throw new ParamException("Double field value type must be Double");
-                        }
-                    }
-                } else if (field.getType() == DataType.Bool) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof Boolean)) {
-                            throw new ParamException("Bool field value type must be Boolean");
-                        }
-                    }
-                } else if (field.getType() == DataType.String || field.getType() == DataType.VarChar) {
-                    for (Object obj : values) {
-                        if (!(obj instanceof String)) {
-                            throw new ParamException("String field value type must be String");
-                        }
-                    }
-                }
-            }
-
+            // this method doesn't check data type, the insert() api will do this work
             return new InsertParam(this);
         }
     }
@@ -231,27 +149,31 @@ public class InsertParam {
                 "collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 ", row_count=" + rowCount +
+                ", fields=" + fields +
                 '}';
     }
 
     /**
      * Internal class for insert data.
-     * If dataType is scalar(bool/int/float/double), values is List&lt;Integer&gt;, List&lt;Long&gt;, etc.
-     * If dataType is FloatVector, values is List&lt;Float&gt;.
-     * If dataType is BinaryVector, values is List&lt;ByteBuffer&gt;.
+     * If dataType is Bool, values is List of Boolean
+     * If dataType is Int64, values is List of Long
+     * If dataType is Float, values is List of Float
+     * If dataType is Double, values is List of Double
+     * If dataType is Varchar, values is List of String
+     * If dataType is FloatVector, values is List of List Float
+     * If dataType is BinaryVector, values is List of ByteBuffer
+     *
+     * Note:
+     * If dataType is Int8/Int16/Int32, values is List of Integer or Short
+     * (why? because the rpc proto only support int32/int64 type, actually Int8/Int16/Int32 use int32 type to encode/decode)
+     *
      */
     public static class Field {
         private final String name;
-        private final DataType type;
         private final List<?> values;
 
-        public Field(String name, DataType type, List<?> values) {
-            if (type == DataType.String) {
-                throw new ParamException("String type is not supported, use VarChar instead");
-            }
-
+        public Field(String name, List<?> values) {
             this.name = name;
-            this.type = type;
             this.values = values;
         }
 
@@ -265,21 +187,25 @@ public class InsertParam {
         }
 
         /**
-         * Return data type of the field.
-         *
-         * @return <code>String</code>
-         */
-        public DataType getType() {
-            return type;
-        }
-
-        /**
          * Return data of the field, in column-base.
          *
          * @return <code>List</code>
          */
         public List<?> getValues() {
             return values;
+        }
+
+        /**
+         * Constructs a <code>String</code> by {@link InsertParam.Field} instance.
+         *
+         * @return <code>String</code>
+         */
+        @Override
+        public String toString() {
+            return "Field{" +
+                    "fieldName='" + name + '\'' +
+                    ", row_count=" + values.size() +
+                    '}';
         }
     }
 }

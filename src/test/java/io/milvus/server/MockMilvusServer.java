@@ -47,24 +47,24 @@ public class MockMilvusServer {
                     .build()
                     .start();
         } catch (Exception e) {
-            logger.error("Failed to start server on port: " + serverPort);
+            logger.error("Failed to start MockServer on port: " + serverPort);
             return;
         }
 
-        logger.info("Server started on port: " + serverPort);
+        logger.info("MockServer started on port: " + serverPort);
         Runtime.getRuntime().addShutdownHook(new Thread(MockMilvusServer.this::stop));
     }
 
     public void stop() {
         if (rpcServer != null) {
-            logger.info("RPC server is shutting down...");
+            logger.info("MockServer is shutting down...");
             try {
                 rpcServer.shutdown().awaitTermination(10, TimeUnit.SECONDS);
             } catch (Exception e) {
-                logger.error("Failed to shutdown RPC server");
+                logger.error("Failed to shutdown MockServer");
             }
             rpcServer = null;
-            logger.info("Server stopped");
+            logger.info("MockServer stopped");
         }
     }
 }

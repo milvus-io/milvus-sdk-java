@@ -1388,7 +1388,7 @@ class MilvusServiceClientTest {
         // field name is empty
         fields.clear();
         List<Long> ids = new ArrayList<>();
-        fields.add(new InsertParam.Field("", DataType.Int64, ids));
+        fields.add(new InsertParam.Field("", ids));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
@@ -1397,7 +1397,7 @@ class MilvusServiceClientTest {
 
         // field row count is 0
         fields.clear();
-        fields.add(new InsertParam.Field("field1", DataType.Int64, ids));
+        fields.add(new InsertParam.Field("field1", ids));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
@@ -1407,77 +1407,9 @@ class MilvusServiceClientTest {
         // field row count not equal
         fields.clear();
         List<Long> ages = Arrays.asList(1L, 2L);
-        fields.add(new InsertParam.Field("field1", DataType.Int64, ages));
+        fields.add(new InsertParam.Field("field1", ages));
         List<Integer> ports = Arrays.asList(1, 2, 3);
-        fields.add(new InsertParam.Field("field2", DataType.Int32, ports));
-        assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFields(fields)
-                .build()
-        );
-
-        // wrong type
-        fields.clear();
-        List<String> fakeVectors1 = Arrays.asList("1", "2", "3");
-        fields.add(new InsertParam.Field("field2", DataType.FloatVector, fakeVectors1));
-        assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFields(fields)
-                .build()
-        );
-
-        fields.clear();
-        List<List<String>> fakeVectors2 = new ArrayList<>();
-        fakeVectors2.add(Arrays.asList("1", "2", "3"));
-        fields.add(new InsertParam.Field("field2", DataType.FloatVector, fakeVectors2));
-        assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFields(fields)
-                .build()
-        );
-
-        List<DataType> testTypes = Arrays.asList(DataType.Int64, DataType.Int32, DataType.Int16, DataType.Int8,
-                DataType.Float, DataType.Double, DataType.Bool, DataType.BinaryVector);
-        testTypes.forEach((tp) -> {
-            fields.clear();
-            List<String> fakeVectors3 = Arrays.asList("1", "2", "3");
-            fields.add(new InsertParam.Field("field3", tp, fakeVectors3));
-            assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                    .withCollectionName("collection1")
-                    .withFields(fields)
-                    .build()
-            );
-        });
-
-        fields.clear();
-        List<Long> fakeVectors4 = Arrays.asList(1L, 2L, 3L);
-        fields.add(new InsertParam.Field("field4", DataType.VarChar, fakeVectors4));
-        assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFields(fields)
-                .build()
-        );
-
-        // vector dimension not equal
-        fields.clear();
-        List<Float> vector1 = Arrays.asList(0.1F, 0.2F, 0.3F);
-        List<Float> vector2 = Arrays.asList(0.1F, 0.2F);
-        List<List<Float>> vectors = Arrays.asList(vector1, vector2);
-        fields.add(new InsertParam.Field("field1", DataType.FloatVector, vectors));
-        assertThrows(ParamException.class, () -> InsertParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFields(fields)
-                .build()
-        );
-
-        fields.clear();
-        ByteBuffer buf1 = ByteBuffer.allocate(1);
-        buf1.put((byte) 1);
-        ByteBuffer buf2 = ByteBuffer.allocate(2);
-        buf2.put((byte) 1);
-        buf2.put((byte) 2);
-        List<ByteBuffer> binVectors = Arrays.asList(buf1, buf2);
-        fields.add(new InsertParam.Field("field2", DataType.BinaryVector, binVectors));
+        fields.add(new InsertParam.Field("field2", ports));
         assertThrows(ParamException.class, () -> InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFields(fields)
@@ -1487,7 +1419,64 @@ class MilvusServiceClientTest {
 
     @Test
     void insert() {
-        List<InsertParam.Field> fields = new ArrayList<>();
+        // prepare schema
+        HashMap<String, FieldSchema> fieldsSchema = new HashMap<>();
+        fieldsSchema.put("field0", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field0")
+                .withDataType(DataType.Int64)
+                .withAutoID(false)
+                .withPrimaryKey(true)
+                .build()));
+
+        fieldsSchema.put("field1", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field1")
+                .withDataType(DataType.Int32)
+                .build()));
+
+        fieldsSchema.put("field2", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field2")
+                .withDataType(DataType.Int16)
+                .build()));
+
+        fieldsSchema.put("field3", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field3")
+                .withDataType(DataType.Int8)
+                .build()));
+
+        fieldsSchema.put("field4", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field4")
+                .withDataType(DataType.Bool)
+                .build()));
+
+        fieldsSchema.put("field5", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field5")
+                .withDataType(DataType.Float)
+                .build()));
+
+        fieldsSchema.put("field6", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field6")
+                .withDataType(DataType.Double)
+                .build()));
+
+        fieldsSchema.put("field7", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field7")
+                .withDataType(DataType.VarChar)
+                .withMaxLength(20)
+                .build()));
+
+        fieldsSchema.put("field8", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field8")
+                .withDataType(DataType.FloatVector)
+                .withDimension(2)
+                .build()));
+
+        fieldsSchema.put("field9", ParamUtils.ConvertField(FieldType.newBuilder()
+                .withName("field9")
+                .withDataType(DataType.BinaryVector)
+                .withDimension(16)
+                .build()));
+
+        // prepare raw data
         List<Long> ids = new ArrayList<>();
         List<Integer> nVal = new ArrayList<>();
         List<Boolean> bVal = new ArrayList<>();
@@ -1496,7 +1485,8 @@ class MilvusServiceClientTest {
         List<String> sVal = new ArrayList<>();
         List<ByteBuffer> bVectors = new ArrayList<>();
         List<List<Float>> fVectors = new ArrayList<>();
-        for (int i = 0; i < 3; ++i) {
+        int rowCount = 3;
+        for (int i = 0; i < rowCount; ++i) {
             ids.add((long) i);
             nVal.add(i);
             bVal.add(Boolean.TRUE);
@@ -1510,58 +1500,145 @@ class MilvusServiceClientTest {
             List<Float> vec = Arrays.asList(0.1f, 0.2f);
             fVectors.add(vec);
         }
-        fields.add(new InsertParam.Field("field1", DataType.Int64, ids));
-        fields.add(new InsertParam.Field("field2", DataType.Int8, nVal));
-        fields.add(new InsertParam.Field("field3", DataType.Bool, bVal));
-        fields.add(new InsertParam.Field("field4", DataType.Float, fVal));
-        fields.add(new InsertParam.Field("field5", DataType.Double, dVal));
-        fields.add(new InsertParam.Field("field6", DataType.VarChar, sVal));
-        fields.add(new InsertParam.Field("field7", DataType.FloatVector, fVectors));
-        fields.add(new InsertParam.Field("field8", DataType.BinaryVector, bVectors));
+
+        CollectionSchema.Builder colBuilder = CollectionSchema.newBuilder();
+        colBuilder.addFields(fieldsSchema.get("field0"));
+        colBuilder.addFields(fieldsSchema.get("field1"));
+        colBuilder.addFields(fieldsSchema.get("field2"));
+        colBuilder.addFields(fieldsSchema.get("field3"));
+        colBuilder.addFields(fieldsSchema.get("field4"));
+        colBuilder.addFields(fieldsSchema.get("field5"));
+        colBuilder.addFields(fieldsSchema.get("field6"));
+        colBuilder.addFields(fieldsSchema.get("field7"));
+        colBuilder.addFields(fieldsSchema.get("field8"));
+        colBuilder.addFields(fieldsSchema.get("field9"));
+
+        List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field("field0", ids));
+        fields.add(new InsertParam.Field("field1", nVal));
+        fields.add(new InsertParam.Field("field2", nVal));
+        fields.add(new InsertParam.Field("field3", nVal));
+        fields.add(new InsertParam.Field("field4", bVal));
+        fields.add(new InsertParam.Field("field5", fVal));
+        fields.add(new InsertParam.Field("field6", dVal));
+        fields.add(new InsertParam.Field("field7", sVal));
+        fields.add(new InsertParam.Field("field8", fVectors));
+        fields.add(new InsertParam.Field("field9", bVectors));
+
         InsertParam param = InsertParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionName("partition1")
                 .withFields(fields)
                 .build();
 
-        CollectionSchema.Builder colBuilder = CollectionSchema.newBuilder();
-        for (int i = fields.size() - 1; i >= 0; i--) {
-            InsertParam.Field field = fields.get(i);
-            boolean primaryKey = field.getName().equals("field1");
-            FieldType.Builder builder = FieldType.newBuilder()
-                    .withName(field.getName())
-                    .withDataType(field.getType())
-                    .withAutoID(false)
-                    .withPrimaryKey(primaryKey);
-            if (field.getType() == DataType.BinaryVector) {
-                builder.withDimension(16);
-            } else if (field.getType() == DataType.FloatVector) {
-                builder.withDimension(2);
-            } else if (field.getType() == DataType.VarChar) {
-                builder.withMaxLength(20);
-            }
-
-            colBuilder.addFields(ParamUtils.ConvertField(builder.build()));
-        }
-
         {
             // start mock server
             MockMilvusServer server = startServer();
             MilvusServiceClient client = startClient();
 
+            // test return ok with correct input
             mockServerImpl.setDescribeCollectionResponse(DescribeCollectionResponse.newBuilder()
                     .setCollectionID(1L)
                     .setShardsNum(2)
                     .setSchema(colBuilder.build())
                     .build());
 
-            // test return ok with correct input
             R<MutationResult> resp = client.insert(param);
             assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
-            server.stop();
+            // test return error with wrong int64 type
+            InsertParam.Builder paramBuilder = InsertParam.newBuilder();
+            paramBuilder.withCollectionName("collection1");
+
+            fields.set(0, new InsertParam.Field("field0", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong int32 type
+            fields.set(0, new InsertParam.Field("field0", ids));
+            fields.set(1, new InsertParam.Field("field1", ids));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong int16 type
+            fields.set(1, new InsertParam.Field("field1", nVal));
+            fields.set(2, new InsertParam.Field("field2", ids));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong int8 type
+            fields.set(2, new InsertParam.Field("field2", nVal));
+            fields.set(3, new InsertParam.Field("field3", ids));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong bool type
+            fields.set(3, new InsertParam.Field("field3", nVal));
+            fields.set(4, new InsertParam.Field("field4", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong float type
+            fields.set(4, new InsertParam.Field("field4", bVal));
+            fields.set(5, new InsertParam.Field("field5", bVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong double type
+            fields.set(5, new InsertParam.Field("field5", fVal));
+            fields.set(6, new InsertParam.Field("field6", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong varchar type
+            fields.set(6, new InsertParam.Field("field6", dVal));
+            fields.set(7, new InsertParam.Field("field7", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong float vector type
+            fields.set(7, new InsertParam.Field("field7", sVal));
+            fields.set(8, new InsertParam.Field("field8", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test throw exception when row count is not equal
+            List<List<Long>> fakeList = new ArrayList<>();
+            fakeList.add(ids);
+            fields.set(8, new InsertParam.Field("field8", fakeList));
+            assertThrows(ParamException.class, () -> paramBuilder.withFields(fields).build());
+
+            // test return error with wrong dimension of float vector
+            fVectors.remove(rowCount - 1);
+            fVectors.add(fVal);
+            fields.set(8, new InsertParam.Field("field8", fVectors));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error with wrong binary vector type
+            fVectors.remove(rowCount - 1);
+            fVectors.add(Arrays.asList(0.1f, 0.2f));
+            fields.set(8, new InsertParam.Field("field8", fVectors));
+            fields.set(9, new InsertParam.Field("field9", nVal));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test throw exception when row count is not equal
+            List<ByteBuffer> fakeList2 = new ArrayList<>();
+            fakeList2.add(ByteBuffer.allocate(2));
+            fields.set(9, new InsertParam.Field("field9", fakeList2));
+            assertThrows(ParamException.class, () -> paramBuilder.withFields(fields).build());
+
+            // test return error with wrong dimension of binary vector
+            bVectors.remove(rowCount - 1);
+            bVectors.add(ByteBuffer.allocate(1));
+            fields.set(9, new InsertParam.Field("field9", bVectors));
+            resp = client.insert(paramBuilder.withFields(fields).build());
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
 
             // test return error without server
+            server.stop();
             resp = client.insert(param);
             assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
 
