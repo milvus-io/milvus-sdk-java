@@ -119,7 +119,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 }
 
                 try {
-                    logInfo("Waiting load, interval: {} ms, percentage: {}%", waitingInterval, percentage);
+                    logDebug("Waiting load, interval: {} ms, percentage: {}%", waitingInterval, percentage);
                     TimeUnit.MILLISECONDS.sleep(waitingInterval);
                 } catch (InterruptedException e) {
                     logWarning("Waiting load thread is interrupted, loading process may not be finished");
@@ -187,7 +187,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     if (!partitionNotFullyLoad.isEmpty()) {
                         msg += ("Partition " + partitionNotFullyLoad + " has not fully loaded.");
                     }
-                    logInfo(msg);
+                    logDebug(msg);
                     TimeUnit.MILLISECONDS.sleep(waitingInterval);
                 } catch (InterruptedException e) {
                     logWarning("Waiting load thread is interrupted, load process may not be finished");
@@ -219,13 +219,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 if (response.getFlushed()) {
                     // if all segment of this collection has been flushed, break this circle and check next collection
                     String msg = segmentIDs.getDataCount() + " segments of " + collectionName + " has been flushed.";
-                    logInfo(msg);
+                    logDebug(msg);
                     break;
                 }
 
                 try {
                     String msg = "Waiting flush for " + collectionName + ", interval: " + waitingInterval + "ms. ";
-                    logInfo(msg);
+                    logDebug(msg);
                     TimeUnit.MILLISECONDS.sleep(waitingInterval);
                 } catch (InterruptedException e) {
                     logWarning("Waiting flush thread is interrupted, flush process may not be finished");
@@ -265,7 +265,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             try {
                 String msg = "Waiting index, interval: " + waitingInterval + "ms. ";
-                logInfo(msg);
+                logDebug(msg);
                 TimeUnit.MILLISECONDS.sleep(waitingInterval);
             } catch (InterruptedException e) {
                 String msg = "Waiting index thread is interrupted, index process may not be finished";
@@ -303,7 +303,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             BoolResponse response = blockingStub().hasCollection(hasCollectionRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("HasCollectionRequest successfully!");
+                logDebug("HasCollectionRequest successfully!");
                 Boolean value = Optional.of(response)
                         .map(BoolResponse::getValue)
                         .orElse(false);
@@ -364,7 +364,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().createCollection(createCollectionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("CreateCollectionRequest successfully! Collection name:{}",
+                logDebug("CreateCollectionRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -397,7 +397,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().dropCollection(dropCollectionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("DropCollectionRequest successfully! Collection name:{}",
+                logDebug("DropCollectionRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -440,7 +440,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
-            logInfo("LoadCollectionRequest successfully! Collection name:{}",
+            logDebug("LoadCollectionRequest successfully! Collection name:{}",
                     requestParam.getCollectionName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) { // gRPC could throw this exception
@@ -474,7 +474,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().releaseCollection(releaseCollectionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("ReleaseCollectionRequest successfully! Collection name:{}",
+                logDebug("ReleaseCollectionRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -507,7 +507,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("DescribeCollectionRequest successfully!");
+                logDebug("DescribeCollectionRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("DescribeCollectionRequest", response.getStatus());
@@ -548,7 +548,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetCollectionStatisticsResponse response = blockingStub().getCollectionStatistics(getCollectionStatisticsRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetCollectionStatisticsRequest successfully!");
+                logDebug("GetCollectionStatisticsRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetCollectionStatisticsRequest", response.getStatus());
@@ -578,7 +578,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             ShowCollectionsResponse response = blockingStub().showCollections(showCollectionsRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("ShowCollectionsRequest successfully!");
+                logDebug("ShowCollectionsRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("ShowCollectionsRequest", response.getStatus());
@@ -617,7 +617,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncFlushWaitingTimeout());
             }
 
-            logInfo("FlushRequest successfully! Collection names:{}", requestParam.getCollectionNames());
+            logDebug("FlushRequest successfully! Collection names:{}", requestParam.getCollectionNames());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("FlushRequest RPC failed! Collection names:{}\n{}",
@@ -647,7 +647,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().createPartition(createPartitionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("CreatePartitionRequest successfully! Collection name:{}, partition name:{}",
+                logDebug("CreatePartitionRequest successfully! Collection name:{}, partition name:{}",
                         requestParam.getCollectionName(), requestParam.getPartitionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -681,7 +681,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().dropPartition(dropPartitionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("DropPartitionRequest successfully! Collection name:{}, partition name:{}",
+                logDebug("DropPartitionRequest successfully! Collection name:{}, partition name:{}",
                         requestParam.getCollectionName(), requestParam.getPartitionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -715,7 +715,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             BoolResponse response = blockingStub().hasPartition(hasPartitionRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("HasPartitionRequest successfully!");
+                logDebug("HasPartitionRequest successfully!");
                 Boolean result = response.getValue();
                 return R.success(result);
             } else {
@@ -757,7 +757,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
-            logInfo("LoadPartitionsRequest successfully! Collection name:{}, partition names:{}",
+            logDebug("LoadPartitionsRequest successfully! Collection name:{}, partition names:{}",
                     requestParam.getCollectionName(), requestParam.getPartitionNames());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) { // gRPC could throw this exception
@@ -792,7 +792,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().releasePartitions(releasePartitionsRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("ReleasePartitionsRequest successfully! Collection name:{}, partition names:{}",
+                logDebug("ReleasePartitionsRequest successfully! Collection name:{}, partition names:{}",
                         requestParam.getCollectionName(), requestParam.getPartitionNames());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -838,7 +838,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     blockingStub().getPartitionStatistics(getPartitionStatisticsRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetPartitionStatisticsRequest successfully!");
+                logDebug("GetPartitionStatisticsRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("getPartitionStatistics", response.getStatus());
@@ -869,7 +869,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             ShowPartitionsResponse response = blockingStub().showPartitions(showPartitionsRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("ShowPartitionsRequest successfully!");
+                logDebug("ShowPartitionsRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("ShowPartitionsRequest", response.getStatus());
@@ -900,7 +900,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().createAlias(createAliasRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("CreateAliasRequest successfully! Collection name:{}, alias name:{}",
+                logDebug("CreateAliasRequest successfully! Collection name:{}, alias name:{}",
                         requestParam.getCollectionName(), requestParam.getAlias());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -933,7 +933,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().dropAlias(dropAliasRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("DropAliasRequest successfully! Alias name:{}", requestParam.getAlias());
+                logDebug("DropAliasRequest successfully! Alias name:{}", requestParam.getAlias());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
                 return failedStatus("DropAliasRequest", response);
@@ -966,7 +966,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().alterAlias(alterAliasRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("AlterAliasRequest successfully! Collection name:{}, alias name:{}",
+                logDebug("AlterAliasRequest successfully! Collection name:{}, alias name:{}",
                         requestParam.getCollectionName(), requestParam.getAlias());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -1028,7 +1028,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     return failedStatus("CreateIndexRequest in sync mode", response);
                 }
             }
-            logInfo("CreateIndexRequest successfully! Collection name:{} Field name:{}",
+            logDebug("CreateIndexRequest successfully! Collection name:{} Field name:{}",
                     requestParam.getCollectionName(), requestParam.getFieldName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1071,7 +1071,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().dropIndex(dropIndexRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("DropIndexRequest successfully! Collection name:{}",
+                logDebug("DropIndexRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
@@ -1105,7 +1105,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DescribeIndexResponse response = blockingStub().describeIndex(describeIndexRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("DescribeIndexRequest successfully!");
+                logDebug("DescribeIndexRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("DescribeIndexRequest", response.getStatus());
@@ -1136,7 +1136,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetIndexStateResponse response = blockingStub().getIndexState(getIndexStateRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetIndexStateRequest successfully!");
+                logDebug("GetIndexStateRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetIndexStateRequest", response.getStatus());
@@ -1167,7 +1167,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(getIndexBuildProgressRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetIndexBuildProgressRequest successfully!");
+                logDebug("GetIndexBuildProgressRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetIndexBuildProgressRequest", response.getStatus());
@@ -1200,7 +1200,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             MutationResult response = blockingStub().delete(deleteRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("DeleteRequest successfully! Collection name:{}",
+                logDebug("DeleteRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(response);
             } else {
@@ -1240,7 +1240,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 //            ImportResponse response = blockingStub().import_(importRequest);
 //
 //            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logInfo("ImportRequest successfully!");
+//                logDebug("ImportRequest successfully!");
 //                return R.success(response);
 //            } else {
 //                return failedStatus("ImportRequest", response.getStatus());
@@ -1269,7 +1269,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 //            GetImportStateResponse response = blockingStub().getImportState(importRequest);
 //
 //            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logInfo("GetImportStateRequest successfully!");
+//                logDebug("GetImportStateRequest successfully!");
 //                return R.success(response);
 //            } else {
 //                return failedStatus("GetImportStateRequest", response.getStatus());
@@ -1296,7 +1296,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 //            ListImportTasksResponse response = blockingStub().listImportTasks(listRequest);
 //
 //            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logInfo("ListImportTasksRequest successfully!");
+//                logDebug("ListImportTasksRequest successfully!");
 //                return R.success(response);
 //            } else {
 //                return failedStatus("ListImportTasksRequest", response.getStatus());
@@ -1332,7 +1332,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             MutationResult response = blockingStub().insert(insertRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("InsertRequest successfully! Collection name:{}",
+                logDebug("InsertRequest successfully! Collection name:{}",
                         requestParam.getCollectionName());
                 return R.success(response);
             } else {
@@ -1363,7 +1363,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 .withCollectionName(requestParam.getCollectionName())
                 .build());
         if (descResp.getStatus() != R.Status.Success.getCode()) {
-            logInfo("Failed to describe collection: {}", requestParam.getCollectionName());
+            logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
             return Futures.immediateFuture(
                     R.failed(new ClientNotConnectedException("Failed to describe collection")));
         }
@@ -1378,7 +1378,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(MutationResult result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logInfo("insertAsync successfully! Collection name:{}",
+                            logDebug("insertAsync successfully! Collection name:{}",
                                     requestParam.getCollectionName());
                         } else {
                             logError("insertAsync failed! Collection name:{}\n{}",
@@ -1421,7 +1421,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             //TODO: truncate distance value by round decimal
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("SearchRequest successfully!");
+                logDebug("SearchRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("SearchRequest", response.getStatus());
@@ -1454,7 +1454,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(SearchResults result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logInfo("searchAsync successfully! Collection name:{}",
+                            logDebug("searchAsync successfully! Collection name:{}",
                                     requestParam.getCollectionName());
                         } else {
                             logError("searchAsync failed! Collection name:{}\n{}",
@@ -1494,7 +1494,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
             QueryResults response = this.blockingStub().query(queryRequest);
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("QueryRequest successfully!");
+                logDebug("QueryRequest successfully!");
                 return R.success(response);
             } else {
                 // Server side behavior: if a query expression could not filter out any result,
@@ -1535,7 +1535,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(QueryResults result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logInfo("queryAsync successfully! Collection name:{}",
+                            logDebug("queryAsync successfully! Collection name:{}",
                                     requestParam.getCollectionName());
                         } else {
                             logError("queryAsync failed! Collection name:{}\n{}",
@@ -1617,7 +1617,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             CalcDistanceResults response = blockingStub().calcDistance(calcDistanceRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("CalcDistanceRequest successfully!");
+                logDebug("CalcDistanceRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("CalcDistanceRequest", response.getStatus());
@@ -1647,7 +1647,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetMetricsResponse response = blockingStub().getMetrics(getMetricsRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetMetricsRequest successfully!");
+                logDebug("GetMetricsRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetMetricsRequest", response.getStatus());
@@ -1677,7 +1677,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetFlushState successfully!");
+                logDebug("GetFlushState successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetFlushState", response.getStatus());
@@ -1707,7 +1707,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetPersistentSegmentInfoResponse response = blockingStub().getPersistentSegmentInfo(getSegmentInfoRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetPersistentSegmentInfoRequest successfully!");
+                logDebug("GetPersistentSegmentInfoRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetPersistentSegmentInfoRequest", response.getStatus());
@@ -1737,7 +1737,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetQuerySegmentInfoResponse response = blockingStub().getQuerySegmentInfo(getSegmentInfoRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetQuerySegmentInfoRequest successfully!");
+                logDebug("GetQuerySegmentInfoRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetQuerySegmentInfoRequest", response.getStatus());
@@ -1776,7 +1776,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetReplicasResponse response = blockingStub().getReplicas(getReplicasRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetReplicasRequest successfully!");
+                logDebug("GetReplicasRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetReplicasRequest", response.getStatus());
@@ -1808,7 +1808,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Status response = blockingStub().loadBalance(loadBalanceRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
-                logInfo("LoadBalanceRequest successfully!");
+                logDebug("LoadBalanceRequest successfully!");
                 return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
             } else {
                 return failedStatus("LoadBalanceRequest", response);
@@ -1838,7 +1838,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetCompactionStateResponse response = blockingStub().getCompactionState(getCompactionStateRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetCompactionStateRequest successfully!");
+                logDebug("GetCompactionStateRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetCompactionStateRequest", response.getStatus());
@@ -1876,7 +1876,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             ManualCompactionResponse response = blockingStub().manualCompaction(manualCompactionRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("ManualCompactionRequest successfully!");
+                logDebug("ManualCompactionRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("ManualCompactionRequest", response.getStatus());
@@ -1906,7 +1906,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetCompactionPlansResponse response = blockingStub().getCompactionStateWithPlans(getCompactionPlansRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logInfo("GetCompactionPlansRequest successfully!");
+                logDebug("GetCompactionPlansRequest successfully!");
                 return R.success(response);
             } else {
                 return failedStatus("GetCompactionPlansRequest", response.getStatus());
@@ -1939,7 +1939,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("CreateCredential", response);
             }
 
-            logInfo("CreateCredential successfully! Username:{}",
+            logDebug("CreateCredential successfully! Username:{}",
                     requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1973,7 +1973,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("UpdateCredential", response);
             }
 
-            logInfo("UpdateCredential successfully! Username:{}", requestParam.getUsername());
+            logDebug("UpdateCredential successfully! Username:{}", requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("UpdateCredential RPC failed! Username:{}\n{}",
@@ -2004,7 +2004,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("DeleteCredential", response);
             }
 
-            logInfo("DeleteCredential successfully! Username:{}", requestParam.getUsername());
+            logDebug("DeleteCredential successfully! Username:{}", requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("DeleteCredential RPC failed! Username:{}\n{}", requestParam.getUsername(), e.getStatus().toString());
@@ -2032,7 +2032,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return failedStatus("ListCredUsers", response.getStatus());
             }
 
-            logInfo("ListCredUsers successfully!");
+            logDebug("ListCredUsers successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("ListCredUsers RPC failed! \n{}", e.getStatus().toString());
@@ -2048,6 +2048,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     ///////////////////// Log Functions//////////////////////
+    private void logDebug(String msg, Object... params) {
+        logger.debug(msg, params);
+    }
 
     private void logInfo(String msg, Object... params) {
         logger.info(msg, params);
