@@ -22,7 +22,7 @@ public class ShowPartResponseWrapper {
     /**
      * Get information of the partitions.
      *
-     * @return List&lt;PartitionInfo&gt; information array of the partitions
+     * @return List of PartitionInfo, information array of the partitions
      */
     public List<PartitionInfo> getPartitionsInfo() throws IllegalResponseException {
         if (response.getPartitionNamesCount() != response.getPartitionIDsCount()

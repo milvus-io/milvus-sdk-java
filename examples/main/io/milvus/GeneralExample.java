@@ -23,7 +23,7 @@ import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
-import io.milvus.param.control.ManualCompactionParam;
+import io.milvus.param.control.ManualCompactParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -410,7 +410,7 @@ public class GeneralExample {
 
     private R<ManualCompactionResponse> compact() {
         System.out.println("========== compact() ==========");
-        R<ManualCompactionResponse> response = milvusClient.manualCompaction(ManualCompactionParam.newBuilder()
+        R<ManualCompactionResponse> response = milvusClient.manualCompact(ManualCompactParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
         handleResponseStatus(response);
@@ -429,9 +429,9 @@ public class GeneralExample {
         }
 
         List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(AGE_FIELD, DataType.Int8, ages));
-        fields.add(new InsertParam.Field(VECTOR_FIELD, DataType.FloatVector, vectors));
-//        fields.add(new InsertParam.Field(PROFILE_FIELD, DataType.BinaryVector, profiles));
+        fields.add(new InsertParam.Field(AGE_FIELD, ages));
+        fields.add(new InsertParam.Field(VECTOR_FIELD, vectors));
+//        fields.add(new InsertParam.Field(PROFILE_FIELD, profiles));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)

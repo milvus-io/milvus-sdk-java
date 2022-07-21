@@ -251,11 +251,11 @@ public class CommonFunction {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-    fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
     fields.add(
         new InsertParam.Field(
-            CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+            CommonData.defaultVectorField, book_intro_array));
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
@@ -272,10 +272,10 @@ public class CommonFunction {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
     fields.add(
             new InsertParam.Field(
-                    CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+                    CommonData.defaultVectorField, book_intro_array));
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
@@ -329,11 +329,11 @@ public class CommonFunction {
     }
     List<ByteBuffer> book_intro_array = generateBinaryVectors(num, 128);
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-    fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
     fields.add(
         new InsertParam.Field(
-            CommonData.defaultBinaryVectorField, DataType.BinaryVector, book_intro_array));
+            CommonData.defaultBinaryVectorField, book_intro_array));
     //    logger.info("generateTestData" + JacksonUtil.serialize(fields));
     return fields;
   }
@@ -369,11 +369,11 @@ public class CommonFunction {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_name", DataType.VarChar, book_name_array));
-    fields.add(new InsertParam.Field("book_content", DataType.VarChar, book_content_array));
+    fields.add(new InsertParam.Field("book_name", book_name_array));
+    fields.add(new InsertParam.Field("book_content", book_content_array));
     fields.add(
         new InsertParam.Field(
-            CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+            CommonData.defaultVectorField, book_intro_array));
     //    logger.info("Generate String and Chinese Data"+ JacksonUtil.serialize(fields));
     return fields;
   }
@@ -388,11 +388,11 @@ public class CommonFunction {
     }
     List<ByteBuffer> book_intro_array = generateBinaryVectors(num, 128);
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_name", DataType.VarChar, book_name_array));
-    fields.add(new InsertParam.Field("book_content", DataType.VarChar, book_content_array));
+    fields.add(new InsertParam.Field("book_name", book_name_array));
+    fields.add(new InsertParam.Field("book_content", book_content_array));
     fields.add(
         new InsertParam.Field(
-            CommonData.defaultBinaryVectorField, DataType.BinaryVector, book_intro_array));
+            CommonData.defaultBinaryVectorField, book_intro_array));
     //    logger.info("generateTestData" + JacksonUtil.serialize(fields));
     return fields;
   }

@@ -30,7 +30,7 @@ public class MutationResultWrapper {
      * Gets the long ID array returned by insert interface.
      * Throw {@link ParamException} if the primary key type is not int64 type.
      *
-     * @return List&lt;Long&gt; ID array returned by insert interface
+     * @return List of Long, ID array returned by insert interface
      */
     public List<Long> getLongIDs() throws ParamException {
         if (result.getIDs().hasIntId()) {
@@ -45,7 +45,7 @@ public class MutationResultWrapper {
      * Throw {@link ParamException} if the primary key type is not string type.
      * Note that current release of Milvus doesn't support string type field, thus this method is reserved.
      *
-     * @return List&lt;String&gt; ID array returned by insert interface
+     * @return List of String, ID array returned by insert interface
      */
     public List<String> getStringIDs() throws ParamException {
         if (result.getIDs().hasStrId()) {
@@ -56,7 +56,7 @@ public class MutationResultWrapper {
     }
 
     /**
-     * Gets the row count of the deleted entities. Currently this value is always equal to input row count
+     * Gets the row count of the deleted entities. Currently, this value is always equal to input row count
      *
      * @return <code>int</code> row count of the deleted entities
      */

@@ -22,7 +22,7 @@ public class ShowCollResponseWrapper {
     /**
      * Get information of the collections.
      *
-     * @return List&lt;CollectionInfo&gt; information array of the collections
+     * @return List of CollectionInfo, information array of the collections
      */
     public List<CollectionInfo> getCollectionsInfo() throws IllegalResponseException {
         if (response.getCollectionNamesCount() != response.getCollectionIdsCount()

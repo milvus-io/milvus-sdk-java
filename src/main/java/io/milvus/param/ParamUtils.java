@@ -2,6 +2,7 @@ package io.milvus.param;
 
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.collection.FieldType;
@@ -20,6 +21,121 @@ import java.util.stream.Collectors;
  * Utility functions for param classes
  */
 public class ParamUtils {
+    public static HashMap<DataType, String> getTypeErrorMsg() {
+        final HashMap<DataType, String> typeErrMsg = new HashMap<>();
+        typeErrMsg.put(DataType.None, "Type mismatch for field '%s': the field type is illegal");
+        typeErrMsg.put(DataType.Bool, "Type mismatch for field '%s': Bool field value type must be Boolean");
+        typeErrMsg.put(DataType.Int8, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
+        typeErrMsg.put(DataType.Int16, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
+        typeErrMsg.put(DataType.Int32, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
+        typeErrMsg.put(DataType.Int64, "Type mismatch for field '%s': Int64 field value type must be Long");
+        typeErrMsg.put(DataType.Float, "Type mismatch for field '%s': Float field value type must be Float");
+        typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be Double");
+        typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be String");
+        typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be String");
+        typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be List<Float>");
+        typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be ByteBuffer");
+        return typeErrMsg;
+    }
+
+    private static void checkFieldData(FieldType fieldSchema, InsertParam.Field fieldData) {
+        List<?> values = fieldData.getValues();
+        HashMap<DataType, String> errMsgs = getTypeErrorMsg();
+        DataType dataType = fieldSchema.getDataType();
+
+        switch (dataType) {
+            case FloatVector: {
+                int dim = fieldSchema.getDimension();
+                for (int i = 0; i < values.size(); ++i) {
+                    // is List<> ?
+                    Object value  = values.get(i);
+                    if (!(value instanceof List)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                    // is List<Float> ?
+                    List<?> temp = (List<?>)value;
+                    for (Object v : temp) {
+                        if (!(v instanceof Float)) {
+                            throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                        }
+                    }
+
+                    // check dimension
+                    if (temp.size() != dim) {
+                        String msg = "Incorrect dimension for field '%s': the no.%d vector's dimension: %d is not equal to field's dimension: %d";
+                        throw new ParamException(String.format(msg, fieldSchema.getName(), i, temp.size(), dim));
+                    }
+                }
+            }
+            break;
+            case BinaryVector: {
+                int dim = fieldSchema.getDimension();
+                for (int i = 0; i < values.size(); ++i) {
+                    Object value  = values.get(i);
+                    // is ByteBuffer?
+                    if (!(value instanceof ByteBuffer)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+
+                    // check dimension
+                    ByteBuffer v = (ByteBuffer)value;
+                    if (v.position()*8 != dim) {
+                        String msg = "Incorrect dimension for field '%s': the no.%d vector's dimension: %d is not equal to field's dimension: %d";
+                        throw new ParamException(String.format(msg, fieldSchema.getName(), i, v.position()*8, dim));
+                    }
+                }
+            }
+            break;
+            case Int64:
+                for (Object value : values) {
+                    if (!(value instanceof Long)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            case Int32:
+            case Int16:
+            case Int8:
+                for (Object value : values) {
+                    if (!(value instanceof Short) && !(value instanceof Integer)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            case Bool:
+                for (Object value : values) {
+                    if (!(value instanceof Boolean)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            case Float:
+                for (Object value : values) {
+                    if (!(value instanceof Float)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            case Double:
+                for (Object value : values) {
+                    if (!(value instanceof Double)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            case VarChar:
+            case String:
+                for (Object value : values) {
+                    if (!(value instanceof String)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
+            default:
+                throw new IllegalResponseException("Unsupported data type returned by FieldData");
+        }
+    }
+
     /**
      * Checks if a string is empty or null.
      * Throws {@link ParamException} if the string is empty of null.
@@ -52,7 +168,7 @@ public class ParamUtils {
     }
 
     /**
-     * Checks if a index type is for vector.
+     * Checks if an index type is for vector.
      *
      * @param idx index type
      */
@@ -75,7 +191,7 @@ public class ParamUtils {
                 .setNumRows(requestParam.getRowCount());
 
         // gen fieldData
-        // make sure the field order must be consist with collection schema
+        // make sure the field order must be consisted with collection schema
         for (FieldType fieldType : fieldTypes) {
             boolean found = false;
             for (InsertParam.Field field : fields) {
@@ -84,13 +200,10 @@ public class ParamUtils {
                         String msg = "The primary key: " + fieldType.getName() + " is auto generated, no need to input.";
                         throw new ParamException(msg);
                     }
-                    if (fieldType.getDataType() != field.getType()) {
-                        String msg = "The field: " + fieldType.getName() + " data type doesn't match the collection schema.";
-                        throw new ParamException(msg);
-                    }
+                    checkFieldData(fieldType, field);
 
                     found = true;
-                    insertBuilder.addFieldsData(genFieldData(field.getName(), field.getType(), field.getValues()));
+                    insertBuilder.addFieldsData(genFieldData(field.getName(), fieldType.getDataType(), field.getValues()));
                     break;
                 }
 
@@ -289,39 +402,45 @@ public class ParamUtils {
                 case None:
                 case UNRECOGNIZED:
                     throw new ParamException("Cannot support this dataType:" + dataType);
-                case Int64:
+                case Int64: {
                     List<Long> longs = objects.stream().map(p -> (Long) p).collect(Collectors.toList());
                     LongArray longArray = LongArray.newBuilder().addAllData(longs).build();
-                    ScalarField scalarField1 = ScalarField.newBuilder().setLongData(longArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField1).build();
+                    ScalarField scalarField = ScalarField.newBuilder().setLongData(longArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
                 case Int32:
                 case Int16:
-                case Int8:
+                case Int8: {
                     List<Integer> integers = objects.stream().map(p -> p instanceof Short ? ((Short) p).intValue() : (Integer) p).collect(Collectors.toList());
                     IntArray intArray = IntArray.newBuilder().addAllData(integers).build();
-                    ScalarField scalarField2 = ScalarField.newBuilder().setIntData(intArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField2).build();
-                case Bool:
+                    ScalarField scalarField = ScalarField.newBuilder().setIntData(intArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
+                case Bool: {
                     List<Boolean> booleans = objects.stream().map(p -> (Boolean) p).collect(Collectors.toList());
                     BoolArray boolArray = BoolArray.newBuilder().addAllData(booleans).build();
-                    ScalarField scalarField3 = ScalarField.newBuilder().setBoolData(boolArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField3).build();
-                case Float:
+                    ScalarField scalarField = ScalarField.newBuilder().setBoolData(boolArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
+                case Float: {
                     List<Float> floats = objects.stream().map(p -> (Float) p).collect(Collectors.toList());
                     FloatArray floatArray = FloatArray.newBuilder().addAllData(floats).build();
-                    ScalarField scalarField4 = ScalarField.newBuilder().setFloatData(floatArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField4).build();
-                case Double:
+                    ScalarField scalarField = ScalarField.newBuilder().setFloatData(floatArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
+                case Double: {
                     List<Double> doubles = objects.stream().map(p -> (Double) p).collect(Collectors.toList());
                     DoubleArray doubleArray = DoubleArray.newBuilder().addAllData(doubles).build();
-                    ScalarField scalarField5 = ScalarField.newBuilder().setDoubleData(doubleArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField5).build();
+                    ScalarField scalarField = ScalarField.newBuilder().setDoubleData(doubleArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
                 case String:
-                case VarChar:
+                case VarChar: {
                     List<String> strings = objects.stream().map(p -> (String) p).collect(Collectors.toList());
                     StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
-                    ScalarField scalarField6 = ScalarField.newBuilder().setStringData(stringArray).build();
-                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField6).build();
+                    ScalarField scalarField = ScalarField.newBuilder().setStringData(stringArray).build();
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
             }
         }
 

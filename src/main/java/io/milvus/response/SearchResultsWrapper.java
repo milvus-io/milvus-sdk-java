@@ -59,7 +59,7 @@ public class SearchResultsWrapper {
      * Throws {@link IllegalResponseException} if the returned results is illegal.
      *
      * @param indexOfTarget which target vector the result belongs to
-     * @return List&lt;IDScore&gt; ID-score pairs returned by search interface
+     * @return List of IDScore, ID-score pairs returned by search interface
      */
     public List<IDScore> getIDScore(int indexOfTarget) throws ParamException, IllegalResponseException {
         Position position = getOffsetByIndex(indexOfTarget);

@@ -3,7 +3,6 @@ package io.milvus.response;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FieldSchema;
-import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
@@ -71,7 +70,7 @@ public class DescCollResponseWrapper {
     /**
      * Get aliases of the collection.
      *
-     * @return List&lt;String&gt; aliases of the collection
+     * @return List of String, aliases of the collection
      */
     public List<String> getAliases() {
         List<String> aliases = new ArrayList<>();
@@ -85,7 +84,7 @@ public class DescCollResponseWrapper {
     /**
      * Get schema of the collection's fields.
      *
-     * @return List&lt;FieldType&gt; schema of the collection's fields
+     * @return List of FieldType, schema of the collection's fields
      */
     public List<FieldType> getFields() {
         List<FieldType> results = new ArrayList<>();
