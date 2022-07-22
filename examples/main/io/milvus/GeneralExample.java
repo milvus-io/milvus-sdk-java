@@ -44,7 +44,7 @@ public class GeneralExample {
 
     static {
         ConnectParam connectParam = ConnectParam.newBuilder()
-                .withHost("localhost")
+                .withHost("in01-d7e11fe45ffb98a.ap-southeast-1-aws.vdc-test.zilliz.com")
                 .withPort(19530)
                 .withAuthorization("root","Milvus")
                 .build();
@@ -317,42 +317,42 @@ public class GeneralExample {
         return response;
     }
 
-    private R<SearchResults> searchFace(String expr) {
-        System.out.println("========== searchFace() ==========");
-        long begin = System.currentTimeMillis();
-
-        List<String> outFields = Collections.singletonList(AGE_FIELD);
-        List<List<Float>> vectors = generateFloatVectors(5);
-
-        SearchParam searchParam = SearchParam.newBuilder()
-                .withCollectionName(COLLECTION_NAME)
-                .withMetricType(MetricType.L2)
-                .withOutFields(outFields)
-                .withTopK(SEARCH_K)
-                .withVectors(vectors)
-                .withVectorFieldName(VECTOR_FIELD)
-                .withExpr(expr)
-                .withParams(SEARCH_PARAM)
-                .withGuaranteeTimestamp(Constant.GUARANTEE_EVENTUALLY_TS)
-                .build();
-
-        R<SearchResults> response = milvusClient.search(searchParam);
-        long end = System.currentTimeMillis();
-        long cost = (end - begin);
-        System.out.println("Search time cost: " + cost + "ms");
-
-        handleResponseStatus(response);
-        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-        for (int i = 0; i < vectors.size(); ++i) {
-            System.out.println("Search result of No." + i);
-            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-            System.out.println(scores);
-            System.out.println("Output field data for No." + i);
-            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
-        }
-
-        return response;
-    }
+//    private R<SearchResults> searchFace(String expr) {
+//        System.out.println("========== searchFace() ==========");
+//        long begin = System.currentTimeMillis();
+//
+//        List<String> outFields = Collections.singletonList(AGE_FIELD);
+//        List<List<Float>> vectors = generateFloatVectors(5);
+//
+//        SearchParam searchParam = SearchParam.newBuilder()
+//                .withCollectionName(COLLECTION_NAME)
+//                .withMetricType(MetricType.L2)
+//                .withOutFields(outFields)
+//                .withTopK(SEARCH_K)
+//                .withVectors(vectors)
+//                .withVectorFieldName(VECTOR_FIELD)
+//                .withExpr(expr)
+//                .withParams(SEARCH_PARAM)
+//                .withGuaranteeTimestamp(Constant.GUARANTEE_EVENTUALLY_TS)
+//                .build();
+//
+//        R<SearchResults> response = milvusClient.search(searchParam);
+//        long end = System.currentTimeMillis();
+//        long cost = (end - begin);
+//        System.out.println("Search time cost: " + cost + "ms");
+//
+//        handleResponseStatus(response);
+//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
+//        for (int i = 0; i < vectors.size(); ++i) {
+//            System.out.println("Search result of No." + i);
+//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
+//            System.out.println(scores);
+//            System.out.println("Output field data for No." + i);
+//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
+//        }
+//
+//        return response;
+//    }
 
 //    private R<SearchResults> searchProfile(String expr) {
 //        System.out.println("========== searchProfile() ==========");
@@ -517,8 +517,6 @@ public class GeneralExample {
         String queryExpr = AGE_FIELD + " == 60";
         example.query(queryExpr);
 
-//        searchExpr = AGE_FIELD + " <= 30";
-//        example.searchProfile(searchExpr);
         example.compact();
         example.getCollectionStatistics();
 
