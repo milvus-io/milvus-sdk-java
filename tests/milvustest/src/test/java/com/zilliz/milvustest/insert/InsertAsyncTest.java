@@ -134,11 +134,11 @@ public class InsertAsyncTest extends BaseTest {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_id", DataType.VarChar, book_id_array));
-    fields.add(new InsertParam.Field("word_count", DataType.VarChar, word_count_array));
+    fields.add(new InsertParam.Field("book_id",  book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
     fields.add(
             new InsertParam.Field(
-                    CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+                    CommonData.defaultVectorField,  book_intro_array));
 
     ListenableFuture<R<MutationResult>> rListenableFuture =
             milvusClient.insertAsync(
@@ -168,11 +168,11 @@ public class InsertAsyncTest extends BaseTest {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-    fields.add(new InsertParam.Field("word_count", DataType.VarChar, word_count_array));
+    fields.add(new InsertParam.Field("book_id",  book_id_array));
+    fields.add(new InsertParam.Field("word_count",  word_count_array));
     fields.add(
             new InsertParam.Field(
-                    CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+                    CommonData.defaultVectorField,  book_intro_array));
 
     ListenableFuture<R<MutationResult>> rListenableFuture =
             milvusClient.insertAsync(
@@ -245,10 +245,10 @@ public class InsertAsyncTest extends BaseTest {
       book_intro_array.add(vector);
     }
     List<InsertParam.Field> fields = new ArrayList<>();
-    fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
+    fields.add(new InsertParam.Field("word_count",  word_count_array));
     fields.add(
             new InsertParam.Field(
-                    CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
+                    CommonData.defaultVectorField,  book_intro_array));
 
     ListenableFuture<R<MutationResult>> rListenableFuture =
             milvusClient.insertAsync(
