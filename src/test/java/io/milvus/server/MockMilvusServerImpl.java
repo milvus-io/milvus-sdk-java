@@ -57,7 +57,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.SearchResults respSearch;
     private io.milvus.grpc.FlushResponse respFlush;
     private io.milvus.grpc.QueryResults respQuery;
-    private io.milvus.grpc.CalcDistanceResults respCalcDistance;
+//    private io.milvus.grpc.CalcDistanceResults respCalcDistance;
     private io.milvus.grpc.GetFlushStateResponse respGetFlushState;
     private io.milvus.grpc.GetPersistentSegmentInfoResponse respGetPersistentSegmentInfo;
     private io.milvus.grpc.GetQuerySegmentInfoResponse respGetQuerySegmentInfo;
@@ -468,18 +468,18 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         respQuery = resp;
     }
 
-    @Override
-    public void calcDistance(io.milvus.grpc.CalcDistanceRequest request,
-                             io.grpc.stub.StreamObserver<io.milvus.grpc.CalcDistanceResults> responseObserver) {
-        logger.info("MockServer receive calcDistance() call");
-
-        responseObserver.onNext(respCalcDistance);
-        responseObserver.onCompleted();
-    }
-
-    public void setCalcDistanceResponse(io.milvus.grpc.CalcDistanceResults resp) {
-        respCalcDistance = resp;
-    }
+//    @Override
+//    public void calcDistance(io.milvus.grpc.CalcDistanceRequest request,
+//                             io.grpc.stub.StreamObserver<io.milvus.grpc.CalcDistanceResults> responseObserver) {
+//        logger.info("MockServer receive calcDistance() call");
+//
+//        responseObserver.onNext(respCalcDistance);
+//        responseObserver.onCompleted();
+//    }
+//
+//    public void setCalcDistanceResponse(io.milvus.grpc.CalcDistanceResults resp) {
+//        respCalcDistance = resp;
+//    }
 
     @Override
     public void getFlushState(io.milvus.grpc.GetFlushStateRequest request,

@@ -155,13 +155,13 @@ public class InsertParam {
 
     /**
      * Internal class for insert data.
-     * If dataType is Bool, values is List of Boolean
-     * If dataType is Int64, values is List of Long
-     * If dataType is Float, values is List of Float
-     * If dataType is Double, values is List of Double
-     * If dataType is Varchar, values is List of String
-     * If dataType is FloatVector, values is List of List Float
-     * If dataType is BinaryVector, values is List of ByteBuffer
+     * If dataType is Bool, values is List of Boolean;
+     * If dataType is Int64, values is List of Long;
+     * If dataType is Float, values is List of Float;
+     * If dataType is Double, values is List of Double;
+     * If dataType is Varchar, values is List of String;
+     * If dataType is FloatVector, values is List of List Float;
+     * If dataType is BinaryVector, values is List of ByteBuffer;
      *
      * Note:
      * If dataType is Int8/Int16/Int32, values is List of Integer or Short

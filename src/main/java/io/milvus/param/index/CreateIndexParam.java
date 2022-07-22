@@ -154,7 +154,7 @@ public class CreateIndexParam {
         /**
          * Sets the specific index parameters according to index type.
          *
-         * For example: IVF index, the extra parameters can be "{\"nlist\":1024}"
+         * For example: IVF index, the extra parameters can be "{\"nlist\":1024}".
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
          * @param extraParam extra parameters in .json format

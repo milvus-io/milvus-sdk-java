@@ -1,5 +1,33 @@
 # Changelog
 
+## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
+
+### Feature
+
+- Refine the InsertParam for better usability, no need to specify data type for each field
+- Remove the calcDistance interface because no one use this interface 
+
+## milvus-sdk-java 2.1.0-beta3 (2022-07-15)
+
+### Feature
+
+- Specify index name to replace field name in DescribeIndexParam/GetIndexBuildProgressParam/GetIndexStateParam
+- Remove the index type IVF_HNSW(no longer supported)
+
+## milvus-sdk-java 2.1.0-beta2 (2022-07-12)
+
+### Feature
+
+- Support search consistency level
+
+## milvus-sdk-java 2.1.0-beta1 (2022-07-09)
+
+### Feature
+
+- Support Varchar type field
+- Implement authentication interfaces: CreateCredential/UpdateCredential/DeleteCredential/ListCredUsers
+- Multiserver failover control(optional function)
+
 ## milvus-sdk-java 2.0.4 (2022-02-14)
 
 ### Feature

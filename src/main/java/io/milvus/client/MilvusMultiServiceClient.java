@@ -329,10 +329,10 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().queryAsync(requestParam);
     }
 
-    @Override
-    public R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().calcDistance(requestParam);
-    }
+//    @Override
+//    public R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam) {
+//        return this.clusterFactory.getMaster().getClient().calcDistance(requestParam);
+//    }
 
     @Override
     public R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam) {

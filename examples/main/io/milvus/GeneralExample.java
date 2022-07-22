@@ -500,17 +500,23 @@ public class GeneralExample {
         }
         example.getCollectionStatistics();
 
+        System.out.println("Search without index");
+        String searchExpr = AGE_FIELD + " > 50";
+        example.searchFace(searchExpr);
+
         example.createIndex();
         example.describeIndex();
         example.getIndexBuildProgress();
         example.getIndexState();
 
+        System.out.println("Search with index");
+        example.searchFace(searchExpr);
+
         String deleteExpr = ID_FIELD + " in " + deleteIds.toString();
         example.delete(partitionName, deleteExpr);
         String queryExpr = AGE_FIELD + " == 60";
         example.query(queryExpr);
-        String searchExpr = AGE_FIELD + " > 50";
-        example.searchFace(searchExpr);
+
 //        searchExpr = AGE_FIELD + " <= 30";
 //        example.searchProfile(searchExpr);
         example.compact();
