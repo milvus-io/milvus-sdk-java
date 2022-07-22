@@ -2093,79 +2093,79 @@ class MilvusServiceClientTest {
         testAsyncFuncByName("queryAsync", param);
     }
 
-    @Test
-    void calcDistanceParam() {
-        // test throw exception with illegal input
-        List<List<Float>> vectorsLeft = new ArrayList<>();
-        List<List<Float>> vectorsRight = new ArrayList<>();
-        List<Float> vector1 = Collections.singletonList(0.1F);
-        List<Float> vector2 = Collections.singletonList(0.1F);
-        vectorsLeft.add(vector1);
-        vectorsRight.add(vector2);
-
-        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.INVALID)
-                .build()
-        );
-
-        vectorsLeft.clear();
-        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.IP)
-                .build()
-        );
-
-        vectorsLeft.add(vector1);
-        vectorsRight.clear();
-        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.IP)
-                .build()
-        );
-
-        // vector dimension not equal
-        vectorsRight.add(vector2);
-        List<Float> vector3 = Arrays.asList(0.1F, 0.2F);
-        vectorsLeft.add(vector3);
-        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.IP)
-                .build()
-        );
-
-        vectorsLeft.clear();
-        vectorsLeft.add(vector1);
-        List<Float> vector4 = Arrays.asList(0.1F, 0.2F);
-        vectorsRight.add(vector4);
-        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.IP)
-                .build()
-        );
-    }
-
-    @Test
-    void calcDistance() {
-        List<List<Float>> vectorsLeft = new ArrayList<>();
-        List<List<Float>> vectorsRight = new ArrayList<>();
-        List<Float> vector1 = Collections.singletonList(0.1F);
-        List<Float> vector2 = Collections.singletonList(0.1F);
-        vectorsLeft.add(vector1);
-        vectorsRight.add(vector2);
-        CalcDistanceParam param = CalcDistanceParam.newBuilder()
-                .withVectorsLeft(vectorsLeft)
-                .withVectorsRight(vectorsRight)
-                .withMetricType(MetricType.L2)
-                .build();
-
-        testFuncByName("calcDistance", param);
-    }
+//    @Test
+//    void calcDistanceParam() {
+//        // test throw exception with illegal input
+//        List<List<Float>> vectorsLeft = new ArrayList<>();
+//        List<List<Float>> vectorsRight = new ArrayList<>();
+//        List<Float> vector1 = Collections.singletonList(0.1F);
+//        List<Float> vector2 = Collections.singletonList(0.1F);
+//        vectorsLeft.add(vector1);
+//        vectorsRight.add(vector2);
+//
+//        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.INVALID)
+//                .build()
+//        );
+//
+//        vectorsLeft.clear();
+//        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.IP)
+//                .build()
+//        );
+//
+//        vectorsLeft.add(vector1);
+//        vectorsRight.clear();
+//        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.IP)
+//                .build()
+//        );
+//
+//        // vector dimension not equal
+//        vectorsRight.add(vector2);
+//        List<Float> vector3 = Arrays.asList(0.1F, 0.2F);
+//        vectorsLeft.add(vector3);
+//        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.IP)
+//                .build()
+//        );
+//
+//        vectorsLeft.clear();
+//        vectorsLeft.add(vector1);
+//        List<Float> vector4 = Arrays.asList(0.1F, 0.2F);
+//        vectorsRight.add(vector4);
+//        assertThrows(ParamException.class, () -> CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.IP)
+//                .build()
+//        );
+//    }
+//
+//    @Test
+//    void calcDistance() {
+//        List<List<Float>> vectorsLeft = new ArrayList<>();
+//        List<List<Float>> vectorsRight = new ArrayList<>();
+//        List<Float> vector1 = Collections.singletonList(0.1F);
+//        List<Float> vector2 = Collections.singletonList(0.1F);
+//        vectorsLeft.add(vector1);
+//        vectorsRight.add(vector2);
+//        CalcDistanceParam param = CalcDistanceParam.newBuilder()
+//                .withVectorsLeft(vectorsLeft)
+//                .withVectorsRight(vectorsRight)
+//                .withMetricType(MetricType.L2)
+//                .build();
+//
+//        testFuncByName("calcDistance", param);
+//    }
 
     @Test
     void getMetricsParam() {
