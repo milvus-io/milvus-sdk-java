@@ -744,6 +744,7 @@ public class SearchTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+            .withExpr("book_id == 9999")
             .build();
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
@@ -873,7 +874,7 @@ public class SearchTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
-                .withExpr("book_name == \"" + newBookName + "\"")
+            .withExpr("book_name == \"" + newBookName + "\"")
             .build();
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
@@ -1007,6 +1008,7 @@ public class SearchTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+            .withExpr("book_id == "+id)
             .build();
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);

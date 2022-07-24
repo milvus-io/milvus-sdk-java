@@ -1,11 +1,12 @@
 package com.zilliz.milvustest.partition;
 
 import com.zilliz.milvustest.common.BaseTest;
-import com.zilliz.milvustest.common.CommonData;
+import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.QueryResults;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
@@ -28,18 +29,20 @@ import java.util.List;
 @Feature("ReleasePartitions")
 public class ReleasePartitionsTest extends BaseTest {
   public String partition;
+  public String collection;
 
   @BeforeClass(description = "load partition")
   public void initPartition() {
+    collection = CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
     milvusClient.createPartition(
         CreatePartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .build());
     milvusClient.loadPartitions(
         LoadPartitionsParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .addPartitionName(partition)
             .build());
   }
@@ -48,9 +51,11 @@ public class ReleasePartitionsTest extends BaseTest {
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .build());
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -59,48 +64,51 @@ public class ReleasePartitionsTest extends BaseTest {
     R<RpcStatus> rpcStatusR =
         milvusClient.releasePartitions(
             ReleasePartitionsParam.newBuilder()
-                .withCollectionName(CommonData.defaultCollection)
+                .withCollectionName(collection)
                 .addPartitionName(partition)
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
-  @Test(
-          description = "query from partition after release ",
-          dependsOnMethods = "releasePartition")
+  @Test(description = "query from partition after release ", dependsOnMethods = "releasePartition")
   @Severity(SeverityLevel.NORMAL)
   public void queryAfterReleasePartition() {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
     List<String> outFields = Arrays.asList("book_id", "word_count");
     List<String> partitions =
-            new ArrayList<String>() {
-              {
-                add(partition);
-              }
-            };
+        new ArrayList<String>() {
+          {
+            add(partition);
+          }
+        };
     QueryParam queryParam =
-            QueryParam.newBuilder()
-                    .withCollectionName(CommonData.defaultCollection)
-                    .withPartitionNames(partitions)
-                    .withOutFields(outFields)
-                    .withExpr(SEARCH_PARAM)
-                    .build();
+        QueryParam.newBuilder()
+            .withCollectionName(collection)
+            .withPartitionNames(partitions)
+            .withOutFields(outFields)
+            .withExpr(SEARCH_PARAM)
+            .build();
     R<QueryResults> queryResultsR = milvusClient.query(queryParam);
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 1);
-    Assert.assertTrue(queryResultsR.getException().getMessage().contains("checkIfLoaded failed when query"));
+    Assert.assertTrue(
+        queryResultsR.getException().getMessage().contains("checkIfLoaded failed when query"));
   }
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "release nonexistent partition")
   public void releaseNonexistentPartition() {
     R<RpcStatus> rpcStatusR =
-            milvusClient.releasePartitions(
-                    ReleasePartitionsParam.newBuilder()
-                            .withCollectionName(CommonData.defaultCollection)
-                            .addPartitionName("NonexistentPartition")
-                            .build());
+        milvusClient.releasePartitions(
+            ReleasePartitionsParam.newBuilder()
+                .withCollectionName(collection)
+                .addPartitionName("NonexistentPartition")
+                .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
-    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("partitionID of partitionName:NonexistentPartition can not be find"));
+    Assert.assertTrue(
+        rpcStatusR
+            .getException()
+            .getMessage()
+            .contains("partitionID of partitionName:NonexistentPartition can not be find"));
   }
 }

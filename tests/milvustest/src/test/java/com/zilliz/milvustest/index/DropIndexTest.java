@@ -47,7 +47,7 @@ public class DropIndexTest extends BaseTest {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
             .withCollectionName(collection)
-            .withIndexName(CommonData.defaultVectorField)
+            .withIndexName(CommonData.defaultIndex)
             .build());
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
@@ -60,64 +60,68 @@ public class DropIndexTest extends BaseTest {
         milvusClient.dropIndex(
             DropIndexParam.newBuilder()
                 .withCollectionName(collection)
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.MINOR)
-  @Test(description = "drop index without field name", expectedExceptions = ParamException.class)
-  public void dropIndexWithoutFieldName() {
+  @Test(description = "drop index without index name")
+  public void dropIndexWithoutIndexName() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropIndex(DropIndexParam.newBuilder().withCollectionName(collection).build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(),25);
+    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("Index doesn't exist"));
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "drop index with error field name")
-  public void dropIndexWithErrorFieldName() {
+  @Test(description = "drop index with error index name")
+  public void dropIndexWithErrorIndexName() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropIndex(
             DropIndexParam.newBuilder()
                 .withCollectionName(collection)
                 .withIndexName("book_id")
                 .build());
-    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
-    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 25);
+    Assert.assertTrue(rpcStatusR.getException().getMessage().contains( "Index doesn't exist"));
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "drop index with nonexistent field name")
-  public void dropIndexWithNonexistentFieldName() {
+  @Test(description = "drop index with nonexistent index name")
+  public void dropIndexWithNonexistentIndexName() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropIndex(
             DropIndexParam.newBuilder()
                 .withCollectionName(collection)
                 .withIndexName("nonexistent")
                 .build());
-    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 25);
     Assert.assertEquals(
         rpcStatusR.getException().getMessage(),
-        "DropIndex failed: collection " + collection + " doesn't have filed nonexistent");
+        "Index doesn't exist");
   }
 
   @Severity(SeverityLevel.MINOR)
   @Test(
       description = "describe index after drop index",
-      dependsOnMethods = "dropIndexSuccess",
-      enabled = false)
+      dependsOnMethods = "dropIndexSuccess")
   public void describeIndexAfterDropIndex() {
     R<DescribeIndexResponse> describeIndexResponseR =
         milvusClient.describeIndex(
             DescribeIndexParam.newBuilder()
                 .withCollectionName(collection)
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
-    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 0);
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
+    Assert.assertTrue(
+            describeIndexResponseR.getException().getMessage().contains(
+            "index not exist"));
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "create index after drop index", dependsOnMethods = "dropIndexSuccess")
+  @Test(description = "create index after drop index", dependsOnMethods = {"dropIndexSuccess","describeIndexAfterDropIndex"})
   public void createIndexAfterDrop(){
     R<RpcStatus> indexR = milvusClient.createIndex(
             CreateIndexParam.newBuilder()

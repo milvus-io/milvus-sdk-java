@@ -7,11 +7,11 @@ import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.QueryResults;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.partition.CreatePartitionParam;
-import io.milvus.param.partition.DropPartitionParam;
 import io.milvus.response.QueryResultsWrapper;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -30,19 +30,18 @@ import java.util.List;
 @Feature("CreatePartition")
 public class CreatePartitionTest extends BaseTest {
   private String partition;
+  private String collection;
 
   @BeforeClass(description = "init partition Name")
   public void createPartitionTest() {
+    collection=CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
   }
 
   @AfterClass(description = "delete partition after test")
-  public void deletePartition() {
-    milvusClient.dropPartition(
-        DropPartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
-            .withPartitionName(partition)
-            .build());
+  public void deleteCollection() {
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -50,7 +49,7 @@ public class CreatePartitionTest extends BaseTest {
   public void createPartition() {
     CreatePartitionParam createPartitionParam =
         CreatePartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .build();
     R<RpcStatus> rpcStatusR = milvusClient.createPartition(createPartitionParam);
@@ -63,7 +62,7 @@ public class CreatePartitionTest extends BaseTest {
   public void createPartitionRepeatedly() {
     CreatePartitionParam createPartitionParam =
             CreatePartitionParam.newBuilder()
-                    .withCollectionName(CommonData.defaultCollection)
+                    .withCollectionName(collection)
                     .withPartitionName(partition)
                     .build();
     R<RpcStatus> rpcStatusR = milvusClient.createPartition(createPartitionParam);
@@ -77,7 +76,7 @@ public class CreatePartitionTest extends BaseTest {
   @Severity(SeverityLevel.NORMAL)
   public void queryFromEmptyPartition() {
     milvusClient.loadCollection(
-        LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
+        LoadCollectionParam.newBuilder().withCollectionName(collection).build());
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
     List<String> outFields = Arrays.asList("book_id", "word_count");
     List<String> partitions =
@@ -88,14 +87,14 @@ public class CreatePartitionTest extends BaseTest {
         };
     QueryParam queryParam =
         QueryParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionNames(partitions)
             .withOutFields(outFields)
             .withExpr(SEARCH_PARAM)
             .build();
     R<QueryResults> queryResultsR = milvusClient.query(queryParam);
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 26);
-    Assert.assertEquals(queryResultsR.getException().getMessage(), "emptly collection");
+    Assert.assertTrue(queryResultsR.getException().getMessage().contains("empty collection or improper expression"));
   }
 
   @Test(
@@ -106,12 +105,12 @@ public class CreatePartitionTest extends BaseTest {
     List<InsertParam.Field> fields = CommonFunction.generateData(100);
     milvusClient.insert(
         InsertParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .withFields(fields)
             .build());
     milvusClient.loadCollection(
-        LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).withSyncLoad(Boolean.TRUE)
+        LoadCollectionParam.newBuilder().withCollectionName(collection).withSyncLoad(Boolean.TRUE)
                 .withSyncLoadWaitingInterval(1000L).withSyncLoadWaitingTimeout(300L).build());
     Thread.sleep(5000);
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
@@ -124,7 +123,7 @@ public class CreatePartitionTest extends BaseTest {
         };
     QueryParam queryParam =
         QueryParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionNames(partitions)
             .withOutFields(outFields)
             .withExpr(SEARCH_PARAM)

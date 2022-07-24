@@ -143,7 +143,7 @@ public class InsertTest extends BaseTest {
                             .withFields(fields)
                             .build());
     Assert.assertEquals(mutationResultR.getStatus().intValue(), -5);
-    Assert.assertTrue(mutationResultR.getException().getMessage().contains("book_id data type doesn't match the collection schema"));
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("'book_id': Int64 field value type must be Long"));
   }
 
   @Severity(SeverityLevel.NORMAL)
@@ -176,7 +176,7 @@ public class InsertTest extends BaseTest {
                             .withFields(fields)
                             .build());
     Assert.assertEquals(mutationResultR.getStatus().intValue(), -5);
-    Assert.assertTrue(mutationResultR.getException().getMessage().contains("word_count data type doesn't match the collection schema"));
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("'word_count': Int64 field value type must be Long"));
   }
 
   @Severity(SeverityLevel.NORMAL)
