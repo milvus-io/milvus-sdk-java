@@ -554,6 +554,8 @@ public class QueryTest extends BaseTest {
     Thread.sleep(2000);
     String SEARCH_PARAM = "book_id in [22,24,26,28]";
     List<String> outFields = Arrays.asList("book_id", "word_count");
+    milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection).build());
     QueryParam queryParam =
         QueryParam.newBuilder()
             .withCollectionName(CommonData.defaultCollection)
@@ -569,7 +571,7 @@ public class QueryTest extends BaseTest {
   }
 
   @Test(
-      description = "String PK and  float vector query after delete data ",
+      description = "String PK and float vector query after delete data ",
       dataProvider = "providerPartition",
       dependsOnMethods = {"stringPKAndFloatVectorAfterInsert", "stringPKAndFloatVectorAfterUpdate"})
   @Severity(SeverityLevel.NORMAL)
@@ -626,7 +628,7 @@ public class QueryTest extends BaseTest {
             .withExpr(SEARCH_PARAM)
             .build();
     R<QueryResults> queryResultsR = milvusClient.query(queryParam);
-    Assert.assertEquals(queryResultsR.getStatus().intValue(), 25);
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 26);
     Assert.assertEquals(
         queryResultsR.getException().getMessage(), "empty collection or improper expression");
   }

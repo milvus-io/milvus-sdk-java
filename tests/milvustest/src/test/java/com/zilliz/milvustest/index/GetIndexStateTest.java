@@ -4,6 +4,7 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import io.milvus.grpc.GetIndexStateResponse;
+import io.milvus.grpc.IndexState;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
@@ -35,7 +36,9 @@ public class GetIndexStateTest extends BaseTest {
                 .withMetricType(MetricType.L2)
                 .withIndexType(IndexType.IVF_FLAT)
                 .withExtraParam(CommonData.defaultExtraParam)
-                .withSyncMode(Boolean.FALSE)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
                 .build());
     softAssert.assertEquals(indexR.getStatus().intValue(), 0);
     softAssert.assertAll();
@@ -46,24 +49,24 @@ public class GetIndexStateTest extends BaseTest {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
             .withCollectionName(collection)
-            .withIndexName(CommonData.defaultVectorField)
+            .withIndexName(CommonData.defaultIndex)
             .build());
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Get index state of default collection")
+  @Test(description = "Get index state ")
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/302")
-  public void getIndexStateDefault() {
+  public void getIndexState() {
     R<GetIndexStateResponse> getIndexStateResponseR =
         milvusClient.getIndexState(
             GetIndexStateParam.newBuilder()
                 .withCollectionName(collection)
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 0);
-    Assert.assertEquals(getIndexStateResponseR.getData(), 0);
+    Assert.assertEquals(getIndexStateResponseR.getData().getState(), IndexState.Finished);
   }
 
   @Severity(SeverityLevel.NORMAL)
@@ -73,7 +76,7 @@ public class GetIndexStateTest extends BaseTest {
         milvusClient.getIndexState(
             GetIndexStateParam.newBuilder()
                 .withCollectionName("NonexistentCollection")
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
     Assert.assertTrue(getIndexStateResponseR.getException().getMessage().contains("not found"));
@@ -87,7 +90,7 @@ public class GetIndexStateTest extends BaseTest {
         milvusClient.getIndexState(
             GetIndexStateParam.newBuilder()
                 .withCollectionName(newCollection)
-                .withIndexName(CommonData.defaultVectorField)
+                .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
     Assert.assertTrue(

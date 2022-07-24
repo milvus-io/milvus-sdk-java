@@ -550,7 +550,7 @@ public class QueryAsyncTest extends BaseTest {
   }
 
   @Test(
-          description = "Int PK and  float vector query after delete data ",
+          description = "Int PK and float vector query after delete data ",
           dataProvider = "providerPartition")
   @Severity(SeverityLevel.NORMAL)
   public void intPKAndFloatVectorAfterDelete(Boolean usePart) throws ExecutionException, InterruptedException {
@@ -627,9 +627,9 @@ public class QueryAsyncTest extends BaseTest {
             queryResultsR.getException().getMessage(), "Expression cannot be null or empty");
   }
 
-  @Test(description = "query return empty ")
+  @Test(description = "query async return empty ")
   @Severity(SeverityLevel.MINOR)
-  public void queryReturnEmpty()throws ExecutionException, InterruptedException  {
+  public void queryAsyncReturnEmpty()throws ExecutionException, InterruptedException  {
     String SEARCH_PARAM = "book_id in [-1,-2,-3,-4]";
     List<String> outFields = Arrays.asList("book_id", "word_count");
     QueryParam queryParam =
