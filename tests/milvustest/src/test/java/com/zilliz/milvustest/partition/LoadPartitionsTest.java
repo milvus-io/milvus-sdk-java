@@ -2,9 +2,11 @@ package com.zilliz.milvustest.partition;
 
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
+import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
 import io.milvus.param.partition.LoadPartitionsParam;
@@ -24,21 +26,23 @@ import java.util.List;
 @Epic("Partition")
 @Feature("LoadPartitions")
 public class LoadPartitionsTest extends BaseTest {
+  private String collection;
   private String partition;
   private String partition2;
 
   @BeforeClass(description = "init partition Name")
   public void createPartitionTest() {
+    collection= CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
     partition2 = "partition_" + MathUtil.getRandomString(10);
     milvusClient.createPartition(
         CreatePartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .build());
     milvusClient.createPartition(
             CreatePartitionParam.newBuilder()
-                    .withCollectionName(CommonData.defaultCollection)
+                    .withCollectionName(collection)
                     .withPartitionName(partition2)
                     .build());
   }
@@ -47,14 +51,15 @@ public class LoadPartitionsTest extends BaseTest {
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .withPartitionName(partition)
             .build());
     milvusClient.dropPartition(
             DropPartitionParam.newBuilder()
-                    .withCollectionName(CommonData.defaultCollection)
+                    .withCollectionName(collection)
                     .withPartitionName(partition2)
                     .build());
+    milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -70,7 +75,7 @@ public class LoadPartitionsTest extends BaseTest {
     R<RpcStatus> rpcStatusR =
         milvusClient.loadPartitions(
             LoadPartitionsParam.newBuilder()
-                .withCollectionName(CommonData.defaultCollection)
+                .withCollectionName(collection)
                 .withPartitionNames(partitionNames)
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
@@ -90,7 +95,7 @@ public class LoadPartitionsTest extends BaseTest {
     R<RpcStatus> rpcStatusR =
         milvusClient.loadPartitions(
             LoadPartitionsParam.newBuilder()
-                .withCollectionName(CommonData.defaultCollection)
+                .withCollectionName(collection)
                 .withPartitionNames(partitionNames)
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
@@ -105,9 +110,14 @@ public class LoadPartitionsTest extends BaseTest {
     // release first
     milvusClient.releasePartitions(
         ReleasePartitionsParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
+            .withCollectionName(collection)
             .addPartitionName(partition)
             .build());
+    milvusClient.releasePartitions(
+            ReleasePartitionsParam.newBuilder()
+                    .withCollectionName(collection)
+                    .addPartitionName(partition2)
+                    .build());
     // load
     List<String> partitionNames =
         new ArrayList<String>() {
@@ -118,7 +128,7 @@ public class LoadPartitionsTest extends BaseTest {
     R<RpcStatus> rpcStatusR =
         milvusClient.loadPartitions(
             LoadPartitionsParam.newBuilder()
-                .withCollectionName(CommonData.defaultCollection)
+                .withCollectionName(collection)
                 .withPartitionNames(partitionNames)
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);

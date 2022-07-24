@@ -14,7 +14,6 @@ import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.index.DropIndexParam;
 import io.milvus.param.index.GetIndexBuildProgressParam;
-import io.milvus.response.DescIndexResponseWrapper;
 import io.qameta.allure.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -48,7 +47,7 @@ public class GetIndexBuildProgressTest extends BaseTest {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
             .withCollectionName(collection)
-            .withIndexName(CommonData.defaultVectorField)
+            .withIndexName(CommonData.defaultIndex)
             .build());
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
@@ -58,21 +57,12 @@ public class GetIndexBuildProgressTest extends BaseTest {
   @Test(description = "Get Index Build Progress")
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/299")
   public void getIndexBuildProgressTest() {
-    R<DescribeIndexResponse> describeIndexResponseR =
-        milvusClient.describeIndex(
-            DescribeIndexParam.newBuilder()
-                .withCollectionName(collection)
-                .withIndexName(CommonData.defaultVectorField)
-                .build());
-    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 0);
-    DescribeIndexResponse describeIndexResponse = describeIndexResponseR.getData();
-    DescIndexResponseWrapper descIndexResponseWrapper =
-        new DescIndexResponseWrapper(describeIndexResponse);
-    System.out.println(descIndexResponseWrapper);
-
     R<GetIndexBuildProgressResponse> indexBuildProgress =
         milvusClient.getIndexBuildProgress(
-            GetIndexBuildProgressParam.newBuilder().withCollectionName(collection).build());
+            GetIndexBuildProgressParam.newBuilder()
+                .withCollectionName(collection)
+                .withIndexName(CommonData.defaultIndex)
+                .build());
     Assert.assertEquals(indexBuildProgress.getStatus().intValue(), 0);
     Assert.assertEquals(indexBuildProgress.getData().getIndexedRows(), 0);
   }

@@ -717,6 +717,7 @@ public class SearchAsyncTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+            .withExpr("book_id == 9999")
             .build();
     ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
     try {
@@ -854,6 +855,7 @@ public class SearchAsyncTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+            .withExpr("book_name == \"" + newBookName + "\"")
             .build();
     ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
     try {
@@ -871,7 +873,7 @@ public class SearchAsyncTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(
-      description = "string PK and float vector search async after insert the entity",
+      description = "string PK and binary vector search async after insert the entity",
       dataProvider = "providerPartition")
   public void stringPKAndBinaryVectorSearchAsyncAfterInsertNewEntity(Boolean usePart)
       throws InterruptedException {
@@ -994,6 +996,7 @@ public class SearchAsyncTest extends BaseTest {
             .withVectors(book_intro_array)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+            .withExpr("book_id =="+id)
             .build();
     ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
     try {
@@ -1157,7 +1160,7 @@ public class SearchAsyncTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(
-      description = "string PK and float vector search async after update the entity",
+      description = "string PK and binary vector search async after update the entity",
       dataProvider = "providerPartition",
       dependsOnMethods = "stringPKAndBinaryVectorSearchAsyncAfterInsertNewEntity")
   public void stringPKAndBinaryVectorSearchAsyncAfterUpdateNewEntity(Boolean usePart)
