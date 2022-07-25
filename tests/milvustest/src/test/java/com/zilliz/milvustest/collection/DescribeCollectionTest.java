@@ -29,7 +29,7 @@ public class DescribeCollectionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "query the name and schema of the collection",dataProvider = "provideCollection")
+  @Test(description = "query the name and schema of the collection",dataProvider = "provideCollection",groups = {"Smoke"})
   public void describeCollection(String collection) {
     R<DescribeCollectionResponse> respDescribeCollection =
         milvusClient.describeCollection( // Return the name and schema of the collection.

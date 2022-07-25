@@ -57,7 +57,7 @@ public class GetFlushStateTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Get flush state of specified segments.", dataProvider = "providerSegmentIds")
+  @Test(description = "Get flush state of specified segments.", dataProvider = "providerSegmentIds",groups = {"Smoke"})
   public void getFlushStateTest(Long segmentId, String collection) {
     R<GetFlushStateResponse> getFlushStateResponseR =
         milvusClient.getFlushState(GetFlushStateParam.newBuilder().addSegmentID(segmentId).build());

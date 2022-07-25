@@ -38,7 +38,7 @@ public class AlterAliasTest extends BaseTest {
   private String aliasStr;
   private String collectionStr;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initData() {
     aliasStr = "alias_" + MathUtil.getRandomString(10);
     milvusClient.createAlias(
@@ -49,7 +49,7 @@ public class AlterAliasTest extends BaseTest {
     collectionStr = CommonFunction.createNewCollection();
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void dropAlias() {
     milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(aliasStr).build());
     milvusClient.dropCollection(
@@ -57,7 +57,7 @@ public class AlterAliasTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Alter alias to anther collection")
+  @Test(description = "Alter alias to anther collection",groups = {"Smoke"})
   public void alterAliasTest() {
     R<RpcStatus> rpcStatusR =
         milvusClient.alterAlias(

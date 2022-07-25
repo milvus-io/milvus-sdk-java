@@ -15,8 +15,8 @@ import org.testng.annotations.Test;
 @Epic("Credential")
 @Feature("ListCredUser")
 public class ListCredUsersTest extends BaseTest {
-  @Severity(SeverityLevel.CRITICAL)
-  @Test(description = "List all user names")
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "List all user names",groups = {"Smoke"})
   public void listCredUsersTest() {
     R<ListCredUsersResponse> listCredUsersResponseR =
         milvusClient.listCredUsers(ListCredUsersParam.newBuilder().build());

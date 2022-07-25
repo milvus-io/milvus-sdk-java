@@ -28,7 +28,7 @@ public class GetCompactionStateTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Gets the compaction state by id.", dataProvider = "provideCompaction")
+  @Test(description = "Gets the compaction state by id.", dataProvider = "provideCompaction",groups = {"Smoke"})
   public void getCompactionState(long compactionId) {
     R<GetCompactionStateResponse> responseR =
         milvusClient.getCompactionState(

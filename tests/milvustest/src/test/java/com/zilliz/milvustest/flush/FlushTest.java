@@ -20,7 +20,7 @@ import java.util.List;
 public class FlushTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "flush collection sync ", enabled = true)
+  @Test(description = "flush collection sync ",groups = {"Smoke"})
   public void flushCollectionSync() {
     List<String> collectionName =
         new ArrayList<String>() {

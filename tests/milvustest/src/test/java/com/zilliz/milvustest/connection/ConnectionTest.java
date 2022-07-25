@@ -21,7 +21,7 @@ public class ConnectionTest extends BaseTest {
     };
   }
 
-  @Test(dataProvider = "connectParm")
+  @Test(dataProvider = "connectParm",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void connectMilvus(String host, Integer prot) {
     MilvusServiceClient milvusClient =

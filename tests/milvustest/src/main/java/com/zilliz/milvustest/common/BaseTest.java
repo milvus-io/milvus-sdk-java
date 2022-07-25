@@ -58,7 +58,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
               //.withSecure(true)
               .build());
 
-  @BeforeSuite
+  @BeforeSuite(alwaysRun = true)
   public void initCollection() {
     System.out.println(
         "**************************************************BeforeSuit**********************");
@@ -85,7 +85,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
 
   }
 
-  @AfterSuite
+  @AfterSuite(alwaysRun = true)
   public void cleanTestData() {
     System.out.println(
         "**************************************************AfterSuit**********************");

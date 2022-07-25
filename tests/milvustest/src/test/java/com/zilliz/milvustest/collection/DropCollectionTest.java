@@ -32,14 +32,14 @@ import java.util.List;
 public class DropCollectionTest extends BaseTest {
   public String commonCollection;
 
-  @BeforeClass(description = "Create collection before test")
+  @BeforeClass(description = "Create collection before test",alwaysRun=true)
   public void provideCollectionName() {
     String newCollection = CommonFunction.createNewCollection();
     commonCollection = newCollection;
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "drop collection")
+  @Test(description = "drop collection",groups = {"Smoke"})
   public void dropCollection() {
     DropCollectionParam build =
         DropCollectionParam.newBuilder().withCollectionName(commonCollection).build();

@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 public class ShowCollectionsTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Show collections list")
+  @Test(description = "Show collections list",groups = {"Smoke"})
   public void showCollectionTest1() {
     R<ShowCollectionsResponse> respShowCollections =
         milvusClient.showCollections(ShowCollectionsParam.newBuilder().build());

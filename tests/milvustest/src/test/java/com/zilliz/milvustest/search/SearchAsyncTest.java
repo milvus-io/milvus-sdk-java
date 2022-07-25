@@ -44,7 +44,7 @@ public class SearchAsyncTest extends BaseTest {
   public String newBookName;
   public String newBookNameBin;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -62,7 +62,7 @@ public class SearchAsyncTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -192,7 +192,7 @@ public class SearchAsyncTest extends BaseTest {
   @Test(
       description =
           "Conducts ANN async search on a vector field. Use expression to do filtering before search.",
-      dataProvider = "providerPartition")
+      dataProvider = "providerPartition",groups = {"Smoke"})
   public void intPKAndFloatVectorSearchAsync(Boolean usePart) {
     final Integer SEARCH_K = 2; // TopK
     final String SEARCH_PARAM = "{\"nprobe\":100}";

@@ -18,7 +18,8 @@ public class GetMetricsTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(
       description =
-          "Gets the runtime metrics information of Milvus, returns the result in .json format.")
+          "Gets the runtime metrics information of Milvus, returns the result in .json format."
+          ,groups = {"Smoke"})
   public void getMetricTest() {
     String param = "{\"metric_type\": \"system_info\"}";
     R<GetMetricsResponse> getMetricsResponseR =

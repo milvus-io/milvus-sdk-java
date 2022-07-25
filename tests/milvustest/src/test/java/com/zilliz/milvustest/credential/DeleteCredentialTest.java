@@ -17,7 +17,7 @@ public class DeleteCredentialTest extends BaseTest {
   private String username;
   private String password;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun = true)
   public void initCredentialInfo() {
     username = "user_" + MathUtil.getRandomString(5);
     password = "Pawd_" + MathUtil.getRandomString(5);
@@ -30,7 +30,7 @@ public class DeleteCredentialTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "delete credential by username")
+  @Test(description = "delete credential by username",groups = {"Smoke"})
   public void deleteCredential() {
     R<RpcStatus> rpcStatusR =
         milvusClient.deleteCredential(

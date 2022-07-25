@@ -22,7 +22,7 @@ public class UpdateCredentialTest extends BaseTest {
   private String username;
   private String password;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun = true)
   public void initCredentialInfo() {
     username = "user_" + MathUtil.getRandomString(5);
     password = "Pwd_" + MathUtil.getRandomString(5);
@@ -30,14 +30,14 @@ public class UpdateCredentialTest extends BaseTest {
         CreateCredentialParam.newBuilder().withUsername(username).withPassword(password).build());
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun = true)
   public void deleteCredentialInfo() {
     milvusClient.deleteCredential(
         DeleteCredentialParam.newBuilder().withUsername(username).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Update credential using the given user and password")
+  @Test(description = "Update credential using the given user and password",groups = {"Smoke"})
   public void updateCredentialTest() {
     String newPWD = "Pwd_" + MathUtil.getRandomString(6);
     R<RpcStatus> rpcStatusR =

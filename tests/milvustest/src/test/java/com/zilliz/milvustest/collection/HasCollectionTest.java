@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
 public class HasCollectionTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Check collection is existent")
+  @Test(description = "Check collection is existent",groups = {"Smoke"})
   public void hasCollectionTest() {
     R<Boolean> respHasCollection =
         milvusClient.hasCollection(

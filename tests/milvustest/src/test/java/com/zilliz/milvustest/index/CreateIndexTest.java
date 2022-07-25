@@ -25,13 +25,13 @@ public class CreateIndexTest extends BaseTest {
   public String collection;
   public String binaryCollection;
 
-  @BeforeClass(description = "create collection for test")
+  @BeforeClass(description = "create collection for test",alwaysRun = true)
   public void createCollection() {
     collection = CommonFunction.createNewCollection();
     binaryCollection = CommonFunction.createBinaryCollection();
   }
 
-  @AfterClass(description = "drop collection after test")
+  @AfterClass(description = "drop collection after test",alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
@@ -87,7 +87,7 @@ public class CreateIndexTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/311")
-  @Test(description = "Create index for collection sync", dataProvider = "FloatIndex")
+  @Test(description = "Create index for collection sync", dataProvider = "FloatIndex",groups = {"Smoke"})
   public void createIndexSync(IndexType indexType, MetricType metricType) {
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(

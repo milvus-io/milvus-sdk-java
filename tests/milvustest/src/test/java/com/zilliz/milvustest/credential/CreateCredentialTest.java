@@ -20,13 +20,13 @@ public class CreateCredentialTest extends BaseTest {
   private String username;
   private String password;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun = true)
   public void initCredentialInfo() {
     username = "user_" + MathUtil.getRandomString(5);
     password = "Pawd_" + MathUtil.getRandomString(5);
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun = true)
   public void deleteCredentialInfo() {
     R<RpcStatus> rpcStatusR =
         milvusClient.deleteCredential(
@@ -34,7 +34,7 @@ public class CreateCredentialTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Create credential using the given user and password.")
+  @Test(description = "Create credential using the given user and password.",groups = {"Smoke"})
   public void createCredentialTest() {
     R<RpcStatus> rpcStatusR =
         milvusClient.createCredential(

@@ -31,7 +31,7 @@ public class CreateCollectionTest extends BaseTest {
     return new String[][] {{"collection_" + MathUtil.getRandomString(10)}};
   }
 
-  @AfterClass(description = "delete test datas after CreateCollectionTest")
+  @AfterClass(description = "delete test datas after CreateCollectionTest",alwaysRun=true)
   public void deleteTestData() {
     if (commonCollection != null) {
       milvusClient.dropCollection(
@@ -77,7 +77,7 @@ public class CreateCollectionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Create collection success", dataProvider = "collectionByDataProvider")
+  @Test(description = "Create collection success", dataProvider = "collectionByDataProvider",groups = {"Smoke"})
   public void createCollectionSuccess(String collectionName) {
     commonCollection = collectionName;
     FieldType fieldType1 =

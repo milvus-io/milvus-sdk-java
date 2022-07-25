@@ -31,19 +31,19 @@ import java.util.Random;
 public class InsertTest extends BaseTest {
   public String stringPKAndBinaryCollection;
 
-  @BeforeClass(description = "provider collection")
+  @BeforeClass(description = "provider collection",alwaysRun = true)
   public void providerData() {
     stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
   }
 
-  @AfterClass(description = "delete test data")
+  @AfterClass(description = "delete test data",alwaysRun = true)
   public void deleteData() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(stringPKAndBinaryCollection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Insert data into collection")
+  @Test(description = "Insert data into collection",groups = {"Smoke"})
   public void insertDataIntoCollection() {
     List<InsertParam.Field> fields = CommonFunction.generateData(2000);
     R<MutationResult> mutationResultR =

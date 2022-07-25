@@ -18,7 +18,7 @@ import org.testng.annotations.Test;
 public class GetCollectionStatisticsTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Shows the statistics information of a collection.")
+  @Test(description = "Shows the statistics information of a collection.",groups = {"Smoke"})
   public void getCollectionStatisticsInfo() {
     R<GetCollectionStatisticsResponse> respCollectionStatistics =
         milvusClient
