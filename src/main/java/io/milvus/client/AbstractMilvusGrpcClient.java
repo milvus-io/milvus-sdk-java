@@ -1563,73 +1563,73 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return Futures.transform(response, transformFunc::apply, MoreExecutors.directExecutor());
     }
 
-//    @Override
-//    public R<CalcDistanceResults> calcDistance(@NonNull CalcDistanceParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            List<List<Float>> vectors_left = requestParam.getVectorsLeft();
-//            List<List<Float>> vectors_right = requestParam.getVectorsRight();
-//
-//            FloatArray.Builder left_float_array = FloatArray.newBuilder();
-//            for (List<Float> vector : vectors_left) {
-//                left_float_array.addAllData(vector);
-//            }
-//
-//            FloatArray.Builder right_float_array = FloatArray.newBuilder();
-//            for (List<Float> vector : vectors_right) {
-//                right_float_array.addAllData(vector);
-//            }
-//
-//            CalcDistanceRequest calcDistanceRequest = CalcDistanceRequest.newBuilder()
-//                    .setOpLeft(
-//                            VectorsArray.newBuilder()
-//                                    .setDataArray(
-//                                            VectorField.newBuilder()
-//                                                    .setFloatVector(left_float_array.build())
-//                                                    .setDim(vectors_left.get(0).size())
-//                                                    .build()
-//                                    )
-//                                    .build()
-//                    )
-//                    .setOpRight(
-//                            VectorsArray.newBuilder()
-//                                    .setDataArray(
-//                                            VectorField.newBuilder()
-//                                                    .setFloatVector(right_float_array.build())
-//                                                    .setDim(vectors_right.get(0).size())
-//                                                    .build()
-//                                    )
-//                                    .build()
-//                    )
-//                    .addParams(
-//                            KeyValuePair.newBuilder()
-//                                    .setKey("metric")
-//                                    .setValue(requestParam.getMetricType())
-//                                    .build()
-//                    )
-//                    .build();
-//
-//            CalcDistanceResults response = blockingStub().calcDistance(calcDistanceRequest);
-//
-//            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logDebug("CalcDistanceRequest successfully!");
-//                return R.success(response);
-//            } else {
-//                return failedStatus("CalcDistanceRequest", response.getStatus());
-//            }
-//        } catch (StatusRuntimeException e) {
-//            logError("CalcDistanceRequest RPC failed:{}", e.getMessage());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("CalcDistanceRequest failed:\n{}", e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
+    @Override
+    public R<CalcDistanceResults> calcDistance(@NonNull CalcDistanceParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            List<List<Float>> vectors_left = requestParam.getVectorsLeft();
+            List<List<Float>> vectors_right = requestParam.getVectorsRight();
+
+            FloatArray.Builder left_float_array = FloatArray.newBuilder();
+            for (List<Float> vector : vectors_left) {
+                left_float_array.addAllData(vector);
+            }
+
+            FloatArray.Builder right_float_array = FloatArray.newBuilder();
+            for (List<Float> vector : vectors_right) {
+                right_float_array.addAllData(vector);
+            }
+
+            CalcDistanceRequest calcDistanceRequest = CalcDistanceRequest.newBuilder()
+                    .setOpLeft(
+                            VectorsArray.newBuilder()
+                                    .setDataArray(
+                                            VectorField.newBuilder()
+                                                    .setFloatVector(left_float_array.build())
+                                                    .setDim(vectors_left.get(0).size())
+                                                    .build()
+                                    )
+                                    .build()
+                    )
+                    .setOpRight(
+                            VectorsArray.newBuilder()
+                                    .setDataArray(
+                                            VectorField.newBuilder()
+                                                    .setFloatVector(right_float_array.build())
+                                                    .setDim(vectors_right.get(0).size())
+                                                    .build()
+                                    )
+                                    .build()
+                    )
+                    .addParams(
+                            KeyValuePair.newBuilder()
+                                    .setKey("metric")
+                                    .setValue(requestParam.getMetricType())
+                                    .build()
+                    )
+                    .build();
+
+            CalcDistanceResults response = blockingStub().calcDistance(calcDistanceRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("CalcDistanceRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("CalcDistanceRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("CalcDistanceRequest RPC failed:{}", e.getMessage());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CalcDistanceRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
 
     @Override
     public R<GetMetricsResponse> getMetrics(@NonNull GetMetricsParam requestParam) {

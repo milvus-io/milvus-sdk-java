@@ -344,13 +344,13 @@ public interface MilvusClient {
      */
     ListenableFuture<R<QueryResults>> queryAsync(QueryParam requestParam);
 
-//    /**
-//     * Calculates the distance between the specified vectors.
-//     *
-//     * @param requestParam {@link CalcDistanceParam}
-//     * @return {status:result code, data: CalcDistanceResults{distances}}
-//     */
-//    R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam);
+    /**
+     * Calculates the distance between the specified vectors.
+     *
+     * @param requestParam {@link CalcDistanceParam}
+     * @return {status:result code, data: CalcDistanceResults{distances}}
+     */
+    R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam);
 
     /**
      * Gets the runtime metrics information of Milvus, returns the result in .json format.
