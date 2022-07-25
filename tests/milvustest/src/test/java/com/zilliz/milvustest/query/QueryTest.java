@@ -42,7 +42,7 @@ import static com.zilliz.milvustest.util.MathUtil.combine;
 public class QueryTest extends BaseTest {
   public String newBookName;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -65,7 +65,7 @@ public class QueryTest extends BaseTest {
     return new Object[][] {{Boolean.FALSE}, {Boolean.TRUE}};
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -176,7 +176,7 @@ public class QueryTest extends BaseTest {
       {" book_name < book_content "},
       {" book_name <= book_content "},
       {" \"10\" < book_name  <= \"a\" "},
-      {" \"a\" <= book_name < \"a99\" "},
+      {" \"a\" <= book_name < \"zAS\" "},
       {" \"asa\" < book_name <= \"zaa\" "},
       {" \"a\" <= book_name  and book_name >= \"99\" "},
       {" book_name like \"国%\" "},
@@ -186,7 +186,7 @@ public class QueryTest extends BaseTest {
     };
   }
 
-  @Test(description = "int PK and float vector query", dataProvider = "providerPartition")
+  @Test(description = "int PK and float vector query", dataProvider = "providerPartition",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void intPKAndFloatVectorQuery(Boolean usePart) {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";

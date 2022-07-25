@@ -20,7 +20,7 @@ import java.util.Arrays;
 @Epic("Segment")
 @Feature("GetPersistentSegmentInfo")
 public class GetPersistentSegmentInfoTest extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun = true)
   public void flushFirst() {
     milvusClient.flush(
         FlushParam.newBuilder()
@@ -31,7 +31,8 @@ public class GetPersistentSegmentInfoTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(
       description =
-          "Gets the information of persistent segments from data node, including row count, persistence state")
+          "Gets the information of persistent segments from data node, including row count, persistence state"
+          ,groups = {"Smoke"})
   public void getPersistentSegmentInfoTest() {
     R<GetPersistentSegmentInfoResponse> responseR =
         milvusClient.getPersistentSegmentInfo(

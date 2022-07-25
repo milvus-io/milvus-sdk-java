@@ -31,7 +31,7 @@ public class ReleasePartitionsTest extends BaseTest {
   public String partition;
   public String collection;
 
-  @BeforeClass(description = "load partition")
+  @BeforeClass(description = "load partition",alwaysRun = true)
   public void initPartition() {
     collection = CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
@@ -47,7 +47,7 @@ public class ReleasePartitionsTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "delete partition after test")
+  @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
@@ -59,7 +59,7 @@ public class ReleasePartitionsTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "release partition")
+  @Test(description = "release partition",groups = {"Smoke"})
   public void releasePartition() {
     R<RpcStatus> rpcStatusR =
         milvusClient.releasePartitions(

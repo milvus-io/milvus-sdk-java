@@ -25,7 +25,7 @@ import org.testng.annotations.Test;
 public class GetIndexBuildProgressTest extends BaseTest {
   public String collection;
 
-  @BeforeClass(description = "Create collection and index for test")
+  @BeforeClass(description = "Create collection and index for test",alwaysRun = true)
   public void createCollectionAndIndex() {
     collection = CommonFunction.createNewCollection();
     milvusClient.createIndex(
@@ -42,7 +42,7 @@ public class GetIndexBuildProgressTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "drop collection after test")
+  @AfterClass(description = "drop collection after test",alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
@@ -54,7 +54,7 @@ public class GetIndexBuildProgressTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Get Index Build Progress")
+  @Test(description = "Get Index Build Progress",groups = {"Smoke"})
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/299")
   public void getIndexBuildProgressTest() {
     R<GetIndexBuildProgressResponse> indexBuildProgress =

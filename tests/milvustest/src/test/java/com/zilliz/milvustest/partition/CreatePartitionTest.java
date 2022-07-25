@@ -32,20 +32,20 @@ public class CreatePartitionTest extends BaseTest {
   private String partition;
   private String collection;
 
-  @BeforeClass(description = "init partition Name")
+  @BeforeClass(description = "init partition Name",alwaysRun = true)
   public void createPartitionTest() {
     collection=CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
   }
 
-  @AfterClass(description = "delete partition after test")
+  @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deleteCollection() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Create partition")
+  @Test(description = "Create partition",groups = {"Smoke"})
   public void createPartition() {
     CreatePartitionParam createPartitionParam =
         CreatePartitionParam.newBuilder()
@@ -57,7 +57,7 @@ public class CreatePartitionTest extends BaseTest {
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
-  @Severity(SeverityLevel.BLOCKER)
+  @Severity(SeverityLevel.NORMAL)
   @Test(description = "Create partition repeatedly",dependsOnMethods = "createPartition")
   public void createPartitionRepeatedly() {
     CreatePartitionParam createPartitionParam =

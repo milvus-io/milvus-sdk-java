@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 @Epic("Replicas")
 @Feature("GetReplicas")
 public class GetReplicasTest extends BaseTest {
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder()
@@ -28,7 +28,7 @@ public class GetReplicasTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -36,7 +36,7 @@ public class GetReplicasTest extends BaseTest {
             .build());
   }
 
-  @Test(description = "Returns the collection's replica information")
+  @Test(description = "Returns the collection's replica information",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void getReplicasTest() {
     R<GetReplicasResponse> getReplicasResponseR =

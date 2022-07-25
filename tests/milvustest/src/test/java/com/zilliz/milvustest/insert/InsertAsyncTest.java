@@ -13,10 +13,7 @@ import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -32,17 +29,17 @@ import java.util.concurrent.ExecutionException;
 public class InsertAsyncTest extends BaseTest {
   public String stringPKAndBinaryCollection;
 
-  @BeforeClass(description = "provider collection")
+  @BeforeClass(description = "provider collection",alwaysRun = true)
   public void providerData() {
     stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
   }
 
-  @AfterClass(description = "delete test data")
+  @AfterClass(description = "delete test data",alwaysRun = true)
   public void deleteData() {
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(stringPKAndBinaryCollection).build());
   }
-  @Test(description = "Insert data Async")
+  @Test(description = "Insert data Async",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void insertAsyncSuccess() throws ExecutionException, InterruptedException {
     List<InsertParam.Field> fields = CommonFunction.generateData(2000);
@@ -102,8 +99,9 @@ public class InsertAsyncTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.NORMAL)
+  @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/358")
   @Test(description = "Insert async into collection not match vector type")
-  public void insertIntoCollectionNotMatchVectorType() throws ExecutionException, InterruptedException  {
+  public void insertAsyncIntoCollectionNotMatchVectorType() throws ExecutionException, InterruptedException  {
     List<InsertParam.Field> fields = CommonFunction.generateBinaryData(10);
     ListenableFuture<R<MutationResult>> rListenableFuture =
             milvusClient.insertAsync(
@@ -119,7 +117,7 @@ public class InsertAsyncTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "Insert async into collection not match PK type")
-  public void insertIntoCollectionNotMatchPKType() throws ExecutionException, InterruptedException  {
+  public void insertAsyncIntoCollectionNotMatchPKType() throws ExecutionException, InterruptedException  {
     Random ran = new Random();
     List<String> book_id_array = new ArrayList<>();
     List<String> word_count_array = new ArrayList<>();
@@ -153,7 +151,7 @@ public class InsertAsyncTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "Insert async into collection not match scalar type")
-  public void insertIntoCollectionNotMatchScalarType() throws ExecutionException, InterruptedException  {
+  public void insertAsyncIntoCollectionNotMatchScalarType() throws ExecutionException, InterruptedException  {
     Random ran = new Random();
     List<Long> book_id_array = new ArrayList<>();
     List<String> word_count_array = new ArrayList<>();

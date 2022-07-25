@@ -34,13 +34,13 @@ public class CreateAliasTest extends BaseTest {
   private String aliasStr;
   private String anotherAliasStr;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initData() {
     aliasStr = "alias_" + MathUtil.getRandomString(10);
     anotherAliasStr = "alias_" + MathUtil.getRandomString(10);
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void dropAlias() {
     milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(aliasStr).build());
     milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(anotherAliasStr).build());
@@ -52,7 +52,7 @@ public class CreateAliasTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "Create alias for collection")
+  @Test(description = "Create alias with nonexistent collection")
   public void createAliasWithNonexistentCollection() {
     R<RpcStatus> rpcStatusR =
         milvusClient.createAlias(
@@ -66,7 +66,7 @@ public class CreateAliasTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Create alias for collection")
+  @Test(description = "Create alias for collection",groups = {"Smoke"})
   public void createAliasTest() {
     R<RpcStatus> rpcStatusR =
         milvusClient.createAlias(

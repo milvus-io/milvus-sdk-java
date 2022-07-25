@@ -44,7 +44,7 @@ import static com.zilliz.milvustest.util.MathUtil.combine;
 public class QueryAsyncTest extends BaseTest {
   public String newBookName;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -67,7 +67,7 @@ public class QueryAsyncTest extends BaseTest {
     return new Object[][] {{Boolean.FALSE}, {Boolean.TRUE}};
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -189,7 +189,7 @@ public class QueryAsyncTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "query data async", dataProvider = "providerPartition")
+  @Test(description = "query data async", dataProvider = "providerPartition",groups = {"Smoke"})
   public void queryAsyncTest(Boolean usePart) throws ExecutionException, InterruptedException {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
     List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);

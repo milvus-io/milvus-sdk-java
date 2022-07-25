@@ -24,7 +24,7 @@ import org.testng.annotations.Test;
 public class GetIndexStateTest extends BaseTest {
   public String collection;
 
-  @BeforeClass(description = "Create collection and index for test")
+  @BeforeClass(description = "Create collection and index for test",alwaysRun = true)
   public void createCollectionAndIndex() {
     collection = CommonFunction.createNewCollection();
     R<RpcStatus> indexR =
@@ -44,7 +44,7 @@ public class GetIndexStateTest extends BaseTest {
     softAssert.assertAll();
   }
 
-  @AfterClass(description = "drop collection after test")
+  @AfterClass(description = "drop collection after test",alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
@@ -56,7 +56,7 @@ public class GetIndexStateTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Get index state ")
+  @Test(description = "Get index state ",groups = {"Smoke"})
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/302")
   public void getIndexState() {
     R<GetIndexStateResponse> getIndexStateResponseR =

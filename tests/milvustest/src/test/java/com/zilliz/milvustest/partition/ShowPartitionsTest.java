@@ -20,7 +20,7 @@ import java.util.List;
 public class ShowPartitionsTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "show partitions")
+  @Test(description = "show partitions",alwaysRun = true)
   public void showPartitionTest() {
     List<String> strings =
         new ArrayList<String>() {

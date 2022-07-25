@@ -30,7 +30,7 @@ public class LoadPartitionsTest extends BaseTest {
   private String partition;
   private String partition2;
 
-  @BeforeClass(description = "init partition Name")
+  @BeforeClass(description = "init partition Name",alwaysRun = true)
   public void createPartitionTest() {
     collection= CommonFunction.createNewCollection();
     partition = "partition_" + MathUtil.getRandomString(10);
@@ -47,7 +47,7 @@ public class LoadPartitionsTest extends BaseTest {
                     .build());
   }
 
-  @AfterClass(description = "delete partition after test")
+  @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
@@ -63,7 +63,7 @@ public class LoadPartitionsTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "load partition")
+  @Test(description = "load partition",groups = {"Smoke"})
   public void loadPartition() {
     List<String> partitionNames =
         new ArrayList<String>() {

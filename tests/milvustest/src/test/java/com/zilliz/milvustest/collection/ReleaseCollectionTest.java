@@ -26,14 +26,14 @@ import java.util.List;
 @Epic("Collection")
 @Feature("ReleaseCollection")
 public class ReleaseCollectionTest extends BaseTest {
-  @BeforeClass(description = "load collection")
+  @BeforeClass(description = "load collection",alwaysRun=true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "release collection")
+  @Test(description = "release collection",groups = {"Smoke"})
   public void releaseCollection() {
     R<RpcStatus> rpcStatusR =
         milvusClient.releaseCollection(

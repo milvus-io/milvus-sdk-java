@@ -26,7 +26,7 @@ public class DeleteTest extends BaseTest {
   public String commonCollection;
   public String commonPartition;
 
-  @BeforeClass(description = "Create collection before test")
+  @BeforeClass(description = "Create collection before test",alwaysRun = true)
   public void provideCollectionName() {
     commonCollection = CommonFunction.createNewCollection();
     commonPartition = "partition_" + MathUtil.getRandomString(10);
@@ -40,14 +40,14 @@ public class DeleteTest extends BaseTest {
         InsertParam.newBuilder().withCollectionName(commonCollection).withPartitionName(commonPartition).withFields(fields).build());
   }
 
-  @AfterClass(description = "delete collection after deleteDataTest")
+  @AfterClass(description = "delete collection after deleteDataTest",alwaysRun = true)
   public void deleteTestData() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(commonCollection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "delete data in expression ")
+  @Test(description = "delete data in expression ",groups = {"Smoke"})
   public void deleteData() {
     R<MutationResult> mutationResultR =
         milvusClient.delete(
@@ -59,7 +59,7 @@ public class DeleteTest extends BaseTest {
     Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
   }
 
-  @Severity(SeverityLevel.BLOCKER)
+  @Severity(SeverityLevel.CRITICAL)
   @Test(description = "delete data in expression by partition ")
   public void deleteDataByPartition() {
     R<MutationResult> mutationResultR =
@@ -73,7 +73,7 @@ public class DeleteTest extends BaseTest {
     Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
   }
 
-  @Severity(SeverityLevel.BLOCKER)
+  @Severity(SeverityLevel.NORMAL)
   @Test(description = "delete data with invalid expression ")
   public void deleteDataInvalidExpression() {
     R<MutationResult> mutationResultR =

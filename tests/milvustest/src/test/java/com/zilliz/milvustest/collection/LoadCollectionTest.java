@@ -22,25 +22,25 @@ import org.testng.annotations.Test;
 public class LoadCollectionTest extends BaseTest {
   private String collection;
 
-  @BeforeClass(description = "create new collection")
+  @BeforeClass(description = "create new collection",alwaysRun=true)
   public void createCollection() {
     collection = CommonFunction.createNewCollection();
   }
 
-  @AfterClass(description = "delete test collection")
+  @AfterClass(description = "delete test collection",alwaysRun=true)
   public void dropCollection() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
-  @AfterMethod(description = "release collection")
+  @AfterMethod(description = "release collection",alwaysRun=true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "load collection with default param")
+  @Test(description = "load collection with default param",groups = {"Smoke"})
   public void loadCollection() {
     LoadCollectionParam loadCollectionParam =
         new LoadCollectionParam(
@@ -55,7 +55,7 @@ public class LoadCollectionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "load collection Async")
+  @Test(description = "load collection Async",groups = {"Smoke"})
   public void loadCollectionWithAsync() {
     LoadCollectionParam loadCollectionParam =
         LoadCollectionParam.newBuilder()

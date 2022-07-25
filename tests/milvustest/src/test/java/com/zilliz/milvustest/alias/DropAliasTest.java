@@ -33,7 +33,7 @@ import java.util.List;
 public class DropAliasTest extends BaseTest {
   private String aliasStr;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initData() {
     aliasStr = "alias_" + MathUtil.getRandomString(10);
     milvusClient.createAlias(
@@ -44,7 +44,7 @@ public class DropAliasTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "drop alias")
+  @Test(description = "drop alias",groups = {"Smoke"})
   public void dropAlias() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(aliasStr).build());

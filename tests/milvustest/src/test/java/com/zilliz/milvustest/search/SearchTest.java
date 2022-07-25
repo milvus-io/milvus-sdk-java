@@ -44,7 +44,7 @@ public class SearchTest extends BaseTest {
   public String newBookName;
   public String newBookNameBin;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -62,7 +62,7 @@ public class SearchTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -178,7 +178,7 @@ public class SearchTest extends BaseTest {
             {" book_name < book_content "},
             {" book_name <= book_content "},
             {" \"10\" < book_name  <= \"a\" "},
-            {" \"a\" <= book_name < \"a99\" "},
+            {" \"a\" <= book_name < \"zAs\" "},
             {" \"asa\" < book_name <= \"zaa\" "},
             {" \"a\" <= book_name  and book_name >= \"99\" "},
             {" book_name like \"国%\" "},
@@ -192,7 +192,7 @@ public class SearchTest extends BaseTest {
   @Test(
       description =
           "Conducts ANN search on a vector field. Use expression to do filtering before search.",
-      dataProvider = "providerPartition")
+      dataProvider = "providerPartition",groups = {"Smoke"})
   public void intPKAndFloatVectorSearch(Boolean usePart) {
     Integer SEARCH_K = 2; // TopK
     String SEARCH_PARAM = "{\"nprobe\":10}";
@@ -1359,7 +1359,7 @@ public class SearchTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(
-      description = "string PK and float vector search after delete the entity",
+      description = "string PK and Binary vector search after delete the entity",
       dataProvider = "providerPartition",
       dependsOnMethods = {
         "stringPKAndBinaryVectorSearchAfterInsertNewEntity",
