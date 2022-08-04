@@ -11,4 +11,7 @@
             <package name="com.zilliz.milvustest.*"/>
         </packages>
     </test>
+    <listeners>
+        <listener class-name="com.zilliz.milvustest.service.CustomerListener"></listener>
+    </listeners>
 </suite>

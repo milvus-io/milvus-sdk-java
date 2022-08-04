@@ -951,4 +951,42 @@ public class QueryTest extends BaseTest {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
   }
+
+  @Test(description = "int PK and float vector query without pk field")
+  @Severity(SeverityLevel.NORMAL)
+  public void queryWithoutPKField() {
+    String SEARCH_PARAM = "word_count in [10002,10004,10006,10008]";
+    List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withOutFields(outFields)
+                    .withExpr(SEARCH_PARAM)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    System.out.println(wrapperQuery.getFieldWrapper("book_id").getFieldData());
+    System.out.println(wrapperQuery.getFieldWrapper("word_count").getFieldData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper("word_count").getFieldData().size(), 4);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper("book_id").getFieldData().size(), 4);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper(CommonData.defaultVectorField).getDim(), 128);
+  }
+
+  @Test(description = "int PK and float vector query with invalid expression")
+  @Severity(SeverityLevel.NORMAL)
+  public void queryWithInvalidExpression() {
+    String SEARCH_PARAM = "word_count = 10002 ";
+    List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withOutFields(outFields)
+                    .withExpr(SEARCH_PARAM)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 1);
+    Assert.assertTrue(queryResultsR.getException().getMessage().contains("cannot parse expression"));
+
+  }
 }

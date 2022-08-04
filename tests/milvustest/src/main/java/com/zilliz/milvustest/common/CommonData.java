@@ -19,7 +19,7 @@ public class CommonData {
 
   public static String defaultBinaryIndex = "BinaryVectorIndex";
   public static String defaultExtraParam =
-      "{\"nlist\":1024,\"M\":16,\"efConstruction\":64, \"PQM\":16,\"nbits\":8}";
+          "{\"nlist\":128}";
   public static String defaultUserName = "UserNameAT";
   public static String defaultPassword = "Password123AT";
   public static String defaultBulkLoadPath = "./src/test/java/resources/temp/";

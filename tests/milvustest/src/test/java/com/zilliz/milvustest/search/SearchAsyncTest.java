@@ -1789,4 +1789,59 @@ public class SearchAsyncTest extends BaseTest {
       Assert.fail(e.getMessage());
     }
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Search without load")
+  public void searchAsyncWithoutLoad() throws ExecutionException, InterruptedException {
+    milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .build());
+    Integer SEARCH_K = 2; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("book_id");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .build();
+    ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
+    R<SearchResults> searchResultsR = rListenableFuture.get();
+    Assert.assertEquals(searchResultsR.getStatus().intValue(),1);
+    Assert.assertTrue(searchResultsR.getException().getMessage().contains("checkIfLoaded failed when search"));
+    milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .build());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "string PK Search with error expressions")
+  public void stringPKSearchAsyncWithErrorExpressions() throws ExecutionException, InterruptedException {
+    Integer SEARCH_K = 2; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("book_name");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultStringPKCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withExpr( "  book_name = a")
+                    .build();
+    ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
+    R<SearchResults> searchResultsR = rListenableFuture.get();
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
+    Assert.assertTrue(searchResultsR.getException().getMessage().contains("cannot parse expression"));
+
+  }
 }
