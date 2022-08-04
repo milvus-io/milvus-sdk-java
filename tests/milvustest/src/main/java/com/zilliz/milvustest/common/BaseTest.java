@@ -17,7 +17,8 @@ import io.milvus.param.credential.DeleteCredentialParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.partition.CreatePartitionParam;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -37,8 +38,8 @@ import java.util.List;
 @SpringBootTest(classes = MilvustestApplication.class)
 @WebAppConfiguration
 public class BaseTest extends AbstractTestNGSpringContextTests {
-  public static Logger logger = Logger.getLogger(BaseTest.class);
-  public static SoftAssert softAssert = new SoftAssert();
+  public static final Logger logger= LoggerFactory.getLogger(BaseTest.class);
+  public static final SoftAssert softAssert = new SoftAssert();
   public static final MilvusServiceClient milvusClient =
       new MilvusServiceClient(
           ConnectParam.newBuilder()
@@ -60,7 +61,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
 
   @BeforeSuite(alwaysRun = true)
   public void initCollection() {
-    System.out.println(
+    logger.info(
         "**************************************************BeforeSuit**********************");
     initEvn();
     // check collection is existed
@@ -87,7 +88,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
 
   @AfterSuite(alwaysRun = true)
   public void cleanTestData() {
-    System.out.println(
+    logger.info(
         "**************************************************AfterSuit**********************");
     logger.info("drop Default Collection");
     milvusClient.dropCollection(

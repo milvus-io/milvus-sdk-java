@@ -7,7 +7,8 @@ import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.UploadObjectArgs;
 import io.minio.errors.MinioException;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.security.InvalidKeyException;
@@ -15,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 public class FileUtils {
-  public static Logger logger = Logger.getLogger(FileUtils.class);
+  public static Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
   // generate Json File
   public static boolean createFile(

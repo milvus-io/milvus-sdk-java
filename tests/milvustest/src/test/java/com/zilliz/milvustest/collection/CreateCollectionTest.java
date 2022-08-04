@@ -18,6 +18,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
 @Epic("Collection")
 @Feature("CreateCollection")
 public class CreateCollectionTest extends BaseTest {
@@ -25,13 +29,14 @@ public class CreateCollectionTest extends BaseTest {
   public String binaryVectorCollection;
 
   public String stringPKCollection;
+  public String maxFieldCollection;
 
   @DataProvider(name = "collectionByDataProvider")
   public Object[][] provideCollectionName() {
     return new String[][] {{"collection_" + MathUtil.getRandomString(10)}};
   }
 
-  @AfterClass(description = "delete test datas after CreateCollectionTest",alwaysRun=true)
+  @AfterClass(description = "delete test datas after CreateCollectionTest", alwaysRun = true)
   public void deleteTestData() {
     if (commonCollection != null) {
       milvusClient.dropCollection(
@@ -44,6 +49,10 @@ public class CreateCollectionTest extends BaseTest {
     if (stringPKCollection != null) {
       milvusClient.dropCollection(
           DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
+    }
+    if (maxFieldCollection != null) {
+      milvusClient.dropCollection(
+          DropCollectionParam.newBuilder().withCollectionName(maxFieldCollection).build());
     }
   }
 
@@ -77,7 +86,10 @@ public class CreateCollectionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Create collection success", dataProvider = "collectionByDataProvider",groups = {"Smoke"})
+  @Test(
+      description = "Create collection success",
+      dataProvider = "collectionByDataProvider",
+      groups = {"Smoke"})
   public void createCollectionSuccess(String collectionName) {
     commonCollection = collectionName;
     FieldType fieldType1 =
@@ -304,4 +316,170 @@ public class CreateCollectionTest extends BaseTest {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collectionName).build());
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create collection with max fields")
+  public void createCollectionWithMaxFields() {
+    maxFieldCollection = "coll_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+        FieldType.newBuilder()
+            .withName("book_id")
+            .withDataType(DataType.Int64)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .build();
+
+    FieldType fieldType3 =
+        FieldType.newBuilder()
+            .withName("book_intro")
+            .withDataType(DataType.FloatVector)
+            .withDimension(128)
+            .build();
+    CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
+    builder
+        .withCollectionName(maxFieldCollection)
+        .withDescription("Test " + maxFieldCollection + " search")
+        .withShardsNum(2)
+        .addFieldType(fieldType1)
+        .addFieldType(fieldType3);
+
+    for (int i = 0; i < 254; i++) {
+      FieldType field =
+          FieldType.newBuilder().withName("field_" + i).withDataType(DataType.Int64).build();
+      builder.addFieldType(field);
+    }
+    R<RpcStatus> collection = milvusClient.createCollection(builder.build());
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create collection with max fields")
+  public void createCollectionWith257Fields() {
+    maxFieldCollection = "coll_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+        FieldType.newBuilder()
+            .withName("book_id")
+            .withDataType(DataType.Int64)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .build();
+
+    FieldType fieldType3 =
+        FieldType.newBuilder()
+            .withName("book_intro")
+            .withDataType(DataType.FloatVector)
+            .withDimension(128)
+            .build();
+    CreateCollectionParam.Builder builder = CreateCollectionParam.newBuilder();
+    builder
+        .withCollectionName(maxFieldCollection)
+        .withDescription("Test " + maxFieldCollection + " search")
+        .withShardsNum(2)
+        .addFieldType(fieldType1)
+        .addFieldType(fieldType3);
+
+    for (int i = 0; i < 255; i++) {
+      FieldType field =
+          FieldType.newBuilder().withName("field_" + i).withDataType(DataType.Int64).build();
+      builder.addFieldType(field);
+    }
+    R<RpcStatus> collection = milvusClient.createCollection(builder.build());
+    Assert.assertEquals(collection.getStatus().intValue(), 1);
+    Assert.assertTrue(
+        collection
+            .getException()
+            .getMessage()
+            .contains("maximum field's number should be limited to 256"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create collection with multiple PK")
+  public void createCollectionWithMultiPK() {
+    String collection = "coll_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+        FieldType.newBuilder()
+            .withName("book_id")
+            .withDataType(DataType.Int64)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .build();
+    FieldType fieldType2 =
+        FieldType.newBuilder()
+            .withName("word_count")
+            .withDataType(DataType.Int64)
+            .withPrimaryKey(true)
+            .withAutoID(false)
+            .build();
+    FieldType fieldType3 =
+        FieldType.newBuilder()
+            .withName("book_intro")
+            .withDataType(DataType.FloatVector)
+            .withDimension(128)
+            .build();
+    R<RpcStatus> collectionR =
+        milvusClient.createCollection(
+            CreateCollectionParam.newBuilder()
+                .withCollectionName(collection)
+                .withShardsNum(2)
+                .addFieldType(fieldType1)
+                .addFieldType(fieldType2)
+                .addFieldType(fieldType3)
+                .build());
+    Assert.assertEquals(collectionR.getStatus().intValue(), 1);
+    Assert.assertTrue(collectionR.getException().getMessage().contains("there are more than one primary key"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create collection with multiple thread")
+  public void createCollectionWithMultiThread() {
+    ExecutorService executorService= Executors.newFixedThreadPool(5);
+    List<Future> futures=new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      int finalI = i;
+      Callable callable= () -> {
+        String collection="Col_"+ finalI +MathUtil.getRandomString(10);
+        Integer resultCode;
+        FieldType fieldType1 =
+                FieldType.newBuilder()
+                        .withName("book_id")
+                        .withDataType(DataType.Int64)
+                        .withPrimaryKey(true)
+                        .withAutoID(false)
+                        .build();
+        FieldType fieldType2 =
+                FieldType.newBuilder()
+                        .withName("word_count")
+                        .withDataType(DataType.Int64).build();
+        FieldType fieldType3 =
+                FieldType.newBuilder()
+                        .withName("book_intro")
+                        .withDataType(DataType.FloatVector)
+                        .withDimension(128)
+                        .build();
+        R<RpcStatus> collectionR =
+                milvusClient.createCollection(
+                        CreateCollectionParam.newBuilder()
+                                .withCollectionName(collection)
+                                .withShardsNum(2)
+                                .addFieldType(fieldType1)
+                                .addFieldType(fieldType2)
+                                .addFieldType(fieldType3)
+                                .build());
+        resultCode=collectionR.getStatus();
+        milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(collection).build());
+        return resultCode;
+      };
+      Future submit = executorService.submit(callable);
+      futures.add(submit);
+    }
+    futures.forEach(x->{
+      try {
+        Assert.assertEquals(x.get().toString(),"0");
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+    });
+  }
+
 }

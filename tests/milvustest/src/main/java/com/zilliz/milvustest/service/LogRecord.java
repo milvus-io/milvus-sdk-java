@@ -1,6 +1,8 @@
 package com.zilliz.milvustest.service;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
@@ -10,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class LogRecord implements ITestListener {
-  Logger logger = Logger.getLogger(LogRecord.class);
+  Logger logger = LoggerFactory.getLogger(LogRecord.class);
 
   @Override
   public void onTestStart(ITestResult result) {

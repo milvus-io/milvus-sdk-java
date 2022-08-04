@@ -1,12 +1,15 @@
 package com.zilliz.milvustest.partition;
 
 import com.zilliz.milvustest.common.BaseTest;
+import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.QueryResults;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
@@ -110,5 +113,27 @@ public class ReleasePartitionsTest extends BaseTest {
             .getException()
             .getMessage()
             .contains("partitionID of partitionName:NonexistentPartition can not be find"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "release partition after load collection")
+  public void releasePartitionAfterLoadCollection() {
+    LoadCollectionParam loadCollectionParam =
+            LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build();
+    milvusClient.loadCollection(loadCollectionParam);
+    R<RpcStatus> rpcStatusR = milvusClient.releasePartitions(ReleasePartitionsParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .withPartitionNames(Arrays.asList(CommonData.defaultPartition)).build());
+
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    Assert.assertTrue(
+            rpcStatusR
+                    .getException()
+                    .getMessage()
+                    .contains("releasing some partitions after load collection is not supported"));
+    milvusClient.releaseCollection(
+            ReleaseCollectionParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .build());
   }
 }
