@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.1.0 (2022-08-31)
+
+### Bug
+
+- \#367 Fix keepAliveTimeout timeunit error for ConnectParam
+
 ## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
 
 ### Feature
