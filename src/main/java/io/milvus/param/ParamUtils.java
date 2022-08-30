@@ -308,8 +308,7 @@ public class ParamUtils {
             builder.setDsl(requestParam.getExpr());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
-                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel());
         builder.setTravelTimestamp(requestParam.getTravelTimestamp());
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
@@ -317,8 +316,7 @@ public class ParamUtils {
     }
 
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
-                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel());
         return QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
@@ -329,8 +327,8 @@ public class ParamUtils {
                 .build();
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
-                                              long guaranteeTimestamp, Long gracefulTime){
+    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel){
+        long guaranteeTimestamp = 2L;
         if(consistencyLevel == null){
             return guaranteeTimestamp;
         }
@@ -338,11 +336,11 @@ public class ParamUtils {
             case STRONG:
                 guaranteeTimestamp = 0L;
                 break;
-            case BOUNDED:
-                guaranteeTimestamp = (new Date()).getTime() - gracefulTime;
-                break;
             case EVENTUALLY:
                 guaranteeTimestamp = 1L;
+                break;
+            case BOUNDED:
+                guaranteeTimestamp = 2L;
                 break;
         }
         return guaranteeTimestamp;
