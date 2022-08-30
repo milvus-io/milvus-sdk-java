@@ -5,13 +5,9 @@ name: Java CI with Maven
 
 on:
   push:
-    branches:
-      - base=master
-      - base~=2\.\d
+    branches: [ "2.1" ]
   pull_request:
-    branches:
-      - base=master
-      - base~=2\.\d
+    branches: [ "2.1" ]
 
 jobs:
   build:

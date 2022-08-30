@@ -55,13 +55,4 @@ public class Constant {
 
     // max value for waiting create index interval, unit: millisecond
     public static final Long MAX_WAITING_INDEX_INTERVAL = 2000L;
-
-
-    // set this value for "withGuaranteeTimestamp" of QueryParam/SearchParam
-    // to instruct server execute query/search immediately.
-    public static final Long GUARANTEE_EVENTUALLY_TS = 1L;
-
-    // set this value for "withGuaranteeTimestamp" of QueryParam/SearchParam
-    // to instruct server execute query/search after all DML operations finished.
-    public static final Long GUARANTEE_STRONG_TS = 0L;
 }
