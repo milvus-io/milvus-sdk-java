@@ -1,0 +1,13 @@
+io.milvus.client
+io.milvus.common.clientenum
+io.milvus.connection
+io.milvus.exception
+io.milvus.param
+io.milvus.param.alias
+io.milvus.param.collection
+io.milvus.param.control
+io.milvus.param.credential
+io.milvus.param.dml
+io.milvus.param.index
+io.milvus.param.partition
+io.milvus.response
