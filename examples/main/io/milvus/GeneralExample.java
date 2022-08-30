@@ -28,6 +28,7 @@ import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.response.*;
+import io.milvus.common.clientenum.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;

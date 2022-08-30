@@ -6,6 +6,10 @@
 
 - \#367 Fix keepAliveTimeout timeunit error for ConnectParam
 
+### Improvement
+
+- Remove withGuaranteeTimestamp/withGracefulTime of SearchParam/QueryParam. User only need to provide consistency level.
+
 ## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
 
 ### Feature
