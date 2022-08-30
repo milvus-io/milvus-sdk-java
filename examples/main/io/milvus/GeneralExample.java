@@ -333,7 +333,7 @@ public class GeneralExample {
                 .withVectorFieldName(VECTOR_FIELD)
                 .withExpr(expr)
                 .withParams(SEARCH_PARAM)
-                .withGuaranteeTimestamp(Constant.GUARANTEE_EVENTUALLY_TS)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
 
         R<SearchResults> response = milvusClient.search(searchParam);
