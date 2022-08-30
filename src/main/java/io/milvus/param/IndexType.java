@@ -40,5 +40,6 @@ public enum IndexType {
 
     //Only for varchar type field
     TRIE,
+    DISKANN
     ;
 }
