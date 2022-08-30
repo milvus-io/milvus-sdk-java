@@ -40,8 +40,6 @@ public class QueryParam {
     private final List<String> outFields;
     private final String expr;
     private final long travelTimestamp;
-    private final long guaranteeTimestamp;
-    private final Long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
 
     private QueryParam(@NonNull Builder builder) {
@@ -50,9 +48,7 @@ public class QueryParam {
         this.outFields = builder.outFields;
         this.expr = builder.expr;
         this.travelTimestamp = builder.travelTimestamp;
-        this.guaranteeTimestamp = builder.guaranteeTimestamp;
         this.consistencyLevel = builder.consistencyLevel;
-        this.gracefulTime = builder.gracefulTime;
     }
 
     public static Builder newBuilder() {
@@ -68,9 +64,7 @@ public class QueryParam {
         private final List<String> outFields = new ArrayList<>();
         private String expr = "";
         private Long travelTimestamp = 0L;
-        private Long gracefulTime = 5000L;
-        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
-        private ConsistencyLevelEnum consistencyLevel;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
 
         private Builder() {
         }
@@ -88,6 +82,7 @@ public class QueryParam {
 
         /**
          * ConsistencyLevel of consistency level.
+         * Default value is ConsistencyLevelEnum.BOUNDED.
          *
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
@@ -105,17 +100,6 @@ public class QueryParam {
          */
         public Builder withPartitionNames(@NonNull List<String> partitionNames) {
             partitionNames.forEach(this::addPartitionName);
-            return this;
-        }
-
-        /**
-         *  Graceful time for BOUNDED Consistency Level
-         *
-         * @param gracefulTime graceful time
-         * @return <code>Builder</code>
-         */
-        public Builder withGracefulTime(Long gracefulTime) {
-            this.gracefulTime = gracefulTime;
             return this;
         }
 
@@ -181,25 +165,6 @@ public class QueryParam {
         }
 
         /**
-         * Instructs server to see insert/delete operations performed before a provided timestamp.
-         * If no such timestamp is specified, the server will wait for the latest operation to finish and query.
-         *
-         * Note: The timestamp is not an absolute timestamp, it is a hybrid value combined by UTC time and internal flags.
-         *  We call it TSO, for more information please refer to: https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md
-         *  You can get a TSO from insert/delete operations, see the <code>MutationResultWrapper</code> class.
-         *  Use an operation's TSO to set this parameter, the server will execute query after this operation is finished.
-         *
-         * Default value is GUARANTEE_EVENTUALLY_TS, query executes query immediately.
-         *
-         * @param ts a timestamp value
-         * @return <code>Builder</code>
-         */
-        public Builder withGuaranteeTimestamp(@NonNull Long ts) {
-            this.guaranteeTimestamp = ts;
-            return this;
-        }
-
-        /**
          * Verifies parameters and creates a new {@link QueryParam} instance.
          *
          * @return {@link QueryParam}
@@ -210,10 +175,6 @@ public class QueryParam {
 
             if (travelTimestamp < 0) {
                 throw new ParamException("The travel timestamp must be greater than 0");
-            }
-
-            if (guaranteeTimestamp < 0) {
-                throw new ParamException("The guarantee timestamp must be greater than 0");
             }
 
             return new QueryParam(this);
@@ -230,6 +191,7 @@ public class QueryParam {
         return "QueryParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionNames='" + partitionNames.toString() + '\'' +
+                ", outFields='" + outFields.toString() + '\'' +
                 ", expr='" + expr + '\'' +
                 ", consistencyLevel='" + consistencyLevel + '\'' +
                 '}';

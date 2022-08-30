@@ -47,8 +47,6 @@ public class SearchParam {
     private final int roundDecimal;
     private final String params;
     private final long travelTimestamp;
-    private final long guaranteeTimestamp;
-    private final Long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
 
     private SearchParam(@NonNull Builder builder) {
@@ -63,8 +61,6 @@ public class SearchParam {
         this.roundDecimal = builder.roundDecimal;
         this.params = builder.params;
         this.travelTimestamp = builder.travelTimestamp;
-        this.guaranteeTimestamp = builder.guaranteeTimestamp;
-        this.gracefulTime = builder.gracefulTime;
         this.consistencyLevel = builder.consistencyLevel;
     }
 
@@ -87,9 +83,7 @@ public class SearchParam {
         private Integer roundDecimal = -1;
         private String params = "{}";
         private Long travelTimestamp = 0L;
-        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
-        private Long gracefulTime = 5000L;
-        private ConsistencyLevelEnum consistencyLevel;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
 
        Builder() {
         }
@@ -118,23 +112,13 @@ public class SearchParam {
 
         /**
          * ConsistencyLevel of consistency level.
+         * Default value is ConsistencyLevelEnum.BOUNDED.
          *
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
-            return this;
-        }
-
-        /**
-         *  Graceful time for BOUNDED Consistency Level
-         *
-         * @param gracefulTime graceful time
-         * @return <code>Builder</code>
-         */
-        public Builder withGracefulTime(Long gracefulTime) {
-            this.gracefulTime = gracefulTime;
             return this;
         }
 
@@ -271,25 +255,6 @@ public class SearchParam {
         }
 
         /**
-         * Instructs server to see insert/delete operations performed before a provided timestamp.
-         * If no such timestamp is specified, the server will wait for the latest operation to finish and search.
-         *
-         * Note: The timestamp is not an absolute timestamp, it is a hybrid value combined by UTC time and internal flags.
-         *  We call it TSO, for more information please refer to: https://github.com/milvus-io/milvus/blob/master/docs/design_docs/milvus_hybrid_ts_en.md
-         *  You can get a TSO from insert/delete operations, see the <code>MutationResultWrapper</code> class.
-         *  Use an operation's TSO to set this parameter, the server will execute search after this operation is finished.
-         *
-         * Default value is GUARANTEE_EVENTUALLY_TS, server executes search immediately.
-         *
-         * @param ts a timestamp value
-         * @return <code>Builder</code>
-         */
-        public Builder withGuaranteeTimestamp(@NonNull Long ts) {
-            this.guaranteeTimestamp = ts;
-            return this;
-        }
-
-        /**
          * Verifies parameters and creates a new {@link SearchParam} instance.
          *
          * @return {@link SearchParam}
@@ -304,10 +269,6 @@ public class SearchParam {
 
             if (travelTimestamp < 0) {
                 throw new ParamException("The travel timestamp must be greater than 0");
-            }
-
-            if (guaranteeTimestamp < 0) {
-                throw new ParamException("The guarantee timestamp must be greater than 0");
             }
 
             if (metricType == MetricType.INVALID) {
@@ -376,6 +337,7 @@ public class SearchParam {
                 ", topK=" + topK +
                 ", expr='" + expr + '\'' +
                 ", params='" + params + '\'' +
+                ", consistencyLevel='" + consistencyLevel + '\'' +
                 '}';
     }
 }
