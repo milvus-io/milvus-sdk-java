@@ -8,7 +8,8 @@
 
 ### Improvement
 
-- Remove withGuaranteeTimestamp/withGracefulTime of SearchParam/QueryParam. User only need to provide consistency level.
+- Remove withGuaranteeTimestamp/withGracefulTime of SearchParam/QueryParam. User only need to provide consistency level
+- Change the default consistency level from Strong to Bounded in SearchParam/QueryParam
 
 ## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
 
