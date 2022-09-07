@@ -33,6 +33,7 @@ import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.param.role.AddUserToRoleParam;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -400,6 +401,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam) {
         return this.clusterFactory.getMaster().getClient().listCredUsers(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().addUserToRole(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {

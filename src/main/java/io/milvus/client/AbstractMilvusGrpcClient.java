@@ -27,19 +27,128 @@ import io.grpc.StatusRuntimeException;
 import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.*;
+import io.milvus.grpc.AlterAliasRequest;
+import io.milvus.grpc.BoolResponse;
+import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.CreateAliasRequest;
+import io.milvus.grpc.CreateCollectionRequest;
+import io.milvus.grpc.CreateCredentialRequest;
+import io.milvus.grpc.CreateIndexRequest;
+import io.milvus.grpc.CreatePartitionRequest;
+import io.milvus.grpc.DeleteCredentialRequest;
+import io.milvus.grpc.DeleteRequest;
+import io.milvus.grpc.DescribeCollectionRequest;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.DescribeIndexRequest;
+import io.milvus.grpc.DescribeIndexResponse;
+import io.milvus.grpc.DropAliasRequest;
+import io.milvus.grpc.DropCollectionRequest;
+import io.milvus.grpc.DropIndexRequest;
+import io.milvus.grpc.DropPartitionRequest;
+import io.milvus.grpc.ErrorCode;
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.FlushRequest;
+import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.GetCollectionStatisticsRequest;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
+import io.milvus.grpc.GetCompactionPlansRequest;
+import io.milvus.grpc.GetCompactionPlansResponse;
+import io.milvus.grpc.GetCompactionStateRequest;
+import io.milvus.grpc.GetCompactionStateResponse;
+import io.milvus.grpc.GetFlushStateRequest;
+import io.milvus.grpc.GetFlushStateResponse;
+import io.milvus.grpc.GetIndexBuildProgressRequest;
+import io.milvus.grpc.GetIndexBuildProgressResponse;
+import io.milvus.grpc.GetIndexStateRequest;
+import io.milvus.grpc.GetIndexStateResponse;
+import io.milvus.grpc.GetMetricsRequest;
+import io.milvus.grpc.GetMetricsResponse;
+import io.milvus.grpc.GetPartitionStatisticsRequest;
+import io.milvus.grpc.GetPartitionStatisticsResponse;
+import io.milvus.grpc.GetPersistentSegmentInfoRequest;
+import io.milvus.grpc.GetPersistentSegmentInfoResponse;
+import io.milvus.grpc.GetQuerySegmentInfoRequest;
+import io.milvus.grpc.GetQuerySegmentInfoResponse;
+import io.milvus.grpc.GetReplicasRequest;
+import io.milvus.grpc.GetReplicasResponse;
+import io.milvus.grpc.HasCollectionRequest;
+import io.milvus.grpc.HasPartitionRequest;
+import io.milvus.grpc.IndexState;
+import io.milvus.grpc.InsertRequest;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.ListCredUsersRequest;
+import io.milvus.grpc.ListCredUsersResponse;
+import io.milvus.grpc.LoadBalanceRequest;
+import io.milvus.grpc.LoadCollectionRequest;
+import io.milvus.grpc.LoadPartitionsRequest;
+import io.milvus.grpc.LongArray;
+import io.milvus.grpc.ManualCompactionRequest;
+import io.milvus.grpc.ManualCompactionResponse;
+import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.MsgBase;
+import io.milvus.grpc.MsgType;
+import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.OperateUserRoleRequest;
+import io.milvus.grpc.OperateUserRoleType;
+import io.milvus.grpc.QueryRequest;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.ReleaseCollectionRequest;
+import io.milvus.grpc.ReleasePartitionsRequest;
+import io.milvus.grpc.SearchRequest;
+import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.ShowCollectionsRequest;
+import io.milvus.grpc.ShowCollectionsResponse;
+import io.milvus.grpc.ShowPartitionsRequest;
+import io.milvus.grpc.ShowPartitionsResponse;
+import io.milvus.grpc.ShowType;
+import io.milvus.grpc.Status;
+import io.milvus.grpc.UpdateCredentialRequest;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.collection.*;
-import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.param.partition.*;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.DescribeCollectionParam;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FieldType;
+import io.milvus.param.collection.FlushParam;
+import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
+import io.milvus.param.collection.ShowCollectionsParam;
+import io.milvus.param.control.GetCompactionPlansParam;
+import io.milvus.param.control.GetCompactionStateParam;
+import io.milvus.param.control.GetFlushStateParam;
+import io.milvus.param.control.GetMetricsParam;
+import io.milvus.param.control.GetPersistentSegmentInfoParam;
+import io.milvus.param.control.GetQuerySegmentInfoParam;
+import io.milvus.param.control.GetReplicasParam;
+import io.milvus.param.control.LoadBalanceParam;
+import io.milvus.param.control.ManualCompactParam;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DescribeIndexParam;
+import io.milvus.param.index.DropIndexParam;
+import io.milvus.param.index.GetIndexBuildProgressParam;
+import io.milvus.param.index.GetIndexStateParam;
+import io.milvus.param.partition.CreatePartitionParam;
+import io.milvus.param.partition.DropPartitionParam;
+import io.milvus.param.partition.GetPartitionStatisticsParam;
+import io.milvus.param.partition.HasPartitionParam;
+import io.milvus.param.partition.LoadPartitionsParam;
+import io.milvus.param.partition.ReleasePartitionsParam;
+import io.milvus.param.partition.ShowPartitionsParam;
+import io.milvus.param.role.AddUserToRoleParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -49,7 +158,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -2042,6 +2157,40 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         }
     }
+
+    @Override
+    public R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            OperateUserRoleRequest request = OperateUserRoleRequest.newBuilder()
+                    .setUsername(requestParam.getUserName())
+                    .setRoleName(requestParam.getRoleName())
+                    .setType(OperateUserRoleType.AddUserToRole)
+                    .build();
+
+            Status response = blockingStub().operateUserRole(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("AddUserToRole", response);
+            }
+
+            logDebug("AddUserToRole successfully! Username:{}, RoleName:{}", requestParam.getUserName(), request.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("AddUserToRole RPC failed! Username:{} RoleName:{} \n{}",
+                    requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("AddUserToRole RPC failed! Username:{} RoleName:{} \n{}",
+                    requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
 
     private String getBase64EncodeString(String str) {
         return Base64.getEncoder().encodeToString(str.getBytes(StandardCharsets.UTF_8));

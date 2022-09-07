@@ -33,6 +33,8 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import io.milvus.param.role.AddUserToRoleParam;
+
 import java.util.concurrent.TimeUnit;
 
 /** The Milvus Client Interface */
@@ -459,4 +461,13 @@ public interface MilvusClient {
      * @return {status:result code, data:ListCredUsersResponse{status,info}}
      */
     R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam);
+
+
+    /**
+     * The user will get permissions that the role are allowed to perform operations.
+     *
+     * @param requestParam {@link AddUserToRoleParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam);
 }
