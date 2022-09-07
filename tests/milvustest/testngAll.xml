@@ -98,6 +98,6 @@
          </classes>
      </test>-->
     <listeners>
-        <listener class-name="com.zilliz.milvustest.service.ComstumerListener"/>
+        <listener class-name="com.zilliz.milvustest.service.CustomerListener"/>
     </listeners>
 </suite>

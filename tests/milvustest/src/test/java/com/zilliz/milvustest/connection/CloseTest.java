@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
  * @Date 2022/7/11 14:14
  */
 public class CloseTest extends BaseTest {
-    @Test(description = "close connection",enabled = false)
+    @Test(description = "close connection",enabled = false,groups = {"Smoke"})
     @Severity(SeverityLevel.BLOCKER)
     public void closeConnection(){
         milvusClient.close();

@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 public class HasPartitionTest extends BaseTest {
   private String partition;
 
-  @BeforeClass(description = "init partition Name")
+  @BeforeClass(description = "init partition Name",alwaysRun = true)
   public void createPartitionTest() {
     partition = "partition_" + MathUtil.getRandomString(10);
     milvusClient.createPartition(
@@ -31,7 +31,7 @@ public class HasPartitionTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "delete partition after test")
+  @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
@@ -41,7 +41,7 @@ public class HasPartitionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Check partition")
+  @Test(description = "Check partition",groups = {"Smoke"})
   public void hasPartitionTest1() {
     R<Boolean> booleanR =
         milvusClient.hasPartition(

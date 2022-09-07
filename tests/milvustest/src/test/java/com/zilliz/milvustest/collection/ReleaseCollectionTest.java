@@ -12,6 +12,7 @@ import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.param.partition.LoadPartitionsParam;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -26,14 +27,14 @@ import java.util.List;
 @Epic("Collection")
 @Feature("ReleaseCollection")
 public class ReleaseCollectionTest extends BaseTest {
-  @BeforeClass(description = "load collection")
+  @BeforeClass(description = "load collection",alwaysRun=true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "release collection")
+  @Test(description = "release collection",groups = {"Smoke"})
   public void releaseCollection() {
     R<RpcStatus> rpcStatusR =
         milvusClient.releaseCollection(
@@ -81,5 +82,22 @@ public class ReleaseCollectionTest extends BaseTest {
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
     Assert.assertTrue(
             searchResultsR.getException().getMessage().contains("checkIfLoaded failed when search"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "release collection after load partition")
+  public void releaseCollectionAfterLoadPartition() {
+    milvusClient.loadPartitions(
+        LoadPartitionsParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .withPartitionNames(Arrays.asList(CommonData.defaultPartition))
+            .build());
+    R<RpcStatus> rpcStatusR =
+        milvusClient.releaseCollection(
+            ReleaseCollectionParam.newBuilder()
+                .withCollectionName(CommonData.defaultCollection)
+                .build());
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 }

@@ -1501,7 +1501,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 // or collection is empty, the server return ErrorCode.EmptyCollection.
                 // Here we give a general message for this case.
                 if (response.getStatus().getErrorCode() == ErrorCode.EmptyCollection) {
-                    logError("QueryRequest returns nothing: empty collection or improper expression");
+                    logWarning("QueryRequest returns nothing: empty collection or improper expression");
                     return R.failed(ErrorCode.EmptyCollection, "empty collection or improper expression");
                 }
                 return failedStatus("QueryRequest", response.getStatus());

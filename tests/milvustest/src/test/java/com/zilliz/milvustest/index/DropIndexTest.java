@@ -27,7 +27,7 @@ import org.testng.annotations.Test;
 public class DropIndexTest extends BaseTest {
   public String collection;
 
-  @BeforeClass(description = "create collection and  index for test")
+  @BeforeClass(description = "create collection and  index for test",alwaysRun = true)
   public void createCollectionAndIndex() {
     collection = CommonFunction.createNewCollection();
     milvusClient.createIndex(
@@ -42,7 +42,7 @@ public class DropIndexTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "drop collection after test")
+  @AfterClass(description = "drop collection after test",alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropIndex(
         DropIndexParam.newBuilder()
@@ -54,7 +54,7 @@ public class DropIndexTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "drop index success")
+  @Test(description = "drop index success",groups = {"Smoke"})
   public void dropIndexSuccess() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropIndex(

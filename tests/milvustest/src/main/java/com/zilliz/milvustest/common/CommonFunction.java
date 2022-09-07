@@ -12,7 +12,8 @@ import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.partition.CreatePartitionParam;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.nio.ByteBuffer;
@@ -22,7 +23,7 @@ import java.util.Random;
 
 @Component
 public class CommonFunction {
-  static Logger logger = Logger.getLogger(CommonFunction.class);
+  public static Logger logger = LoggerFactory.getLogger(CommonFunction.class);
 
   // int PK, float vector collection
   public static String createNewCollection() {
@@ -429,7 +430,7 @@ public class CommonFunction {
         extraParm = "{\"M\":16,\"efConstruction\":64}";
         break;
       default:
-        extraParm = "";
+        extraParm = "{\"nlist\":128}";
         break;
     }
     return extraParm;

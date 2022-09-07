@@ -26,7 +26,7 @@ import java.util.List;
 public class GetPartitionStatisticsTest extends BaseTest {
   public String partition;
 
-  @BeforeClass(description = "load partition")
+  @BeforeClass(description = "load partition",alwaysRun = true)
   public void initPartition() {
     partition = "partition_" + MathUtil.getRandomString(10);
     milvusClient.createPartition(
@@ -36,7 +36,7 @@ public class GetPartitionStatisticsTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "delete partition after test")
+  @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deletePartition() {
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
@@ -46,7 +46,7 @@ public class GetPartitionStatisticsTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Get partition statistics")
+  @Test(description = "Get partition statistics",groups = {"Smoke"})
   public void getPartitionStatistics() {
     List<InsertParam.Field> fields = CommonFunction.generateData(1000);
     milvusClient.insert(
@@ -67,7 +67,7 @@ public class GetPartitionStatisticsTest extends BaseTest {
     Assert.assertEquals(partitionStatisticsResponse.getStats(0).getValue(), "1000");
   }
 
-  @Severity(SeverityLevel.BLOCKER)
+  @Severity(SeverityLevel.NORMAL)
   @Test(description = "Get nonexistent partition statistics")
   public void getNonexistentPartitionStatistics() {
 

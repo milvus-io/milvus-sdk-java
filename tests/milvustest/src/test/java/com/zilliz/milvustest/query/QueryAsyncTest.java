@@ -44,7 +44,7 @@ import static com.zilliz.milvustest.util.MathUtil.combine;
 public class QueryAsyncTest extends BaseTest {
   public String newBookName;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -67,7 +67,7 @@ public class QueryAsyncTest extends BaseTest {
     return new Object[][] {{Boolean.FALSE}, {Boolean.TRUE}};
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -189,7 +189,7 @@ public class QueryAsyncTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "query data async", dataProvider = "providerPartition")
+  @Test(description = "query data async", dataProvider = "providerPartition",groups = {"Smoke"})
   public void queryAsyncTest(Boolean usePart) throws ExecutionException, InterruptedException {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
     List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);
@@ -973,5 +973,45 @@ public class QueryAsyncTest extends BaseTest {
     // drop collection
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
+  }
+
+  @Test(description = "int PK and float vector query without pk field")
+  @Severity(SeverityLevel.NORMAL)
+  public void queryAsyncWithoutPKField() throws ExecutionException, InterruptedException {
+    String SEARCH_PARAM = "word_count in [10002,10004,10006,10008]";
+    List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withOutFields(outFields)
+                    .withExpr(SEARCH_PARAM)
+                    .build();
+    ListenableFuture<R<QueryResults>> rListenableFuture = milvusClient.queryAsync(queryParam);
+    R<QueryResults> queryResultsR = rListenableFuture.get();
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    System.out.println(wrapperQuery.getFieldWrapper("book_id").getFieldData());
+    System.out.println(wrapperQuery.getFieldWrapper("word_count").getFieldData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper("word_count").getFieldData().size(), 4);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper("book_id").getFieldData().size(), 4);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper(CommonData.defaultVectorField).getDim(), 128);
+  }
+
+  @Test(description = "int PK and float vector query with invalid expression")
+  @Severity(SeverityLevel.NORMAL)
+  public void queryAsyncWithInvalidExpression() throws ExecutionException, InterruptedException {
+    String SEARCH_PARAM = "word_count = 10002 ";
+    List<String> outFields = Arrays.asList("book_id", "word_count", CommonData.defaultVectorField);
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withOutFields(outFields)
+                    .withExpr(SEARCH_PARAM)
+                    .build();
+    ListenableFuture<R<QueryResults>> rListenableFuture = milvusClient.queryAsync(queryParam);
+    R<QueryResults> queryResultsR = rListenableFuture.get();
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 1);
+    Assert.assertTrue(queryResultsR.getException().getMessage().contains("cannot parse expression"));
+
   }
 }

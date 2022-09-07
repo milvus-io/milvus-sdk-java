@@ -25,13 +25,13 @@ public class CreateIndexTest extends BaseTest {
   public String collection;
   public String binaryCollection;
 
-  @BeforeClass(description = "create collection for test")
+  @BeforeClass(description = "create collection for test",alwaysRun = true)
   public void createCollection() {
     collection = CommonFunction.createNewCollection();
     binaryCollection = CommonFunction.createBinaryCollection();
   }
 
-  @AfterClass(description = "drop collection after test")
+  @AfterClass(description = "drop collection after test",alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
@@ -87,7 +87,7 @@ public class CreateIndexTest extends BaseTest {
 
   @Severity(SeverityLevel.BLOCKER)
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/311")
-  @Test(description = "Create index for collection sync", dataProvider = "FloatIndex")
+  @Test(description = "Create index for collection sync", dataProvider = "FloatIndex",groups = {"Smoke"})
   public void createIndexSync(IndexType indexType, MetricType metricType) {
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
@@ -341,5 +341,101 @@ public class CreateIndexTest extends BaseTest {
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
   }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "repeat create index")
+  public void repeatCreateIndex() {
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createIndex(
+                    CreateIndexParam.newBuilder()
+                            .withCollectionName(CommonData.defaultCollection)
+                            .withFieldName(CommonData.defaultVectorField)
+                            .withIndexName(CommonData.defaultIndex)
+                            .withMetricType(MetricType.IP)
+                            .withIndexType(IndexType.HNSW)
+                            .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                            .withSyncMode(Boolean.TRUE)
+                            .withSyncWaitingTimeout(30L)
+                            .withSyncWaitingInterval(500L)
+                            .build());
+    System.out.println("Create index" + rpcStatusR);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("index already exists"));
+
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create multiple index with different fields")
+  public void createMultiIndexWithDiffFields() {
+    String stringPKCollection = CommonFunction.createStringPKCollection();
+    milvusClient.createIndex(
+            CreateIndexParam.newBuilder()
+                    .withCollectionName(stringPKCollection)
+                    .withFieldName("book_content")
+                    .withIndexName("indexName1")
+                    .withMetricType(MetricType.IP)
+                    .withIndexType(IndexType.HNSW)
+                    .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                    .withSyncMode(Boolean.TRUE)
+                    .withSyncWaitingTimeout(30L)
+                    .withSyncWaitingInterval(500L)
+                    .build());
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createIndex(
+                    CreateIndexParam.newBuilder()
+                            .withCollectionName(stringPKCollection)
+                            .withFieldName("book_name")
+                            .withIndexName(CommonData.defaultIndex)
+                            .withMetricType(MetricType.IP)
+                            .withIndexType(IndexType.HNSW)
+                            .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                            .withSyncMode(Boolean.TRUE)
+                            .withSyncWaitingTimeout(30L)
+                            .withSyncWaitingInterval(500L)
+                            .build());
+    System.out.println("Create index" + rpcStatusR);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create multiple index with same index name")
+  public void createMultiIndexWithSameIndexName() {
+    String stringPKCollection = CommonFunction.createStringPKCollection();
+    milvusClient.createIndex(
+            CreateIndexParam.newBuilder()
+                    .withCollectionName(stringPKCollection)
+                    .withFieldName("book_content")
+                    .withIndexName(CommonData.defaultIndex)
+                    .withMetricType(MetricType.IP)
+                    .withIndexType(IndexType.HNSW)
+                    .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                    .withSyncMode(Boolean.TRUE)
+                    .withSyncWaitingTimeout(30L)
+                    .withSyncWaitingInterval(500L)
+                    .build());
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createIndex(
+                    CreateIndexParam.newBuilder()
+                            .withCollectionName(stringPKCollection)
+                            .withFieldName("book_name")
+                            .withIndexName(CommonData.defaultIndex)
+                            .withMetricType(MetricType.IP)
+                            .withIndexType(IndexType.HNSW)
+                            .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                            .withSyncMode(Boolean.TRUE)
+                            .withSyncWaitingTimeout(30L)
+                            .withSyncWaitingInterval(500L)
+                            .build());
+    System.out.println("Create index" + rpcStatusR);
+    softAssert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+    softAssert.assertTrue(rpcStatusR.getException().getMessage().contains("index already exists"));
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
+    softAssert.assertAll();
+  }
+
 
 }

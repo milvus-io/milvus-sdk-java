@@ -4,6 +4,7 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.param.R;
@@ -31,19 +32,19 @@ import java.util.Random;
 public class InsertTest extends BaseTest {
   public String stringPKAndBinaryCollection;
 
-  @BeforeClass(description = "provider collection")
+  @BeforeClass(description = "provider collection",alwaysRun = true)
   public void providerData() {
     stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
   }
 
-  @AfterClass(description = "delete test data")
+  @AfterClass(description = "delete test data",alwaysRun = true)
   public void deleteData() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(stringPKAndBinaryCollection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "Insert data into collection")
+  @Test(description = "Insert data into collection",groups = {"Smoke"})
   public void insertDataIntoCollection() {
     List<InsertParam.Field> fields = CommonFunction.generateData(2000);
     R<MutationResult> mutationResultR =
@@ -252,6 +253,89 @@ public class InsertTest extends BaseTest {
     Assert.assertEquals(mutationResultR.getStatus().intValue(), 0);
     Assert.assertEquals(mutationResultR.getData().getSuccIndexCount(), 100);
     milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(collectionName).build());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Insert field inconsistent dimension")
+  public void insertVectorFieldInconsistentDim() {
+    Random ran = new Random();
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+    List<List<Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < 100; ++i) {
+      book_id_array.add( i);
+      word_count_array.add(i+10000);
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 127; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      book_intro_array.add(vector);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(
+            new InsertParam.Field(
+                    CommonData.defaultVectorField, book_intro_array));
+
+    R<MutationResult> mutationResultR =
+            milvusClient.insert(
+                    InsertParam.newBuilder()
+                            .withCollectionName(CommonData.defaultCollection)
+                            .withFields(fields)
+                            .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), -5);
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("The field: VectorFieldAutoTest is not provided"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Insert field inconsistent number",expectedExceptions = ParamException.class)
+  public void insertVectorFieldInconsistentNumber() {
+    Random ran = new Random();
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+    List<List<Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < 100; ++i) {
+      book_id_array.add( i);
+      word_count_array.add(i+10000);
+
+    }
+    for (int i = 0; i < 90; i++) {
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      book_intro_array.add(vector);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(
+            new InsertParam.Field(
+                    CommonData.defaultVectorField, book_intro_array));
+
+    R<MutationResult> mutationResultR =
+            milvusClient.insert(
+                    InsertParam.newBuilder()
+                            .withCollectionName(CommonData.defaultCollection)
+                            .withFields(fields)
+                            .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), -5);
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("Row count of fields must be equal"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Insert into nonexistent collection")
+  public void insertIntoNonexistentCollection() {
+    List<InsertParam.Field> fields = CommonFunction.generateData(10);
+    R<MutationResult> mutationResultR =
+            milvusClient.insert(
+                    InsertParam.newBuilder()
+                            .withCollectionName("NonexistentCollection")
+                            .withFields(fields)
+                            .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("can't find collection"));
   }
 
 }

@@ -4,6 +4,7 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.QueryResults;
 import io.milvus.grpc.SearchResults;
@@ -32,14 +33,14 @@ import java.util.List;
 public class DropCollectionTest extends BaseTest {
   public String commonCollection;
 
-  @BeforeClass(description = "Create collection before test")
+  @BeforeClass(description = "Create collection before test",alwaysRun=true)
   public void provideCollectionName() {
     String newCollection = CommonFunction.createNewCollection();
     commonCollection = newCollection;
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "drop collection")
+  @Test(description = "drop collection",groups = {"Smoke"})
   public void dropCollection() {
     DropCollectionParam build =
         DropCollectionParam.newBuilder().withCollectionName(commonCollection).build();
@@ -121,5 +122,15 @@ public class DropCollectionTest extends BaseTest {
                     DescribeCollectionParam.newBuilder().withCollectionName(commonCollection).build());
     Assert.assertEquals(describeCollectionResponseR.getStatus().intValue(), 1);
     Assert.assertTrue(describeCollectionResponseR.getException().getMessage().contains("can't find collection"));
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "drop empty collection",expectedExceptions = ParamException.class)
+  public void dropEmptyCollection() {
+    DropCollectionParam build =
+            DropCollectionParam.newBuilder().withCollectionName("").build();
+    R<RpcStatus> rpcStatusR = milvusClient.dropCollection(build);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
+
   }
 }

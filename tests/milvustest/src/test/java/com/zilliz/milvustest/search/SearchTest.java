@@ -44,7 +44,7 @@ public class SearchTest extends BaseTest {
   public String newBookName;
   public String newBookNameBin;
 
-  @BeforeClass(description = "load collection first")
+  @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
         LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
@@ -62,7 +62,7 @@ public class SearchTest extends BaseTest {
             .build());
   }
 
-  @AfterClass(description = "release collection after test")
+  @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
         ReleaseCollectionParam.newBuilder()
@@ -178,7 +178,7 @@ public class SearchTest extends BaseTest {
             {" book_name < book_content "},
             {" book_name <= book_content "},
             {" \"10\" < book_name  <= \"a\" "},
-            {" \"a\" <= book_name < \"a99\" "},
+            {" \"a\" <= book_name < \"zAs\" "},
             {" \"asa\" < book_name <= \"zaa\" "},
             {" \"a\" <= book_name  and book_name >= \"99\" "},
             {" book_name like \"国%\" "},
@@ -192,7 +192,7 @@ public class SearchTest extends BaseTest {
   @Test(
       description =
           "Conducts ANN search on a vector field. Use expression to do filtering before search.",
-      dataProvider = "providerPartition")
+      dataProvider = "providerPartition",groups = {"Smoke"})
   public void intPKAndFloatVectorSearch(Boolean usePart) {
     Integer SEARCH_K = 2; // TopK
     String SEARCH_PARAM = "{\"nprobe\":10}";
@@ -425,114 +425,6 @@ public class SearchTest extends BaseTest {
         searchResultsWrapper.getFieldData("book_name", 0).size(), SEARCH_K.intValue());
     System.out.println(searchResultsR.getData().getResults());
   }
-
-  /*  @Severity(SeverityLevel.CRITICAL)
-  @Test(description = "int PK and float vector search by partition")
-  public void intPKAndFloatVectorSearchByPartition() {
-    Integer SEARCH_K = 2; // TopK
-    String SEARCH_PARAM = "{\"nprobe\":10}";
-    List<String> search_output_fields = Arrays.asList("book_id");
-    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
-    SearchParam searchParam =
-        SearchParam.newBuilder()
-            .withCollectionName(CommonData.defaultCollection)
-            .withPartitionNames(Arrays.asList(CommonData.defaultPartition))
-            .withMetricType(MetricType.L2)
-            .withOutFields(search_output_fields)
-            .withTopK(SEARCH_K)
-            .withVectors(search_vectors)
-            .withVectorFieldName(CommonData.defaultVectorField)
-            .withParams(SEARCH_PARAM)
-            .build();
-    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-    Assert.assertEquals(searchResultsR.getData().getResults().getTopK(), 2);
-    Assert.assertEquals(
-        searchResultsR.getData().getResults().getIds().getIntId().getDataCount(), 2);
-    System.out.println(searchResultsR.getData().getResults());
-  }
-
-  @Severity(SeverityLevel.CRITICAL)
-  @Test(description = "int PK and binary vector search by partition")
-  public void intPKAndBinaryVectorSearchByPartition() {
-    Integer SEARCH_K = 2; // TopK
-    String SEARCH_PARAM = "{\"nprobe\":10}";
-    List<String> search_output_fields = Arrays.asList("book_id");
-    List<ByteBuffer> search_vectors = CommonFunction.generateBinaryVectors(1, 128);
-    SearchParam searchParam =
-            SearchParam.newBuilder()
-                    .withCollectionName(CommonData.defaultBinaryCollection)
-                    .withPartitionNames(Arrays.asList(CommonData.defaultBinaryPartition))
-                    .withMetricType(MetricType.JACCARD)
-                    .withOutFields(search_output_fields)
-                    .withTopK(SEARCH_K)
-                    .withVectors(search_vectors)
-                    .withVectorFieldName(CommonData.defaultBinaryVectorField)
-                    .withParams(SEARCH_PARAM)
-                    .build();
-    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-    Assert.assertEquals(searchResultsR.getData().getResults().getTopK(), 2);
-    Assert.assertEquals(
-            searchResultsR.getData().getResults().getIds().getIntId().getDataCount(), 2);
-    System.out.println(searchResultsR.getData().getResults());
-  }
-
-  @Severity(SeverityLevel.CRITICAL)
-  @Test(description = "String PK and float vector search by partition")
-  public void stringPKAndFloatVectorSearchByPartition() {
-    Integer SEARCH_K = 2; // TopK
-    String SEARCH_PARAM = "{\"nprobe\":10}";
-    List<String> search_output_fields = Arrays.asList("book_name");
-    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
-    SearchParam searchParam =
-            SearchParam.newBuilder()
-                    .withCollectionName(CommonData.defaultStringPKCollection)
-                    .withPartitionNames(Arrays.asList(CommonData.defaultStringPKPartition))
-                    .withMetricType(MetricType.L2)
-                    .withOutFields(search_output_fields)
-                    .withTopK(SEARCH_K)
-                    .withVectors(search_vectors)
-                    .withVectorFieldName(CommonData.defaultVectorField)
-                    .withParams(SEARCH_PARAM)
-                    .build();
-    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-    Assert.assertEquals(searchResultsR.getData().getResults().getTopK(), 2);
-    SearchResultsWrapper searchResultsWrapper =
-            new SearchResultsWrapper(searchResultsR.getData().getResults());
-    Assert.assertEquals(
-            searchResultsWrapper.getFieldData("book_name",0).size(), 2);
-    System.out.println(searchResultsR.getData().getResults());
-  }
-
-  @Severity(SeverityLevel.CRITICAL)
-  @Test(description = "string PK and binary vector search by partition")
-  public void stringPKAndBinaryVectorSearchByPartition() {
-    Integer SEARCH_K = 2; // TopK
-    String SEARCH_PARAM = "{\"nprobe\":10}";
-    List<String> search_output_fields = Arrays.asList("book_name");
-    List<ByteBuffer> search_vectors = CommonFunction.generateBinaryVectors(1, 128);
-    SearchParam searchParam =
-            SearchParam.newBuilder()
-                    .withCollectionName(CommonData.defaultStringPKBinaryCollection)
-                    .withPartitionNames(Arrays.asList(CommonData.defaultStringPKBinaryPartition))
-                    .withMetricType(MetricType.JACCARD)
-                    .withOutFields(search_output_fields)
-                    .withTopK(SEARCH_K)
-                    .withVectors(search_vectors)
-                    .withVectorFieldName(CommonData.defaultBinaryVectorField)
-                    .withParams(SEARCH_PARAM)
-                    .build();
-    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-    Assert.assertEquals(searchResultsR.getData().getResults().getTopK(), 2);
-    SearchResultsWrapper searchResultsWrapper =
-            new SearchResultsWrapper(searchResultsR.getData().getResults());
-    Assert.assertEquals(
-            searchResultsWrapper.getFieldData("book_name",0).size(), 2);
-    System.out.println(searchResultsR.getData().getResults());
-  }*/
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "search in nonexistent  partition")
@@ -1359,7 +1251,7 @@ public class SearchTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(
-      description = "string PK and float vector search after delete the entity",
+      description = "string PK and Binary vector search after delete the entity",
       dataProvider = "providerPartition",
       dependsOnMethods = {
         "stringPKAndBinaryVectorSearchAfterInsertNewEntity",
@@ -1402,309 +1294,6 @@ public class SearchTest extends BaseTest {
     System.out.println(searchResultsR.getData().getResults());
   }
 
-  /* @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int Pk and float vector search in partition after insert  entity")
-    public void intPKAndFloatVectorSearchByPartitionAfterInsert() throws InterruptedException {
-      // insert first
-      List<Long> book_id_array =
-          new ArrayList<Long>() {
-            {
-              add(9999L);
-            }
-          };
-      List<Long> word_count_array =
-          new ArrayList<Long>() {
-            {
-              add(19999L);
-            }
-          };
-      List<Float> fs = Arrays.asList(MathUtil.generateFloat(128));
-      List<List<Float>> book_intro_array =
-          new ArrayList<List<Float>>() {
-            {
-              add(fs);
-            }
-          };
-      List<InsertParam.Field> fields = new ArrayList<>();
-      fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-      fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
-      fields.add(
-          new InsertParam.Field(
-              CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
-      milvusClient.insert(
-          InsertParam.newBuilder()
-              .withCollectionName(CommonData.defaultCollection)
-              .withPartitionName(CommonData.defaultPartition)
-              .withFields(fields)
-              .build());
-      Thread.sleep(2000);
-
-      Integer SEARCH_K = 1; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id","word_count");
-      SearchParam searchParam =
-          SearchParam.newBuilder()
-              .withCollectionName(CommonData.defaultCollection)
-              .withPartitionNames(Arrays.asList(CommonData.defaultPartition))
-              .withMetricType(MetricType.L2)
-              .withOutFields(search_output_fields)
-              .withTopK(SEARCH_K)
-              .withVectors(book_intro_array)
-              .withVectorFieldName(CommonData.defaultVectorField)
-              .withParams(SEARCH_PARAM)
-              .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      SearchResultsWrapper searchResultsWrapper =
-              new SearchResultsWrapper(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsWrapper.getFieldData("word_count",0).get(0),19999L);
-      Assert.assertEquals(searchResultsWrapper.getFieldData("book_id",0).get(0),9999L);
-      System.out.println(searchResultsR.getData().getResults());
-    }
-
-    @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int PK and binary vector search after insert the entity")
-    public void intPKAndBinaryVectorSearchByPartitionAfterInsertNewEntity() throws InterruptedException {
-      // insert entity first
-      List<Long> book_id_array =
-              new ArrayList<Long>() {
-                {
-                  add(9999L);
-                }
-              };
-      List<Long> word_count_array =
-              new ArrayList<Long>() {
-                {
-                  add(19999L);
-                }
-              };
-      List<ByteBuffer> book_intro_array = CommonFunction.generateBinaryVectors(1, 128);
-
-      List<InsertParam.Field> fields = new ArrayList<>();
-      fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-      fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
-      fields.add(
-              new InsertParam.Field(
-                      CommonData.defaultBinaryVectorField, DataType.BinaryVector, book_intro_array));
-      milvusClient.insert(
-              InsertParam.newBuilder()
-                      .withCollectionName(CommonData.defaultBinaryCollection)
-                      .withPartitionName(CommonData.defaultBinaryPartition)
-                      .withFields(fields)
-                      .build());
-      Thread.sleep(2000);
-      // search
-      Integer SEARCH_K = 1; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id","word_count");
-
-      SearchParam searchParam =
-              SearchParam.newBuilder()
-                      .withCollectionName(CommonData.defaultBinaryCollection)
-                      .withPartitionNames(Arrays.asList(CommonData.defaultBinaryPartition))
-                      .withMetricType(MetricType.JACCARD)
-                      .withOutFields(search_output_fields)
-                      .withTopK(SEARCH_K)
-                      .withVectors(book_intro_array)
-                      .withVectorFieldName(CommonData.defaultBinaryVectorField)
-                      .withParams(SEARCH_PARAM)
-                      .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      SearchResultsWrapper searchResultsWrapper =
-              new SearchResultsWrapper(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsWrapper.getFieldData("word_count",0).get(0),19999L);
-      Assert.assertEquals(searchResultsWrapper.getFieldData("book_id",0).get(0),9999L);
-      System.out.println(searchResultsR.getData().getResults());
-    }
-
-    @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int PK and float vector search after update the entity")
-    public void intPKAndFloatVectorSearchByPartitionAfterUpdateEntity() throws InterruptedException {
-      Random random = new Random();
-      int id = random.nextInt(2000);
-      // update entity first
-      List<Long> book_id_array =
-              new ArrayList<Long>() {
-                {
-                  add((long) id);
-                }
-              };
-      List<Long> word_count_array =
-              new ArrayList<Long>() {
-                {
-                  add(19999L);
-                }
-              };
-      List<Float> fs = Arrays.asList(MathUtil.generateFloat(128));
-      List<List<Float>> book_intro_array =
-              new ArrayList<List<Float>>() {
-                {
-                  add(fs);
-                }
-              };
-      List<InsertParam.Field> fields = new ArrayList<>();
-      fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-      fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
-      fields.add(
-              new InsertParam.Field(
-                      CommonData.defaultVectorField, DataType.FloatVector, book_intro_array));
-      milvusClient.insert(
-              InsertParam.newBuilder()
-                      .withCollectionName(CommonData.defaultCollection)
-                      .withPartitionName(CommonData.defaultPartition)
-                      .withFields(fields)
-                      .build());
-      Thread.sleep(2000);
-      // search
-      Integer SEARCH_K = 1; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id","word_count");
-
-      SearchParam searchParam =
-              SearchParam.newBuilder()
-                      .withCollectionName(CommonData.defaultCollection)
-                      .withPartitionNames(Arrays.asList(CommonData.defaultPartition))
-                      .withMetricType(MetricType.L2)
-                      .withOutFields(search_output_fields)
-                      .withTopK(SEARCH_K)
-                      .withVectors(book_intro_array)
-                      .withVectorFieldName(CommonData.defaultVectorField)
-                      .withParams(SEARCH_PARAM)
-                      .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      SearchResultsWrapper searchResultsWrapper =
-              new SearchResultsWrapper(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsWrapper.getFieldData("word_count",0).get(0),19999L);
-      System.out.println(searchResultsR.getData().getResults());
-    }
-
-    @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int PK and binary vector search after update the entity")
-    public void intPKAndBinaryVectorSearchByPartitionAfterUpdateEntity() throws InterruptedException {
-      Random random = new Random();
-      int id = random.nextInt(2000);
-      // update entity first
-      List<Long> book_id_array =
-              new ArrayList<Long>() {
-                {
-                  add((long) id);
-                }
-              };
-      List<Long> word_count_array =
-              new ArrayList<Long>() {
-                {
-                  add(19999L);
-                }
-              };
-      List<ByteBuffer> book_intro_array = CommonFunction.generateBinaryVectors(1, 128);
-
-      List<InsertParam.Field> fields = new ArrayList<>();
-      fields.add(new InsertParam.Field("book_id", DataType.Int64, book_id_array));
-      fields.add(new InsertParam.Field("word_count", DataType.Int64, word_count_array));
-      fields.add(
-              new InsertParam.Field(
-                      CommonData.defaultBinaryVectorField, DataType.BinaryVector, book_intro_array));
-      milvusClient.insert(
-              InsertParam.newBuilder()
-                      .withCollectionName(CommonData.defaultBinaryCollection)
-                      .withPartitionName(CommonData.defaultBinaryPartition)
-                      .withFields(fields)
-                      .build());
-      Thread.sleep(2000);
-      // search
-      Integer SEARCH_K = 1; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id","word_count");
-
-      SearchParam searchParam =
-              SearchParam.newBuilder()
-                      .withCollectionName(CommonData.defaultBinaryCollection)
-                      .withPartitionNames(Arrays.asList(CommonData.defaultBinaryPartition))
-                      .withMetricType(MetricType.JACCARD)
-                      .withOutFields(search_output_fields)
-                      .withTopK(SEARCH_K)
-                      .withVectors(book_intro_array)
-                      .withVectorFieldName(CommonData.defaultBinaryVectorField)
-                      .withParams(SEARCH_PARAM)
-                      .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      SearchResultsWrapper searchResultsWrapper =
-              new SearchResultsWrapper(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsWrapper.getFieldData("word_count",0).get(0),19999L);
-      System.out.println(searchResultsR.getData().getResults());
-    }
-
-    @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int PK and float vector search after delete data")
-    public void intPKAndFloatVectorSearchByPartitionAfterDelete() throws InterruptedException {
-      R<MutationResult> mutationResultR =
-              milvusClient.delete(
-                      DeleteParam.newBuilder()
-                              .withCollectionName(CommonData.defaultCollection)
-                              .withPartitionName(CommonData.defaultPartition)
-                              .withExpr("book_id in [1,2,3]")
-                              .build());
-      Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
-      Thread.sleep(2000);
-      Integer SEARCH_K = 2; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id");
-      List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
-      SearchParam searchParam =
-              SearchParam.newBuilder()
-                      .withCollectionName(CommonData.defaultCollection)
-                      .withPartitionNames(Arrays.asList(CommonData.defaultPartition))
-                      .withMetricType(MetricType.L2)
-                      .withOutFields(search_output_fields)
-                      .withTopK(SEARCH_K)
-                      .withVectors(search_vectors)
-                      .withVectorFieldName(CommonData.defaultVectorField)
-                      .withParams(SEARCH_PARAM)
-                      .withExpr(" book_id in [1,2,3] ")
-                      .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      System.out.println(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      Assert.assertEquals(searchResultsR.getData().getResults().getFieldsDataCount(), 0);
-    }
-
-    @Severity(SeverityLevel.NORMAL)
-    @Test(description = "int PK and binary vector search after delete data")
-    public void intPKAndBinaryVectorSearchByPartitionAfterDelete() throws InterruptedException {
-      R<MutationResult> mutationResultR =
-              milvusClient.delete(
-                      DeleteParam.newBuilder()
-                              .withCollectionName(CommonData.defaultBinaryCollection)
-                              .withPartitionName(CommonData.defaultBinaryPartition)
-                              .withExpr("book_id in [1,2,3]")
-                              .build());
-      Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
-      Thread.sleep(2000);
-      Integer SEARCH_K = 2; // TopK
-      String SEARCH_PARAM = "{\"nprobe\":10}";
-      List<String> search_output_fields = Arrays.asList("book_id");
-      List<ByteBuffer> search_vectors = CommonFunction.generateBinaryVectors(1, 128);
-      SearchParam searchParam =
-              SearchParam.newBuilder()
-                      .withCollectionName(CommonData.defaultBinaryCollection)
-                      .withPartitionNames(Arrays.asList(CommonData.defaultBinaryPartition))
-                      .withMetricType(MetricType.JACCARD)
-                      .withOutFields(search_output_fields)
-                      .withTopK(SEARCH_K)
-                      .withVectors(search_vectors)
-                      .withVectorFieldName(CommonData.defaultBinaryVectorField)
-                      .withParams(SEARCH_PARAM)
-                      .withExpr(" book_id in [1,2,3] ")
-                      .build();
-      R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-      System.out.println(searchResultsR.getData().getResults());
-      Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-      Assert.assertEquals(searchResultsR.getData().getResults().getFieldsDataCount(), 0);
-    }
-  */
   @Severity(SeverityLevel.CRITICAL)
   @Test(description = "int PK and float vector search by alias")
   public void intPKAndFloatVectorSearchByAlias() {
@@ -2022,5 +1611,58 @@ public class SearchTest extends BaseTest {
             new SearchResultsWrapper(searchResultsR.getData().getResults());
     Assert.assertTrue(searchResultsWrapper.getFieldData("book_name", 0).size()>=1);
     System.out.println(searchResultsR.getData().getResults());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Search without load")
+  public void searchWithoutLoad(){
+    milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .build());
+    Integer SEARCH_K = 2; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("book_id");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(),1);
+    Assert.assertTrue(searchResultsR.getException().getMessage().contains("checkIfLoaded failed when search"));
+    milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection)
+            .build());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "string PK Search with error expressions")
+  public void stringPKSearchWithErrorExpressions() {
+    Integer SEARCH_K = 2; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("book_name");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultStringPKCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withExpr( "  book_name = a")
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
+    Assert.assertTrue(searchResultsR.getException().getMessage().contains("cannot parse expression"));
+
   }
 }

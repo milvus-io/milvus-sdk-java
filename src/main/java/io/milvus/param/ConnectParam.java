@@ -163,7 +163,7 @@ public class ConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
-            this.keepAliveTimeoutMs = timeUnit.toNanos(keepAliveTimeout);
+            this.keepAliveTimeoutMs = timeUnit.toMillis(keepAliveTimeout);
             return this;
         }
 

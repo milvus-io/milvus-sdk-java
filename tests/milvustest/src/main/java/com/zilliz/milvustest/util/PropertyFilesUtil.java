@@ -1,6 +1,10 @@
 package com.zilliz.milvustest.util;
 
-import org.apache.log4j.Logger;
+
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -10,7 +14,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 public class PropertyFilesUtil {
-  static Logger logger = Logger.getLogger(PropertyFilesUtil.class);
+  static Logger logger = LoggerFactory.getLogger(PropertyFilesUtil.class);
 
   public static HashMap<String, String> readPropertyFile(String propertyFileName) {
     HashMap<String, String> hashMap = new HashMap<>();

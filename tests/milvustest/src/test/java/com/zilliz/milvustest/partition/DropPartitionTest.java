@@ -39,7 +39,7 @@ public class DropPartitionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "drop partition", dataProvider = "partitionName")
+  @Test(description = "drop partition", dataProvider = "partitionName",groups = {"Smoke"})
   public void dropPartition(String partitionName) {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropPartition(

@@ -32,7 +32,7 @@ import java.util.List;
 public class ManualCompactionTest extends BaseTest {
   public String collection;
 
-  @BeforeClass
+  @BeforeClass(alwaysRun = true)
   public void providerData() {
     collection = CommonFunction.createNewCollection();
     List<InsertParam.Field> fields = CommonFunction.generateData(10000);
@@ -47,14 +47,14 @@ public class ManualCompactionTest extends BaseTest {
         FlushParam.newBuilder().withCollectionNames(Arrays.asList(collection)).build());
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun = true)
   public void dropCollection() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collection).build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "performs a manual compaction.")
+  @Test(description = "performs a manual compaction.",groups = {"Smoke"})
   public void manualCompactionTest() {
     R<ManualCompactionResponse> responseR =
         milvusClient.manualCompact(

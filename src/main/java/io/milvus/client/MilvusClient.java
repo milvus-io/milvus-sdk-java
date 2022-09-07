@@ -127,8 +127,7 @@ public interface MilvusClient {
     R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
 
     /**
-     * Flushes collections.
-     * Currently we do not support this method on client since compaction is not supported on server.
+     * Flushes inserted data in buffer into storage.
      *
      * @param requestParam {@link FlushParam}
      * @return {status:result code,data: FlushResponse{flush segment ids}}

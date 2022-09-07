@@ -1,12 +1,14 @@
 package com.zilliz.milvustest.service;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
 
-public class ComstumerListener extends TestListenerAdapter {
-  Logger logger = Logger.getLogger(ComstumerListener.class);
+public class CustomerListener extends TestListenerAdapter {
+  private static final Logger logger = LoggerFactory.getLogger(CustomerListener.class);
   /**
    * 开始
    *
@@ -15,8 +17,7 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onStart(ITestContext iTestContext) {
     super.onStart(iTestContext);
-    logger.info(
-        String.format("====================[%s]测试开始====================", iTestContext.getName()));
+    logger.info("===================={}测试开始====================", iTestContext.getName());
   }
 
   /**
@@ -27,7 +28,7 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onTestStart(ITestResult iTestResult) {
     super.onTestStart(iTestResult);
-    logger.info(String.format("========%s测试开始========", iTestResult.getName()));
+    logger.info("========{}测试开始========", iTestResult.getName());
   }
 
   /**
@@ -38,7 +39,7 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onTestSuccess(ITestResult iTestResult) {
     super.onTestSuccess(iTestResult);
-    logger.info(String.format("========%s测试通过========", iTestResult.getName()));
+    logger.info("========{}测试通过========", iTestResult.getName());
   }
 
   /**
@@ -49,12 +50,8 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onTestFailure(ITestResult iTestResult) {
     super.onTestFailure(iTestResult);
-    logger.error(
-        String.format(
-            "========%s测试失败,失败原因如下：\n%s========",
-            iTestResult.getName(), iTestResult.getThrowable()));
+    logger.error("========{}测试失败,失败原因如下：\n{}========", iTestResult.getName(), iTestResult.getThrowable());
 
-    /** 出现异常进行截图操作，这里得要自己去实现 */
   }
 
   /**
@@ -65,7 +62,7 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onTestSkipped(ITestResult iTestResult) {
     super.onTestSkipped(iTestResult);
-    logger.info(String.format("========%s跳过测试========", iTestResult.getName()));
+    logger.info("========{}跳过测试========", iTestResult.getName());
   }
 
   /**
@@ -76,7 +73,6 @@ public class ComstumerListener extends TestListenerAdapter {
   @Override
   public void onFinish(ITestContext iTestContext) {
     super.onFinish(iTestContext);
-    logger.info(
-        String.format("====================%s测试结束====================", iTestContext.getName()));
+    logger.info("===================={}测试结束====================", iTestContext.getName());
   }
 }
