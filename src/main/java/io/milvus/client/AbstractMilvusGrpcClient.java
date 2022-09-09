@@ -96,6 +96,8 @@ import io.milvus.grpc.ReleaseCollectionRequest;
 import io.milvus.grpc.ReleasePartitionsRequest;
 import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.SelectRoleRequest;
+import io.milvus.grpc.SelectRoleResponse;
 import io.milvus.grpc.ShowCollectionsRequest;
 import io.milvus.grpc.ShowCollectionsResponse;
 import io.milvus.grpc.ShowPartitionsRequest;
@@ -149,6 +151,7 @@ import io.milvus.param.partition.LoadPartitionsParam;
 import io.milvus.param.partition.ReleasePartitionsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.param.role.AddUserToRoleParam;
+import io.milvus.param.role.RemoveUserFromRoleParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -2190,6 +2193,72 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         }
     }
+
+    @Override
+    public R<RpcStatus> removeUserFromRole(RemoveUserFromRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            OperateUserRoleRequest request = OperateUserRoleRequest.newBuilder()
+                    .setUsername(requestParam.getUserName())
+                    .setRoleName(requestParam.getRoleName())
+                    .setType(OperateUserRoleType.RemoveUserFromRole)
+                    .build();
+
+            Status response = blockingStub().operateUserRole(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("RemoveUserFromRole", response);
+            }
+
+            logDebug("RemoveUserFromRole successfully! Username:{}, RoleName:{}", requestParam.getUserName(), request.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
+                    requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
+                    requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+//    public R<SelectRoleResponse> selectRole(RemoveUserFromRoleParam requestParam) {
+//        if (!clientIsReady()) {
+//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+//        }
+//
+//        logInfo(requestParam.toString());
+//
+//        try {
+//            SelectRoleRequest request = SelectRoleRequest.newBuilder()
+//                    .setRole()
+//                    .build();
+//
+//            SelectRoleResponse response = blockingStub().selectRole(request);
+//            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+//                return failedStatus("Select", response.getStatus());
+//            }
+//
+//            logDebug("RemoveUserFromRole successfully! Username:{}, RoleName:{}", requestParam.getUserName(), request.getRoleName());
+//            return R.success(response);
+//        } catch (StatusRuntimeException e) {
+//            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
+//                    requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
+//            return R.failed(e);
+//        } catch (Exception e) {
+//            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
+//                    requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
+//            return R.failed(e);
+//        }
+//    }
+
+
 
 
     private String getBase64EncodeString(String str) {
