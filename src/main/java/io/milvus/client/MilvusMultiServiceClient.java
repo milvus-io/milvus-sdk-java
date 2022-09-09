@@ -22,30 +22,7 @@ package io.milvus.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.connection.ClusterFactory;
 import io.milvus.connection.ServerSetting;
-import io.milvus.grpc.DescribeCollectionResponse;
-import io.milvus.grpc.DescribeIndexResponse;
-import io.milvus.grpc.FlushResponse;
-import io.milvus.grpc.GetCollectionStatisticsResponse;
-import io.milvus.grpc.GetCompactionPlansResponse;
-import io.milvus.grpc.GetCompactionStateResponse;
-import io.milvus.grpc.GetFlushStateResponse;
-import io.milvus.grpc.GetIndexBuildProgressResponse;
-import io.milvus.grpc.GetIndexStateResponse;
-import io.milvus.grpc.GetMetricsResponse;
-import io.milvus.grpc.GetPartitionStatisticsResponse;
-import io.milvus.grpc.GetPersistentSegmentInfoResponse;
-import io.milvus.grpc.GetQuerySegmentInfoResponse;
-import io.milvus.grpc.GetReplicasResponse;
-import io.milvus.grpc.ListCredUsersResponse;
-import io.milvus.grpc.ManualCompactionResponse;
-import io.milvus.grpc.MutationResult;
-import io.milvus.grpc.QueryResults;
-import io.milvus.grpc.SearchResults;
-import io.milvus.grpc.SelectGrantResponse;
-import io.milvus.grpc.SelectRoleResponse;
-import io.milvus.grpc.SelectUserResponse;
-import io.milvus.grpc.ShowCollectionsResponse;
-import io.milvus.grpc.ShowPartitionsResponse;
+import io.milvus.grpc.*;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.MultiConnectParam;
 import io.milvus.param.R;
@@ -54,6 +31,9 @@ import io.milvus.param.ServerAddress;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.bulkload.GetImportStateParam;
+import io.milvus.param.bulkload.ImportParam;
+import io.milvus.param.bulkload.ListImportTasksParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
@@ -520,6 +500,21 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam) {
         return this.clusterFactory.getMaster().getClient().selectGrantForRoleAndObject(requestParam);
+    }
+
+    @Override
+    public R<ImportResponse> import_(ImportParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().import_(requestParam);
+    }
+
+    @Override
+    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getImportState(requestParam);
+    }
+
+    @Override
+    public R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listImportTasks(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {

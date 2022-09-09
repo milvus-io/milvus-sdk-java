@@ -20,35 +20,15 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import io.milvus.grpc.DescribeCollectionResponse;
-import io.milvus.grpc.DescribeIndexResponse;
-import io.milvus.grpc.FlushResponse;
-import io.milvus.grpc.GetCollectionStatisticsResponse;
-import io.milvus.grpc.GetCompactionPlansResponse;
-import io.milvus.grpc.GetCompactionStateResponse;
-import io.milvus.grpc.GetFlushStateResponse;
-import io.milvus.grpc.GetIndexBuildProgressResponse;
-import io.milvus.grpc.GetIndexStateResponse;
-import io.milvus.grpc.GetMetricsResponse;
-import io.milvus.grpc.GetPartitionStatisticsResponse;
-import io.milvus.grpc.GetPersistentSegmentInfoResponse;
-import io.milvus.grpc.GetQuerySegmentInfoResponse;
-import io.milvus.grpc.GetReplicasResponse;
-import io.milvus.grpc.ListCredUsersResponse;
-import io.milvus.grpc.ManualCompactionResponse;
-import io.milvus.grpc.MutationResult;
-import io.milvus.grpc.QueryResults;
-import io.milvus.grpc.SearchResults;
-import io.milvus.grpc.SelectGrantResponse;
-import io.milvus.grpc.SelectRoleResponse;
-import io.milvus.grpc.SelectUserResponse;
-import io.milvus.grpc.ShowCollectionsResponse;
-import io.milvus.grpc.ShowPartitionsResponse;
+import io.milvus.grpc.*;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.bulkload.GetImportStateParam;
+import io.milvus.param.bulkload.ImportParam;
+import io.milvus.param.bulkload.ListImportTasksParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
@@ -619,4 +599,9 @@ public interface MilvusClient {
      */
     R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam);
 
+    R<ImportResponse> import_(ImportParam requestParam);
+
+    R<GetImportStateResponse> getImportState(GetImportStateParam requestParam);
+
+    R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam);
 }
