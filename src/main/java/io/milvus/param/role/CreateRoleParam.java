@@ -8,20 +8,20 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class GetRoleParam {
+public class CreateRoleParam {
 
     private final String roleName;
 
-    private GetRoleParam(@NonNull GetRoleParam.Builder builder) {
+    private CreateRoleParam(@NonNull CreateRoleParam.Builder builder) {
         this.roleName = builder.roleName;
     }
 
-    public static GetRoleParam.Builder newBuilder() {
-        return new GetRoleParam.Builder();
+    public static CreateRoleParam.Builder newBuilder() {
+        return new CreateRoleParam.Builder();
     }
 
     /**
-     * Builder for {@link GetRoleParam} class.
+     * Builder for {@link CreateRoleParam} class.
      */
     public static final class Builder {
         private String roleName;
@@ -35,20 +35,20 @@ public class GetRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public GetRoleParam.Builder withRoleName(@NonNull String roleName) {
+        public CreateRoleParam.Builder withRoleName(@NonNull String roleName) {
             this.roleName = roleName;
             return this;
         }
 
         /**
-         * Verifies parameters and creates a new {@link GetRoleParam} instance.
+         * Verifies parameters and creates a new {@link CreateRoleParam} instance.
          *
-         * @return {@link GetRoleParam}
+         * @return {@link CreateRoleParam}
          */
-        public GetRoleParam build() throws ParamException {
+        public CreateRoleParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(roleName, "RoleName");
 
-            return new GetRoleParam(this);
+            return new CreateRoleParam(this);
         }
     }
 

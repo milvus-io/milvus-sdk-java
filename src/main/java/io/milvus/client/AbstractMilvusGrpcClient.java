@@ -35,6 +35,7 @@ import io.milvus.grpc.CreateCollectionRequest;
 import io.milvus.grpc.CreateCredentialRequest;
 import io.milvus.grpc.CreateIndexRequest;
 import io.milvus.grpc.CreatePartitionRequest;
+import io.milvus.grpc.CreateRoleRequest;
 import io.milvus.grpc.DeleteCredentialRequest;
 import io.milvus.grpc.DeleteRequest;
 import io.milvus.grpc.DescribeCollectionRequest;
@@ -45,6 +46,7 @@ import io.milvus.grpc.DropAliasRequest;
 import io.milvus.grpc.DropCollectionRequest;
 import io.milvus.grpc.DropIndexRequest;
 import io.milvus.grpc.DropPartitionRequest;
+import io.milvus.grpc.DropRoleRequest;
 import io.milvus.grpc.ErrorCode;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.FlushRequest;
@@ -71,6 +73,8 @@ import io.milvus.grpc.GetQuerySegmentInfoRequest;
 import io.milvus.grpc.GetQuerySegmentInfoResponse;
 import io.milvus.grpc.GetReplicasRequest;
 import io.milvus.grpc.GetReplicasResponse;
+import io.milvus.grpc.GrantEntity;
+import io.milvus.grpc.GrantorEntity;
 import io.milvus.grpc.HasCollectionRequest;
 import io.milvus.grpc.HasPartitionRequest;
 import io.milvus.grpc.IndexState;
@@ -88,16 +92,25 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.MsgBase;
 import io.milvus.grpc.MsgType;
 import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.ObjectEntity;
+import io.milvus.grpc.OperatePrivilegeRequest;
+import io.milvus.grpc.OperatePrivilegeType;
 import io.milvus.grpc.OperateUserRoleRequest;
 import io.milvus.grpc.OperateUserRoleType;
+import io.milvus.grpc.PrivilegeEntity;
 import io.milvus.grpc.QueryRequest;
 import io.milvus.grpc.QueryResults;
 import io.milvus.grpc.ReleaseCollectionRequest;
 import io.milvus.grpc.ReleasePartitionsRequest;
+import io.milvus.grpc.RoleEntity;
 import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.SelectGrantRequest;
+import io.milvus.grpc.SelectGrantResponse;
 import io.milvus.grpc.SelectRoleRequest;
 import io.milvus.grpc.SelectRoleResponse;
+import io.milvus.grpc.SelectUserRequest;
+import io.milvus.grpc.SelectUserResponse;
 import io.milvus.grpc.ShowCollectionsRequest;
 import io.milvus.grpc.ShowCollectionsResponse;
 import io.milvus.grpc.ShowPartitionsRequest;
@@ -105,6 +118,7 @@ import io.milvus.grpc.ShowPartitionsResponse;
 import io.milvus.grpc.ShowType;
 import io.milvus.grpc.Status;
 import io.milvus.grpc.UpdateCredentialRequest;
+import io.milvus.grpc.UserEntity;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
@@ -151,7 +165,15 @@ import io.milvus.param.partition.LoadPartitionsParam;
 import io.milvus.param.partition.ReleasePartitionsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.param.role.AddUserToRoleParam;
+import io.milvus.param.role.CreateRoleParam;
+import io.milvus.param.role.DropRoleParam;
+import io.milvus.param.role.GrantRolePrivilegeParam;
 import io.milvus.param.role.RemoveUserFromRoleParam;
+import io.milvus.param.role.RevokeRolePrivilegeParam;
+import io.milvus.param.role.SelectGrantForRoleAndObjectParam;
+import io.milvus.param.role.SelectGrantForRoleParam;
+import io.milvus.param.role.SelectRoleParam;
+import io.milvus.param.role.SelectUserParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -2188,7 +2210,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("AddUserToRole RPC failed! Username:{} RoleName:{} \n{}",
+            logError("AddUserToRole failed! Username:{} RoleName:{} \n{}",
                     requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
             return R.failed(e);
         }
@@ -2221,44 +2243,272 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
+            logError("RemoveUserFromRole failed! Username:{} RoleName:{} \n{}",
                     requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
             return R.failed(e);
         }
     }
 
 
-//    public R<SelectRoleResponse> selectRole(RemoveUserFromRoleParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            SelectRoleRequest request = SelectRoleRequest.newBuilder()
-//                    .setRole()
-//                    .build();
-//
-//            SelectRoleResponse response = blockingStub().selectRole(request);
-//            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-//                return failedStatus("Select", response.getStatus());
-//            }
-//
-//            logDebug("RemoveUserFromRole successfully! Username:{}, RoleName:{}", requestParam.getUserName(), request.getRoleName());
-//            return R.success(response);
-//        } catch (StatusRuntimeException e) {
-//            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
-//                    requestParam.getUserName(), requestParam.getRoleName(), e.getStatus().toString());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("RemoveUserFromRole RPC failed! Username:{} RoleName:{} \n{}",
-//                    requestParam.getUserName(), requestParam.getRoleName(), e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
+    public R<RpcStatus> createRole(CreateRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            CreateRoleRequest request = CreateRoleRequest.newBuilder()
+                    .setEntity(RoleEntity.newBuilder()
+                            .setName(requestParam.getRoleName())
+                            .build())
+                    .build();
+
+            Status response = blockingStub().createRole(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("CreateRole", response);
+            }
+            logDebug("CreateRole successfully! RoleName:{}", requestParam.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("CreateRole RPC failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CreateRole failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
 
 
+    public R<RpcStatus> dropRole(DropRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            DropRoleRequest request = DropRoleRequest.newBuilder()
+                    .setRoleName(requestParam.getRoleName())
+                    .build();
+
+            Status response = blockingStub().dropRole(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("DropRole", response);
+            }
+            logDebug("DropRole successfully! RoleName:{}", requestParam.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("DropRole RPC failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DropRole failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+    public R<SelectRoleResponse> selectRole(SelectRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            SelectRoleRequest request = SelectRoleRequest.newBuilder()
+                    .setRole(RoleEntity.newBuilder()
+                            .setName(requestParam.getRoleName())
+                            .build())
+                    .setIncludeUserInfo(requestParam.isIncludeUserInfo())
+                    .build();
+
+            SelectRoleResponse response = blockingStub().selectRole(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectRole", response.getStatus());
+            }
+            logDebug("SelectRole successfully! RoleName:{}", requestParam.getRoleName());
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("SelectRole RPC failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("SelectRole failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+    public R<SelectUserResponse> selectUser(SelectUserParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+        try {
+            SelectUserRequest request = SelectUserRequest.newBuilder()
+                    .setUser(UserEntity.newBuilder().setName(requestParam.getUserName()).build())
+                    .setIncludeRoleInfo(requestParam.isIncludeRoleInfo())
+                    .build();
+
+            SelectUserResponse response = blockingStub().selectUser(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectUser", response.getStatus());
+            }
+            logDebug("SelectUser successfully! Request:{}", requestParam);
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("SelectUser RPC failed! Request:{} \n{}",
+                    requestParam, e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("SelectUser failed! Request:{} \n{}",
+                    requestParam, e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+    public R<RpcStatus> grantRolePrivilege(GrantRolePrivilegeParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
+                    .setType(OperatePrivilegeType.Grant)
+                    .setEntity(GrantEntity.newBuilder()
+                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                            .setObjectName(requestParam.getObjectName())
+                            .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
+                            .setGrantor(GrantorEntity.newBuilder()
+                                    .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build())
+                            .build())
+                    .build();
+
+            Status response = blockingStub().operatePrivilege(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("GrantRolePrivilege", response);
+            }
+            logDebug("GrantRolePrivilege successfully! RoleName:{}", requestParam.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("GrantRolePrivilege RPC failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GrantRolePrivilege failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<RpcStatus> revokeRolePrivilege(RevokeRolePrivilegeParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+        try {
+            OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
+                    .setType(OperatePrivilegeType.Revoke)
+                    .setEntity(GrantEntity.newBuilder()
+                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                            .setObjectName(requestParam.getObjectName())
+                            .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
+                            .setGrantor(GrantorEntity.newBuilder()
+                                    .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build())
+                            .build())
+                    .build();
+
+            Status response = blockingStub().operatePrivilege(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("RevokeRolePrivilege", response);
+            }
+            logDebug("RevokeRolePrivilege successfully! RoleName:{}", requestParam.getRoleName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("RevokeRolePrivilege RPC failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("RevokeRolePrivilege failed! RoleName:{} \n{}",
+                    requestParam.getRoleName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+    public R<SelectGrantResponse> selectGrantForRole(SelectGrantForRoleParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            SelectGrantRequest request = SelectGrantRequest.newBuilder()
+                    .setEntity(GrantEntity.newBuilder()
+                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                            .build())
+                    .build();
+
+            SelectGrantResponse response = blockingStub().selectGrant(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("SelectGrantForRole successfully! Request:{},", requestParam);
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("SelectGrantForRole RPC failed! Request:{} \n{}",
+                    requestParam, e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("SelectGrantForRole failed! Request:{} \n{}",
+                    requestParam, e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+        try {
+            SelectGrantRequest request = SelectGrantRequest.newBuilder()
+                    .setEntity(GrantEntity.newBuilder()
+                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                            .setObjectName(requestParam.getObjectName())
+                            .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
+                            .build())
+                    .build();
+
+            SelectGrantResponse response = blockingStub().selectGrant(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("SelectGrantForRoleAndObject successfully! Request:{},", requestParam);
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("SelectGrantForRoleAndObject RPC failed! Request:{} \n{}",
+                    requestParam, e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("SelectGrantForRoleAndObject failed! Request:{} \n{}",
+                    requestParam, e.getMessage());
+            return R.failed(e);
+        }
+    }
 
 
     private String getBase64EncodeString(String str) {

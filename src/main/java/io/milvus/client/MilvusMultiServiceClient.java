@@ -22,19 +22,86 @@ package io.milvus.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.connection.ClusterFactory;
 import io.milvus.connection.ServerSetting;
-import io.milvus.grpc.*;
-import io.milvus.param.*;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.DescribeIndexResponse;
+import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
+import io.milvus.grpc.GetCompactionPlansResponse;
+import io.milvus.grpc.GetCompactionStateResponse;
+import io.milvus.grpc.GetFlushStateResponse;
+import io.milvus.grpc.GetIndexBuildProgressResponse;
+import io.milvus.grpc.GetIndexStateResponse;
+import io.milvus.grpc.GetMetricsResponse;
+import io.milvus.grpc.GetPartitionStatisticsResponse;
+import io.milvus.grpc.GetPersistentSegmentInfoResponse;
+import io.milvus.grpc.GetQuerySegmentInfoResponse;
+import io.milvus.grpc.GetReplicasResponse;
+import io.milvus.grpc.ListCredUsersResponse;
+import io.milvus.grpc.ManualCompactionResponse;
+import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.SelectGrantResponse;
+import io.milvus.grpc.SelectRoleResponse;
+import io.milvus.grpc.SelectUserResponse;
+import io.milvus.grpc.ShowCollectionsResponse;
+import io.milvus.grpc.ShowPartitionsResponse;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.MultiConnectParam;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.ServerAddress;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.collection.*;
-import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.param.partition.*;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.DescribeCollectionParam;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FlushParam;
+import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
+import io.milvus.param.collection.ShowCollectionsParam;
+import io.milvus.param.control.GetCompactionPlansParam;
+import io.milvus.param.control.GetCompactionStateParam;
+import io.milvus.param.control.GetFlushStateParam;
+import io.milvus.param.control.GetMetricsParam;
+import io.milvus.param.control.GetPersistentSegmentInfoParam;
+import io.milvus.param.control.GetQuerySegmentInfoParam;
+import io.milvus.param.control.GetReplicasParam;
+import io.milvus.param.control.LoadBalanceParam;
+import io.milvus.param.control.ManualCompactParam;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DescribeIndexParam;
+import io.milvus.param.index.DropIndexParam;
+import io.milvus.param.index.GetIndexBuildProgressParam;
+import io.milvus.param.index.GetIndexStateParam;
+import io.milvus.param.partition.CreatePartitionParam;
+import io.milvus.param.partition.DropPartitionParam;
+import io.milvus.param.partition.GetPartitionStatisticsParam;
+import io.milvus.param.partition.HasPartitionParam;
+import io.milvus.param.partition.LoadPartitionsParam;
+import io.milvus.param.partition.ReleasePartitionsParam;
+import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.param.role.AddUserToRoleParam;
+import io.milvus.param.role.CreateRoleParam;
+import io.milvus.param.role.DropRoleParam;
+import io.milvus.param.role.GrantRolePrivilegeParam;
 import io.milvus.param.role.RemoveUserFromRoleParam;
+import io.milvus.param.role.RevokeRolePrivilegeParam;
+import io.milvus.param.role.SelectGrantForRoleAndObjectParam;
+import io.milvus.param.role.SelectGrantForRoleParam;
+import io.milvus.param.role.SelectUserParam;
+import io.milvus.param.role.SelectRoleParam;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -48,6 +115,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
 
     /**
      * Sets connect param for multi milvus clusters.
+     *
      * @param multiConnectParam multi server connect param
      */
     public MilvusMultiServiceClient(@NonNull MultiConnectParam multiConnectParam) {
@@ -405,6 +473,16 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> createRole(CreateRoleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().createRole(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> dropRole(DropRoleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().dropRole(requestParam);
+    }
+
+    @Override
     public R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam) {
         return this.clusterFactory.getMaster().getClient().addUserToRole(requestParam);
     }
@@ -412,6 +490,36 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<RpcStatus> removeUserFromRole(RemoveUserFromRoleParam requestParam) {
         return this.clusterFactory.getMaster().getClient().removeUserFromRole(requestParam);
+    }
+
+    @Override
+    public R<SelectRoleResponse> selectRole(SelectRoleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().selectRole(requestParam);
+    }
+
+    @Override
+    public R<SelectUserResponse> selectUser(SelectUserParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().selectUser(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> grantRolePrivilege(GrantRolePrivilegeParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().grantRolePrivilege(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> revokeRolePrivilege(RevokeRolePrivilegeParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().revokeRolePrivilege(requestParam);
+    }
+
+    @Override
+    public R<SelectGrantResponse> selectGrantForRole(SelectGrantForRoleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().selectGrantForRole(requestParam);
+    }
+
+    @Override
+    public R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().selectGrantForRoleAndObject(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {
