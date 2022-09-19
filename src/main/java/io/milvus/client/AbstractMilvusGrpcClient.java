@@ -1145,12 +1145,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.success(new RpcStatus("Warning: It is not necessary to build index with index_type: FLAT"));
             }
 
-            // keep consistence behavior with python sdk, flush before creating index
-            FlushRequest flushRequest = FlushRequest.newBuilder()
-                    .addCollectionNames(requestParam.getCollectionName())
-                    .build();
-            blockingStub().flush(flushRequest);
-
             CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
                     .setIndexName(requestParam.getIndexName())
