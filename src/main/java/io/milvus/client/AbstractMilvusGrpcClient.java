@@ -91,6 +91,7 @@ import io.milvus.response.DescCollResponseWrapper;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -2426,14 +2427,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            ImportRequest importRequest = ImportRequest.newBuilder()
+            ImportRequest.Builder importRequest = ImportRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setPartitionName(requestParam.getPartitionName())
                     .setRowBased(requestParam.isRowBased())
-                    .addAllFiles(requestParam.getFiles())
-                    .build();
+                    .addAllFiles(requestParam.getFiles());
 
-            ImportResponse response = blockingStub().import_(importRequest);
+            if (StringUtils.isNotEmpty(requestParam.getPartitionName())) {
+                importRequest.setPartitionName(requestParam.getPartitionName());
+            }
+
+            ImportResponse response = blockingStub().import_(importRequest.build());
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
                 return failedStatus("BulkLoadImport", response.getStatus());
             }
