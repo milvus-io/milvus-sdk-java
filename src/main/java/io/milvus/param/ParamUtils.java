@@ -267,6 +267,7 @@ public class ParamUtils {
 
         ByteString byteStr = placeholderGroup.toByteString();
         builder.setPlaceholderGroup(byteStr);
+        builder.setNq(requestParam.getNQ());
 
         // search parameters
         builder.addSearchParams(

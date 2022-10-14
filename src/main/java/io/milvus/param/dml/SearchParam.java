@@ -44,6 +44,7 @@ public class SearchParam {
     private final String expr;
     private final List<String> outFields;
     private final List<?> vectors;
+    private final Long NQ;
     private final int roundDecimal;
     private final String params;
     private final long travelTimestamp;
@@ -60,6 +61,7 @@ public class SearchParam {
         this.expr = builder.expr;
         this.outFields = builder.outFields;
         this.vectors = builder.vectors;
+        this.NQ = builder.NQ;
         this.roundDecimal = builder.roundDecimal;
         this.params = builder.params;
         this.travelTimestamp = builder.travelTimestamp;
@@ -84,6 +86,7 @@ public class SearchParam {
         private String expr = "";
         private final List<String> outFields = Lists.newArrayList();
         private List<?> vectors;
+        private Long NQ;
         private Integer roundDecimal = -1;
         private String params = "{}";
         private Long travelTimestamp = 0L;
@@ -230,6 +233,7 @@ public class SearchParam {
          */
         public Builder withVectors(@NonNull List<?> vectors) {
             this.vectors = vectors;
+            this.NQ = (long) vectors.size();
             return this;
         }
 
@@ -374,6 +378,7 @@ public class SearchParam {
                 ", target vectors count=" + vectors.size() +
                 ", vectorFieldName='" + vectorFieldName + '\'' +
                 ", topK=" + topK +
+                ", nq=" + NQ +
                 ", expr='" + expr + '\'' +
                 ", params='" + params + '\'' +
                 '}';
