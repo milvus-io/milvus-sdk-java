@@ -26,9 +26,9 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.bulkload.GetImportStateParam;
-import io.milvus.param.bulkload.ImportParam;
-import io.milvus.param.bulkload.ListImportTasksParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
@@ -599,9 +599,9 @@ public interface MilvusClient {
      */
     R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam);
 
-    R<ImportResponse> import_(ImportParam requestParam);
+    R<ImportResponse> bulkInsert(BulkInsertParam requestParam);
 
-    R<GetImportStateResponse> getImportState(GetImportStateParam requestParam);
+    R<GetImportStateResponse> getBulkInsertState(GetBulkInsertStateParam requestParam);
 
-    R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam);
+    R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam);
 }

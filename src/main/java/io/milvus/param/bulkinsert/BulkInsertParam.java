@@ -17,11 +17,10 @@
  * under the License.
  */
 
-package io.milvus.param.bulkload;
+package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.collection.FieldType;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -30,16 +29,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parameters for <code>import</code> interface.
+ * Parameters for <code>bulkInsert</code> interface.
  */
 @Getter
-public class ImportParam {
+public class BulkInsertParam {
     private final String collectionName;
     private final String partitionName;
     private final boolean rowBased;
     private final List<String> files;
 
-    private ImportParam(@NonNull Builder builder) {
+    private BulkInsertParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.rowBased = builder.rowBased;
@@ -51,7 +50,7 @@ public class ImportParam {
     }
 
     /**
-     * Builder for {@link ImportParam} class.
+     * Builder for {@link BulkInsertParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -118,11 +117,11 @@ public class ImportParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link ImportParam} instance.
+         * Verifies parameters and creates a new {@link BulkInsertParam} instance.
          *
-         * @return {@link ImportParam}
+         * @return {@link BulkInsertParam}
          */
-        public ImportParam build() throws ParamException {
+        public BulkInsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
 
@@ -136,18 +135,18 @@ public class ImportParam {
                 }
             }
 
-            return new ImportParam(this);
+            return new BulkInsertParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link ImportParam} instance.
+     * Constructs a <code>String</code> by {@link BulkInsertParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "ImportParam{" +
+        return "BulkInsertParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionName=" + partitionName +
                 ", rowBased='" + rowBased + '\'' +

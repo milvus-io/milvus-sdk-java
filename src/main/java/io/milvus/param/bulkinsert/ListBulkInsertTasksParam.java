@@ -17,18 +17,18 @@
  * under the License.
  */
 
-package io.milvus.param.bulkload;
+package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 
 /**
- * Parameters for <code>listImportTasks</code> interface.
+ * Parameters for <code>listBulkInsertTasks</code> interface.
  */
 @Getter
-public class ListImportTasksParam {
+public class ListBulkInsertTasksParam {
 
-    private ListImportTasksParam() {
+    private ListBulkInsertTasksParam() {
     }
 
     public static Builder newBuilder() {
@@ -36,30 +36,30 @@ public class ListImportTasksParam {
     }
 
     /**
-     * Builder for {@link ListImportTasksParam} class.
+     * Builder for {@link ListBulkInsertTasksParam} class.
      */
     public static final class Builder {
         private Builder() {
         }
 
         /**
-         * Verifies parameters and creates a new {@link ListImportTasksParam} instance.
+         * Verifies parameters and creates a new {@link ListBulkInsertTasksParam} instance.
          *
-         * @return {@link ListImportTasksParam}
+         * @return {@link ListBulkInsertTasksParam}
          */
-        public ListImportTasksParam build() throws ParamException {
-            return new ListImportTasksParam();
+        public ListBulkInsertTasksParam build() throws ParamException {
+            return new ListBulkInsertTasksParam();
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link ListImportTasksParam} instance.
+     * Constructs a <code>String</code> by {@link ListBulkInsertTasksParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "ListImportTasksParam{" +
+        return "ListBulkInsertTasksParam{" +
                 '}';
     }
 }

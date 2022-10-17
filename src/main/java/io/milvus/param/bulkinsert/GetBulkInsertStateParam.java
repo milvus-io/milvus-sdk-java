@@ -17,20 +17,20 @@
  * under the License.
  */
 
-package io.milvus.param.bulkload;
+package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>getImportState</code> interface.
+ * Parameters for <code>getBulkInsertState</code> interface.
  */
 @Getter
-public class GetImportStateParam {
+public class GetBulkInsertStateParam {
     private final Long task;
 
-    private GetImportStateParam(@NonNull Builder builder) {
+    private GetBulkInsertStateParam(@NonNull Builder builder) {
         this.task = builder.task;
     }
 
@@ -39,7 +39,7 @@ public class GetImportStateParam {
     }
 
     /**
-     * Builder for {@link GetImportStateParam} class.
+     * Builder for {@link GetBulkInsertStateParam} class.
      */
     public static final class Builder {
         private Long task;
@@ -60,23 +60,23 @@ public class GetImportStateParam {
 
 
         /**
-         * Verifies parameters and creates a new {@link GetImportStateParam} instance.
+         * Verifies parameters and creates a new {@link GetBulkInsertStateParam} instance.
          *
-         * @return {@link GetImportStateParam}
+         * @return {@link GetBulkInsertStateParam}
          */
-        public GetImportStateParam build() throws ParamException {
-            return new GetImportStateParam(this);
+        public GetBulkInsertStateParam build() throws ParamException {
+            return new GetBulkInsertStateParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link GetImportStateParam} instance.
+     * Constructs a <code>String</code> by {@link GetBulkInsertStateParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "GetImportStateParam{" +
+        return "GetBulkInsertStateParam{" +
                 "task='" + task + '\'' +
                 '}';
     }

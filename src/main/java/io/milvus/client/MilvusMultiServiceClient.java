@@ -31,9 +31,9 @@ import io.milvus.param.ServerAddress;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.bulkload.GetImportStateParam;
-import io.milvus.param.bulkload.ImportParam;
-import io.milvus.param.bulkload.ListImportTasksParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
@@ -502,18 +502,18 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
-    public R<ImportResponse> import_(ImportParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().import_(requestParam);
+    public R<ImportResponse> bulkInsert(BulkInsertParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().bulkInsert(requestParam);
     }
 
     @Override
-    public R<GetImportStateResponse> getImportState(GetImportStateParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().getImportState(requestParam);
+    public R<GetImportStateResponse> getBulkInsertState(GetBulkInsertStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getBulkInsertState(requestParam);
     }
 
     @Override
-    public R<ListImportTasksResponse> listImportTasks(ListImportTasksParam requestParam) {
-        return this.clusterFactory.getMaster().getClient().listImportTasks(requestParam);
+    public R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listBulkInsertTasks(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {
