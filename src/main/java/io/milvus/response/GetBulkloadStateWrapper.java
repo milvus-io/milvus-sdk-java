@@ -107,23 +107,6 @@ public class GetBulkloadStateWrapper {
         return getInfo(Constant.IMPORT_PARTITION);
     }
 
-    /**
-     * A flag indicating whether import data are queryable (i.e. loaded in query nodes).
-     *
-     * @return boolean whether import data are queryable
-     */
-    public boolean queryable() {
-        return response.getDataQueryable();
-    }
-
-    /**
-     * A flag indicating whether import data are indexed.
-     *
-     * @return boolean whether import data are queryable
-     */
-    public boolean indexed() {
-        return response.getDataIndexed();
-    }
 
     private String getInfo(@NonNull String key) {
         List<KeyValuePair> infos = response.getInfosList();
