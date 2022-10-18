@@ -26,6 +26,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
+
 /**
  * Parameters for client connection.
  */
@@ -239,6 +242,12 @@ public class ConnectParam {
          */
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
+            if(host.startsWith(HOST_HTTPS_PREFIX)){
+                this.host = host.replace(HOST_HTTPS_PREFIX, "");
+                this.secure = true;
+            }else if(host.startsWith(HOST_HTTP_PREFIX)){
+                this.host = host.replace(HOST_HTTP_PREFIX, "");
+            }
 
             if (port < 0 || port > 0xFFFF) {
                 throw new ParamException("Port is out of range!");

@@ -1,5 +1,6 @@
 package io.milvus.param;
 
+import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -8,6 +9,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
 
 /**
  * Parameters for client connection of multi server.
@@ -215,13 +219,27 @@ public class MultiConnectParam {
                 throw new ParamException("Server addresses is empty!");
             }
 
+            List<ServerAddress> hostAddress = Lists.newArrayList();
             for (ServerAddress serverAddress : hosts) {
-                ParamUtils.CheckNullEmptyString(serverAddress.getHost(), "Host name");
+                String host = serverAddress.getHost();
+                ParamUtils.CheckNullEmptyString(host, "Host name");
+                if(host.startsWith(HOST_HTTPS_PREFIX)){
+                    host = host.replace(HOST_HTTPS_PREFIX, "");
+                    this.secure = true;
+                }else if(host.startsWith(HOST_HTTP_PREFIX)){
+                    host = host.replace(HOST_HTTP_PREFIX, "");
+                }
+                hostAddress.add(ServerAddress.newBuilder()
+                        .withHost(host)
+                        .withPort(serverAddress.getPort())
+                        .withHealthPort(serverAddress.getHealthPort())
+                        .build());
 
                 if (serverAddress.getPort() < 0 || serverAddress.getPort() > 0xFFFF) {
                     throw new ParamException("Port is out of range!");
                 }
             }
+            this.withHosts(hostAddress);
 
             if (keepAliveTimeMs <= 0L) {
                 throw new ParamException("Keep alive time must be positive!");
