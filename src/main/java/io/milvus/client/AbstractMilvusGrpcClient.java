@@ -1265,99 +1265,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
-//    @Override
-//    public R<ImportResponse> bulkload(@NonNull BulkloadParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            ImportRequest.Builder builder = ImportRequest.newBuilder();
-//            builder.setCollectionName(requestParam.getCollectionName())
-//                    .setPartitionName(requestParam.getPartitionName())
-//                    .setRowBased(requestParam.isRowBased());
-//            requestParam.getFiles().forEach(builder::addFiles);
-//            List<KeyValuePair> options = assembleKvPair(requestParam.getOptions());
-//            if (CollectionUtils.isNotEmpty(options)) {
-//                options.forEach(builder::addOptions);
-//            }
-//
-//            ImportRequest importRequest = builder.build();
-//            ImportResponse response = blockingStub().import_(importRequest);
-//
-//            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logDebug("ImportRequest successfully!");
-//                return R.success(response);
-//            } else {
-//                return failedStatus("ImportRequest", response.getStatus());
-//            }
-//        } catch (StatusRuntimeException e) {
-//            logError("ImportRequest RPC failed:\n{}", e.getStatus().toString());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("ImportRequest failed:\n{}", e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
-//
-//    @Override
-//    public R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            GetImportStateRequest importRequest = GetImportStateRequest.newBuilder()
-//                    .setTask(requestParam.getTaskID())
-//                    .build();
-//            GetImportStateResponse response = blockingStub().getImportState(importRequest);
-//
-//            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logDebug("GetImportStateRequest successfully!");
-//                return R.success(response);
-//            } else {
-//                return failedStatus("GetImportStateRequest", response.getStatus());
-//            }
-//        } catch (StatusRuntimeException e) {
-//            logError("GetImportStateRequest RPC failed:\n{}", e.getStatus().toString());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("GetImportStateRequest failed:\n{}", e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
-//
-//    @Override
-//    public R<ListImportTasksResponse> listBulkloadTasks(@NonNull ListBulkloadTasksParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            ListImportTasksRequest listRequest = ListImportTasksRequest.newBuilder().build();
-//            ListImportTasksResponse response = blockingStub().listImportTasks(listRequest);
-//
-//            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logDebug("ListImportTasksRequest successfully!");
-//                return R.success(response);
-//            } else {
-//                return failedStatus("ListImportTasksRequest", response.getStatus());
-//            }
-//        } catch (StatusRuntimeException e) {
-//            logError("ListImportTasksRequest RPC failed! \n{}", e.getMessage());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("ListImportTasksRequest failed! \n{}", e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
-
     @Override
     public R<MutationResult> insert(@NonNull InsertParam requestParam) {
         if (!clientIsReady()) {
@@ -1610,74 +1517,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         return Futures.transform(response, transformFunc::apply, MoreExecutors.directExecutor());
     }
-
-//    @Override
-//    public R<CalcDistanceResults> calcDistance(@NonNull CalcDistanceParam requestParam) {
-//        if (!clientIsReady()) {
-//            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
-//        }
-//
-//        logInfo(requestParam.toString());
-//
-//        try {
-//            List<List<Float>> vectors_left = requestParam.getVectorsLeft();
-//            List<List<Float>> vectors_right = requestParam.getVectorsRight();
-//
-//            FloatArray.Builder left_float_array = FloatArray.newBuilder();
-//            for (List<Float> vector : vectors_left) {
-//                left_float_array.addAllData(vector);
-//            }
-//
-//            FloatArray.Builder right_float_array = FloatArray.newBuilder();
-//            for (List<Float> vector : vectors_right) {
-//                right_float_array.addAllData(vector);
-//            }
-//
-//            CalcDistanceRequest calcDistanceRequest = CalcDistanceRequest.newBuilder()
-//                    .setOpLeft(
-//                            VectorsArray.newBuilder()
-//                                    .setDataArray(
-//                                            VectorField.newBuilder()
-//                                                    .setFloatVector(left_float_array.build())
-//                                                    .setDim(vectors_left.get(0).size())
-//                                                    .build()
-//                                    )
-//                                    .build()
-//                    )
-//                    .setOpRight(
-//                            VectorsArray.newBuilder()
-//                                    .setDataArray(
-//                                            VectorField.newBuilder()
-//                                                    .setFloatVector(right_float_array.build())
-//                                                    .setDim(vectors_right.get(0).size())
-//                                                    .build()
-//                                    )
-//                                    .build()
-//                    )
-//                    .addParams(
-//                            KeyValuePair.newBuilder()
-//                                    .setKey("metric")
-//                                    .setValue(requestParam.getMetricType())
-//                                    .build()
-//                    )
-//                    .build();
-//
-//            CalcDistanceResults response = blockingStub().calcDistance(calcDistanceRequest);
-//
-//            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-//                logDebug("CalcDistanceRequest successfully!");
-//                return R.success(response);
-//            } else {
-//                return failedStatus("CalcDistanceRequest", response.getStatus());
-//            }
-//        } catch (StatusRuntimeException e) {
-//            logError("CalcDistanceRequest RPC failed:{}", e.getMessage());
-//            return R.failed(e);
-//        } catch (Exception e) {
-//            logError("CalcDistanceRequest failed:\n{}", e.getMessage());
-//            return R.failed(e);
-//        }
-//    }
 
     @Override
     public R<GetMetricsResponse> getMetrics(@NonNull GetMetricsParam requestParam) {
@@ -2440,18 +2279,23 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 importRequest.setPartitionName(requestParam.getPartitionName());
             }
 
-            ImportResponse response = blockingStub().import_(importRequest.build());
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("BulkLoadImport", response.getStatus());
+            List<KeyValuePair> options = assembleKvPair(requestParam.getOptions());
+            if (CollectionUtils.isNotEmpty(options)) {
+                options.forEach(importRequest::addOptions);
             }
 
-            logDebug("BulkLoadImport successfully!");
+            ImportResponse response = blockingStub().import_(importRequest.build());
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("BulkInsert", response.getStatus());
+            }
+
+            logDebug("BulkInsert successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("BulkLoadImport RPC failed! \n{}", e.getStatus().toString());
+            logError("BulkInsert RPC failed! \n{}", e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("BulkLoadImport failed! \n{}", e.getMessage());
+            logError("BulkInsert failed! \n{}", e.getMessage());
             return R.failed(e);
         }
     }
@@ -2471,16 +2315,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             GetImportStateResponse response = blockingStub().getImportState(getImportStateRequest);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("GetImportState", response.getStatus());
+                return failedStatus("GetBulkInsertState", response.getStatus());
             }
 
-            logDebug("GetImportState successfully!");
+            logDebug("GetBulkInsertState successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetImportState RPC failed! \n{}", e.getStatus().toString());
+            logError("GetBulkInsertState RPC failed! \n{}", e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetImportState failed! \n{}", e.getMessage());
+            logError("GetBulkInsertState failed! \n{}", e.getMessage());
             return R.failed(e);
         }
     }
@@ -2495,20 +2339,22 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             ListImportTasksRequest listImportTasksRequest = ListImportTasksRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName())
+                    .setLimit(requestParam.getLimit())
                     .build();
 
             ListImportTasksResponse response = blockingStub().listImportTasks(listImportTasksRequest);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("ListImportTasks", response.getStatus());
+                return failedStatus("ListBulkInsertTasks", response.getStatus());
             }
 
-            logDebug("ListImportTasks successfully!");
+            logDebug("ListBulkInsertTasks successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListImportTasks RPC failed! \n{}", e.getStatus().toString());
+            logError("ListBulkInsertTasks RPC failed! \n{}", e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListImportTasks failed! \n{}", e.getMessage());
+            logError("ListBulkInsertTasks failed! \n{}", e.getMessage());
             return R.failed(e);
         }
     }

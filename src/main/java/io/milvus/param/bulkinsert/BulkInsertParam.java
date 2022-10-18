@@ -26,7 +26,9 @@ import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Parameters for <code>bulkInsert</code> interface.
@@ -37,6 +39,7 @@ public class BulkInsertParam {
     private final String partitionName;
     private final boolean rowBased;
     private final List<String> files;
+    private final Map<String, String> options = new HashMap<>();
 
     private BulkInsertParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;

@@ -334,30 +334,6 @@ public interface MilvusClient {
      */
     R<MutationResult> delete(DeleteParam requestParam);
 
-//    /**
-//     * Import data from external files, currently support JSON/Numpy format
-//     *
-//     * @param requestParam {@link BulkloadParam}
-//     * @return {status:result code, data:RpcStatus{msg: result message}}
-//     */
-//    R<ImportResponse> bulkload(BulkloadParam requestParam);
-//
-//    /**
-//     * Get state of bulk a load task
-//     *
-//     * @param requestParam {@link GetBulkloadStateParam}
-//     * @return {status:result code, data:GetImportStateResponse{status,state}}
-//     */
-//    R<GetImportStateResponse> getBulkloadState(GetBulkloadStateParam requestParam);
-//
-//    /**
-//     * List all bulk load tasks
-//     *
-//     * @param requestParam {@link ListBulkloadTasksParam}
-//     * @return {status:result code, data:ListImportTasksResponse{status,state}}
-//     */
-//    R<ListImportTasksResponse> listBulkloadTasks(ListBulkloadTasksParam requestParam);
-
     /**
      * Conducts ANN search on a vector field. Use expression to do filtering before search.
      *
@@ -391,14 +367,6 @@ public interface MilvusClient {
      * @return {status:result code,data: QueryResults{filter results}}
      */
     ListenableFuture<R<QueryResults>> queryAsync(QueryParam requestParam);
-
-//    /**
-//     * Calculates the distance between the specified vectors.
-//     *
-//     * @param requestParam {@link CalcDistanceParam}
-//     * @return {status:result code, data: CalcDistanceResults{distances}}
-//     */
-//    R<CalcDistanceResults> calcDistance(CalcDistanceParam requestParam);
 
     /**
      * Gets the runtime metrics information of Milvus, returns the result in .json format.
@@ -599,9 +567,27 @@ public interface MilvusClient {
      */
     R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam);
 
+    /**
+     * Import data from external files, currently support JSON/Numpy format
+     *
+     * @param requestParam {@link BulkInsertParam}
+     * @return {status:result code, data:ImportResponse{status,info}}
+     */
     R<ImportResponse> bulkInsert(BulkInsertParam requestParam);
 
+    /**
+     * Get state of bulk insert task
+     *
+     * @param requestParam {@link GetBulkInsertStateParam}
+     * @return {status:result code, data:GetImportStateResponse{status,info}}
+     */
     R<GetImportStateResponse> getBulkInsertState(GetBulkInsertStateParam requestParam);
 
+    /**
+     * List bulk insert tasks
+     *
+     * @param requestParam {@link ListBulkInsertTasksParam}
+     * @return {status:result code, data:ListImportTasksResponse{status,info}}
+     */
     R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam);
 }

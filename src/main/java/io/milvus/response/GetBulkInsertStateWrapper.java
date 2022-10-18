@@ -7,11 +7,12 @@ import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.Constant;
 import lombok.NonNull;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Util class to wrap response of <code>getBulkInsertState</code> interface.
+ * Util class to wrap response of <code>GetImportStateResponse</code> interface.
  */
 public class GetBulkInsertStateWrapper {
     private final GetImportStateResponse response;
@@ -69,6 +70,25 @@ public class GetBulkInsertStateWrapper {
      */
     public long getImportedCount() {
         return response.getRowCount();
+    }
+
+    /**
+     * Gets the integer timestamp when this task is created.
+     *
+     * @return the integer timestamp when this task is created
+     */
+    public long getCreateTimestamp() {
+        return response.getCreateTs();
+    }
+
+    /**
+     * Gets the timestamp in string format when this task is created.
+     *
+     * @return the timestamp in string format when this task is created
+     */
+    public String getCreateTimeStr() {
+        Timestamp ts = new Timestamp(response.getCreateTs());
+        return ts.toString();
     }
 
     /**

@@ -20,15 +20,22 @@
 package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
+import lombok.NonNull;
 
 /**
  * Parameters for <code>listBulkInsertTasks</code> interface.
  */
 @Getter
 public class ListBulkInsertTasksParam {
+    private final String collectionName;
+    private final int limit;
 
-    private ListBulkInsertTasksParam() {
+    private ListBulkInsertTasksParam(@NonNull Builder builder) {
+        this.collectionName = builder.collectionName;
+        this.limit = builder.limit;
     }
 
     public static Builder newBuilder() {
@@ -39,7 +46,36 @@ public class ListBulkInsertTasksParam {
      * Builder for {@link ListBulkInsertTasksParam} class.
      */
     public static final class Builder {
+        private String collectionName;
+
+        // The limit count of returned tasks, list all tasks if the value is 0
+        // default by 0
+        private Integer limit = 0;
+
         private Builder() {
+        }
+
+        /**
+         * Sets the target collection name, list all tasks if the name is empty.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        /**
+         * Specify limit count of returned tasks, list all tasks if the value is 0.
+         * default value is 0
+         *
+         * @param limit limit number
+         * @return <code>Builder</code>
+         */
+        public Builder withLimit(@NonNull Integer limit) {
+            this.limit = limit;
+            return this;
         }
 
         /**
@@ -48,7 +84,7 @@ public class ListBulkInsertTasksParam {
          * @return {@link ListBulkInsertTasksParam}
          */
         public ListBulkInsertTasksParam build() throws ParamException {
-            return new ListBulkInsertTasksParam();
+            return new ListBulkInsertTasksParam(this);
         }
     }
 
@@ -60,6 +96,8 @@ public class ListBulkInsertTasksParam {
     @Override
     public String toString() {
         return "ListBulkInsertTasksParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", limit=" + limit +
                 '}';
     }
 }
