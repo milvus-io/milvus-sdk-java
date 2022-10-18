@@ -17,6 +17,9 @@ import java.nio.ByteOrder;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
+
 /**
  * Utility functions for param classes
  */
@@ -486,5 +489,17 @@ public class ParamUtils {
                 .setKey(key).setValue(value).build()));
 
         return builder.build();
+    }
+
+    public static ServerAddress convertServerAddress(ServerAddress serverAddress) {
+        String host = serverAddress.getHost();
+        int port = serverAddress.getPort();
+
+        if(host.startsWith(HOST_HTTPS_PREFIX)){
+            host = host.replace(HOST_HTTPS_PREFIX, "");
+            this.secure = true;
+        }else if(host.startsWith(HOST_HTTP_PREFIX)){
+            this.host = host.replace(HOST_HTTP_PREFIX, "");
+        }
     }
 }
