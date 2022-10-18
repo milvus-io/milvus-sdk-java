@@ -23,7 +23,7 @@ public enum ConsistencyLevelEnum {
 
     private static final ConsistencyLevelEnum[] CONSISTENCY_LEVELS = new ConsistencyLevelEnum[values().length];
 
-    private static ConsistencyLevelEnum getNameByCode(int code) {
+    public static ConsistencyLevelEnum getNameByCode(int code) {
         if (code >= 0 && code < CONSISTENCY_LEVELS.length) {
             return CONSISTENCY_LEVELS[code];
         }
