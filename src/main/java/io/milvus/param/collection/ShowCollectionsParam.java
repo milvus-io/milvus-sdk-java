@@ -70,6 +70,17 @@ public class ShowCollectionsParam {
         }
 
         /**
+         * Sets a show type. Show Type can be empty or null, default value is ShowType.All.
+         *
+         * @param showType ShowType
+         * @return <code>Builder</code>
+         */
+        public Builder withShowType(ShowType showType) {
+            this.showType = showType;
+            return this;
+        }
+
+        /**
          * Adds a collection name. Collection name cannot be empty or null.
          *
          * @param collectionName collection name

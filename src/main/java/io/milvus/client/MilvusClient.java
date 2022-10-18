@@ -19,33 +19,82 @@
 
 package io.milvus.client;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.collection.*;
-import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.param.partition.*;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.DescribeCollectionParam;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FlushParam;
+import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
+import io.milvus.param.collection.ShowCollectionsParam;
+import io.milvus.param.control.GetCompactionPlansParam;
+import io.milvus.param.control.GetCompactionStateParam;
+import io.milvus.param.control.GetFlushStateParam;
+import io.milvus.param.control.GetMetricsParam;
+import io.milvus.param.control.GetPersistentSegmentInfoParam;
+import io.milvus.param.control.GetQuerySegmentInfoParam;
+import io.milvus.param.control.GetReplicasParam;
+import io.milvus.param.control.LoadBalanceParam;
+import io.milvus.param.control.ManualCompactParam;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.param.index.DescribeIndexParam;
+import io.milvus.param.index.DropIndexParam;
+import io.milvus.param.index.GetIndexBuildProgressParam;
+import io.milvus.param.index.GetIndexStateParam;
+import io.milvus.param.partition.CreatePartitionParam;
+import io.milvus.param.partition.DropPartitionParam;
+import io.milvus.param.partition.GetPartitionStatisticsParam;
+import io.milvus.param.partition.HasPartitionParam;
+import io.milvus.param.partition.LoadPartitionsParam;
+import io.milvus.param.partition.ReleasePartitionsParam;
+import io.milvus.param.partition.ShowPartitionsParam;
+import io.milvus.param.role.AddUserToRoleParam;
+import io.milvus.param.role.CreateRoleParam;
+import io.milvus.param.role.DropRoleParam;
+import io.milvus.param.role.GrantRolePrivilegeParam;
+import io.milvus.param.role.RemoveUserFromRoleParam;
+import io.milvus.param.role.RevokeRolePrivilegeParam;
+import io.milvus.param.role.SelectGrantForRoleAndObjectParam;
+import io.milvus.param.role.SelectGrantForRoleParam;
+import io.milvus.param.role.SelectUserParam;
+import io.milvus.param.role.SelectRoleParam;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import java.util.concurrent.TimeUnit;
 
-/** The Milvus Client Interface */
+/**
+ * The Milvus Client Interface
+ */
 public interface MilvusClient {
     /**
      * Timeout setting for rpc call.
      *
-     * @param timeout set time waiting for a rpc call.
+     * @param timeout     set time waiting for a rpc call.
      * @param timeoutUnit time unit
      */
     MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
-    /** Disconnects from a Milvus server with timeout of 1 minute */
+    /**
+     * Disconnects from a Milvus server with timeout of 1 minute
+     */
     default void close() {
         try {
             close(TimeUnit.MINUTES.toSeconds(1));
@@ -94,7 +143,7 @@ public interface MilvusClient {
     R<RpcStatus> loadCollection(LoadCollectionParam requestParam);
 
     /**
-     * Releases a collection from memory to reduce memory usage. Note that you 
+     * Releases a collection from memory to reduce memory usage. Note that you
      * cannot search while the corresponding collection is released from memory.
      *
      * @param requestParam {@link ReleaseCollectionParam}
@@ -143,7 +192,7 @@ public interface MilvusClient {
     R<RpcStatus> createPartition(CreatePartitionParam requestParam);
 
     /**
-     * Drops a partition. Note that this method drops all data in this partition 
+     * Drops a partition. Note that this method drops all data in this partition
      * and the _default partition cannot be dropped.
      *
      * @param requestParam {@link DropPartitionParam}
@@ -234,7 +283,7 @@ public interface MilvusClient {
     R<RpcStatus> dropIndex(DropIndexParam requestParam);
 
     /**
-     * Shows the information of the specified index. Current release of Milvus 
+     * Shows the information of the specified index. Current release of Milvus
      * only supports showing latest built index.
      *
      * @param requestParam {@link DescribeIndexParam}
@@ -277,7 +326,7 @@ public interface MilvusClient {
     ListenableFuture<R<MutationResult>> insertAsync(InsertParam requestParam);
 
     /**
-     * Deletes entity(s) based on primary key(s) filtered by boolean expression. Current release 
+     * Deletes entity(s) based on primary key(s) filtered by boolean expression. Current release
      * of Milvus only supports expression in the format "pk_field in [1, 2, ...]"
      *
      * @param requestParam {@link DeleteParam}
@@ -326,7 +375,7 @@ public interface MilvusClient {
     ListenableFuture<R<SearchResults>> searchAsync(SearchParam requestParam);
 
     /**
-     * Queries entity(s) based on scalar field(s) filtered by boolean expression. 
+     * Queries entity(s) based on scalar field(s) filtered by boolean expression.
      * Note that the order of the returned entities cannot be guaranteed.
      *
      * @param requestParam {@link QueryParam}
@@ -459,4 +508,100 @@ public interface MilvusClient {
      * @return {status:result code, data:ListCredUsersResponse{status,info}}
      */
     R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam);
+
+
+    /**
+     * It will success if the role isn't existed, otherwise fail.
+     *
+     * @param requestParam {@link CreateRoleParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createRole(CreateRoleParam requestParam);
+
+
+    /**
+     * It will success if the role is existed, otherwise fail.
+     *
+     * @param requestParam {@link DropRoleParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> dropRole(DropRoleParam requestParam);
+
+
+    /**
+     * The user will get permissions that the role are allowed to perform operations.
+     *
+     * @param requestParam {@link AddUserToRoleParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam);
+
+
+    /**
+     * The user will remove permissions that the role are allowed to perform operations.
+     *
+     * @param requestParam {@link AddUserToRoleParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> removeUserFromRole(RemoveUserFromRoleParam requestParam);
+
+
+    /**
+     * Get all users who are added to the role.
+     *
+     * @param requestParam {@link SelectRoleParam}
+     * @return {status:result code, data:SelectRoleResponse{status,info}}
+     */
+    R<SelectRoleResponse> selectRole(SelectRoleParam requestParam);
+
+
+    /**
+     * Get all roles the user has.
+     *
+     * @param requestParam {@link SelectUserParam}
+     * @return {status:result code, data:SelectUserResponse{status,info}}
+     */
+    R<SelectUserResponse> selectUser(SelectUserParam requestParam);
+
+
+    /**
+     * Grant Role Privilege.
+     *
+     * @param requestParam {@link GrantRolePrivilegeParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> grantRolePrivilege(GrantRolePrivilegeParam requestParam);
+
+
+    /**
+     * Revoke Role Privilege.
+     *
+     * @param requestParam {@link RevokeRolePrivilegeParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> revokeRolePrivilege(RevokeRolePrivilegeParam requestParam);
+
+
+    /**
+     * List a grant info for the role and the specific object
+     *
+     * @param requestParam {@link SelectGrantForRoleParam}
+     * @return {status:result code, data:SelectRoleResponse{status,info}}
+     */
+    R<SelectGrantResponse> selectGrantForRole(SelectGrantForRoleParam requestParam);
+
+
+    /**
+     * List a grant info for the role
+     *
+     * @param requestParam {@link SelectGrantForRoleAndObjectParam}
+     * @return {status:result code, data:SelectRoleResponse{status,info}}
+     */
+    R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam);
+
+    R<ImportResponse> bulkInsert(BulkInsertParam requestParam);
+
+    R<GetImportStateResponse> getBulkInsertState(GetBulkInsertStateParam requestParam);
+
+    R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam);
 }

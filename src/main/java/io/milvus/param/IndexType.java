@@ -34,6 +34,8 @@ public enum IndexType {
     RHNSW_FLAT,
     RHNSW_PQ,
     RHNSW_SQ,
+    DISKANN,
+    AUTOINDEX,
     //Only supported for binary vectors
     BIN_FLAT,
     BIN_IVF_FLAT,
