@@ -177,9 +177,10 @@ public class LoadCollectionParam {
     public String toString() {
         return "LoadCollectionParam{" +
                 "collectionName='" + collectionName + '\'' +
-                ", syncLoad=" + syncLoad +
-                ", syncLoadWaitingInterval=" + syncLoadWaitingInterval +
-                ", syncLoadWaitingTimeout=" + syncLoadWaitingTimeout +
+                ", syncLoad=" + syncLoad + '\'' +
+                ", syncLoadWaitingInterval=" + syncLoadWaitingInterval + '\'' +
+                ", syncLoadWaitingTimeout=" + syncLoadWaitingTimeout + '\'' +
+                ", replicaNumber=" + replicaNumber + '\'' +
                 '}';
     }
 }

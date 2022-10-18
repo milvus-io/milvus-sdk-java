@@ -50,7 +50,7 @@ public class GetCollectionStatisticsParam {
 
         // if flushCollection is true, getCollectionStatistics() firstly call flush() and wait flush() finish
         // Note: use default interval and timeout to wait flush()
-        private Boolean flushCollection = Boolean.TRUE;
+        private Boolean flushCollection = Boolean.FALSE;
 
         private Builder() {
         }
