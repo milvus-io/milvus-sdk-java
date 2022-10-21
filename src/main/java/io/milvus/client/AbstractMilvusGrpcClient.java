@@ -2272,7 +2272,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             ImportRequest.Builder importRequest = ImportRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setRowBased(requestParam.isRowBased())
                     .addAllFiles(requestParam.getFiles());
 
             if (StringUtils.isNotEmpty(requestParam.getPartitionName())) {
