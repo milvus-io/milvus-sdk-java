@@ -27,16 +27,116 @@ import io.grpc.StatusRuntimeException;
 import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.*;
+import io.milvus.grpc.AlterAliasRequest;
+import io.milvus.grpc.BoolResponse;
+import io.milvus.grpc.CheckHealthRequest;
+import io.milvus.grpc.CheckHealthResponse;
+import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.CreateAliasRequest;
+import io.milvus.grpc.CreateCollectionRequest;
+import io.milvus.grpc.CreateCredentialRequest;
+import io.milvus.grpc.CreateIndexRequest;
+import io.milvus.grpc.CreatePartitionRequest;
+import io.milvus.grpc.CreateRoleRequest;
+import io.milvus.grpc.DeleteCredentialRequest;
+import io.milvus.grpc.DeleteRequest;
+import io.milvus.grpc.DescribeCollectionRequest;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.DescribeIndexRequest;
+import io.milvus.grpc.DescribeIndexResponse;
+import io.milvus.grpc.DropAliasRequest;
+import io.milvus.grpc.DropCollectionRequest;
+import io.milvus.grpc.DropIndexRequest;
+import io.milvus.grpc.DropPartitionRequest;
+import io.milvus.grpc.DropRoleRequest;
+import io.milvus.grpc.ErrorCode;
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.FlushRequest;
+import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.GetCollectionStatisticsRequest;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
+import io.milvus.grpc.GetCompactionPlansRequest;
+import io.milvus.grpc.GetCompactionPlansResponse;
+import io.milvus.grpc.GetCompactionStateRequest;
+import io.milvus.grpc.GetCompactionStateResponse;
+import io.milvus.grpc.GetFlushStateRequest;
+import io.milvus.grpc.GetFlushStateResponse;
+import io.milvus.grpc.GetImportStateRequest;
+import io.milvus.grpc.GetImportStateResponse;
+import io.milvus.grpc.GetIndexBuildProgressRequest;
+import io.milvus.grpc.GetIndexBuildProgressResponse;
+import io.milvus.grpc.GetIndexStateRequest;
+import io.milvus.grpc.GetIndexStateResponse;
+import io.milvus.grpc.GetMetricsRequest;
+import io.milvus.grpc.GetMetricsResponse;
+import io.milvus.grpc.GetPartitionStatisticsRequest;
+import io.milvus.grpc.GetPartitionStatisticsResponse;
+import io.milvus.grpc.GetPersistentSegmentInfoRequest;
+import io.milvus.grpc.GetPersistentSegmentInfoResponse;
+import io.milvus.grpc.GetQuerySegmentInfoRequest;
+import io.milvus.grpc.GetQuerySegmentInfoResponse;
+import io.milvus.grpc.GetReplicasRequest;
+import io.milvus.grpc.GetReplicasResponse;
+import io.milvus.grpc.GetVersionRequest;
+import io.milvus.grpc.GetVersionResponse;
+import io.milvus.grpc.GrantEntity;
+import io.milvus.grpc.GrantorEntity;
+import io.milvus.grpc.HasCollectionRequest;
+import io.milvus.grpc.HasPartitionRequest;
+import io.milvus.grpc.ImportRequest;
+import io.milvus.grpc.ImportResponse;
+import io.milvus.grpc.IndexState;
+import io.milvus.grpc.InsertRequest;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.ListCredUsersRequest;
+import io.milvus.grpc.ListCredUsersResponse;
+import io.milvus.grpc.ListImportTasksRequest;
+import io.milvus.grpc.ListImportTasksResponse;
+import io.milvus.grpc.LoadBalanceRequest;
+import io.milvus.grpc.LoadCollectionRequest;
+import io.milvus.grpc.LoadPartitionsRequest;
+import io.milvus.grpc.LongArray;
+import io.milvus.grpc.ManualCompactionRequest;
+import io.milvus.grpc.ManualCompactionResponse;
+import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.MsgBase;
+import io.milvus.grpc.MsgType;
+import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.ObjectEntity;
+import io.milvus.grpc.OperatePrivilegeRequest;
+import io.milvus.grpc.OperatePrivilegeType;
+import io.milvus.grpc.OperateUserRoleRequest;
+import io.milvus.grpc.OperateUserRoleType;
+import io.milvus.grpc.PrivilegeEntity;
+import io.milvus.grpc.QueryRequest;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.ReleaseCollectionRequest;
+import io.milvus.grpc.ReleasePartitionsRequest;
+import io.milvus.grpc.RoleEntity;
+import io.milvus.grpc.SearchRequest;
+import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.SelectGrantRequest;
+import io.milvus.grpc.SelectGrantResponse;
+import io.milvus.grpc.SelectRoleRequest;
+import io.milvus.grpc.SelectRoleResponse;
+import io.milvus.grpc.SelectUserRequest;
+import io.milvus.grpc.SelectUserResponse;
+import io.milvus.grpc.ShowCollectionsRequest;
+import io.milvus.grpc.ShowCollectionsResponse;
+import io.milvus.grpc.ShowPartitionsRequest;
+import io.milvus.grpc.ShowPartitionsResponse;
+import io.milvus.grpc.ShowType;
+import io.milvus.grpc.Status;
+import io.milvus.grpc.UpdateCredentialRequest;
+import io.milvus.grpc.UserEntity;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
 import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
 import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DescribeCollectionParam;
@@ -2355,6 +2455,46 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("ListBulkInsertTasks failed! \n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<CheckHealthResponse> checkHealth() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+        try {
+            CheckHealthResponse response = blockingStub().checkHealth(CheckHealthRequest.newBuilder().build());
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("CheckHealth successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("CheckHealth RPC failed!", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CheckHealth failed! ", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<GetVersionResponse> getVersion() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+        try {
+            GetVersionResponse response = blockingStub().getVersion(GetVersionRequest.newBuilder().build());
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("GetVersion successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("GetVersion RPC failed!", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetVersion failed! ", e.getMessage());
             return R.failed(e);
         }
     }
