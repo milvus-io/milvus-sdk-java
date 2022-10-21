@@ -48,7 +48,7 @@ public class GetBulkInsertStateParam {
         }
 
         /**
-         * Sets the task id. task cannot be empty or null.
+         * Sets the task id.
          *
          * @param task task id
          * @return <code>Builder</code>
@@ -77,7 +77,7 @@ public class GetBulkInsertStateParam {
     @Override
     public String toString() {
         return "GetBulkInsertStateParam{" +
-                "task='" + task + '\'' +
+                "taskID='" + task + '\'' +
                 '}';
     }
 }

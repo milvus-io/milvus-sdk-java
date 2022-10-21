@@ -75,6 +75,9 @@ public class ListBulkInsertTasksParam {
          */
         public Builder withLimit(@NonNull Integer limit) {
             this.limit = limit;
+            if (this.limit < 0) {
+                this.limit = 0;
+            }
             return this;
         }
 

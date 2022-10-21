@@ -37,14 +37,12 @@ import java.util.Map;
 public class BulkInsertParam {
     private final String collectionName;
     private final String partitionName;
-    private final boolean rowBased;
     private final List<String> files;
     private final Map<String, String> options = new HashMap<>();
 
     private BulkInsertParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
-        this.rowBased = builder.rowBased;
         this.files = builder.files;
     }
 
@@ -58,7 +56,6 @@ public class BulkInsertParam {
     public static final class Builder {
         private String collectionName;
         private String partitionName;
-        private Boolean rowBased = false;
         private final List<String> files = new ArrayList<>();
         private Builder() {
         }
@@ -86,18 +83,8 @@ public class BulkInsertParam {
         }
 
         /**
-         * Sets the file description. The description can be empty. The default is false.
-         *
-         * @param rowBased description of the file
-         * @return <code>Builder</code>
-         */
-        public Builder withRowBased(@NonNull Boolean rowBased) {
-            this.rowBased = rowBased;
-            return this;
-        }
-
-        /**
-         * Sets the path of the files. The files cannot be empty or null.
+         * Sets the path of the files. The paths cannot be empty or null.
+         * Each file path must be a relative path under the Milvus storage root path.
          *
          * @param files a <code>List</code> of {@link String}
          * @return <code>Builder</code>
@@ -108,8 +95,8 @@ public class BulkInsertParam {
         }
 
         /**
-         * Adds a file path.
-         * @see String
+         * Adds a file path. The path cannot be empty or null.
+         * The file path must be a relative path under the Milvus storage root path.
          *
          * @param file a {@link String}
          * @return <code>Builder</code>
@@ -129,12 +116,12 @@ public class BulkInsertParam {
 
 
             if (files.isEmpty()) {
-                throw new ParamException("Field numbers must be larger than 0");
+                throw new ParamException("File path is required");
             }
 
             for (String file : files) {
                 if (StringUtils.isEmpty(file)) {
-                    throw new ParamException("file field cannot be empty");
+                    throw new ParamException("File path cannot be empty or null");
                 }
             }
 
@@ -152,7 +139,6 @@ public class BulkInsertParam {
         return "BulkInsertParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionName=" + partitionName +
-                ", rowBased='" + rowBased + '\'' +
                 ", files=" + files.toString() +
                 '}';
     }

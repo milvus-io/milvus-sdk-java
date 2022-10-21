@@ -568,7 +568,7 @@ public interface MilvusClient {
     R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam);
 
     /**
-     * Import data from external files, currently support JSON/Numpy format
+     * Import data from external files, currently support JSON format
      *
      * @param requestParam {@link BulkInsertParam}
      * @return {status:result code, data:ImportResponse{status,info}}
