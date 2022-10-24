@@ -75,8 +75,8 @@ import io.milvus.param.role.RemoveUserFromRoleParam;
 import io.milvus.param.role.RevokeRolePrivilegeParam;
 import io.milvus.param.role.SelectGrantForRoleAndObjectParam;
 import io.milvus.param.role.SelectGrantForRoleParam;
-import io.milvus.param.role.SelectUserParam;
 import io.milvus.param.role.SelectRoleParam;
+import io.milvus.param.role.SelectUserParam;
 
 import java.util.concurrent.TimeUnit;
 
@@ -590,4 +590,20 @@ public interface MilvusClient {
      * @return {status:result code, data:ListImportTasksResponse{status,info}}
      */
     R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam);
+
+
+    /**
+     * Check Server Health
+     *
+     * @return {status:result code, data:CheckHealthResponse{status,info}}
+     */
+    R<CheckHealthResponse> checkHealth();
+
+
+    /**
+     * Get Server Version
+     *
+     * @return {status:result code, data:GetVersionResponse{status,info}}
+     */
+    R<GetVersionResponse> getVersion();
 }

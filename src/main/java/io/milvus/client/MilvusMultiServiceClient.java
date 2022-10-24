@@ -511,6 +511,14 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().listBulkInsertTasks(requestParam);
     }
 
+    public R<CheckHealthResponse> checkHealth(){
+        return this.clusterFactory.getMaster().getClient().checkHealth();
+    }
+
+    public R<GetVersionResponse> getVersion(){
+        return this.clusterFactory.getMaster().getClient().getVersion();
+    }
+
     private <T> R<T> handleResponse(List<R<T>> response) {
         if (CollectionUtils.isNotEmpty(response)) {
             R<T> rSuccess = null;
