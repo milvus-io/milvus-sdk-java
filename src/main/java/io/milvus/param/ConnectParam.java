@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
+import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
 
 /**
  * Parameters for client connection.
@@ -242,6 +243,10 @@ public class ConnectParam {
          */
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
+            String[] hostArray = host.split(COLON);
+            if(hostArray.length == 2){
+                this.port = Integer.valueOf(hostArray[1]);
+            }
             if(host.startsWith(HOST_HTTPS_PREFIX)){
                 this.host = host.replace(HOST_HTTPS_PREFIX, "");
                 this.secure = true;

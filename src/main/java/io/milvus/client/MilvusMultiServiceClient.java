@@ -39,6 +39,7 @@ import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FlushParam;
 import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.GetLoadingProgressParam;
 import io.milvus.param.collection.HasCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
@@ -515,8 +516,18 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().checkHealth();
     }
 
-    public R<GetVersionResponse> getVersion(){
+    public R<GetVersionResponse> getVersion() {
         return this.clusterFactory.getMaster().getClient().getVersion();
+    }
+    /**
+     * Get Loading Collection Progress
+     *
+     * @param requestParam {@link GetLoadingProgressParam}
+     * @return {status:result code, data:GetLoadingProgressResponse{status}}
+     */
+    @Override
+    public R<GetLoadingProgressResponse> getLoadingProgress(GetLoadingProgressParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getLoadingProgress(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {
