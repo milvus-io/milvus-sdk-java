@@ -21,6 +21,7 @@ package io.milvus.param;
 
 import io.milvus.exception.ParamException;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
+import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
 
 /**
  * Parameters for client connection.
@@ -35,6 +37,7 @@ import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_H
 public class ConnectParam {
     private final String host;
     private final int port;
+    private final String uri;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
@@ -46,6 +49,7 @@ public class ConnectParam {
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
+        this.uri = builder.uri;
         this.connectTimeoutMs = builder.connectTimeoutMs;
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
@@ -101,6 +105,7 @@ public class ConnectParam {
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
+        private String uri;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
@@ -131,6 +136,17 @@ public class ConnectParam {
          */
         public Builder withPort(int port)  {
             this.port = port;
+            return this;
+        }
+
+        /**
+         * Sets the uri
+         *
+         * @param uri
+         * @return <code>Builder</code>
+         */
+        public Builder withUri(String uri) {
+            this.uri = uri;
             return this;
         }
 
@@ -242,11 +258,18 @@ public class ConnectParam {
          */
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
-            if(host.startsWith(HOST_HTTPS_PREFIX)){
-                this.host = host.replace(HOST_HTTPS_PREFIX, "");
-                this.secure = true;
-            }else if(host.startsWith(HOST_HTTP_PREFIX)){
-                this.host = host.replace(HOST_HTTP_PREFIX, "");
+            if (StringUtils.isNotEmpty(uri)) {
+                if (uri.startsWith(HOST_HTTPS_PREFIX)) {
+                    this.uri = uri.replace(HOST_HTTPS_PREFIX, "");
+                    this.secure = true;
+                } else if (uri.startsWith(HOST_HTTP_PREFIX)) {
+                    this.uri = uri.replace(HOST_HTTP_PREFIX, "");
+                }
+                String[] uriArray = uri.split(COLON);
+                this.host = uriArray[0];
+                if(uriArray.length == 2){
+                    this.port = Integer.valueOf(uriArray[1]);
+                }
             }
 
             if (port < 0 || port > 0xFFFF) {

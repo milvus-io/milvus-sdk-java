@@ -7,4 +7,8 @@ public class MilvusClientConstant {
 
         public final static String HOST_HTTP_PREFIX = "http://";
     }
+    public static class StringValue {
+        public final static String COLON = ":";
+        public final static String DOUBLE_SLASH = "//";
+    }
 }

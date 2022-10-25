@@ -44,6 +44,7 @@ import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.collection.FlushParam;
 import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.GetLoadingProgressParam;
 import io.milvus.param.collection.HasCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
@@ -2354,6 +2355,80 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("ListBulkInsertTasks failed! \n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetLoadingProgressResponse> getLoadingProgress(GetLoadingProgressParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetLoadingProgressRequest releasePartitionsRequest = GetLoadingProgressRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName())
+                    .addAllPartitionNames(requestParam.getPartitionNames())
+                    .build();
+
+            GetLoadingProgressResponse response = blockingStub().getLoadingProgress(releasePartitionsRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("GetLoadingProgressParam successfully! Collection name:{}, partition names:{}",
+                        requestParam.getCollectionName(), requestParam.getPartitionNames());
+                return R.success(response);
+            } else {
+                return failedStatus("ReleasePartitionsRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetLoadingProgressParam RPC failed! Collection name:{}, partition names:{}\n{}",
+                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetLoadingProgressParam failed! Collection name:{}, partition names:{}\n{}",
+                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<CheckHealthResponse> checkHealth() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+        try {
+            CheckHealthResponse response = blockingStub().checkHealth(CheckHealthRequest.newBuilder().build());
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("CheckHealth successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("CheckHealth RPC failed!", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CheckHealth failed! ", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    public R<GetVersionResponse> getVersion() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+        try {
+            GetVersionResponse response = blockingStub().getVersion(GetVersionRequest.newBuilder().build());
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("SelectGrant", response.getStatus());
+            }
+            logDebug("GetVersion successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("GetVersion RPC failed!", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetVersion failed! ", e.getMessage());
             return R.failed(e);
         }
     }
