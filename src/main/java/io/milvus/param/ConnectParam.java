@@ -21,6 +21,7 @@ package io.milvus.param;
 
 import io.milvus.exception.ParamException;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -36,6 +37,7 @@ import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
 public class ConnectParam {
     private final String host;
     private final int port;
+    private final String uri;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
@@ -46,6 +48,7 @@ public class ConnectParam {
 
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
+        this.uri = builder.uri;
         this.port = builder.port;
         this.connectTimeoutMs = builder.connectTimeoutMs;
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
@@ -101,6 +104,7 @@ public class ConnectParam {
      */
     public static class Builder {
         private String host = "localhost";
+        private String uri;
         private int port = 19530;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
@@ -125,12 +129,23 @@ public class ConnectParam {
         }
 
         /**
+         * Sets the uri
+         *
+         * @param uri
+         * @return <code>Builder</code>
+         */
+        public Builder withUri(String uri) {
+            this.uri = uri;
+            return this;
+        }
+
+        /**
          * Sets the connection port. Port value must be greater than zero and less than 65536.
          *
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withPort(int port)  {
+        public Builder withPort(int port) {
             this.port = port;
             return this;
         }
@@ -139,7 +154,7 @@ public class ConnectParam {
          * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param connectTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit       timeout unit
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
@@ -151,7 +166,7 @@ public class ConnectParam {
          * Sets the keep-alive time value of client channel. The keep-alive value must be greater than zero.
          *
          * @param keepAliveTime keep-alive value
-         * @param timeUnit keep-alive unit
+         * @param timeUnit      keep-alive unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
@@ -163,7 +178,7 @@ public class ConnectParam {
          * Sets the keep-alive timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param keepAliveTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit         timeout unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
@@ -197,7 +212,7 @@ public class ConnectParam {
          * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
          * @param idleTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit    timeout unit
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
@@ -207,6 +222,7 @@ public class ConnectParam {
 
         /**
          * Sets the username and password for this connection
+         *
          * @param username current user
          * @param password password
          * @return <code>Builder</code>
@@ -218,6 +234,7 @@ public class ConnectParam {
 
         /**
          * Sets secure the authorization for this connection
+         *
          * @param secure boolean
          * @return <code>Builder</code>
          */
@@ -228,6 +245,7 @@ public class ConnectParam {
 
         /**
          * Sets the secure for this connection
+         *
          * @param authorization the authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
@@ -243,15 +261,19 @@ public class ConnectParam {
          */
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
-            String[] hostArray = host.split(COLON);
-            if(hostArray.length == 2){
-                this.port = Integer.valueOf(hostArray[1]);
-            }
-            if(host.startsWith(HOST_HTTPS_PREFIX)){
-                this.host = host.replace(HOST_HTTPS_PREFIX, "");
-                this.secure = true;
-            }else if(host.startsWith(HOST_HTTP_PREFIX)){
-                this.host = host.replace(HOST_HTTP_PREFIX, "");
+
+            if (StringUtils.isNotEmpty(uri)) {
+                if (uri.startsWith(HOST_HTTPS_PREFIX)) {
+                    this.uri = uri.replace(HOST_HTTPS_PREFIX, "");
+                    this.secure = true;
+                } else if (uri.startsWith(HOST_HTTP_PREFIX)) {
+                    this.uri = uri.replace(HOST_HTTP_PREFIX, "");
+                }
+                String[] uriArray = uri.split(COLON);
+                this.host = uriArray[0];
+                if(uriArray.length == 2){
+                    this.port = Integer.valueOf(uriArray[1]);
+                }
             }
 
             if (port < 0 || port > 0xFFFF) {
