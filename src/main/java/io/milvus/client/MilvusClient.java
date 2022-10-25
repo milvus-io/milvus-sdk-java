@@ -34,6 +34,7 @@ import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FlushParam;
 import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.GetLoadingProgressParam;
 import io.milvus.param.collection.HasCollectionParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
@@ -590,4 +591,27 @@ public interface MilvusClient {
      * @return {status:result code, data:ListImportTasksResponse{status,info}}
      */
     R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam);
+
+    /**
+     * Check Server Health
+     *
+     * @return {status:result code, data:CheckHealthResponse{status,info}}
+     */
+    R<CheckHealthResponse> checkHealth();
+
+
+    /**
+     * Get Server Version
+     *
+     * @return {status:result code, data:GetVersionResponse{status,info}}
+     */
+    R<GetVersionResponse> getVersion();
+
+    /**
+     * Get Loading Collection Progress
+     *
+     * @param requestParam {@link GetLoadingProgressParam}
+     * @return {status:result code, data:GetLoadingProgressResponse{status}}
+     */
+    R<GetLoadingProgressResponse> getLoadingProgress(GetLoadingProgressParam requestParam);
 }
