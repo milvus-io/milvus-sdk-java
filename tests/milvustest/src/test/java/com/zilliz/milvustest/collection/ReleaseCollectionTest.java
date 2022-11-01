@@ -47,7 +47,7 @@ public class ReleaseCollectionTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "query after release collection", dependsOnMethods = "releaseCollection")
-  public void queryAfterDropCollection() {
+  public void queryAfterReleaseCollection() {
     String SEARCH_PARAM = "book_id in [2,4,6,8]";
     List<String> outFields = Arrays.asList("book_id", "word_count");
     QueryParam queryParam =
@@ -62,8 +62,8 @@ public class ReleaseCollectionTest extends BaseTest {
             queryResultsR.getException().getMessage().contains("checkIfLoaded failed when query"));
   }
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "search after drop collection", dependsOnMethods = "releaseCollection")
-  public void searchAfterDropCollection() {
+  @Test(description = "search after release collection", dependsOnMethods = "releaseCollection")
+  public void searchAfterReleaseCollection() {
     Integer SEARCH_K = 2; // TopK
     String SEARCH_PARAM = "{\"nprobe\":10}";
     List<String> search_output_fields = Arrays.asList("book_id");
@@ -81,7 +81,7 @@ public class ReleaseCollectionTest extends BaseTest {
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
     Assert.assertTrue(
-            searchResultsR.getException().getMessage().contains("checkIfLoaded failed when search"));
+            searchResultsR.getException().getMessage().contains("not loaded into memory when search"));
   }
 
   @Severity(SeverityLevel.NORMAL)

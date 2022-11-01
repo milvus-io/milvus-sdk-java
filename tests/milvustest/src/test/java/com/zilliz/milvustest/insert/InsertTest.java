@@ -6,13 +6,16 @@ import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.MutationResult;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FieldType;
+import io.milvus.param.collection.GetCollectionStatisticsParam;
 import io.milvus.param.dml.InsertParam;
+import io.milvus.response.GetCollStatResponseWrapper;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -22,7 +25,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -336,6 +338,77 @@ public class InsertTest extends BaseTest {
                             .build());
     Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
     Assert.assertTrue(mutationResultR.getException().getMessage().contains("can't find collection"));
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert into collection with empty String fields")
+  public void insertWithEmptyStringField(){
+    String stringPKCollection = CommonFunction.createStringPKCollection();
+    Random ran = new Random();
+    List<String> book_name_array = new ArrayList<>();
+    List<String> book_content_array = new ArrayList<>();
+    List<List<Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < 1000; ++i) {
+      book_name_array.add(MathUtil.genRandomStringAndChinese(10) + "-" + i);
+      book_content_array.add("");
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      book_intro_array.add(vector);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_name", book_name_array));
+    fields.add(new InsertParam.Field("book_content", book_content_array));
+    fields.add(
+            new InsertParam.Field(
+                    CommonData.defaultVectorField, book_intro_array));
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder().withCollectionName(stringPKCollection)
+            .withFields(fields).build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+    milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert into collection with empty String fields")
+  public void insertWithEmptyStringPK(){
+    String stringPKCollection = CommonFunction.createStringPKCollection();
+    Random ran = new Random();
+    List<String> book_name_array = new ArrayList<>();
+    List<String> book_content_array = new ArrayList<>();
+    List<List<Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < 1000; ++i) {
+      book_name_array.add("");
+      book_content_array.add(MathUtil.genRandomStringAndChinese(10) + "-" + i);
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      book_intro_array.add(vector);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_name", book_name_array));
+    fields.add(new InsertParam.Field("book_content", book_content_array));
+    fields.add(
+            new InsertParam.Field(
+                    CommonData.defaultVectorField, book_intro_array));
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder().withCollectionName(stringPKCollection)
+            .withFields(fields).build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+    // has collection
+    R<GetCollectionStatisticsResponse> respCollectionStatistics =
+        milvusClient.getCollectionStatistics(
+            GetCollectionStatisticsParam.newBuilder()
+                .withCollectionName(stringPKCollection)
+                .withFlush(false)
+                .build());
+    Assert.assertEquals(respCollectionStatistics.getStatus().intValue(), 0);
+    GetCollStatResponseWrapper wrapperCollectionStatistics =
+            new GetCollStatResponseWrapper(respCollectionStatistics.getData());
+    Assert.assertEquals(wrapperCollectionStatistics.getRowCount(), 1000);
+    milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
   }
 
 }
