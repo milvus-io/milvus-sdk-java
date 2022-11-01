@@ -10,6 +10,8 @@ import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FlushParam;
+import io.milvus.param.dml.InsertParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.index.DropIndexParam;
@@ -20,6 +22,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Epic("Index")
 @Feature("GetIndexBuildProgress")
 public class GetIndexBuildProgressTest extends BaseTest {
@@ -28,6 +33,13 @@ public class GetIndexBuildProgressTest extends BaseTest {
   @BeforeClass(description = "Create collection and index for test",alwaysRun = true)
   public void createCollectionAndIndex() {
     collection = CommonFunction.createNewCollection();
+    List<InsertParam.Field> fields = CommonFunction.generateData(999);
+    milvusClient.insert(InsertParam.newBuilder()
+            .withFields(fields)
+            .withCollectionName(collection).build());
+    milvusClient.flush(FlushParam.newBuilder().withCollectionNames(Arrays.asList(collection))
+            .withSyncFlush(true).withSyncFlushWaitingInterval(500L)
+            .withSyncFlushWaitingTimeout(30L).build());
     milvusClient.createIndex(
         CreateIndexParam.newBuilder()
             .withCollectionName(collection)
@@ -64,7 +76,7 @@ public class GetIndexBuildProgressTest extends BaseTest {
                 .withIndexName(CommonData.defaultIndex)
                 .build());
     Assert.assertEquals(indexBuildProgress.getStatus().intValue(), 0);
-    Assert.assertEquals(indexBuildProgress.getData().getIndexedRows(), 0);
+    Assert.assertEquals(indexBuildProgress.getData().getTotalRows(), 999);
   }
 
   @Severity(SeverityLevel.NORMAL)

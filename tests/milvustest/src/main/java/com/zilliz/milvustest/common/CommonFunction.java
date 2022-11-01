@@ -3,7 +3,10 @@ package com.zilliz.milvustest.common;
 import com.zilliz.milvustest.entity.FileBody;
 import com.zilliz.milvustest.entity.MilvusEntity;
 import com.zilliz.milvustest.util.MathUtil;
+import com.zilliz.milvustest.util.PropertyFilesUtil;
+import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.DataType;
+import io.milvus.param.ConnectParam;
 import io.milvus.param.IndexType;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
@@ -56,32 +59,33 @@ public class CommonFunction {
     logger.info("create collection:" + collectionName);
     return collectionName;
   }
+
   public static String createNewCollectionWithAutoPK() {
     String collectionName = "Collection_" + MathUtil.getRandomString(10);
     FieldType fieldType1 =
-            FieldType.newBuilder()
-                    .withName("book_id")
-                    .withDataType(DataType.Int64)
-                    .withPrimaryKey(true)
-                    .withAutoID(true)
-                    .build();
+        FieldType.newBuilder()
+            .withName("book_id")
+            .withDataType(DataType.Int64)
+            .withPrimaryKey(true)
+            .withAutoID(true)
+            .build();
     FieldType fieldType2 =
-            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+        FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
     FieldType fieldType3 =
-            FieldType.newBuilder()
-                    .withName(CommonData.defaultVectorField)
-                    .withDataType(DataType.FloatVector)
-                    .withDimension(128)
-                    .build();
+        FieldType.newBuilder()
+            .withName(CommonData.defaultVectorField)
+            .withDataType(DataType.FloatVector)
+            .withDimension(128)
+            .build();
     CreateCollectionParam createCollectionReq =
-            CreateCollectionParam.newBuilder()
-                    .withCollectionName(collectionName)
-                    .withDescription("Test" + collectionName + "search")
-                    .withShardsNum(2)
-                    .addFieldType(fieldType1)
-                    .addFieldType(fieldType2)
-                    .addFieldType(fieldType3)
-                    .build();
+        CreateCollectionParam.newBuilder()
+            .withCollectionName(collectionName)
+            .withDescription("Test" + collectionName + "search")
+            .withShardsNum(2)
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .build();
     R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
     logger.info("create collection:" + collectionName);
     return collectionName;
@@ -254,12 +258,11 @@ public class CommonFunction {
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("book_id", book_id_array));
     fields.add(new InsertParam.Field("word_count", word_count_array));
-    fields.add(
-        new InsertParam.Field(
-            CommonData.defaultVectorField, book_intro_array));
+    fields.add(new InsertParam.Field(CommonData.defaultVectorField, book_intro_array));
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
+
   public static List<InsertParam.Field> generateDataWithAutoPK(int num) {
     Random ran = new Random();
     List<Long> word_count_array = new ArrayList<>();
@@ -274,9 +277,7 @@ public class CommonFunction {
     }
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("word_count", word_count_array));
-    fields.add(
-            new InsertParam.Field(
-                    CommonData.defaultVectorField, book_intro_array));
+    fields.add(new InsertParam.Field(CommonData.defaultVectorField, book_intro_array));
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
@@ -332,9 +333,7 @@ public class CommonFunction {
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("book_id", book_id_array));
     fields.add(new InsertParam.Field("word_count", word_count_array));
-    fields.add(
-        new InsertParam.Field(
-            CommonData.defaultBinaryVectorField, book_intro_array));
+    fields.add(new InsertParam.Field(CommonData.defaultBinaryVectorField, book_intro_array));
     //    logger.info("generateTestData" + JacksonUtil.serialize(fields));
     return fields;
   }
@@ -372,9 +371,7 @@ public class CommonFunction {
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("book_name", book_name_array));
     fields.add(new InsertParam.Field("book_content", book_content_array));
-    fields.add(
-        new InsertParam.Field(
-            CommonData.defaultVectorField, book_intro_array));
+    fields.add(new InsertParam.Field(CommonData.defaultVectorField, book_intro_array));
     //    logger.info("Generate String and Chinese Data"+ JacksonUtil.serialize(fields));
     return fields;
   }
@@ -391,9 +388,7 @@ public class CommonFunction {
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("book_name", book_name_array));
     fields.add(new InsertParam.Field("book_content", book_content_array));
-    fields.add(
-        new InsertParam.Field(
-            CommonData.defaultBinaryVectorField, book_intro_array));
+    fields.add(new InsertParam.Field(CommonData.defaultBinaryVectorField, book_intro_array));
     //    logger.info("generateTestData" + JacksonUtil.serialize(fields));
     return fields;
   }
@@ -434,5 +429,22 @@ public class CommonFunction {
         break;
     }
     return extraParm;
+  }
+
+  public static MilvusServiceClient newMilvusClient(String username,String password) {
+    return new MilvusServiceClient(
+        ConnectParam.newBuilder()
+            .withHost(
+                System.getProperty("milvusHost") == null
+                    ? PropertyFilesUtil.getRunValue("milvusHost")
+                    : System.getProperty("milvusHost"))
+            .withPort(
+                Integer.parseInt(
+                    System.getProperty("milvusPort") == null
+                        ? PropertyFilesUtil.getRunValue("milvusPort")
+                        : System.getProperty("milvusPort")))
+            .withAuthorization(username, password)
+            .withSecure(true)
+            .build());
   }
 }

@@ -8,10 +8,8 @@ import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.param.*;
 import io.milvus.param.alias.CreateAliasParam;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.collection.*;
 import io.milvus.param.credential.CreateCredentialParam;
 import io.milvus.param.credential.DeleteCredentialParam;
 import io.milvus.param.dml.InsertParam;
@@ -19,6 +17,7 @@ import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -33,6 +32,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @SpringBootTest(classes = MilvustestApplication.class)
@@ -52,10 +52,6 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
                       System.getProperty("milvusPort") == null
                           ? PropertyFilesUtil.getRunValue("milvusPort")
                           : System.getProperty("milvusPort")))
-             //.withAuthorization("root","1qaz@WSX")
-             //.withAuthorization("root","Milvus")
-              //.withAuthorization("root", "Lyp0107!")
-             //.withAuthorization(CommonData.defaultUserName,CommonData.defaultPassword)
               //.withSecure(true)
               .build());
 
@@ -105,6 +101,10 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
             DropCollectionParam.newBuilder()
                     .withCollectionName(CommonData.defaultStringPKBinaryCollection)
                     .build());
+    milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(CommonData.defaultAlias).build());
+    milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(CommonData.defaultBinaryAlias).build());
+    milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(CommonData.defaultStringPKAlias).build());
+    milvusClient.dropAlias(DropAliasParam.newBuilder().withAlias(CommonData.defaultStringPKBinaryAlias).build());
     logger.info("delete Default Credential:" + CommonData.defaultUserName);
     milvusClient.deleteCredential(
         DeleteCredentialParam.newBuilder().withUsername(CommonData.defaultUserName).build());
@@ -244,7 +244,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
             .withCollectionName(CommonData.defaultCollection)
             .withPartitionName(CommonData.defaultPartition)
             .build());
-
+    milvusClient.flush(FlushParam.newBuilder().withCollectionNames(Collections.singletonList(CommonData.defaultCollection)).build());
     logger.info(CommonData.defaultCollection + "Create Index:" + CommonData.defaultIndex);
     milvusClient.createIndex(
         CreateIndexParam.newBuilder()
