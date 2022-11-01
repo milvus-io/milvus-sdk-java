@@ -50,7 +50,8 @@ public class CreateIndexTest extends BaseTest {
       {IndexType.ANNOY},
       {IndexType.RHNSW_FLAT},
       {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ}
+      {IndexType.RHNSW_SQ},
+      {IndexType.DISKANN}
     };
   }
 
@@ -437,5 +438,21 @@ public class CreateIndexTest extends BaseTest {
     softAssert.assertAll();
   }
 
-
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Create diskANN index")
+  public void diskANNIndexTest() {
+    String stringPKCollection = CommonFunction.createNewCollection();
+    R<RpcStatus> indexR =
+        milvusClient.createIndex(
+            CreateIndexParam.newBuilder()
+                .withIndexType(IndexType.DISKANN)
+                .withCollectionName(stringPKCollection)
+                .withFieldName(CommonData.defaultVectorField)
+                    .withMetricType(MetricType.L2)
+                    .withIndexName("DiskAnnIndex")
+                .build());
+    Assert.assertEquals(indexR.getStatus().intValue(), 1);
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
+  }
 }

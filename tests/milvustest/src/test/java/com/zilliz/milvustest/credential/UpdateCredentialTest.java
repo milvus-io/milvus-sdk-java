@@ -58,7 +58,7 @@ public class UpdateCredentialTest extends BaseTest {
         milvusClient.updateCredential(
             UpdateCredentialParam.newBuilder()
                 .withUsername("root")
-                .withOldPassword("Milvus")
+                .withOldPassword("@lds16Ff")
                 .withNewPassword("Milvus")
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);

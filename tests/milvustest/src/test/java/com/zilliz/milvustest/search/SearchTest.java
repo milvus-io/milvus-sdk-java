@@ -209,6 +209,7 @@ public class SearchTest extends BaseTest {
             .withVectors(search_vectors)
             .withVectorFieldName(CommonData.defaultVectorField)
             .withParams(SEARCH_PARAM)
+                .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
             .build();
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
@@ -1635,7 +1636,7 @@ public class SearchTest extends BaseTest {
                     .build();
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     Assert.assertEquals(searchResultsR.getStatus().intValue(),1);
-    Assert.assertTrue(searchResultsR.getException().getMessage().contains("checkIfLoaded failed when search"));
+    Assert.assertTrue(searchResultsR.getException().getMessage().contains("not loaded into memory"));
     milvusClient.loadCollection(LoadCollectionParam.newBuilder()
             .withCollectionName(CommonData.defaultCollection)
             .build());

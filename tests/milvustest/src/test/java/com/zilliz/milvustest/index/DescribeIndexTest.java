@@ -90,14 +90,14 @@ public class DescribeIndexTest extends BaseTest {
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "Describe Index without index name")
-  public void describeIndexWithoutIndexNam() {
+  public void describeIndexWithoutIndexName() {
     R<DescribeIndexResponse> describeIndexResponseR =
         milvusClient.describeIndex(
             DescribeIndexParam.newBuilder()
                 .withCollectionName(collection)
                 .build());
-    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
-    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("index not exist"));
+    Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 0);
+    Assert.assertTrue(describeIndexResponseR.getData().getIndexDescriptionsList().size() >= 1);
     }
 
   @Severity(SeverityLevel.NORMAL)

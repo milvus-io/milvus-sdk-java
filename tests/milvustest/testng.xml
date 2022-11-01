@@ -8,10 +8,13 @@
             </run>
         </groups>
         <packages>
-            <package name="com.zilliz.milvustest.*"/>
+            <package name="com.zilliz.milvustest.*">
+                <exclude name="com.zilliz.milvustest.limit.*"></exclude>
+                <exclude name="com.zilliz.milvustest.vdc.*"></exclude>
+            </package>
         </packages>
     </test>
     <listeners>
-        <listener class-name="com.zilliz.milvustest.service.CustomerListener"></listener>
+        <listener class-name="com.zilliz.milvustest.service.CustomerListener"/>
     </listeners>
 </suite>
