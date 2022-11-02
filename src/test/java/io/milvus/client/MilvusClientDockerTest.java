@@ -461,6 +461,12 @@ class MilvusClientDockerTest {
         fieldData = results.getFieldData(field4Name, nq - 1);
         assertEquals(topK, fieldData.size());
 
+        // release collection
+        ReleaseCollectionParam releaseCollectionParam = ReleaseCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName).build();
+        R<RpcStatus> releaseCollectionR = client.releaseCollection(releaseCollectionParam);
+        assertEquals(R.Status.Success.getCode(), releaseCollectionR.getStatus().intValue());
+
         // drop index
         DropIndexParam dropIndexParam = DropIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -543,13 +549,27 @@ class MilvusClientDockerTest {
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
 
+        // create index
+        CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.BIN_FLAT)
+                .withMetricType(MetricType.SUPERSTRUCTURE)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR2 = client.createIndex(indexParam2);
+        assertEquals(R.Status.Success.getCode(), createIndexR2.getStatus().intValue());
+
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .build());
         assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
-        // search without index
+        // search with BIN_FLAT index
         List<ByteBuffer> oneVector = new ArrayList<>();
         oneVector.add(vectors.get(0));
 
@@ -568,6 +588,17 @@ class MilvusClientDockerTest {
         List<SearchResultsWrapper.IDScore> oneScores = oneResult.getIDScore(0);
         System.out.println("The result of " + ids.get(0) + " with SUPERSTRUCTURE metric:");
         System.out.println(oneScores);
+
+        // release collection
+        ReleaseCollectionParam releaseCollectionParam = ReleaseCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName).build();
+        R<RpcStatus> releaseCollectionR = client.releaseCollection(releaseCollectionParam);
+        assertEquals(R.Status.Success.getCode(), releaseCollectionR.getStatus().intValue());
+
+        DropIndexParam dropIndexParam = DropIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName).build();
+        R<RpcStatus> dropIndexR = client.dropIndex(dropIndexParam);
+        assertEquals(R.Status.Success.getCode(), dropIndexR.getStatus().intValue());
 
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
@@ -589,6 +620,12 @@ class MilvusClientDockerTest {
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR2 = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), loadR2.getStatus().intValue());
 
         // pick some vectors to search with index
         int nq = 5;
@@ -708,6 +745,20 @@ class MilvusClientDockerTest {
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.IP)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
@@ -956,6 +1007,20 @@ class MilvusClientDockerTest {
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.IP)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR2 = client.createIndex(indexParam2);
+        assertEquals(R.Status.Success.getCode(), createIndexR2.getStatus().intValue());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()

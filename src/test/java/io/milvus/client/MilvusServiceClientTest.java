@@ -1181,19 +1181,19 @@ class MilvusServiceClientTest {
         MilvusServiceClient client = startClient();
 
         // test return ok for sync mode loading
-        mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
-                .setState(IndexState.InProgress)
+        mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
+                .addIndexDescriptions(IndexDescription.newBuilder().setState(IndexState.InProgress).build())
                 .build());
 
         new Thread(() -> {
             try {
                 TimeUnit.SECONDS.sleep(1);
-                mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
-                        .setState(IndexState.Finished)
+                mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
+                        .addIndexDescriptions(IndexDescription.newBuilder().setState(IndexState.Finished).build())
                         .build());
             } catch (InterruptedException e) {
-                mockServerImpl.setGetIndexStateResponse(GetIndexStateResponse.newBuilder()
-                        .setState(IndexState.Finished)
+                mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
+                        .addIndexDescriptions(IndexDescription.newBuilder().setState(IndexState.Finished).build())
                         .build());
             }
         }, "RefreshIndexState").start();

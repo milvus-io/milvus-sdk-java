@@ -359,9 +359,9 @@ public class CreateIndexTest extends BaseTest {
                             .withSyncWaitingTimeout(30L)
                             .withSyncWaitingInterval(500L)
                             .build());
-    System.out.println("Create index" + rpcStatusR);
+    System.out.println("Create index " + rpcStatusR);
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
-    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("index already exists"));
+    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("at most one distinct index is allowed per field"));
 
   }
 
@@ -432,7 +432,7 @@ public class CreateIndexTest extends BaseTest {
                             .build());
     System.out.println("Create index" + rpcStatusR);
     softAssert.assertEquals(rpcStatusR.getStatus().intValue(), 1);
-    softAssert.assertTrue(rpcStatusR.getException().getMessage().contains("index already exists"));
+    softAssert.assertTrue(rpcStatusR.getException().getMessage().contains("at most one distinct index is allowed per field"));
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
     softAssert.assertAll();

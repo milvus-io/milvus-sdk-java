@@ -123,7 +123,7 @@ public class DescribeIndexTest extends BaseTest {
                             .withCollectionName("NonexistentCollection")
                             .build());
     Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 1);
-    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("not found"));
+    Assert.assertTrue(describeIndexResponseR.getException().getMessage().contains("can't find"));
   }
 
 }
