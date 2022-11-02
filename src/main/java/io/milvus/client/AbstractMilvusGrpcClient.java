@@ -301,7 +301,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             if ((tsNow - tsBegin) >= timeout * 1000) {
                 String msg = "Waiting index thread is timeout, index process may not be finished";
                 logWarning(msg);
-                return R.failed(R.Status.Success, msg);
+                return R.failed(R.Status.UnexpectedError, msg);
             }
 
             GetIndexStateRequest request = GetIndexStateRequest.newBuilder()
@@ -311,7 +311,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             GetIndexStateResponse response = blockingStub().getIndexState(request);
             if (response.getState() == IndexState.Finished) {
-                break;
+                return R.success(true);
             } else if (response.getState() == IndexState.Failed) {
                 String msg = "Get index state failed: " + response.toString();
                 logError(msg);
@@ -328,8 +328,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(R.Status.Success, msg);
             }
         }
-
-        return R.failed(R.Status.Success, "Waiting index thread exist");
     }
 
     private <T> R<T> failedStatus(String requestName, io.milvus.grpc.Status status) {
@@ -1074,7 +1072,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getIndexName(),
                         requestParam.getSyncWaitingInterval(), requestParam.getSyncWaitingTimeout());
                 if (res.getStatus() != R.Status.Success.getCode()) {
-                    return failedStatus("CreateIndexRequest in sync mode", response);
+                    logError("CreateIndexRequest in sync mode" + " failed:\n{}", res.getMessage());
+                    return R.failed(R.Status.valueOf(res.getStatus()), res.getMessage());
                 }
             }
             logDebug("CreateIndexRequest successfully! Collection name:{} Field name:{}",

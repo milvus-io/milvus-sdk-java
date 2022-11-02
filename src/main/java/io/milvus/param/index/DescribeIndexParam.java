@@ -49,7 +49,7 @@ public class DescribeIndexParam {
      */
     public static final class Builder {
         private String collectionName;
-        private String indexName = Constant.DEFAULT_INDEX_NAME;
+        private String indexName = "";
 
         private Builder() {
         }
@@ -66,12 +66,12 @@ public class DescribeIndexParam {
         }
 
         /**
-         * Sets the target index name. Index name cannot be empty or null.
-         *
+         * Sets the target index name. Index name can be empty or null.
+         * If no index name is specified, then return all this collection indexes.
          * @param indexName field name
          * @return <code>Builder</code>
          */
-        public Builder withIndexName(@NonNull String indexName) {
+        public Builder withIndexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
