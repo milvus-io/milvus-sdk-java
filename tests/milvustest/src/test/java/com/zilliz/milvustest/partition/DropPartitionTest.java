@@ -8,6 +8,7 @@ import io.milvus.grpc.QueryResults;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.partition.*;
 import io.qameta.allure.Epic;
@@ -41,6 +42,7 @@ public class DropPartitionTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "drop partition", dataProvider = "partitionName",groups = {"Smoke"})
   public void dropPartition(String partitionName) {
+    milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
     R<RpcStatus> rpcStatusR =
         milvusClient.dropPartition(
             DropPartitionParam.newBuilder()

@@ -35,7 +35,7 @@ public class GetCompactionStateTest extends BaseTest {
             GetCompactionStateParam.newBuilder().withCompactionID(compactionId).build());
     Assert.assertEquals(responseR.getStatus().intValue(), 0);
     GetCompactionStateResponse data = responseR.getData();
-    Assert.assertEquals(data.getState(), CompactionState.Completed);
+    Assert.assertTrue(data.getState().equals( CompactionState.Completed)||data.getState().equals( CompactionState.Executing));
   }
 
   @Severity(SeverityLevel.NORMAL)

@@ -28,4 +28,6 @@ public class CommonData {
   public static String defaultColJson = "colJson";
   public static String defaultColStrJson = "colStrJson";
   public static String defaultRoleName = "roleTest";
+  public static String defaultRoleName2 = "roleTest2";
 }
+

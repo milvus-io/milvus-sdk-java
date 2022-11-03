@@ -54,27 +54,23 @@ public class ManualCompactionTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.BLOCKER)
-  @Test(description = "performs a manual compaction.",groups = {"Smoke"})
+  @Test(
+      description = "performs a manual compaction.",
+      groups = {"Smoke"})
   public void manualCompactionTest() {
     R<ManualCompactionResponse> responseR =
         milvusClient.manualCompact(
-            ManualCompactParam.newBuilder()
-                .withCollectionName(collection)
-                .build());
+            ManualCompactParam.newBuilder().withCollectionName(collection).build());
     Assert.assertEquals(responseR.getStatus().intValue(), 0);
     Assert.assertTrue(responseR.getData().getCompactionID() > 0);
     long compactionID = responseR.getData().getCompactionID();
     R<GetCompactionStateResponse> GetCompactionStateResponse =
-            milvusClient.getCompactionState(
-                    GetCompactionStateParam.newBuilder().withCompactionID(compactionID).build());
+        milvusClient.getCompactionState(
+            GetCompactionStateParam.newBuilder().withCompactionID(compactionID).build());
     Assert.assertEquals(GetCompactionStateResponse.getStatus().intValue(), 0);
-    Assert.assertEquals(GetCompactionStateResponse.getData().getState(), CompactionState.Executing);
-    R<GetCompactionPlansResponse> GetCompactionPlansResponse =
-            milvusClient.getCompactionStateWithPlans(
-                    GetCompactionPlansParam.newBuilder().withCompactionID(compactionID).build());
-    Assert.assertEquals(GetCompactionPlansResponse.getStatus().intValue(), 0);
-    Assert.assertEquals(GetCompactionPlansResponse.getData().getState(),CompactionState.Executing);
-  }
+    Assert.assertTrue(GetCompactionStateResponse.getData().getState().equals(CompactionState.Executing)||
+            GetCompactionStateResponse.getData().getState().equals(CompactionState.Completed));
+   }
 
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "manual compaction with nonexistent collection")

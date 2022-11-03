@@ -118,35 +118,5 @@ public class GrantRolePrivilegeTest extends BaseTest {
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
-    MilvusServiceClient milvusServiceClient = CommonFunction.newMilvusClient(CommonData.defaultUserName, CommonData.defaultPassword);
-    collectionName = "Collection_" + MathUtil.getRandomString(10);
-    FieldType fieldType1 =
-            FieldType.newBuilder()
-                    .withName("book_id")
-                    .withDataType(DataType.Int64)
-                    .withPrimaryKey(true)
-                    .withAutoID(true)
-                    .build();
-    FieldType fieldType2 =
-            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
-    FieldType fieldType3 =
-            FieldType.newBuilder()
-                    .withName(CommonData.defaultVectorField)
-                    .withDataType(DataType.FloatVector)
-                    .withDimension(128)
-                    .build();
-    CreateCollectionParam createCollectionReq =
-            CreateCollectionParam.newBuilder()
-                    .withCollectionName(collectionName)
-                    .withDescription("Test" + collectionName + "search")
-                    .withShardsNum(2)
-                    .addFieldType(fieldType1)
-                    .addFieldType(fieldType2)
-                    .addFieldType(fieldType3)
-                    .build();
-    R<RpcStatus> collection = milvusServiceClient.createCollection(createCollectionReq);
-    Assert.assertEquals(collection.getStatus().intValue(),0);
-    R<RpcStatus> rpcStatusR1 = milvusServiceClient.loadCollection(LoadCollectionParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
-    Assert.assertTrue(rpcStatusR1.getMessage().contains("permission deny"));
   }
 }

@@ -59,7 +59,7 @@ public class GetPartitionStatisticsTest extends BaseTest {
         milvusClient.getPartitionStatistics(
             GetPartitionStatisticsParam.newBuilder()
                 .withCollectionName(CommonData.defaultCollection)
-                .withPartitionName(partition)
+                .withPartitionName(partition).withFlush(true)
                 .build());
     Assert.assertEquals(partitionStatisticsResponseR.getStatus().intValue(), 0);
     GetPartitionStatisticsResponse partitionStatisticsResponse =

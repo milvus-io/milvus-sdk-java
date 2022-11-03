@@ -4,9 +4,12 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
+import io.milvus.param.IndexType;
+import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.partition.CreatePartitionParam;
 import io.milvus.param.partition.DropPartitionParam;
 import io.milvus.param.partition.LoadPartitionsParam;
@@ -21,6 +24,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Epic("Partition")
@@ -45,10 +49,18 @@ public class LoadPartitionsTest extends BaseTest {
                     .withCollectionName(collection)
                     .withPartitionName(partition2)
                     .build());
+    milvusClient.createIndex(CreateIndexParam.newBuilder().withCollectionName(collection)
+            .withFieldName(CommonData.defaultVectorField)
+            .withIndexType(IndexType.HNSW)
+            .withMetricType(MetricType.L2)
+            .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW)).build());
   }
 
   @AfterClass(description = "delete partition after test",alwaysRun = true)
   public void deletePartition() {
+    milvusClient.releasePartitions(ReleasePartitionsParam.newBuilder()
+            .withCollectionName(collection)
+            .withPartitionNames(Arrays.asList(partition,partition2)).build());
     milvusClient.dropPartition(
         DropPartitionParam.newBuilder()
             .withCollectionName(collection)

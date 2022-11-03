@@ -8,12 +8,9 @@ import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
 import org.testng.TestListenerAdapter;
-import sun.util.resources.LocaleData;
 
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CustomerListener extends TestListenerAdapter {
   private static final Logger logger = LoggerFactory.getLogger(CustomerListener.class);

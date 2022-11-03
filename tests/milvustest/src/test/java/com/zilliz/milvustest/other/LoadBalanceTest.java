@@ -26,7 +26,7 @@ import java.util.List;
 public class LoadBalanceTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/356")
-  @Test(description = "Moves segment from a query node to another to keep the load balanced.",groups = {"Smoke"})
+  @Test(description = "Moves segment from a query node to another to keep the load balanced.",groups = {"Smoke"},enabled = false)
   public void loadBalanceTest() {
     // insert
     List<InsertParam.Field> fields = CommonFunction.generateData(3000);

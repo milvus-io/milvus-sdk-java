@@ -19,11 +19,12 @@ import org.testng.annotations.Test;
  */
 @Epic("Role")
 @Feature("CreateRole")
+
 public class CreateRoleTest extends BaseTest {
   @AfterClass
   public void removeTestData() {
     milvusClient.dropRole(
-        DropRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+        DropRoleParam.newBuilder().withRoleName("newRole").build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -33,7 +34,7 @@ public class CreateRoleTest extends BaseTest {
   public void createRole() {
     R<RpcStatus> role =
         milvusClient.createRole(
-            CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+            CreateRoleParam.newBuilder().withRoleName("newRole").build());
     Assert.assertEquals(role.getStatus().intValue(), 0);
     Assert.assertEquals(role.getData().getMsg(), "Success");
   }
