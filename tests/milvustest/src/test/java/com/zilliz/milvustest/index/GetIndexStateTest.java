@@ -78,7 +78,7 @@ public class GetIndexStateTest extends BaseTest {
                 .withCollectionName("NonexistentCollection")
                 .withIndexName(CommonData.defaultIndex)
                 .build());
-    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
+    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 0);
     Assert.assertTrue(getIndexStateResponseR.getException().getMessage().contains("not found"));
   }
 
@@ -92,9 +92,8 @@ public class GetIndexStateTest extends BaseTest {
                 .withCollectionName(newCollection)
                 .withIndexName(CommonData.defaultIndex)
                 .build());
-    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 1);
-    Assert.assertTrue(
-        getIndexStateResponseR.getException().getMessage().contains("index not found"));
+    Assert.assertEquals(getIndexStateResponseR.getStatus().intValue(), 0);
+    Assert.assertEquals(getIndexStateResponseR.getData().getState(), IndexState.Finished);
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
   }

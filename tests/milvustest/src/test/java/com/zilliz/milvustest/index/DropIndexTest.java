@@ -64,6 +64,15 @@ public class DropIndexTest extends BaseTest {
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+
+    R<RpcStatus> rpcStatusR2 =
+            milvusClient.dropIndex(
+                    DropIndexParam.newBuilder()
+                            .withCollectionName(collection)
+                            .withIndexName(CommonData.defaultIndex)
+                            .build());
+    Assert.assertEquals(rpcStatusR2.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR2.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.MINOR)
@@ -71,8 +80,8 @@ public class DropIndexTest extends BaseTest {
   public void dropIndexWithoutIndexName() {
     R<RpcStatus> rpcStatusR =
         milvusClient.dropIndex(DropIndexParam.newBuilder().withCollectionName(collection).build());
-    Assert.assertEquals(rpcStatusR.getStatus().intValue(),25);
-    Assert.assertTrue(rpcStatusR.getException().getMessage().contains("Index doesn't exist"));
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(),0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.NORMAL)
@@ -84,8 +93,8 @@ public class DropIndexTest extends BaseTest {
                 .withCollectionName(collection)
                 .withIndexName("book_id")
                 .build());
-    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 25);
-    Assert.assertTrue(rpcStatusR.getException().getMessage().contains( "Index doesn't exist"));
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.NORMAL)
@@ -97,10 +106,8 @@ public class DropIndexTest extends BaseTest {
                 .withCollectionName(collection)
                 .withIndexName("nonexistent")
                 .build());
-    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 25);
-    Assert.assertEquals(
-        rpcStatusR.getException().getMessage(),
-        "Index doesn't exist");
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.MINOR)

@@ -531,6 +531,20 @@ class MilvusMultiClientDockerTest {
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
 
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.BIN_FLAT)
+                .withMetricType(MetricType.HAMMING)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -654,6 +668,20 @@ class MilvusMultiClientDockerTest {
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.IP)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()

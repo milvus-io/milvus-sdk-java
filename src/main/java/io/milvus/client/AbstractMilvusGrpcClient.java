@@ -290,7 +290,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         });
     }
 
-    private R<Boolean> waitForIndex(String collectionName, String indexName,
+    private R<Boolean> waitForIndex(String collectionName, String indexName, String fieldName,
                                     long waitingInterval, long timeout) {
         // This method use getIndexState() to check index state.
         // If all index state become Finished, then we say the sync index action is finished.
@@ -304,16 +304,29 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(R.Status.UnexpectedError, msg);
             }
 
-            GetIndexStateRequest request = GetIndexStateRequest.newBuilder()
+            DescribeIndexRequest request = DescribeIndexRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setIndexName(indexName)
                     .build();
 
-            GetIndexStateResponse response = blockingStub().getIndexState(request);
-            if (response.getState() == IndexState.Finished) {
+            DescribeIndexResponse response = blockingStub().describeIndex(request);
+
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return R.failed(response.getStatus().getErrorCode(), response.getStatus().getReason());
+            }
+
+            if (response.getIndexDescriptionsList().size() == 0) {
+                return R.failed(R.Status.UnexpectedError, response.getStatus().getReason());
+            }
+            IndexDescription index = response.getIndexDescriptionsList().stream()
+                    .filter(x -> x.getFieldName().equals(fieldName))
+                    .findFirst()
+                    .orElse(response.getIndexDescriptions(0));
+
+            if (index.getState() == IndexState.Finished) {
                 return R.success(true);
-            } else if (response.getState() == IndexState.Failed) {
-                String msg = "Get index state failed: " + response.toString();
+            } else if (index.getState() == IndexState.Failed) {
+                String msg = "Get index state failed: " + index.getState().toString();
                 logError(msg);
                 return R.failed(R.Status.UnexpectedError, msg);
             }
@@ -1051,14 +1064,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
 
-            // keep consistence behavior with python sdk, if the index type is flat, return succeed with a warning
-            // TODO: call dropIndex if the index type is flat
-            // TODO: call describeCollection to check field name
-            if (requestParam.getIndexName() == "FLAT" || requestParam.getIndexName() == "BIN_FLAT") {
-                return R.success(new RpcStatus("Warning: It is not necessary to build index with index_type: FLAT"));
-            }
-
-            CreateIndexRequest createIndexRequest = createIndexRequestBuilder.setCollectionName(requestParam.getCollectionName())
+            CreateIndexRequest createIndexRequest = createIndexRequestBuilder
+                    .setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
                     .setIndexName(requestParam.getIndexName())
                     .build();
@@ -1070,6 +1077,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             if (requestParam.isSyncMode()) {
                 R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getIndexName(),
+                        requestParam.getFieldName(),
                         requestParam.getSyncWaitingInterval(), requestParam.getSyncWaitingTimeout());
                 if (res.getStatus() != R.Status.Success.getCode()) {
                     logError("CreateIndexRequest in sync mode" + " failed:\n{}", res.getMessage());
@@ -1099,21 +1107,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
-
-            DescribeIndexResponse descResp = blockingStub().describeIndex(describeIndexRequest);
-            if (descResp.getStatus().getErrorCode() != ErrorCode.Success || descResp.getIndexDescriptionsCount() == 0) {
-                logError("Index doesn't exist:\n{}", requestParam.getIndexName());
-                return R.failed(R.Status.IndexNotExist, "Index doesn't exist");
-            }
-
             DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setIndexName(requestParam.getIndexName())
-                    .setFieldName(descResp.getIndexDescriptions(0).getFieldName())
                     .build();
 
             Status response = blockingStub().dropIndex(dropIndexRequest);
@@ -1167,6 +1163,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Deprecated
+    // use DescribeIndex instead
     @Override
     public R<GetIndexStateResponse> getIndexState(@NonNull GetIndexStateParam requestParam) {
         if (!clientIsReady()) {
@@ -1198,6 +1196,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Deprecated
+    // use DescribeIndex instead
     @Override
     public R<GetIndexBuildProgressResponse> getIndexBuildProgress(@NonNull GetIndexBuildProgressParam requestParam) {
         if (!clientIsReady()) {
