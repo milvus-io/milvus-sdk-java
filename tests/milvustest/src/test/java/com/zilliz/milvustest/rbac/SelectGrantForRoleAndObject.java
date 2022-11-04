@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 @Epic("Role")
 @Feature("SelectGrantForRoleAndObject")
 public class SelectGrantForRoleAndObject extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initTestData() {
       R<RpcStatus> newRole = milvusClient.createRole(
               CreateRoleParam.newBuilder().withRoleName("newRole").build());
@@ -36,7 +36,7 @@ public class SelectGrantForRoleAndObject extends BaseTest {
       logger.info("rpcStatusR:"+rpcStatusR);
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeTestData() {
     milvusClient.revokeRolePrivilege(
         RevokeRolePrivilegeParam.newBuilder()

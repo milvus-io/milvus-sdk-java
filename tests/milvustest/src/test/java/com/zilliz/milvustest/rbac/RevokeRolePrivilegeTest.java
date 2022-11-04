@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 @Epic("Role")
 @Feature("RevokeRolePrivilege")
 public class RevokeRolePrivilegeTest extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initTestData() {
        milvusClient.createRole(
               CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
@@ -35,7 +35,7 @@ public class RevokeRolePrivilegeTest extends BaseTest {
             .withPrivilege("DescribeCollection")
             .build());
   }
-    @AfterClass
+    @AfterClass(alwaysRun=true)
     public void removeTestData(){
         milvusClient.dropRole(DropRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
 

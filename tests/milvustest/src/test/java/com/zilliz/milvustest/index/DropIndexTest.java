@@ -64,15 +64,6 @@ public class DropIndexTest extends BaseTest {
                 .build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
-
-    R<RpcStatus> rpcStatusR2 =
-            milvusClient.dropIndex(
-                    DropIndexParam.newBuilder()
-                            .withCollectionName(collection)
-                            .withIndexName(CommonData.defaultIndex)
-                            .build());
-    Assert.assertEquals(rpcStatusR2.getStatus().intValue(), 0);
-    Assert.assertEquals(rpcStatusR2.getData().getMsg(), "Success");
   }
 
   @Severity(SeverityLevel.MINOR)
