@@ -19,6 +19,7 @@ import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -34,7 +35,16 @@ import java.util.Optional;
  */
 @Epic("Import")
 @Feature("GetImportState")
-public class bulkloadStateTest extends BaseTest {
+public class BulkLoadStateTest extends BaseTest {
+  @BeforeClass
+  public void generateJsonFiles(){
+    BulkInsertTest bulkInsertTest=new BulkInsertTest();
+    try {
+      bulkInsertTest.generateJsonFiles();
+    } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
+      logger.error(e.getMessage());
+    }
+  }
 
   @DataProvider(name = "bigRowJsonTaskId")
   public Object[][] bigRowBasedTask()

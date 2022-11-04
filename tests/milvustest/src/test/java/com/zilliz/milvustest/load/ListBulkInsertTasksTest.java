@@ -28,8 +28,8 @@ public class ListBulkInsertTasksTest extends BaseTest {
                 BulkInsertParam.newBuilder()
                 .withCollectionName(CommonData.defaultCollection)
                 .addFile("rowJson0.json")
-                .addFile("rowJson1.json")
                 .build());
+    logger.info("importResponseR:"+importResponseR);
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -38,8 +38,10 @@ public class ListBulkInsertTasksTest extends BaseTest {
       groups = {"Smoke"})
   public void ListImportTasksTest() {
     R<ListImportTasksResponse> listImportTasksResponseR =
-        milvusClient.listBulkInsertTasks(ListBulkInsertTasksParam.newBuilder().build());
+        milvusClient.listBulkInsertTasks(ListBulkInsertTasksParam.newBuilder()
+                .withCollectionName(CommonData.defaultCollection)
+                .withLimit(1).build());
     Assert.assertEquals(listImportTasksResponseR.getStatus().intValue(), 0);
-    Assert.assertTrue(listImportTasksResponseR.getData().getTasksList().size() > 1);
+    Assert.assertTrue(listImportTasksResponseR.getData().getTasksList().size() == 1);
   }
 }

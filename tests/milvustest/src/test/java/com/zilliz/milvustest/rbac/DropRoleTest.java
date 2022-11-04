@@ -23,7 +23,7 @@ public class DropRoleTest extends BaseTest {
 
   @BeforeClass
   public void initCreateRole() {
-    milvusClient.createRole(CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+    milvusClient.createRole(CreateRoleParam.newBuilder().withRoleName("newRoleName").build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -32,7 +32,7 @@ public class DropRoleTest extends BaseTest {
       groups = {"Smoke"})
   public void dropRole() {
     R<RpcStatus> rpcStatusR =
-        milvusClient.dropRole(DropRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+        milvusClient.dropRole(DropRoleParam.newBuilder().withRoleName("newRoleName").build());
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
   }

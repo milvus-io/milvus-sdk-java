@@ -25,8 +25,9 @@ import org.testng.annotations.Test;
 public class AddUserToRoleTest extends BaseTest {
   @BeforeClass
   public void initCreateRole() {
-    milvusClient.createRole(
-        CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+    R<RpcStatus> role = milvusClient.createRole(
+            CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+    logger.info("role:"+role);
   }
 
   @AfterClass

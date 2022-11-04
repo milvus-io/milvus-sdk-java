@@ -4,6 +4,7 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import io.milvus.grpc.SelectGrantResponse;
 import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
 import io.milvus.param.role.*;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -22,28 +23,30 @@ import org.testng.annotations.Test;
 public class SelectGrantForRoleAndObject extends BaseTest {
   @BeforeClass
   public void initTestData() {
-    milvusClient.createRole(
-        CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
-    milvusClient.grantRolePrivilege(
-        GrantRolePrivilegeParam.newBuilder()
-            .withRoleName(CommonData.defaultRoleName)
-            .withObject("Collection")
-            .withObjectName(CommonData.defaultCollection)
-            .withPrivilege("Load")
-            .build());
+      R<RpcStatus> newRole = milvusClient.createRole(
+              CreateRoleParam.newBuilder().withRoleName("newRole").build());
+      logger.info("newRole:"+newRole);
+      R<RpcStatus> rpcStatusR = milvusClient.grantRolePrivilege(
+              GrantRolePrivilegeParam.newBuilder()
+                      .withRoleName("newRole")
+                      .withObject("Collection")
+                      .withObjectName(CommonData.defaultCollection)
+                      .withPrivilege("Load")
+                      .build());
+      logger.info("rpcStatusR:"+rpcStatusR);
   }
 
   @AfterClass
   public void removeTestData() {
     milvusClient.revokeRolePrivilege(
         RevokeRolePrivilegeParam.newBuilder()
-            .withRoleName(CommonData.defaultRoleName)
+            .withRoleName("newRole")
             .withObject("Collection")
             .withObjectName(CommonData.defaultCollection)
             .withPrivilege("Load")
             .build());
     milvusClient.dropRole(
-        DropRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+        DropRoleParam.newBuilder().withRoleName("newRole").build());
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -53,14 +56,15 @@ public class SelectGrantForRoleAndObject extends BaseTest {
   public void selectGrantForRoleAndObject() {
       R<SelectGrantResponse> selectGrantResponseR = milvusClient.selectGrantForRoleAndObject(
               SelectGrantForRoleAndObjectParam.newBuilder()
-                      .withRoleName(CommonData.defaultRoleName)
+                      .withRoleName("newRole")
                       .withObject("Collection")
                       .withObjectName(CommonData.defaultCollection)
                       .build());
+      logger.info("selectGrantResponseR"+selectGrantResponseR);
       Assert.assertEquals(selectGrantResponseR.getStatus().intValue(), 0);
       Assert.assertEquals(
               selectGrantResponseR.getData().getEntities(0).getRole().getName(),
-              CommonData.defaultRoleName);
+              "newRole");
       Assert.assertEquals(
               selectGrantResponseR.getData().getEntities(0).getObject().getName(), "Collection");
       Assert.assertEquals(selectGrantResponseR.getData().getEntities(0).getObjectName(), CommonData.defaultCollection);

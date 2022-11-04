@@ -54,12 +54,12 @@ public class SelectGrantForRoleTest extends BaseTest {
     R<SelectGrantResponse> selectGrantResponseR =
         milvusClient.selectGrantForRole(
             SelectGrantForRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
+    logger.info("selectGrantResponseR"+selectGrantResponseR);
     Assert.assertEquals(selectGrantResponseR.getStatus().intValue(), 0);
     Assert.assertEquals(
         selectGrantResponseR.getData().getEntities(0).getRole().getName(),
         CommonData.defaultRoleName);
-    Assert.assertEquals(
-        selectGrantResponseR.getData().getEntities(0).getObject().getName(), "Global");
-    Assert.assertEquals(selectGrantResponseR.getData().getEntities(0).getObjectName(), "*");
+    Assert.assertTrue(
+        selectGrantResponseR.getData().getEntitiesCount()>1);
   }
 }

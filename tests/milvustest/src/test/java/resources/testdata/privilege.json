@@ -17,11 +17,6 @@
   {
     "object":"Collection",
     "objectName":"*",
-    "privilege":"DescribePartition"
-  },
-  {
-    "object":"Collection",
-    "objectName":"*",
     "privilege":"Load"
   },
   {
