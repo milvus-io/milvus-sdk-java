@@ -50,7 +50,7 @@ public class GrantRolePrivilegeTest extends BaseTest {
     return objects;
   }
 
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initTestData() {
     milvusClient.createRole(
         CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
@@ -59,7 +59,7 @@ public class GrantRolePrivilegeTest extends BaseTest {
             .withUserName(CommonData.defaultUserName).build());
   }
 
-  @AfterMethod
+  @AfterMethod(alwaysRun=true)
   public void revokeRolePrivilege() {
     System.out.println("after:" + privilege);
     milvusClient.revokeRolePrivilege(
@@ -71,7 +71,7 @@ public class GrantRolePrivilegeTest extends BaseTest {
             .build());
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeTestData() {
     milvusClient.removeUserFromRole(
             RemoveUserFromRoleParam.newBuilder()

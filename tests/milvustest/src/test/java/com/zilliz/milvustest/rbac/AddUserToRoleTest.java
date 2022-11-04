@@ -23,14 +23,14 @@ import org.testng.annotations.Test;
 @Epic("Role")
 @Feature("AddUserToRole")
 public class AddUserToRoleTest extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initCreateRole() {
     R<RpcStatus> role = milvusClient.createRole(
             CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
-    logger.info("role:"+role);
+    System.out.println("role:"+role);
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeRole() {
     milvusClient.removeUserFromRole(RemoveUserFromRoleParam.newBuilder()
             .withRoleName(CommonData.defaultRoleName)

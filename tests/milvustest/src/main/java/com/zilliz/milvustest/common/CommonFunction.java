@@ -424,6 +424,8 @@ public class CommonFunction {
       case RHNSW_SQ:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
         break;
+      case BIN_IVF_FLAT:
+        extraParm = "";
       default:
         extraParm = "{\"nlist\":128}";
         break;

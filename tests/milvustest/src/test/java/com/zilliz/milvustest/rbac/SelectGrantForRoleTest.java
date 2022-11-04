@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 @Epic("Role")
 @Feature("SelectGrantForRole")
 public class SelectGrantForRoleTest extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initTestData() {
     milvusClient.createRole(
         CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
@@ -33,7 +33,7 @@ public class SelectGrantForRoleTest extends BaseTest {
             .build());
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeTestData() {
     milvusClient.revokeRolePrivilege(
         RevokeRolePrivilegeParam.newBuilder()
@@ -60,6 +60,6 @@ public class SelectGrantForRoleTest extends BaseTest {
         selectGrantResponseR.getData().getEntities(0).getRole().getName(),
         CommonData.defaultRoleName);
     Assert.assertTrue(
-        selectGrantResponseR.getData().getEntitiesCount()>1);
+        selectGrantResponseR.getData().getEntitiesCount()>=1);
   }
 }

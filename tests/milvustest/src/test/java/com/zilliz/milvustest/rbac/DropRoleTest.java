@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 @Feature("DropRole")
 public class DropRoleTest extends BaseTest {
 
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initCreateRole() {
     milvusClient.createRole(CreateRoleParam.newBuilder().withRoleName("newRoleName").build());
   }

@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 @Epic("Role")
 @Feature("SelectRole")
 public class SelectRoleTest extends BaseTest {
-  @BeforeClass
+  @BeforeClass(alwaysRun=true)
   public void initTestData() {
     milvusClient.createRole(
         CreateRoleParam.newBuilder().withRoleName(CommonData.defaultRoleName).build());
@@ -31,7 +31,7 @@ public class SelectRoleTest extends BaseTest {
             .build());
   }
 
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeRole() {
     milvusClient.removeUserFromRole(RemoveUserFromRoleParam.newBuilder()
             .withRoleName(CommonData.defaultRoleName)

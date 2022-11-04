@@ -162,10 +162,15 @@ public class IndexLoadTest extends BaseTest {
     @Severity(SeverityLevel.NORMAL)
     @Test(description = "Test create/drop index when collection is loaded for binary vector", dataProvider = "BinaryIndex",groups = {"Smoke"})
     public void createIndexAfterLoadBinaryCollection(IndexType indexType, MetricType metricType) {
+        if (indexType.equals(IndexType.BIN_IVF_FLAT)
+                && (metricType.equals(MetricType.SUBSTRUCTURE)
+                || metricType.equals(MetricType.SUPERSTRUCTURE))) {
+            return;
+        }
         // 1. create index params
         CreateIndexParam createIndexParams = CreateIndexParam.newBuilder()
                 .withCollectionName(binaryCollection)
-                .withFieldName(CommonData.defaultVectorField)
+                .withFieldName(CommonData.defaultBinaryVectorField)
                 .withMetricType(metricType)
                 .withIndexType(indexType)
                 .withExtraParam(CommonFunction.provideExtraParam(indexType))
@@ -207,7 +212,7 @@ public class IndexLoadTest extends BaseTest {
         // 6. release collection
         R<RpcStatus> rpcStatusR5 = milvusClient.releaseCollection(
                 ReleaseCollectionParam.newBuilder()
-                        .withCollectionName(collection)
+                        .withCollectionName(binaryCollection)
                         .build());
         System.out.println("Release collection " + rpcStatusR);
         Assert.assertEquals(rpcStatusR5.getStatus().intValue(), 0);
@@ -223,7 +228,7 @@ public class IndexLoadTest extends BaseTest {
         // 8. drop index
         R<RpcStatus> rpcStatusR7 = milvusClient.dropIndex(
                 DropIndexParam.newBuilder()
-                        .withCollectionName(collection)
+                        .withCollectionName(binaryCollection)
                         .build());
         System.out.println("Drop index " + rpcStatusR);
         Assert.assertEquals(rpcStatusR7.getStatus().intValue(), 0);

@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 @Feature("CreateRole")
 
 public class CreateRoleTest extends BaseTest {
-  @AfterClass
+  @AfterClass(alwaysRun=true)
   public void removeTestData() {
     milvusClient.dropRole(
         DropRoleParam.newBuilder().withRoleName("newRole").build());
