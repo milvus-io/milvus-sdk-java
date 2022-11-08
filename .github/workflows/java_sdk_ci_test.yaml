@@ -1,0 +1,49 @@
+name: Java sdk CI test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: Deploy milvus server,build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Deploy Milvus
+        timeout-minutes: 15
+        shell: bash
+        working-directory: tests/milvustest/src/test/java/resources
+        run: |
+          echo "deploy milvus"
+          ls
+          sudo docker-compose up -d
+
+      - name: Build jar
+        timeout-minutes: 30
+        shell: bash
+        working-directory:
+        run: |
+          echo "build jar"
+          git submodule update --init
+          mvn clean install -Dmaven.test.skip=true
+
+      - name: Test
+        timeout-minutes: 60
+        shell: bash
+        working-directory: tests/milvustest
+        run: |
+          echo "run testcases"
+          mvn clean test -DsuiteXmlFile=testng.xml
+
+      - name: Upload logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs-java-sdk-ci-test
+          path: |
+            tests/milvustest/target/surefire-reports
+            tests/milvustest/target/allure-results 
