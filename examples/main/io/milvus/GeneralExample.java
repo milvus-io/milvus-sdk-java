@@ -482,7 +482,6 @@ public class GeneralExample {
         example.hasCollection();
         example.describeCollection();
         example.showCollections();
-        example.loadCollection();
 
         final String partitionName = "p1";
         example.createPartition(partitionName);
@@ -500,16 +499,15 @@ public class GeneralExample {
         }
         example.getCollectionStatistics();
 
-        System.out.println("Search without index");
-        String searchExpr = AGE_FIELD + " > 50";
-        example.searchFace(searchExpr);
-
         example.createIndex();
         example.describeIndex();
         example.getIndexBuildProgress();
         example.getIndexState();
 
+        example.loadCollection();
+
         System.out.println("Search with index");
+        String searchExpr = AGE_FIELD + " > 50";
         example.searchFace(searchExpr);
 
         String deleteExpr = ID_FIELD + " in " + deleteIds.toString();
