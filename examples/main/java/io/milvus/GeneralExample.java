@@ -172,7 +172,7 @@ public class GeneralExample {
         // call flush() to flush the insert buffer to storage,
         // so that the getCollectionStatistics() can get correct number
         milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
-        
+
         System.out.println("========== getCollectionStatistics() ==========");
         R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(
                 GetCollectionStatisticsParam.newBuilder()
@@ -531,10 +531,10 @@ public class GeneralExample {
         example.getIndexBuildProgress();
         example.getIndexState();
 
-        // loadCollection() must be called before search()
         example.loadCollection();
 
         System.out.println("Search with index");
+        String searchExpr = AGE_FIELD + " > 50";
         example.searchFace(searchExpr);
 
         String deleteExpr = ID_FIELD + " in " + deleteIds.toString();
