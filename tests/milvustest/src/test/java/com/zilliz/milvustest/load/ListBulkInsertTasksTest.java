@@ -21,7 +21,7 @@ import org.testng.annotations.Test;
 @Epic("Import")
 @Feature("ListImportTasks")
 public class ListBulkInsertTasksTest extends BaseTest {
-  @BeforeClass(description = "init bulk load task")
+  @BeforeClass(description = "init bulk load task",alwaysRun = true)
   public void bulkLoad() {
     R<ImportResponse> importResponseR =
         milvusClient.bulkInsert(

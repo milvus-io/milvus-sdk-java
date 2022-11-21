@@ -13,7 +13,7 @@ public class CommonData {
   public static String defaultStringPKAlias = "StringPKAliasAutoTest";
   public static String defaultBinaryAlias = "BinaryAliasAutoTest";
   public static String defaultStringPKBinaryAlias = "StringPKBinaryAliasAutoTest";
-  public static String defaultVectorField = "VectorFieldAutoTest";
+  public static String defaultVectorField = "book_intro";
   public static String defaultBinaryVectorField = "BinaryVectorFieldAutoTest";
   public static String defaultIndex = "FloatVectorIndex";
 
