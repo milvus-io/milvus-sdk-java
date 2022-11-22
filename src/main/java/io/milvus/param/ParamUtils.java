@@ -320,14 +320,33 @@ public class ParamUtils {
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
         long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
                 requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
-        return QueryRequest.newBuilder()
+        QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
                 .addAllOutputFields(requestParam.getOutFields())
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
-                .setGuaranteeTimestamp(guaranteeTimestamp)
-                .build();
+                .setGuaranteeTimestamp(guaranteeTimestamp);
+
+        // set offset and limit value.
+        // directly pass the two values, the server will verify them.
+        long offset = requestParam.getOffset();
+        if (offset > 0) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey("offset")
+                    .setValue(String.valueOf(offset))
+                    .build());
+        }
+
+        long limit = requestParam.getLimit();
+        if (limit > 0) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey("limit")
+                    .setValue(String.valueOf(limit))
+                    .build());
+        }
+
+        return builder.build();
     }
 
     private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,

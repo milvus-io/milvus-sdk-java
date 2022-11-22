@@ -423,6 +423,22 @@ class MilvusClientDockerTest {
             }
         }
 
+        // query with offset and limit
+        int queryLimit = 5;
+        expr = field5Name + " > 1"; // "age > 1"
+        queryParam = QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(expr)
+                .withOffset(100L)
+                .withLimit((long) queryLimit)
+                .build();
+        queryR = client.query(queryParam);
+        assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+        queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+        // we didn't set the output fields, only primary key field is returned
+        List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
+        assertEquals(queryLimit, out.size());
 
         // pick some vectors to search
         List<Long> targetVectorIDs = new ArrayList<>();
