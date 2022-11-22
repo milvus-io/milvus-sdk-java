@@ -2073,6 +2073,24 @@ class MilvusServiceClientTest {
                 .withGuaranteeTimestamp(-1L)
                 .build()
         );
+
+        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .withExpr("dummy")
+                .withLimit(-1L)
+                .build()
+        );
+
+        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .withExpr("dummy")
+                .withOffset(-1L)
+                .build()
+        );
     }
 
     @Test
