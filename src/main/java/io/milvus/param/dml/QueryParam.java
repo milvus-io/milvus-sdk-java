@@ -41,8 +41,10 @@ public class QueryParam {
     private final String expr;
     private final long travelTimestamp;
     private final long guaranteeTimestamp;
-    private final Long gracefulTime;
+    private final long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
+    private final long offset;
+    private final long limit;
 
     private QueryParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -53,6 +55,8 @@ public class QueryParam {
         this.guaranteeTimestamp = builder.guaranteeTimestamp;
         this.consistencyLevel = builder.consistencyLevel;
         this.gracefulTime = builder.gracefulTime;
+        this.offset = builder.offset;
+        this.limit = builder.limit;
     }
 
     public static Builder newBuilder() {
@@ -71,6 +75,8 @@ public class QueryParam {
         private Long gracefulTime = 5000L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
         private ConsistencyLevelEnum consistencyLevel;
+        private Long offset = 0L;
+        private Long limit = 0L;
 
         private Builder() {
         }
@@ -200,6 +206,30 @@ public class QueryParam {
         }
 
         /**
+         * Specify a position to return results. Only take effect when the 'limit' value is specified.
+         * Default value is 0, start from begin.
+         *
+         * @param offset a value to define the position
+         * @return <code>Builder</code>
+         */
+        public Builder withOffset(@NonNull Long offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        /**
+         * Specify a value to control the returned number of entities. Must be a positive value.
+         * Default value is 0, will return without limit.
+         *
+         * @param limit a value to define the limit of returned entities
+         * @return <code>Builder</code>
+         */
+        public Builder withLimit(@NonNull Long limit) {
+            this.limit = limit;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link QueryParam} instance.
          *
          * @return {@link QueryParam}
@@ -216,6 +246,14 @@ public class QueryParam {
                 throw new ParamException("The guarantee timestamp must be greater than 0");
             }
 
+            if (offset < 0) {
+                throw new ParamException("The offset value cannot be less than 0");
+            }
+
+            if (limit < 0) {
+                throw new ParamException("The limit value cannot be less than 0");
+            }
+
             return new QueryParam(this);
         }
     }
@@ -230,8 +268,11 @@ public class QueryParam {
         return "QueryParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionNames='" + partitionNames.toString() + '\'' +
+                ", outFields=" + outFields.toString() +
                 ", expr='" + expr + '\'' +
                 ", consistencyLevel='" + consistencyLevel + '\'' +
+                ", offset=" + offset +
+                ", limit=" + limit +
                 '}';
     }
 }
