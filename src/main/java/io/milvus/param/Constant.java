@@ -40,6 +40,7 @@ public class Constant {
     public static final String IMPORT_COLLECTION = "collection";
     public static final String IMPORT_PARTITION = "partition";
     public static final String DEFAULT_INDEX_NAME = "";
+    public final static String OFFSET = "offset";
 
     // max value for waiting loading collection/partition interval, unit: millisecond
     public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;
