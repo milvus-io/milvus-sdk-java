@@ -2401,6 +2401,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
                 return failedStatus("SelectGrant", response.getStatus());
             }
+            for (int i = 0; i < response.getQuotaStatesCount(); i++) {
+                QuotaState state = response.getQuotaStates(i);
+                if (state == QuotaState.DenyToWrite || state == QuotaState.DenyToRead) {
+                    Status status = Status.newBuilder()
+                            .setErrorCode(ErrorCode.ForceDeny)
+                            .setReason(response.getReasons(i))
+                            .build();
+                    return failedStatus("checkHealth", status);
+                }
+            }
             logDebug("CheckHealth successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
