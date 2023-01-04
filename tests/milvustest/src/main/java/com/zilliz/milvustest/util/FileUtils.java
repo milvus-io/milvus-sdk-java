@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -92,6 +93,10 @@ public class FileUtils {
               if (x.getFieldType().equals(FieldType.STRING_PK_FIELD)) {
                 String[] strings = MathUtil.generateString(rows);
                 x.setFieldValue(Arrays.asList(strings));
+              }
+              if (x.getFieldType().equals(FieldType.BINARY_VECTOR_FIELD)) {
+                List<int[]> ints = MathUtil.generateBinaryVectors(rows, dim);
+                x.setFieldValue(ints);
               }
             });
     if (rowBased) {

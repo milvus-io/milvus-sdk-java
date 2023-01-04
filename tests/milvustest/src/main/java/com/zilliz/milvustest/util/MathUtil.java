@@ -2,6 +2,7 @@ package com.zilliz.milvustest.util;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class MathUtil {
@@ -117,6 +118,21 @@ public class MathUtil {
       doubleList.add(doubles);
     }
     return doubleList;
+  }
+
+  public static List<int[]> generateBinaryVectors(int num, int dim) {
+    Random random=new Random();
+    List<int[]> intList = new ArrayList<>(num);
+    for (int j = 0; j < num; j++) {
+      int[] intvalue = new int[dim/8];
+      for (int i = 0; i < dim/8; i++) {
+
+        intvalue[i] = random.nextInt(100);
+      }
+      intList.add(intvalue);
+    }
+    return intList;
+
   }
 
   public static Boolean[] generateBoolean(int num) {
