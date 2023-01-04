@@ -1666,4 +1666,68 @@ public class SearchTest extends BaseTest {
     Assert.assertTrue(searchResultsR.getException().getMessage().contains("cannot parse expression"));
 
   }
+
+  public long data1=0L;
+  public long data2=0L;
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(
+          description =
+                  "Search with pagination(offset=0)",groups = {"Smoke"})
+  public void intPKAndFloatVectorSearchWithPagination() {
+    Integer SEARCH_K = 4; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10,\"offset\":0}";
+    List<String> search_output_fields = Arrays.asList("book_id");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertEquals(searchResultsWrapper.getFieldData("book_id", 0).size(), 4);
+    data1=searchResultsR.getData().getResults().getIds().getIntId().getData(2);
+    data2=searchResultsR.getData().getResults().getIds().getIntId().getData(3);
+  }
+
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(
+          description =
+                  "Search with pagination.",
+          groups = {"Smoke"},dependsOnMethods = "intPKAndFloatVectorSearchWithPagination")
+  public void intPKAndFloatVectorSearchWithPagination2() {
+    Integer SEARCH_K = 4; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10,\"offset\":2}";
+    List<String> search_output_fields = Arrays.asList("book_id");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(CommonData.defaultCollection)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertEquals(searchResultsWrapper.getFieldData("book_id", 0).size(), 4);
+    Assert.assertEquals(searchResultsR.getData().getResults().getIds().getIntId().getData(0),data1);
+    Assert.assertEquals(searchResultsR.getData().getResults().getIds().getIntId().getData(1),data2);
+    logger.info(searchResultsR.getData().getResults().toString());
+  }
 }
