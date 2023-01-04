@@ -1,5 +1,41 @@
 # Changelog
 
+## milvus-sdk-java 2.2.2 (2023-01-04)
+
+### Bug
+
+- Fix search param offset not avaliable bug
+
+
+## milvus-sdk-java 2.2.1 (2022-11-22)
+
+### Improvement
+
+- Support pagination for query() interface
+- Upgrade commons-text to 1.10.0 to avoid security vulnerabilities
+
+
+## milvus-sdk-java 2.2.0 (2022-11-18)
+
+### Improvement
+
+- Supports Role-Based Access Control (RBAC)
+- Support bulk insert data
+- Support DISKANN index
+
+
+## milvus-sdk-java 2.1.0 (2022-08-31)
+
+### Bug
+
+- Fix keepAliveTimeout timeunit error for ConnectParam
+
+### Improvement
+
+- Remove withGuaranteeTimestamp/withGracefulTime of SearchParam/QueryParam. User only need to provide consistency level
+- Change the default consistency level from Strong to Bounded in SearchParam/QueryParam
+
+
 ## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
 
 ### Feature
