@@ -1,6 +1,7 @@
 package io.milvus.param;
 
 import com.google.protobuf.ByteString;
+import io.grpc.StatusRuntimeException;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.exception.IllegalResponseException;
@@ -293,6 +294,7 @@ public class ParamUtils {
                                 .build());
 
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
+            try {
             Map<String, Object> paramMap = JacksonUtils.fromJson(requestParam.getParams(),Map.class);
             String offset = paramMap.getOrDefault(Constant.OFFSET, 0).toString();
             builder.addSearchParams(
@@ -305,6 +307,9 @@ public class ParamUtils {
                             .setKey(Constant.PARAMS)
                             .setValue(requestParam.getParams())
                             .build());
+            } catch (IllegalArgumentException e) {
+                throw new ParamException(e.getMessage() + e.getCause().getMessage());
+            }
         }
 
         if (!requestParam.getOutFields().isEmpty()) {
