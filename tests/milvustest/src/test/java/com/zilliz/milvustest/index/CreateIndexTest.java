@@ -3,11 +3,16 @@ package com.zilliz.milvustest.index;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
+import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.QueryResults;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
 import io.qameta.allure.*;
@@ -16,6 +21,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static com.zilliz.milvustest.util.MathUtil.combine;
 
@@ -304,7 +312,7 @@ public class CreateIndexTest extends BaseTest {
                     CreateIndexParam.newBuilder()
                             .withCollectionName(newCollection)
                             .withFieldName("book_id")
-                            .withIndexName(CommonData.defaultIndex)
+                            .withIndexName("book_id_index")
                             .withMetricType(MetricType.IP)
                             .withIndexType(IndexType.HNSW)
                             .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
@@ -312,9 +320,36 @@ public class CreateIndexTest extends BaseTest {
                             .withSyncWaitingTimeout(30L)
                             .withSyncWaitingInterval(500L)
                             .build());
+
+    milvusClient.createIndex(
+            CreateIndexParam.newBuilder()
+                    .withCollectionName(newCollection)
+                    .withFieldName(CommonData.defaultVectorField)
+                    .withIndexName(CommonData.defaultIndex)
+                    .withMetricType(MetricType.IP)
+                    .withIndexType(IndexType.HNSW)
+                    .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                    .withSyncMode(Boolean.TRUE)
+                    .withSyncWaitingTimeout(30L)
+                    .withSyncWaitingInterval(500L)
+                    .build());
     System.out.println("Create index" + rpcStatusR);
     Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
     Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+    List<InsertParam.Field> fields = CommonFunction.generateData(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder().withCollectionName(newCollection)
+            .withFields(fields).build());
+    logger.info("insert result:{}",insert);
+    R<RpcStatus> rpcStatusR1 = milvusClient.loadCollection(LoadCollectionParam.newBuilder().withCollectionName(newCollection).withSyncLoadWaitingInterval(500L)
+            .withSyncLoadWaitingTimeout(30L)
+            .build());
+    logger.info("Load result:{}",rpcStatusR1);
+    R<QueryResults> query = milvusClient.query(QueryParam.newBuilder()
+            .withCollectionName(newCollection)
+            .withExpr("book_id in [1,2,3,4,5,6,7]")
+            .withOutFields(Arrays.asList("book_id", "word_count"))
+            .build());
+    logger.info("query:{}",query);
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
   }

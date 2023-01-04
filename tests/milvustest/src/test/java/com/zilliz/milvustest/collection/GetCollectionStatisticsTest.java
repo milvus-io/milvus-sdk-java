@@ -30,7 +30,7 @@ public class GetCollectionStatisticsTest extends BaseTest {
     Assert.assertEquals(respCollectionStatistics.getStatus().intValue(), 0);
     GetCollStatResponseWrapper wrapperCollectionStatistics =
         new GetCollStatResponseWrapper(respCollectionStatistics.getData());
-    Assert.assertEquals(wrapperCollectionStatistics.getRowCount(), 0);
+    Assert.assertEquals(wrapperCollectionStatistics.getRowCount(), 2000);
     System.out.println(wrapperCollectionStatistics);
   }
 
