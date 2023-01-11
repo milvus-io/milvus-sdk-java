@@ -39,6 +39,7 @@ public class Constant {
     public static final String IMPORT_FILES = "files";
     public static final String IMPORT_COLLECTION = "collection";
     public static final String IMPORT_PARTITION = "partition";
+    public static final String IMPORT_PROGRESS = "progress_percent";
     public static final String DEFAULT_INDEX_NAME = "";
     public final static String OFFSET = "offset";
 
