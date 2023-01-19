@@ -41,6 +41,7 @@ public class LoadPartitionsParam {
     private final long syncLoadWaitingInterval;
     private final long syncLoadWaitingTimeout;
     private final int replicaNumber;
+    private final boolean refresh;
 
     private LoadPartitionsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -49,6 +50,7 @@ public class LoadPartitionsParam {
         this.syncLoadWaitingInterval = builder.syncLoadWaitingInterval;
         this.syncLoadWaitingTimeout = builder.syncLoadWaitingTimeout;
         this.replicaNumber = builder.replicaNumber;
+        this.refresh = builder.refresh;
     }
 
     public static Builder newBuilder() {
@@ -79,6 +81,12 @@ public class LoadPartitionsParam {
         // replicaNumber:
         //   The replica number to load, default by 1
         private Integer replicaNumber = 1;
+
+        // refresh:
+        //   This flag must be set to FALSE when first time call the loadPartitions().
+        //   After loading a partition, call loadPartitions() again with refresh=TRUE,
+        //   the server will look for new segments that are not loaded yet and tries to load them up.
+        private Boolean refresh = Boolean.FALSE;
 
         private Builder() {
         }
@@ -166,6 +174,21 @@ public class LoadPartitionsParam {
          */
         public Builder withReplicaNumber(@NonNull Integer replicaNumber) {
             this.replicaNumber = replicaNumber;
+            return this;
+        }
+
+        /**
+         * Whether to enable refresh mode.
+         * Refresh mode renews the segment list of this collection before loading.
+         * This flag must be set to FALSE when first time call the loadPartitions().
+         * After loading a collection, call loadPartitions() again with refresh=TRUE,
+         * the server will look for new segments that are not loaded yet and tries to load them up.
+         *
+         * @param refresh <code>Boolean.TRUE</code> is refresh mode, <code>Boolean.FALSE</code> is not
+         * @return <code>Builder</code>
+         */
+        public Builder withRefresh(@NonNull Boolean refresh) {
+            this.refresh = refresh;
             return this;
         }
 
