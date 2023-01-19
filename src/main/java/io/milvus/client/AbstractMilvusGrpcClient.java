@@ -492,6 +492,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
+                    .setRefresh(requestParam.isRefresh())
                     .build();
 
             Status response = blockingStub().loadCollection(loadCollectionRequest);
@@ -809,6 +810,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
+                    .setRefresh(requestParam.isRefresh())
                     .build();
 
             Status response = blockingStub().loadPartitions(loadPartitionsRequest);
