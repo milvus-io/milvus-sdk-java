@@ -849,7 +849,7 @@ class MilvusClientDockerTest {
     // this case can be executed when the milvus image of version 2.1 is published.
     @Test
     void testCredential() {
-        String collectionName = "aa";
+        String randomCollectionName = generator.generate(10);
         // collection schema
         String field1Name = "long_field";
         String field2Name = "vec_field";
@@ -871,7 +871,7 @@ class MilvusClientDockerTest {
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
-                .withCollectionName(collectionName)
+                .withCollectionName(randomCollectionName)
                 .withDescription("test")
                 .withFieldTypes(fieldsSchema)
                 .build();
@@ -880,7 +880,7 @@ class MilvusClientDockerTest {
 
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
-                .withCollectionName(collectionName)
+                .withCollectionName(randomCollectionName)
                 .withFieldName(field2Name)
                 .withIndexType(IndexType.IVF_FLAT)
                 .withIndexName("xxx")
@@ -894,16 +894,16 @@ class MilvusClientDockerTest {
         R<RpcStatus> createIndexR = client.createIndex(indexParam);
 
         client.getIndexState(GetIndexStateParam.newBuilder()
-                .withCollectionName(collectionName)
+                .withCollectionName(randomCollectionName)
                 .withIndexName(indexParam.getIndexName())
                 .build());
 
         R<RpcStatus> dropIndexR = client.dropIndex(DropIndexParam.newBuilder()
-                .withCollectionName(collectionName)
+                .withCollectionName(randomCollectionName)
                 .withIndexName(indexParam.getIndexName())
                 .build());
 
-        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(collectionName).build());
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
     }
 
     @Test
@@ -1108,6 +1108,8 @@ class MilvusClientDockerTest {
             System.out.println("The result of No." + i + " target vector(ID = " + queryIds.get(i) + "):");
             System.out.println(scores);
         }
+
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
     }
 
     private static void testIndex(String collectionName, String fieldName,
@@ -1189,6 +1191,8 @@ class MilvusClientDockerTest {
                 testIndex(randomCollectionName, field2Name, type, metric, indexTypes.get(type), Boolean.FALSE);
             }
         }
+
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
     }
 
     @Test
@@ -1241,5 +1245,7 @@ class MilvusClientDockerTest {
             testIndex(randomCollectionName, field2Name, IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.TRUE);
             testIndex(randomCollectionName, field2Name, IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.FALSE);
         }
+
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
     }
 }
