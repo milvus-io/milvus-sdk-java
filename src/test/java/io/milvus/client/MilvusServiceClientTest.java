@@ -68,53 +68,72 @@ class MilvusServiceClientTest {
         return new MilvusServiceClient(connectParam);
     }
 
+    private <T, P> void invokeFunc(Method testFunc, MilvusServiceClient client, T param, int ret, boolean equalRet) {
+        try {
+            R<P> resp = (R<P>) testFunc.invoke(client, param);
+            if (equalRet) {
+                assertEquals(ret, resp.getStatus());
+            } else {
+                assertNotEquals(ret, resp.getStatus());
+            }
+        } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            fail();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private <T, P> void testFuncByName(String funcName, T param) {
+        // start mock server
+        MockMilvusServer server = startServer();
+        MilvusServiceClient client = startClient();
         try {
             Class<?> clientClass = MilvusServiceClient.class;
             Method testFunc = clientClass.getMethod(funcName, param.getClass());
 
-            // start mock server
-            MockMilvusServer server = startServer();
-            MilvusServiceClient client = startClient();
-
             // test return ok with correct input
-            R<P> resp = (R<P>) testFunc.invoke(client, param);
-            assertEquals(R.Status.Success.getCode(), resp.getStatus());
+            invokeFunc(testFunc, client, param, R.Status.Success.getCode(), true);
 
             // stop mock server
             server.stop();
 
             // test return error without server
-            resp = (R<P>) testFunc.invoke(client, param);
-            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+            invokeFunc(testFunc, client, param, R.Status.Success.getCode(), false);
 
             // test return error when client channel is shutdown
             client.close();
-            resp = (R<P>) testFunc.invoke(client, param);
-            assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            System.out.println(e.toString());
+            invokeFunc(testFunc, client, param, R.Status.ClientNotConnected.getCode(), true);
+        } catch (NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            fail();
+        } finally {
+            server.stop();
+            client.close();
         }
     }
 
     @SuppressWarnings("unchecked")
     private <T, P> void testAsyncFuncByName(String funcName, T param) {
+        // start mock server
+        MockMilvusServer server = startServer();
+        MilvusServiceClient client = startClient();
+
         try {
             Class<?> clientClass = MilvusServiceClient.class;
             Method testFunc = clientClass.getMethod(funcName, param.getClass());
-
-            // start mock server
-            MockMilvusServer server = startServer();
-            MilvusServiceClient client = startClient();
 
             // test return ok with correct input
             try {
                 ListenableFuture<R<P>> respFuture = (ListenableFuture<R<P>>) testFunc.invoke(client, param);
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.Success.getCode(), response.getStatus());
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
+                    InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                System.out.println(e.getMessage());
+                fail();
             }
 
             // stop mock server
@@ -133,11 +152,19 @@ class MilvusServiceClientTest {
                 ListenableFuture<R<P>> respFuture = (ListenableFuture<R<P>>) testFunc.invoke(client, param);
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.ClientNotConnected.getCode(), response.getStatus());
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
+                    InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+                System.out.println(e.getMessage());
+                fail();
             }
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-            System.out.println(e.toString());
+        } catch (NoSuchMethodException | SecurityException e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            fail();
+        } finally {
+            server.stop();
+            client.close();
         }
     }
 
@@ -402,46 +429,55 @@ class MilvusServiceClientTest {
         MockMilvusServer server = startServer();
         MilvusServiceClient client = startClient();
 
-        final String collectionName = "collection1";
-        GetCollectionStatisticsParam param = GetCollectionStatisticsParam.newBuilder()
-                .withCollectionName(collectionName)
-                .withFlush(Boolean.TRUE)
-                .build();
+        try {
+            final String collectionName = "collection1";
+            GetCollectionStatisticsParam param = GetCollectionStatisticsParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withFlush(Boolean.TRUE)
+                    .build();
 
-        // test return ok with correct input
-        final long segmentID = 2021L;
-        mockServerImpl.setFlushResponse(FlushResponse.newBuilder()
-                .putCollSegIDs(collectionName, LongArray.newBuilder().addData(segmentID).build())
-                .build());
-        mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
-                .setFlushed(false)
-                .build());
-
-        new Thread(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(1);
-            } catch (InterruptedException e) {
-                System.out.println(e.toString());
-            }
-            mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
-                    .setFlushed(true)
+            // test return ok with correct input
+            final long segmentID = 2021L;
+            mockServerImpl.setFlushResponse(FlushResponse.newBuilder()
+                    .putCollSegIDs(collectionName, LongArray.newBuilder().addData(segmentID).build())
                     .build());
-        }, "RefreshFlushState").start();
+            mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
+                    .setFlushed(false)
+                    .build());
 
-        R<GetCollectionStatisticsResponse> resp = client.getCollectionStatistics(param);
-        assertEquals(R.Status.Success.getCode(), resp.getStatus());
+            new Thread(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(1);
+                } catch (InterruptedException e) {
+                    System.out.println(e.toString());
+                }
+                mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
+                        .setFlushed(true)
+                        .build());
+            }, "RefreshFlushState").start();
 
-        // stop mock server
-        server.stop();
+            R<GetCollectionStatisticsResponse> resp = client.getCollectionStatistics(param);
+            assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
-        // test return error without server
-        resp = client.getCollectionStatistics(param);
-        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+            // stop mock server
+            server.stop();
 
-        // test return error when client channel is shutdown
-        client.close();
-        resp = client.getCollectionStatistics(param);
-        assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+            // test return error without server
+            resp = client.getCollectionStatistics(param);
+            assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+            // test return error when client channel is shutdown
+            client.close();
+            resp = client.getCollectionStatistics(param);
+            assertEquals(R.Status.ClientNotConnected.getCode(), resp.getStatus());
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+            fail();
+        } finally {
+            server.stop();
+            client.close();
+        }
     }
 
     @Test
@@ -1929,7 +1965,7 @@ class MilvusServiceClientTest {
         );
 
         // float vector metric type is illegal
-        List<List<Float>> vectors2 = Arrays.asList(vector2);
+        List<List<Float>> vectors2 = Collections.singletonList(vector2);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -1944,7 +1980,7 @@ class MilvusServiceClientTest {
         );
 
         // binary vector metric type is illegal
-        List<ByteBuffer> binVectors2 = Arrays.asList(buf2);
+        List<ByteBuffer> binVectors2 = Collections.singletonList(buf2);
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
