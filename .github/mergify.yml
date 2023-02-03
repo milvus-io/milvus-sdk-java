@@ -1,7 +1,9 @@
 pull_request_rules:
   - name: Test passed for code changed
     conditions:
-      - base=master
+      - or:
+        - base=master
+        - base~=2\.\d
       - "status-success=Build and test"
     actions:
       label:
@@ -10,7 +12,9 @@ pull_request_rules:
 
   - name: Remove ci-passed when code check failed
     conditions:
-      - base=master
+      - or:
+        - base=master
+        - base~=2\.\d
       - "check-failure=Build and test"
     actions:
       label:
