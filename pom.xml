@@ -92,6 +92,7 @@
         <junit.jupiter.engine.version>5.1.0</junit.jupiter.engine.version>
         <jackson.version>2.12.7.1</jackson.version>
         <gson.version>2.9.0</gson.version>
+        <kotlin.version>1.6.0</kotlin.version>
     </properties>
 
     <dependencyManagement>
@@ -200,7 +201,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
-            <version>1.4.10</version>
+            <version>${kotlin.version}</version>
         </dependency>
     </dependencies>
 
