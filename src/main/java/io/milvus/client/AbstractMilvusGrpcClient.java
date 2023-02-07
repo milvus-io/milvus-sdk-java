@@ -24,70 +24,21 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.StatusRuntimeException;
-import io.milvus.exception.ClientNotConnectedException;
-import io.milvus.exception.IllegalResponseException;
-import io.milvus.exception.ParamException;
+import io.milvus.exception.*;
 import io.milvus.grpc.*;
 import io.milvus.grpc.ObjectEntity;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
-import io.milvus.param.alias.AlterAliasParam;
-import io.milvus.param.alias.CreateAliasParam;
-import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
-import io.milvus.param.bulkinsert.BulkInsertParam;
-import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DescribeCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.FlushParam;
-import io.milvus.param.collection.GetCollectionStatisticsParam;
-import io.milvus.param.collection.GetLoadingProgressParam;
-import io.milvus.param.collection.HasCollectionParam;
-import io.milvus.param.collection.LoadCollectionParam;
-import io.milvus.param.collection.ReleaseCollectionParam;
-import io.milvus.param.collection.ShowCollectionsParam;
-import io.milvus.param.control.GetCompactionPlansParam;
-import io.milvus.param.control.GetCompactionStateParam;
-import io.milvus.param.control.GetFlushStateParam;
-import io.milvus.param.control.GetMetricsParam;
-import io.milvus.param.control.GetPersistentSegmentInfoParam;
-import io.milvus.param.control.GetQuerySegmentInfoParam;
-import io.milvus.param.control.GetReplicasParam;
-import io.milvus.param.control.LoadBalanceParam;
-import io.milvus.param.control.ManualCompactParam;
-import io.milvus.param.credential.CreateCredentialParam;
-import io.milvus.param.credential.DeleteCredentialParam;
-import io.milvus.param.credential.ListCredUsersParam;
-import io.milvus.param.credential.UpdateCredentialParam;
-import io.milvus.param.dml.DeleteParam;
-import io.milvus.param.dml.InsertParam;
-import io.milvus.param.dml.QueryParam;
-import io.milvus.param.dml.SearchParam;
-import io.milvus.param.index.CreateIndexParam;
-import io.milvus.param.index.DescribeIndexParam;
-import io.milvus.param.index.DropIndexParam;
-import io.milvus.param.index.GetIndexBuildProgressParam;
-import io.milvus.param.index.GetIndexStateParam;
-import io.milvus.param.partition.CreatePartitionParam;
-import io.milvus.param.partition.DropPartitionParam;
-import io.milvus.param.partition.GetPartitionStatisticsParam;
-import io.milvus.param.partition.HasPartitionParam;
-import io.milvus.param.partition.LoadPartitionsParam;
-import io.milvus.param.partition.ReleasePartitionsParam;
-import io.milvus.param.partition.ShowPartitionsParam;
-import io.milvus.param.role.AddUserToRoleParam;
-import io.milvus.param.role.CreateRoleParam;
-import io.milvus.param.role.DropRoleParam;
-import io.milvus.param.role.GrantRolePrivilegeParam;
-import io.milvus.param.role.RemoveUserFromRoleParam;
-import io.milvus.param.role.RevokeRolePrivilegeParam;
-import io.milvus.param.role.SelectGrantForRoleAndObjectParam;
-import io.milvus.param.role.SelectGrantForRoleParam;
-import io.milvus.param.role.SelectRoleParam;
-import io.milvus.param.role.SelectUserParam;
+import io.milvus.param.alias.*;
+import io.milvus.param.bulkinsert.*;
+import io.milvus.param.collection.*;
+import io.milvus.param.control.*;
+import io.milvus.param.credential.*;
+import io.milvus.param.dml.*;
+import io.milvus.param.index.*;
+import io.milvus.param.partition.*;
+import io.milvus.param.role.*;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -1825,18 +1776,18 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().createCredential(createCredentialRequest);
             if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateCredential", response);
+                return failedStatus("CreateCredentialRequest", response);
             }
 
-            logDebug("CreateCredential successfully! Username:{}",
+            logDebug("CreateCredentialRequest successfully! Username:{}",
                     requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateCredential RPC failed! Username:{}\n{}",
+            logError("CreateCredentialRequest RPC failed! Username:{}\n{}",
                     requestParam.getUsername(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateCredential failed! Username:{},\n{}",
+            logError("CreateCredentialRequest failed! Username:{},\n{}",
                     requestParam.getUsername(), e.getMessage());
             return R.failed(e);
         }
@@ -1859,17 +1810,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().updateCredential(updateCredentialRequest);
             if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("UpdateCredential", response);
+                return failedStatus("UpdateCredentialRequest", response);
             }
 
-            logDebug("UpdateCredential successfully! Username:{}", requestParam.getUsername());
+            logDebug("UpdateCredentialRequest successfully! Username:{}", requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("UpdateCredential RPC failed! Username:{}\n{}",
+            logError("UpdateCredentialRequest RPC failed! Username:{}\n{}",
                     requestParam.getUsername(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("UpdateCredential failed! Username:{}\n{}",
+            logError("UpdateCredentialRequest failed! Username:{}\n{}",
                     requestParam.getUsername(), e.getMessage());
             return R.failed(e);
         }
@@ -1890,16 +1841,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().deleteCredential(deleteCredentialRequest);
             if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DeleteCredential", response);
+                return failedStatus("DeleteCredentialRequest", response);
             }
 
-            logDebug("DeleteCredential successfully! Username:{}", requestParam.getUsername());
+            logDebug("DeleteCredentialRequest successfully! Username:{}", requestParam.getUsername());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DeleteCredential RPC failed! Username:{}\n{}", requestParam.getUsername(), e.getStatus().toString());
+            logError("DeleteCredentialRequest RPC failed! Username:{}\n{}", requestParam.getUsername(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("DeleteCredential failed! Username:{}\n{}", requestParam.getUsername(), e.getMessage());
+            logError("DeleteCredentialRequest failed! Username:{}\n{}", requestParam.getUsername(), e.getMessage());
             return R.failed(e);
         }
     }
@@ -1918,16 +1869,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             ListCredUsersResponse response = blockingStub().listCredUsers(listCredUsersRequest);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("ListCredUsers", response.getStatus());
+                return failedStatus("ListCredUsersRequest", response.getStatus());
             }
 
-            logDebug("ListCredUsers successfully!");
+            logDebug("ListCredUsersRequest successfully!");
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListCredUsers RPC failed! \n{}", e.getStatus().toString());
+            logError("ListCredUsersRequest RPC failed! \n{}", e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("DeleteCredential failed! \n{}", e.getMessage());
+            logError("ListCredUsersRequest failed! \n{}", e.getMessage());
             return R.failed(e);
         }
     }
@@ -2019,16 +1970,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().createRole(request);
             if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateRole", response);
+                return failedStatus("CreateRoleRequest", response);
             }
-            logDebug("CreateRole successfully! RoleName:{}", requestParam.getRoleName());
+            logDebug("CreateRoleRequest successfully! RoleName:{}", requestParam.getRoleName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateRole RPC failed! RoleName:{} \n{}",
+            logError("CreateRoleRequest RPC failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateRole failed! RoleName:{} \n{}",
+            logError("CreateRoleRequest failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getMessage());
             return R.failed(e);
         }
@@ -2049,16 +2000,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().dropRole(request);
             if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DropRole", response);
+                return failedStatus("DropRoleRequest", response);
             }
-            logDebug("DropRole successfully! RoleName:{}", requestParam.getRoleName());
+            logDebug("DropRoleRequest successfully! RoleName:{}", requestParam.getRoleName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropRole RPC failed! RoleName:{} \n{}",
+            logError("DropRoleRequest RPC failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropRole failed! RoleName:{} \n{}",
+            logError("DropRoleRequest failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getMessage());
             return R.failed(e);
         }
@@ -2082,16 +2033,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             SelectRoleResponse response = blockingStub().selectRole(request);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectRole", response.getStatus());
+                return failedStatus("SelectRoleRequest", response.getStatus());
             }
-            logDebug("SelectRole successfully! RoleName:{}", requestParam.getRoleName());
+            logDebug("SelectRoleRequest successfully! RoleName:{}", requestParam.getRoleName());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectRole RPC failed! RoleName:{} \n{}",
+            logError("SelectRoleRequest RPC failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectRole failed! RoleName:{} \n{}",
+            logError("SelectRoleRequest failed! RoleName:{} \n{}",
                     requestParam.getRoleName(), e.getMessage());
             return R.failed(e);
         }
@@ -2112,16 +2063,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             SelectUserResponse response = blockingStub().selectUser(request);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectUser", response.getStatus());
+                return failedStatus("SelectUserRequest", response.getStatus());
             }
-            logDebug("SelectUser successfully! Request:{}", requestParam);
+            logDebug("SelectUserRequest successfully! Request:{}", requestParam);
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectUser RPC failed! Request:{} \n{}",
+            logError("SelectUserRequest RPC failed! Request:{} \n{}",
                     requestParam, e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectUser failed! Request:{} \n{}",
+            logError("SelectUserRequest failed! Request:{} \n{}",
                     requestParam, e.getMessage());
             return R.failed(e);
         }
@@ -2216,7 +2167,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             SelectGrantResponse response = blockingStub().selectGrant(request);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrant", response.getStatus());
+                return failedStatus("SelectGrantForRole", response.getStatus());
             }
             logDebug("SelectGrantForRole successfully! Request:{},", requestParam);
             return R.success(response);
@@ -2248,7 +2199,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             SelectGrantResponse response = blockingStub().selectGrant(request);
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrant", response.getStatus());
+                return failedStatus("SelectGrantForRoleAndObject", response.getStatus());
             }
             logDebug("SelectGrantForRoleAndObject successfully! Request:{},", requestParam);
             return R.success(response);
@@ -2369,26 +2320,60 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            GetLoadingProgressRequest releasePartitionsRequest = GetLoadingProgressRequest.newBuilder()
+            GetLoadingProgressRequest getLoadingProgressRequest = GetLoadingProgressRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .addAllPartitionNames(requestParam.getPartitionNames())
                     .build();
 
-            GetLoadingProgressResponse response = blockingStub().getLoadingProgress(releasePartitionsRequest);
+            GetLoadingProgressResponse response = blockingStub().getLoadingProgress(getLoadingProgressRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetLoadingProgressParam successfully! Collection name:{}, partition names:{}",
+                logDebug("GetLoadingProgressRequest successfully! Collection name:{}, partition names:{}",
                         requestParam.getCollectionName(), requestParam.getPartitionNames());
                 return R.success(response);
             } else {
-                return failedStatus("ReleasePartitionsRequest", response.getStatus());
+                return failedStatus("GetLoadingProgressRequest", response.getStatus());
             }
         } catch (StatusRuntimeException e) {
-            logError("GetLoadingProgressParam RPC failed! Collection name:{}, partition names:{}\n{}",
+            logError("GetLoadingProgressRequest RPC failed! Collection name:{}, partition names:{}\n{}",
                     requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getStatus().toString());
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetLoadingProgressParam failed! Collection name:{}, partition names:{}\n{}",
+            logError("GetLoadingProgressRequest failed! Collection name:{}, partition names:{}\n{}",
+                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            GetLoadStateRequest loadStateRequest = GetLoadStateRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName())
+                    .addAllPartitionNames(requestParam.getPartitionNames())
+                    .build();
+
+            GetLoadStateResponse response = blockingStub().getLoadState(loadStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("GetLoadStateRequest successfully! Collection name:{}, partition names:{}",
+                        requestParam.getCollectionName(), requestParam.getPartitionNames());
+                return R.success(response);
+            } else {
+                return failedStatus("GetLoadStateRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("GetLoadStateRequest RPC failed! Collection name:{}, partition names:{}\n{}",
+                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("GetLoadStateRequest failed! Collection name:{}, partition names:{}\n{}",
                     requestParam.getCollectionName(), requestParam.getPartitionNames(), e.getMessage());
             return R.failed(e);
         }
@@ -2401,7 +2386,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             CheckHealthResponse response = blockingStub().checkHealth(CheckHealthRequest.newBuilder().build());
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrant", response.getStatus());
+                return failedStatus("CheckHealth", response.getStatus());
             }
             logDebug("CheckHealth successfully!");
             return R.success(response);
@@ -2421,7 +2406,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             GetVersionResponse response = blockingStub().getVersion(GetVersionRequest.newBuilder().build());
             if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrant", response.getStatus());
+                return failedStatus("GetVersion", response.getStatus());
             }
             logDebug("GetVersion successfully!");
             return R.success(response);

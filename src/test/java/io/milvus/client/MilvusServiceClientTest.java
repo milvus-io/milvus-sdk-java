@@ -2403,6 +2403,28 @@ class MilvusServiceClientTest {
         );
     }
 
+    @Test
+    void getLoadingProgress() {
+        List<String> partitions = Collections.singletonList("partition1");
+        testFuncByName("getLoadingProgress", GetLoadingProgressParam
+                .newBuilder()
+                .withCollectionName("dummy")
+                .withPartitionNames(partitions)
+                .build()
+        );
+    }
+
+    @Test
+    void getLoadState() {
+        List<String> partitions = Collections.singletonList("partition1");
+        testFuncByName("getLoadState", GetLoadStateParam
+                .newBuilder()
+                .withCollectionName("dummy")
+                .withPartitionNames(partitions)
+                .build()
+        );
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////
     // Response wrapper test
     private void testScalarField(ScalarField field, DataType type, long rowCount) {
