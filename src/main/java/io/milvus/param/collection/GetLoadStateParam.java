@@ -21,26 +21,21 @@ package io.milvus.param.collection;
 
 import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.dml.QueryParam;
-import io.milvus.param.partition.ReleasePartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
- * Parameters for <code>loadCollection</code> interface.
+ * Parameters for <code>getLoadState</code> interface.
  */
 @Getter
-public class GetLoadingProgressParam {
+public class GetLoadStateParam {
     private final String collectionName;
     private final List<String> partitionNames;
 
-    public GetLoadingProgressParam(@NonNull Builder builder) {
+    public GetLoadStateParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
     }
@@ -50,7 +45,7 @@ public class GetLoadingProgressParam {
     }
 
     /**
-     * Builder for {@link GetLoadingProgressParam} class.
+     * Builder for {@link GetLoadStateParam} class.
      */
     public static final class Builder {
         private String collectionName;
@@ -96,25 +91,25 @@ public class GetLoadingProgressParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link GetLoadingProgressParam} instance.
+         * Verifies parameters and creates a new {@link GetLoadStateParam} instance.
          *
-         * @return {@link GetLoadingProgressParam}
+         * @return {@link GetLoadStateParam}
          */
-        public GetLoadingProgressParam build() throws ParamException {
+        public GetLoadStateParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            return new GetLoadingProgressParam(this);
+            return new GetLoadStateParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link GetLoadingProgressParam} instance.
+     * Constructs a <code>String</code> by {@link GetLoadStateParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "GetLoadingProgressParam{" +
+        return "GetLoadStateParam{" +
                 "collectionName='" + collectionName + '\'' +
                 ", partitionNames='" + partitionNames.toString() + '\'' +
                 '}';
