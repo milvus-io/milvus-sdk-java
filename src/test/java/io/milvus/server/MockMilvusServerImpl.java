@@ -74,6 +74,9 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.Status respDeleteCredential;
     private io.milvus.grpc.ListCredUsersResponse respListCredUsers;
 
+    private io.milvus.grpc.GetLoadingProgressResponse respGetLoadingProgress;
+    private io.milvus.grpc.GetLoadStateResponse respGetLoadState;
+
     public MockMilvusServerImpl() {
     }
 
@@ -594,6 +597,10 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         responseObserver.onCompleted();
     }
 
+    public void setGetCompactionPlansResponse(io.milvus.grpc.GetCompactionPlansResponse resp) {
+        respGetCompactionPlans = resp;
+    }
+
     @Override
     public void createCredential(CreateCredentialRequest request, StreamObserver<Status> responseObserver) {
         logger.info("MockServer receive createCredential() call");
@@ -642,7 +649,27 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         this.respListCredUsers = respListCredUsers;
     }
 
-    public void setGetCompactionPlansResponse(io.milvus.grpc.GetCompactionPlansResponse resp) {
-        respGetCompactionPlans = resp;
+    @Override
+    public void getLoadingProgress(GetLoadingProgressRequest request, StreamObserver<GetLoadingProgressResponse> responseObserver) {
+        logger.info("MockServer receive getLoadingProgress() call");
+
+        responseObserver.onNext(respGetLoadingProgress);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetLoadingProgress(GetLoadingProgressResponse respGetLoadingProgress) {
+        this.respGetLoadingProgress = respGetLoadingProgress;
+    }
+
+    @Override
+    public void getLoadState(GetLoadStateRequest request, StreamObserver<GetLoadStateResponse> responseObserver) {
+        logger.info("MockServer receive getLoadState() call");
+
+        responseObserver.onNext(respGetLoadState);
+        responseObserver.onCompleted();
+    }
+
+    public void setGetLoadingProgress(GetLoadStateResponse respGetLoadState) {
+        this.respGetLoadState = respGetLoadState;
     }
 }
