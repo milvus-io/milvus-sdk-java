@@ -4,6 +4,7 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import io.milvus.grpc.GetReplicasResponse;
 import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.control.GetReplicasParam;
@@ -39,6 +40,9 @@ public class GetReplicasTest extends BaseTest {
   @Test(description = "Returns the collection's replica information",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void getReplicasTest() {
+    R<RpcStatus> rpcStatusR = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(CommonData.defaultCollection).build());
+    logger.info(rpcStatusR.toString());
     R<GetReplicasResponse> getReplicasResponseR =
         milvusClient.getReplicas(
             GetReplicasParam.newBuilder().withCollectionName(CommonData.defaultCollection).build());
