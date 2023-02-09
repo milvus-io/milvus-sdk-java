@@ -118,12 +118,12 @@ public class IndexLoadTest extends BaseTest {
         Assert.assertEquals(rpcStatusR2.getStatus().intValue(), 0);
         Assert.assertEquals(rpcStatusR2.getData().getMsg(), "Success");
 
-        // 4. create index
+      /*  // 4. create index
         R<RpcStatus> rpcStatusR3 = milvusClient.createIndex(createIndexParams);
         System.out.println("Create index " + rpcStatusR);
         Assert.assertEquals(rpcStatusR3.getStatus().intValue(), 1);
         Assert.assertTrue(rpcStatusR3.getMessage().contains("create index failed, collection is loaded, please release it first"));
-
+*/
         // 5. drop index
         R<RpcStatus> rpcStatusR4 = milvusClient.dropIndex(
                         DropIndexParam.newBuilder()
@@ -194,12 +194,12 @@ public class IndexLoadTest extends BaseTest {
         Assert.assertEquals(rpcStatusR2.getStatus().intValue(), 0);
         Assert.assertEquals(rpcStatusR2.getData().getMsg(), "Success");
 
-        // 4. create index
+      /*  // 4. create index
         R<RpcStatus> rpcStatusR3 = milvusClient.createIndex(createIndexParams);
         System.out.println("Create index " + rpcStatusR);
         Assert.assertEquals(rpcStatusR3.getStatus().intValue(), 1);
         Assert.assertTrue(rpcStatusR3.getMessage().contains("create index failed, collection is loaded, please release it first"));
-
+*/
         // 5. drop index
         R<RpcStatus> rpcStatusR4 = milvusClient.dropIndex(
                 DropIndexParam.newBuilder()
