@@ -4,11 +4,13 @@ import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import io.milvus.exception.ParamException;
+import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.DescribeIndexResponse;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.DescribeCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
@@ -115,7 +117,7 @@ public class DropIndexTest extends BaseTest {
     Assert.assertEquals(describeIndexResponseR.getStatus().intValue(), 25);
     Assert.assertTrue(
             describeIndexResponseR.getException().getMessage().contains(
-            "index not exist"));
+            "index doesn't exist"));
   }
 
   @Severity(SeverityLevel.NORMAL)
@@ -133,6 +135,14 @@ public class DropIndexTest extends BaseTest {
                     .build());
     Assert.assertEquals(indexR.getStatus().intValue(),0);
     Assert.assertEquals(indexR.getData().getMsg(),"Success");
-
+    R<DescribeIndexResponse> describeIndexResponseR =
+            milvusClient.describeIndex(
+                    DescribeIndexParam.newBuilder()
+                            .withCollectionName(collection)
+                            .withIndexName(CommonData.defaultIndex)
+                            .build());
+    logger.info(describeIndexResponseR.getData().toString());
+    R<DescribeCollectionResponse> describeCollectionResponseR = milvusClient.describeCollection(DescribeCollectionParam.newBuilder().withCollectionName(collection).build());
+    logger.info(describeCollectionResponseR.getData().getSchema().getFieldsList().toString());
   }
 }
