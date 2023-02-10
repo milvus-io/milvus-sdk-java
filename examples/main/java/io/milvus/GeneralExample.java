@@ -169,6 +169,10 @@ public class GeneralExample {
     }
 
     private R<GetCollectionStatisticsResponse> getCollectionStatistics() {
+        // call flush() to flush the insert buffer to storage,
+        // so that the getCollectionStatistics() can get correct number
+        milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
+        
         System.out.println("========== getCollectionStatistics() ==========");
         R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(
                 GetCollectionStatisticsParam.newBuilder()
@@ -482,7 +486,6 @@ public class GeneralExample {
         example.hasCollection();
         example.describeCollection();
         example.showCollections();
-        example.loadCollection();
 
         final String partitionName = "p1";
         example.createPartition(partitionName);
@@ -500,14 +503,36 @@ public class GeneralExample {
         }
         example.getCollectionStatistics();
 
+        // Must create an index before load(), FLAT is brute-force search(no index)
+        milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withFieldName(VECTOR_FIELD)
+                .withIndexName(INDEX_NAME)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam(INDEX_PARAM)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+
+        // loadCollection() must be called before search()
+        example.loadCollection();
+
         System.out.println("Search without index");
         String searchExpr = AGE_FIELD + " > 50";
         example.searchFace(searchExpr);
 
+        // must call releaseCollection() before re-create index
+        example.releaseCollection();
+
+        // re-create another index
+        example.dropIndex();
         example.createIndex();
         example.describeIndex();
         example.getIndexBuildProgress();
         example.getIndexState();
+
+        // loadCollection() must be called before search()
+        example.loadCollection();
 
         System.out.println("Search with index");
         example.searchFace(searchExpr);
