@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.2.3 (2023-02-11)
+
+### Improvement
+
+- Implement getLoadState() interface
+- Add refresh parameter to load() interface
+- Add getProcess() for bulkinsert task state
+- Fix example error
+
 ## milvus-sdk-java 2.2.2 (2023-01-04)
 
 ### Bug
