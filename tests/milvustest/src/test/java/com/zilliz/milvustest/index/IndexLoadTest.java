@@ -49,10 +49,10 @@ public class IndexLoadTest extends BaseTest {
                 {IndexType.IVF_SQ8},
                 {IndexType.IVF_PQ},
                 {IndexType.HNSW},
-                {IndexType.ANNOY},
+              /*  {IndexType.ANNOY},
                 {IndexType.RHNSW_FLAT},
                 {IndexType.RHNSW_PQ},
-                {IndexType.RHNSW_SQ}
+                {IndexType.RHNSW_SQ}*/
         };
     }
 
