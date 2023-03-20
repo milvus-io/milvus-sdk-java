@@ -147,6 +147,14 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> renameCollection(RenameCollectionParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().renameCollection(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
     public R<DescribeCollectionResponse> describeCollection(DescribeCollectionParam requestParam) {
         return this.clusterFactory.getMaster().getClient().describeCollection(requestParam);
     }
