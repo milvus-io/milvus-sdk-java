@@ -107,6 +107,14 @@ public interface MilvusClient {
     R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam);
 
     /**
+     * rename a collection
+     *
+     * @param requestParam {@link RenameCollectionParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> renameCollection(RenameCollectionParam requestParam);
+
+    /**
      * Shows the details of a collection, e.g. name, schema.
      *
      * @param requestParam {@link DescribeCollectionParam}
