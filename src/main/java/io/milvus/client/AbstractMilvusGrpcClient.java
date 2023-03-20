@@ -510,6 +510,40 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> renameCollection(RenameCollectionParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
+                    .setOldName(requestParam.getOldCollectionName())
+                    .setNewName(requestParam.getNewCollectionName())
+                    .build();
+
+            Status response = blockingStub().renameCollection(renameCollectionRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("RenameCollectionRequest successfully! Collection name:{}",
+                        requestParam.getOldCollectionName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("RenameCollectionRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("RenameCollectionRequest RPC failed! Collection name:{}\n{}",
+                    requestParam.getOldCollectionName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("RenameCollectionRequest failed! Collection name:{}\n{}",
+                    requestParam.getOldCollectionName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<DescribeCollectionResponse> describeCollection(@NonNull DescribeCollectionParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
