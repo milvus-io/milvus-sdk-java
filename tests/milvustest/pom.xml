@@ -86,6 +86,11 @@
             <artifactId>milvus-sdk-java</artifactId>
             <version>2.2.3</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.19.1</version>
+        </dependency>
         <!--Allure-->
         <dependency>
             <groupId>io.qameta.allure</groupId>
