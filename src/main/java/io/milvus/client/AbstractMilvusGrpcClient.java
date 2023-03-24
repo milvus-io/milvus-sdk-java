@@ -241,6 +241,40 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         });
     }
 
+    private void waitForFlushAll(FlushAllResponse flushAllResponse, long waitingInterval, long timeout) {
+        // The rpc api flushAll() returns a FlushAllResponse, but the returned flushAllTs may not yet be persisted.
+        // This method uses getFlushAllState() to check the flushAll state.
+        // If getFlushAllState() returns Flushed, then we can say that the flushAll action is finished.
+        // If the waiting time exceeds the timeout, exit the loop.
+        long tsBegin = System.currentTimeMillis();
+        long flushAllTs = flushAllResponse.getFlushAllTs();
+        while (true) {
+            long tsNow = System.currentTimeMillis();
+            if ((tsNow - tsBegin) >= timeout * 1000) {
+                logWarning("waitForFlushAll timeout");
+                break;
+            }
+
+            GetFlushAllStateRequest getFlushAllStateRequest = GetFlushAllStateRequest.newBuilder()
+                    .setFlushAllTs(flushAllTs)
+                    .build();
+            GetFlushAllStateResponse response = blockingStub().getFlushAllState(getFlushAllStateRequest);
+            if (response.getFlushed()) {
+                logDebug("waitForFlushAll done, all flushed!");
+                break;
+            }
+
+            try {
+                String msg = "waitForFlushAll, interval: " + waitingInterval + "ms.";
+                logDebug(msg);
+                TimeUnit.MILLISECONDS.sleep(waitingInterval);
+            } catch (InterruptedException e) {
+                logWarning("waitForFlushAll interrupted");
+                break;
+            }
+        }
+    }
+
     private R<Boolean> waitForIndex(String collectionName, String indexName, String fieldName,
                                     long waitingInterval, long timeout) {
         // This method use getIndexState() to check index state.
@@ -644,6 +678,35 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         } catch (Exception e) {
             logError("FlushRequest failed! Collection names:{}\n{}",
                     requestParam.getCollectionNames(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    /**
+     * Flush all collections. All insertions, deletions, and upserts before `flushAll` will be synced.
+     */
+    @Override
+    public R<FlushAllResponse> flushAll(boolean syncFlushAll, long syncFlushAllWaitingInterval, long syncFlushAllTimeout) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo("start flushAll...");
+        try {
+            FlushAllRequest flushAllRequest = FlushAllRequest.newBuilder().build();
+            FlushAllResponse response = blockingStub().flushAll(flushAllRequest);
+
+            if (syncFlushAll) {
+                waitForFlushAll(response, syncFlushAllWaitingInterval, syncFlushAllTimeout);
+            }
+
+            logDebug("flushAll successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("flushAll RPC failed!");
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("flushAll failed!");
             return R.failed(e);
         }
     }

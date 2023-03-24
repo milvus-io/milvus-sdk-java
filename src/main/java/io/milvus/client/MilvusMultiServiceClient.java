@@ -170,6 +170,14 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<FlushAllResponse> flushAll(boolean syncFlushAll, long syncFlushAllWaitingInterval, long syncFlushAllTimeout) {
+        List<R<FlushAllResponse>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().flushAll(syncFlushAll, syncFlushAllWaitingInterval, syncFlushAllTimeout))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
     public R<RpcStatus> createPartition(CreatePartitionParam requestParam) {
         List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
                 .map(serverSetting -> serverSetting.getClient().createPartition(requestParam))

@@ -139,6 +139,16 @@ public interface MilvusClient {
     R<FlushResponse> flush(FlushParam requestParam);
 
     /**
+     * Flush all collections. All insertions, deletions, and upserts before `flushAll` will be synced.
+     *
+     * @param syncFlushAll {flushAll synchronously or asynchronously}
+     * @param syncFlushAllWaitingInterval {wait intervel when flushAll synchronously}
+     * @param syncFlushAllTimeout {timeout when flushAll synchronously}
+     * @return {status:result code,data: FlushAllResponse{flushAllTs}}
+     */
+    R<FlushAllResponse> flushAll(boolean syncFlushAll, long syncFlushAllWaitingInterval, long syncFlushAllTimeout);
+
+    /**
      * Creates a partition in the specified collection.
      *
      * @param requestParam {@link CreatePartitionParam}
