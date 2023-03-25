@@ -34,6 +34,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.Status respLoadCollection;
     private io.milvus.grpc.Status respReleaseCollection;
     private io.milvus.grpc.ShowCollectionsResponse respShowCollections;
+    private io.milvus.grpc.Status respAlterCollection;
     private io.milvus.grpc.Status respCreatePartition;
     private io.milvus.grpc.Status respDropPartition;
     private io.milvus.grpc.BoolResponse respHasPartition;
@@ -177,6 +178,15 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         logger.info("MockServer receive showCollections() call");
 
         responseObserver.onNext(respShowCollections);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void alterCollection(io.milvus.grpc.AlterCollectionRequest request,
+                                io.grpc.stub.StreamObserver<io.milvus.grpc.Status> responseObserver) {
+        logger.info("MockServer receive alterCollection() call");
+
+        responseObserver.onNext(respAlterCollection);
         responseObserver.onCompleted();
     }
 

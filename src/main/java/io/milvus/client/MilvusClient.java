@@ -131,6 +131,15 @@ public interface MilvusClient {
     R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
 
     /**
+     * Alter collection.
+     * Currently, only support setting collection TTL with key `collection.ttl.seconds`
+     *
+     * @param requestParam {@link AlterCollectionParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> alterCollection(AlterCollectionParam requestParam);
+
+    /**
      * Flushes inserted data in buffer into storage.
      *
      * @param requestParam {@link FlushParam}
