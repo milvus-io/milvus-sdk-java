@@ -675,6 +675,45 @@ class MilvusServiceClientTest {
     }
 
     @Test
+    void alterCollectionParam() {
+        AlterCollectionParam param = AlterCollectionParam.newBuilder()
+                .withCollectionName("collection1")
+                .build();
+        assertEquals("collection1", param.getCollectionName());
+        assertTrue(param.getProperties().isEmpty());
+
+        param = AlterCollectionParam.newBuilder()
+                .withCollectionName("collection1")
+                .withTTL(100)
+                .build();
+        assertTrue(param.getProperties().containsKey(Constant.TTL_SECONDS));
+        assertEquals("100", param.getProperties().get(Constant.TTL_SECONDS));
+
+        assertThrows(ParamException.class, () ->
+                AlterCollectionParam.newBuilder()
+                        .withCollectionName("")
+                        .build()
+        );
+
+        assertThrows(ParamException.class, () ->
+                AlterCollectionParam.newBuilder()
+                        .withCollectionName("collection1")
+                        .withTTL(-5)
+                        .build()
+        );
+    }
+
+    @Test
+    void alterCollection() {
+        AlterCollectionParam param = AlterCollectionParam.newBuilder()
+                .withCollectionName("collection1")
+                .withTTL(100)
+                .build();
+
+        testFuncByName("alterCollection", param);
+    }
+
+    @Test
     void flushParam() {
         // test throw exception with illegal input
         assertThrows(ParamException.class, () -> FlushParam.newBuilder()
