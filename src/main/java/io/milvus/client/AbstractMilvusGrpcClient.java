@@ -610,6 +610,42 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Override
+    public R<RpcStatus> alterCollection(AlterCollectionParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            AlterCollectionRequest.Builder alterCollRequestBuilder = AlterCollectionRequest.newBuilder();
+            List<KeyValuePair> propertiesList = assembleKvPair(requestParam.getProperties());
+            if (CollectionUtils.isNotEmpty(propertiesList)) {
+                propertiesList.forEach(alterCollRequestBuilder::addProperties);
+            }
+
+            AlterCollectionRequest alterCollectionRequest = alterCollRequestBuilder
+                    .setCollectionName(requestParam.getCollectionName())
+                    .build();
+
+            Status response = blockingStub().alterCollection(alterCollectionRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("AlterCollectionRequest successfully!");
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("AlterCollectionRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("AlterCollectionRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("AlterCollectionRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
     /**
      * Flush insert buffer into storage. To make sure the buffer persisted successfully, it calls
      * GetFlushState() to check related segments state.
