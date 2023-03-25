@@ -64,9 +64,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.47.1</grpc.version>
-        <protobuf.version>3.19.6</protobuf.version>
-        <protoc.version>3.19.6</protoc.version>
+        <grpc.version>1.46.0</grpc.version>
+        <protobuf.version>3.19.2</protobuf.version>
+        <protoc.version>3.19.2</protoc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -137,7 +137,7 @@
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
+            <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
         </dependency>
         <dependency>
