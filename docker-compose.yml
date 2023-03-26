@@ -3,7 +3,7 @@ version: '3.5'
 services:
   etcd:
     container_name: milvus-javasdk-test-etcd
-    image: quay.io/coreos/etcd:v3.5.0
+    image: quay.io/coreos/etcd:v3.5.5
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -31,7 +31,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-test-standalone
-    image: milvusdb/milvus:2.2.0-20230203-932ced5c
+    image: milvusdb/milvus:v2.2.4
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -47,7 +47,7 @@ services:
 
   etcdslave:
     container_name: milvus-javasdk-test-etcd-slave
-    image: quay.io/coreos/etcd:v3.5.0
+    image: quay.io/coreos/etcd:v3.5.5
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd-slave:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -75,7 +75,7 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-test-slave-standalone
-    image: milvusdb/milvus:2.2.0-20230203-932ced5c
+    image: milvusdb/milvus:v2.2.4
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcdslave:2379
