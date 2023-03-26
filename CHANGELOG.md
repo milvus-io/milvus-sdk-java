@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.2.4 (2023-03-26)
+
+### Improvement
+
+- Implement alterCollection() interface
+- Use the same grpc version v1.46.0 as milvus-proto repo
+
 ## milvus-sdk-java 2.2.3 (2023-02-11)
 
 ### Improvement
