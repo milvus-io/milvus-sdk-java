@@ -43,6 +43,9 @@ public class Constant {
     public static final String DEFAULT_INDEX_NAME = "";
     public final static String OFFSET = "offset";
 
+    // constant values for general
+    public static final String TTL_SECONDS = "collection.ttl.seconds";
+
     // max value for waiting loading collection/partition interval, unit: millisecond
     public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;
 

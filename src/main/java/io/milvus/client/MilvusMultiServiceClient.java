@@ -162,6 +162,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> alterCollection(AlterCollectionParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().alterCollection(requestParam);
+    }
+
+    @Override
     public R<FlushResponse> flush(FlushParam requestParam) {
         List<R<FlushResponse>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .map(serverSetting -> serverSetting.getClient().flush(requestParam))
