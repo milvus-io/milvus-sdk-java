@@ -2044,6 +2044,7 @@ class MilvusServiceClientTest {
                 .withTopK(5)
                 .withVectors(vectors2)
                 .withExpr("dummy")
+                .withIgnoreGrowing(Boolean.TRUE)
                 .build()
         );
 
@@ -2127,6 +2128,8 @@ class MilvusServiceClientTest {
         // test throw exception with illegal input
         List<String> partitions = Collections.singletonList("partition1");
         List<String> outputFields = Collections.singletonList("field1");
+
+        // empty collection name
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("")
                 .withPartitionNames(partitions)
@@ -2137,6 +2140,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // empty expression
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -2145,6 +2149,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // negative travel time stamp
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -2154,6 +2159,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // negative guarantee time stamp
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -2163,6 +2169,7 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // negative topk
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -2172,12 +2179,25 @@ class MilvusServiceClientTest {
                 .build()
         );
 
+        // negative offset
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
                 .withOutFields(outputFields)
                 .withExpr("dummy")
                 .withOffset(-1L)
+                .build()
+        );
+
+        // success
+        assertDoesNotThrow(() -> QueryParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .withExpr("dummy")
+                .withOffset(1L)
+                .withLimit(1L)
+                .withIgnoreGrowing(Boolean.TRUE)
                 .build()
         );
     }

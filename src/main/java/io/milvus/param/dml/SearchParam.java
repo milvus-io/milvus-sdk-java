@@ -51,6 +51,7 @@ public class SearchParam {
     private final long guaranteeTimestamp;
     private final Long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
+    private final boolean ignoreGrowing;
 
     private SearchParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -68,6 +69,7 @@ public class SearchParam {
         this.guaranteeTimestamp = builder.guaranteeTimestamp;
         this.gracefulTime = builder.gracefulTime;
         this.consistencyLevel = builder.consistencyLevel;
+        this.ignoreGrowing = builder.ignoreGrowing;
     }
 
     public static Builder newBuilder() {
@@ -93,6 +95,7 @@ public class SearchParam {
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
         private Long gracefulTime = 5000L;
         private ConsistencyLevelEnum consistencyLevel;
+        private Boolean ignoreGrowing = Boolean.FALSE;
 
        Builder() {
         }
@@ -294,6 +297,18 @@ public class SearchParam {
         }
 
         /**
+         * Ignore the growing segments to get best search performance. Default is False.
+         * For the user case that don't require data visibility.
+         *
+         * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
+            this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link SearchParam} instance.
          *
          * @return {@link SearchParam}
@@ -381,6 +396,8 @@ public class SearchParam {
                 ", nq=" + NQ +
                 ", expr='" + expr + '\'' +
                 ", params='" + params + '\'' +
+                ", consistencyLevel='" + consistencyLevel + '\'' +
+                ", ignoreGrowing='" + ignoreGrowing + '\'' +
                 '}';
     }
 }

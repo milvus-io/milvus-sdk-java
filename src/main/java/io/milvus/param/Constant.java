@@ -29,6 +29,7 @@ public class Constant {
     public static final String VECTOR_DIM = "dim";
     public static final String VARCHAR_MAX_LENGTH = "max_length";
     public static final String TOP_K = "topk";
+    public static final String IGNORE_GROWING = "ignore_growing";
     public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";
     public static final String ROUND_DECIMAL = "round_decimal";
@@ -42,6 +43,7 @@ public class Constant {
     public static final String IMPORT_PROGRESS = "progress_percent";
     public static final String DEFAULT_INDEX_NAME = "";
     public final static String OFFSET = "offset";
+    public final static String LIMIT = "limit";
 
     // constant values for general
     public static final String TTL_SECONDS = "collection.ttl.seconds";
