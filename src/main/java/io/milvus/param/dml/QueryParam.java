@@ -45,6 +45,7 @@ public class QueryParam {
     private final ConsistencyLevelEnum consistencyLevel;
     private final long offset;
     private final long limit;
+    private final boolean ignoreGrowing;
 
     private QueryParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -57,6 +58,7 @@ public class QueryParam {
         this.gracefulTime = builder.gracefulTime;
         this.offset = builder.offset;
         this.limit = builder.limit;
+        this.ignoreGrowing = builder.ignoreGrowing;
     }
 
     public static Builder newBuilder() {
@@ -77,6 +79,7 @@ public class QueryParam {
         private ConsistencyLevelEnum consistencyLevel;
         private Long offset = 0L;
         private Long limit = 0L;
+        private Boolean ignoreGrowing = Boolean.FALSE;
 
         private Builder() {
         }
@@ -230,6 +233,18 @@ public class QueryParam {
         }
 
         /**
+         * Ignore the growing segments to get best query performance. Default is False.
+         * For the user case that don't require data visibility.
+         *
+         * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
+            this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link QueryParam} instance.
          *
          * @return {@link QueryParam}
@@ -273,6 +288,7 @@ public class QueryParam {
                 ", consistencyLevel='" + consistencyLevel + '\'' +
                 ", offset=" + offset +
                 ", limit=" + limit +
+                ", ignoreGrowing='" + ignoreGrowing + '\'' +
                 '}';
     }
 }
