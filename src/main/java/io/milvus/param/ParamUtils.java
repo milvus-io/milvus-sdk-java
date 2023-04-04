@@ -291,6 +291,11 @@ public class ParamUtils {
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.ROUND_DECIMAL)
                                 .setValue(String.valueOf(requestParam.getRoundDecimal()))
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.IGNORE_GROWING)
+                                .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
                                 .build());
 
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
@@ -346,7 +351,7 @@ public class ParamUtils {
         long offset = requestParam.getOffset();
         if (offset > 0) {
             builder.addQueryParams(KeyValuePair.newBuilder()
-                    .setKey("offset")
+                    .setKey(Constant.OFFSET)
                     .setValue(String.valueOf(offset))
                     .build());
         }
@@ -354,10 +359,16 @@ public class ParamUtils {
         long limit = requestParam.getLimit();
         if (limit > 0) {
             builder.addQueryParams(KeyValuePair.newBuilder()
-                    .setKey("limit")
+                    .setKey(Constant.LIMIT)
                     .setValue(String.valueOf(limit))
                     .build());
         }
+
+        // ignore growing
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                .setKey(Constant.IGNORE_GROWING)
+                .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
+                .build());
 
         return builder.build();
     }
