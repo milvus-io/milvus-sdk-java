@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.2.5 (2023-04-04)
+
+### Improvement
+
+- Implement flushAll() interface
+- Add ignoreGrowing flag for query/search
+
 ## milvus-sdk-java 2.2.4 (2023-03-26)
 
 ### Improvement
