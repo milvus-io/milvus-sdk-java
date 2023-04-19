@@ -682,6 +682,32 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+
+    /**
+     * FlushAll insert buffer into storage. To make sure the buffer persisted successfully, it calls
+     * GetFlushAllState() to check related segments state.
+     */
+    @Override
+    public R<FlushAllResponse> flushAll() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        try {
+            FlushAllRequest flushAllRequest = FlushAllRequest.newBuilder()
+                    .build();
+            FlushAllResponse response = blockingStub().flushAll(flushAllRequest);
+            logDebug("FlushAllRequest successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("FlushAllRequest RPC failed! {}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("FlushAllRequest failed! {}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
     @Override
     public R<RpcStatus> createPartition(@NonNull CreatePartitionParam requestParam) {
         if (!clientIsReady()) {
@@ -1561,6 +1587,39 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("GetFlushState failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+
+    @Override
+    public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
+            GetFlushAllStateRequest getFlushStateRequest = GetFlushAllStateRequest.newBuilder()
+                    .setBase(msgBase)
+                    .setFlushAllTs(requestParam.getFlushAllTs())
+                    .build();
+
+            GetFlushAllStateResponse response = blockingStub().getFlushAllState(getFlushStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("getFlushAllState successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("getFlushAllState", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("getFlushAllState RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("getFlushAllState failed:\n{}", e.getMessage());
             return R.failed(e);
         }
     }

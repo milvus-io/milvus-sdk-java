@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Parameters for <code>getMetric</code> interface.
+ * Parameters for <code>getFlushState</code> interface.
  */
 @Getter
 public class GetFlushStateParam {
