@@ -1664,6 +1664,39 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+
+    @Override
+    public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
+            GetFlushAllStateRequest getFlushStateRequest = GetFlushAllStateRequest.newBuilder()
+                    .setBase(msgBase)
+                    .setFlushAllTs(requestParam.getFlushAllTs())
+                    .build();
+
+            GetFlushAllStateResponse response = blockingStub().getFlushAllState(getFlushStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("getFlushAllState successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("getFlushAllState", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("getFlushAllState RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("getFlushAllState failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
     @Override
     public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(@NonNull GetPersistentSegmentInfoParam requestParam) {
         if (!clientIsReady()) {
