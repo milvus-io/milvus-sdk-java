@@ -365,6 +365,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getFlushAllState(requestParam);
+    }
+
+    @Override
     public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getPersistentSegmentInfo(requestParam);
     }

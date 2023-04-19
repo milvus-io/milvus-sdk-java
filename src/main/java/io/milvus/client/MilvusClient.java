@@ -155,6 +155,14 @@ public interface MilvusClient {
      */
     R<FlushResponse> flush(FlushParam requestParam);
 
+
+    /**
+     * FlushAll inserted data in buffer into storage.
+     *
+     * @return {status:result code,data: FlushResponse{flush segment ids}}
+     */
+    R<FlushAllResponse> flushAll();
+
     /**
      * Flush all collections. All insertions, deletions, and upserts before `flushAll` will be synced.
      *
@@ -365,6 +373,15 @@ public interface MilvusClient {
      * @return {status:result code, data:GetMetricsResponse{status,metrics}}
      */
     R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam);
+
+
+    /**
+     * Get flushAll state of specified segments.
+     *
+     * @param requestParam {@link GetFlushAllStateParam}
+     * @return {status:result code, data:GetMetricsResponse{status,metrics}}
+     */
+    R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam);
 
     /**
      * Gets the information of persistent segments from data node, including row count,
