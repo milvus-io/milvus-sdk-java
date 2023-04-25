@@ -372,6 +372,113 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> createDatabase(CreateDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            // Construct CreateDatabaseRequest
+            // TODO 这个地方应该少了一个 msgType
+            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.CreateCollection).build();
+            CreateDatabaseRequest createCollectionRequest = CreateDatabaseRequest.newBuilder()
+                    .setDbName(requestParam.getDatabaseName())
+                    .setBase(myBase)
+                    .build();
+
+            Status response = blockingStub().createDatabase(createCollectionRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("CreateDatabaseRequest successfully! Database name:{}",
+                        requestParam.getDatabaseName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("CreateDatabaseRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("CreateDatabaseRequest RPC failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CreateDatabaseRequest failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ListDatabasesResponse> listDatabases() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        try {
+            // Construct CreateDatabaseRequest
+            // TODO 这个地方应该少了一个 msgType
+            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.ListPolicy).build();
+            ListDatabasesRequest listDatabasesRequest = ListDatabasesRequest.newBuilder()
+                    .setBase(myBase)
+                    .build();
+
+            ListDatabasesResponse response = blockingStub().listDatabases(listDatabasesRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("ListDatabasesRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("ListDatabasesRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("ListDatabasesRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ListDatabasesRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> dropDatabase(DropDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            // TODO 这个地方应该少了一个 msgType
+            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.DropCollection).build();
+            DropDatabaseRequest dropCollectionRequest = DropDatabaseRequest.newBuilder()
+                    .setBase(myBase)
+                    .setDbName(requestParam.getDatabaseName())
+                    .build();
+
+            // TODO 需要修改
+//            Status response = blockingStub().dropDatabase(dropCollectionRequest);
+            Status response = blockingStub().dropDatabase(CreateDatabaseRequest.getDefaultInstance());
+
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("DropDatabaseRequest successfully! Database name:{}",
+                        requestParam.getDatabaseName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("DropDatabaseRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("DropDatabaseRequest RPC failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DropDatabaseRequest failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<RpcStatus> createCollection(@NonNull CreateCollectionParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));

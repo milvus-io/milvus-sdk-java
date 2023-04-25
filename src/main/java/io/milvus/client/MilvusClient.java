@@ -74,6 +74,30 @@ public interface MilvusClient {
     R<Boolean> hasCollection(HasCollectionParam requestParam);
 
     /**
+     * Creates a database in Milvus.
+     *
+     * @param requestParam {@link CreateDatabaseParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createDatabase(CreateDatabaseParam requestParam);
+
+    /**
+     * Drops a database. Note that this method drops all data in the database.
+     *
+     * @param requestParam {@link DropDatabaseParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> dropDatabase(DropDatabaseParam requestParam);
+
+    /**
+     * List databases. Note that this method list all database in the cluster.
+     *
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<ListDatabasesResponse> listDatabases();
+
+
+    /**
      * Creates a collection in Milvus.
      *
      * @param requestParam {@link CreateCollectionParam}
