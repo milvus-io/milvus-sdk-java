@@ -115,6 +115,30 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> createDatabase(CreateDatabaseParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().createDatabase(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<RpcStatus> dropDatabase(DropDatabaseParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().dropDatabase(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<ListDatabasesResponse> listDatabases() {
+        List<R<ListDatabasesResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().listDatabases())
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
     public R<RpcStatus> createCollection(CreateCollectionParam requestParam) {
         List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
                 .map(serverSetting -> serverSetting.getClient().createCollection(requestParam))
