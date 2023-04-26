@@ -381,11 +381,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             // Construct CreateDatabaseRequest
-            // TODO 这个地方应该少了一个 msgType
-            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.CreateCollection).build();
             CreateDatabaseRequest createCollectionRequest = CreateDatabaseRequest.newBuilder()
                     .setDbName(requestParam.getDatabaseName())
-                    .setBase(myBase)
                     .build();
 
             Status response = blockingStub().createDatabase(createCollectionRequest);
@@ -415,11 +412,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         try {
-            // Construct CreateDatabaseRequest
-            // TODO 这个地方应该少了一个 msgType
-            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.ListPolicy).build();
+            // Construct ListDatabasesRequest
             ListDatabasesRequest listDatabasesRequest = ListDatabasesRequest.newBuilder()
-                    .setBase(myBase)
                     .build();
 
             ListDatabasesResponse response = blockingStub().listDatabases(listDatabasesRequest);
@@ -448,17 +442,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            // TODO 这个地方应该少了一个 msgType
-            MsgBase myBase = MsgBase.newBuilder().setMsgType(MsgType.DropCollection).build();
+            // Construct DropDatabaseRequest
             DropDatabaseRequest dropCollectionRequest = DropDatabaseRequest.newBuilder()
-                    .setBase(myBase)
                     .setDbName(requestParam.getDatabaseName())
                     .build();
 
-            // TODO 需要修改
-//            Status response = blockingStub().dropDatabase(dropCollectionRequest);
-            Status response = blockingStub().dropDatabase(CreateDatabaseRequest.getDefaultInstance());
-
+            Status response = blockingStub().dropDatabase(dropCollectionRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
                 logDebug("DropDatabaseRequest successfully! Database name:{}",
