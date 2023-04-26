@@ -347,11 +347,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             // Construct CreateDatabaseRequest
-            CreateDatabaseRequest createCollectionRequest = CreateDatabaseRequest.newBuilder()
+            CreateDatabaseRequest createDatabaseRequest = CreateDatabaseRequest.newBuilder()
                     .setDbName(requestParam.getDatabaseName())
                     .build();
 
-            Status response = blockingStub().createDatabase(createCollectionRequest);
+            Status response = blockingStub().createDatabase(createDatabaseRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
                 logDebug("CreateDatabaseRequest successfully! Database name:{}",
@@ -409,11 +409,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             // Construct DropDatabaseRequest
-            DropDatabaseRequest dropCollectionRequest = DropDatabaseRequest.newBuilder()
+            DropDatabaseRequest dropDatabaseRequest = DropDatabaseRequest.newBuilder()
                     .setDbName(requestParam.getDatabaseName())
                     .build();
 
-            Status response = blockingStub().dropDatabase(dropCollectionRequest);
+            Status response = blockingStub().dropDatabase(dropDatabaseRequest);
 
             if (response.getErrorCode() == ErrorCode.Success) {
                 logDebug("DropDatabaseRequest successfully! Database name:{}",
