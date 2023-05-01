@@ -25,6 +25,8 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.concurrent.TimeUnit;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
@@ -36,6 +38,9 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     public MilvusServiceClient(@NonNull ConnectParam connectParam) {
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
+        if (StringUtils.isNotEmpty(connectParam.getDatabaseName())) {
+            metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
+        }
 
         ManagedChannelBuilder builder = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                 .usePlaintext()
@@ -46,7 +51,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                 .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
 
-        if(connectParam.isSecure()){
+        if (connectParam.isSecure()) {
             builder.useTransportSecurity();
         }
         channel = builder.build();

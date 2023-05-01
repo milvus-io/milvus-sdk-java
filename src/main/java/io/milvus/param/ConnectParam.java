@@ -20,6 +20,7 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
+import io.milvus.utils.URLParser;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,16 +28,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
-
 /**
  * Parameters for client connection.
  */
 public class ConnectParam {
     private final String host;
     private final int port;
+    private final String databaseName;
     private final String uri;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
@@ -49,6 +47,7 @@ public class ConnectParam {
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
+        this.databaseName = builder.databaseName;
         this.uri = builder.uri;
         this.connectTimeoutMs = builder.connectTimeoutMs;
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
@@ -95,6 +94,10 @@ public class ConnectParam {
         return authorization;
     }
 
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -105,6 +108,7 @@ public class ConnectParam {
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
+        private String databaseName = "default";
         private String uri;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
@@ -134,8 +138,19 @@ public class ConnectParam {
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withPort(int port)  {
+        public Builder withPort(int port) {
             this.port = port;
+            return this;
+        }
+
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(@NonNull String databaseName) {
+            this.databaseName = databaseName;
             return this;
         }
 
@@ -154,7 +169,7 @@ public class ConnectParam {
          * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param connectTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit       timeout unit
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
@@ -166,7 +181,7 @@ public class ConnectParam {
          * Sets the keep-alive time value of client channel. The keep-alive value must be greater than zero.
          *
          * @param keepAliveTime keep-alive value
-         * @param timeUnit keep-alive unit
+         * @param timeUnit      keep-alive unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
@@ -178,7 +193,7 @@ public class ConnectParam {
          * Sets the keep-alive timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param keepAliveTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit         timeout unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
@@ -212,7 +227,7 @@ public class ConnectParam {
          * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
          * @param idleTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit    timeout unit
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
@@ -222,6 +237,7 @@ public class ConnectParam {
 
         /**
          * Sets the username and password for this connection
+         *
          * @param username current user
          * @param password password
          * @return <code>Builder</code>
@@ -233,6 +249,7 @@ public class ConnectParam {
 
         /**
          * Sets secure the authorization for this connection
+         *
          * @param secure boolean
          * @return <code>Builder</code>
          */
@@ -243,6 +260,7 @@ public class ConnectParam {
 
         /**
          * Sets the secure for this connection
+         *
          * @param authorization the authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
@@ -259,17 +277,11 @@ public class ConnectParam {
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
-                if (uri.startsWith(HOST_HTTPS_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTPS_PREFIX, "");
-                    this.secure = true;
-                } else if (uri.startsWith(HOST_HTTP_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTP_PREFIX, "");
-                }
-                String[] uriArray = uri.split(COLON);
-                this.host = uriArray[0];
-                if(uriArray.length == 2){
-                    this.port = Integer.valueOf(uriArray[1]);
-                }
+                URLParser result = new URLParser(uri);
+                this.secure = result.isSecure();
+                this.host = result.getHostname();
+                this.port = result.getPort();
+                this.databaseName = result.getDatabase();
             }
 
             if (port < 0 || port > 0xFFFF) {
