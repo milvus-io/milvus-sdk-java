@@ -2279,6 +2279,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
                     .setType(OperatePrivilegeType.Grant)
                     .setEntity(GrantEntity.newBuilder()
+                            .setDbName(requestParam.getDatabaseName())
                             .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
                             .setObjectName(requestParam.getObjectName())
                             .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
