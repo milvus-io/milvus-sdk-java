@@ -91,12 +91,12 @@ public class GrantRolePrivilegeParam {
         }
 
         /**
-         * Sets the databaseName. databaseName cannot be empty or null.
+         * Sets the databaseName. databaseName cannot be null.
          *
          * @param databaseName databaseName
          * @return <code>Builder</code>
          */
-        public GrantRolePrivilegeParam.Builder withDatabaseName(@NonNull String databaseName) {
+        public GrantRolePrivilegeParam.Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
