@@ -18,11 +18,14 @@ public class GrantRolePrivilegeParam {
 
     private final String privilege;
 
+    private final String databaseName;
+
     private GrantRolePrivilegeParam(@NonNull GrantRolePrivilegeParam.Builder builder) {
         this.roleName = builder.roleName;
         this.object = builder.object;
         this.objectName = builder.objectName;
         this.privilege = builder.privilege;
+        this.databaseName = builder.databaseName;
     }
 
     public static GrantRolePrivilegeParam.Builder newBuilder() {
@@ -37,6 +40,7 @@ public class GrantRolePrivilegeParam {
         private String object;
         private String objectName;
         private String privilege;
+        private String databaseName;
 
 
         private Builder() {
@@ -83,6 +87,17 @@ public class GrantRolePrivilegeParam {
          */
         public GrantRolePrivilegeParam.Builder withPrivilege(@NonNull String privilege) {
             this.privilege = privilege;
+            return this;
+        }
+
+        /**
+         * Sets the databaseName. databaseName cannot be empty or null.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public GrantRolePrivilegeParam.Builder withDatabaseName(@NonNull String databaseName) {
+            this.databaseName = databaseName;
             return this;
         }
 
