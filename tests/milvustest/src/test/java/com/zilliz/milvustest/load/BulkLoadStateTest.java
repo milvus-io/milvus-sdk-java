@@ -9,6 +9,7 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.bulkinsert.BulkInsertParam;
 import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
 
+import io.milvus.param.collection.FlushParam;
 import io.milvus.param.collection.GetCollectionStatisticsParam;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.QueryParam;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -79,6 +81,7 @@ public class BulkLoadStateTest extends BaseTest {
                 .withCollectionName(CommonData.defaultCollection)
                 .addFile("rowJson0.json")
                 .build());
+    milvusClient.flush(FlushParam.newBuilder().withCollectionNames(Collections.singletonList(CommonData.defaultCollection)).withSyncFlush(true).build());
     ImportResponse data = importResponseR.getData();
     Optional.ofNullable(data).ifPresent(x -> objects[0][0] = x.getTasks(0));
     return objects;
@@ -103,11 +106,19 @@ public class BulkLoadStateTest extends BaseTest {
       description = "Get bulk load state of  single row based json task",
       dataProvider = "singleRowBasedTaskId",
       groups = {"Smoke"})
-  public void getSingleRowBaseJsonState(Long taskId) {
+  public void getSingleRowBaseJsonState(Long taskId) throws InterruptedException {
     R<GetImportStateResponse> bulkloadState =
+            milvusClient.getBulkInsertState(GetBulkInsertStateParam.newBuilder().withTask(taskId).build());
+    int i=0;
+    while(bulkloadState.getData().getState().getValueDescriptor().getNumber()!=6&&i<10){
+        bulkloadState =
         milvusClient.getBulkInsertState(GetBulkInsertStateParam.newBuilder().withTask(taskId).build());
+        Thread.sleep(500);
+        i++;
+    }
     Assert.assertEquals(bulkloadState.getStatus().intValue(), 0);
     Assert.assertEquals(bulkloadState.getData().getRowCount(), 10L);
+
 
     R<RpcStatus> rpcStatusR =
         milvusClient.loadCollection(

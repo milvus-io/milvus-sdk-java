@@ -114,9 +114,10 @@ public class CustomerListener extends TestListenerAdapter {
     request.put("PassRate", passRate);
     request.put("RunningTime", costTime);
     request.put("Link",scenarioDesc.equalsIgnoreCase("CI")?githubLink:jenkinsLink);
-   String s = HttpClientUtils.doPostJson("http://qtp-server.zilliz.cc/results/insert",request.toJSONString());
-   logger.info("insert result:"+s);
-
-
+    String s = HttpClientUtils.doPostJson("http://qtp-server.zilliz.cc/results/insert",request.toJSONString());
+    logger.info("insert result:"+s);
+   if(iTestContext.getFailedTests().size()>0){
+    System.exit(1);
+    }
   }
 }
