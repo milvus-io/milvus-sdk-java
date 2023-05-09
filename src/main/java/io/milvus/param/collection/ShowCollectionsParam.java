@@ -35,10 +35,12 @@ import java.util.List;
 public class ShowCollectionsParam {
     private final List<String> collectionNames;
     private final ShowType showType;
+    private final String databaseName;
 
     private ShowCollectionsParam(@NonNull Builder builder) {
         this.collectionNames = builder.collectionNames;
         this.showType = builder.showType;
+        this.databaseName = builder.databaseName;
     }
 
     public static Builder newBuilder() {
@@ -54,6 +56,7 @@ public class ShowCollectionsParam {
         //   default showType = ShowType.All
         //   if collectionNames is not empty, set showType = ShowType.InMemory
         private ShowType showType = ShowType.All;
+        private String databaseName;
 
         private Builder() {
         }
@@ -77,6 +80,11 @@ public class ShowCollectionsParam {
          */
         public Builder withShowType(ShowType showType) {
             this.showType = showType;
+            return this;
+        }
+
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
             return this;
         }
 
