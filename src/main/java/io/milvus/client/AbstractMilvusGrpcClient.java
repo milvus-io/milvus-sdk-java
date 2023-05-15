@@ -866,9 +866,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            DescribeCollectionRequest describeCollectionRequest = builder.build();
 
             DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
 
