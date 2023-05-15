@@ -21,7 +21,6 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -30,10 +29,12 @@ import lombok.NonNull;
  */
 @Getter
 public class GetCollectionStatisticsParam {
+    private final String databaseName;
     private final String collectionName;
     private final boolean flushCollection;
 
     private GetCollectionStatisticsParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.flushCollection = builder.flushCollection;
     }
@@ -46,6 +47,7 @@ public class GetCollectionStatisticsParam {
      * Builder for {@link GetCollectionStatisticsParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
 
         // if flushCollection is true, getCollectionStatistics() firstly call flush() and wait flush() finish
@@ -53,6 +55,17 @@ public class GetCollectionStatisticsParam {
         private Boolean flushCollection = Boolean.FALSE;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

@@ -903,6 +903,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // flush collection if client command to do it(some times user may want to know the newest row count)
             if (requestParam.isFlushCollection()) {
                 R<FlushResponse> response = flush(FlushParam.newBuilder()
+                        .withDatabaseName(requestParam.getDatabaseName())
                         .addCollectionName(requestParam.getCollectionName())
                         .withSyncFlush(Boolean.TRUE)
                         .build());
@@ -911,9 +912,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 }
             }
 
-            GetCollectionStatisticsRequest getCollectionStatisticsRequest = GetCollectionStatisticsRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            GetCollectionStatisticsRequest.Builder builder = GetCollectionStatisticsRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            GetCollectionStatisticsRequest getCollectionStatisticsRequest = builder.build();
 
             GetCollectionStatisticsResponse response = blockingStub().getCollectionStatistics(getCollectionStatisticsRequest);
 
@@ -1016,10 +1020,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
-            FlushRequest flushRequest = FlushRequest.newBuilder()
+            FlushRequest.Builder builder = FlushRequest.newBuilder()
                     .setBase(msgBase)
-                    .addAllCollectionNames(requestParam.getCollectionNames())
-                    .build();
+                    .addAllCollectionNames(requestParam.getCollectionNames());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            FlushRequest flushRequest = builder.build();
             FlushResponse response = blockingStub().flush(flushRequest);
 
             if (Objects.equals(requestParam.getSyncFlush(), Boolean.TRUE)) {
@@ -1649,10 +1656,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                    .withDatabaseName(requestParam.getDatabaseName())
                     .withCollectionName(requestParam.getCollectionName());
-            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-                builder.withDatabaseName(requestParam.getDatabaseName());
-            }
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
 
             if (descResp.getStatus() != R.Status.Success.getCode()) {
