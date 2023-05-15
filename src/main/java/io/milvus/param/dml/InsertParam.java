@@ -21,23 +21,27 @@ package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.List;
 
 /**
  * Parameters for <code>insert</code> interface.
  */
 @Getter
+@ToString
 public class InsertParam {
     private final List<Field> fields;
 
+    private final String databaseName;
     private final String collectionName;
     private final String partitionName;
     private final int rowCount;
 
     private InsertParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.fields = builder.fields;
@@ -52,12 +56,24 @@ public class InsertParam {
      * Builder for {@link InsertParam} class.
      */
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName = "_default";
         private List<InsertParam.Field> fields;
         private int rowCount;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -136,21 +152,6 @@ public class InsertParam {
             // this method doesn't check data type, the insert() api will do this work
             return new InsertParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link InsertParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "InsertParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", row_count=" + rowCount +
-                ", fields=" + fields +
-                '}';
     }
 
     /**

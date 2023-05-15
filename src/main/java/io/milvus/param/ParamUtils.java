@@ -204,6 +204,9 @@ public class ParamUtils {
                 .setPartitionName(partitionName)
                 .setBase(msgBase)
                 .setNumRows(requestParam.getRowCount());
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            insertBuilder.setDbName(requestParam.getDatabaseName());
+        }
 
         // gen fieldData
         // make sure the field order must be consisted with collection schema
