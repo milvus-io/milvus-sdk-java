@@ -24,6 +24,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +33,14 @@ import java.util.List;
  * Parameters for <code>createCollection</code> interface.
  */
 @Getter
+@ToString
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
     private final String description;
     private final List<FieldType> fieldTypes;
     private final ConsistencyLevelEnum consistencyLevel;
+    private final String databaseName;
 
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -45,6 +48,7 @@ public class CreateCollectionParam {
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
         this.consistencyLevel = builder.consistencyLevel;
+        this.databaseName = builder.databaseName;
     }
 
     public static Builder newBuilder() {
@@ -60,6 +64,7 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.SESSION;
+        private String databaseName;
 
         private Builder() {
         }
@@ -72,6 +77,17 @@ public class CreateCollectionParam {
          */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
             return this;
         }
 
@@ -157,21 +173,5 @@ public class CreateCollectionParam {
 
             return new CreateCollectionParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link CreateCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateCollectionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", shardsNum=" + shardsNum +
-                ", description='" + description + '\'' +
-                ", fields=" + fieldTypes.toString() + '\'' +
-                ", consistencyLevel=" + consistencyLevel +
-                '}';
     }
 }
