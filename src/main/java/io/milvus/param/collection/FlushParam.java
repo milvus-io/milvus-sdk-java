@@ -3,9 +3,9 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,12 +16,14 @@ import java.util.Objects;
  */
 @Getter
 public class FlushParam {
+    private final String databaseName;
     private final List<String> collectionNames;
     private final Boolean syncFlush;
     private final long syncFlushWaitingInterval;
     private final long syncFlushWaitingTimeout;
 
     private FlushParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
         this.syncFlush = builder.syncFlush;
         this.syncFlushWaitingInterval = builder.syncFlushWaitingInterval;
@@ -36,6 +38,7 @@ public class FlushParam {
      * Builder for {@link FlushParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private final List<String> collectionNames = new ArrayList<>();
 
         // syncFlush:
@@ -53,6 +56,17 @@ public class FlushParam {
         private Long syncFlushWaitingTimeout = 60L;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -80,7 +94,7 @@ public class FlushParam {
         /**
          * Sets the flush function to sync mode.
          * With sync mode enabled, the client keeps waiting until all segments of the collection successfully flushed.
-         *
+         * <p>
          * If sync mode disabled, client returns at once after the flush() is called.
          *
          * @param syncFlush <code>Boolean.TRUE</code> is sync mode, <code>Boolean.FALSE</code> is not
@@ -94,10 +108,10 @@ public class FlushParam {
         /**
          * Sets waiting interval in sync mode. With sync mode enabled, the client will constantly check segments state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_INTERVAL.
-         * @see Constant
          *
          * @param milliseconds interval
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncFlushWaitingInterval(@NonNull Long milliseconds) {
             this.syncFlushWaitingInterval = milliseconds;
@@ -107,10 +121,10 @@ public class FlushParam {
         /**
          * Sets timeout value for sync mode.
          * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_TIMEOUT.
-         * @see Constant
          *
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncFlushWaitingTimeout(@NonNull Long seconds) {
             this.syncFlushWaitingTimeout = seconds;
