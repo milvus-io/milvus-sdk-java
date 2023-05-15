@@ -1644,9 +1644,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
-                    .withCollectionName(requestParam.getCollectionName())
-                    .build());
+            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                    .withCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.withDatabaseName(requestParam.getDatabaseName());
+            }
+            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
                 return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
@@ -1684,9 +1688,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         logInfo(requestParam.toString());
 
-        R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
-                .withCollectionName(requestParam.getCollectionName())
-                .build());
+        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withCollectionName(requestParam.getCollectionName());
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.withDatabaseName(requestParam.getDatabaseName());
+        }
+        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
         if (descResp.getStatus() != R.Status.Success.getCode()) {
             logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
             return Futures.immediateFuture(
