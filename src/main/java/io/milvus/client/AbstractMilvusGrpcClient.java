@@ -680,7 +680,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode())
                     .setSchema(collectionSchemaBuilder.build().toByteString());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-                builder.setDbName(builder.getDbName());
+                builder.setDbName(requestParam.getDatabaseName());
             }
 
             CreateCollectionRequest createCollectionRequest = builder.build();
