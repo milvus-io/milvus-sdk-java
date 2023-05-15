@@ -517,7 +517,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             HasCollectionRequest.Builder builder = HasCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName());
-            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())){
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
             HasCollectionRequest hasCollectionRequest = builder
@@ -750,10 +750,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
+            LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
-                    .setRefresh(requestParam.isRefresh())
+                    .setRefresh(requestParam.isRefresh());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            LoadCollectionRequest loadCollectionRequest = builder
                     .build();
 
             Status response = blockingStub().loadCollection(loadCollectionRequest);
@@ -2804,9 +2809,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            GetLoadStateRequest loadStateRequest = GetLoadStateRequest.newBuilder()
+            GetLoadStateRequest.Builder builder = GetLoadStateRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .addAllPartitionNames(requestParam.getPartitionNames())
+                    .addAllPartitionNames(requestParam.getPartitionNames());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetLoadStateRequest loadStateRequest = builder
                     .build();
 
             GetLoadStateResponse response = blockingStub().getLoadState(loadStateRequest);

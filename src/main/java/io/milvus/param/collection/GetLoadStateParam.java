@@ -24,6 +24,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -31,11 +32,14 @@ import java.util.List;
  * Parameters for <code>getLoadState</code> interface.
  */
 @Getter
+@ToString
 public class GetLoadStateParam {
+    private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
 
     public GetLoadStateParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
     }
@@ -48,11 +52,23 @@ public class GetLoadStateParam {
      * Builder for {@link GetLoadStateParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
 
         private final List<String> partitionNames = Lists.newArrayList();
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -100,18 +116,5 @@ public class GetLoadStateParam {
 
             return new GetLoadStateParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link GetLoadStateParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetLoadStateParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionNames='" + partitionNames.toString() + '\'' +
-                '}';
     }
 }
