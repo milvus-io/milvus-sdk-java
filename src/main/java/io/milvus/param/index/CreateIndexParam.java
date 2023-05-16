@@ -26,6 +26,7 @@ import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -36,7 +37,9 @@ import java.util.Objects;
  * Parameters for <code>createIndex</code> interface.
  */
 @Getter
+@ToString
 public class CreateIndexParam {
+    private final String databaseName;
     private final String collectionName;
     private final String fieldName;
     private final String indexName;
@@ -46,6 +49,7 @@ public class CreateIndexParam {
     private final long syncWaitingTimeout;
 
     private CreateIndexParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
@@ -71,6 +75,7 @@ public class CreateIndexParam {
      * Builder for {@link CreateIndexParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String fieldName;
         private IndexType indexType = IndexType.INVALID;
@@ -93,6 +98,17 @@ public class CreateIndexParam {
         private Long syncWaitingTimeout = 600L;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -153,7 +169,7 @@ public class CreateIndexParam {
 
         /**
          * Sets the specific index parameters according to index type.
-         *
+         * <p>
          * For example: IVF index, the extra parameters can be "{\"nlist\":1024}".
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
@@ -168,7 +184,7 @@ public class CreateIndexParam {
         /**
          * Enables to sync mode.
          * With sync mode enabled, the client keeps waiting until all segments of the collection are successfully indexed.
-         *
+         * <p>
          * With sync mode disabled, client returns at once after the createIndex() is called.
          *
          * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
@@ -183,10 +199,10 @@ public class CreateIndexParam {
          * Sets the waiting interval in sync mode. With sync mode enabled, the client constantly checks index state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_INDEX_INTERVAL.
          * Default value is 500 milliseconds.
-         * @see Constant
          *
          * @param milliseconds interval
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncWaitingInterval(@NonNull Long milliseconds) {
             this.syncWaitingInterval = milliseconds;
@@ -194,12 +210,12 @@ public class CreateIndexParam {
         }
 
         /**
-         * Sets the timeout value for sync mode. 
+         * Sets the timeout value for sync mode.
          * Timeout value must be greater than zero and with No upper limit. Default value is 600 seconds.
-         * @see Constant
          *
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncWaitingTimeout(@NonNull Long seconds) {
             this.syncWaitingTimeout = seconds;
@@ -246,23 +262,5 @@ public class CreateIndexParam {
 
             return new CreateIndexParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link CreateIndexParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateIndexParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", fieldName='" + fieldName + '\'' +
-                ", indexName='" + indexName + '\'' +
-                ", params='" + extraParam.toString() + '\'' +
-                ", syncMode=" + syncMode +
-                ", syncWaitingInterval=" + syncWaitingInterval +
-                ", syncWaitingTimeout=" + syncWaitingTimeout +
-                '}';
     }
 }
