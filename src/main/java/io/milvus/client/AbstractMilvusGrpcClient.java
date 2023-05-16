@@ -138,14 +138,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return result;
     }
 
-    private void waitForLoadingCollection(String collectionName, List<String> partitionNames,
+    private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
                                           long waitingInterval, long timeout) throws IllegalResponseException {
         long tsBegin = System.currentTimeMillis();
         if (partitionNames == null || partitionNames.isEmpty()) {
-            ShowCollectionsRequest showCollectionRequest = ShowCollectionsRequest.newBuilder()
+            ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder()
                     .addCollectionNames(collectionName)
-                    .setType(ShowType.InMemory)
-                    .build();
+                    .setType(ShowType.InMemory);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+            }
+            ShowCollectionsRequest showCollectionRequest = builder.build();
 
             // Use showCollection() to check loading percentages of the collection.
             // If the inMemory percentage is 100, that means the collection has finished loading.
@@ -188,10 +191,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
         } else {
-            ShowPartitionsRequest showPartitionsRequest = ShowPartitionsRequest.newBuilder()
+            ShowPartitionsRequest.Builder builder = ShowPartitionsRequest.newBuilder()
                     .setCollectionName(collectionName)
-                    .addAllPartitionNames(partitionNames)
-                    .setType(ShowType.InMemory).build();
+                    .addAllPartitionNames(partitionNames);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+            }
+            ShowPartitionsRequest showPartitionsRequest = builder.setType(ShowType.InMemory).build();
 
             // Use showPartitions() to check loading percentages of all the partitions.
             // If each partition's  inMemory percentage is 100, that means all the partitions have finished loading.
@@ -658,7 +664,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // sync load, wait until collection finish loading
             if (requestParam.isSyncLoad()) {
-                waitForLoadingCollection(requestParam.getCollectionName(), null,
+                waitForLoadingCollection(requestParam.getDatabaseName(), requestParam.getCollectionName(), null,
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
