@@ -1081,12 +1081,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            LoadPartitionsRequest loadPartitionsRequest = LoadPartitionsRequest.newBuilder()
+            LoadPartitionsRequest.Builder builder = LoadPartitionsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
-                    .setRefresh(requestParam.isRefresh())
-                    .build();
+                    .setRefresh(requestParam.isRefresh());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            LoadPartitionsRequest loadPartitionsRequest = builder.build();
 
             Status response = blockingStub().loadPartitions(loadPartitionsRequest);
 
@@ -1096,7 +1099,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // sync load, wait until all partitions finish loading
             if (requestParam.isSyncLoad()) {
-                waitForLoadingCollection(requestParam.getCollectionName(), requestParam.getPartitionNames(),
+                waitForLoadingCollection(requestParam.getDatabaseName(), requestParam.getCollectionName(), requestParam.getPartitionNames(),
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
