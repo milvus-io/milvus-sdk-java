@@ -22,10 +22,9 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,6 +34,7 @@ import java.util.Objects;
  */
 @Getter
 public class LoadPartitionsParam {
+    private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final boolean syncLoad;
@@ -44,6 +44,7 @@ public class LoadPartitionsParam {
     private final boolean refresh;
 
     private LoadPartitionsParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.syncLoad = builder.syncLoad;
@@ -61,6 +62,7 @@ public class LoadPartitionsParam {
      * Builder for {@link LoadPartitionsParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private final List<String> partitionNames = new ArrayList<>();
 
@@ -89,6 +91,17 @@ public class LoadPartitionsParam {
         private Boolean refresh = Boolean.FALSE;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
