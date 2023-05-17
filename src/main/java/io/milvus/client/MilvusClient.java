@@ -179,14 +179,6 @@ public interface MilvusClient {
      */
     R<FlushResponse> flush(FlushParam requestParam);
 
-
-    /**
-     * FlushAll inserted data in buffer into storage.
-     *
-     * @return {status:result code,data: FlushResponse{flush segment ids}}
-     */
-    R<FlushAllResponse> flushAll();
-
     /**
      * Flush all collections. All insertions, deletions, and upserts before `flushAll` will be synced.
      *
