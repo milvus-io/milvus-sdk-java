@@ -40,12 +40,15 @@ public class CreateCollectionParam {
     private final List<FieldType> fieldTypes;
     private final String databaseName;
 
+    private final boolean enableDynamicField;
+
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
         this.databaseName = builder.databaseName;
+        this.enableDynamicField = builder.enableDynamicField;
     }
 
     public static Builder newBuilder() {
@@ -61,6 +64,8 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private String databaseName;
+
+        private boolean enableDynamicField;
 
         private Builder() {
         }
@@ -106,6 +111,17 @@ public class CreateCollectionParam {
          */
         public Builder withDescription(@NonNull String description) {
             this.description = description;
+            return this;
+        }
+
+        /**
+         * Sets the collection if enableDynamicField.
+         *
+         * @param enableDynamicField enableDynamicField of the collection
+         * @return <code>Builder</code>
+         */
+        public Builder withEnableDynamicField(boolean enableDynamicField) {
+            this.enableDynamicField = enableDynamicField;
             return this;
         }
 

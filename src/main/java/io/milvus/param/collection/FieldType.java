@@ -41,6 +41,7 @@ public class FieldType {
     private final DataType dataType;
     private final Map<String,String> typeParams;
     private final boolean autoID;
+    private final boolean isDynamic;
 
     private FieldType(@NonNull Builder builder){
         this.name = builder.name;
@@ -49,6 +50,7 @@ public class FieldType {
         this.dataType = builder.dataType;
         this.typeParams = builder.typeParams;
         this.autoID = builder.autoID;
+        this.isDynamic = builder.isDynamic;
     }
 
     public int getDimension() {
@@ -81,6 +83,7 @@ public class FieldType {
         private DataType dataType;
         private final Map<String,String> typeParams = new HashMap<>();
         private boolean autoID = false;
+        private boolean isDynamic = false;
 
         private Builder() {
         }
@@ -181,6 +184,17 @@ public class FieldType {
          */
         public Builder withAutoID(boolean autoID) {
             this.autoID = autoID;
+            return this;
+        }
+
+        /**
+         * Sets the isDynamic of a field.
+         *
+         * @param isDynamic of a field
+         * @return <code>Builder</code>
+         */
+        public Builder withIsDynamic(boolean isDynamic) {
+            this.isDynamic = isDynamic;
             return this;
         }
 
