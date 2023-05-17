@@ -28,8 +28,6 @@
 
 #### 仓库（maven）
 
-![img.png](src/main/resources/images/img.png)
-
 #### 中央仓库
 
 ```xml
@@ -37,64 +35,13 @@
 <dependency>
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>2.0.4</version>
+    <version>2.2.4</version>
 </dependency>
 ```
-
-#### 私库
-
-- 仓库地址：http://10.13.0.84:9081/#browse/browse:nexus-snapshots:io
 
 - 参考开发环境：https://zilliverse.feishu.cn/wiki/wikcnjtrUdSxgjcG3nLXe8C7bKf#
 
-- 打开Maven安装目录下\conf文件，编辑settings.xml，在<services>标签下添加
 
-```xml
-
-<servers>
-    <server>
-        <id>nexus-releases</id>  <!--对应pom.xml的id=releases的仓库-->
-        <username>admin</username>
-        <password>admin123</password>
-    </server>
-    <server>
-        <id>nexus-snapshots</id> <!--对应pom.xml中id=snapshots的仓库-->
-        <username>admin</username>
-        <password>admin123</password>
-    </server>
-</servers>
-```
-
-- 在pom文件中加入distributionManagement节点
-
-```xml
-
-<distributionManagement>
-    <!--正式版本-->
-    <repository>
-        <!-- nexus服务器中用户名：在settings.xml中<server>的id-->
-        <id>nexus-snapshots</id>
-        <name>Snapshots repository</name>
-        <url>http://10.13.0.84:9081/repository/nexus-snapshot/</url>
-    </repository>
-    <snapshotRepository>
-        <id>nexus-snapshots</id>
-        <name>Snapshots repository</name>
-        <url>http://10.13.0.84:9081/repository/nexus-snapshot/</url>
-    </snapshotRepository>
-</distributionManagement>
-```
-
-- 修改milvus-sdk-java坐标version
-
-```xml
-
-<dependency>
-    <groupId>io.milvus</groupId>
-    <artifactId>milvus-sdk-java</artifactId>
-    <version>2.0.5-SNAPSHOT</version>
-</dependency>
-```
 
 ## 模块介绍
 
@@ -122,12 +69,12 @@
 ### 设计思路
 
 - BaseTest类，继承AbstractTestNGSpringContextTests类，为每个测试类提供MilvusServiceClient，方便调用。通过@BeforeSuite提供默认的Collection、Index、Partition
-等供测试类使用。
+  等供测试类使用。
 
 - test文件里，每一个测试类对应一个接口，每个类之间相互解耦，非必要，不依赖。同类型接口放到同一个文件夹下。接口类的串行测试放到单独文件。
 
 - CommonData,CommonFunction提供公用的参数和方法。
-  
+
 - tesgng.xml文件，提供测试运行配置和测试数据的参数化。
 
 - allure-results文件夹，负责测试运行数据的收集和测试报告的创建。

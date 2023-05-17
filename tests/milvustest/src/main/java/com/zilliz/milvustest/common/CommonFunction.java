@@ -19,8 +19,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import javax.swing.text.FlowView;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -350,6 +352,16 @@ public class CommonFunction {
         // logger.info("generateBinaryVector:"+(byte) ran.nextInt(Byte.MAX_VALUE));
       }
       vectors.add(vector);
+    }
+    return vectors;
+  }
+
+  public static List<List<Float>> generateFloatVectors(int count, int dimension) {
+    Random ran = new Random();
+    List<List<Float>> vectors = new ArrayList<>();
+    for(int i = 0; i < count; i++) {
+      List<Float> item= Arrays.asList(MathUtil.generateFloat(dimension));
+      vectors.add(item);
     }
     return vectors;
   }
