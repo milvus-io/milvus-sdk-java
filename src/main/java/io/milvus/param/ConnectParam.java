@@ -36,6 +36,7 @@ public class ConnectParam {
     private final int port;
     private final String databaseName;
     private final String uri;
+    private final String token;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
@@ -47,6 +48,7 @@ public class ConnectParam {
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
+        this.token = builder.token;
         this.databaseName = builder.databaseName;
         this.uri = builder.uri;
         this.connectTimeoutMs = builder.connectTimeoutMs;
@@ -110,6 +112,7 @@ public class ConnectParam {
         private int port = 19530;
         private String databaseName = "default";
         private String uri;
+        private String token;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
@@ -162,6 +165,17 @@ public class ConnectParam {
          */
         public Builder withUri(String uri) {
             this.uri = uri;
+            return this;
+        }
+
+        /**
+         * Sets the token
+         *
+         * @param token
+         * @return <code>Builder</code>
+         */
+        public Builder withToken(String token) {
+            this.token = token;
             return this;
         }
 
@@ -282,6 +296,10 @@ public class ConnectParam {
                 this.host = result.getHostname();
                 this.port = result.getPort();
                 this.databaseName = result.getDatabase();
+            }
+
+            if (StringUtils.isNotEmpty(token)) {
+                this.authorization = token;
             }
 
             if (port < 0 || port > 0xFFFF) {
