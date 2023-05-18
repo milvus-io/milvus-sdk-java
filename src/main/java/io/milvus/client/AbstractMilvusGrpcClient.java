@@ -547,7 +547,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // Construct CollectionSchema Params
             CollectionSchema.Builder collectionSchemaBuilder = CollectionSchema.newBuilder();
             collectionSchemaBuilder.setName(requestParam.getCollectionName())
-                    .setDescription(requestParam.getDescription());
+                    .setDescription(requestParam.getDescription())
+                    .setEnableDynamicField(requestParam.isEnableDynamicField());
 
             long fieldID = 0;
             for (FieldType fieldType : requestParam.getFieldTypes()) {
@@ -557,7 +558,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         .setIsPrimaryKey(fieldType.isPrimaryKey())
                         .setDescription(fieldType.getDescription())
                         .setDataType(fieldType.getDataType())
-                        .setAutoID(fieldType.isAutoID());
+                        .setAutoID(fieldType.isAutoID())
+                        .setIsDynamic(fieldType.isDynamic());
 
                 // assemble typeParams for CollectionSchema
                 List<KeyValuePair> typeParamsList = assembleKvPair(fieldType.getTypeParams());
