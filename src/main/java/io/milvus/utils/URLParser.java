@@ -16,7 +16,7 @@ import java.util.Objects;
 public class URLParser {
 
     private String hostname;
-    private int port = 19530;
+    private int port;
     private String database;
     private boolean secure;
 
@@ -36,6 +36,9 @@ public class URLParser {
 
             // port
             port = uri.getPort();
+            if(port <= 0){
+                port = 19530;
+            }
 
             // database
             String path = uri.getPath();
