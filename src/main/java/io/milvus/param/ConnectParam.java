@@ -256,7 +256,7 @@ public class ConnectParam {
          * @param password password
          * @return <code>Builder</code>
          */
-        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
+        public Builder withAuthorization(String username, String password) {
             this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
             return this;
         }
