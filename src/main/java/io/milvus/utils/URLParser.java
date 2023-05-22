@@ -16,7 +16,7 @@ import java.util.Objects;
 public class URLParser {
 
     private String hostname;
-    private int port;
+    private int port = 19530;
     private String database;
     private boolean secure;
 
