@@ -1,6 +1,7 @@
 package io.milvus.response;
 
 import com.google.protobuf.ProtocolStringList;
+import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
@@ -8,8 +9,11 @@ import io.milvus.exception.IllegalResponseException;
 import lombok.NonNull;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
 
@@ -25,6 +29,10 @@ public class FieldDataWrapper {
 
     public boolean isVectorField() {
         return fieldData.getType() == DataType.FloatVector || fieldData.getType() == DataType.BinaryVector;
+    }
+
+    public boolean isJsonField() {
+        return fieldData.getType() == DataType.JSON;
     }
 
     /**
@@ -82,6 +90,8 @@ public class FieldDataWrapper {
             case VarChar:
             case String:
                 return fieldData.getScalars().getStringData().getDataList().size();
+            case JSON:
+                return fieldData.getScalars().getJsonData().getDataList().size();
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
@@ -152,6 +162,9 @@ public class FieldDataWrapper {
             case String:
                 ProtocolStringList protoStrList = fieldData.getScalars().getStringData().getDataList();
                 return protoStrList.subList(0, protoStrList.size());
+            case JSON:
+                List<ByteString> dataList = fieldData.getScalars().getJsonData().getDataList();
+                return dataList.stream().map(e -> JacksonUtils.fromJson(e.toByteArray(), Map.class)).collect(Collectors.toList());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
