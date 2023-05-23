@@ -87,6 +87,7 @@
         <junit.platform.version>1.1.0</junit.platform.version>
         <junit.jupiter.engine.version>5.1.0</junit.jupiter.engine.version>
         <jackson.version>2.12.7.1</jackson.version>
+        <version.fastjson>1.2.76</version.fastjson>
     </properties>
 
     <dependencyManagement>
@@ -191,6 +192,11 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
             <version>${plexus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+            <version>${version.fastjson}</version>
         </dependency>
     </dependencies>
 
