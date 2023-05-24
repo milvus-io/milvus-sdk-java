@@ -12,8 +12,10 @@ import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.response.DescCollResponseWrapper;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -211,7 +213,7 @@ public class ParamUtils {
     }
 
     public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
-                                                   @NonNull List<FieldType> fieldTypes) {
+                                                   @NonNull DescCollResponseWrapper wrapper) {
         String collectionName = requestParam.getCollectionName();
         String partitionName = requestParam.getPartitionName();
 
@@ -225,20 +227,20 @@ public class ParamUtils {
         if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
             insertBuilder.setDbName(requestParam.getDatabaseName());
         }
-        fillFieldsData(requestParam, fieldTypes, insertBuilder);
+        fillFieldsData(requestParam, wrapper, insertBuilder);
 
         // gen request
         return insertBuilder.build();
     }
 
-    private static void fillFieldsData(InsertParam requestParam, List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder) {
+    private static void fillFieldsData(InsertParam requestParam, DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder) {
         List<InsertParam.Field> columnFields = requestParam.getFields();
         List<JSONObject> rowFields = requestParam.getRows();
 
         if (CollectionUtils.isNotEmpty(columnFields)) {
-            checkAndSetColumnData(fieldTypes, insertBuilder, columnFields);
+            checkAndSetColumnData(wrapper.getFields(), insertBuilder, columnFields);
         } else {
-            checkAndSetRowData(fieldTypes, insertBuilder, rowFields);
+            checkAndSetRowData(wrapper, insertBuilder, rowFields);
         }
     }
 
@@ -268,49 +270,22 @@ public class ParamUtils {
         }
     }
 
-    private static void setColumnData(List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<InsertParam.Field> fields) {
-        // gen fieldData
-        // make sure the field order must be consisted with collection schema
-        for (FieldType fieldType : fieldTypes) {
-            for (InsertParam.Field field : fields) {
-                if (field.getName().equals(fieldType.getName())) {
-                    insertBuilder.addFieldsData(genFieldData(field.getName(), fieldType.getDataType(), field.getValues()));
-                    break;
-                }
-            }
-        }
-    }
+    private static void checkAndSetRowData(DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder, List<JSONObject> rows) {
+        List<FieldType> fieldTypes = wrapper.getFields();
 
-    private static void checkAndSetRowData(List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<JSONObject> rows) {
-        LinkedList<InsertParam.Field> fields = new LinkedList<>();
-        Map<String, FieldType> nameFieldTypeMap = fieldTypes.stream().collect(Collectors.toMap(FieldType::getName, e -> e));
-        Map<String, LinkedList<Object>> nameDataMap = new LinkedHashMap<>();
-
+        Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
+        InsertDataInfo insertDynamicDataInfo = InsertDataInfo.builder().dataType(DataType.JSON).data(new LinkedList<>()).build();
         for (JSONObject row : rows) {
             for (FieldType fieldType : fieldTypes) {
                 String fieldName = fieldType.getName();
-                LinkedList<Object> dataList = nameDataMap.getOrDefault(fieldName, new LinkedList<>());
+                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
+                        .fieldName(fieldName).dataType(fieldType.getDataType()).data(new LinkedList<>()).build());
 
                 // check jsonField
                 if (fieldType.getDataType() == DataType.JSON) {
-                    JSONObject jsonField = new JSONObject();
-                    if (fieldType.isDynamic()) {
-                        for (String rowFieldName : row.keySet()) {
-                            Pair<String, String> outerJsonField = parseData(rowFieldName);
-                            if (!nameFieldTypeMap.containsKey(rowFieldName) && outerJsonField == null) {
-                                jsonField.put(rowFieldName, row.get(rowFieldName));
-                            }
-                        }
-                    } else {
-                        for (String rowFieldName : row.keySet()) {
-                            Pair<String, String> outerJsonField = parseData(rowFieldName);
-                            if (outerJsonField != null && fieldType.getName().equals(outerJsonField.getKey())) {
-                                jsonField.put(outerJsonField.getValue(), row.get(rowFieldName));
-                            }
-                        }
-                    }
-                    dataList.add(jsonField);
-                    nameDataMap.put(fieldName, dataList);
+                    JSONObject jsonField = parseJsonData(row, fieldType);
+                    insertDataInfo.getData().add(jsonField);
+                    nameInsertInfo.put(fieldName, insertDataInfo);
                 } else {
                     // check normalField
                     Object rowFieldData = row.get(fieldName);
@@ -321,11 +296,11 @@ public class ParamUtils {
                         }
                         checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
 
-                        dataList.add(rowFieldData);
-                        nameDataMap.put(fieldName, dataList);
+                        insertDataInfo.getData().add(rowFieldData);
+                        nameInsertInfo.put(fieldName, insertDataInfo);
                     } else {
-                        // check if autoId or dynamic
-                        if (!fieldType.isAutoID() && !fieldType.isDynamic()) {
+                        // check if autoId
+                        if (!fieldType.isAutoID()) {
                             String msg = "The field: " + fieldType.getName() + " is not provided.";
                             throw new ParamException(msg);
                         }
@@ -333,38 +308,55 @@ public class ParamUtils {
                 }
             }
 
+            // deal with dynamicField
+            if (wrapper.getEnableDynamicField()) {
+                JSONObject dynamicField = new JSONObject();
+                for (String rowFieldName : row.keySet()) {
+                    Pair<String, String> outerJsonField = parseData(rowFieldName);
+                    if (!nameInsertInfo.containsKey(rowFieldName) && outerJsonField == null) {
+                        dynamicField.put(rowFieldName, row.get(rowFieldName));
+                    }
+                }
+                insertDynamicDataInfo.getData().add(dynamicField);
+            }
+
             for (String rowFieldName : row.keySet()) {
                 Pair<String, String> outerJsonField = parseData(rowFieldName);
-                if (outerJsonField != null  && !nameFieldTypeMap.containsKey(outerJsonField.getKey())) {
+                if (outerJsonField != null  && !nameInsertInfo.containsKey(outerJsonField.getKey())) {
                     String msg = "The field: " + outerJsonField.getKey() + " not exists, no need to provided.";
                     throw new ParamException(msg);
                 }
             }
         }
 
-        for (String fieldName : nameDataMap.keySet()) {
-            InsertParam.Field field = InsertParam.Field.builder().name(fieldName).values(nameDataMap.get(fieldName)).build();
-            fields.add(field);
+        for (String fieldNameKey : nameInsertInfo.keySet()) {
+            InsertDataInfo insertDataInfo = nameInsertInfo.get(fieldNameKey);
+            insertBuilder.addFieldsData(genFieldData(insertDataInfo.getFieldName(), insertDataInfo.getDataType(), insertDataInfo.getData()));
         }
+        if (wrapper.getEnableDynamicField()) {
+            insertBuilder.addFieldsData(genFieldData(insertDynamicDataInfo.getFieldName(), insertDynamicDataInfo.getDataType(), insertDynamicDataInfo.getData(), Boolean.TRUE));
+        }
+    }
 
-        setColumnData(fieldTypes, insertBuilder, fields);
+    private static JSONObject parseJsonData(JSONObject row, FieldType fieldType) {
+        JSONObject jsonField = new JSONObject();
+        for (String rowFieldName : row.keySet()) {
+            Pair<String, String> outerJsonField = parseData(rowFieldName);
+            if (outerJsonField != null && fieldType.getName().equals(outerJsonField.getKey())) {
+                jsonField.put(outerJsonField.getValue(), row.get(rowFieldName));
+            }
+        }
+        return jsonField;
     }
 
     public static Pair<String, String> parseData(String data) {
-        if (isValidDataFormat(data)) {
-            String pattern = "(\\w+)\\[\"(\\w+)\"\\]";
-            Pattern regex = Pattern.compile(pattern);
-            Matcher matcher = regex.matcher(data);
-            if (matcher.matches()) {
-                return Pair.of(matcher.group(1), matcher.group(2));
-            }
+        String pattern = "(\\w+)\\[\"(\\w+)\"\\]";
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(data);
+        if (matcher.matches()) {
+            return Pair.of(matcher.group(1), matcher.group(2));
         }
         return null;
-    }
-
-    public static boolean isValidDataFormat(String data) {
-        String pattern = "\\w+\\[\"\\w+\"\\]";
-        return Pattern.matches(pattern, data);
     }
 
     @SuppressWarnings("unchecked")
@@ -536,6 +528,11 @@ public class ParamUtils {
 
     @SuppressWarnings("unchecked")
     private static FieldData genFieldData(String fieldName, DataType dataType, List<?> objects) {
+        return genFieldData(fieldName, dataType, objects, Boolean.FALSE);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static FieldData genFieldData(String fieldName, DataType dataType, List<?> objects, boolean isDynamic) {
         if (objects == null) {
             throw new ParamException("Cannot generate FieldData from null object");
         }
@@ -626,6 +623,9 @@ public class ParamUtils {
                             .collect(Collectors.toList());
                     JSONArray jsonArray = JSONArray.newBuilder().addAllData(byteStrings).build();
                     ScalarField scalarField = ScalarField.newBuilder().setJsonData(jsonArray).build();
+                    if (isDynamic) {
+                        return builder.setType(dataType).setScalars(scalarField).setIsDynamic(true).build();
+                    }
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
                 }
             }
@@ -676,5 +676,13 @@ public class ParamUtils {
                 .setKey(key).setValue(value).build()));
 
         return builder.build();
+    }
+
+    @Builder
+    @Getter
+    public static class InsertDataInfo {
+        private String fieldName;
+        private DataType dataType;
+        private LinkedList<Object> data;
     }
 }
