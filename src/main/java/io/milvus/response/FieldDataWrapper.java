@@ -1,5 +1,6 @@
 package io.milvus.response;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ProtocolStringList;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.DataType;
@@ -17,6 +18,8 @@ import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
 
+import static io.milvus.grpc.DataType.JSON;
+
 /**
  * Utility class to wrap response of <code>query/search</code> interface.
  */
@@ -32,7 +35,11 @@ public class FieldDataWrapper {
     }
 
     public boolean isJsonField() {
-        return fieldData.getType() == DataType.JSON;
+        return fieldData.getType() == JSON;
+    }
+
+    public boolean isDynamicField() {
+        return fieldData.getType() == JSON && fieldData.getIsDynamic();
     }
 
     /**
@@ -164,9 +171,61 @@ public class FieldDataWrapper {
                 return protoStrList.subList(0, protoStrList.size());
             case JSON:
                 List<ByteString> dataList = fieldData.getScalars().getJsonData().getDataList();
-                return dataList.stream().map(e -> JacksonUtils.fromJson(e.toByteArray(), Map.class)).collect(Collectors.toList());
+                return dataList.stream().map(ByteString::toByteArray).collect(Collectors.toList());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
+    }
+
+    public int getAsInt(int index) throws Exception {
+        if (isDynamicField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.getInteger(fieldData.getFieldName());
+        }
+        throw new IllegalResponseException("Unsupported data type");
+    }
+
+    public String getAsString(int index) throws Exception {
+        if (isDynamicField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.getString(fieldData.getFieldName());
+        }
+        throw new IllegalResponseException("Unsupported data type");
+    }
+
+    public boolean getAsBool(int index) throws Exception {
+        if (isDynamicField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.getBoolean(fieldData.getFieldName());
+        }
+        throw new IllegalResponseException("Unsupported data type");
+    }
+
+    public double getAsDouble(int index) throws Exception {
+        if (isDynamicField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.getDouble(fieldData.getFieldName());
+        }
+        throw new IllegalResponseException("Unsupported data type");
+    }
+
+    public Object get(int index) throws Exception {
+        if (isDynamicField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.get(fieldData.getFieldName());
+        }
+        throw new IllegalResponseException("Unsupported data type");
+    }
+
+    private Object valueByIdx(int index) {
+        if (index < 0 || index >= getFieldData().size()) {
+            throw new IllegalResponseException("index out of range");
+        }
+        return getFieldData().get(index);
+    }
+
+    private JSONObject parseObjectData(int index) {
+        Object object = valueByIdx(index);
+        return JSONObject.parseObject(object.toString());
     }
 }

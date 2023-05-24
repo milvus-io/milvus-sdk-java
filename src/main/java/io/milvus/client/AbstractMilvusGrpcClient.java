@@ -1573,7 +1573,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
+            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
             MutationResult response = blockingStub().insert(insertRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
@@ -1618,7 +1618,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
+        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
         ListenableFuture<MutationResult> response = futureStub().insert(insertRequest);
 
         Futures.addCallback(
