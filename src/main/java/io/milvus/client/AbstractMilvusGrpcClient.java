@@ -391,6 +391,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         .setFieldID(fieldID)
                         .setName(fieldType.getName())
                         .setIsPrimaryKey(fieldType.isPrimaryKey())
+                        .setIsPartitionKey(fieldType.isPartitionKey())
                         .setDescription(fieldType.getDescription())
                         .setDataType(fieldType.getDataType())
                         .setAutoID(fieldType.isAutoID());
@@ -406,7 +407,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             // Construct CreateCollectionRequest
-            CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
+            CreateCollectionRequest.Builder createCollectionBuilder = CreateCollectionRequest.newBuilder();
+            if (requestParam.getPartitionsNum() > 0) {
+                createCollectionBuilder.setNumPartitions(requestParam.getPartitionsNum());
+            }
+            CreateCollectionRequest createCollectionRequest = createCollectionBuilder
                     .setCollectionName(requestParam.getCollectionName())
                     .setShardsNum(requestParam.getShardsNum())
                     .setSchema(collectionSchemaBuilder.build().toByteString())
