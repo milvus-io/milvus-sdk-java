@@ -274,7 +274,7 @@ class MilvusServiceClientTest {
 
     @Test
     void createCollectionParam() {
-        // test throw exception with illegal input
+        // test throw exception with illegal input for FieldType
         assertThrows(ParamException.class, () ->
                 FieldType.newBuilder()
                         .withName("")
@@ -295,6 +295,54 @@ class MilvusServiceClientTest {
                         .build()
         );
 
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .withDataType(DataType.Int64)
+                        .withPrimaryKey(true)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .withDataType(DataType.FloatVector)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                FieldType.newBuilder()
+                        .withName("partitionKey")
+                        .withDataType(DataType.Int64)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                FieldType.newBuilder()
+                        .withName("partitionKey")
+                        .withDataType(DataType.VarChar)
+                        .withMaxLength(120)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("vec")
+                        .withDescription("desc")
+                        .withDataType(DataType.FloatVector)
+                        .withTypeParams(params)
+                        .addTypeParam("2", "2")
+                        .withDimension(-1)
+                        .build()
+        );
+
+        // test throw exception with illegal input for CreateCollectionParam
         assertThrows(ParamException.class, () ->
                 CreateCollectionParam
                         .newBuilder()
@@ -339,16 +387,38 @@ class MilvusServiceClientTest {
                         .build()
         );
 
-        Map<String, String> params = new HashMap<>();
-        params.put("1", "1");
         assertThrows(ParamException.class, () ->
-                FieldType.newBuilder()
-                        .withName("vec")
-                        .withDescription("desc")
-                        .withDataType(DataType.FloatVector)
-                        .withTypeParams(params)
-                        .addTypeParam("2", "2")
-                        .withDimension(-1)
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .withShardsNum(0)
+                        .withPartitionsNum(10)
+                        .addFieldType(fieldType1)
+                        .build()
+        );
+
+        FieldType fieldType2 = FieldType.newBuilder()
+                .withName("partitionKey")
+                .withDataType(DataType.Int64)
+                .withPartitionKey(true)
+                .build();
+
+        assertDoesNotThrow(() ->
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .addFieldType(fieldType1)
+                        .addFieldType(fieldType2)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .withPartitionsNum(100)
+                        .addFieldType(fieldType1)
+                        .addFieldType(fieldType2)
                         .build()
         );
     }
