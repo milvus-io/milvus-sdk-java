@@ -573,6 +573,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // Construct CreateCollectionRequest
             CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
+            CreateCollectionRequest.Builder createCollectionBuilder = CreateCollectionRequest.newBuilder();
+            if (requestParam.getPartitionsNum() > 0) {
+                createCollectionBuilder.setNumPartitions(requestParam.getPartitionsNum());
+            }
+            CreateCollectionRequest createCollectionRequest = createCollectionBuilder
                     .setCollectionName(requestParam.getCollectionName())
                     .setShardsNum(requestParam.getShardsNum())
                     .setSchema(collectionSchemaBuilder.build().toByteString());

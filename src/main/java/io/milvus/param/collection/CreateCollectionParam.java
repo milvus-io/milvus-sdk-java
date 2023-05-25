@@ -38,6 +38,7 @@ public class CreateCollectionParam {
     private final int shardsNum;
     private final String description;
     private final List<FieldType> fieldTypes;
+    private final int partitionsNum;
     private final String databaseName;
 
     private final boolean enableDynamicField;
@@ -47,6 +48,7 @@ public class CreateCollectionParam {
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
+        this.partitionsNum = builder.partitionsNum;
         this.databaseName = builder.databaseName;
         this.enableDynamicField = builder.enableDynamicField;
     }
@@ -63,6 +65,7 @@ public class CreateCollectionParam {
         private int shardsNum = 2;
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
+        private int partitionsNum = 0;
         private String databaseName;
 
         private boolean enableDynamicField;
@@ -150,6 +153,20 @@ public class CreateCollectionParam {
         }
 
         /**
+         * Sets the partitions number if there is partition key field. The number must be greater than zero.
+         * The default value is 64(defined in server side). The upper limit is 4096(defined in server side).
+         * Not allow to set this value if none of field is partition key.
+         * Only one partition key field is allowed in a collection.
+         *
+         * @param partitionsNum partitions number
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionsNum(int partitionsNum) {
+            this.partitionsNum = partitionsNum;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link CreateCollectionParam} instance.
          *
          * @return {@link CreateCollectionParam}
@@ -165,9 +182,23 @@ public class CreateCollectionParam {
                 throw new ParamException("Field numbers must be larger than 0");
             }
 
+            boolean hasPartitionKey = false;
             for (FieldType fieldType : fieldTypes) {
                 if (fieldType == null) {
                     throw new ParamException("Collection field cannot be null");
+                }
+
+                if (fieldType.isPartitionKey()) {
+                    if (hasPartitionKey) {
+                        throw new ParamException("Only one partition key field is allowed in a collection");
+                    }
+                    hasPartitionKey = true;
+                }
+            }
+
+            if (partitionsNum > 0) {
+                if (!hasPartitionKey) {
+                    throw new ParamException("None of fields is partition key, not allow to define partition number");
                 }
             }
 

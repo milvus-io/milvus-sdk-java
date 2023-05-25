@@ -41,6 +41,7 @@ public class FieldType {
     private final DataType dataType;
     private final Map<String,String> typeParams;
     private final boolean autoID;
+    private final boolean partitionKey;
     private final boolean isDynamic;
 
     private FieldType(@NonNull Builder builder){
@@ -50,6 +51,7 @@ public class FieldType {
         this.dataType = builder.dataType;
         this.typeParams = builder.typeParams;
         this.autoID = builder.autoID;
+        this.partitionKey = builder.partitionKey;
         this.isDynamic = builder.isDynamic;
     }
 
@@ -83,6 +85,7 @@ public class FieldType {
         private DataType dataType;
         private final Map<String,String> typeParams = new HashMap<>();
         private boolean autoID = false;
+        private boolean partitionKey = false;
         private boolean isDynamic = false;
 
         private Builder() {
@@ -199,6 +202,20 @@ public class FieldType {
         }
 
         /**
+         * Sets the field to be partition key.
+         * A partition key field's values are hashed and distributed to different logic partitions.
+         * Only int64 and varchar type field can be partition key.
+         * Primary key field cannot be partition key.
+         *
+         * @param partitionKey true is partition key, false is not
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionKey(boolean partitionKey) {
+            this.partitionKey = partitionKey;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link FieldType} instance.
          *
          * @return {@link FieldType}
@@ -211,7 +228,7 @@ public class FieldType {
             }
 
             if (dataType == DataType.String) {
-                throw new ParamException("String type is not supported, use VarChar instead");
+                throw new ParamException("String type is not supported, use Varchar instead");
             }
 
             if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
@@ -244,6 +261,17 @@ public class FieldType {
                 }
             }
 
+            // verify partition key
+            if (partitionKey) {
+                if (primaryKey) {
+                    throw new ParamException("Primary key field can not be partition key");
+                }
+                if (dataType != DataType.Int64 && dataType != DataType.VarChar) {
+                    throw new ParamException("Only Int64 and Varchar type field can be partition key");
+                }
+            }
+
+
             return new FieldType(this);
         }
     }
@@ -259,6 +287,7 @@ public class FieldType {
                 "name='" + name + '\'' +
                 ", type='" + dataType.name() + '\'' +
                 ", primaryKey=" + primaryKey +
+                ", partitionKey=" + partitionKey +
                 ", autoID=" + autoID +
                 ", params=" + typeParams +
                 '}';
