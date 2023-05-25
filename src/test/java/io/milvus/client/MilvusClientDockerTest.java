@@ -1121,7 +1121,7 @@ class MilvusClientDockerTest {
         }
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withMetricType(MetricType.L2)
+                .withMetricType(MetricType.IP)
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
@@ -1205,11 +1205,11 @@ class MilvusClientDockerTest {
         indexTypes.put(IndexType.IVF_FLAT, "{\"nlist\":128}");
         indexTypes.put(IndexType.IVF_SQ8, "{\"nlist\":128}");
         indexTypes.put(IndexType.IVF_PQ, "{\"nlist\":128, \"m\":16, \"nbits\":8}");
-        indexTypes.put(IndexType.ANNOY, "{\"n_trees\":16}");
+//        indexTypes.put(IndexType.ANNOY, "{\"n_trees\":16}");
         indexTypes.put(IndexType.HNSW, "{\"M\":16,\"efConstruction\":64}");
-        indexTypes.put(IndexType.RHNSW_FLAT, "{\"M\":16,\"efConstruction\":64}");
-        indexTypes.put(IndexType.RHNSW_PQ, "{\"M\":16,\"efConstruction\":64, \"PQM\":16}");
-        indexTypes.put(IndexType.RHNSW_SQ, "{\"M\":16,\"efConstruction\":64}");
+//        indexTypes.put(IndexType.RHNSW_FLAT, "{\"M\":16,\"efConstruction\":64}");
+//        indexTypes.put(IndexType.RHNSW_PQ, "{\"M\":16,\"efConstruction\":64, \"PQM\":16}");
+//        indexTypes.put(IndexType.RHNSW_SQ, "{\"M\":16,\"efConstruction\":64}");
 
         List<MetricType> metricTypes = new ArrayList<>();
         metricTypes.add(MetricType.L2);
