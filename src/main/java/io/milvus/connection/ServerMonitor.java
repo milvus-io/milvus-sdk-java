@@ -56,8 +56,9 @@ public class ServerMonitor {
         public void run() {
             while (isRunning) {
                 long startTime = System.currentTimeMillis();
+                long timeTillNextCheck;
 
-                if (null == lastHeartbeat || startTime - lastHeartbeat > heartbeatInterval) {
+                if (null == lastHeartbeat || (timeTillNextCheck = lastHeartbeat + heartbeatInterval - startTime) <= 0) {
 
                     lastHeartbeat = startTime;
 
@@ -77,6 +78,14 @@ public class ServerMonitor {
                         clusterFactory.masterChange(master);
                     } else {
                         logger.debug("Milvus Server Heartbeat. Master is Running.");
+                    }
+                } else {
+                    try {
+                        Thread.sleep(timeTillNextCheck);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        logger.warn("Milvus Server Heartbeat. Interrupted.");
+                        throw new RuntimeException(e);
                     }
                 }
             }
