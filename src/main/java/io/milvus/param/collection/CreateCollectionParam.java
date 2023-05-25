@@ -19,6 +19,7 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public class CreateCollectionParam {
     private final String description;
     private final List<FieldType> fieldTypes;
     private final int partitionsNum;
+    private final ConsistencyLevelEnum consistencyLevel;
     private final String databaseName;
 
     private final boolean enableDynamicField;
@@ -51,6 +53,7 @@ public class CreateCollectionParam {
         this.partitionsNum = builder.partitionsNum;
         this.databaseName = builder.databaseName;
         this.enableDynamicField = builder.enableDynamicField;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -66,6 +69,7 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
         private String databaseName;
 
         private boolean enableDynamicField;
@@ -149,6 +153,18 @@ public class CreateCollectionParam {
          */
         public Builder addFieldType(@NonNull FieldType fieldType) {
             this.fieldTypes.add(fieldType);
+            return this;
+        }
+
+        /**
+         * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
+         * @see ConsistencyLevelEnum
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(@NonNull ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 
