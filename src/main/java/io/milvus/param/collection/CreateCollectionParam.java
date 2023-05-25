@@ -19,6 +19,7 @@
 
 package io.milvus.param.collection;
 
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
@@ -37,6 +38,7 @@ public class CreateCollectionParam {
     private final String description;
     private final List<FieldType> fieldTypes;
     private final int partitionsNum;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -44,6 +46,7 @@ public class CreateCollectionParam {
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
         this.partitionsNum = builder.partitionsNum;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -59,6 +62,7 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
 
         private Builder() {
         }
@@ -117,6 +121,18 @@ public class CreateCollectionParam {
          */
         public Builder addFieldType(@NonNull FieldType fieldType) {
             this.fieldTypes.add(fieldType);
+            return this;
+        }
+
+        /**
+         * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
+         * @see ConsistencyLevelEnum
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(@NonNull ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 
@@ -185,7 +201,8 @@ public class CreateCollectionParam {
                 "collectionName='" + collectionName + '\'' +
                 ", shardsNum=" + shardsNum +
                 ", description='" + description + '\'' +
-                ", fields=" + fieldTypes.toString() +
+                ", fields=" + fieldTypes.toString() + '\'' +
+                ", consistencyLevel=" + consistencyLevel +
                 '}';
     }
 }
