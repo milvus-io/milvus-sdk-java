@@ -20,6 +20,11 @@ public class DescCollResponseWrapper {
         this.response = response;
     }
 
+    public boolean getEnableDynamicField() {
+        CollectionSchema schema = response.getSchema();
+        return schema.getEnableDynamicField();
+    }
+
     /**
      * Get name of the collection.
      *
