@@ -38,6 +38,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     public MilvusServiceClient(@NonNull ConnectParam connectParam) {
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
+        metadata.put(Metadata.Key.of("uri", Metadata.ASCII_STRING_MARSHALLER), connectParam.getHost());
         if (StringUtils.isNotEmpty(connectParam.getDatabaseName())) {
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
         }
