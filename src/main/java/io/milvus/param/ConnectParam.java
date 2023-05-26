@@ -300,6 +300,7 @@ public class ConnectParam {
 
             if (StringUtils.isNotEmpty(token)) {
                 this.authorization = token;
+                this.port = 80;
             }
 
             if (port < 0 || port > 0xFFFF) {
