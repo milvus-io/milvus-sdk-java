@@ -300,7 +300,9 @@ public class ConnectParam {
 
             if (StringUtils.isNotEmpty(token)) {
                 this.authorization = token;
-                this.port = 80;
+                if (!token.contains(":")) {
+                    this.port = 443;
+                }
             }
 
             if (port < 0 || port > 0xFFFF) {
