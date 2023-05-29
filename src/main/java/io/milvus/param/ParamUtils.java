@@ -247,7 +247,12 @@ public class ParamUtils {
     private static void checkAndSetColumnData(List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<InsertParam.Field> fields) {
         // gen fieldData
         // make sure the field order must be consisted with collection schema
+        boolean isPartitionKeyEnabled = false;
         for (FieldType fieldType : fieldTypes) {
+            if (fieldType.isPartitionKey()) {
+                isPartitionKeyEnabled = true;
+            }
+
             boolean found = false;
             for (InsertParam.Field field : fields) {
                 if (field.getName().equals(fieldType.getName())) {
@@ -338,6 +343,13 @@ public class ParamUtils {
         }
     }
 
+        // set partition name only when there is no partition key field
+        if (!isPartitionKeyEnabled) {
+            insertBuilder.setPartitionName(partitionName);
+        }
+
+        // gen request
+        return insertBuilder.build();
     private static JSONObject parseJsonData(JSONObject row, FieldType fieldType) {
         JSONObject jsonField = new JSONObject();
         for (String rowFieldName : row.keySet()) {

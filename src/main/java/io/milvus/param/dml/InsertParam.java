@@ -95,6 +95,7 @@ public class InsertParam {
 
         /**
          * Set partition name (Optional).
+         * This partition name will be ignored if the collection has a partition key field.
          *
          * @param partitionName partition name
          * @return <code>Builder</code>
