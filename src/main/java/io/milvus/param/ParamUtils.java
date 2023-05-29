@@ -188,13 +188,17 @@ public class ParamUtils {
         MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
         InsertRequest.Builder insertBuilder = InsertRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setPartitionName(partitionName)
                 .setBase(msgBase)
                 .setNumRows(requestParam.getRowCount());
 
         // gen fieldData
         // make sure the field order must be consisted with collection schema
+        boolean isPartitionKeyEnabled = false;
         for (FieldType fieldType : fieldTypes) {
+            if (fieldType.isPartitionKey()) {
+                isPartitionKeyEnabled = true;
+            }
+
             boolean found = false;
             for (InsertParam.Field field : fields) {
                 if (field.getName().equals(fieldType.getName())) {
@@ -214,6 +218,11 @@ public class ParamUtils {
                 String msg = "The field: " + fieldType.getName() + " is not provided.";
                 throw new ParamException(msg);
             }
+        }
+
+        // set partition name only when there is no partition key field
+        if (!isPartitionKeyEnabled) {
+            insertBuilder.setPartitionName(partitionName);
         }
 
         // gen request
