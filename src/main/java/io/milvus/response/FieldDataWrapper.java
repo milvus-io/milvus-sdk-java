@@ -177,10 +177,10 @@ public class FieldDataWrapper {
         }
     }
 
-    public int getAsInt(int index) {
+    public int getAsInt(int index, String paramName) {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.getInteger(fieldData.getFieldName());
+            return jsonObject.getInteger(paramName);
         }
         throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
