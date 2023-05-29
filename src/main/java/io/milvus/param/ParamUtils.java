@@ -512,7 +512,8 @@ public class ParamUtils {
                 .withDescription(field.getDescription())
                 .withPrimaryKey(field.getIsPrimaryKey())
                 .withAutoID(field.getAutoID())
-                .withDataType(field.getDataType());
+                .withDataType(field.getDataType())
+                .withPartitionKey(field.getIsPartitionKey());
 
         List<KeyValuePair> keyValuePairs = field.getTypeParamsList();
         keyValuePairs.forEach((kv) -> builder.addTypeParam(kv.getKey(), kv.getValue()));
