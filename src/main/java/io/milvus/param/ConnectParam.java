@@ -299,7 +299,7 @@ public class ConnectParam {
             }
 
             if (StringUtils.isNotEmpty(token)) {
-                this.authorization = token;
+                this.authorization = Base64.getEncoder().encodeToString(String.format("%s", token).getBytes(StandardCharsets.UTF_8));
                 if (!token.contains(":")) {
                     this.port = 443;
                 }
