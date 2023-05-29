@@ -115,6 +115,34 @@ public class DescCollResponseWrapper {
     }
 
     /**
+     * Get whether the collection dynamic field is enabled
+     *
+     * @return boolean
+     */
+    public boolean isDynamicFieldEnabled() {
+        CollectionSchema schema = response.getSchema();
+        return schema.getEnableDynamicField();
+    }
+
+    /**
+     * Get the partition key field.
+     * Return null if the partition key field doesn't exist.
+     *
+     * @return {@link FieldType} schema of the partition key field
+     */
+    public FieldType getPartitionKeyField() {
+        CollectionSchema schema = response.getSchema();
+        for (int i = 0; i < schema.getFieldsCount(); ++i) {
+            FieldSchema field = schema.getFields(i);
+            if (field.getIsPartitionKey()) {
+                return ParamUtils.ConvertField(field);
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Construct a <code>String</code> by {@link DescCollResponseWrapper} instance.
      *
      * @return <code>String</code>
@@ -129,6 +157,7 @@ public class DescCollResponseWrapper {
                 ", createdUtcTimestamp:" + getCreatedUtcTimestamp() +
                 ", aliases:" + getAliases().toString() +
                 ", fields:" + getFields().toString() +
+                ", isDynamicFieldEnabled:" + isDynamicFieldEnabled() +
                 '}';
     }
 }
