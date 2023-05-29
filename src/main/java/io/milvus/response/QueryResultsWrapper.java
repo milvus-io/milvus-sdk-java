@@ -34,4 +34,15 @@ public class QueryResultsWrapper {
 
         throw new ParamException("The field name doesn't exist");
     }
+
+    public FieldDataWrapper getDynamicWrapper() throws ParamException {
+        List<FieldData> fields = results.getFieldsDataList();
+        for (FieldData field : fields) {
+            if (field.getIsDynamic()) {
+                return new FieldDataWrapper(field);
+            }
+        }
+
+        throw new ParamException("The dynamic field doesn't exist");
+    }
 }
