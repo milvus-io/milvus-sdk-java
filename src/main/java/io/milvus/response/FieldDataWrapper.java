@@ -177,44 +177,44 @@ public class FieldDataWrapper {
         }
     }
 
-    public int getAsInt(int index) throws Exception {
+    public int getAsInt(int index) {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
             return jsonObject.getInteger(fieldData.getFieldName());
         }
-        throw new IllegalResponseException("Unsupported data type");
+        throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
 
-    public String getAsString(int index) throws Exception {
+    public String getAsString(int index, String paramName) {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.getString(fieldData.getFieldName());
+            return jsonObject.getString(paramName);
         }
-        throw new IllegalResponseException("Unsupported data type");
+        throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
 
-    public boolean getAsBool(int index) throws Exception {
+    public boolean getAsBool(int index, String paramName) {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.getBoolean(fieldData.getFieldName());
+            return jsonObject.getBoolean(paramName);
         }
-        throw new IllegalResponseException("Unsupported data type");
+        throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
 
-    public double getAsDouble(int index) throws Exception {
+    public double getAsDouble(int index, String paramName) {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.getDouble(fieldData.getFieldName());
+            return jsonObject.getDouble(paramName);
         }
-        throw new IllegalResponseException("Unsupported data type");
+        throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
 
-    public Object get(int index) throws Exception {
+    public Object get(int index, String paramName) throws Exception {
         if (isDynamicField()) {
             JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.get(fieldData.getFieldName());
+            return jsonObject.get(paramName);
         }
-        throw new IllegalResponseException("Unsupported data type");
+        throw new IllegalResponseException("The field is not dynamic and does not support this operation");
     }
 
     private Object valueByIdx(int index) {
@@ -226,6 +226,6 @@ public class FieldDataWrapper {
 
     private JSONObject parseObjectData(int index) {
         Object object = valueByIdx(index);
-        return JSONObject.parseObject(object.toString());
+        return JSONObject.parseObject(new String((byte[])object));
     }
 }
