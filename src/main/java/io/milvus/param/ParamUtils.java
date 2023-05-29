@@ -669,7 +669,8 @@ public class ParamUtils {
                 .withDescription(field.getDescription())
                 .withPrimaryKey(field.getIsPrimaryKey())
                 .withAutoID(field.getAutoID())
-                .withDataType(field.getDataType());
+                .withDataType(field.getDataType())
+                .withPartitionKey(field.getIsPartitionKey());
 
         if (field.getIsDynamic()) {
             builder.withIsDynamic(true);
