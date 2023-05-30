@@ -32,8 +32,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final ManagedChannel channel;
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
+    private final long rpcDeadlineMs;
 
     public MilvusServiceClient(@NonNull ConnectParam connectParam) {
+        this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
+
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
 
@@ -57,6 +60,10 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub() {
+        if (this.rpcDeadlineMs > 0) {
+            return this.blockingStub.withWaitForReady()
+                    .withDeadlineAfter(this.rpcDeadlineMs, TimeUnit.MILLISECONDS);
+        }
         return this.blockingStub;
     }
 
