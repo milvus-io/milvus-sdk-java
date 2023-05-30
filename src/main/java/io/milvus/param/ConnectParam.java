@@ -42,6 +42,7 @@ public class ConnectParam {
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
+    private final long rpcDeadlineMs;
     private final boolean secure;
     private final long idleTimeoutMs;
     private final String authorization;
@@ -55,6 +56,7 @@ public class ConnectParam {
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
         this.idleTimeoutMs = builder.idleTimeoutMs;
+        this.rpcDeadlineMs = builder.rpcDeadlineMs;
         this.secure = builder.secure;
         this.authorization = builder.authorization;
     }
@@ -82,14 +84,18 @@ public class ConnectParam {
     public boolean isKeepAliveWithoutCalls() {
         return keepAliveWithoutCalls;
     }
+    public long getIdleTimeoutMs() {
+        return idleTimeoutMs;
+    }
+
+    public long getRpcDeadlineMs() {
+        return rpcDeadlineMs;
+    }
 
     public boolean isSecure() {
         return secure;
     }
 
-    public long getIdleTimeoutMs() {
-        return idleTimeoutMs;
-    }
 
     public String getAuthorization() {
         return authorization;
@@ -110,6 +116,8 @@ public class ConnectParam {
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
+        private long rpcDeadlineMs = 0; // Disabling deadline
+
         private boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = Base64.getEncoder().encodeToString("root:milvus".getBytes(StandardCharsets.UTF_8));
@@ -217,6 +225,20 @@ public class ConnectParam {
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
             this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
+            return this;
+        }
+
+        /**
+         * Set a deadline for how long you are willing to wait for a reply from the server.
+         * With a deadline setting, the client will wait when encounter fast RPC fail caused by network fluctuations.
+         * The deadline value must be larger than or equal to zero. Default value is 0, deadline is disabled.
+         *
+         * @param deadline deadline value
+         * @param timeUnit deadline unit
+         * @return <code>Builder</code>
+         */
+        public Builder withRpcDeadline(long deadline, @NonNull TimeUnit timeUnit) {
+            this.rpcDeadlineMs = timeUnit.toMillis(deadline);
             return this;
         }
 
