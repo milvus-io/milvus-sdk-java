@@ -53,7 +53,7 @@ public class InsertParam {
      */
     public static class Builder {
         private String collectionName;
-        private String partitionName = "_default";
+        private String partitionName = "";
         private List<InsertParam.Field> fields;
         private int rowCount;
 
