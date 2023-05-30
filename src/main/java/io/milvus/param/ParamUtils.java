@@ -221,7 +221,12 @@ public class ParamUtils {
         }
 
         // set partition name only when there is no partition key field
-        if (!isPartitionKeyEnabled) {
+        if (isPartitionKeyEnabled) {
+            if (partitionName != null && !partitionName.isEmpty()) {
+                String msg = "Collection " + collectionName + " has partition key, not allow to specify partition name";
+                throw new ParamException(msg);
+            }
+        } else if (partitionName != null) {
             insertBuilder.setPartitionName(partitionName);
         }
 
