@@ -148,7 +148,7 @@ public class ParamUtils {
                 break;
             case JSON:
                 for (Object value : values) {
-                    if (!(value instanceof ByteString)) {
+                    if (!(value instanceof JSONObject)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
                 }
