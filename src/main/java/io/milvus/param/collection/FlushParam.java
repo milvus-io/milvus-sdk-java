@@ -16,12 +16,14 @@ import java.util.Objects;
  */
 @Getter
 public class FlushParam {
+    private final String databaseName;
     private final List<String> collectionNames;
     private final Boolean syncFlush;
     private final long syncFlushWaitingInterval;
     private final long syncFlushWaitingTimeout;
 
     private FlushParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
         this.syncFlush = builder.syncFlush;
         this.syncFlushWaitingInterval = builder.syncFlushWaitingInterval;
@@ -36,6 +38,7 @@ public class FlushParam {
      * Builder for {@link FlushParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private final List<String> collectionNames = new ArrayList<>();
 
         // syncFlush:
@@ -53,6 +56,17 @@ public class FlushParam {
         private Long syncFlushWaitingTimeout = 60L;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

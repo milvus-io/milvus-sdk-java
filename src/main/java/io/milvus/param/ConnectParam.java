@@ -27,17 +27,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
-
 /**
  * Parameters for client connection.
  */
 public class ConnectParam {
     private final String host;
     private final int port;
+    private final String databaseName;
     private final String uri;
+    private final String token;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
@@ -50,6 +48,8 @@ public class ConnectParam {
     private ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
+        this.token = builder.token;
+        this.databaseName = builder.databaseName;
         this.uri = builder.uri;
         this.connectTimeoutMs = builder.connectTimeoutMs;
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
@@ -101,6 +101,10 @@ public class ConnectParam {
         return authorization;
     }
 
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -111,7 +115,9 @@ public class ConnectParam {
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
+        private String databaseName = "default";
         private String uri;
+        private String token;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
@@ -148,6 +154,17 @@ public class ConnectParam {
         }
 
         /**
+         * Sets the database name.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(@NonNull String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
          * Sets the uri
          *
          * @param uri
@@ -155,6 +172,17 @@ public class ConnectParam {
          */
         public Builder withUri(String uri) {
             this.uri = uri;
+            return this;
+        }
+
+        /**
+         * Sets the token
+         *
+         * @param token
+         * @return <code>Builder</code>
+         */
+        public Builder withToken(String token) {
+            this.token = token;
             return this;
         }
 
@@ -248,7 +276,7 @@ public class ConnectParam {
          * @param password password
          * @return <code>Builder</code>
          */
-        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
+        public Builder withAuthorization(String username, String password) {
             this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
             return this;
         }
@@ -281,16 +309,17 @@ public class ConnectParam {
         public ConnectParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
-                if (uri.startsWith(HOST_HTTPS_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTPS_PREFIX, "");
-                    this.secure = true;
-                } else if (uri.startsWith(HOST_HTTP_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTP_PREFIX, "");
-                }
-                String[] uriArray = uri.split(COLON);
-                this.host = uriArray[0];
-                if(uriArray.length == 2){
-                    this.port = Integer.valueOf(uriArray[1]);
+                io.milvus.utils.URLParser result = new io.milvus.utils.URLParser(uri);
+                this.secure = result.isSecure();
+                this.host = result.getHostname();
+                this.port = result.getPort();
+                this.databaseName = result.getDatabase();
+            }
+
+            if (StringUtils.isNotEmpty(token)) {
+                this.authorization = Base64.getEncoder().encodeToString(String.format("%s", token).getBytes(StandardCharsets.UTF_8));
+                if (!token.contains(":")) {
+                    this.port = 443;
                 }
             }
 

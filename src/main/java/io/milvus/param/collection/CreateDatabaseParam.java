@@ -21,20 +21,17 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>dropCollection</code> interface.
+ * Parameters for <code>createDatabase</code> interface.
  */
 @Getter
-public class DropCollectionParam {
-    private final String collectionName;
+public class CreateDatabaseParam {
     private final String databaseName;
 
-    private DropCollectionParam(@NonNull Builder builder) {
-        this.collectionName = builder.collectionName;
+    private CreateDatabaseParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
     }
 
@@ -43,57 +40,46 @@ public class DropCollectionParam {
     }
 
     /**
-     * Builder for {@link DropCollectionParam} class.
+     * Builder for {@link CreateDatabaseParam} class.
      */
     public static final class Builder {
-        private String collectionName;
         private String databaseName;
 
         private Builder() {
         }
 
         /**
-         * Sets the collection name. Database name can empty or null.
+         * Sets the database name. Database name cannot be empty or null.
          *
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(String databaseName) {
+        public Builder withDatabaseName(@NonNull String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
         /**
-         * Sets the collection name. Collection name cannot be empty or null.
+         * Verifies parameters and creates a new {@link CreateDatabaseParam} instance.
          *
-         * @param collectionName collection name
-         * @return <code>Builder</code>
+         * @return {@link CreateDatabaseParam}
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
-            this.collectionName = collectionName;
-            return this;
-        }
+        public CreateDatabaseParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(databaseName, "Database name");
 
-        /**
-         * Verifies parameters and creates a new {@link DropCollectionParam} instance.
-         *
-         * @return {@link DropCollectionParam}
-         */
-        public DropCollectionParam build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-
-            return new DropCollectionParam(this);
+            return new CreateDatabaseParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link DropCollectionParam} instance.
+     * Constructs a <code>String</code> by {@link CreateDatabaseParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "DropCollectionParam{" +
-                "collectionName='" + collectionName + '\'' + '}';
+        return "CreateDatabaseParam{" +
+                "databaseName='" + databaseName + '\'' +
+                '}';
     }
 }

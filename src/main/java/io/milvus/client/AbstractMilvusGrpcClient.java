@@ -84,14 +84,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return result;
     }
 
-    private void waitForLoadingCollection(String collectionName, List<String> partitionNames,
+    private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
                                           long waitingInterval, long timeout) throws IllegalResponseException {
         long tsBegin = System.currentTimeMillis();
         if (partitionNames == null || partitionNames.isEmpty()) {
-            ShowCollectionsRequest showCollectionRequest = ShowCollectionsRequest.newBuilder()
+            ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder()
                     .addCollectionNames(collectionName)
-                    .setType(ShowType.InMemory)
-                    .build();
+                    .setType(ShowType.InMemory);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+            }
+            ShowCollectionsRequest showCollectionRequest = builder.build();
 
             // Use showCollection() to check loading percentages of the collection.
             // If the inMemory percentage is 100, that means the collection has finished loading.
@@ -134,10 +137,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
         } else {
-            ShowPartitionsRequest showPartitionsRequest = ShowPartitionsRequest.newBuilder()
+            ShowPartitionsRequest.Builder builder = ShowPartitionsRequest.newBuilder()
                     .setCollectionName(collectionName)
-                    .addAllPartitionNames(partitionNames)
-                    .setType(ShowType.InMemory).build();
+                    .addAllPartitionNames(partitionNames);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+            }
+            ShowPartitionsRequest showPartitionsRequest = builder.setType(ShowType.InMemory).build();
 
             // Use showPartitions() to check loading percentages of all the partitions.
             // If each partition's  inMemory percentage is 100, that means all the partitions have finished loading.
@@ -275,7 +281,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
-    private R<Boolean> waitForIndex(String collectionName, String indexName, String fieldName,
+    private R<Boolean> waitForIndex(String databaseName, String collectionName, String indexName, String fieldName,
                                     long waitingInterval, long timeout) {
         // This method use getIndexState() to check index state.
         // If all index state become Finished, then we say the sync index action is finished.
@@ -289,10 +295,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(R.Status.UnexpectedError, msg);
             }
 
-            DescribeIndexRequest request = DescribeIndexRequest.newBuilder()
+            DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
                     .setCollectionName(collectionName)
-                    .setIndexName(indexName)
-                    .build();
+                    .setIndexName(indexName);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+            }
+            DescribeIndexRequest request = builder.build();
 
             DescribeIndexResponse response = blockingStub().describeIndex(request);
 
@@ -347,8 +356,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
+            HasCollectionRequest.Builder builder = HasCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            HasCollectionRequest hasCollectionRequest = builder
                     .build();
 
             BoolResponse response = blockingStub().hasCollection(hasCollectionRequest);
@@ -372,6 +385,102 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> createDatabase(CreateDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            // Construct CreateDatabaseRequest
+            CreateDatabaseRequest createDatabaseRequest = CreateDatabaseRequest.newBuilder()
+                    .setDbName(requestParam.getDatabaseName())
+                    .build();
+
+            Status response = blockingStub().createDatabase(createDatabaseRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("CreateDatabaseRequest successfully! Database name:{}",
+                        requestParam.getDatabaseName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("CreateDatabaseRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("CreateDatabaseRequest RPC failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CreateDatabaseRequest failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ListDatabasesResponse> listDatabases() {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        try {
+            // Construct ListDatabasesRequest
+            ListDatabasesRequest listDatabasesRequest = ListDatabasesRequest.newBuilder()
+                    .build();
+
+            ListDatabasesResponse response = blockingStub().listDatabases(listDatabasesRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("ListDatabasesRequest successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("ListDatabasesRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("ListDatabasesRequest RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ListDatabasesRequest failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> dropDatabase(DropDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            // Construct DropDatabaseRequest
+            DropDatabaseRequest dropDatabaseRequest = DropDatabaseRequest.newBuilder()
+                    .setDbName(requestParam.getDatabaseName())
+                    .build();
+
+            Status response = blockingStub().dropDatabase(dropDatabaseRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("DropDatabaseRequest successfully! Database name:{}",
+                        requestParam.getDatabaseName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("DropDatabaseRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("DropDatabaseRequest RPC failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DropDatabaseRequest failed! Database name:{}\n{}",
+                    requestParam.getDatabaseName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<RpcStatus> createCollection(@NonNull CreateCollectionParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -383,7 +492,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // Construct CollectionSchema Params
             CollectionSchema.Builder collectionSchemaBuilder = CollectionSchema.newBuilder();
             collectionSchemaBuilder.setName(requestParam.getCollectionName())
-                    .setDescription(requestParam.getDescription());
+                    .setDescription(requestParam.getDescription())
+                    .setEnableDynamicField(requestParam.isEnableDynamicField());
 
             long fieldID = 0;
             for (FieldType fieldType : requestParam.getFieldTypes()) {
@@ -394,7 +504,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         .setIsPartitionKey(fieldType.isPartitionKey())
                         .setDescription(fieldType.getDescription())
                         .setDataType(fieldType.getDataType())
-                        .setAutoID(fieldType.isAutoID());
+                        .setAutoID(fieldType.isAutoID())
+                        .setIsDynamic(fieldType.isDynamic());
 
                 // assemble typeParams for CollectionSchema
                 List<KeyValuePair> typeParamsList = assembleKvPair(fieldType.getTypeParams());
@@ -407,16 +518,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             // Construct CreateCollectionRequest
-            CreateCollectionRequest.Builder createCollectionBuilder = CreateCollectionRequest.newBuilder();
-            if (requestParam.getPartitionsNum() > 0) {
-                createCollectionBuilder.setNumPartitions(requestParam.getPartitionsNum());
-            }
-            CreateCollectionRequest createCollectionRequest = createCollectionBuilder
+            CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setShardsNum(requestParam.getShardsNum())
                     .setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode())
-                    .setSchema(collectionSchemaBuilder.build().toByteString())
-                    .build();
+                    .setSchema(collectionSchemaBuilder.build().toByteString());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            CreateCollectionRequest createCollectionRequest = builder.build();
 
             Status response = blockingStub().createCollection(createCollectionRequest);
 
@@ -447,9 +558,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            DropCollectionRequest dropCollectionRequest = DropCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            DropCollectionRequest.Builder builder = DropCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            DropCollectionRequest dropCollectionRequest = builder.build();
 
             Status response = blockingStub().dropCollection(dropCollectionRequest);
 
@@ -480,10 +594,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
+            LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
-                    .setRefresh(requestParam.isRefresh())
+                    .setRefresh(requestParam.isRefresh());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            LoadCollectionRequest loadCollectionRequest = builder
                     .build();
 
             Status response = blockingStub().loadCollection(loadCollectionRequest);
@@ -494,7 +613,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // sync load, wait until collection finish loading
             if (requestParam.isSyncLoad()) {
-                waitForLoadingCollection(requestParam.getCollectionName(), null,
+                waitForLoadingCollection(requestParam.getDatabaseName(), requestParam.getCollectionName(), null,
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
@@ -550,6 +669,40 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> renameCollection(RenameCollectionParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
+                    .setOldName(requestParam.getOldCollectionName())
+                    .setNewName(requestParam.getNewCollectionName())
+                    .build();
+
+            Status response = blockingStub().renameCollection(renameCollectionRequest);
+
+            if (response.getErrorCode() == ErrorCode.Success) {
+                logDebug("RenameCollectionRequest successfully! Collection name:{}",
+                        requestParam.getOldCollectionName());
+                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+            } else {
+                return failedStatus("RenameCollectionRequest", response);
+            }
+        } catch (StatusRuntimeException e) {
+            logError("RenameCollectionRequest RPC failed! Collection name:{}\n{}",
+                    requestParam.getOldCollectionName(), e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("RenameCollectionRequest failed! Collection name:{}\n{}",
+                    requestParam.getOldCollectionName(), e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<DescribeCollectionResponse> describeCollection(@NonNull DescribeCollectionParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -558,9 +711,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            DescribeCollectionRequest describeCollectionRequest = builder.build();
 
             DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
 
@@ -591,6 +747,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // flush collection if client command to do it(some times user may want to know the newest row count)
             if (requestParam.isFlushCollection()) {
                 R<FlushResponse> response = flush(FlushParam.newBuilder()
+                        .withDatabaseName(requestParam.getDatabaseName())
                         .addCollectionName(requestParam.getCollectionName())
                         .withSyncFlush(Boolean.TRUE)
                         .build());
@@ -599,9 +756,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 }
             }
 
-            GetCollectionStatisticsRequest getCollectionStatisticsRequest = GetCollectionStatisticsRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            GetCollectionStatisticsRequest.Builder builder = GetCollectionStatisticsRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            GetCollectionStatisticsRequest getCollectionStatisticsRequest = builder.build();
 
             GetCollectionStatisticsResponse response = blockingStub().getCollectionStatistics(getCollectionStatisticsRequest);
 
@@ -629,9 +789,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            ShowCollectionsRequest showCollectionsRequest = ShowCollectionsRequest.newBuilder()
+            ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder()
                     .addAllCollectionNames(requestParam.getCollectionNames())
-                    .setType(requestParam.getShowType()).build();
+                    .setType(requestParam.getShowType());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            ShowCollectionsRequest showCollectionsRequest = builder.build();
 
             ShowCollectionsResponse response = blockingStub().showCollections(showCollectionsRequest);
 
@@ -700,10 +864,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
-            FlushRequest flushRequest = FlushRequest.newBuilder()
+            FlushRequest.Builder builder = FlushRequest.newBuilder()
                     .setBase(msgBase)
-                    .addAllCollectionNames(requestParam.getCollectionNames())
-                    .build();
+                    .addAllCollectionNames(requestParam.getCollectionNames());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            FlushRequest flushRequest = builder.build();
             FlushResponse response = blockingStub().flush(flushRequest);
 
             if (Objects.equals(requestParam.getSyncFlush(), Boolean.TRUE)) {
@@ -862,12 +1029,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            LoadPartitionsRequest loadPartitionsRequest = LoadPartitionsRequest.newBuilder()
+            LoadPartitionsRequest.Builder builder = LoadPartitionsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
-                    .setRefresh(requestParam.isRefresh())
-                    .build();
+                    .setRefresh(requestParam.isRefresh());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            LoadPartitionsRequest loadPartitionsRequest = builder.build();
 
             Status response = blockingStub().loadPartitions(loadPartitionsRequest);
 
@@ -877,7 +1047,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // sync load, wait until all partitions finish loading
             if (requestParam.isSyncLoad()) {
-                waitForLoadingCollection(requestParam.getCollectionName(), requestParam.getPartitionNames(),
+                waitForLoadingCollection(requestParam.getDatabaseName(), requestParam.getCollectionName(), requestParam.getPartitionNames(),
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
@@ -1122,11 +1292,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
 
-            CreateIndexRequest createIndexRequest = createIndexRequestBuilder
+            CreateIndexRequest.Builder builder = createIndexRequestBuilder
                     .setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
+                    .setIndexName(requestParam.getIndexName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            CreateIndexRequest createIndexRequest = builder.build();
 
             Status response = blockingStub().createIndex(createIndexRequest);
             if (response.getErrorCode() != ErrorCode.Success) {
@@ -1134,7 +1307,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             if (requestParam.isSyncMode()) {
-                R<Boolean> res = waitForIndex(requestParam.getCollectionName(), requestParam.getIndexName(),
+                R<Boolean> res = waitForIndex(requestParam.getDatabaseName(), requestParam.getCollectionName(), requestParam.getIndexName(),
                         requestParam.getFieldName(),
                         requestParam.getSyncWaitingInterval(), requestParam.getSyncWaitingTimeout());
                 if (res.getStatus() != R.Status.Success.getCode()) {
@@ -1199,10 +1372,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
+            DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
+                    .setIndexName(requestParam.getIndexName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+            DescribeIndexRequest describeIndexRequest = builder.build();
 
             DescribeIndexResponse response = blockingStub().describeIndex(describeIndexRequest);
 
@@ -1332,16 +1508,18 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
-                    .withCollectionName(requestParam.getCollectionName())
-                    .build());
+            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                    .withDatabaseName(requestParam.getDatabaseName())
+                    .withCollectionName(requestParam.getCollectionName());
+            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
                 return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
+            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
             MutationResult response = blockingStub().insert(insertRequest);
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
@@ -1372,9 +1550,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         logInfo(requestParam.toString());
 
-        R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
-                .withCollectionName(requestParam.getCollectionName())
-                .build());
+        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withCollectionName(requestParam.getCollectionName());
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.withDatabaseName(requestParam.getDatabaseName());
+        }
+        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
         if (descResp.getStatus() != R.Status.Success.getCode()) {
             logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
             return Futures.immediateFuture(
@@ -1382,7 +1564,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper.getFields());
+        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
         ListenableFuture<MutationResult> response = futureStub().insert(insertRequest);
 
         Futures.addCallback(
@@ -1632,6 +1814,38 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         } catch (Exception e) {
             logError("GetFlushState failed:\n{}", e.getMessage());
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
+            GetFlushAllStateRequest getFlushStateRequest = GetFlushAllStateRequest.newBuilder()
+                    .setBase(msgBase)
+                    .setFlushAllTs(requestParam.getFlushAllTs())
+                    .build();
+
+            GetFlushAllStateResponse response = blockingStub().getFlushAllState(getFlushStateRequest);
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("getFlushAllState successfully!");
+                return R.success(response);
+            } else {
+                return failedStatus("getFlushAllState", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("getFlushAllState RPC failed:\n{}", e.getStatus().toString());
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("getFlushAllState failed:\n{}", e.getMessage());
             return R.failed(e);
         }
     }
@@ -2191,16 +2405,20 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         logInfo(requestParam.toString());
 
+        GrantEntity.Builder builder = GrantEntity.newBuilder()
+                .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                .setObjectName(requestParam.getObjectName())
+                .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
+                .setGrantor(GrantorEntity.newBuilder()
+                        .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build());
+        if (StringUtils.isNotBlank(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
+        }
+
         try {
             OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
                     .setType(OperatePrivilegeType.Grant)
-                    .setEntity(GrantEntity.newBuilder()
-                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
-                            .setObjectName(requestParam.getObjectName())
-                            .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
-                            .setGrantor(GrantorEntity.newBuilder()
-                                    .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build())
-                            .build())
+                    .setEntity(builder.build())
                     .build();
 
             Status response = blockingStub().operatePrivilege(request);
@@ -2459,9 +2677,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
-            GetLoadStateRequest loadStateRequest = GetLoadStateRequest.newBuilder()
+            GetLoadStateRequest.Builder builder = GetLoadStateRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .addAllPartitionNames(requestParam.getPartitionNames())
+                    .addAllPartitionNames(requestParam.getPartitionNames());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetLoadStateRequest loadStateRequest = builder
                     .build();
 
             GetLoadStateResponse response = blockingStub().getLoadState(loadStateRequest);
