@@ -24,16 +24,20 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>hasCollection</code> interface.
  */
 @Getter
+@ToString
 public class HasCollectionParam {
     private final String collectionName;
+    private final String databaseName;
 
     private HasCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.databaseName = builder.databaseName;
     }
 
     public static Builder newBuilder() {
@@ -45,8 +49,20 @@ public class HasCollectionParam {
      */
     public static final class Builder {
         private String collectionName;
+        private String databaseName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. Database name can be empty.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(@NonNull String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -72,14 +88,4 @@ public class HasCollectionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link HasCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "HasCollectionParam{" +
-                "collectionName='" + collectionName + '\'' + '}';
-    }
 }

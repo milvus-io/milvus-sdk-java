@@ -24,6 +24,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import java.util.List;
  * Parameters for <code>createCollection</code> interface.
  */
 @Getter
+@ToString
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
@@ -39,6 +41,9 @@ public class CreateCollectionParam {
     private final List<FieldType> fieldTypes;
     private final int partitionsNum;
     private final ConsistencyLevelEnum consistencyLevel;
+    private final String databaseName;
+
+    private final boolean enableDynamicField;
 
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -47,6 +52,8 @@ public class CreateCollectionParam {
         this.fieldTypes = builder.fieldTypes;
         this.partitionsNum = builder.partitionsNum;
         this.consistencyLevel = builder.consistencyLevel;
+        this.databaseName = builder.databaseName;
+        this.enableDynamicField = builder.enableDynamicField;
     }
 
     public static Builder newBuilder() {
@@ -62,8 +69,10 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
-        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.SESSION;
+        private String databaseName;
 
+        private boolean enableDynamicField;
         private Builder() {
         }
 
@@ -79,6 +88,17 @@ public class CreateCollectionParam {
         }
 
         /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
          * Sets the shards number. The number must be greater than zero. The default value is 2.
          *
          * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
@@ -86,6 +106,17 @@ public class CreateCollectionParam {
          */
         public Builder withShardsNum(int shardsNum) {
             this.shardsNum = shardsNum;
+            return this;
+        }
+
+        /**
+         * Sets the collection if enableDynamicField.
+         *
+         * @param enableDynamicField enableDynamicField of the collection
+         * @return <code>Builder</code>
+         */
+        public Builder withEnableDynamicField(boolean enableDynamicField) {
+            this.enableDynamicField = enableDynamicField;
             return this;
         }
 
@@ -188,21 +219,5 @@ public class CreateCollectionParam {
 
             return new CreateCollectionParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link CreateCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateCollectionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", shardsNum=" + shardsNum +
-                ", description='" + description + '\'' +
-                ", fields=" + fieldTypes.toString() + '\'' +
-                ", consistencyLevel=" + consistencyLevel +
-                '}';
     }
 }
