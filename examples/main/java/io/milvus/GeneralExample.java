@@ -19,7 +19,10 @@
 
 package io.milvus;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -54,6 +57,7 @@ public class GeneralExample {
     private static final String COLLECTION_NAME = "TEST";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
+    private static final String USER_JSON_FIELD = "userJson";
     private static final Integer VECTOR_DIM = 64;
     private static final String AGE_FIELD = "userAge";
 //    private static final String PROFILE_FIELD = "userProfile";
@@ -65,6 +69,13 @@ public class GeneralExample {
 
     private static final Integer SEARCH_K = 5;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
+
+    private static final String INT32_FIELD_NAME = "int32";
+    private static final String INT64_FIELD_NAME = "int64";
+    private static final String VARCHAR_FIELD_NAME = "varchar";
+    private static final String BOOL_FIELD_NAME = "bool";
+    private static final String FLOAT_FIELD_NAME = "float";
+    private static final String DOUBLE_FIELD_NAME = "double";
 
     private void handleResponseStatus(R<?> r) {
         if (r.getStatus() != R.Status.Success.getCode()) {
@@ -102,17 +113,25 @@ public class GeneralExample {
 //                .withDimension(BINARY_DIM)
 //                .build();
 
+        FieldType fieldType5 = FieldType.newBuilder()
+                .withName(USER_JSON_FIELD)
+                .withDescription("user json")
+                .withDataType(DataType.JSON)
+                .build();
+
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
                 .withShardsNum(2)
+                .withEnableDynamicField(true)
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
 //                .addFieldType(fieldType4)
+                .addFieldType(fieldType5)
                 .build();
         R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
-                                            .createCollection(createCollectionReq);
+                .createCollection(createCollectionReq);
         handleResponseStatus(response);
         System.out.println(response);
         return response;
@@ -172,7 +191,7 @@ public class GeneralExample {
         // call flush() to flush the insert buffer to storage,
         // so that the getCollectionStatistics() can get correct number
         milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
-        
+
         System.out.println("========== getCollectionStatistics() ==========");
         R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(
                 GetCollectionStatisticsParam.newBuilder()
@@ -421,8 +440,8 @@ public class GeneralExample {
         return response;
     }
 
-    private R<MutationResult> insert(String partitionName, int count) {
-        System.out.println("========== insert() ==========");
+    private R<MutationResult> insertColumns(String partitionName, int count) {
+        System.out.println("========== insertColumns() ==========");
         List<List<Float>> vectors = generateFloatVectors(count);
 //        List<ByteBuffer> profiles = generateBinaryVectors(count);
 
@@ -432,15 +451,64 @@ public class GeneralExample {
             ages.add(ran.nextInt(99));
         }
 
+        List<JSONObject> objectList = new ArrayList<>();
+        for (long i = 0L; i < count ; ++i) {
+            JSONObject obj = new JSONObject();
+            obj.put(INT32_FIELD_NAME, ran.nextInt());
+            obj.put(DOUBLE_FIELD_NAME, ran.nextDouble());
+            objectList.add(obj);
+        }
+
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(AGE_FIELD, ages));
         fields.add(new InsertParam.Field(VECTOR_FIELD, vectors));
+        fields.add(new InsertParam.Field(USER_JSON_FIELD, objectList));
 //        fields.add(new InsertParam.Field(PROFILE_FIELD, profiles));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .withFields(fields)
+                .build();
+
+        R<MutationResult> response = milvusClient.insert(insertParam);
+        handleResponseStatus(response);
+        return response;
+    }
+
+    private R<MutationResult> insertRows(String partitionName, int count) {
+        System.out.println("========== insertRows() ==========");
+
+        List<JSONObject> rowsData = new ArrayList<>();
+        Random ran = new Random();
+        for (long i = 0L; i < count; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(AGE_FIELD, ran.nextInt(99));
+            row.put(VECTOR_FIELD, generateFloatVector());
+
+            // $meta if collection EnableDynamicField, you can input this field not exist in schema, else deny
+            row.put(INT32_FIELD_NAME, ran.nextInt());
+            row.put(INT64_FIELD_NAME, ran.nextLong());
+            row.put(VARCHAR_FIELD_NAME, "测试varchar");
+            row.put(FLOAT_FIELD_NAME, ran.nextFloat());
+            row.put(DOUBLE_FIELD_NAME, ran.nextDouble());
+            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
+
+            // $json
+            row.put(USER_JSON_FIELD + "[" + INT32_FIELD_NAME + "]", ran.nextInt());
+            row.put(USER_JSON_FIELD + "[" + INT64_FIELD_NAME + "]", ran.nextLong());
+            row.put(USER_JSON_FIELD + "[" + VARCHAR_FIELD_NAME + "]", "测试varchar");
+            row.put(USER_JSON_FIELD + "[" + FLOAT_FIELD_NAME + "]", ran.nextFloat());
+            row.put(USER_JSON_FIELD + "[" + DOUBLE_FIELD_NAME + "]", ran.nextDouble());
+            row.put(USER_JSON_FIELD + "[" + BOOL_FIELD_NAME + "]", ran.nextBoolean());
+
+            rowsData.add(row);
+        }
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withPartitionName(partitionName)
+                .withRows(rowsData)
                 .build();
 
         R<MutationResult> response = milvusClient.insert(insertParam);
@@ -460,6 +528,15 @@ public class GeneralExample {
         }
 
         return vectors;
+    }
+
+    private List<Float> generateFloatVector() {
+        Random ran = new Random();
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < VECTOR_DIM; ++i) {
+            vector.add(ran.nextFloat());
+        }
+        return vector;
     }
 
 //    private List<ByteBuffer> generateBinaryVectors(int count) {
@@ -496,11 +573,20 @@ public class GeneralExample {
         List<Long> deleteIds = new ArrayList<>();
         Random ran = new Random();
         for (int i = 0; i < 100; ++i) {
-            R<MutationResult> result = example.insert(partitionName, row_count);
+            // insertColumns
+            R<MutationResult> result = example.insertColumns(partitionName, row_count);
             MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
             List<Long> ids = wrapper.getLongIDs();
             deleteIds.add(ids.get(ran.nextInt(row_count)));
         }
+
+        // insertRows
+        R<MutationResult> result = example.insertRows(partitionName, row_count);
+        MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
+        long insertCount = wrapper.getInsertCount();
+        List<Long> longIDs = wrapper.getLongIDs();
+        System.out.println("complete insertRows, insertCount:" + insertCount + "; longIDs:" + longIDs);
+
         example.getCollectionStatistics();
 
         // Must create an index before load(), FLAT is brute-force search(no index)

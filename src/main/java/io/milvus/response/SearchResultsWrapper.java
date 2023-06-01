@@ -20,6 +20,24 @@ public class SearchResultsWrapper {
     }
 
     /**
+     * Gets {@link FieldDataWrapper} for a field.
+     * Throws {@link ParamException} if the field doesn't exist.
+     *
+     * @param fieldName field name to get output data
+     * @return {@link FieldDataWrapper}
+     */
+    public FieldDataWrapper getFieldWrapper(@NonNull String fieldName) throws ParamException {
+        List<FieldData> fields = results.getFieldsDataList();
+        for (FieldData field : fields) {
+            if (fieldName.compareTo(field.getFieldName()) == 0) {
+                return new FieldDataWrapper(field);
+            }
+        }
+
+        throw new ParamException("The field name doesn't exist");
+    }
+
+    /**
      * Gets data for an output field which is specified by search request.
      * Throws {@link ParamException} if the field doesn't exist.
      * Throws {@link ParamException} if the indexOfTarget is illegal.
