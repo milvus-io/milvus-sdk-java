@@ -113,22 +113,22 @@ public class GeneralExample {
 //                .withDimension(BINARY_DIM)
 //                .build();
 
-        FieldType fieldType5 = FieldType.newBuilder()
-                .withName(USER_JSON_FIELD)
-                .withDescription("user json")
-                .withDataType(DataType.JSON)
-                .build();
+//        FieldType fieldType5 = FieldType.newBuilder()
+//                .withName(USER_JSON_FIELD)
+//                .withDescription("user json")
+//                .withDataType(DataType.JSON)
+//                .build();
 
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
                 .withShardsNum(2)
-                .withEnableDynamicField(true)
+                .withEnableDynamicField(false)
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
 //                .addFieldType(fieldType4)
-                .addFieldType(fieldType5)
+//                .addFieldType(fieldType5)
                 .build();
         R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                 .createCollection(createCollectionReq);
@@ -451,18 +451,18 @@ public class GeneralExample {
             ages.add(ran.nextInt(99));
         }
 
-        List<JSONObject> objectList = new ArrayList<>();
-        for (long i = 0L; i < count ; ++i) {
-            JSONObject obj = new JSONObject();
-            obj.put(INT32_FIELD_NAME, ran.nextInt());
-            obj.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-            objectList.add(obj);
-        }
+//        List<JSONObject> objectList = new ArrayList<>();
+//        for (long i = 0L; i < count ; ++i) {
+//            JSONObject obj = new JSONObject();
+//            obj.put(INT32_FIELD_NAME, ran.nextInt());
+//            obj.put(DOUBLE_FIELD_NAME, ran.nextDouble());
+//            objectList.add(obj);
+//        }
 
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(AGE_FIELD, ages));
         fields.add(new InsertParam.Field(VECTOR_FIELD, vectors));
-        fields.add(new InsertParam.Field(USER_JSON_FIELD, objectList));
+//        fields.add(new InsertParam.Field(USER_JSON_FIELD, objectList));
 //        fields.add(new InsertParam.Field(PROFILE_FIELD, profiles));
 
         InsertParam insertParam = InsertParam.newBuilder()
@@ -487,20 +487,20 @@ public class GeneralExample {
             row.put(VECTOR_FIELD, generateFloatVector());
 
             // $meta if collection EnableDynamicField, you can input this field not exist in schema, else deny
-            row.put(INT32_FIELD_NAME, ran.nextInt());
-            row.put(INT64_FIELD_NAME, ran.nextLong());
-            row.put(VARCHAR_FIELD_NAME, "测试varchar");
-            row.put(FLOAT_FIELD_NAME, ran.nextFloat());
-            row.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
+//            row.put(INT32_FIELD_NAME, ran.nextInt());
+//            row.put(INT64_FIELD_NAME, ran.nextLong());
+//            row.put(VARCHAR_FIELD_NAME, "测试varchar");
+//            row.put(FLOAT_FIELD_NAME, ran.nextFloat());
+//            row.put(DOUBLE_FIELD_NAME, ran.nextDouble());
+//            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
 
             // $json
-            row.put(USER_JSON_FIELD + "[" + INT32_FIELD_NAME + "]", ran.nextInt());
-            row.put(USER_JSON_FIELD + "[" + INT64_FIELD_NAME + "]", ran.nextLong());
-            row.put(USER_JSON_FIELD + "[" + VARCHAR_FIELD_NAME + "]", "测试varchar");
-            row.put(USER_JSON_FIELD + "[" + FLOAT_FIELD_NAME + "]", ran.nextFloat());
-            row.put(USER_JSON_FIELD + "[" + DOUBLE_FIELD_NAME + "]", ran.nextDouble());
-            row.put(USER_JSON_FIELD + "[" + BOOL_FIELD_NAME + "]", ran.nextBoolean());
+//            row.put(USER_JSON_FIELD + "[" + INT32_FIELD_NAME + "]", ran.nextInt());
+//            row.put(USER_JSON_FIELD + "[" + INT64_FIELD_NAME + "]", ran.nextLong());
+//            row.put(USER_JSON_FIELD + "[" + VARCHAR_FIELD_NAME + "]", "测试varchar");
+//            row.put(USER_JSON_FIELD + "[" + FLOAT_FIELD_NAME + "]", ran.nextFloat());
+//            row.put(USER_JSON_FIELD + "[" + DOUBLE_FIELD_NAME + "]", ran.nextDouble());
+//            row.put(USER_JSON_FIELD + "[" + BOOL_FIELD_NAME + "]", ran.nextBoolean());
 
             rowsData.add(row);
         }
@@ -581,7 +581,7 @@ public class GeneralExample {
         }
 
         // insertRows
-        R<MutationResult> result = example.insertRows(partitionName, row_count);
+        R<MutationResult> result = example.insertRows(partitionName, 10);
         MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
         long insertCount = wrapper.getInsertCount();
         List<Long> longIDs = wrapper.getLongIDs();
