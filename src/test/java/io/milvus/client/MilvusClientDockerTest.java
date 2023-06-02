@@ -256,6 +256,16 @@ class MilvusClientDockerTest {
         DescCollResponseWrapper desc = new DescCollResponseWrapper(response.getData());
         System.out.println(desc.toString());
 
+        R<ShowPartitionsResponse> spResp = client.showPartitions(ShowPartitionsParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        System.out.println(spResp);
+
+        ShowPartResponseWrapper wra = new ShowPartResponseWrapper(spResp.getData());
+        List<ShowPartResponseWrapper.PartitionInfo> parts = wra.getPartitionsInfo();
+        System.out.println("Partition num: "+parts.size());
+
+
         // insert data
         int rowCount = 10000;
         List<Long> ids = new ArrayList<>();

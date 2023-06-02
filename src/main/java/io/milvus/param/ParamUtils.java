@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -666,9 +667,10 @@ public class ParamUtils {
                 .withName(field.getName())
                 .withDescription(field.getDescription())
                 .withPrimaryKey(field.getIsPrimaryKey())
+                .withPartitionKey(field.getIsPartitionKey())
                 .withAutoID(field.getAutoID())
                 .withDataType(field.getDataType())
-                .withPartitionKey(field.getIsPartitionKey());
+                .withIsDynamic(field.getIsDynamic());
 
         if (field.getIsDynamic()) {
             builder.withIsDynamic(true);
@@ -688,16 +690,35 @@ public class ParamUtils {
      */
     public static FieldSchema ConvertField(@NonNull FieldType field) {
         FieldSchema.Builder builder = FieldSchema.newBuilder()
-                .setIsPrimaryKey(field.isPrimaryKey())
-                .setAutoID(field.isAutoID())
                 .setName(field.getName())
                 .setDescription(field.getDescription())
-                .setDataType(field.getDataType());
-        Map<String, String> params = field.getTypeParams();
-        params.forEach((key, value) -> builder.addTypeParams(KeyValuePair.newBuilder()
-                .setKey(key).setValue(value).build()));
+                .setIsPrimaryKey(field.isPrimaryKey())
+                .setIsPartitionKey(field.isPartitionKey())
+                .setAutoID(field.isAutoID())
+                .setDataType(field.getDataType())
+                .setIsDynamic(field.isDynamic());
+
+        // assemble typeParams for CollectionSchema
+        List<KeyValuePair> typeParamsList = AssembleKvPair(field.getTypeParams());
+        if (CollectionUtils.isNotEmpty(typeParamsList)) {
+            typeParamsList.forEach(builder::addTypeParams);
+        }
 
         return builder.build();
+    }
+
+    public static List<KeyValuePair> AssembleKvPair(Map<String, String> sourceMap) {
+        List<KeyValuePair> result = new ArrayList<>();
+
+        if (MapUtils.isNotEmpty(sourceMap)) {
+            sourceMap.forEach((key, value) -> {
+                KeyValuePair kv = KeyValuePair.newBuilder()
+                        .setKey(key)
+                        .setValue(value).build();
+                result.add(kv);
+            });
+        }
+        return result;
     }
 
     @Builder
