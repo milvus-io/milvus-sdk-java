@@ -69,7 +69,7 @@ public class CreateCollectionParam {
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
-        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.SESSION;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
         private String databaseName;
 
         private boolean enableDynamicField;

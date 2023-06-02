@@ -471,6 +471,11 @@ public class ParamUtils {
         builder.setTravelTimestamp(requestParam.getTravelTimestamp());
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
+        // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
+        if (requestParam.getConsistencyLevel() == null) {
+            builder.setUseDefaultConsistency(true);
+        }
+
         return builder.build();
     }
 
@@ -484,6 +489,11 @@ public class ParamUtils {
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
                 .setGuaranteeTimestamp(guaranteeTimestamp);
+
+        // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
+        if (requestParam.getConsistencyLevel() == null) {
+            builder.setUseDefaultConsistency(true);
+        }
 
         // set offset and limit value.
         // directly pass the two values, the server will verify them.
@@ -515,7 +525,7 @@ public class ParamUtils {
     private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
                                               long guaranteeTimestamp, Long gracefulTime){
         if(consistencyLevel == null){
-            return guaranteeTimestamp;
+            return 1L;
         }
         switch (consistencyLevel){
             case STRONG:
