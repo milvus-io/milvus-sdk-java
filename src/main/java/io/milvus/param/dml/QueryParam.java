@@ -76,7 +76,7 @@ public class QueryParam {
         private Long travelTimestamp = 0L;
         private Long gracefulTime = 5000L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
-        private ConsistencyLevelEnum consistencyLevel;
+        private ConsistencyLevelEnum consistencyLevel = null;
         private Long offset = 0L;
         private Long limit = 0L;
         private Boolean ignoreGrowing = Boolean.FALSE;

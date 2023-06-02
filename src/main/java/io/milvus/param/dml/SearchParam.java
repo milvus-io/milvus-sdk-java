@@ -94,7 +94,7 @@ public class SearchParam {
         private Long travelTimestamp = 0L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
         private Long gracefulTime = 5000L;
-        private ConsistencyLevelEnum consistencyLevel;
+        private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
 
        Builder() {

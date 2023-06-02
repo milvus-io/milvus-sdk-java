@@ -139,6 +139,10 @@ public class InsertParam {
 
             int count = 0;
             if (CollectionUtils.isNotEmpty(fields)) {
+                if (fields.get(0) == null) {
+                    throw new ParamException("Field cannot be null." +
+                            " If the field is auto-id, just ignore it from withFields()");
+                }
                 count = fields.get(0).getValues().size();
                 checkFields(count);
             } else {
