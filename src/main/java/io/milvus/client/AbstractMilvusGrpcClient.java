@@ -69,21 +69,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected abstract boolean clientIsReady();
 
-    ///////////////////// Internal Functions//////////////////////
-    private List<KeyValuePair> assembleKvPair(Map<String, String> sourceMap) {
-        List<KeyValuePair> result = new ArrayList<>();
-
-        if (MapUtils.isNotEmpty(sourceMap)) {
-            sourceMap.forEach((key, value) -> {
-                KeyValuePair kv = KeyValuePair.newBuilder()
-                        .setKey(key)
-                        .setValue(value).build();
-                result.add(kv);
-            });
-        }
-        return result;
-    }
-
     private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
                                           long waitingInterval, long timeout) throws IllegalResponseException {
         long tsBegin = System.currentTimeMillis();
@@ -497,23 +482,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             long fieldID = 0;
             for (FieldType fieldType : requestParam.getFieldTypes()) {
-                FieldSchema.Builder fieldSchemaBuilder = FieldSchema.newBuilder()
-                        .setFieldID(fieldID)
-                        .setName(fieldType.getName())
-                        .setIsPrimaryKey(fieldType.isPrimaryKey())
-                        .setIsPartitionKey(fieldType.isPartitionKey())
-                        .setDescription(fieldType.getDescription())
-                        .setDataType(fieldType.getDataType())
-                        .setAutoID(fieldType.isAutoID())
-                        .setIsDynamic(fieldType.isDynamic());
-
-                // assemble typeParams for CollectionSchema
-                List<KeyValuePair> typeParamsList = assembleKvPair(fieldType.getTypeParams());
-                if (CollectionUtils.isNotEmpty(typeParamsList)) {
-                    typeParamsList.forEach(fieldSchemaBuilder::addTypeParams);
-                }
-
-                collectionSchemaBuilder.addFields(fieldSchemaBuilder.build());
+                collectionSchemaBuilder.addFields(ParamUtils.ConvertField(fieldType));
                 fieldID++;
             }
 
@@ -525,6 +494,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setSchema(collectionSchemaBuilder.build().toByteString());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
+            }
+            if (requestParam.getPartitionsNum() > 0) {
+                builder.setNumPartitions(requestParam.getPartitionsNum());
             }
 
             CreateCollectionRequest createCollectionRequest = builder.build();
@@ -824,7 +796,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             AlterCollectionRequest.Builder alterCollRequestBuilder = AlterCollectionRequest.newBuilder();
-            List<KeyValuePair> propertiesList = assembleKvPair(requestParam.getProperties());
+            List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
             if (CollectionUtils.isNotEmpty(propertiesList)) {
                 propertiesList.forEach(alterCollRequestBuilder::addProperties);
             }
@@ -1287,7 +1259,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         try {
             CreateIndexRequest.Builder createIndexRequestBuilder = CreateIndexRequest.newBuilder();
-            List<KeyValuePair> extraParamList = assembleKvPair(requestParam.getExtraParam());
+            List<KeyValuePair> extraParamList = ParamUtils.AssembleKvPair(requestParam.getExtraParam());
             if (CollectionUtils.isNotEmpty(extraParamList)) {
                 extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
             }
@@ -2554,7 +2526,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 importRequest.setPartitionName(requestParam.getPartitionName());
             }
 
-            List<KeyValuePair> options = assembleKvPair(requestParam.getOptions());
+            List<KeyValuePair> options = ParamUtils.AssembleKvPair(requestParam.getOptions());
             if (CollectionUtils.isNotEmpty(options)) {
                 options.forEach(importRequest::addOptions);
             }
