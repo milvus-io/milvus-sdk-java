@@ -390,7 +390,7 @@ public interface MilvusClient {
     R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam);
 
     /**
-     * Get flushAll state of specified segments.
+     * Get flush state of all segments.
      *
      * @param requestParam {@link GetFlushAllStateParam}
      * @return {status:result code, data:GetMetricsResponse{status,metrics}}
