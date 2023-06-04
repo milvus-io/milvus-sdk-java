@@ -2,6 +2,7 @@ package io.milvus.response;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ProtocolStringList;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
@@ -174,7 +175,7 @@ public class FieldDataWrapper {
         }
     }
 
-    public Integer getAsInt(int index, String paramName) {
+    public Integer getAsInt(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             String result = getAsString(index, paramName);
             return result == null ? null : Integer.parseInt(result);
@@ -182,7 +183,7 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
-    public String getAsString(int index, String paramName) {
+    public String getAsString(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             JSONObject jsonObject = parseObjectData(index);
             return jsonObject.getString(paramName);
@@ -190,7 +191,7 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
-    public Boolean getAsBool(int index, String paramName) {
+    public Boolean getAsBool(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             String result = getAsString(index, paramName);
             return result == null ? null : Boolean.parseBoolean(result);
@@ -198,7 +199,7 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
-    public Double getAsDouble(int index, String paramName) {
+    public Double getAsDouble(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             String result = getAsString(index, paramName);
             return result == null ? null : Double.parseDouble(result);
@@ -206,7 +207,7 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
-    public Object get(int index, String paramName) throws Exception {
+    public Object get(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
             JSONObject jsonObject = parseObjectData(index);
             return jsonObject.get(paramName);
@@ -214,9 +215,9 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
-    private Object valueByIdx(int index) {
+    public Object valueByIdx(int index) throws ParamException {
         if (index < 0 || index >= getFieldData().size()) {
-            throw new IllegalResponseException("index out of range");
+            throw new ParamException("index out of range");
         }
         return getFieldData().get(index);
     }
