@@ -202,7 +202,6 @@ public class ParamUtils {
     public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
                                                    DescCollResponseWrapper wrapper) {
         String collectionName = requestParam.getCollectionName();
-        String partitionName = requestParam.getPartitionName();
 
         // gen insert request
         MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
@@ -219,6 +218,24 @@ public class ParamUtils {
         return insertBuilder.build();
     }
     private static void fillFieldsData(InsertParam requestParam, DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder) {
+        // set partition name only when there is no partition key field
+        String partitionName = requestParam.getPartitionName();
+        boolean isPartitionKeyEnabled = false;
+        for (FieldType fieldType : wrapper.getFields()) {
+            if (fieldType.isPartitionKey()) {
+                isPartitionKeyEnabled = true;
+            }
+        }
+        if (isPartitionKeyEnabled) {
+            if (partitionName != null && !partitionName.isEmpty()) {
+                String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
+                throw new ParamException(msg);
+            }
+        } else if (partitionName != null) {
+            insertBuilder.setPartitionName(partitionName);
+        }
+
+        // convert insert data
         List<InsertParam.Field> columnFields = requestParam.getFields();
         List<JSONObject> rowFields = requestParam.getRows();
 
@@ -232,13 +249,7 @@ public class ParamUtils {
     private static void checkAndSetColumnData(InsertParam requestParam, List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<InsertParam.Field> fields) {
         // gen fieldData
         // make sure the field order must be consisted with collection schema
-        String partitionName = requestParam.getPartitionName();
-        boolean isPartitionKeyEnabled = false;
         for (FieldType fieldType : fieldTypes) {
-            if (fieldType.isPartitionKey()) {
-                isPartitionKeyEnabled = true;
-            }
-
             boolean found = false;
             for (InsertParam.Field field : fields) {
                 if (field.getName().equals(fieldType.getName())) {
@@ -258,16 +269,6 @@ public class ParamUtils {
                 String msg = "The field: " + fieldType.getName() + " is not provided.";
                 throw new ParamException(msg);
             }
-        }
-
-        // set partition name only when there is no partition key field
-        if (isPartitionKeyEnabled) {
-            if (partitionName != null && !partitionName.isEmpty()) {
-                String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
-                throw new ParamException(msg);
-            }
-        } else if (partitionName != null) {
-            insertBuilder.setPartitionName(partitionName);
         }
     }
 

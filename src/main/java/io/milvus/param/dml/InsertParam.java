@@ -201,6 +201,27 @@ public class InsertParam {
             }
         }
     }
+
+    /**
+     * Constructs a <code>String</code> by {@link InsertParam} instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        String baseStr = "InsertParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", rowCount=" + rowCount;
+        if (!CollectionUtils.isEmpty(fields)) {
+            return baseStr +
+                    ", columnFields+" + fields +
+                    '}';
+        } else {
+            return baseStr + '}';
+        }
+    }
+
     /**
      * Internal class for insert data.
      * If dataType is Bool, values is List of Boolean;

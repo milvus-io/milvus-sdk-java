@@ -1,5 +1,6 @@
 package io.milvus.response;
 
+import com.alibaba.fastjson.JSONObject;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -7,7 +8,9 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class to wrap response of <code>search</code> interface.
@@ -88,8 +91,9 @@ public class SearchResultsWrapper {
             throw new IllegalResponseException("Result scores count is wrong");
         }
 
-        List<IDScore> idScore = new ArrayList<>();
+        List<IDScore> idScores = new ArrayList<>();
 
+        // set id and distance
         IDs ids = results.getIds();
         if (ids.hasIntId()) {
             LongArray longIDs = ids.getIntId();
@@ -98,7 +102,7 @@ public class SearchResultsWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScore.add(new IDScore("", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
+                idScores.add(new IDScore("", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
@@ -107,13 +111,57 @@ public class SearchResultsWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScore.add(new IDScore(strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
+                idScores.add(new IDScore(strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
             }
         } else {
             throw new IllegalResponseException("Result ids is illegal");
         }
 
-        return idScore;
+        // set output fields
+        List<String> outputFields = results.getOutputFieldsList();
+        List<FieldData> fields = results.getFieldsDataList();
+        if (fields.isEmpty()) {
+            return idScores;
+        }
+
+        for (String outputKey : outputFields) {
+            boolean isField = false;
+            FieldDataWrapper dynamicField = null;
+            for (FieldData field : fields) {
+                if (field.getIsDynamic()) {
+                    dynamicField = new FieldDataWrapper(field);
+                }
+                if (outputKey.equals(field.getFieldName())) {
+                    FieldDataWrapper wrapper = new FieldDataWrapper(field);
+                    for (int n = 0; n < k; ++n) {
+                        if ((offset + n) >= wrapper.getRowCount()) {
+                            throw new ParamException("Illegal values length of output fields");
+                        }
+
+                        Object value = wrapper.valueByIdx((int)offset + n);
+                        if (wrapper.isJsonField()) {
+                            idScores.get(n).put(field.getFieldName(), JSONObject.parseObject(new String((byte[])value)));
+                        } else {
+                            idScores.get(n).put(field.getFieldName(), value);
+                        }
+                    }
+
+                    isField = true;
+                    break;
+                }
+            }
+
+            // if the output field is not a field name, fetch it from dynamic field
+            if (!isField && dynamicField != null) {
+                for (int n = 0; n < k; ++n) {
+                    Object obj = dynamicField.get((int)offset + n, outputKey);
+                    if (obj != null) {
+                        idScores.get(n).put(outputKey, obj);
+                    }
+                }
+            }
+        }
+        return idScores;
     }
 
     @Getter
@@ -158,6 +206,7 @@ public class SearchResultsWrapper {
         private final String strID;
         private final long longID;
         private final float score;
+        Map<String, Object> fieldValues = new HashMap<>();
 
         public IDScore(String strID, long longID, float score) {
             this.strID = strID;
@@ -165,12 +214,54 @@ public class SearchResultsWrapper {
             this.score = score;
         }
 
+        public boolean put(String keyName, Object obj) {
+            if (fieldValues.containsKey(keyName)) {
+                return false;
+            }
+            fieldValues.put(keyName, obj);
+
+            return true;
+        }
+
+        /**
+         * Get a value by a key name. If the key name is a field name, return the value of this field.
+         * If the key name is in dynamic field, return the value from the dynamic field.
+         * Throws {@link ParamException} if the key name doesn't exist.
+         *
+         * @return {@link FieldDataWrapper}
+         */
+        public Object get(String keyName) throws ParamException {
+            if (fieldValues.isEmpty()) {
+                throw new ParamException("This record is empty");
+            }
+
+            Object obj = fieldValues.get(keyName);
+            if (obj == null) {
+                // find the value from dynamic field
+                Object meta = fieldValues.get("$meta");
+                if (meta != null) {
+                    JSONObject jsonMata = (JSONObject)meta;
+                    Object innerObj = jsonMata.get(keyName);
+                    if (innerObj != null) {
+                        return innerObj;
+                    }
+                }
+            }
+
+            return obj;
+        }
+
         @Override
         public String toString() {
+            List<String> pairs = new ArrayList<>();
+            fieldValues.forEach((keyName, fieldValue) -> {
+                pairs.add(keyName + ":" + fieldValue.toString());
+            });
+
             if (strID.isEmpty()) {
-                return "(ID: " + getLongID() + " Score: " + getScore() + ")";
+                return "(ID: " + getLongID() + " Score: " + getScore() + " OutputFields: " + pairs + ")";
             } else {
-                return "(ID: '" + getStrID() + "' Score: " + getScore() + ")";
+                return "(ID: '" + getStrID() + "' Score: " + getScore()+ " OutputFields: " + pairs + ")";
             }
         }
     }

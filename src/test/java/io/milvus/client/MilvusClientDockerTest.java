@@ -19,6 +19,8 @@
 
 package io.milvus.client;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
@@ -1257,5 +1259,197 @@ class MilvusClientDockerTest {
         }
 
         client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testDynamicField() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "id_field";
+        String field2Name = "vec_field";
+        String field3Name = "json_field";
+        List<FieldType> fieldsSchema = new ArrayList<>();
+        fieldsSchema.add(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .withDescription("identity")
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDescription("face")
+                .withDimension(dimension)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.JSON)
+                .withName(field3Name)
+                .withDescription("info")
+                .build());
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldTypes(fieldsSchema)
+                .withEnableDynamicField(true)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        R<DescribeCollectionResponse> response = client.describeCollection(DescribeCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+
+        DescCollResponseWrapper desc = new DescCollResponseWrapper(response.getData());
+        System.out.println(desc.toString());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexName("abv")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("{}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        int rowCount = 10;
+        // insert data by row-based
+        List<JSONObject> rows = new ArrayList<>();
+        for (long i = 0L; i < rowCount; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(field1Name, i);
+            row.put(field2Name, generateFloatVectors(1).get(0));
+
+            // JSON field
+            JSONObject info = new JSONObject();
+            info.put("row-based-info", i);
+            row.put(field3Name, info);
+
+            // extra meta is automatically stored in dynamic field
+            row.put("extra_meta", i % 3 == 0);
+            row.put(generator.generate(5), 100);
+
+            rows.add(row);
+        }
+
+        InsertParam insertRowParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(rows)
+                .build();
+
+        R<MutationResult> insertRowResp = client.insert(insertRowParam);
+        assertEquals(R.Status.Success.getCode(), insertRowResp.getStatus().intValue());
+        System.out.println(rowCount + " rows inserted");
+
+        // insert data by column-based
+        List<Long> ids = new ArrayList<>();
+        List<JSONObject> infos = new ArrayList<>();
+        for (long i = 0L; i < rowCount; ++i) {
+            ids.add(rowCount + i);
+            JSONObject obj = new JSONObject();
+            obj.put("column-based-info", i);
+            obj.put(generator.generate(5), i);
+            infos.add(obj);
+        }
+        List<List<Float>> vectors = generateFloatVectors(rowCount);
+
+        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
+        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
+        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
+        fieldsInsert.add(new InsertParam.Field(field3Name, infos));
+
+        InsertParam insertColumnsParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fieldsInsert)
+                .build();
+
+        R<MutationResult> insertColumnResp = client.insert(insertColumnsParam);
+        assertEquals(R.Status.Success.getCode(), insertColumnResp.getStatus().intValue());
+        System.out.println(rowCount + " rows inserted");
+
+        // get collection statistics
+        R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
+                .newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFlush(true)
+                .build());
+        assertEquals(R.Status.Success.getCode(), statR.getStatus().intValue());
+
+        GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
+        System.out.println("Collection row count: " + stat.getRowCount());
+
+        // retrieve rows
+        String expr = "extra_meta == true";
+        List<String> outputFields = Arrays.asList(field3Name, "extra_meta");
+        QueryParam queryParam = QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(expr)
+                .withOutFields(outputFields)
+                .build();
+
+        R<QueryResults> queryR = client.query(queryParam);
+        assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+        QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+        List<QueryResultsWrapper.RowRecord> records = queryResultsWrapper.getRowRecords();
+        System.out.println("Query results:");
+        for (QueryResultsWrapper.RowRecord record:records) {
+            System.out.println(record);
+            Object extraMeta = record.get("extra_meta");
+            if (extraMeta != null) {
+                System.out.println("'extra_meta' is from dynamic field, value: " + extraMeta);
+            }
+        }
+
+        // search
+        List<List<Float>> targetVectors = generateFloatVectors(2);
+        int topK = 5;
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.L2)
+                .withTopK(topK)
+                .withVectors(targetVectors)
+                .withVectorFieldName(field2Name)
+                .withParams("{}")
+                .withOutFields(outputFields)
+                .build();
+
+        R<SearchResults> searchR = client.search(searchParam);
+        assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        for (int i = 0; i < targetVectors.size(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
+            System.out.println("The result of No." + i + " target vector:");
+            for (SearchResultsWrapper.IDScore score:scores) {
+                System.out.println(score);
+                Object extraMeta = score.get("extra_meta");
+                if (extraMeta != null) {
+                    System.out.println("'extra_meta' is from dynamic field, value: " + extraMeta);
+                }
+            }
+        }
+
+        // drop collection
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
     }
 }
