@@ -5,8 +5,6 @@ import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 
-import io.milvus.param.dml.InsertParam;
-import kotlin.text.UStringsKt;
 import lombok.Getter;
 import lombok.NonNull;
 

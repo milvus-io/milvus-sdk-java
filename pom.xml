@@ -25,7 +25,7 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>2.2.5</version>
+    <version>2.2.6</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
