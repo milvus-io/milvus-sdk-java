@@ -372,7 +372,7 @@ public class SearchParam {
                     throw new ParamException("Target vector is binary but metric type is incorrect");
                 }
             } else {
-                throw new ParamException("Target vector type must be Lst<Float> or ByteBuffer");
+                throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
             }
 
             return new SearchParam(this);

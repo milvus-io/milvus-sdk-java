@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.response.basic.RowRecordWrapper;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 /**
  * Utility class to wrap response of <code>search</code> interface.
  */
-public class SearchResultsWrapper {
+public class SearchResultsWrapper extends RowRecordWrapper {
     private final SearchResultData results;
 
     public SearchResultsWrapper(@NonNull SearchResultData results) {
@@ -38,6 +39,43 @@ public class SearchResultsWrapper {
         }
 
         throw new ParamException("The field name doesn't exist");
+    }
+
+    @Override
+    public List<QueryResultsWrapper.RowRecord> getRowRecords() {
+        List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
+        long topK = results.getTopK();
+        for (int i = 0; i < topK; ++i) {
+            QueryResultsWrapper.RowRecord rowRecord = buildRowRecord(i);
+            records.add(rowRecord);
+        }
+        return records;
+    }
+
+    /**
+     * Gets a row record from result.
+     *  Throws {@link ParamException} if the index is illegal.
+     *
+     * @return <code>RowRecord</code> a row record of the result
+     */
+    protected QueryResultsWrapper.RowRecord buildRowRecord(long index) {
+        QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
+
+        List<IDScore> idScore = getIDScore(0);
+        record.put("id", idScore.get((int) index).getLongID());
+        record.put("distance", idScore.get((int)index).getScore());
+
+        buildRowRecord(record, index);
+        return record;
+    }
+
+    @Override
+    protected List<FieldData> getFieldDataList() {
+        return results.getFieldsDataList();
+    }
+
+    protected List<String> getOutputFields() {
+        return results.getOutputFieldsList();
     }
 
     /**

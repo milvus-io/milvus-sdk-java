@@ -56,6 +56,21 @@ public class MutationResultWrapper {
     }
 
     /**
+     * Gets the ID array from returned by insert interface.
+     *
+     * @return List of Ids, ID array returned by insert interface
+     */
+    public List<?> getInsertIDs() {
+        if (result.getIDs().hasIntId()) {
+            return result.getIDs().getIntId().getDataList();
+        } else if (result.getIDs().hasStrId()) {
+            return result.getIDs().getStrId().getDataList();
+        } else {
+            throw new ParamException("No found insertIds, please check your requests");
+        }
+    }
+
+    /**
      * Gets the row count of the deleted entities. Currently, this value is always equal to input row count
      *
      * @return <code>int</code> row count of the deleted entities

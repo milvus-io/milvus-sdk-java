@@ -26,9 +26,14 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
+import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
+import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.dml.*;
+import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
@@ -634,4 +639,65 @@ public interface MilvusClient {
      * @return {status:result code, data:GetLoadStateResponse{status}}
      */
     R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam);
+
+
+
+    ///////////////////// High Level API//////////////////////
+    /**
+     * Creates a collection in Milvus.
+     *
+     * @param requestParam {@link CreateSimpleCollectionParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam);
+
+    /**
+     * Lists all collections
+     *
+     * @param requestParam {@link ListCollectionsParam}
+     * @return {status:result code, data: ListCollectionsResponse{collection_names}}
+     */
+    R<ListCollectionsResponse> listCollections(ListCollectionsParam requestParam);
+
+    /**
+     * Inserts rows data into a specified collection . Note that you don't need to
+     * input primary key field if auto_id is enabled.
+     *
+     * @param requestParam {@link InsertRowsParam}
+     * @return {status:result code, data: MutationResult{insert results}}
+     */
+    R<InsertResponse> insert(InsertRowsParam requestParam);
+
+    /**
+     * Deletes entity(s) based on the value of primary key.
+     *
+     * @param requestParam {@link DeleteIdsParam}
+     * @return {status:result code, data: MutationResult{delete results}}
+     */
+    R<DeleteResponse> delete(DeleteIdsParam requestParam);
+
+    /**
+     * Get entity(s) based on the value of primary key.
+     *
+     * @param requestParam {@link GetIdsParam}
+     * @return {status:result code, data: QueryResults{query results}}
+     */
+    R<GetResponse> get(GetIdsParam requestParam);
+
+    /**
+     * Queries entity(s) based on scalar field(s) filtered by boolean expression.
+     * Note that the order of the returned entities cannot be guaranteed.
+     *
+     * @param requestParam {@link QuerySimpleParam}
+     * @return {status:result code,data: QueryResults{filter results}}
+     */
+    R<QueryResponse> query(QuerySimpleParam requestParam);
+
+    /**
+     * Conducts ANN search on a vector field. Use expression to do filtering before search.
+     *
+     * @param requestParam {@link SearchSimpleParam}
+     * @return {status:result code, data: SearchResults{topK results}}
+     */
+    R<SearchResponse> search(SearchSimpleParam requestParam);
 }

@@ -1,10 +1,10 @@
 package io.milvus.response;
 
 import com.alibaba.fastjson.JSONObject;
-import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 
+import io.milvus.response.basic.RowRecordWrapper;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Utility class to wrap response of <code>query</code> interface.
  */
-public class QueryResultsWrapper {
+public class QueryResultsWrapper extends RowRecordWrapper {
     private final QueryResults results;
 
     public QueryResultsWrapper(@NonNull QueryResults results) {
@@ -39,26 +39,38 @@ public class QueryResultsWrapper {
     }
 
     /**
-     * Get the dynamic field. Only available when a collection's dynamic field is enabled.
-     * Throws {@link ParamException} if the dynamic field doesn't exist.
+     * Gets row records list from query result.
      *
-     * @return {@link FieldDataWrapper}
+     * @return <code>List<RowRecord></code> a row records list of the query result
      */
-    public FieldDataWrapper getDynamicWrapper() throws ParamException {
-        List<FieldData> fields = results.getFieldsDataList();
-        for (FieldData field : fields) {
-            if (field.getIsDynamic()) {
-                return new FieldDataWrapper(field);
-            }
+    @Override
+    public List<QueryResultsWrapper.RowRecord> getRowRecords() {
+        long rowCount = getRowCount();
+        List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
+        for (long i = 0; i < rowCount; i++) {
+            QueryResultsWrapper.RowRecord record = buildRowRecord(i);
+            records.add(record);
         }
 
-        throw new ParamException("The dynamic field doesn't exist");
+        return records;
     }
 
     /**
-     * Gets the row count of a query result.
+     * Gets a row record from result.
+     *  Throws {@link ParamException} if the index is illegal.
      *
-     * @return <code>long</code> row count of the query result
+     * @return <code>RowRecord</code> a row record of the result
+     */
+    protected QueryResultsWrapper.RowRecord buildRowRecord(long index) {
+        QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
+        buildRowRecord(record, index);
+        return record;
+    }
+
+    /**
+     * Gets the row count of the result.
+     *
+     * @return <code>long</code> row count of the result
      */
     public long getRowCount() {
         List<FieldData> fields = results.getFieldsDataList();
@@ -70,65 +82,13 @@ public class QueryResultsWrapper {
         return 0L;
     }
 
-    /**
-     * Gets a row record from query result.
-     *  Throws {@link ParamException} if the index is illegal.
-     *
-     * @return <code>RowRecord</code> a row record of the query result
-     */
-    public RowRecord getRowRecord(long index) throws ParamException {
-        List<String> outputFields = results.getOutputFieldsList();
-        List<FieldData> fields = results.getFieldsDataList();
-
-        RowRecord record = new RowRecord();
-        for (String outputKey : outputFields) {
-            boolean isField = false;
-            for (FieldData field : fields) {
-                if (outputKey.equals(field.getFieldName())) {
-                    FieldDataWrapper wrapper = new FieldDataWrapper(field);
-                    if (index < 0 || index >= wrapper.getRowCount()) {
-                        throw new ParamException("Index out of range");
-                    }
-                    Object value = wrapper.valueByIdx((int)index);
-                    if (wrapper.isJsonField()) {
-                        record.put(field.getFieldName(), JSONObject.parseObject(new String((byte[])value)));
-                    } else {
-                        record.put(field.getFieldName(), value);
-                    }
-                    isField = true;
-                    break;
-                }
-            }
-
-            // if the output field is not a field name, fetch it from dynamic field
-            if (!isField) {
-                FieldDataWrapper dynamicField = getDynamicWrapper();
-                if (dynamicField != null) {
-                    Object obj = dynamicField.get((int)index, outputKey);
-                    if (obj != null) {
-                        record.put(outputKey, obj);
-                    }
-                }
-            }
-        }
-
-        return record;
+    @Override
+    protected List<FieldData> getFieldDataList() {
+        return results.getFieldsDataList();
     }
 
-    /**
-     * Gets row records list from query result.
-     *
-     * @return <code>List<RowRecord></code> a row records list of the query result
-     */
-    public List<RowRecord> getRowRecords() {
-        long rowCount = getRowCount();
-        List<RowRecord> records = new ArrayList<>();
-        for (long i = 0; i < rowCount; i++) {
-            RowRecord record = getRowRecord(i);
-            records.add(record);
-        }
-
-        return records;
+    protected List<String> getOutputFields() {
+        return results.getOutputFieldsList();
     }
 
     /**
