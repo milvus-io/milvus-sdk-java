@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.2.6 (2023-06-05)
+
+### Improvement
+
+- Support JSON type field
+- Support dynamic field
+- Support partition key
+- Support database management: createDatabase/dropDatabase/listDatabases
+
 ## milvus-sdk-java 2.2.5 (2023-04-04)
 
 ### Improvement
