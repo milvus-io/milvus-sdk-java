@@ -1,5 +1,6 @@
 package com.zilliz.milvustest.insert;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -33,16 +34,25 @@ import java.util.Random;
 @Feature("Insert")
 public class InsertTest extends BaseTest {
   public String stringPKAndBinaryCollection;
+  public String collectionWithJsonField;
+  public String collectionWithDynamicField;
 
   @BeforeClass(description = "provider collection",alwaysRun = true)
   public void providerData() {
     stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
+    collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
+    collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
   }
 
   @AfterClass(description = "delete test data",alwaysRun = true)
   public void deleteData() {
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(stringPKAndBinaryCollection).build());
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
+    milvusClient.dropCollection(
+        DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
+
   }
 
   @Severity(SeverityLevel.BLOCKER)
@@ -411,4 +421,50 @@ public class InsertTest extends BaseTest {
     milvusClient.dropCollection(DropCollectionParam.newBuilder().withCollectionName(stringPKCollection).build());
   }
 
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert data into collection with JSON field",groups = {"Smoke"})
+  public void insertDataCollectionWithJsonField(){
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(100);
+    System.out.println(jsonObjects);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithJsonField)
+            .withRows(jsonObjects)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),100);
+  }
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert data into collection with Dynamic field",groups = {"Smoke"})
+  public void insertDataCollectionWithDynamicField(){
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithDynamicField)
+            .withRows(jsonObjects)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),100);
+  }
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Insert data into collection with Dynamic field use column data",expectedExceptions = ParamException.class)
+  public void insertDataCollectionWithDynamicFieldUseColumnData(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithDynamicFiledColumn(100);
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(100);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithDynamicField)
+            .withFields(fields)
+            .withRows(jsonObjects)
+            .build());
+
+  }
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Insert data into collection with Dynamic field",expectedExceptions = ParamException.class)
+  public void insertFieldsAndRowsData(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithDynamicFiledColumn(100);
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithDynamicField)
+            .withFields(fields)
+            .withRows(jsonObjects)
+            .build());
+  }
 }
