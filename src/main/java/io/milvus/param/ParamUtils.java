@@ -173,6 +173,19 @@ public class ParamUtils {
     }
 
     /**
+     * Checks if a string is  null.
+     * Throws {@link ParamException} if the string is null.
+     *
+     * @param target target string
+     * @param name a name to describe this string
+     */
+    public static void CheckNullString(String target, String name) throws ParamException {
+        if (target == null) {
+            throw new ParamException(name + " cannot be null");
+        }
+    }
+
+    /**
      * Checks if a metric is for float vector.
      *
      * @param metric metric type
