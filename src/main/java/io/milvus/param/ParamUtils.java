@@ -281,29 +281,22 @@ public class ParamUtils {
                 InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
                         .fieldName(fieldName).dataType(fieldType.getDataType()).data(new LinkedList<>()).build());
 
-                // check jsonField
-                if (fieldType.getDataType() == DataType.JSON) {
-                    JSONObject jsonField = parseJsonData(row, fieldType);
-                    insertDataInfo.getData().add(jsonField);
+                // check normalField
+                Object rowFieldData = row.get(fieldName);
+                if (rowFieldData != null) {
+                    if (fieldType.isAutoID()) {
+                        String msg = "The primary key: " + fieldName + " is auto generated, no need to input.";
+                        throw new ParamException(msg);
+                    }
+                    checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
+
+                    insertDataInfo.getData().add(rowFieldData);
                     nameInsertInfo.put(fieldName, insertDataInfo);
                 } else {
-                    // check normalField
-                    Object rowFieldData = row.get(fieldName);
-                    if (rowFieldData != null) {
-                        if (fieldType.isAutoID()) {
-                            String msg = "The primary key: " + fieldName + " is auto generated, no need to input.";
-                            throw new ParamException(msg);
-                        }
-                        checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
-
-                        insertDataInfo.getData().add(rowFieldData);
-                        nameInsertInfo.put(fieldName, insertDataInfo);
-                    } else {
-                        // check if autoId
-                        if (!fieldType.isAutoID()) {
-                            String msg = "The field: " + fieldType.getName() + " is not provided.";
-                            throw new ParamException(msg);
-                        }
+                    // check if autoId
+                    if (!fieldType.isAutoID()) {
+                        String msg = "The field: " + fieldType.getName() + " is not provided.";
+                        throw new ParamException(msg);
                     }
                 }
             }
@@ -312,20 +305,11 @@ public class ParamUtils {
             if (wrapper.getEnableDynamicField()) {
                 JSONObject dynamicField = new JSONObject();
                 for (String rowFieldName : row.keySet()) {
-                    Pair<String, String> outerJsonField = parseData(rowFieldName);
-                    if (!nameInsertInfo.containsKey(rowFieldName) && outerJsonField == null) {
+                    if (!nameInsertInfo.containsKey(rowFieldName)) {
                         dynamicField.put(rowFieldName, row.get(rowFieldName));
                     }
                 }
                 insertDynamicDataInfo.getData().add(dynamicField);
-            }
-
-            for (String rowFieldName : row.keySet()) {
-                Pair<String, String> outerJsonField = parseData(rowFieldName);
-                if (outerJsonField != null  && !nameInsertInfo.containsKey(outerJsonField.getKey())) {
-                    String msg = "The field: " + outerJsonField.getKey() + " not exists, no need to provided.";
-                    throw new ParamException(msg);
-                }
             }
         }
 
@@ -336,27 +320,6 @@ public class ParamUtils {
         if (wrapper.getEnableDynamicField()) {
             insertBuilder.addFieldsData(genFieldData(insertDynamicDataInfo.getFieldName(), insertDynamicDataInfo.getDataType(), insertDynamicDataInfo.getData(), Boolean.TRUE));
         }
-    }
-
-    private static JSONObject parseJsonData(JSONObject row, FieldType fieldType) {
-        JSONObject jsonField = new JSONObject();
-        for (String rowFieldName : row.keySet()) {
-            Pair<String, String> outerJsonField = parseData(rowFieldName);
-            if (outerJsonField != null && fieldType.getName().equals(outerJsonField.getKey())) {
-                jsonField.put(outerJsonField.getValue(), row.get(rowFieldName));
-            }
-        }
-        return jsonField;
-    }
-
-    public static Pair<String, String> parseData(String data) {
-        String pattern = "(\\w+)\\[\"(\\w+)\"\\]";
-        Pattern regex = Pattern.compile(pattern);
-        Matcher matcher = regex.matcher(data);
-        if (matcher.matches()) {
-            return Pair.of(matcher.group(1), matcher.group(2));
-        }
-        return null;
     }
 
     @SuppressWarnings("unchecked")

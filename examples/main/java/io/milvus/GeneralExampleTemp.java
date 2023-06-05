@@ -495,14 +495,12 @@ public class GeneralExample {
 //            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
 
             // $json
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put(INT32_FIELD_NAME, ran.nextInt());
-//            jsonObject.put(INT64_FIELD_NAME, ran.nextLong());
-//            jsonObject.put(VARCHAR_FIELD_NAME, "测试varchar");
-//            jsonObject.put(FLOAT_FIELD_NAME, ran.nextFloat());
-//            jsonObject.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-//            jsonObject.put(BOOL_FIELD_NAME, ran.nextBoolean());
-//            row.put(USER_JSON_FIELD, jsonObject);
+//            row.put(USER_JSON_FIELD + "[" + INT32_FIELD_NAME + "]", ran.nextInt());
+//            row.put(USER_JSON_FIELD + "[" + INT64_FIELD_NAME + "]", ran.nextLong());
+//            row.put(USER_JSON_FIELD + "[" + VARCHAR_FIELD_NAME + "]", "测试varchar");
+//            row.put(USER_JSON_FIELD + "[" + FLOAT_FIELD_NAME + "]", ran.nextFloat());
+//            row.put(USER_JSON_FIELD + "[" + DOUBLE_FIELD_NAME + "]", ran.nextDouble());
+//            row.put(USER_JSON_FIELD + "[" + BOOL_FIELD_NAME + "]", ran.nextBoolean());
 
             rowsData.add(row);
         }
