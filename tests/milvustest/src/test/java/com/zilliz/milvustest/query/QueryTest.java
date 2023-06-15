@@ -1,5 +1,6 @@
 package com.zilliz.milvustest.query;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -20,6 +21,7 @@ import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
+import io.milvus.response.FieldDataWrapper;
 import io.milvus.response.QueryResultsWrapper;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
@@ -41,6 +43,8 @@ import static com.zilliz.milvustest.util.MathUtil.combine;
 @Feature("Query")
 public class QueryTest extends BaseTest {
   public String newBookName;
+  public String collectionWithJsonField;
+  public String collectionWithDynamicField;
 
   @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
@@ -58,6 +62,8 @@ public class QueryTest extends BaseTest {
         LoadCollectionParam.newBuilder()
             .withCollectionName(CommonData.defaultStringPKBinaryCollection)
             .build());
+    collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
+    collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
   }
 
   @DataProvider(name = "providerPartition")
@@ -83,6 +89,10 @@ public class QueryTest extends BaseTest {
         ReleaseCollectionParam.newBuilder()
             .withCollectionName(CommonData.defaultStringPKBinaryCollection)
             .build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
   }
 
   @DataProvider(name = "providerConsistency")
@@ -137,6 +147,25 @@ public class QueryTest extends BaseTest {
   @DataProvider(name = "BinaryIndex")
   public Object[][] providerIndexForBinaryCollection() {
     return combine(provideBinaryIndexType(), providerBinaryMetricType());
+  }
+  @DataProvider(name="dynamicExpressions")
+  public Object[][] provideDynamicExpression(){
+    return  new Object[][]{
+            {"json_field[\"int32\"] in [2,4,6,8]"},
+            {"book_id in [10,20,30,40]"},
+            {"extra_field2 in [1,2,3,4]"},
+            {"\"String0\"<=extra_field<=\"String3\""}
+    };
+  }
+  @DataProvider(name="jsonExpressions")
+  public Object[][] provideJsonExpression(){
+    return  new Object[][]{
+            {"int64_field in [10,20,30,40]"},
+            {"json_field[\"int64_field\"] in [10,20,30,40]"},
+            {"json_field[\"inner_json\"][\"int32\"] in [1,2,3,4]"},
+            {"\"Str0\"<=json_field[\"inner_json\"][\"varchar\"]<=\"Str3\""},
+            {"json_field[\"inner_json\"][\"int64\"] in [10,20,30,40]"}
+    };
   }
 
   @DataProvider(name = "provideIntExpressions")
@@ -989,4 +1018,115 @@ public class QueryTest extends BaseTest {
     Assert.assertTrue(queryResultsR.getException().getMessage().contains("cannot parse expression"));
 
   }
+
+  @Test(description = "query collection with dynamic field",groups = {"Smoke"},dataProvider = "dynamicExpressions")
+  @Severity(SeverityLevel.BLOCKER)
+  public void queryCollectionWithDynamicField(String expr) {
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithDynamicField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
+    //query
+
+    List<String> outFields = Arrays.asList("extra_field");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithDynamicField)
+                    .withOutFields(outFields)
+                    .withExpr(expr)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+     Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+     Assert.assertTrue(wrapperQuery.getFieldWrapper("$meta").getFieldData().size()>=4);
+    FieldDataWrapper fieldDataWrapper=new FieldDataWrapper(queryResultsR.getData().getFieldsData(0));
+    String extra_field = fieldDataWrapper.getAsString(0, "extra_field");
+    Assert.assertTrue(extra_field.contains("String"));
+  }
+
+  @Test(description = "query collection with dynamic field use inner json field",groups = {"Smoke"},dataProvider = "dynamicExpressions")
+  @Severity(SeverityLevel.BLOCKER)
+  public void queryWithDynamicFieldUseInnerJsonField(String expr) {
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithDynamicField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
+    //query
+    List<String> outFields = Arrays.asList("json_field",CommonData.defaultVectorField);
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithDynamicField)
+                    .withOutFields(outFields)
+                    .withExpr(expr)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper("$meta").getFieldData().size()>=4);
+  }
+
+  @Test(description = "query collection with dynamic field use nonexistent field name")
+  @Severity(SeverityLevel.NORMAL)
+  public void queryWithDynamicFieldUseNonexistentFiledName() {
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithDynamicField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
+    //query
+    String SEARCH_PARAM = "book_id in [2,4,6,8]";
+    List<String> outFields = Arrays.asList("extra_field_nonexistent");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithDynamicField)
+                    .withOutFields(outFields)
+                    .withExpr(SEARCH_PARAM)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertEquals(wrapperQuery.getFieldWrapper("$meta").getFieldData().size(),4);
+    FieldDataWrapper fieldDataWrapper=new FieldDataWrapper(queryResultsR.getData().getFieldsData(0));
+    String extra_field = fieldDataWrapper.getAsString(0, "extra_field");
+    Assert.assertTrue(extra_field.contains("String"));
+  }
+
+  @Test(description = "query collection with json field",groups = {"Smoke"},dataProvider = "jsonExpressions")
+  @Severity(SeverityLevel.BLOCKER)
+  public void queryCollectionWithJsonField(String expr) {
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithJsonField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithJsonField,IndexType.HNSW,MetricType.L2,"float_vector");
+    //query
+    List<String> outFields = Arrays.asList("json_field");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithJsonField)
+                    .withOutFields(outFields)
+                    .withExpr(expr)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper("json_field").getFieldData().size()>=4);
+    JSONObject jsonObject = (JSONObject) wrapperQuery.getRowRecord(0).get("json_field");
+    String string_field = jsonObject.getString("string_field");
+    Assert.assertTrue(string_field.contains("Str"));
+
+  }
+
+
+
 }

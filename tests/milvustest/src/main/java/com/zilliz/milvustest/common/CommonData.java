@@ -14,6 +14,7 @@ public class CommonData {
   public static String defaultBinaryAlias = "BinaryAliasAutoTest";
   public static String defaultStringPKBinaryAlias = "StringPKBinaryAliasAutoTest";
   public static String defaultVectorField = "book_intro";
+  public static String defaultPartitionField="book_name";
   public static String defaultBinaryVectorField = "BinaryVectorFieldAutoTest";
   public static String defaultIndex = "FloatVectorIndex";
 
