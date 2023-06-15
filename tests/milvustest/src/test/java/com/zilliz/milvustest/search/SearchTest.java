@@ -1,12 +1,12 @@
 package com.zilliz.milvustest.search;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.SearchResults;
 import io.milvus.param.IndexType;
@@ -20,10 +20,9 @@ import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.CreateIndexParam;
+import io.milvus.response.FieldDataWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import io.qameta.allure.*;
-import lombok.Data;
-import org.checkerframework.checker.units.qual.A;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -43,6 +42,8 @@ import static com.zilliz.milvustest.util.MathUtil.combine;
 public class SearchTest extends BaseTest {
   public String newBookName;
   public String newBookNameBin;
+  public String collectionWithJsonField;
+  public String collectionWithDynamicField;
 
   @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
@@ -60,8 +61,29 @@ public class SearchTest extends BaseTest {
         LoadCollectionParam.newBuilder()
             .withCollectionName(CommonData.defaultStringPKBinaryCollection)
             .build());
+    collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
+    collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
   }
 
+  @DataProvider(name="dynamicExpressions")
+  public Object[][] provideDynamicExpression(){
+    return  new Object[][]{
+            {"json_field[\"int32\"] in [2,4,6,8]"},
+            {"book_id in [10,20,30,40]"},
+            {"extra_field2 in [1,2,3,4]"},
+            {"\"String0\"<=extra_field<=\"String3\""}
+    };
+  }
+  @DataProvider(name="jsonExpressions")
+  public Object[][] provideJsonExpression(){
+    return  new Object[][]{
+            {"int64_field in [10,20,30,40]"},
+            {"json_field[\"int64_field\"] in [10,20,30,40]"},
+            {"json_field[\"inner_json\"][\"int32\"] in [1,2,3,4]"},
+            {"\"Str0\"<=json_field[\"inner_json\"][\"varchar\"]<=\"Str3\""},
+            {"json_field[\"inner_json\"][\"int64\"] in [10,20,30,40]"}
+    };
+  }
   @AfterClass(description = "release collection after test",alwaysRun = true)
   public void releaseCollection() {
     milvusClient.releaseCollection(
@@ -80,6 +102,11 @@ public class SearchTest extends BaseTest {
         ReleaseCollectionParam.newBuilder()
             .withCollectionName(CommonData.defaultStringPKBinaryCollection)
             .build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
+
   }
 
   @DataProvider(name = "providerPartition")
@@ -1729,5 +1756,121 @@ public class SearchTest extends BaseTest {
     Assert.assertEquals(searchResultsR.getData().getResults().getIds().getIntId().getData(0),data1);
     Assert.assertEquals(searchResultsR.getData().getResults().getIds().getIntId().getData(1),data2);
     logger.info(searchResultsR.getData().getResults().toString());
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Search with DynamicField.", groups = {"Smoke"},dataProvider = "dynamicExpressions")
+  public void searchWithDynamicField(String expr){
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithDynamicField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
+    // search
+    Integer SEARCH_K = 10; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("extra_field");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(collectionWithDynamicField)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withExpr(expr)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertTrue(searchResultsWrapper.getFieldData("$meta", 0).size()>=4);
+    logger.info(searchResultsR.getData().getResults().toString());
+    System.out.println(searchResultsWrapper.getFieldData("$meta", 0).size());
+  }
+
+  @Severity(SeverityLevel.NORMAL)
+  @Test(description = "Search with DynamicField use nonexistent field name")
+  public void searchWithDynamicFieldUseNonexistentFiledName(){
+    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithDynamicField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
+    // search
+    Integer SEARCH_K = 10; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("extra_field_nonexistent");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(collectionWithDynamicField)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withExpr(" extra_field2 > 100 ")
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertEquals(searchResultsWrapper.getFieldData("$meta", 0).size(), 10);
+    logger.info(searchResultsR.getData().getResults().toString());
+
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Search with JSON field.", groups = {"Smoke"},dataProvider = "jsonExpressions")
+  public void searchWithJsonField(String expr) {
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithJsonField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithLoad(collectionWithJsonField, IndexType.HNSW, MetricType.L2, "float_vector");
+    // search
+    Integer SEARCH_K = 10; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("json_field");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(collectionWithJsonField)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName("float_vector")
+                    .withParams(SEARCH_PARAM)
+                    .withExpr(expr)
+                    .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertTrue(searchResultsWrapper.getFieldData("json_field", 0).size()>=4);
+    // 按照列获取数据
+    FieldDataWrapper json_field = searchResultsWrapper.getFieldWrapper("json_field");
+    String string_field = json_field.getAsString(0, "string_field");
+    Assert.assertTrue(string_field.contains("Str"));
+    // 按照行
+    JSONObject jsonObject= (JSONObject) searchResultsWrapper.getIDScore(0).get(0).get("json_field");
+    String string = jsonObject.getString("string_field");
+    Assert.assertTrue(string.contains("Str"));
+
+
   }
 }
