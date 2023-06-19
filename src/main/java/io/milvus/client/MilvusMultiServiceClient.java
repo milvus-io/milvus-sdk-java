@@ -31,9 +31,14 @@ import io.milvus.param.ServerAddress;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
+import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
+import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.dml.*;
+import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
@@ -532,6 +537,53 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getLoadState(requestParam);
+    }
+
+    ///////////////////// High Level API//////////////////////
+
+
+    @Override
+    public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().createCollection(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<ListCollectionsResponse> listCollections(ListCollectionsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listCollections(requestParam);
+    }
+
+    @Override
+    public R<InsertResponse> insert(InsertRowsParam requestParam) {
+        List<R<InsertResponse>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().insert(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<DeleteResponse> delete(DeleteIdsParam requestParam) {
+        List<R<DeleteResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().delete(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<GetResponse> get(GetIdsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().get(requestParam);
+    }
+
+    @Override
+    public R<QueryResponse> query(QuerySimpleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().query(requestParam);
+    }
+
+    @Override
+    public R<SearchResponse> search(SearchSimpleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().search(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {

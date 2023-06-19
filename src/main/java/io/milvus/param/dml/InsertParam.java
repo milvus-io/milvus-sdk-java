@@ -106,9 +106,9 @@ public class InsertParam {
         }
 
         /**
-         * Sets the data to insert. The field list cannot be empty.
+         * Sets the column data to insert. The field list cannot be empty.
          *
-         * @param fields insert data
+         * @param fields insert column data
          * @return <code>Builder</code>
          * @see InsertParam.Field
          */
@@ -117,6 +117,13 @@ public class InsertParam {
             return this;
         }
 
+        /**
+         * Sets the row data to insert. The rows list cannot be empty.
+         *
+         * @param rows insert row data
+         * @return <code>Builder</code>
+         * @see JSONObject
+         */
         public Builder withRows(@NonNull List<JSONObject> rows) {
             this.rows = rows;
             return this;

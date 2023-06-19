@@ -24,6 +24,8 @@ import io.grpc.stub.MetadataUtils;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
