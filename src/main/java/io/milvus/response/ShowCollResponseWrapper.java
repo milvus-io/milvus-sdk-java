@@ -19,6 +19,10 @@ public class ShowCollResponseWrapper {
         this.response = response;
     }
 
+    public List<String> getCollectionNames() {
+        return response.getCollectionNamesList();
+    }
+
     /**
      * Get information of the collections.
      *
