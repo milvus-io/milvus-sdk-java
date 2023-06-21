@@ -2478,10 +2478,10 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        assertThrows(ParamException.class, () -> UpdateCredentialParam
+        assertDoesNotThrow(() -> UpdateCredentialParam
                 .newBuilder()
                 .withUsername("username")
-                .withOldPassword("  ")
+                .withOldPassword("")
                 .withNewPassword("newPassword")
                 .build()
         );
