@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.2.7 (2023-06-21)
+
+### Improvement
+
+- Provide easy to used high-level interfaces
+- Add more examples
+
 ## milvus-sdk-java 2.2.6 (2023-06-05)
 
 ### Improvement
