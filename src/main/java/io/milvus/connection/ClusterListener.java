@@ -34,8 +34,7 @@ public class ClusterListener implements Listener {
                 serverSetting.getServerAddress().getHealthPort());
 
         boolean isRunning = false;
-        try {
-            Response response = get(url);
+        try (Response response = get(url)) {
             isRunning = checkResponse(response);
             if (isRunning) {
                 logger.debug("Host [{}] heartbeat Success of Milvus Cluster Listener.",
