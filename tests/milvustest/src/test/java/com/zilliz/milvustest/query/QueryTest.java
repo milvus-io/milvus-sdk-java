@@ -1121,7 +1121,7 @@ public class QueryTest extends BaseTest {
     QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
     Assert.assertTrue(wrapperQuery.getFieldWrapper("json_field").getFieldData().size()>=4);
-    JSONObject jsonObject = (JSONObject) wrapperQuery.getRowRecord(0).get("json_field");
+    JSONObject jsonObject = (JSONObject) wrapperQuery.getRowRecords().get(0).get("json_field");
     String string_field = jsonObject.getString("string_field");
     Assert.assertTrue(string_field.contains("Str"));
 
