@@ -50,8 +50,8 @@ public class HighLevelExample {
 
     static {
         ConnectParam connectParam = ConnectParam.newBuilder()
-                .withUri("https://in01-a00c28dbbf13e49.aws-us-west-2.vectordb-uat3.zillizcloud.com:19535")
-                .withAuthorization("db_admin","Easou!234")
+                .withUri("https://in01-cdac4a1608b0931.aws-us-west-2.vectordb-uat3.zillizcloud.com:19540")
+                .withAuthorization("root","Milvus")
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
@@ -222,6 +222,7 @@ public class HighLevelExample {
         QuerySimpleParam querySimpleParam = QuerySimpleParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFilter(filter)
+                .withOutputFields(Lists.newArrayList("int32", "int64"))
                 .withLimit(100L)
                 .withOffset(0L)
                 .build();

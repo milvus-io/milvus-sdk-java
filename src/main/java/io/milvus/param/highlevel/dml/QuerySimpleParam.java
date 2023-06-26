@@ -61,8 +61,8 @@ public class QuerySimpleParam {
         private String collectionName;
         private final List<String> outputFields = new ArrayList<>();
         private String filter = "";
-        private Long offset;
-        private Long limit;
+        private Long offset = 0L;
+        private Long limit = 0L;
 
         private Builder() {
         }
@@ -84,8 +84,20 @@ public class QuerySimpleParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withOutFields(@NonNull List<String> outFields) {
             this.outputFields.addAll(outFields);
+            return this;
+        }
+
+        /**
+         * Specifies output fields (Optional).
+         *
+         * @param outputFields output fields
+         * @return <code>Builder</code>
+         */
+        public Builder withOutputFields(@NonNull List<String> outputFields) {
+            this.outputFields.addAll(outputFields);
             return this;
         }
 
