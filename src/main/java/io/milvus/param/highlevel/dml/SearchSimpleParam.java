@@ -70,8 +70,8 @@ public class SearchSimpleParam {
         private List<?> vectors;
         private final List<String> outputFields = Lists.newArrayList();
         private String filter = "";
-        private Long offset;
-        private int limit;
+        private Long offset = 0L;
+        private int limit = 10;
 
         private final Map<String, Object> params = new HashMap<>();
 
@@ -139,13 +139,27 @@ public class SearchSimpleParam {
 
         /**
          * Specify a value to control the returned number of entities. Must be a positive value.
-         * Default value is 0, will return without limit.
+         * Default value is 10, will return without limit.
          *
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withLimit(int limit) {
             this.limit = limit;
+            return this;
+        }
+
+        /**
+         * Specify a value to control the returned number of entities. Must be a positive value.
+         * Default value is 10, will return without limit.
+         * To maintain consistency with the parameter type of the query interface, the field is declared as Long. In reality, the field is of type int.
+         *
+         * @param limit a value to define the limit of returned entities
+         * @return <code>Builder</code>
+         */
+        public Builder withLimit(@NonNull Long limit) {
+            this.limit = Math.toIntExact(limit);
             return this;
         }
 
