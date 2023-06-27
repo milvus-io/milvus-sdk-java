@@ -25,6 +25,7 @@ package io.milvus.param;
  */
 public enum IndexType {
     INVALID,
+    //Only supported for float vectors
     FLAT,
     IVF_FLAT,
     IVF_SQ8,
@@ -42,5 +43,7 @@ public enum IndexType {
 
     //Only for varchar type field
     TRIE,
+    //Only for scalar type field
+    SORT,
     ;
 }

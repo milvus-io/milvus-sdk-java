@@ -43,6 +43,7 @@ public class CreateIndexParam {
     private final String collectionName;
     private final String fieldName;
     private final String indexName;
+    private final IndexType indexType; // for easily get to check with field type
     private final Map<String, String> extraParam = new HashMap<>();
     private final boolean syncMode;
     private final long syncWaitingInterval;
@@ -53,6 +54,7 @@ public class CreateIndexParam {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
+        this.indexType = builder.indexType;
         if (builder.indexType != IndexType.INVALID) {
             this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
         }
