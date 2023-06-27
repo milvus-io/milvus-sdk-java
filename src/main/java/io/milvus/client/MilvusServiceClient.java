@@ -24,6 +24,7 @@ import io.grpc.stub.MetadataUtils;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
+import io.milvus.param.LogLevel;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import lombok.NonNull;
@@ -63,6 +64,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);
+    }
+
+    // set log level in runtime
+    public void setLogLevel(LogLevel level) {
+        logLevel = level;
     }
 
     @Override
