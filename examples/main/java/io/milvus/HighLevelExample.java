@@ -50,7 +50,8 @@ public class HighLevelExample {
 
     static {
         ConnectParam connectParam = ConnectParam.newBuilder()
-                .withUri("https://in01-cdac4a1608b0931.aws-us-west-2.vectordb-uat3.zillizcloud.com:19540")
+                .withHost("localhost")
+                .withPort(19530)
                 .withAuthorization("root","Milvus")
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
