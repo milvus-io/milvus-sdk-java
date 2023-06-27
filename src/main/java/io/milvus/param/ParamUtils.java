@@ -15,6 +15,7 @@ import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -204,12 +205,30 @@ public class ParamUtils {
     }
 
     /**
-     * Checks if an index type is for vector.
+     * Checks if an index type is for vector field.
      *
      * @param idx index type
      */
     public static boolean IsVectorIndex(IndexType idx) {
-        return idx != IndexType.INVALID && idx != IndexType.TRIE;
+        return idx != IndexType.INVALID && idx != IndexType.TRIE && idx != IndexType.SORT;
+    }
+
+    /**
+     * Checks if an index type is matched with data type.
+     *
+     * @param indexType index type
+     * @param dataType data type
+     */
+    public static boolean VerifyIndexType(IndexType indexType, DataType dataType) {
+        if (dataType == DataType.FloatVector) {
+            return (IsVectorIndex(indexType) && (indexType != IndexType.BIN_FLAT) && (indexType != IndexType.BIN_IVF_FLAT));
+        } else if (dataType == DataType.BinaryVector) {
+            return indexType == IndexType.BIN_FLAT || indexType == IndexType.BIN_IVF_FLAT;
+        } else if (dataType == DataType.VarChar) {
+            return indexType == IndexType.TRIE;
+        } else {
+            return indexType == IndexType.SORT;
+        }
     }
 
     public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,

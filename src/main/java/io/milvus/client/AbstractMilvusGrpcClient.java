@@ -1261,6 +1261,45 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         try {
+            // get collection schema to check input
+            DescribeCollectionParam.Builder descBuilder = DescribeCollectionParam.newBuilder()
+                    .withDatabaseName(requestParam.getDatabaseName())
+                    .withCollectionName(requestParam.getCollectionName());
+            R<DescribeCollectionResponse> descResp = describeCollection(descBuilder.build());
+
+            if (descResp.getStatus() != R.Status.Success.getCode()) {
+                logError("Failed to describe collection: {}", requestParam.getCollectionName());
+                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+            }
+
+            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+            List<FieldType> fields = wrapper.getFields();
+            // check field existence and index_type/field_type must be matched
+            boolean fieldExists = false;
+            boolean validType = false;
+            for (FieldType field : fields) {
+                if (requestParam.getFieldName().equals(field.getName())) {
+                    fieldExists = true;
+                    if (ParamUtils.VerifyIndexType(requestParam.getIndexType(), field.getDataType())) {
+                        validType = true;
+                    }
+                    break;
+                }
+            }
+
+            if (!fieldExists) {
+                String msg = String.format("Field '%s' doesn't exist in the collection", requestParam.getFieldName());
+                logError("CreateIndexRequest failed! {}\n", msg);
+                return R.failed(R.Status.IllegalArgument, msg);
+            }
+            if (!validType) {
+                String msg = String.format("Index type '%s' doesn't match with data type of field '%s'",
+                        requestParam.getIndexType().name(), requestParam.getFieldName());
+                logError("CreateIndexRequest failed! {}\n", msg);
+                return R.failed(R.Status.IllegalArgument, msg);
+            }
+
+            // prepare index parameters
             CreateIndexRequest.Builder createIndexRequestBuilder = CreateIndexRequest.newBuilder();
             List<KeyValuePair> extraParamList = ParamUtils.AssembleKvPair(requestParam.getExtraParam());
             if (CollectionUtils.isNotEmpty(extraParamList)) {

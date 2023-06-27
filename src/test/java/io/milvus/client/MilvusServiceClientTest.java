@@ -1325,10 +1325,50 @@ class MilvusServiceClientTest {
         MockMilvusServer server = startServer();
         MilvusServiceClient client = startClient();
 
+        // createIndex() calls describeCollection() to check input
+        CollectionSchema schema = CollectionSchema.newBuilder()
+                .addFields(FieldSchema.newBuilder()
+                        .setName("field1")
+                        .setDataType(DataType.FloatVector)
+                        .addTypeParams(KeyValuePair.newBuilder().setKey(Constant.VECTOR_DIM).setValue("256").build())
+                        .build())
+                .build();
+        mockServerImpl.setDescribeCollectionResponse(DescribeCollectionResponse.newBuilder().setSchema(schema).build());
+
         // test return ok for sync mode loading
         mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
                 .addIndexDescriptions(IndexDescription.newBuilder().setState(IndexState.InProgress).build())
                 .build());
+
+        // field doesn't exist
+        CreateIndexParam param = CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("aaa")
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("dummy")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(2L)
+                .build();
+
+        R<RpcStatus> resp = client.createIndex(param);
+        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+        // index type doesn't match with data type
+        param = CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("field1")
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("dummy")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(2L)
+                .build();
+
+        resp = client.createIndex(param);
+        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
 
         new Thread(() -> {
             try {
@@ -1343,7 +1383,7 @@ class MilvusServiceClientTest {
             }
         }, "RefreshIndexState").start();
 
-        CreateIndexParam param = CreateIndexParam.newBuilder()
+        param = CreateIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
@@ -1355,7 +1395,7 @@ class MilvusServiceClientTest {
                 .build();
 
         // test return ok with correct input
-        R<RpcStatus> resp = client.createIndex(param);
+        resp = client.createIndex(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
         // stop mock server
