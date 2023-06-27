@@ -74,6 +74,8 @@ public class CreateSimpleCollectionParam {
         private boolean autoId = Boolean.FALSE;
         private boolean syncLoad = Boolean.TRUE;
 
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
+
         private Builder() {
         }
 
@@ -164,6 +166,18 @@ public class CreateSimpleCollectionParam {
         }
 
         /**
+         * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
+         * @see ConsistencyLevelEnum
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(@NonNull ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link CreateSimpleCollectionParam} instance.
          *
          * @return {@link CreateSimpleCollectionParam}
@@ -189,7 +203,7 @@ public class CreateSimpleCollectionParam {
                     .withShardsNum(Constant.SHARD_NUMBER_DEFAULT)
                     .withDescription(description)
                     .withFieldTypes(fieldTypes)
-                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withConsistencyLevel(consistencyLevel)
                     .withEnableDynamicField(Boolean.TRUE)
                     .build();
 

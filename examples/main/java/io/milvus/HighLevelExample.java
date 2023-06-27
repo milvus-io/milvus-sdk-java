@@ -22,6 +22,7 @@ package io.milvus;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.grpc.*;
@@ -208,6 +209,7 @@ public class HighLevelExample {
                 .withLimit(100L)
                 .withOffset(0L)
                 .withOutputFields(Lists.newArrayList("int32", "int64"))
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
         R<SearchResponse> response = milvusClient.search(searchSimpleParam);
@@ -228,6 +230,7 @@ public class HighLevelExample {
                 .withOutputFields(Lists.newArrayList("int32", "int64"))
                 .withLimit(100L)
                 .withOffset(0L)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
         R<QueryResponse> response = milvusClient.query(querySimpleParam);
