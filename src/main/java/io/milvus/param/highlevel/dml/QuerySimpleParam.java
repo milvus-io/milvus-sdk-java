@@ -19,6 +19,7 @@
 
 package io.milvus.param.highlevel.dml;
 
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.dml.QueryParam;
@@ -41,6 +42,7 @@ public class QuerySimpleParam {
     private final String filter;
     private final Long offset;
     private final Long limit;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private QuerySimpleParam(@NotNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -48,6 +50,7 @@ public class QuerySimpleParam {
         this.filter = builder.filter;
         this.offset = builder.offset;
         this.limit = builder.limit;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -63,6 +66,7 @@ public class QuerySimpleParam {
         private String filter = "";
         private Long offset = 0L;
         private Long limit = 0L;
+        private ConsistencyLevelEnum consistencyLevel = null;
 
         private Builder() {
         }
@@ -134,6 +138,17 @@ public class QuerySimpleParam {
          */
         public Builder withLimit(@NonNull Long limit) {
             this.limit = limit;
+            return this;
+        }
+
+        /**
+         * ConsistencyLevel of consistency level.
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 

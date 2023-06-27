@@ -20,9 +20,11 @@
 package io.milvus.param.highlevel.dml;
 
 import com.google.common.collect.Lists;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
+import io.milvus.param.dml.SearchParam;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -47,6 +49,7 @@ public class SearchSimpleParam {
     private final int limit;
 
     private final Map<String, Object> params;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private SearchSimpleParam(@NotNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -56,6 +59,7 @@ public class SearchSimpleParam {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.params = builder.params;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -72,6 +76,7 @@ public class SearchSimpleParam {
         private String filter = "";
         private Long offset = 0L;
         private int limit = 10;
+        private ConsistencyLevelEnum consistencyLevel = null;
 
         private final Map<String, Object> params = new HashMap<>();
 
@@ -160,6 +165,17 @@ public class SearchSimpleParam {
          */
         public Builder withLimit(@NonNull Long limit) {
             this.limit = Math.toIntExact(limit);
+            return this;
+        }
+
+        /**
+         * ConsistencyLevel of consistency level.
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 

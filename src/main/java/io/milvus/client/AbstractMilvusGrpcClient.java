@@ -2918,7 +2918,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withCollectionName(requestParam.getCollectionName())
                     .withExpr(expr)
                     .withOutFields(requestParam.getOutputFields())
-                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
             R<QueryResults> queryResp = query(queryParam);
             QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryResp.getData());
@@ -2962,7 +2962,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withOutFields(requestParam.getOutputFields())
                     .withOffset(requestParam.getOffset())
                     .withLimit(requestParam.getLimit())
-                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
             R<QueryResults> response = query(queryParam);
             if(!Objects.equals(response.getStatus(), R.success().getStatus())){
@@ -3017,7 +3017,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withExpr(requestParam.getFilter())
                     .withTopK(requestParam.getLimit())
                     .withParams(JacksonUtils.toJsonString(requestParam.getParams()))
-                    .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                    .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
 
             // search

@@ -19,7 +19,7 @@
 
 package io.milvus.param.highlevel.dml;
 
-import com.google.common.collect.Lists;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
@@ -39,11 +39,13 @@ public class GetIdsParam {
     private final String collectionName;
     private final List<?> primaryIds;
     private final List<String> outputFields;
+    private final ConsistencyLevelEnum consistencyLevel;
 
     private GetIdsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.primaryIds = builder.primaryIds;
         this.outputFields = builder.outputFields;
+        this.consistencyLevel = builder.consistencyLevel;
     }
 
     public static Builder newBuilder() {
@@ -55,8 +57,10 @@ public class GetIdsParam {
      */
     public static class Builder<T> {
         private String collectionName;
-        private List<T> primaryIds = new ArrayList<>();
-        private final List<String> outputFields = Lists.newArrayList();
+        private final List<T> primaryIds = new ArrayList<>();
+        private final List<String> outputFields = new ArrayList<>();
+
+        private ConsistencyLevelEnum consistencyLevel = null;
 
         private Builder() {
         }
@@ -102,6 +106,17 @@ public class GetIdsParam {
          */
         public Builder addPrimaryId(@NonNull T primaryId) {
             this.primaryIds.add(primaryId);
+            return this;
+        }
+
+        /**
+         * ConsistencyLevel of consistency level.
+         *
+         * @param consistencyLevel consistency level
+         * @return <code>Builder</code>
+         */
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
             return this;
         }
 
