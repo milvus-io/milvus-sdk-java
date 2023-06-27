@@ -31,10 +31,7 @@ import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
 import io.milvus.grpc.*;
 import io.milvus.grpc.ObjectEntity;
-import io.milvus.param.Constant;
-import io.milvus.param.ParamUtils;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
+import io.milvus.param.*;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
@@ -64,7 +61,8 @@ import java.util.function.Function;
 
 public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
+    protected LogLevel logLevel = LogLevel.Info;
 
     protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
 
@@ -3044,18 +3042,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     ///////////////////// Log Functions//////////////////////
     private void logDebug(String msg, Object... params) {
-        logger.debug(msg, params);
+        if (logLevel.ordinal() <= LogLevel.Debug.ordinal()) {
+            logger.debug(msg, params);
+        }
     }
 
     private void logInfo(String msg, Object... params) {
-        logger.info(msg, params);
+        if (logLevel.ordinal() <= LogLevel.Info.ordinal()) {
+            logger.info(msg, params);
+        }
     }
 
     private void logWarning(String msg, Object... params) {
-        logger.warn(msg, params);
+        if (logLevel.ordinal() <= LogLevel.Warning.ordinal()) {
+            logger.warn(msg, params);
+        }
     }
 
     private void logError(String msg, Object... params) {
-        logger.error(msg, params);
+        if (logLevel.ordinal() <= LogLevel.Error.ordinal()) {
+            logger.error(msg, params);
+        }
     }
 }

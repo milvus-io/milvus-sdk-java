@@ -205,7 +205,7 @@ public class HighLevelExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withVectors(generateFloatVector())
                 .withFilter(filter)
-                .withLimit(100)
+                .withLimit(100L)
                 .withOffset(0L)
                 .withOutputFields(Lists.newArrayList("int32", "int64"))
                 .build();
@@ -219,6 +219,8 @@ public class HighLevelExample {
     }
 
     private R<QueryResponse> querySimple(String filter) {
+        milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
+
         System.out.println("========== high level query ==========");
         QuerySimpleParam querySimpleParam = QuerySimpleParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)

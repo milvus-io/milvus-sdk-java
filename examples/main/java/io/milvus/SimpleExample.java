@@ -43,6 +43,9 @@ public class SimpleExample {
                 .withPort(19530)
                 .build());
 
+        // set log level, only show errors
+        milvusClient.setLogLevel(LogLevel.Error);
+
         // Define fields
         List<FieldType> fieldsSchema = Arrays.asList(
                 FieldType.newBuilder()
@@ -80,13 +83,25 @@ public class SimpleExample {
                 .withMetricType(MetricType.L2)
                 .build());
         if (ret.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException("Failed to create index! Error: " + ret.getMessage());
+            throw new RuntimeException("Failed to create index on vector field! Error: " + ret.getMessage());
+        }
+
+        // Specify an index type on the varchar field.
+        ret = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withFieldName(TITLE_FIELD)
+                .withIndexType(IndexType.TRIE)
+                .build());
+        if (ret.getStatus() != R.Status.Success.getCode()) {
+            throw new RuntimeException("Failed to create index on varchar field! Error: " + ret.getMessage());
         }
 
         // Call loadCollection() to enable automatically loading data into memory for searching
         milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
+
+        System.out.println("Collection created");
 
         // Insert 10 records into the collection
         List<JSONObject> rows = new ArrayList<>();
@@ -113,6 +128,8 @@ public class SimpleExample {
         milvusClient.flush(FlushParam.newBuilder()
                 .addCollectionName(COLLECTION_NAME)
                 .build());
+
+        System.out.println("10 entities inserted");
 
         // Construct a vector to search top5 similar records, return the book title for us.
         // This vector is equal to the No.3 record, we suppose the No.3 record is the most similar.
