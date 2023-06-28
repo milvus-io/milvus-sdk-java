@@ -31,6 +31,7 @@ import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.index.CreateIndexParam;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -75,6 +76,10 @@ public class CreateSimpleCollectionParam {
         private boolean syncLoad = Boolean.TRUE;
 
         private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
+
+        private DataType primaryFieldType = DataType.Int64;
+
+        private Integer maxLength;
 
         private Builder() {
         }
@@ -178,6 +183,29 @@ public class CreateSimpleCollectionParam {
         }
 
         /**
+         * Sets the primaryFiled type. The primaryField type cannot be empty or null. The default is "DataType.Int64".
+         *
+         * @param primaryFieldType primaryFiled type of the collection
+         * @return <code>Builder</code>
+         */
+        public Builder withPrimaryFieldType(@NonNull DataType primaryFieldType) {
+            this.primaryFieldType = primaryFieldType;
+            return this;
+        }
+
+        /**
+         * Sets the primaryFiled maxLength.
+         * If primaryFiled is specified as varchar, this parameter maxLength needs to be specified
+         *
+         * @param maxLength maxLength of the primary field
+         * @return <code>Builder</code>
+         */
+        public Builder withMaxLength(@NonNull Integer maxLength) {
+            this.maxLength =  maxLength;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link CreateSimpleCollectionParam} instance.
          *
          * @return {@link CreateSimpleCollectionParam}
@@ -188,15 +216,33 @@ public class CreateSimpleCollectionParam {
                 throw new ParamException("Dimension must be larger than 0");
             }
 
+            if (primaryFieldType != DataType.Int64 && primaryFieldType != DataType.VarChar) {
+                throw new ParamException("PrimaryFieldType only supports DataType.Int64 or DataType.VarChar");
+            }
+
+            Map<String, String> primaryTypeParams = new HashMap<>();
+            if (primaryFieldType == DataType.VarChar) {
+                if (maxLength == null) {
+                    throw new ParamException("PrimaryField is of varchar type, you need to specify the size of maxLength");
+                }
+                if (maxLength <= 0) {
+                    throw new ParamException("Varchar field max length must be larger than zero");
+                }
+
+                if (autoId) {
+                    throw new ParamException("AutoID is not supported when the VarChar field is the primary key");
+                }
+                primaryTypeParams.put(Constant.VARCHAR_MAX_LENGTH, String.valueOf(maxLength));
+            }
 
             String primaryFieldName = StringUtils.defaultIfEmpty(primaryField, Constant.PRIMARY_FIELD_NAME_DEFAULT);
             String vectorFieldName = StringUtils.defaultString(vectorField, Constant.VECTOR_FIELD_NAME_DEFAULT);
 
-            Map<String, String> typeParams = new HashMap<>();
-            typeParams.put(Constant.VECTOR_DIM, String.valueOf(dimension));
+            Map<String, String> floatTypeParams = new HashMap<>();
+            floatTypeParams.put(Constant.VECTOR_DIM, String.valueOf(dimension));
             List<FieldType> fieldTypes = Lists.newArrayList(
-                    FieldType.newBuilder().withName(primaryFieldName).withDataType(DataType.Int64).withPrimaryKey(Boolean.TRUE).withAutoID(autoId).build(),
-                    FieldType.newBuilder().withName(vectorFieldName).withDataType(DataType.FloatVector).withTypeParams(typeParams).build()
+                    FieldType.newBuilder().withName(primaryFieldName).withDataType(primaryFieldType).withPrimaryKey(Boolean.TRUE).withAutoID(autoId).withTypeParams(primaryTypeParams).build(),
+                    FieldType.newBuilder().withName(vectorFieldName).withDataType(DataType.FloatVector).withTypeParams(floatTypeParams).build()
             );
             CreateCollectionParam createCollectionParam = CreateCollectionParam.newBuilder()
                     .withCollectionName(collectionName)
