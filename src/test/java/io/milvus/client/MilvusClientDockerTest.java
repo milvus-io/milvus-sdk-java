@@ -1103,7 +1103,7 @@ class MilvusClientDockerTest {
         }
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withMetricType(MetricType.L2)
+                .withMetricType(MetricType.IP)
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)

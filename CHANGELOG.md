@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.2.8 (2023-06-29)
+
+### Improvement
+
+- Fix bug of high-level API
+- Add index type SORT for scalar field
+- Set log level in runtime
+
 ## milvus-sdk-java 2.2.7 (2023-06-21)
 
 ### Improvement
