@@ -46,7 +46,7 @@ public class ListBulkInsertTasksParam {
      * Builder for {@link ListBulkInsertTasksParam} class.
      */
     public static final class Builder {
-        private String collectionName;
+        private String collectionName = ""; // empty string will list all tasks in the server side
 
         // The limit count of returned tasks, list all tasks if the value is 0
         // default by 0
@@ -57,6 +57,7 @@ public class ListBulkInsertTasksParam {
 
         /**
          * Sets the target collection name, list all tasks if the name is empty.
+         * Default value is an empty string.
          *
          * @param collectionName collection name
          * @return <code>Builder</code>
@@ -68,7 +69,7 @@ public class ListBulkInsertTasksParam {
 
         /**
          * Specify limit count of returned tasks, list all tasks if the value is 0.
-         * default value is 0
+         * Default value is 0
          *
          * @param limit limit number
          * @return <code>Builder</code>

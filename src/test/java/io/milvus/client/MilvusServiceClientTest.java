@@ -372,7 +372,7 @@ class MilvusServiceClientTest {
                 CreateCollectionParam
                         .newBuilder()
                         .withCollectionName("collection1")
-                        .withShardsNum(0)
+                        .withShardsNum(-1)
                         .addFieldType(fieldType1)
                         .build()
         );

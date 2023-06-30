@@ -246,7 +246,6 @@ public class CreateSimpleCollectionParam {
             );
             CreateCollectionParam createCollectionParam = CreateCollectionParam.newBuilder()
                     .withCollectionName(collectionName)
-                    .withShardsNum(Constant.SHARD_NUMBER_DEFAULT)
                     .withDescription(description)
                     .withFieldTypes(fieldTypes)
                     .withConsistencyLevel(consistencyLevel)
