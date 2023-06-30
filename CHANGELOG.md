@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.2.8 (2023-07-03)
+
+### Improvement
+
+- Fix bug of listBulkInsertTasks()
+- Set default shard number to be 1
+
 ## milvus-sdk-java 2.2.8 (2023-06-29)
 
 ### Improvement
