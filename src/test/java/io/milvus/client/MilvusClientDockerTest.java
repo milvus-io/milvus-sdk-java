@@ -24,6 +24,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.*;
 //import io.milvus.param.credential.*;
 import io.milvus.param.dml.InsertParam;
@@ -1451,5 +1452,137 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .build());
         assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testPartitionKey() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "long_field";
+        String field2Name = "vec_field";
+        String field3Name = "varchar_field";
+        List<FieldType> fieldsSchema = new ArrayList<>();
+        fieldsSchema.add(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .withDescription("identity")
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDescription("face")
+                .withDimension(dimension)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.VarChar)
+                .withName(field3Name)
+                .withDescription("comment")
+                .withMaxLength(64)
+                .withPartitionKey(true)
+                .build());
+
+        // create collection
+        int partitionsNum = 10;
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldTypes(fieldsSchema)
+                .withPartitionsNum(partitionsNum)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // show partitions, there are should be 10 partitions returned
+        R<ShowPartitionsResponse> showPartResp = client.showPartitions(ShowPartitionsParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), showPartResp.getStatus().intValue());
+
+        System.out.println("Auto-generated partitions:");
+        ShowPartResponseWrapper showPartWrapper = new ShowPartResponseWrapper(showPartResp.getData());
+        System.out.println(showPartWrapper.getPartitionsInfo());
+        assertEquals(partitionsNum, showPartWrapper.getPartitionsInfo().size());
+
+        // insert data
+        int rowCount = 10000;
+        List<Long> ids = new ArrayList<>();
+        List<String> comments = new ArrayList<>();
+        for (long i = 0L; i < rowCount; ++i) {
+            ids.add(i);
+            comments.add(String.format("comment_%d", i));
+        }
+        List<List<Float>> vectors = generateFloatVectors(rowCount);
+
+        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
+        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
+        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
+        fieldsInsert.add(new InsertParam.Field(field3Name, comments));
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fieldsInsert)
+                .build();
+
+        System.out.println(String.format("Insert %d entities into collection", rowCount));
+        R<MutationResult> insertR = client.insert(insertParam);
+        assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // flush data into storage
+        // flush operation is not necessary here. Even without flush, the data is in query node's memory
+        // and still can be searchable
+        R<FlushResponse> flushREsp = client.flush(FlushParam.newBuilder()
+                .addCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), flushREsp.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // hybrid search for partition key
+        // if the expression contains the partition key, the server will hash the "comment_99"
+        // to find out a correct partition to search
+        List<List<Float>> targetVectors = generateFloatVectors(1);
+        int topK = 5;
+        String expr = String.format("%s == \"comment_99\"", field3Name);
+        System.out.println("Hybrid search with expression: " + expr);
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.L2)
+                .withTopK(topK)
+                .withExpr(expr)
+                .withVectors(targetVectors)
+                .withVectorFieldName(field2Name)
+                .addOutField(field3Name)
+                .build();
+
+        R<SearchResults> searchR = client.search(searchParam);
+        assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        for (int i = 0; i < targetVectors.size(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
+            System.out.println("The result of No." + i + " target vector:");
+            for (int k = 0; k < scores.size(); ++k) {
+                System.out.println(scores.get(k));
+            }
+        }
     }
 }

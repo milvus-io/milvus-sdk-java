@@ -65,7 +65,7 @@ public class CreateCollectionParam {
      */
     public static final class Builder {
         private String collectionName;
-        private int shardsNum = 2;
+        private int shardsNum = 0; // default to 0, let server decide the value
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
@@ -99,7 +99,9 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Sets the shards number. The number must be greater than zero. The default value is 2.
+         * Sets the shards number. The number must be greater or equal to zero.
+         * The default value is 0, which means letting the server decide the value.
+         * The server set this value to 1 if user didn't specify it.
          *
          * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
          * @return <code>Builder</code>
@@ -189,8 +191,8 @@ public class CreateCollectionParam {
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (shardsNum <= 0) {
-                throw new ParamException("ShardNum must be larger than 0");
+            if (shardsNum < 0) {
+                throw new ParamException("ShardNum must be larger or equal than 0");
             }
 
             if (fieldTypes.isEmpty()) {
