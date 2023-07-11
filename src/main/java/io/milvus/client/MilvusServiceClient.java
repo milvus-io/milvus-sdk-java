@@ -25,16 +25,20 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.ConnectParam;
 
 import io.milvus.param.LogLevel;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.io.File;
+
+import io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.NettyChannelBuilder;
+import io.netty.handler.ssl.SslContext;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
-    private final ManagedChannel channel;
+    private ManagedChannel channel;
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
     private final long rpcDeadlineMs;
@@ -48,20 +52,70 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
         }
 
-        ManagedChannelBuilder builder = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
-                .usePlaintext()
-                .maxInboundMessageSize(Integer.MAX_VALUE)
-                .keepAliveTime(connectParam.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
-                .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
-                .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
-                .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+        try {
+            if (StringUtils.isNotEmpty(connectParam.getServerPemPath())) {
+                // one-way tls
+                SslContext sslContext = GrpcSslContexts.forClient()
+                        .trustManager(new File(connectParam.getServerPemPath()))
+                        .build();
 
-        if(connectParam.isSecure()){
-            builder.useTransportSecurity();
+                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
+                        .overrideAuthority(connectParam.getServerName())
+                        .sslContext(sslContext)
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .keepAliveTime(connectParam.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
+                        .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                if(connectParam.isSecure()){
+                    builder.useTransportSecurity();
+                }
+                channel = builder.build();
+            } else if (StringUtils.isNotEmpty(connectParam.getClientPemPath())
+                    && StringUtils.isNotEmpty(connectParam.getClientKeyPath())
+                    && StringUtils.isNotEmpty(connectParam.getCaPemPath())) {
+                // tow-way tls
+                SslContext sslContext = GrpcSslContexts.forClient()
+                        .trustManager(new File(connectParam.getCaPemPath()))
+                        .keyManager(new File(connectParam.getClientPemPath()), new File(connectParam.getClientKeyPath()))
+                        .build();
+
+                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
+                        .sslContext(sslContext)
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .keepAliveTime(connectParam.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
+                        .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                if(connectParam.isSecure()){
+                    builder.useTransportSecurity();
+                }
+                if (StringUtils.isNotEmpty(connectParam.getServerName())) {
+                    builder.overrideAuthority(connectParam.getServerName());
+                }
+                channel = builder.build();
+            } else {
+                // no tls
+                ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
+                        .usePlaintext()
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .keepAliveTime(connectParam.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
+                        .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                if(connectParam.isSecure()){
+                    builder.useTransportSecurity();
+                }
+                channel = builder.build();
+            }
+        } catch (IOException e) {
+            logError("Failed to open credentials file, error:{}\n", e.getMessage());
         }
-        channel = builder.build();
 
+        assert channel != null;
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);
     }

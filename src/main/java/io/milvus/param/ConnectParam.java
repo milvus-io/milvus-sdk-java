@@ -20,7 +20,9 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -30,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Parameters for client connection.
  */
+@Getter
+@ToString
 public class ConnectParam {
     private final String host;
     private final int port;
@@ -44,8 +48,13 @@ public class ConnectParam {
     private final boolean secure;
     private final long idleTimeoutMs;
     private final String authorization;
+    private final String clientKeyPath;
+    private final String clientPemPath;
+    private final String caPemPath;
+    private final String serverPemPath;
+    private final String serverName;
 
-    private ConnectParam(@NonNull Builder builder) {
+    protected ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
         this.token = builder.token;
@@ -59,50 +68,11 @@ public class ConnectParam {
         this.rpcDeadlineMs = builder.rpcDeadlineMs;
         this.secure = builder.secure;
         this.authorization = builder.authorization;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public long getConnectTimeoutMs() {
-        return connectTimeoutMs;
-    }
-
-    public long getKeepAliveTimeMs() {
-        return keepAliveTimeMs;
-    }
-
-    public long getKeepAliveTimeoutMs() {
-        return keepAliveTimeoutMs;
-    }
-
-    public boolean isKeepAliveWithoutCalls() {
-        return keepAliveWithoutCalls;
-    }
-    public long getIdleTimeoutMs() {
-        return idleTimeoutMs;
-    }
-
-    public long getRpcDeadlineMs() {
-        return rpcDeadlineMs;
-    }
-
-    public boolean isSecure() {
-        return secure;
-    }
-
-
-    public String getAuthorization() {
-        return authorization;
-    }
-
-    public String getDatabaseName() {
-        return databaseName;
+        this.clientKeyPath = builder.clientKeyPath;
+        this.clientPemPath = builder.clientPemPath;
+        this.caPemPath = builder.caPemPath;
+        this.serverPemPath = builder.serverPemPath;
+        this.serverName = builder.serverName;
     }
 
     public static Builder newBuilder() {
@@ -112,6 +82,7 @@ public class ConnectParam {
     /**
      * Builder for {@link ConnectParam}
      */
+    @Getter
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
@@ -124,11 +95,17 @@ public class ConnectParam {
         private boolean keepAliveWithoutCalls = false;
         private long rpcDeadlineMs = 0; // Disabling deadline
 
-        private boolean secure = false;
+        private String clientKeyPath;
+        private String clientPemPath;
+        private String caPemPath;
+        private String serverPemPath;
+        private String serverName;
+
+        protected boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = Base64.getEncoder().encodeToString("root:milvus".getBytes(StandardCharsets.UTF_8));
 
-        private Builder() {
+        protected Builder() {
         }
 
         /**
@@ -167,7 +144,7 @@ public class ConnectParam {
         /**
          * Sets the uri
          *
-         * @param uri
+         * @param uri the uri of Milvus instance
          * @return <code>Builder</code>
          */
         public Builder withUri(String uri) {
@@ -178,7 +155,7 @@ public class ConnectParam {
         /**
          * Sets the token
          *
-         * @param token
+         * @param token serving as the key for identification and authentication purposes.
          * @return <code>Builder</code>
          */
         public Builder withToken(String token) {
@@ -239,6 +216,7 @@ public class ConnectParam {
          * @param enable true keep-alive
          * @return <code>Builder</code>
          */
+        @java.lang.Deprecated
         public Builder secure(boolean enable) {
             secure = enable;
             return this;
@@ -282,7 +260,7 @@ public class ConnectParam {
         }
 
         /**
-         * Sets secure the authorization for this connection
+         * Sets secure the authorization for this connection, set to True to enable TLS
          * @param secure boolean
          * @return <code>Builder</code>
          */
@@ -302,11 +280,68 @@ public class ConnectParam {
         }
 
         /**
+         * Set the client.key path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientKeyPath path of client.key
+         * @return <code>Builder</code>
+         */
+        public Builder withClientKeyPath(@NonNull String clientKeyPath) {
+            this.clientKeyPath = clientKeyPath;
+            return this;
+        }
+
+        /**
+         * Set the client.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientPemPath path of client.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withClientPemPath(@NonNull String clientPemPath) {
+            this.clientPemPath = clientPemPath;
+            return this;
+        }
+
+        /**
+         * Set the ca.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param caPemPath path of ca.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withCaPemPath(@NonNull String caPemPath) {
+            this.caPemPath = caPemPath;
+            return this;
+        }
+
+        /**
+         * Set the server.pem path for tls one-way authentication, only takes effect when "secure" is True.
+         * @param serverPemPath path of server.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withServerPemPath(@NonNull String serverPemPath) {
+            this.serverPemPath = serverPemPath;
+            return this;
+        }
+
+        /**
+         * Set target name override for SSL host name checking, only takes effect when "secure" is True.
+         * Note: this value is passed to grpc.ssl_target_name_override
+         * @param serverName override name for SSL host
+         * @return <code>Builder</code>
+         */
+        public Builder withServerName(@NonNull String serverName) {
+            this.serverName = serverName;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link ConnectParam} instance.
          *
          * @return {@link ConnectParam}
          */
         public ConnectParam build() throws ParamException {
+            verify();
+
+            return new ConnectParam(this);
+        }
+
+        protected void verify() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
                 io.milvus.utils.URLParser result = new io.milvus.utils.URLParser(uri);
@@ -321,6 +356,7 @@ public class ConnectParam {
                 if (!token.contains(":")) {
                     this.port = 443;
                 }
+                this.secure = true; //
             }
 
             if (port < 0 || port > 0xFFFF) {
@@ -343,20 +379,10 @@ public class ConnectParam {
                 throw new ParamException("Idle timeout must be positive!");
             }
 
-            return new ConnectParam(this);
+            if (StringUtils.isNotEmpty(serverPemPath) || StringUtils.isNotEmpty(caPemPath)
+                    || StringUtils.isNotEmpty(clientPemPath) || StringUtils.isNotEmpty(clientKeyPath)) {
+                secure = true;
+            }
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link ConnectParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ConnectParam{" +
-                "host='" + host + '\'' +
-                ", port='" + port +
-                '}';
     }
 }
