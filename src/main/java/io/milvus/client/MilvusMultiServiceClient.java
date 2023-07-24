@@ -94,7 +94,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .withKeepAliveTime(keepAliveTimeMs, TimeUnit.MILLISECONDS)
                 .withKeepAliveTimeout(keepAliveTimeoutMs, TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(keepAliveWithoutCalls)
-                .secure(secure)
+                .withSecure(secure)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
                 .withAuthorization(multiConnectParam.getAuthorization())
                 .build();

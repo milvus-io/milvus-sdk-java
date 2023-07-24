@@ -3,7 +3,6 @@ package io.milvus.param;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
-import io.grpc.StatusRuntimeException;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.exception.IllegalResponseException;
@@ -15,19 +14,15 @@ import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -256,6 +251,7 @@ public class ParamUtils {
         for (FieldType fieldType : wrapper.getFields()) {
             if (fieldType.isPartitionKey()) {
                 isPartitionKeyEnabled = true;
+                break;
             }
         }
         if (isPartitionKeyEnabled) {
@@ -544,7 +540,6 @@ public class ParamUtils {
         add(DataType.BinaryVector);
     }};
 
-    @SuppressWarnings("unchecked")
     private static FieldData genFieldData(String fieldName, DataType dataType, List<?> objects) {
         return genFieldData(fieldName, dataType, objects, Boolean.FALSE);
     }
@@ -720,8 +715,8 @@ public class ParamUtils {
     @Builder
     @Getter
     public static class InsertDataInfo {
-        private String fieldName;
-        private DataType dataType;
-        private LinkedList<Object> data;
+        private final String fieldName;
+        private final DataType dataType;
+        private final LinkedList<Object> data;
     }
 }

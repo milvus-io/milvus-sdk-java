@@ -68,6 +68,7 @@ class MilvusServiceClientTest {
         return new MilvusServiceClient(connectParam);
     }
 
+    @SuppressWarnings("unchecked")
     private <T, P> void invokeFunc(Method testFunc, MilvusServiceClient client, T param, int ret, boolean equalRet) {
         try {
             R<P> resp = (R<P>) testFunc.invoke(client, param);
@@ -83,7 +84,6 @@ class MilvusServiceClientTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <T, P> void testFuncByName(String funcName, T param) {
         // start mock server
         MockMilvusServer server = startServer();

@@ -2,11 +2,11 @@ package io.milvus.param;
 
 import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -16,63 +16,16 @@ import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_H
 /**
  * Parameters for client connection of multi server.
  */
-public class MultiConnectParam {
+@Getter
+@ToString
+public class MultiConnectParam extends ConnectParam {
     private final List<ServerAddress> hosts;
     private final QueryNodeSingleSearch queryNodeSingleSearch;
-    private final long connectTimeoutMs;
-    private final long keepAliveTimeMs;
-    private final long keepAliveTimeoutMs;
-    private final boolean keepAliveWithoutCalls;
-    private final boolean secure;
-    private final long idleTimeoutMs;
-    private final String authorization;
 
     private MultiConnectParam(@NonNull Builder builder) {
+        super(builder);
         this.hosts = builder.hosts;
         this.queryNodeSingleSearch = builder.queryNodeSingleSearch;
-        this.connectTimeoutMs = builder.connectTimeoutMs;
-        this.keepAliveTimeMs = builder.keepAliveTimeMs;
-        this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
-        this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
-        this.secure = builder.secure;
-        this.idleTimeoutMs = builder.idleTimeoutMs;
-        this.authorization = builder.authorization;
-    }
-
-    public List<ServerAddress> getHosts() {
-        return hosts;
-    }
-
-    public QueryNodeSingleSearch getQueryNodeSingleSearch() {
-        return queryNodeSingleSearch;
-    }
-
-    public long getConnectTimeoutMs() {
-        return connectTimeoutMs;
-    }
-
-    public long getKeepAliveTimeMs() {
-        return keepAliveTimeMs;
-    }
-
-    public long getKeepAliveTimeoutMs() {
-        return keepAliveTimeoutMs;
-    }
-
-    public boolean isKeepAliveWithoutCalls() {
-        return keepAliveWithoutCalls;
-    }
-
-    public boolean isSecure() {
-        return secure;
-    }
-
-    public long getIdleTimeoutMs() {
-        return idleTimeoutMs;
-    }
-
-    public String getAuthorization() {
-        return authorization;
     }
 
     public static Builder newBuilder() {
@@ -82,16 +35,9 @@ public class MultiConnectParam {
     /**
      * Builder for {@link MultiConnectParam}
      */
-    public static class Builder {
+    public static class Builder extends ConnectParam.Builder {
         private List<ServerAddress> hosts;
         private QueryNodeSingleSearch queryNodeSingleSearch;
-        private long connectTimeoutMs = 10000;
-        private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
-        private long keepAliveTimeoutMs = 20000;
-        private boolean keepAliveWithoutCalls = false;
-        private boolean secure = false;
-        private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
-        private String authorization = "";
 
         private Builder() {
         }
@@ -119,6 +65,61 @@ public class MultiConnectParam {
         }
 
         /**
+         * Sets the host name/address.
+         *
+         * @param host host name/address
+         * @return <code>Builder</code>
+         */
+        public Builder withHost(@NonNull String host) {
+            super.withHost(host);
+            return this;
+        }
+
+        /**
+         * Sets the connection port. Port value must be greater than zero and less than 65536.
+         *
+         * @param port port value
+         * @return <code>Builder</code>
+         */
+        public Builder withPort(int port)  {
+            super.withPort(port);
+            return this;
+        }
+
+        /**
+         * Sets the database name.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(@NonNull String databaseName) {
+            super.withDatabaseName(databaseName);
+            return this;
+        }
+
+        /**
+         * Sets the uri
+         *
+         * @param uri the uri of Milvus instance
+         * @return <code>Builder</code>
+         */
+        public Builder withUri(String uri) {
+            super.withUri(uri);
+            return this;
+        }
+
+        /**
+         * Sets the token
+         *
+         * @param token serving as the key for identification and authentication purposes.
+         * @return <code>Builder</code>
+         */
+        public Builder withToken(String token) {
+            super.withToken(token);
+            return this;
+        }
+
+        /**
          * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param connectTimeout timeout value
@@ -126,7 +127,7 @@ public class MultiConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
-            this.connectTimeoutMs = timeUnit.toMillis(connectTimeout);
+            super.withConnectTimeout(connectTimeout, timeUnit);
             return this;
         }
 
@@ -138,7 +139,7 @@ public class MultiConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
-            this.keepAliveTimeMs = timeUnit.toMillis(keepAliveTime);
+            super.withKeepAliveTime(keepAliveTime, timeUnit);
             return this;
         }
 
@@ -150,7 +151,7 @@ public class MultiConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
-            this.keepAliveTimeoutMs = timeUnit.toNanos(keepAliveTimeout);
+            super.withKeepAliveTimeout(keepAliveTimeout, timeUnit);
             return this;
         }
 
@@ -161,28 +162,7 @@ public class MultiConnectParam {
          * @return <code>Builder</code>
          */
         public Builder keepAliveWithoutCalls(boolean enable) {
-            keepAliveWithoutCalls = enable;
-            return this;
-        }
-
-        /**
-         * Enables the secure for client channel.
-         *
-         * @param enable true keep-alive
-         * @return <code>Builder</code>
-         */
-        public Builder secure(boolean enable) {
-            secure = enable;
-            return this;
-        }
-
-        /**
-         * Sets secure the authorization for this connection
-         * @param secure boolean
-         * @return <code>Builder</code>
-         */
-        public Builder withSecure(boolean secure) {
-            this.secure = secure;
+            super.keepAliveWithoutCalls(enable);
             return this;
         }
 
@@ -194,7 +174,21 @@ public class MultiConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
-            this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
+            super.withIdleTimeout(idleTimeout, timeUnit);
+            return this;
+        }
+
+        /**
+         * Set a deadline for how long you are willing to wait for a reply from the server.
+         * With a deadline setting, the client will wait when encounter fast RPC fail caused by network fluctuations.
+         * The deadline value must be larger than or equal to zero. Default value is 0, deadline is disabled.
+         *
+         * @param deadline deadline value
+         * @param timeUnit deadline unit
+         * @return <code>Builder</code>
+         */
+        public Builder withRpcDeadline(long deadline, @NonNull TimeUnit timeUnit) {
+            super.withRpcDeadline(deadline, timeUnit);
             return this;
         }
 
@@ -204,8 +198,79 @@ public class MultiConnectParam {
          * @param password password
          * @return <code>Builder</code>
          */
-        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
-            this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
+        public Builder withAuthorization(String username, String password) {
+            super.withAuthorization(username, password);
+            return this;
+        }
+
+        /**
+         * Sets secure the authorization for this connection, set to True to enable TLS
+         * @param secure boolean
+         * @return <code>Builder</code>
+         */
+        public Builder withSecure(boolean secure) {
+            super.withSecure(secure);
+            return this;
+        }
+
+        /**
+         * Sets the secure for this connection
+         * @param authorization the authorization info that has included the encoded username and password info
+         * @return <code>Builder</code>
+         */
+        public Builder withAuthorization(@NonNull String authorization) {
+            super.withAuthorization(authorization);
+            return this;
+        }
+
+        /**
+         * Set the client.key path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientKeyPath path of client.key
+         * @return <code>Builder</code>
+         */
+        public Builder withClientKeyPath(@NonNull String clientKeyPath) {
+            super.withClientKeyPath(clientKeyPath);
+            return this;
+        }
+
+        /**
+         * Set the client.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientPemPath path of client.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withClientPemPath(@NonNull String clientPemPath) {
+            super.withClientPemPath(clientPemPath);
+            return this;
+        }
+
+        /**
+         * Set the ca.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param caPemPath path of ca.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withCaPemPath(@NonNull String caPemPath) {
+            super.withCaPemPath(caPemPath);
+            return this;
+        }
+
+        /**
+         * Set the server.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param serverPemPath path of server.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withServerPemPath(@NonNull String serverPemPath) {
+            super.withServerPemPath(serverPemPath);
+            return this;
+        }
+
+        /**
+         * Set target name override for SSL host name checking, only takes effect when "secure" is True.
+         * Note: this value is passed to grpc.ssl_target_name_override
+         * @param serverName path of server.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withServerName(@NonNull String serverName) {
+            super.withServerName(serverName);
             return this;
         }
 
@@ -215,6 +280,8 @@ public class MultiConnectParam {
          * @return {@link MultiConnectParam}
          */
         public MultiConnectParam build() throws ParamException {
+            super.verify();
+
             if (CollectionUtils.isEmpty(hosts)) {
                 throw new ParamException("Server addresses is empty!");
             }
@@ -241,36 +308,7 @@ public class MultiConnectParam {
             }
             this.withHosts(hostAddress);
 
-            if (keepAliveTimeMs <= 0L) {
-                throw new ParamException("Keep alive time must be positive!");
-            }
-
-            if (connectTimeoutMs <= 0L) {
-                throw new ParamException("Connect timeout must be positive!");
-            }
-
-            if (keepAliveTimeoutMs <= 0L) {
-                throw new ParamException("Keep alive timeout must be positive!");
-            }
-
-            if (idleTimeoutMs <= 0L) {
-                throw new ParamException("Idle timeout must be positive!");
-            }
-
             return new MultiConnectParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link ConnectParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        final StringBuffer sb = new StringBuffer("MultiConnectParam{");
-        sb.append("hosts=").append(hosts);
-        sb.append('}');
-        return sb.toString();
     }
 }

@@ -25,7 +25,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.grpc.StatusRuntimeException;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
@@ -325,7 +324,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     private <T> R<T> failedStatus(String requestName, io.milvus.grpc.Status status) {
         String reason = status.getReason();
-        if (reason == null || reason.isEmpty()) {
+        if (StringUtils.isEmpty(reason)) {
             reason = "error code: " + status.getErrorCode().toString();
         }
         logError(requestName + " failed:\n{}", reason);
@@ -481,10 +480,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setDescription(requestParam.getDescription())
                     .setEnableDynamicField(requestParam.isEnableDynamicField());
 
-            long fieldID = 0;
             for (FieldType fieldType : requestParam.getFieldTypes()) {
                 collectionSchemaBuilder.addFields(ParamUtils.ConvertField(fieldType));
-                fieldID++;
             }
 
             // Construct CreateCollectionRequest
@@ -2982,6 +2979,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public R<SearchResponse> search(SearchSimpleParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -3041,25 +3039,25 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     ///////////////////// Log Functions//////////////////////
-    private void logDebug(String msg, Object... params) {
+    protected void logDebug(String msg, Object... params) {
         if (logLevel.ordinal() <= LogLevel.Debug.ordinal()) {
             logger.debug(msg, params);
         }
     }
 
-    private void logInfo(String msg, Object... params) {
+    protected void logInfo(String msg, Object... params) {
         if (logLevel.ordinal() <= LogLevel.Info.ordinal()) {
             logger.info(msg, params);
         }
     }
 
-    private void logWarning(String msg, Object... params) {
+    protected void logWarning(String msg, Object... params) {
         if (logLevel.ordinal() <= LogLevel.Warning.ordinal()) {
             logger.warn(msg, params);
         }
     }
 
-    private void logError(String msg, Object... params) {
+    protected void logError(String msg, Object... params) {
         if (logLevel.ordinal() <= LogLevel.Error.ordinal()) {
             logger.error(msg, params);
         }

@@ -126,7 +126,9 @@ class MilvusMultiClientDockerTest {
     public static void setUp() {
         startDockerContainer();
 
-        MultiConnectParam connectParam = multiConnectParamBuilder().withAuthorization("root", "Milvus").build();
+        MultiConnectParam connectParam = multiConnectParamBuilder()
+                .withAuthorization("root", "Milvus")
+                .build();
         client = new MilvusMultiServiceClient(connectParam);
 //        TimeUnit.SECONDS.sleep(10);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
