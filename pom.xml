@@ -93,7 +93,7 @@
         <jackson.version>2.12.7.1</jackson.version>
         <gson.version>2.9.0</gson.version>
         <kotlin.version>1.6.0</kotlin.version>
-        <version.fastjson>1.2.76</version.fastjson>
+        <version.fastjson>1.2.83</version.fastjson>
     </properties>
 
     <dependencyManagement>
