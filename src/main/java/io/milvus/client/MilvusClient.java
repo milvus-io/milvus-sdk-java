@@ -53,6 +53,21 @@ public interface MilvusClient {
     MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
     /**
+     * Number of retry attempts.
+     *
+     * @param retryTimes     number of retry attempts.
+     */
+    MilvusClient withRetry(int retryTimes);
+
+    /**
+     * Time interval between retry attempts. Default value is 500ms.
+     *
+     * @param interval     time interval between retry attempts.
+     * @param timeUnit     time unit
+     */
+    MilvusClient withRetryInterval(long interval, TimeUnit timeUnit);
+
+    /**
      * Disconnects from a Milvus server with timeout of 1 minute
      */
     default void close() {

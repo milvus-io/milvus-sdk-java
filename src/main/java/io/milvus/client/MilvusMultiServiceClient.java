@@ -108,6 +108,16 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public MilvusClient withRetry(int retryTimes) {
+        return clusterFactory.getMaster().getClient().withRetry(retryTimes);
+    }
+
+    @Override
+    public MilvusClient withRetryInterval(long interval, TimeUnit timeUnit) {
+        return clusterFactory.getMaster().getClient().withRetryInterval(interval, timeUnit);
+    }
+
+    @Override
     public void close(long maxWaitSeconds) throws InterruptedException {
         this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .forEach(serverSetting -> serverSetting.getClient().close());
