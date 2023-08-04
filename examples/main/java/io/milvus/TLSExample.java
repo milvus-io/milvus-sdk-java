@@ -46,7 +46,7 @@ import java.util.*;
 //
 //    common:
 //        security:
-//        tlsMode: 2
+//            tlsMode: 2
 //
 // 3. Start milvus server
 // 4. Run this example.
