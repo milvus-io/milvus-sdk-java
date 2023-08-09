@@ -120,9 +120,14 @@ public class QueryParam {
         /**
          *  Graceful time for BOUNDED Consistency Level
          *
+         * Note: This parameter is deprecated from Milvus v2.2.9, user only input consistency level to search.
+         *       The time settings of different consistency levels are determined by the server side.
+         *       For this reason, this method is marked as Deprecated in Java SDK v2.2.11
+         *
          * @param gracefulTime graceful time
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withGracefulTime(Long gracefulTime) {
             this.gracefulTime = gracefulTime;
             return this;
@@ -200,9 +205,14 @@ public class QueryParam {
          *
          * Default value is GUARANTEE_EVENTUALLY_TS, query executes query immediately.
          *
+         * Note: This parameter is deprecated from Milvus v2.2.9, user only input consistency level to search.
+         *       The time settings of different consistency levels are determined by the server side.
+         *       For this reason, this method is marked as Deprecated in Java SDK v2.2.11
+         *
          * @param ts a timestamp value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withGuaranteeTimestamp(@NonNull Long ts) {
             this.guaranteeTimestamp = ts;
             return this;

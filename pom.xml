@@ -25,11 +25,11 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>2.2.9</version>
+    <version>2.2.11</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
-    <description>Java SDK for Milvus, a distributed high-performance vector search engine.</description>
+    <description>Java SDK for Milvus, a distributed high-performance vector database.</description>
     <url>https://github.com/milvus-io/milvus-sdk-java</url>
 
     <licenses>
