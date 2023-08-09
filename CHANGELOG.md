@@ -1,5 +1,22 @@
 # Changelog
 
+## milvus-sdk-java 2.2.11 (2023-08-09)
+
+### Improvement
+
+- Fix a bug that could not create index for VARCHAR field with Milvus v2.2.12
+
+### Deprecated
+
+- withGuaranteeTimestamp()/withGracefulTime() are marked as Deprecated for SearchParam/QueryParam. From Milvus v2.2.9, the time settings are determined by the server side.
+
+## milvus-sdk-java 2.2.10 (2023-08-08)
+
+### Feature
+
+- Support TLS connection
+- Support retry for interface
+
 ## milvus-sdk-java 2.2.9 (2023-07-03)
 
 ### Improvement

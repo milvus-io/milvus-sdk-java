@@ -30,7 +30,7 @@ import io.milvus.response.*;
 import java.util.*;
 
 public class SimpleExample {
-    private static final String COLLECTION_NAME = "hello_milvus";
+    private static final String COLLECTION_NAME = "java_sdk_example_simple";
     private static final String ID_FIELD = "book_id";
     private static final String VECTOR_FIELD = "book_intro";
     private static final String TITLE_FIELD = "book_title";
