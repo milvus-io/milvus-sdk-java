@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.2.12 (2023-08-10)
+
+### Improvement
+
+- Fix a bug that could not create index for scalar field with Milvus v2.2.12(change IndexType.SORT to IndexType.STL_SORT)
+
 ## milvus-sdk-java 2.2.11 (2023-08-09)
 
 ### Improvement
