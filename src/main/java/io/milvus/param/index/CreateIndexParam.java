@@ -56,11 +56,7 @@ public class CreateIndexParam {
         this.indexName = builder.indexName;
         this.indexType = builder.indexType;
         if (builder.indexType != IndexType.INVALID) {
-            String indexName = builder.indexType.name();
-            if (builder.indexType == IndexType.TRIE) {
-                indexName = "Trie"; // from v2.2.12, the server side requires "Trie"
-            }
-            this.extraParam.put(Constant.INDEX_TYPE, indexName);
+            this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.getName());
         }
         if (builder.metricType != MetricType.INVALID) {
             this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
