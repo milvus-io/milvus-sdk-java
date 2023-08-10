@@ -353,8 +353,19 @@ class MilvusClientDockerTest {
         GetPartStatResponseWrapper statPart = new GetPartStatResponseWrapper(statPartR.getData());
         System.out.println("Partition row count: " + statPart.getRowCount());
 
-        // create index
+        // create index on scalar field
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field5Name)
+                .withIndexType(IndexType.STL_SORT)
+                .withSyncMode(Boolean.TRUE)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // create index on vector field
+        indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withFieldName(field2Name)
                 .withIndexName("abv")
@@ -366,7 +377,7 @@ class MilvusClientDockerTest {
                 .withSyncWaitingTimeout(30L)
                 .build();
 
-        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        createIndexR = client.createIndex(indexParam);
         assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
         // get index description

@@ -57,11 +57,8 @@ public class GeneralExample {
     private static final String COLLECTION_NAME = "java_sdk_example_general";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
-    private static final String USER_JSON_FIELD = "userJson";
     private static final Integer VECTOR_DIM = 64;
     private static final String AGE_FIELD = "userAge";
-//    private static final String PROFILE_FIELD = "userProfile";
-//    private static final Integer BINARY_DIM = 128;
 
     private static final String INDEX_NAME = "userFaceIndex";
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
@@ -69,13 +66,6 @@ public class GeneralExample {
 
     private static final Integer SEARCH_K = 5;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
-
-    private static final String INT32_FIELD_NAME = "int32";
-    private static final String INT64_FIELD_NAME = "int64";
-    private static final String VARCHAR_FIELD_NAME = "varchar";
-    private static final String BOOL_FIELD_NAME = "bool";
-    private static final String FLOAT_FIELD_NAME = "float";
-    private static final String DOUBLE_FIELD_NAME = "double";
 
     private void handleResponseStatus(R<?> r) {
         if (r.getStatus() != R.Status.Success.getCode()) {
@@ -106,19 +96,6 @@ public class GeneralExample {
                 .withDataType(DataType.Int8)
                 .build();
 
-//        FieldType fieldType4 = FieldType.newBuilder()
-//                .withName(PROFILE_FIELD)
-//                .withDescription("user profile")
-//                .withDataType(DataType.BinaryVector)
-//                .withDimension(BINARY_DIM)
-//                .build();
-
-//        FieldType fieldType5 = FieldType.newBuilder()
-//                .withName(USER_JSON_FIELD)
-//                .withDescription("user json")
-//                .withDataType(DataType.JSON)
-//                .build();
-
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
@@ -127,8 +104,6 @@ public class GeneralExample {
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
-//                .addFieldType(fieldType4)
-//                .addFieldType(fieldType5)
                 .build();
         R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                 .createCollection(createCollectionReq);
@@ -268,7 +243,17 @@ public class GeneralExample {
 
     private R<RpcStatus> createIndex() {
         System.out.println("========== createIndex() ==========");
+        // create index for scalar field
         R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withFieldName(AGE_FIELD)
+                .withIndexType(IndexType.STL_SORT)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+        handleResponseStatus(response);
+
+        // create index for vector field
+        response = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .withIndexName(INDEX_NAME)
@@ -377,43 +362,6 @@ public class GeneralExample {
         return response;
     }
 
-//    private R<SearchResults> searchProfile(String expr) {
-//        System.out.println("========== searchProfile() ==========");
-//        long begin = System.currentTimeMillis();
-//
-//        List<String> outFields = Collections.singletonList(AGE_FIELD);
-//        List<ByteBuffer> vectors = generateBinaryVectors(5);
-//
-//        SearchParam searchParam = SearchParam.newBuilder()
-//                .withCollectionName(COLLECTION_NAME)
-//                .withMetricType(MetricType.HAMMING)
-//                .withOutFields(outFields)
-//                .withTopK(SEARCH_K)
-//                .withVectors(vectors)
-//                .withVectorFieldName(PROFILE_FIELD)
-//                .withExpr(expr)
-//                .withParams(SEARCH_PARAM)
-//                .build();
-//
-//
-//        R<SearchResults> response = milvusClient.search(searchParam);
-//        long end = System.currentTimeMillis();
-//        long cost = (end - begin);
-//        System.out.println("Search time cost: " + cost + "ms");
-//
-//        handleResponseStatus(response);
-//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-//        for (int i = 0; i < vectors.size(); ++i) {
-//            System.out.println("Search result of No." + i);
-//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-//            System.out.println(scores);
-//            System.out.println("Output field data for No." + i);
-//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
-//        }
-//
-//        return response;
-//    }
-
     private R<QueryResults> query(String expr) {
         System.out.println("========== query() ==========");
         List<String> fields = Arrays.asList(ID_FIELD, AGE_FIELD);
@@ -443,7 +391,6 @@ public class GeneralExample {
     private R<MutationResult> insertColumns(String partitionName, int count) {
         System.out.println("========== insertColumns() ==========");
         List<List<Float>> vectors = generateFloatVectors(count);
-//        List<ByteBuffer> profiles = generateBinaryVectors(count);
 
         Random ran = new Random();
         List<Integer> ages = new ArrayList<>();
@@ -451,19 +398,9 @@ public class GeneralExample {
             ages.add(ran.nextInt(99));
         }
 
-//        List<JSONObject> objectList = new ArrayList<>();
-//        for (long i = 0L; i < count ; ++i) {
-//            JSONObject obj = new JSONObject();
-//            obj.put(INT32_FIELD_NAME, ran.nextInt());
-//            obj.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-//            objectList.add(obj);
-//        }
-
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(AGE_FIELD, ages));
         fields.add(new InsertParam.Field(VECTOR_FIELD, vectors));
-//        fields.add(new InsertParam.Field(USER_JSON_FIELD, objectList));
-//        fields.add(new InsertParam.Field(PROFILE_FIELD, profiles));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
@@ -485,24 +422,6 @@ public class GeneralExample {
             JSONObject row = new JSONObject();
             row.put(AGE_FIELD, ran.nextInt(99));
             row.put(VECTOR_FIELD, generateFloatVector());
-
-            // $meta if collection EnableDynamicField, you can input this field not exist in schema, else deny
-//            row.put(INT32_FIELD_NAME, ran.nextInt());
-//            row.put(INT64_FIELD_NAME, ran.nextLong());
-//            row.put(VARCHAR_FIELD_NAME, "测试varchar");
-//            row.put(FLOAT_FIELD_NAME, ran.nextFloat());
-//            row.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-//            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
-
-            // $json
-//            JSONObject jsonObject = new JSONObject();
-//            jsonObject.put(INT32_FIELD_NAME, ran.nextInt());
-//            jsonObject.put(INT64_FIELD_NAME, ran.nextLong());
-//            jsonObject.put(VARCHAR_FIELD_NAME, "测试varchar");
-//            jsonObject.put(FLOAT_FIELD_NAME, ran.nextFloat());
-//            jsonObject.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-//            jsonObject.put(BOOL_FIELD_NAME, ran.nextBoolean());
-//            row.put(USER_JSON_FIELD, jsonObject);
 
             rowsData.add(row);
         }
@@ -540,20 +459,6 @@ public class GeneralExample {
         }
         return vector;
     }
-
-//    private List<ByteBuffer> generateBinaryVectors(int count) {
-//        Random ran = new Random();
-//        List<ByteBuffer> vectors = new ArrayList<>();
-//        int byteCount = BINARY_DIM/8;
-//        for (int n = 0; n < count; ++n) {
-//            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-//            for (int i = 0; i < byteCount; ++i) {
-//                vector.put((byte)ran.nextInt(Byte.MAX_VALUE));
-//            }
-//            vectors.add(vector);
-//        }
-//        return vectors;
-//    }
 
     public static void main(String[] args) {
         GeneralExample example = new GeneralExample();
@@ -630,12 +535,9 @@ public class GeneralExample {
         String queryExpr = AGE_FIELD + " == 60";
         example.query(queryExpr);
 
-//        searchExpr = AGE_FIELD + " <= 30";
-//        example.searchProfile(searchExpr);
         example.compact();
         example.getCollectionStatistics();
 
-//        example.releasePartition(partitionName); // releasing partitions after loading collection is not supported currently
         example.releaseCollection();
         example.dropPartition(partitionName);
         example.dropIndex();

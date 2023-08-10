@@ -205,7 +205,7 @@ public class ParamUtils {
      * @param idx index type
      */
     public static boolean IsVectorIndex(IndexType idx) {
-        return idx != IndexType.INVALID && idx != IndexType.TRIE && idx != IndexType.SORT;
+        return idx != IndexType.INVALID && idx.getCode() < IndexType.TRIE.getCode();
     }
 
     /**
@@ -222,7 +222,7 @@ public class ParamUtils {
         } else if (dataType == DataType.VarChar) {
             return indexType == IndexType.TRIE;
         } else {
-            return indexType == IndexType.SORT;
+            return indexType == IndexType.STL_SORT;
         }
     }
 
