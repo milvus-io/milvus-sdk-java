@@ -72,7 +72,7 @@ public class UpdateCredentialParam {
          */
         public UpdateCredentialParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(username, "Username");
-            ParamUtils.CheckNullEmptyString(oldPassword, "OldPassword");
+            ParamUtils.CheckNullString(oldPassword, "OldPassword");
             ParamUtils.CheckNullEmptyString(newPassword, "NewPassword");
 
             return new UpdateCredentialParam(this);

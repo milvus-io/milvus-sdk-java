@@ -32,10 +32,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Getter
 public class DescribeIndexParam {
+    private final String databaseName;
     private final String collectionName;
     private final String indexName;
 
     private DescribeIndexParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
     }
@@ -48,10 +50,22 @@ public class DescribeIndexParam {
      * Builder for {@link DescribeIndexParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String indexName = "";
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

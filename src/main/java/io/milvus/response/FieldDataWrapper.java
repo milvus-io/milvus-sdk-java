@@ -1,6 +1,8 @@
 package io.milvus.response;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ProtocolStringList;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
@@ -10,8 +12,11 @@ import lombok.NonNull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
+
+import static io.milvus.grpc.DataType.JSON;
 
 /**
  * Utility class to wrap response of <code>query/search</code> interface.
@@ -25,6 +30,14 @@ public class FieldDataWrapper {
 
     public boolean isVectorField() {
         return fieldData.getType() == DataType.FloatVector || fieldData.getType() == DataType.BinaryVector;
+    }
+
+    public boolean isJsonField() {
+        return fieldData.getType() == JSON;
+    }
+
+    public boolean isDynamicField() {
+        return fieldData.getType() == JSON && fieldData.getIsDynamic();
     }
 
     /**
@@ -82,6 +95,8 @@ public class FieldDataWrapper {
             case VarChar:
             case String:
                 return fieldData.getScalars().getStringData().getDataList().size();
+            case JSON:
+                return fieldData.getScalars().getJsonData().getDataList().size();
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
@@ -152,8 +167,63 @@ public class FieldDataWrapper {
             case String:
                 ProtocolStringList protoStrList = fieldData.getScalars().getStringData().getDataList();
                 return protoStrList.subList(0, protoStrList.size());
+            case JSON:
+                List<ByteString> dataList = fieldData.getScalars().getJsonData().getDataList();
+                return dataList.stream().map(ByteString::toByteArray).collect(Collectors.toList());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
+    }
+
+    public Integer getAsInt(int index, String paramName) throws IllegalResponseException {
+        if (isJsonField()) {
+            String result = getAsString(index, paramName);
+            return result == null ? null : Integer.parseInt(result);
+        }
+        throw new IllegalResponseException("Only JSON type support this operation");
+    }
+
+    public String getAsString(int index, String paramName) throws IllegalResponseException {
+        if (isJsonField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.getString(paramName);
+        }
+        throw new IllegalResponseException("Only JSON type support this operation");
+    }
+
+    public Boolean getAsBool(int index, String paramName) throws IllegalResponseException {
+        if (isJsonField()) {
+            String result = getAsString(index, paramName);
+            return result == null ? null : Boolean.parseBoolean(result);
+        }
+        throw new IllegalResponseException("Only JSON type support this operation");
+    }
+
+    public Double getAsDouble(int index, String paramName) throws IllegalResponseException {
+        if (isJsonField()) {
+            String result = getAsString(index, paramName);
+            return result == null ? null : Double.parseDouble(result);
+        }
+        throw new IllegalResponseException("Only JSON type support this operation");
+    }
+
+    public Object get(int index, String paramName) throws IllegalResponseException {
+        if (isJsonField()) {
+            JSONObject jsonObject = parseObjectData(index);
+            return jsonObject.get(paramName);
+        }
+        throw new IllegalResponseException("Only JSON type support this operation");
+    }
+
+    public Object valueByIdx(int index) throws ParamException {
+        if (index < 0 || index >= getFieldData().size()) {
+            throw new ParamException("index out of range");
+        }
+        return getFieldData().get(index);
+    }
+
+    private JSONObject parseObjectData(int index) {
+        Object object = valueByIdx(index);
+        return JSONObject.parseObject(new String((byte[])object));
     }
 }

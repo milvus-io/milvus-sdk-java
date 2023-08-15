@@ -94,7 +94,7 @@ public class SearchParam {
         private Long travelTimestamp = 0L;
         private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
         private Long gracefulTime = 5000L;
-        private ConsistencyLevelEnum consistencyLevel;
+        private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
 
        Builder() {
@@ -136,9 +136,14 @@ public class SearchParam {
         /**
          *  Graceful time for BOUNDED Consistency Level
          *
+         * Note: This parameter is deprecated from Milvus v2.2.9, user only input consistency level to search.
+         *       The time settings of different consistency levels are determined by the server side.
+         *       For this reason, this method is marked as Deprecated in Java SDK v2.2.11
+         *
          * @param gracefulTime graceful time
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withGracefulTime(Long gracefulTime) {
             this.gracefulTime = gracefulTime;
             return this;
@@ -272,6 +277,7 @@ public class SearchParam {
          * @param ts a timestamp value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withTravelTimestamp(@NonNull Long ts) {
             this.travelTimestamp = ts;
             return this;
@@ -288,9 +294,14 @@ public class SearchParam {
          *
          * Default value is GUARANTEE_EVENTUALLY_TS, server executes search immediately.
          *
+         * Note: This parameter is deprecated from Milvus v2.2.9, user only input consistency level to search.
+         *       The time settings of different consistency levels are determined by the server side.
+         *       For this reason, this method is marked as Deprecated in Java SDK v2.2.11
+         *
          * @param ts a timestamp value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withGuaranteeTimestamp(@NonNull Long ts) {
             this.guaranteeTimestamp = ts;
             return this;
@@ -372,7 +383,7 @@ public class SearchParam {
                     throw new ParamException("Target vector is binary but metric type is incorrect");
                 }
             } else {
-                throw new ParamException("Target vector type must be Lst<Float> or ByteBuffer");
+                throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
             }
 
             return new SearchParam(this);

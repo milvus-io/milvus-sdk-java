@@ -20,79 +20,59 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTP_PREFIX;
-import static io.milvus.common.constant.MilvusClientConstant.StringValue.COLON;
-
 /**
  * Parameters for client connection.
  */
+@Getter
+@ToString
 public class ConnectParam {
     private final String host;
     private final int port;
+    private final String databaseName;
     private final String uri;
+    private final String token;
     private final long connectTimeoutMs;
     private final long keepAliveTimeMs;
     private final long keepAliveTimeoutMs;
     private final boolean keepAliveWithoutCalls;
+    private final long rpcDeadlineMs;
     private final boolean secure;
     private final long idleTimeoutMs;
     private final String authorization;
+    private final String clientKeyPath;
+    private final String clientPemPath;
+    private final String caPemPath;
+    private final String serverPemPath;
+    private final String serverName;
 
-    private ConnectParam(@NonNull Builder builder) {
+    protected ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
         this.port = builder.port;
+        this.token = builder.token;
+        this.databaseName = builder.databaseName;
         this.uri = builder.uri;
         this.connectTimeoutMs = builder.connectTimeoutMs;
         this.keepAliveTimeMs = builder.keepAliveTimeMs;
         this.keepAliveTimeoutMs = builder.keepAliveTimeoutMs;
         this.keepAliveWithoutCalls = builder.keepAliveWithoutCalls;
         this.idleTimeoutMs = builder.idleTimeoutMs;
+        this.rpcDeadlineMs = builder.rpcDeadlineMs;
         this.secure = builder.secure;
         this.authorization = builder.authorization;
-    }
-
-    public String getHost() {
-        return host;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public long getConnectTimeoutMs() {
-        return connectTimeoutMs;
-    }
-
-    public long getKeepAliveTimeMs() {
-        return keepAliveTimeMs;
-    }
-
-    public long getKeepAliveTimeoutMs() {
-        return keepAliveTimeoutMs;
-    }
-
-    public boolean isKeepAliveWithoutCalls() {
-        return keepAliveWithoutCalls;
-    }
-
-    public boolean isSecure() {
-        return secure;
-    }
-
-    public long getIdleTimeoutMs() {
-        return idleTimeoutMs;
-    }
-
-    public String getAuthorization() {
-        return authorization;
+        this.clientKeyPath = builder.clientKeyPath;
+        this.clientPemPath = builder.clientPemPath;
+        this.caPemPath = builder.caPemPath;
+        this.serverPemPath = builder.serverPemPath;
+        this.serverName = builder.serverName;
     }
 
     public static Builder newBuilder() {
@@ -102,19 +82,30 @@ public class ConnectParam {
     /**
      * Builder for {@link ConnectParam}
      */
+    @Getter
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
+        private String databaseName = "default";
         private String uri;
+        private String token;
         private long connectTimeoutMs = 10000;
         private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
-        private boolean secure = false;
+        private long rpcDeadlineMs = 0; // Disabling deadline
+
+        private String clientKeyPath;
+        private String clientPemPath;
+        private String caPemPath;
+        private String serverPemPath;
+        private String serverName;
+
+        protected boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = Base64.getEncoder().encodeToString("root:milvus".getBytes(StandardCharsets.UTF_8));
 
-        private Builder() {
+        protected Builder() {
         }
 
         /**
@@ -140,13 +131,35 @@ public class ConnectParam {
         }
 
         /**
+         * Sets the database name.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(@NonNull String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
          * Sets the uri
          *
-         * @param uri
+         * @param uri the uri of Milvus instance
          * @return <code>Builder</code>
          */
         public Builder withUri(String uri) {
             this.uri = uri;
+            return this;
+        }
+
+        /**
+         * Sets the token
+         *
+         * @param token serving as the key for identification and authentication purposes.
+         * @return <code>Builder</code>
+         */
+        public Builder withToken(String token) {
+            this.token = token;
             return this;
         }
 
@@ -203,6 +216,7 @@ public class ConnectParam {
          * @param enable true keep-alive
          * @return <code>Builder</code>
          */
+        @java.lang.Deprecated
         public Builder secure(boolean enable) {
             secure = enable;
             return this;
@@ -221,18 +235,32 @@ public class ConnectParam {
         }
 
         /**
+         * Set a deadline for how long you are willing to wait for a reply from the server.
+         * With a deadline setting, the client will wait when encounter fast RPC fail caused by network fluctuations.
+         * The deadline value must be larger than or equal to zero. Default value is 0, deadline is disabled.
+         *
+         * @param deadline deadline value
+         * @param timeUnit deadline unit
+         * @return <code>Builder</code>
+         */
+        public Builder withRpcDeadline(long deadline, @NonNull TimeUnit timeUnit) {
+            this.rpcDeadlineMs = timeUnit.toMillis(deadline);
+            return this;
+        }
+
+        /**
          * Sets the username and password for this connection
          * @param username current user
          * @param password password
          * @return <code>Builder</code>
          */
-        public Builder withAuthorization(@NonNull String username, @NonNull String password) {
+        public Builder withAuthorization(String username, String password) {
             this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
             return this;
         }
 
         /**
-         * Sets secure the authorization for this connection
+         * Sets secure the authorization for this connection, set to True to enable TLS
          * @param secure boolean
          * @return <code>Builder</code>
          */
@@ -252,24 +280,83 @@ public class ConnectParam {
         }
 
         /**
+         * Set the client.key path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientKeyPath path of client.key
+         * @return <code>Builder</code>
+         */
+        public Builder withClientKeyPath(@NonNull String clientKeyPath) {
+            this.clientKeyPath = clientKeyPath;
+            return this;
+        }
+
+        /**
+         * Set the client.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param clientPemPath path of client.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withClientPemPath(@NonNull String clientPemPath) {
+            this.clientPemPath = clientPemPath;
+            return this;
+        }
+
+        /**
+         * Set the ca.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         * @param caPemPath path of ca.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withCaPemPath(@NonNull String caPemPath) {
+            this.caPemPath = caPemPath;
+            return this;
+        }
+
+        /**
+         * Set the server.pem path for tls one-way authentication, only takes effect when "secure" is True.
+         * @param serverPemPath path of server.pem
+         * @return <code>Builder</code>
+         */
+        public Builder withServerPemPath(@NonNull String serverPemPath) {
+            this.serverPemPath = serverPemPath;
+            return this;
+        }
+
+        /**
+         * Set target name override for SSL host name checking, only takes effect when "secure" is True.
+         * Note: this value is passed to grpc.ssl_target_name_override
+         * @param serverName override name for SSL host
+         * @return <code>Builder</code>
+         */
+        public Builder withServerName(@NonNull String serverName) {
+            this.serverName = serverName;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link ConnectParam} instance.
          *
          * @return {@link ConnectParam}
          */
         public ConnectParam build() throws ParamException {
+            verify();
+
+            return new ConnectParam(this);
+        }
+
+        protected void verify() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
-                if (uri.startsWith(HOST_HTTPS_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTPS_PREFIX, "");
-                    this.secure = true;
-                } else if (uri.startsWith(HOST_HTTP_PREFIX)) {
-                    this.uri = uri.replace(HOST_HTTP_PREFIX, "");
+                io.milvus.utils.URLParser result = new io.milvus.utils.URLParser(uri);
+                this.secure = result.isSecure();
+                this.host = result.getHostname();
+                this.port = result.getPort();
+                this.databaseName = result.getDatabase();
+            }
+
+            if (StringUtils.isNotEmpty(token)) {
+                this.authorization = Base64.getEncoder().encodeToString(String.format("%s", token).getBytes(StandardCharsets.UTF_8));
+                if (!token.contains(":")) {
+                    this.port = 443;
                 }
-                String[] uriArray = uri.split(COLON);
-                this.host = uriArray[0];
-                if(uriArray.length == 2){
-                    this.port = Integer.valueOf(uriArray[1]);
-                }
+                this.secure = true; //
             }
 
             if (port < 0 || port > 0xFFFF) {
@@ -292,20 +379,10 @@ public class ConnectParam {
                 throw new ParamException("Idle timeout must be positive!");
             }
 
-            return new ConnectParam(this);
+            if (StringUtils.isNotEmpty(serverPemPath) || StringUtils.isNotEmpty(caPemPath)
+                    || StringUtils.isNotEmpty(clientPemPath) || StringUtils.isNotEmpty(clientKeyPath)) {
+                secure = true;
+            }
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link ConnectParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ConnectParam{" +
-                "host='" + host + '\'' +
-                ", port='" + port +
-                '}';
     }
 }

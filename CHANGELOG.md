@@ -1,5 +1,118 @@
 # Changelog
 
+## milvus-sdk-java 2.2.12 (2023-08-10)
+
+### Improvement
+
+- Fix a bug that could not create index for scalar field with Milvus v2.2.12(change IndexType.SORT to IndexType.STL_SORT)
+
+## milvus-sdk-java 2.2.11 (2023-08-09)
+
+### Improvement
+
+- Fix a bug that could not create index for VARCHAR field with Milvus v2.2.12
+
+### Deprecated
+
+- withGuaranteeTimestamp()/withGracefulTime() are marked as Deprecated for SearchParam/QueryParam. From Milvus v2.2.9, the time settings are determined by the server side.
+
+## milvus-sdk-java 2.2.10 (2023-08-08)
+
+### Feature
+
+- Support TLS connection
+- Support retry for interface
+
+## milvus-sdk-java 2.2.9 (2023-07-03)
+
+### Improvement
+
+- Fix a bug of listBulkInsertTasks()
+- Set default shard number to be 1
+
+## milvus-sdk-java 2.2.8 (2023-06-29)
+
+### Improvement
+
+- Fix bug of high-level API
+- Add index type SORT for scalar field
+- Set log level in runtime
+
+## milvus-sdk-java 2.2.7 (2023-06-21)
+
+### Improvement
+
+- Provide easy to used high-level interfaces
+- Add more examples
+
+## milvus-sdk-java 2.2.6 (2023-06-05)
+
+### Improvement
+
+- Support JSON type field
+- Support dynamic field
+- Support partition key
+- Support database management: createDatabase/dropDatabase/listDatabases
+
+## milvus-sdk-java 2.2.5 (2023-04-04)
+
+### Improvement
+
+- Implement flushAll() interface
+- Add ignoreGrowing flag for query/search
+
+## milvus-sdk-java 2.2.4 (2023-03-26)
+
+### Improvement
+
+- Implement alterCollection() interface
+- Use the same grpc version v1.46.0 as milvus-proto repo
+
+## milvus-sdk-java 2.2.3 (2023-02-11)
+
+### Improvement
+
+- Implement getLoadState() interface
+- Add refresh parameter to load() interface
+- Add getProcess() for bulkinsert task state
+- Fix example error
+
+## milvus-sdk-java 2.2.2 (2023-01-04)
+
+### Bug
+
+- Fix search param offset not avaliable bug
+
+
+## milvus-sdk-java 2.2.1 (2022-11-22)
+
+### Improvement
+
+- Support pagination for query() interface
+- Upgrade commons-text to 1.10.0 to avoid security vulnerabilities
+
+
+## milvus-sdk-java 2.2.0 (2022-11-18)
+
+### Improvement
+
+- Supports Role-Based Access Control (RBAC)
+- Support bulk insert data
+- Support DISKANN index
+
+
+## milvus-sdk-java 2.1.0 (2022-08-31)
+
+### Bug
+
+- Fix keepAliveTimeout timeunit error for ConnectParam
+
+### Improvement
+
+- Remove withGuaranteeTimestamp/withGracefulTime of SearchParam/QueryParam. User only need to provide consistency level
+- Change the default consistency level from Strong to Bounded in SearchParam/QueryParam
+
+
 ## milvus-sdk-java 2.1.0-beta4 (2022-07-22)
 
 ### Feature

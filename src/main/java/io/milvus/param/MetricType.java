@@ -30,8 +30,5 @@ public enum MetricType {
     // Only supported for binary vectors
     HAMMING,
     JACCARD,
-    TANIMOTO,
-    SUBSTRUCTURE,
-    SUPERSTRUCTURE,
     ;
 }

@@ -31,9 +31,14 @@ import io.milvus.param.ServerAddress;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
+import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
+import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.dml.*;
+import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
@@ -89,7 +94,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .withKeepAliveTime(keepAliveTimeMs, TimeUnit.MILLISECONDS)
                 .withKeepAliveTimeout(keepAliveTimeoutMs, TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(keepAliveWithoutCalls)
-                .secure(secure)
+                .withSecure(secure)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
                 .withAuthorization(multiConnectParam.getAuthorization())
                 .build();
@@ -103,6 +108,16 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public MilvusClient withRetry(int retryTimes) {
+        return clusterFactory.getMaster().getClient().withRetry(retryTimes);
+    }
+
+    @Override
+    public MilvusClient withRetryInterval(long interval, TimeUnit timeUnit) {
+        return clusterFactory.getMaster().getClient().withRetryInterval(interval, timeUnit);
+    }
+
+    @Override
     public void close(long maxWaitSeconds) throws InterruptedException {
         this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .forEach(serverSetting -> serverSetting.getClient().close());
@@ -112,6 +127,30 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<Boolean> hasCollection(HasCollectionParam requestParam) {
         return this.clusterFactory.getMaster().getClient().hasCollection(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> createDatabase(CreateDatabaseParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().createDatabase(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<RpcStatus> dropDatabase(DropDatabaseParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().dropDatabase(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<ListDatabasesResponse> listDatabases() {
+        List<R<ListDatabasesResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().listDatabases())
+                .collect(Collectors.toList());
+        return handleResponse(response);
     }
 
     @Override
@@ -142,6 +181,14 @@ public class MilvusMultiServiceClient implements MilvusClient {
     public R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam) {
         List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
                 .map(serverSetting -> serverSetting.getClient().releaseCollection(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<RpcStatus> renameCollection(RenameCollectionParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().renameCollection(requestParam))
                 .collect(Collectors.toList());
         return handleResponse(response);
     }
@@ -357,6 +404,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().getFlushAllState(requestParam);
+    }
+
+    @Override
     public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getPersistentSegmentInfo(requestParam);
     }
@@ -495,6 +547,53 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getLoadState(requestParam);
+    }
+
+    ///////////////////// High Level API//////////////////////
+
+
+    @Override
+    public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {
+        List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().createCollection(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<ListCollectionsResponse> listCollections(ListCollectionsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listCollections(requestParam);
+    }
+
+    @Override
+    public R<InsertResponse> insert(InsertRowsParam requestParam) {
+        List<R<InsertResponse>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().insert(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<DeleteResponse> delete(DeleteIdsParam requestParam) {
+        List<R<DeleteResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().delete(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public R<GetResponse> get(GetIdsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().get(requestParam);
+    }
+
+    @Override
+    public R<QueryResponse> query(QuerySimpleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().query(requestParam);
+    }
+
+    @Override
+    public R<SearchResponse> search(SearchSimpleParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().search(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {

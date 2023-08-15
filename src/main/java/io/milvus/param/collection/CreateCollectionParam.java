@@ -24,6 +24,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +33,27 @@ import java.util.List;
  * Parameters for <code>createCollection</code> interface.
  */
 @Getter
+@ToString
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
     private final String description;
     private final List<FieldType> fieldTypes;
+    private final int partitionsNum;
     private final ConsistencyLevelEnum consistencyLevel;
+    private final String databaseName;
+
+    private final boolean enableDynamicField;
 
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
         this.fieldTypes = builder.fieldTypes;
+        this.partitionsNum = builder.partitionsNum;
         this.consistencyLevel = builder.consistencyLevel;
+        this.databaseName = builder.databaseName;
+        this.enableDynamicField = builder.enableDynamicField;
     }
 
     public static Builder newBuilder() {
@@ -56,11 +65,14 @@ public class CreateCollectionParam {
      */
     public static final class Builder {
         private String collectionName;
-        private int shardsNum = 2;
+        private int shardsNum = 0; // default to 0, let server decide the value
         private String description = "";
         private final List<FieldType> fieldTypes = new ArrayList<>();
-        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.SESSION;
+        private int partitionsNum = 0;
+        private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
+        private String databaseName;
 
+        private boolean enableDynamicField;
         private Builder() {
         }
 
@@ -76,13 +88,37 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Sets the shards number. The number must be greater than zero. The default value is 2.
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
+         * Sets the shards number. The number must be greater or equal to zero.
+         * The default value is 0, which means letting the server decide the value.
+         * The server set this value to 1 if user didn't specify it.
          *
          * @param shardsNum shards number to distribute insert data into multiple data nodes and query nodes.
          * @return <code>Builder</code>
          */
         public Builder withShardsNum(int shardsNum) {
             this.shardsNum = shardsNum;
+            return this;
+        }
+
+        /**
+         * Sets the collection if enableDynamicField.
+         *
+         * @param enableDynamicField enableDynamicField of the collection
+         * @return <code>Builder</code>
+         */
+        public Builder withEnableDynamicField(boolean enableDynamicField) {
+            this.enableDynamicField = enableDynamicField;
             return this;
         }
 
@@ -122,7 +158,7 @@ public class CreateCollectionParam {
         }
 
         /**
-         * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#SESSION}.
+         * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
          * @see ConsistencyLevelEnum
          *
          * @param consistencyLevel consistency level
@@ -134,6 +170,20 @@ public class CreateCollectionParam {
         }
 
         /**
+         * Sets the partitions number if there is partition key field. The number must be greater than zero.
+         * The default value is 64(defined in server side). The upper limit is 4096(defined in server side).
+         * Not allow to set this value if none of field is partition key.
+         * Only one partition key field is allowed in a collection.
+         *
+         * @param partitionsNum partitions number
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionsNum(int partitionsNum) {
+            this.partitionsNum = partitionsNum;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link CreateCollectionParam} instance.
          *
          * @return {@link CreateCollectionParam}
@@ -141,37 +191,35 @@ public class CreateCollectionParam {
         public CreateCollectionParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            if (shardsNum <= 0) {
-                throw new ParamException("ShardNum must be larger than 0");
+            if (shardsNum < 0) {
+                throw new ParamException("ShardNum must be larger or equal to 0");
             }
 
             if (fieldTypes.isEmpty()) {
                 throw new ParamException("Field numbers must be larger than 0");
             }
 
+            boolean hasPartitionKey = false;
             for (FieldType fieldType : fieldTypes) {
                 if (fieldType == null) {
                     throw new ParamException("Collection field cannot be null");
+                }
+
+                if (fieldType.isPartitionKey()) {
+                    if (hasPartitionKey) {
+                        throw new ParamException("Only one partition key field is allowed in a collection");
+                    }
+                    hasPartitionKey = true;
+                }
+            }
+
+            if (partitionsNum > 0) {
+                if (!hasPartitionKey) {
+                    throw new ParamException("None of fields is partition key, not allow to define partition number");
                 }
             }
 
             return new CreateCollectionParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link CreateCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateCollectionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", shardsNum=" + shardsNum +
-                ", description='" + description + '\'' +
-                ", fields=" + fieldTypes.toString() + '\'' +
-                ", consistencyLevel=" + consistencyLevel +
-                '}';
     }
 }

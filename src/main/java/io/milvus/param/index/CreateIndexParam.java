@@ -26,6 +26,7 @@ import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -36,21 +37,26 @@ import java.util.Objects;
  * Parameters for <code>createIndex</code> interface.
  */
 @Getter
+@ToString
 public class CreateIndexParam {
+    private final String databaseName;
     private final String collectionName;
     private final String fieldName;
     private final String indexName;
+    private final IndexType indexType; // for easily get to check with field type
     private final Map<String, String> extraParam = new HashMap<>();
     private final boolean syncMode;
     private final long syncWaitingInterval;
     private final long syncWaitingTimeout;
 
     private CreateIndexParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
+        this.indexType = builder.indexType;
         if (builder.indexType != IndexType.INVALID) {
-            this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.name());
+            this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.getName());
         }
         if (builder.metricType != MetricType.INVALID) {
             this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
@@ -71,6 +77,7 @@ public class CreateIndexParam {
      * Builder for {@link CreateIndexParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String fieldName;
         private IndexType indexType = IndexType.INVALID;
@@ -93,6 +100,17 @@ public class CreateIndexParam {
         private Long syncWaitingTimeout = 600L;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -246,23 +264,5 @@ public class CreateIndexParam {
 
             return new CreateIndexParam(this);
         }
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link CreateIndexParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateIndexParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", fieldName='" + fieldName + '\'' +
-                ", indexName='" + indexName + '\'' +
-                ", params='" + extraParam.toString() + '\'' +
-                ", syncMode=" + syncMode +
-                ", syncWaitingInterval=" + syncWaitingInterval +
-                ", syncWaitingTimeout=" + syncWaitingTimeout +
-                '}';
     }
 }
