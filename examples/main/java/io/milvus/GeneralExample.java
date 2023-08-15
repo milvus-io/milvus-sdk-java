@@ -19,7 +19,10 @@
 
 package io.milvus;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -51,13 +54,11 @@ public class GeneralExample {
         milvusClient = new MilvusServiceClient(connectParam);
     }
 
-    private static final String COLLECTION_NAME = "TEST";
+    private static final String COLLECTION_NAME = "java_sdk_example_general";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 64;
     private static final String AGE_FIELD = "userAge";
-//    private static final String PROFILE_FIELD = "userProfile";
-//    private static final Integer BINARY_DIM = 128;
 
     private static final String INDEX_NAME = "userFaceIndex";
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
@@ -95,24 +96,17 @@ public class GeneralExample {
                 .withDataType(DataType.Int8)
                 .build();
 
-//        FieldType fieldType4 = FieldType.newBuilder()
-//                .withName(PROFILE_FIELD)
-//                .withDescription("user profile")
-//                .withDataType(DataType.BinaryVector)
-//                .withDimension(BINARY_DIM)
-//                .build();
-
         CreateCollectionParam createCollectionReq = CreateCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withDescription("customer info")
                 .withShardsNum(2)
+                .withEnableDynamicField(false)
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
-//                .addFieldType(fieldType4)
                 .build();
         R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
-                                            .createCollection(createCollectionReq);
+                .createCollection(createCollectionReq);
         handleResponseStatus(response);
         System.out.println(response);
         return response;
@@ -172,7 +166,7 @@ public class GeneralExample {
         // call flush() to flush the insert buffer to storage,
         // so that the getCollectionStatistics() can get correct number
         milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
-        
+
         System.out.println("========== getCollectionStatistics() ==========");
         R<GetCollectionStatisticsResponse> response = milvusClient.getCollectionStatistics(
                 GetCollectionStatisticsParam.newBuilder()
@@ -249,7 +243,17 @@ public class GeneralExample {
 
     private R<RpcStatus> createIndex() {
         System.out.println("========== createIndex() ==========");
+        // create index for scalar field
         R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withFieldName(AGE_FIELD)
+                .withIndexType(IndexType.STL_SORT)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+        handleResponseStatus(response);
+
+        // create index for vector field
+        response = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
                 .withIndexName(INDEX_NAME)
@@ -358,43 +362,6 @@ public class GeneralExample {
         return response;
     }
 
-//    private R<SearchResults> searchProfile(String expr) {
-//        System.out.println("========== searchProfile() ==========");
-//        long begin = System.currentTimeMillis();
-//
-//        List<String> outFields = Collections.singletonList(AGE_FIELD);
-//        List<ByteBuffer> vectors = generateBinaryVectors(5);
-//
-//        SearchParam searchParam = SearchParam.newBuilder()
-//                .withCollectionName(COLLECTION_NAME)
-//                .withMetricType(MetricType.HAMMING)
-//                .withOutFields(outFields)
-//                .withTopK(SEARCH_K)
-//                .withVectors(vectors)
-//                .withVectorFieldName(PROFILE_FIELD)
-//                .withExpr(expr)
-//                .withParams(SEARCH_PARAM)
-//                .build();
-//
-//
-//        R<SearchResults> response = milvusClient.search(searchParam);
-//        long end = System.currentTimeMillis();
-//        long cost = (end - begin);
-//        System.out.println("Search time cost: " + cost + "ms");
-//
-//        handleResponseStatus(response);
-//        SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
-//        for (int i = 0; i < vectors.size(); ++i) {
-//            System.out.println("Search result of No." + i);
-//            List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-//            System.out.println(scores);
-//            System.out.println("Output field data for No." + i);
-//            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
-//        }
-//
-//        return response;
-//    }
-
     private R<QueryResults> query(String expr) {
         System.out.println("========== query() ==========");
         List<String> fields = Arrays.asList(ID_FIELD, AGE_FIELD);
@@ -421,10 +388,9 @@ public class GeneralExample {
         return response;
     }
 
-    private R<MutationResult> insert(String partitionName, int count) {
-        System.out.println("========== insert() ==========");
+    private R<MutationResult> insertColumns(String partitionName, int count) {
+        System.out.println("========== insertColumns() ==========");
         List<List<Float>> vectors = generateFloatVectors(count);
-//        List<ByteBuffer> profiles = generateBinaryVectors(count);
 
         Random ran = new Random();
         List<Integer> ages = new ArrayList<>();
@@ -435,12 +401,35 @@ public class GeneralExample {
         List<InsertParam.Field> fields = new ArrayList<>();
         fields.add(new InsertParam.Field(AGE_FIELD, ages));
         fields.add(new InsertParam.Field(VECTOR_FIELD, vectors));
-//        fields.add(new InsertParam.Field(PROFILE_FIELD, profiles));
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .withFields(fields)
+                .build();
+
+        R<MutationResult> response = milvusClient.insert(insertParam);
+        handleResponseStatus(response);
+        return response;
+    }
+
+    private R<MutationResult> insertRows(String partitionName, int count) {
+        System.out.println("========== insertRows() ==========");
+
+        List<JSONObject> rowsData = new ArrayList<>();
+        Random ran = new Random();
+        for (long i = 0L; i < count; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(AGE_FIELD, ran.nextInt(99));
+            row.put(VECTOR_FIELD, generateFloatVector());
+
+            rowsData.add(row);
+        }
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withPartitionName(partitionName)
+                .withRows(rowsData)
                 .build();
 
         R<MutationResult> response = milvusClient.insert(insertParam);
@@ -462,19 +451,14 @@ public class GeneralExample {
         return vectors;
     }
 
-//    private List<ByteBuffer> generateBinaryVectors(int count) {
-//        Random ran = new Random();
-//        List<ByteBuffer> vectors = new ArrayList<>();
-//        int byteCount = BINARY_DIM/8;
-//        for (int n = 0; n < count; ++n) {
-//            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-//            for (int i = 0; i < byteCount; ++i) {
-//                vector.put((byte)ran.nextInt(Byte.MAX_VALUE));
-//            }
-//            vectors.add(vector);
-//        }
-//        return vectors;
-//    }
+    private List<Float> generateFloatVector() {
+        Random ran = new Random();
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < VECTOR_DIM; ++i) {
+            vector.add(ran.nextFloat());
+        }
+        return vector;
+    }
 
     public static void main(String[] args) {
         GeneralExample example = new GeneralExample();
@@ -496,11 +480,20 @@ public class GeneralExample {
         List<Long> deleteIds = new ArrayList<>();
         Random ran = new Random();
         for (int i = 0; i < 100; ++i) {
-            R<MutationResult> result = example.insert(partitionName, row_count);
+            // insertColumns
+            R<MutationResult> result = example.insertColumns(partitionName, row_count);
             MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
             List<Long> ids = wrapper.getLongIDs();
             deleteIds.add(ids.get(ran.nextInt(row_count)));
         }
+
+        // insertRows
+        R<MutationResult> result = example.insertRows(partitionName, 10);
+        MutationResultWrapper wrapper = new MutationResultWrapper(result.getData());
+        long insertCount = wrapper.getInsertCount();
+        List<Long> longIDs = wrapper.getLongIDs();
+        System.out.println("complete insertRows, insertCount:" + insertCount + "; longIDs:" + longIDs);
+
         example.getCollectionStatistics();
 
         // Must create an index before load(), FLAT is brute-force search(no index)
@@ -542,12 +535,9 @@ public class GeneralExample {
         String queryExpr = AGE_FIELD + " == 60";
         example.query(queryExpr);
 
-//        searchExpr = AGE_FIELD + " <= 30";
-//        example.searchProfile(searchExpr);
         example.compact();
         example.getCollectionStatistics();
 
-//        example.releasePartition(partitionName); // releasing partitions after loading collection is not supported currently
         example.releaseCollection();
         example.dropPartition(partitionName);
         example.dropIndex();

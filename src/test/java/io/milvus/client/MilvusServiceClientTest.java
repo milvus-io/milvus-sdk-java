@@ -68,6 +68,7 @@ class MilvusServiceClientTest {
         return new MilvusServiceClient(connectParam);
     }
 
+    @SuppressWarnings("unchecked")
     private <T, P> void invokeFunc(Method testFunc, MilvusServiceClient client, T param, int ret, boolean equalRet) {
         try {
             R<P> resp = (R<P>) testFunc.invoke(client, param);
@@ -83,7 +84,6 @@ class MilvusServiceClientTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private <T, P> void testFuncByName(String funcName, T param) {
         // start mock server
         MockMilvusServer server = startServer();
@@ -274,7 +274,7 @@ class MilvusServiceClientTest {
 
     @Test
     void createCollectionParam() {
-        // test throw exception with illegal input
+        // test throw exception with illegal input for FieldType
         assertThrows(ParamException.class, () ->
                 FieldType.newBuilder()
                         .withName("")
@@ -295,6 +295,54 @@ class MilvusServiceClientTest {
                         .build()
         );
 
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .withDataType(DataType.Int64)
+                        .withPrimaryKey(true)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("userID")
+                        .withDataType(DataType.FloatVector)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                FieldType.newBuilder()
+                        .withName("partitionKey")
+                        .withDataType(DataType.Int64)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                FieldType.newBuilder()
+                        .withName("partitionKey")
+                        .withDataType(DataType.VarChar)
+                        .withMaxLength(120)
+                        .withPartitionKey(true)
+                        .build()
+        );
+
+        Map<String, String> params = new HashMap<>();
+        params.put("1", "1");
+        assertThrows(ParamException.class, () ->
+                FieldType.newBuilder()
+                        .withName("vec")
+                        .withDescription("desc")
+                        .withDataType(DataType.FloatVector)
+                        .withTypeParams(params)
+                        .addTypeParam("2", "2")
+                        .withDimension(-1)
+                        .build()
+        );
+
+        // test throw exception with illegal input for CreateCollectionParam
         assertThrows(ParamException.class, () ->
                 CreateCollectionParam
                         .newBuilder()
@@ -324,7 +372,7 @@ class MilvusServiceClientTest {
                 CreateCollectionParam
                         .newBuilder()
                         .withCollectionName("collection1")
-                        .withShardsNum(0)
+                        .withShardsNum(-1)
                         .addFieldType(fieldType1)
                         .build()
         );
@@ -339,16 +387,38 @@ class MilvusServiceClientTest {
                         .build()
         );
 
-        Map<String, String> params = new HashMap<>();
-        params.put("1", "1");
         assertThrows(ParamException.class, () ->
-                FieldType.newBuilder()
-                        .withName("vec")
-                        .withDescription("desc")
-                        .withDataType(DataType.FloatVector)
-                        .withTypeParams(params)
-                        .addTypeParam("2", "2")
-                        .withDimension(-1)
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .withShardsNum(0)
+                        .withPartitionsNum(10)
+                        .addFieldType(fieldType1)
+                        .build()
+        );
+
+        FieldType fieldType2 = FieldType.newBuilder()
+                .withName("partitionKey")
+                .withDataType(DataType.Int64)
+                .withPartitionKey(true)
+                .build();
+
+        assertDoesNotThrow(() ->
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .addFieldType(fieldType1)
+                        .addFieldType(fieldType2)
+                        .build()
+        );
+
+        assertDoesNotThrow(() ->
+                CreateCollectionParam
+                        .newBuilder()
+                        .withCollectionName("collection1")
+                        .withPartitionsNum(100)
+                        .addFieldType(fieldType1)
+                        .addFieldType(fieldType2)
                         .build()
         );
     }
@@ -1255,10 +1325,50 @@ class MilvusServiceClientTest {
         MockMilvusServer server = startServer();
         MilvusServiceClient client = startClient();
 
+        // createIndex() calls describeCollection() to check input
+        CollectionSchema schema = CollectionSchema.newBuilder()
+                .addFields(FieldSchema.newBuilder()
+                        .setName("field1")
+                        .setDataType(DataType.FloatVector)
+                        .addTypeParams(KeyValuePair.newBuilder().setKey(Constant.VECTOR_DIM).setValue("256").build())
+                        .build())
+                .build();
+        mockServerImpl.setDescribeCollectionResponse(DescribeCollectionResponse.newBuilder().setSchema(schema).build());
+
         // test return ok for sync mode loading
         mockServerImpl.setDescribeIndexResponse(DescribeIndexResponse.newBuilder()
                 .addIndexDescriptions(IndexDescription.newBuilder().setState(IndexState.InProgress).build())
                 .build());
+
+        // field doesn't exist
+        CreateIndexParam param = CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("aaa")
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("dummy")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(2L)
+                .build();
+
+        R<RpcStatus> resp = client.createIndex(param);
+        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
+
+        // index type doesn't match with data type
+        param = CreateIndexParam.newBuilder()
+                .withCollectionName("collection1")
+                .withFieldName("field1")
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("dummy")
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(2L)
+                .build();
+
+        resp = client.createIndex(param);
+        assertNotEquals(R.Status.Success.getCode(), resp.getStatus());
 
         new Thread(() -> {
             try {
@@ -1273,7 +1383,7 @@ class MilvusServiceClientTest {
             }
         }, "RefreshIndexState").start();
 
-        CreateIndexParam param = CreateIndexParam.newBuilder()
+        param = CreateIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
@@ -1285,7 +1395,7 @@ class MilvusServiceClientTest {
                 .build();
 
         // test return ok with correct input
-        R<RpcStatus> resp = client.createIndex(param);
+        resp = client.createIndex(param);
         assertEquals(R.Status.Success.getCode(), resp.getStatus());
 
         // stop mock server
@@ -2408,10 +2518,10 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        assertThrows(ParamException.class, () -> UpdateCredentialParam
+        assertDoesNotThrow(() -> UpdateCredentialParam
                 .newBuilder()
                 .withUsername("username")
-                .withOldPassword("  ")
+                .withOldPassword("")
                 .withNewPassword("newPassword")
                 .build()
         );

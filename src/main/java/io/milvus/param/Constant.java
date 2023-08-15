@@ -71,4 +71,13 @@ public class Constant {
     // set this value for "withGuaranteeTimestamp" of QueryParam/SearchParam
     // to instruct server execute query/search after all DML operations finished.
     public static final Long GUARANTEE_STRONG_TS = 0L;
+
+    // high level api
+    public static final String VECTOR_FIELD_NAME_DEFAULT  = "vector";
+    public static final String PRIMARY_FIELD_NAME_DEFAULT = "id";
+    public static final String VECTOR_INDEX_NAME_DEFAULT  = "vector_idx";
+    public static final Long LIMIT_DEFAULT = 100L;
+    public static final Long OFFSET_DEFAULT = 0L;
+    public static final String ALL_OUTPUT_FIELDS = "*";
+
 }

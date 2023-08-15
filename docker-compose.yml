@@ -3,7 +3,7 @@ version: '3.5'
 services:
   etcd:
     container_name: milvus-javasdk-test-etcd
-    image: quay.io/coreos/etcd:v3.5.0
+    image: quay.io/coreos/etcd:v3.5.5
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -17,12 +17,13 @@ services:
     image: minio/minio:RELEASE.2022-03-17T06-34-49Z
     ports:
       - "9000:9000"
+      - "9001:9001"
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio:/minio_data
-    command: minio server /minio_data
+    command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
@@ -31,7 +32,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-test-standalone
-    image: milvusdb/milvus:master-20230203-787ce7c1
+    image: milvusdb/milvus:master-20230815-ec65a4e0
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -47,7 +48,7 @@ services:
 
   etcdslave:
     container_name: milvus-javasdk-test-etcd-slave
-    image: quay.io/coreos/etcd:v3.5.0
+    image: quay.io/coreos/etcd:v3.5.5
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd-slave:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -60,13 +61,14 @@ services:
     container_name: milvus-javasdk-test-minio-slave
     image: minio/minio:RELEASE.2022-03-17T06-34-49Z
     ports:
-      - "9001:9000"
+      - "19000:9000"
+      - "19001:9001"
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio-slave:/minio_data
-    command: minio server /minio_data
+    command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
       interval: 30s
@@ -75,7 +77,7 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-test-slave-standalone
-    image: milvusdb/milvus:master-20230203-787ce7c1
+    image: milvusdb/milvus:master-20230815-ec65a4e0
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcdslave:2379

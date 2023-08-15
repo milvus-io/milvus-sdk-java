@@ -31,9 +31,11 @@ import lombok.NonNull;
 @Getter
 public class DropCollectionParam {
     private final String collectionName;
+    private final String databaseName;
 
     private DropCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.databaseName = builder.databaseName;
     }
 
     public static Builder newBuilder() {
@@ -45,8 +47,20 @@ public class DropCollectionParam {
      */
     public static final class Builder {
         private String collectionName;
+        private String databaseName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the collection name. Database name can empty or null.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

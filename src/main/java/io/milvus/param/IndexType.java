@@ -19,28 +19,51 @@
 
 package io.milvus.param;
 
+import lombok.Getter;
+
 /**
  * Represents the available index types.
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
  */
 public enum IndexType {
     INVALID,
-    FLAT,
-    IVF_FLAT,
-    IVF_SQ8,
-    IVF_PQ,
-    HNSW,
-    ANNOY,
-    RHNSW_FLAT,
-    RHNSW_PQ,
-    RHNSW_SQ,
-    DISKANN,
-    AUTOINDEX,
+    //Only supported for float vectors
+    FLAT(1),
+    IVF_FLAT(2),
+    IVF_SQ8(3),
+    IVF_PQ(4),
+    HNSW(5),
+    DISKANN(10),
+    AUTOINDEX(11),
     //Only supported for binary vectors
-    BIN_FLAT,
-    BIN_IVF_FLAT,
+    BIN_FLAT(12),
+    BIN_IVF_FLAT(13),
 
+    //Scalar field index start from here
     //Only for varchar type field
-    TRIE,
+    TRIE("Trie", 100),
+    //Only for scalar type field
+    STL_SORT(200),
     ;
+
+    @Getter
+    private final String name;
+
+    @Getter
+    private final int code;
+
+    IndexType(){
+        this.name = this.name();
+        this.code = this.ordinal();
+    }
+
+    IndexType(int code){
+        this.name = this.name();
+        this.code = code;
+    }
+
+    IndexType(String name, int code){
+        this.name = name;
+        this.code = code;
+    }
 }

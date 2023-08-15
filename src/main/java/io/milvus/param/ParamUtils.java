@@ -1,7 +1,8 @@
 package io.milvus.param;
 
+import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.protobuf.ByteString;
-import io.grpc.StatusRuntimeException;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.exception.IllegalResponseException;
@@ -11,7 +12,12 @@ import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.response.DescCollResponseWrapper;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
@@ -42,6 +48,10 @@ public class ParamUtils {
 
     private static void checkFieldData(FieldType fieldSchema, InsertParam.Field fieldData) {
         List<?> values = fieldData.getValues();
+        checkFieldData(fieldSchema, values);
+    }
+
+    private static void checkFieldData(FieldType fieldSchema, List<?> values) {
         HashMap<DataType, String> errMsgs = getTypeErrorMsg();
         DataType dataType = fieldSchema.getDataType();
 
@@ -133,6 +143,13 @@ public class ParamUtils {
                     }
                 }
                 break;
+            case JSON:
+                for (Object value : values) {
+                    if (!(value instanceof JSONObject)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
@@ -148,6 +165,19 @@ public class ParamUtils {
     public static void CheckNullEmptyString(String target, String name) throws ParamException {
         if (target == null || StringUtils.isBlank(target)) {
             throw new ParamException(name + " cannot be null or empty");
+        }
+    }
+
+    /**
+     * Checks if a string is  null.
+     * Throws {@link ParamException} if the string is null.
+     *
+     * @param target target string
+     * @param name a name to describe this string
+     */
+    public static void CheckNullString(String target, String name) throws ParamException {
+        if (target == null) {
+            throw new ParamException(name + " cannot be null");
         }
     }
 
@@ -170,28 +200,81 @@ public class ParamUtils {
     }
 
     /**
-     * Checks if an index type is for vector.
+     * Checks if an index type is for vector field.
      *
      * @param idx index type
      */
     public static boolean IsVectorIndex(IndexType idx) {
-        return idx != IndexType.INVALID && idx != IndexType.TRIE;
+        return idx != IndexType.INVALID && idx.getCode() < IndexType.TRIE.getCode();
+    }
+
+    /**
+     * Checks if an index type is matched with data type.
+     *
+     * @param indexType index type
+     * @param dataType data type
+     */
+    public static boolean VerifyIndexType(IndexType indexType, DataType dataType) {
+        if (dataType == DataType.FloatVector) {
+            return (IsVectorIndex(indexType) && (indexType != IndexType.BIN_FLAT) && (indexType != IndexType.BIN_IVF_FLAT));
+        } else if (dataType == DataType.BinaryVector) {
+            return indexType == IndexType.BIN_FLAT || indexType == IndexType.BIN_IVF_FLAT;
+        } else if (dataType == DataType.VarChar) {
+            return indexType == IndexType.TRIE;
+        } else {
+            return indexType == IndexType.STL_SORT;
+        }
     }
 
     public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
-                                                   @NonNull List<FieldType> fieldTypes) {
+                                                   DescCollResponseWrapper wrapper) {
         String collectionName = requestParam.getCollectionName();
-        String partitionName = requestParam.getPartitionName();
-        List<InsertParam.Field> fields = requestParam.getFields();
 
         // gen insert request
         MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
         InsertRequest.Builder insertBuilder = InsertRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setPartitionName(partitionName)
                 .setBase(msgBase)
                 .setNumRows(requestParam.getRowCount());
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            insertBuilder.setDbName(requestParam.getDatabaseName());
+        }
+        fillFieldsData(requestParam, wrapper, insertBuilder);
 
+        // gen request
+        return insertBuilder.build();
+    }
+    private static void fillFieldsData(InsertParam requestParam, DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder) {
+        // set partition name only when there is no partition key field
+        String partitionName = requestParam.getPartitionName();
+        boolean isPartitionKeyEnabled = false;
+        for (FieldType fieldType : wrapper.getFields()) {
+            if (fieldType.isPartitionKey()) {
+                isPartitionKeyEnabled = true;
+                break;
+            }
+        }
+        if (isPartitionKeyEnabled) {
+            if (partitionName != null && !partitionName.isEmpty()) {
+                String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
+                throw new ParamException(msg);
+            }
+        } else if (partitionName != null) {
+            insertBuilder.setPartitionName(partitionName);
+        }
+
+        // convert insert data
+        List<InsertParam.Field> columnFields = requestParam.getFields();
+        List<JSONObject> rowFields = requestParam.getRows();
+
+        if (CollectionUtils.isNotEmpty(columnFields)) {
+            checkAndSetColumnData(requestParam, wrapper.getFields(), insertBuilder, columnFields);
+        } else {
+            checkAndSetRowData(wrapper, insertBuilder, rowFields);
+        }
+    }
+
+    private static void checkAndSetColumnData(InsertParam requestParam, List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<InsertParam.Field> fields) {
         // gen fieldData
         // make sure the field order must be consisted with collection schema
         for (FieldType fieldType : fieldTypes) {
@@ -215,9 +298,58 @@ public class ParamUtils {
                 throw new ParamException(msg);
             }
         }
+    }
 
-        // gen request
-        return insertBuilder.build();
+    private static void checkAndSetRowData(DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder, List<JSONObject> rows) {
+        List<FieldType> fieldTypes = wrapper.getFields();
+
+        Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
+        InsertDataInfo insertDynamicDataInfo = InsertDataInfo.builder().dataType(DataType.JSON).data(new LinkedList<>()).build();
+        for (JSONObject row : rows) {
+            for (FieldType fieldType : fieldTypes) {
+                String fieldName = fieldType.getName();
+                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
+                        .fieldName(fieldName).dataType(fieldType.getDataType()).data(new LinkedList<>()).build());
+
+                // check normalField
+                Object rowFieldData = row.get(fieldName);
+                if (rowFieldData != null) {
+                    if (fieldType.isAutoID()) {
+                        String msg = "The primary key: " + fieldName + " is auto generated, no need to input.";
+                        throw new ParamException(msg);
+                    }
+                    checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
+
+                    insertDataInfo.getData().add(rowFieldData);
+                    nameInsertInfo.put(fieldName, insertDataInfo);
+                } else {
+                    // check if autoId
+                    if (!fieldType.isAutoID()) {
+                        String msg = "The field: " + fieldType.getName() + " is not provided.";
+                        throw new ParamException(msg);
+                    }
+                }
+            }
+
+            // deal with dynamicField
+            if (wrapper.getEnableDynamicField()) {
+                JSONObject dynamicField = new JSONObject();
+                for (String rowFieldName : row.keySet()) {
+                    if (!nameInsertInfo.containsKey(rowFieldName)) {
+                        dynamicField.put(rowFieldName, row.get(rowFieldName));
+                    }
+                }
+                insertDynamicDataInfo.getData().add(dynamicField);
+            }
+        }
+
+        for (String fieldNameKey : nameInsertInfo.keySet()) {
+            InsertDataInfo insertDataInfo = nameInsertInfo.get(fieldNameKey);
+            insertBuilder.addFieldsData(genFieldData(insertDataInfo.getFieldName(), insertDataInfo.getDataType(), insertDataInfo.getData()));
+        }
+        if (wrapper.getEnableDynamicField()) {
+            insertBuilder.addFieldsData(genFieldData(insertDynamicDataInfo.getFieldName(), insertDynamicDataInfo.getDataType(), insertDynamicDataInfo.getData(), Boolean.TRUE));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -332,6 +464,11 @@ public class ParamUtils {
         builder.setTravelTimestamp(requestParam.getTravelTimestamp());
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
+        // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
+        if (requestParam.getConsistencyLevel() == null) {
+            builder.setUseDefaultConsistency(true);
+        }
+
         return builder.build();
     }
 
@@ -345,6 +482,11 @@ public class ParamUtils {
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
                 .setGuaranteeTimestamp(guaranteeTimestamp);
+
+        // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
+        if (requestParam.getConsistencyLevel() == null) {
+            builder.setUseDefaultConsistency(true);
+        }
 
         // set offset and limit value.
         // directly pass the two values, the server will verify them.
@@ -376,7 +518,7 @@ public class ParamUtils {
     private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
                                               long guaranteeTimestamp, Long gracefulTime){
         if(consistencyLevel == null){
-            return guaranteeTimestamp;
+            return 1L;
         }
         switch (consistencyLevel){
             case STRONG:
@@ -398,8 +540,12 @@ public class ParamUtils {
         add(DataType.BinaryVector);
     }};
 
-    @SuppressWarnings("unchecked")
     private static FieldData genFieldData(String fieldName, DataType dataType, List<?> objects) {
+        return genFieldData(fieldName, dataType, objects, Boolean.FALSE);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static FieldData genFieldData(String fieldName, DataType dataType, List<?> objects, boolean isDynamic) {
         if (objects == null) {
             throw new ParamException("Cannot generate FieldData from null object");
         }
@@ -485,6 +631,16 @@ public class ParamUtils {
                     ScalarField scalarField = ScalarField.newBuilder().setStringData(stringArray).build();
                     return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
                 }
+                case JSON: {
+                    List<ByteString> byteStrings = objects.stream().map(p -> ByteString.copyFromUtf8(((JSONObject) p).toJSONString()))
+                            .collect(Collectors.toList());
+                    JSONArray jsonArray = JSONArray.newBuilder().addAllData(byteStrings).build();
+                    ScalarField scalarField = ScalarField.newBuilder().setJsonData(jsonArray).build();
+                    if (isDynamic) {
+                        return builder.setType(dataType).setScalars(scalarField).setIsDynamic(true).build();
+                    }
+                    return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
+                }
             }
         }
 
@@ -502,8 +658,14 @@ public class ParamUtils {
                 .withName(field.getName())
                 .withDescription(field.getDescription())
                 .withPrimaryKey(field.getIsPrimaryKey())
+                .withPartitionKey(field.getIsPartitionKey())
                 .withAutoID(field.getAutoID())
-                .withDataType(field.getDataType());
+                .withDataType(field.getDataType())
+                .withIsDynamic(field.getIsDynamic());
+
+        if (field.getIsDynamic()) {
+            builder.withIsDynamic(true);
+        }
 
         List<KeyValuePair> keyValuePairs = field.getTypeParamsList();
         keyValuePairs.forEach((kv) -> builder.addTypeParam(kv.getKey(), kv.getValue()));
@@ -519,15 +681,42 @@ public class ParamUtils {
      */
     public static FieldSchema ConvertField(@NonNull FieldType field) {
         FieldSchema.Builder builder = FieldSchema.newBuilder()
-                .setIsPrimaryKey(field.isPrimaryKey())
-                .setAutoID(field.isAutoID())
                 .setName(field.getName())
                 .setDescription(field.getDescription())
-                .setDataType(field.getDataType());
-        Map<String, String> params = field.getTypeParams();
-        params.forEach((key, value) -> builder.addTypeParams(KeyValuePair.newBuilder()
-                .setKey(key).setValue(value).build()));
+                .setIsPrimaryKey(field.isPrimaryKey())
+                .setIsPartitionKey(field.isPartitionKey())
+                .setAutoID(field.isAutoID())
+                .setDataType(field.getDataType())
+                .setIsDynamic(field.isDynamic());
+
+        // assemble typeParams for CollectionSchema
+        List<KeyValuePair> typeParamsList = AssembleKvPair(field.getTypeParams());
+        if (CollectionUtils.isNotEmpty(typeParamsList)) {
+            typeParamsList.forEach(builder::addTypeParams);
+        }
 
         return builder.build();
+    }
+
+    public static List<KeyValuePair> AssembleKvPair(Map<String, String> sourceMap) {
+        List<KeyValuePair> result = new ArrayList<>();
+
+        if (MapUtils.isNotEmpty(sourceMap)) {
+            sourceMap.forEach((key, value) -> {
+                KeyValuePair kv = KeyValuePair.newBuilder()
+                        .setKey(key)
+                        .setValue(value).build();
+                result.add(kv);
+            });
+        }
+        return result;
+    }
+
+    @Builder
+    @Getter
+    public static class InsertDataInfo {
+        private final String fieldName;
+        private final DataType dataType;
+        private final LinkedList<Object> data;
     }
 }

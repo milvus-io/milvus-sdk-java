@@ -26,9 +26,14 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
+import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
+import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.dml.*;
+import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
@@ -46,6 +51,21 @@ public interface MilvusClient {
      * @param timeoutUnit time unit
      */
     MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
+
+    /**
+     * Number of retry attempts.
+     *
+     * @param retryTimes     number of retry attempts.
+     */
+    MilvusClient withRetry(int retryTimes);
+
+    /**
+     * Time interval between retry attempts. Default value is 500ms.
+     *
+     * @param interval     time interval between retry attempts.
+     * @param timeUnit     time unit
+     */
+    MilvusClient withRetryInterval(long interval, TimeUnit timeUnit);
 
     /**
      * Disconnects from a Milvus server with timeout of 1 minute
@@ -72,6 +92,29 @@ public interface MilvusClient {
      * @return {status:result code, data: boolean, whether if has collection or not}
      */
     R<Boolean> hasCollection(HasCollectionParam requestParam);
+
+    /**
+     * Creates a database in Milvus.
+     *
+     * @param requestParam {@link CreateDatabaseParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createDatabase(CreateDatabaseParam requestParam);
+
+    /**
+     * Drops a database. Note that this method drops all data in the database.
+     *
+     * @param requestParam {@link DropDatabaseParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> dropDatabase(DropDatabaseParam requestParam);
+
+    /**
+     * List databases. Note that this method list all database in the cluster.
+     *
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<ListDatabasesResponse> listDatabases();
 
     /**
      * Creates a collection in Milvus.
@@ -121,6 +164,14 @@ public interface MilvusClient {
      * @return {status:result code, data: GetCollectionStatisticsResponse{status,stats}}
      */
     R<GetCollectionStatisticsResponse> getCollectionStatistics(GetCollectionStatisticsParam requestParam);
+
+    /**
+     * rename a collection
+     *
+     * @param requestParam {@link RenameCollectionParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> renameCollection(RenameCollectionParam requestParam);
 
     /**
      * Lists all collections or gets collection loading status.
@@ -359,6 +410,14 @@ public interface MilvusClient {
     R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam);
 
     /**
+     * Get flush state of all segments.
+     *
+     * @param requestParam {@link GetFlushAllStateParam}
+     * @return {status:result code, data:GetMetricsResponse{status,metrics}}
+     */
+    R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam);
+
+    /**
      * Gets the information of persistent segments from data node, including row count,
      * persistence state(growing or flushed), etc.
      *
@@ -595,4 +654,65 @@ public interface MilvusClient {
      * @return {status:result code, data:GetLoadStateResponse{status}}
      */
     R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam);
+
+
+
+    ///////////////////// High Level API//////////////////////
+    /**
+     * Creates a collection in Milvus.
+     *
+     * @param requestParam {@link CreateSimpleCollectionParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam);
+
+    /**
+     * Lists all collections
+     *
+     * @param requestParam {@link ListCollectionsParam}
+     * @return {status:result code, data: ListCollectionsResponse{collection_names}}
+     */
+    R<ListCollectionsResponse> listCollections(ListCollectionsParam requestParam);
+
+    /**
+     * Inserts rows data into a specified collection . Note that you don't need to
+     * input primary key field if auto_id is enabled.
+     *
+     * @param requestParam {@link InsertRowsParam}
+     * @return {status:result code, data: MutationResult{insert results}}
+     */
+    R<InsertResponse> insert(InsertRowsParam requestParam);
+
+    /**
+     * Deletes entity(s) based on the value of primary key.
+     *
+     * @param requestParam {@link DeleteIdsParam}
+     * @return {status:result code, data: MutationResult{delete results}}
+     */
+    R<DeleteResponse> delete(DeleteIdsParam requestParam);
+
+    /**
+     * Get entity(s) based on the value of primary key.
+     *
+     * @param requestParam {@link GetIdsParam}
+     * @return {status:result code, data: QueryResults{query results}}
+     */
+    R<GetResponse> get(GetIdsParam requestParam);
+
+    /**
+     * Queries entity(s) based on scalar field(s) filtered by boolean expression.
+     * Note that the order of the returned entities cannot be guaranteed.
+     *
+     * @param requestParam {@link QuerySimpleParam}
+     * @return {status:result code,data: QueryResults{filter results}}
+     */
+    R<QueryResponse> query(QuerySimpleParam requestParam);
+
+    /**
+     * Conducts ANN search on a vector field. Use expression to do filtering before search.
+     *
+     * @param requestParam {@link SearchSimpleParam}
+     * @return {status:result code, data: SearchResults{topK results}}
+     */
+    R<SearchResponse> search(SearchSimpleParam requestParam);
 }

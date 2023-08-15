@@ -29,3 +29,8 @@ hs_err_pid*
 target/
 volumes/
 *.iml
+
+# Example files
+examples/main/java/io/milvus/tls/*
+!examples/main/java/io/milvus/tls/gen.sh
+!examples/main/java/io/milvus/tls/openssl.cnf

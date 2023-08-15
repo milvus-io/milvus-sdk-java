@@ -72,12 +72,42 @@ class MilvusMultiClientDockerTest {
                 logger.error("Failed to start docker compose, status " + status);
             }
 
-            // here stop 10 seconds, reason: although milvus container is alive, it is still in initializing,
-            // connection will failed and get error "proxy not health".
-            TimeUnit.SECONDS.sleep(10);
             logger.debug("Milvus service started");
         } catch (Throwable t) {
             logger.error("Failed to execute docker compose up", t);
+        }
+
+        ConnectParam connectParam = connectParamBuilder().withAuthorization("root", "Milvus").build();
+        MilvusServiceClient tempClient = new MilvusServiceClient(connectParam);
+        long waitTime = 0;
+        while (true) {
+            // although milvus container is alive, it is still in initializing,
+            // connection will failed and get error "proxy not health".
+            // check health state for every few seconds, until the server is ready.
+            long checkInterval = 3;
+            try {
+                TimeUnit.SECONDS.sleep(checkInterval);
+            } catch (InterruptedException t) {
+                logger.error("Interrupted", t);
+                break;
+            }
+
+            try{
+                R<CheckHealthResponse> resp = tempClient.checkHealth();
+                if (resp.getData().getIsHealthy()) {
+                    logger.info(String.format("Milvus service is ready after %d seconds", waitTime));
+                    break;
+                }
+                logger.info("Milvus service is not ready, waiting...");
+            } catch (Throwable t) {
+                logger.error("Milvus service is in initialize, not able to connect", t);
+            }
+
+            waitTime += checkInterval;
+            if (waitTime > 120) {
+                logger.error(String.format("Milvus service failed to start within %d seconds", waitTime));
+                break;
+            }
         }
     }
 
@@ -126,7 +156,9 @@ class MilvusMultiClientDockerTest {
     public static void setUp() {
         startDockerContainer();
 
-        MultiConnectParam connectParam = multiConnectParamBuilder().withAuthorization("root", "Milvus").build();
+        MultiConnectParam connectParam = multiConnectParamBuilder()
+                .withAuthorization("root", "Milvus")
+                .build();
         client = new MilvusMultiServiceClient(connectParam);
 //        TimeUnit.SECONDS.sleep(10);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
@@ -139,6 +171,14 @@ class MilvusMultiClientDockerTest {
         }
 
         stopDockerContainer();
+    }
+
+    protected static ConnectParam.Builder connectParamBuilder() {
+        return connectParamBuilder("localhost", 19530);
+    }
+
+    private static ConnectParam.Builder connectParamBuilder(String host, int port) {
+        return ConnectParam.newBuilder().withHost(host).withPort(port);
     }
 
     private static MultiConnectParam.Builder multiConnectParamBuilder() {
