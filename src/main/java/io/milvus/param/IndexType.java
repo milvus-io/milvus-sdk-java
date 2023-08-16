@@ -35,9 +35,15 @@ public enum IndexType {
     HNSW(5),
     DISKANN(10),
     AUTOINDEX(11),
+    SCANN(12),
+
+    // GPU index
+    GPU_IVF_FLAT(50),
+    GPU_IVF_PQ(51),
+
     //Only supported for binary vectors
-    BIN_FLAT(12),
-    BIN_IVF_FLAT(13),
+    BIN_FLAT(80),
+    BIN_IVF_FLAT(81),
 
     //Scalar field index start from here
     //Only for varchar type field
