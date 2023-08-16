@@ -594,11 +594,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             logError("LoadCollectionRequest RPC failed! Collection name:{}",
                     requestParam.getCollectionName(), e);
             return R.failed(e);
-        } catch (IllegalResponseException e) { // milvus exception for illegal response
-            logError("LoadCollectionRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
-            return R.failed(e);
-        } catch (Exception e) {
+        } catch (Exception e) { // milvus exception for illegal response
             logError("LoadCollectionRequest failed! Collection name:{}",
                     requestParam.getCollectionName(), e);
             return R.failed(e);
@@ -1028,11 +1024,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             logError("LoadPartitionsRequest RPC failed! Collection name:{}, partition names:{}",
                     requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
             return R.failed(e);
-        } catch (IllegalResponseException e) { // milvus exception for illegal response
-            logError("LoadPartitionsRequest failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
-            return R.failed(e);
-        } catch (Exception e) {
+        } catch (Exception e) { // milvus exception for illegal response
             logError("LoadPartitionsRequest failed! Collection name:{}, partition names:{}",
                     requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
             return R.failed(e);
@@ -1530,8 +1522,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-            InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
-            MutationResult response = blockingStub().insert(insertRequest);
+            ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
+            MutationResult response = blockingStub().insert(builderWraper.buildInsertRequest());
 
             if (response.getStatus().getErrorCode() == ErrorCode.Success) {
                 logDebug("InsertRequest successfully! Collection name:{}",
@@ -1562,10 +1554,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logInfo(requestParam.toString());
 
         DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withDatabaseName(requestParam.getDatabaseName())
                 .withCollectionName(requestParam.getCollectionName());
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.withDatabaseName(requestParam.getDatabaseName());
-        }
         R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
 
         if (descResp.getStatus() != R.Status.Success.getCode()) {
@@ -1575,8 +1565,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-        InsertRequest insertRequest = ParamUtils.convertInsertParam(requestParam, wrapper);
-        ListenableFuture<MutationResult> response = futureStub().insert(insertRequest);
+        ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
+        ListenableFuture<MutationResult> response = futureStub().insert(builderWraper.buildInsertRequest());
 
         Futures.addCallback(
                 response,
@@ -1595,6 +1585,105 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onFailure(@Nonnull Throwable t) {
                         logError("insertAsync failed:\n{}", t.getMessage());
+                    }
+                },
+                MoreExecutors.directExecutor());
+
+        Function<MutationResult, R<MutationResult>> transformFunc =
+                results -> {
+                    if (results.getStatus().getErrorCode() == ErrorCode.Success) {
+                        return R.success(results);
+                    } else {
+                        return R.failed(R.Status.valueOf(results.getStatus().getErrorCode().getNumber()),
+                                results.getStatus().getReason());
+                    }
+                };
+
+        return Futures.transform(response, transformFunc::apply, MoreExecutors.directExecutor());
+    }
+
+    @Override
+    public R<MutationResult> upsert(UpsertParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                    .withDatabaseName(requestParam.getDatabaseName())
+                    .withCollectionName(requestParam.getCollectionName());
+            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
+            if (descResp.getStatus() != R.Status.Success.getCode()) {
+                logError("Failed to describe collection: {}", requestParam.getCollectionName());
+                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+            }
+
+            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+            ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
+            MutationResult response = blockingStub().upsert(builderWraper.buildUpsertRequest());
+
+            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
+                logDebug("UpsertRequest successfully! Collection name:{}",
+                        requestParam.getCollectionName());
+                return R.success(response);
+            } else {
+                return failedStatus("UpsertRequest", response.getStatus());
+            }
+        } catch (StatusRuntimeException e) {
+            logError("UpsertRequest RPC failed! Collection name:{}",
+                    requestParam.getCollectionName(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("UpsertRequest failed! Collection name:{}",
+                    requestParam.getCollectionName(), e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public ListenableFuture<R<MutationResult>> upsertAsync(UpsertParam requestParam) {
+        if (!clientIsReady()) {
+            return Futures.immediateFuture(
+                    R.failed(new ClientNotConnectedException("Client rpc channel is not ready")));
+        }
+
+        logInfo(requestParam.toString());
+
+        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withDatabaseName(requestParam.getDatabaseName())
+                .withCollectionName(requestParam.getCollectionName());
+        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+
+        if (descResp.getStatus() != R.Status.Success.getCode()) {
+            logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
+            return Futures.immediateFuture(
+                    R.failed(new ClientNotConnectedException("Failed to describe collection")));
+        }
+
+        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+        ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
+        ListenableFuture<MutationResult> response = futureStub().upsert(builderWraper.buildUpsertRequest());
+
+        Futures.addCallback(
+                response,
+                new FutureCallback<MutationResult>() {
+                    @Override
+                    public void onSuccess(MutationResult result) {
+                        if (result.getStatus().getErrorCode() == ErrorCode.Success) {
+                            logDebug("upsertAsync successfully! Collection name:{}",
+                                    requestParam.getCollectionName());
+                        } else {
+                            logError("upsertAsync failed! Collection name:{}\n{}",
+                                    requestParam.getCollectionName(), result.getStatus().getReason());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@Nonnull Throwable t) {
+                        logError("upsertAsync failed:\n{}", t.getMessage());
                     }
                 },
                 MoreExecutors.directExecutor());

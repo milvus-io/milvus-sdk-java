@@ -351,6 +351,22 @@ public interface MilvusClient {
     ListenableFuture<R<MutationResult>> insertAsync(InsertParam requestParam);
 
     /**
+     * Insert new entities into a specified collection, replace them if the entities already exist.
+     *
+     * @param requestParam {@link UpsertParam}
+     * @return {status:result code, data: MutationResult{insert results}}
+     */
+    R<MutationResult> upsert(UpsertParam requestParam);
+
+    /**
+     * Insert new entities into a specified collection asynchronously, replace them if the entities already exist.
+     *
+     * @param requestParam {@link UpsertParam}
+     * @return a <code>ListenableFuture</code> object which holds the object {status:result code, data: MutationResult{insert results}}
+     */
+    ListenableFuture<R<MutationResult>> upsertAsync(UpsertParam requestParam);
+
+    /**
      * Deletes entity(s) based on primary key(s) filtered by boolean expression. Current release
      * of Milvus only supports expression in the format "pk_field in [1, 2, ...]"
      *

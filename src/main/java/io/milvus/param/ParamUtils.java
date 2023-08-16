@@ -12,6 +12,7 @@ import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.param.dml.UpsertParam;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.Builder;
 import lombok.Getter;
@@ -226,129 +227,185 @@ public class ParamUtils {
         }
     }
 
-    public static InsertRequest convertInsertParam(@NonNull InsertParam requestParam,
-                                                   DescCollResponseWrapper wrapper) {
-        String collectionName = requestParam.getCollectionName();
+    public static class InsertBuilderWrapper {
+        private InsertRequest.Builder insertBuilder;
+        private UpsertRequest.Builder upsertBuilder;
 
-        // gen insert request
-        MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
-        InsertRequest.Builder insertBuilder = InsertRequest.newBuilder()
-                .setCollectionName(collectionName)
-                .setBase(msgBase)
-                .setNumRows(requestParam.getRowCount());
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            insertBuilder.setDbName(requestParam.getDatabaseName());
+        public InsertBuilderWrapper(@NonNull InsertParam requestParam,
+                                    DescCollResponseWrapper wrapper) {
+            String collectionName = requestParam.getCollectionName();
+
+            // generate insert request builder
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
+            insertBuilder = InsertRequest.newBuilder()
+                    .setCollectionName(collectionName)
+                    .setBase(msgBase)
+                    .setNumRows(requestParam.getRowCount());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                insertBuilder.setDbName(requestParam.getDatabaseName());
+            }
+            fillFieldsData(requestParam, wrapper);
         }
-        fillFieldsData(requestParam, wrapper, insertBuilder);
 
-        // gen request
-        return insertBuilder.build();
-    }
-    private static void fillFieldsData(InsertParam requestParam, DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder) {
-        // set partition name only when there is no partition key field
-        String partitionName = requestParam.getPartitionName();
-        boolean isPartitionKeyEnabled = false;
-        for (FieldType fieldType : wrapper.getFields()) {
-            if (fieldType.isPartitionKey()) {
-                isPartitionKeyEnabled = true;
-                break;
+        public InsertBuilderWrapper(@NonNull UpsertParam requestParam,
+                                    DescCollResponseWrapper wrapper) {
+            String collectionName = requestParam.getCollectionName();
+
+            // currently, not allow to upsert for collection whose primary key is auto-generated
+            FieldType pk = wrapper.getPrimaryField();
+            if (pk.isAutoID()) {
+                throw new ParamException(String.format("Upsert don't support autoID==True, collection: %s",
+                        requestParam.getCollectionName()));
+            }
+
+            // generate upsert request builder
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
+            upsertBuilder = UpsertRequest.newBuilder()
+                    .setCollectionName(collectionName)
+                    .setBase(msgBase)
+                    .setNumRows(requestParam.getRowCount());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                insertBuilder.setDbName(requestParam.getDatabaseName());
+            }
+            fillFieldsData(requestParam, wrapper);
+        }
+
+        private void addFieldsData(io.milvus.grpc.FieldData value) {
+            if (insertBuilder != null) {
+                insertBuilder.addFieldsData(value);
+            } else if (upsertBuilder != null) {
+                upsertBuilder.addFieldsData(value);
             }
         }
-        if (isPartitionKeyEnabled) {
-            if (partitionName != null && !partitionName.isEmpty()) {
-                String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
-                throw new ParamException(msg);
+
+        private void setPartitionName(String value) {
+            if (insertBuilder != null) {
+                insertBuilder.setPartitionName(value);
+            } else if (upsertBuilder != null) {
+                upsertBuilder.setPartitionName(value);
             }
-        } else if (partitionName != null) {
-            insertBuilder.setPartitionName(partitionName);
         }
 
-        // convert insert data
-        List<InsertParam.Field> columnFields = requestParam.getFields();
-        List<JSONObject> rowFields = requestParam.getRows();
-
-        if (CollectionUtils.isNotEmpty(columnFields)) {
-            checkAndSetColumnData(requestParam, wrapper.getFields(), insertBuilder, columnFields);
-        } else {
-            checkAndSetRowData(wrapper, insertBuilder, rowFields);
-        }
-    }
-
-    private static void checkAndSetColumnData(InsertParam requestParam, List<FieldType> fieldTypes, InsertRequest.Builder insertBuilder, List<InsertParam.Field> fields) {
-        // gen fieldData
-        // make sure the field order must be consisted with collection schema
-        for (FieldType fieldType : fieldTypes) {
-            boolean found = false;
-            for (InsertParam.Field field : fields) {
-                if (field.getName().equals(fieldType.getName())) {
-                    if (fieldType.isAutoID()) {
-                        String msg = "The primary key: " + fieldType.getName() + " is auto generated, no need to input.";
-                        throw new ParamException(msg);
-                    }
-                    checkFieldData(fieldType, field);
-
-                    found = true;
-                    insertBuilder.addFieldsData(genFieldData(field.getName(), fieldType.getDataType(), field.getValues()));
+        private void fillFieldsData(InsertParam requestParam, DescCollResponseWrapper wrapper) {
+            // set partition name only when there is no partition key field
+            String partitionName = requestParam.getPartitionName();
+            boolean isPartitionKeyEnabled = false;
+            for (FieldType fieldType : wrapper.getFields()) {
+                if (fieldType.isPartitionKey()) {
+                    isPartitionKeyEnabled = true;
                     break;
                 }
-
             }
-            if (!found && !fieldType.isAutoID()) {
-                String msg = "The field: " + fieldType.getName() + " is not provided.";
-                throw new ParamException(msg);
+            if (isPartitionKeyEnabled) {
+                if (partitionName != null && !partitionName.isEmpty()) {
+                    String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
+                    throw new ParamException(msg);
+                }
+            } else if (partitionName != null) {
+                this.setPartitionName(partitionName);
+            }
+
+            // convert insert data
+            List<InsertParam.Field> columnFields = requestParam.getFields();
+            List<JSONObject> rowFields = requestParam.getRows();
+
+            if (CollectionUtils.isNotEmpty(columnFields)) {
+                checkAndSetColumnData(wrapper.getFields(), columnFields);
+            } else {
+                checkAndSetRowData(wrapper, rowFields);
             }
         }
-    }
 
-    private static void checkAndSetRowData(DescCollResponseWrapper wrapper, InsertRequest.Builder insertBuilder, List<JSONObject> rows) {
-        List<FieldType> fieldTypes = wrapper.getFields();
-
-        Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
-        InsertDataInfo insertDynamicDataInfo = InsertDataInfo.builder().dataType(DataType.JSON).data(new LinkedList<>()).build();
-        for (JSONObject row : rows) {
+        private void checkAndSetColumnData(List<FieldType> fieldTypes, List<InsertParam.Field> fields) {
+            // gen fieldData
+            // make sure the field order must be consisted with collection schema
             for (FieldType fieldType : fieldTypes) {
-                String fieldName = fieldType.getName();
-                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
-                        .fieldName(fieldName).dataType(fieldType.getDataType()).data(new LinkedList<>()).build());
+                boolean found = false;
+                for (InsertParam.Field field : fields) {
+                    if (field.getName().equals(fieldType.getName())) {
+                        if (fieldType.isAutoID()) {
+                            String msg = "The primary key: " + fieldType.getName() + " is auto generated, no need to input.";
+                            throw new ParamException(msg);
+                        }
+                        checkFieldData(fieldType, field);
 
-                // check normalField
-                Object rowFieldData = row.get(fieldName);
-                if (rowFieldData != null) {
-                    if (fieldType.isAutoID()) {
-                        String msg = "The primary key: " + fieldName + " is auto generated, no need to input.";
-                        throw new ParamException(msg);
+                        found = true;
+                        this.addFieldsData(genFieldData(field.getName(), fieldType.getDataType(), field.getValues()));
+                        break;
                     }
-                    checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
 
-                    insertDataInfo.getData().add(rowFieldData);
-                    nameInsertInfo.put(fieldName, insertDataInfo);
-                } else {
-                    // check if autoId
-                    if (!fieldType.isAutoID()) {
-                        String msg = "The field: " + fieldType.getName() + " is not provided.";
-                        throw new ParamException(msg);
+                }
+                if (!found && !fieldType.isAutoID()) {
+                    String msg = "The field: " + fieldType.getName() + " is not provided.";
+                    throw new ParamException(msg);
+                }
+            }
+        }
+
+        private void checkAndSetRowData(DescCollResponseWrapper wrapper, List<JSONObject> rows) {
+            List<FieldType> fieldTypes = wrapper.getFields();
+
+            Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
+            InsertDataInfo insertDynamicDataInfo = InsertDataInfo.builder().dataType(DataType.JSON).data(new LinkedList<>()).build();
+            for (JSONObject row : rows) {
+                for (FieldType fieldType : fieldTypes) {
+                    String fieldName = fieldType.getName();
+                    InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
+                            .fieldName(fieldName).dataType(fieldType.getDataType()).data(new LinkedList<>()).build());
+
+                    // check normalField
+                    Object rowFieldData = row.get(fieldName);
+                    if (rowFieldData != null) {
+                        if (fieldType.isAutoID()) {
+                            String msg = "The primary key: " + fieldName + " is auto generated, no need to input.";
+                            throw new ParamException(msg);
+                        }
+                        checkFieldData(fieldType, Lists.newArrayList(rowFieldData));
+
+                        insertDataInfo.getData().add(rowFieldData);
+                        nameInsertInfo.put(fieldName, insertDataInfo);
+                    } else {
+                        // check if autoId
+                        if (!fieldType.isAutoID()) {
+                            String msg = "The field: " + fieldType.getName() + " is not provided.";
+                            throw new ParamException(msg);
+                        }
                     }
+                }
+
+                // deal with dynamicField
+                if (wrapper.getEnableDynamicField()) {
+                    JSONObject dynamicField = new JSONObject();
+                    for (String rowFieldName : row.keySet()) {
+                        if (!nameInsertInfo.containsKey(rowFieldName)) {
+                            dynamicField.put(rowFieldName, row.get(rowFieldName));
+                        }
+                    }
+                    insertDynamicDataInfo.getData().add(dynamicField);
                 }
             }
 
-            // deal with dynamicField
+            for (String fieldNameKey : nameInsertInfo.keySet()) {
+                InsertDataInfo insertDataInfo = nameInsertInfo.get(fieldNameKey);
+                this.addFieldsData(genFieldData(insertDataInfo.getFieldName(), insertDataInfo.getDataType(), insertDataInfo.getData()));
+            }
             if (wrapper.getEnableDynamicField()) {
-                JSONObject dynamicField = new JSONObject();
-                for (String rowFieldName : row.keySet()) {
-                    if (!nameInsertInfo.containsKey(rowFieldName)) {
-                        dynamicField.put(rowFieldName, row.get(rowFieldName));
-                    }
-                }
-                insertDynamicDataInfo.getData().add(dynamicField);
+                this.addFieldsData(genFieldData(insertDynamicDataInfo.getFieldName(), insertDynamicDataInfo.getDataType(), insertDynamicDataInfo.getData(), Boolean.TRUE));
             }
         }
 
-        for (String fieldNameKey : nameInsertInfo.keySet()) {
-            InsertDataInfo insertDataInfo = nameInsertInfo.get(fieldNameKey);
-            insertBuilder.addFieldsData(genFieldData(insertDataInfo.getFieldName(), insertDataInfo.getDataType(), insertDataInfo.getData()));
+        public InsertRequest buildInsertRequest() {
+            if (insertBuilder != null) {
+                return insertBuilder.build();
+            }
+            throw new ParamException("Unable to build insert request since no input");
         }
-        if (wrapper.getEnableDynamicField()) {
-            insertBuilder.addFieldsData(genFieldData(insertDynamicDataInfo.getFieldName(), insertDynamicDataInfo.getDataType(), insertDynamicDataInfo.getData(), Boolean.TRUE));
+
+        public UpsertRequest buildUpsertRequest() {
+            if (upsertBuilder != null) {
+                return upsertBuilder.build();
+            }
+            throw new ParamException("Unable to build upsert request since no input");
         }
     }
 

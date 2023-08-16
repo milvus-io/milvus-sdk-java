@@ -348,6 +348,22 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<MutationResult> upsert(UpsertParam requestParam) {
+        List<R<MutationResult>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().upsert(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
+    public ListenableFuture<R<MutationResult>> upsertAsync(UpsertParam requestParam) {
+        List<ListenableFuture<R<MutationResult>>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .map(serverSetting -> serverSetting.getClient().upsertAsync(requestParam))
+                .collect(Collectors.toList());
+        return response.get(0);
+    }
+
+    @Override
     public R<MutationResult> delete(DeleteParam requestParam) {
         List<R<MutationResult>> response = this.clusterFactory.getAvailableServerSettings().stream()
                 .map(serverSetting -> serverSetting.getClient().delete(requestParam))

@@ -25,7 +25,6 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -34,17 +33,16 @@ import java.util.List;
  * Parameters for <code>insert</code> interface.
  */
 @Getter
-@ToString
 public class InsertParam {
-    private final List<Field> fields;
-    private final List<JSONObject> rows;
+    protected final List<Field> fields;
+    protected final List<JSONObject> rows;
 
-    private final String databaseName;
-    private final String collectionName;
-    private final String partitionName;
-    private final int rowCount;
+    protected final String databaseName;
+    protected final String collectionName;
+    protected final String partitionName;
+    protected final int rowCount;
 
-    private InsertParam(@NonNull Builder builder) {
+    protected InsertParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -61,14 +59,14 @@ public class InsertParam {
      * Builder for {@link InsertParam} class.
      */
     public static class Builder {
-        private String databaseName;
-        private String collectionName;
-        private String partitionName = "";
-        private List<InsertParam.Field> fields;
-        private List<JSONObject> rows;
-        private int rowCount;
+        protected String databaseName;
+        protected String collectionName;
+        protected String partitionName = "";
+        protected List<InsertParam.Field> fields;
+        protected List<JSONObject> rows;
+        protected int rowCount;
 
-        private Builder() {
+        protected Builder() {
         }
 
         /**
@@ -144,7 +142,7 @@ public class InsertParam {
                 throw new ParamException("Only one of Fields and Rows is allowed to be non-empty.");
             }
 
-            int count = 0;
+            int count;
             if (CollectionUtils.isNotEmpty(fields)) {
                 if (fields.get(0) == null) {
                     throw new ParamException("Field cannot be null." +
@@ -167,7 +165,7 @@ public class InsertParam {
             return new InsertParam(this);
         }
 
-        private void checkFields(int count) {
+        protected void checkFields(int count) {
             for (InsertParam.Field field : fields) {
                 if (field == null) {
                     throw new ParamException("Field cannot be null." +
@@ -190,7 +188,7 @@ public class InsertParam {
             }
         }
 
-        private void checkRows() {
+        protected void checkRows() {
             for (JSONObject row : rows) {
                 if (row == null) {
                     throw new ParamException("Row cannot be null." +
