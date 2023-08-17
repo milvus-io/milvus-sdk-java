@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 2.3.0 (TBD)
+
+### Feature
+
+- Support Upsert interface
+- New GPU index type(only works when server is GPU mode): GPU_IVF_FLAT, GPU_IVF_PQ
+
+### Deprecated
+
+- No longer support index: ANNOY, RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ
+- No longer support metric: TANIMOTO, SUPERSTRUCTURE, SUBSTRUCTURE
+
 ## milvus-sdk-java 2.2.12 (2023-08-10)
 
 ### Improvement
