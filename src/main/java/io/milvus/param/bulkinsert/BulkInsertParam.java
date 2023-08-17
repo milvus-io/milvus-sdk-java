@@ -38,12 +38,13 @@ public class BulkInsertParam {
     private final String collectionName;
     private final String partitionName;
     private final List<String> files;
-    private final Map<String, String> options = new HashMap<>();
+    private final Map<String, String> options;
 
     private BulkInsertParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.files = builder.files;
+        this.options = builder.options;
     }
 
     public static Builder newBuilder() {
@@ -57,6 +58,7 @@ public class BulkInsertParam {
         private String collectionName;
         private String partitionName;
         private final List<String> files = new ArrayList<>();
+        private final Map<String, String> options = new HashMap<>();
         private Builder() {
         }
 
@@ -107,6 +109,18 @@ public class BulkInsertParam {
         }
 
         /**
+         * Sets the options of the request
+         *
+         * @param key a <code>List</code> of {@link String}
+         * @param value a <code>List</code> of {@link String}
+         * @return <code>Builder</code>
+         */
+        public Builder withOption(String key, String value) {
+            this.options.put(key, value);
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link BulkInsertParam} instance.
          *
          * @return {@link BulkInsertParam}
@@ -138,8 +152,9 @@ public class BulkInsertParam {
     public String toString() {
         return "BulkInsertParam{" +
                 "collectionName='" + collectionName + '\'' +
-                ", partitionName=" + partitionName +
-                ", files=" + files.toString() +
+                ", partitionName='" + partitionName + '\'' +
+                ", files=" + files +
+                ", options=" + options +
                 '}';
     }
 }
