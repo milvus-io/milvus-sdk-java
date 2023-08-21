@@ -262,7 +262,7 @@ public class QueryParam {
          */
         public QueryParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-            ParamUtils.CheckNullEmptyString(expr, "Expression");
+            ParamUtils.CheckNullString(expr, "Expression");
 
             if (travelTimestamp < 0) {
                 throw new ParamException("The travel timestamp must be greater than 0");

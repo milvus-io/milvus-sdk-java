@@ -2250,15 +2250,6 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        // empty expression
-        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withOutFields(outputFields)
-                .withExpr("")
-                .build()
-        );
-
         // negative travel time stamp
         assertThrows(ParamException.class, () -> QueryParam.newBuilder()
                 .withCollectionName("collection1")
