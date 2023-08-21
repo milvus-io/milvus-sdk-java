@@ -90,7 +90,7 @@ public class ConnectParam {
         private String uri;
         private String token;
         private long connectTimeoutMs = 10000;
-        private long keepAliveTimeMs = Long.MAX_VALUE; // Disabling keep alive
+        private long keepAliveTimeMs = 55000;
         private long keepAliveTimeoutMs = 20000;
         private boolean keepAliveWithoutCalls = false;
         private long rpcDeadlineMs = 0; // Disabling deadline
@@ -177,6 +177,7 @@ public class ConnectParam {
 
         /**
          * Sets the keep-alive time value of client channel. The keep-alive value must be greater than zero.
+         * Default is 55000 ms.
          *
          * @param keepAliveTime keep-alive value
          * @param timeUnit keep-alive unit
@@ -189,6 +190,7 @@ public class ConnectParam {
 
         /**
          * Sets the keep-alive timeout value of client channel. The timeout value must be greater than zero.
+         * Default value is 20000 ms
          *
          * @param keepAliveTimeout timeout value
          * @param timeUnit timeout unit
