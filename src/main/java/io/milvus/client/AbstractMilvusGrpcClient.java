@@ -3002,14 +3002,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
-            FieldType primaryField = wrapper.getPrimaryField();
-
             if (CollectionUtils.isEmpty(requestParam.getOutputFields())) {
                 FieldType vectorField = wrapper.getVectorField();
                 requestParam.getOutputFields().addAll(Lists.newArrayList(Constant.ALL_OUTPUT_FIELDS, vectorField.getName()));
             }
 
-            String expr = VectorUtils.convertPksExpr(requestParam.getPrimaryIds(), primaryField.getName());
+            String expr = VectorUtils.convertPksExpr(requestParam.getPrimaryIds(), wrapper);
             QueryParam queryParam = QueryParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName())
                     .withExpr(expr)
