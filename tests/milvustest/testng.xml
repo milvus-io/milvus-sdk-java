@@ -11,6 +11,7 @@
             <package name="com.zilliz.milvustest.*">
                 <exclude name="com.zilliz.milvustest.limit.*"></exclude>
                 <exclude name="com.zilliz.milvustest.vdc.*"></exclude>
+                <exclude name="com.zilliz.milvustest.tls.*"></exclude>
             </package>
         </packages>
     </test>

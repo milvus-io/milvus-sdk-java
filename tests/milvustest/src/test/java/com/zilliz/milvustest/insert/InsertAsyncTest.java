@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-@Epic("Index")
+@Epic("Insert")
 @Feature("InsertAsyncT")
 public class InsertAsyncTest extends BaseTest {
   public String stringPKAndBinaryCollection;

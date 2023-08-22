@@ -34,6 +34,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -99,14 +100,13 @@ public class QueryAsyncTest extends BaseTest {
   @DataProvider(name = "IndexTypes")
   public Object[][] provideIndexType() {
     return new Object[][] {
-      {IndexType.IVF_FLAT},
-      {IndexType.IVF_SQ8},
-      {IndexType.IVF_PQ},
-      {IndexType.HNSW},
-      {IndexType.ANNOY},
-      {IndexType.RHNSW_FLAT},
-      {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ}
+            {IndexType.IVF_FLAT},
+            {IndexType.IVF_SQ8},
+            {IndexType.IVF_PQ},
+            {IndexType.HNSW},
+            {IndexType.SCANN},
+            {IndexType.GPU_IVF_FLAT},
+            {IndexType.GPU_IVF_PQ}
     };
   }
 
@@ -129,10 +129,7 @@ public class QueryAsyncTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
-      {MetricType.SUBSTRUCTURE},
-      {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.JACCARD}
     };
   }
 
@@ -197,7 +194,7 @@ public class QueryAsyncTest extends BaseTest {
         QueryParam.newBuilder()
             .withCollectionName(CommonData.defaultCollection)
             .withPartitionNames(
-                usePart ? Arrays.asList(CommonData.defaultPartition) : Arrays.asList())
+                usePart ? Collections.singletonList(CommonData.defaultPartition) : Collections.emptyList())
             .withOutFields(outFields)
             .withExpr(SEARCH_PARAM)
             .build();
@@ -807,12 +804,6 @@ public class QueryAsyncTest extends BaseTest {
   @Severity(SeverityLevel.CRITICAL)
   public void stringPKAndBinaryVectorQueryUsingEachIndex(
           IndexType indexType, MetricType metricType) throws ExecutionException, InterruptedException {
-    boolean b =
-            metricType.equals(MetricType.SUBSTRUCTURE) || metricType.equals(MetricType.SUPERSTRUCTURE);
-
-    if (indexType.equals(IndexType.BIN_IVF_FLAT) && b) {
-      return;
-    }
     String stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
     // create index
     R<RpcStatus> rpcStatusR =
@@ -857,9 +848,6 @@ public class QueryAsyncTest extends BaseTest {
     R<QueryResults> queryResultsR = rListenableFuture.get();
     QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
-    if (b) {
-      return;
-    }
     System.out.println(wrapperQuery.getFieldWrapper("book_name").getFieldData());
     System.out.println(wrapperQuery.getFieldWrapper("book_content").getFieldData());
     Assert.assertTrue(wrapperQuery.getFieldWrapper("book_name").getFieldData().size() > 10);

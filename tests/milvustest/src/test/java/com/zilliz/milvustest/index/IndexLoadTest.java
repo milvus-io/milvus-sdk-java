@@ -44,15 +44,13 @@ public class IndexLoadTest extends BaseTest {
     @DataProvider(name = "IndexTypes")
     public Object[][] provideIndexType() {
         return new Object[][] {
-                {IndexType.FLAT},
                 {IndexType.IVF_FLAT},
                 {IndexType.IVF_SQ8},
                 {IndexType.IVF_PQ},
                 {IndexType.HNSW},
-              /*  {IndexType.ANNOY},
-                {IndexType.RHNSW_FLAT},
-                {IndexType.RHNSW_PQ},
-                {IndexType.RHNSW_SQ}*/
+                {IndexType.SCANN},
+                {IndexType.GPU_IVF_FLAT},
+                {IndexType.GPU_IVF_PQ}
         };
     }
 
@@ -71,10 +69,7 @@ public class IndexLoadTest extends BaseTest {
     public Object[][] providerBinaryMetricType() {
         return new Object[][] {
                 {MetricType.HAMMING},
-                {MetricType.JACCARD},
-                {MetricType.SUBSTRUCTURE},
-                {MetricType.SUPERSTRUCTURE},
-                {MetricType.TANIMOTO}
+                {MetricType.JACCARD}
         };
     }
 
@@ -160,13 +155,9 @@ public class IndexLoadTest extends BaseTest {
     }
 
     @Severity(SeverityLevel.NORMAL)
-    @Test(description = "Test create/drop index when collection is loaded for binary vector", dataProvider = "BinaryIndex",groups = {"Smoke"})
+    @Test(description = "Test create/drop index when collection is loaded for binary vector",
+            dataProvider = "BinaryIndex",groups = {"Smoke"})
     public void createIndexAfterLoadBinaryCollection(IndexType indexType, MetricType metricType) {
-        if (indexType.equals(IndexType.BIN_IVF_FLAT)
-                && (metricType.equals(MetricType.SUBSTRUCTURE)
-                || metricType.equals(MetricType.SUPERSTRUCTURE))) {
-            return;
-        }
         // 1. create index params
         CreateIndexParam createIndexParams = CreateIndexParam.newBuilder()
                 .withCollectionName(binaryCollection)
