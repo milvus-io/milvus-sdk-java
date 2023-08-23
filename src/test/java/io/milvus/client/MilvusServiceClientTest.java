@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -1957,38 +1958,6 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        // travel timestamp must be greater than 0
-        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .addPartitionName("p2")
-                .withParams("{}")
-                .withOutFields(outputFields)
-                .withVectorFieldName("field1")
-                .withMetricType(MetricType.IP)
-                .withTopK(5)
-                .withVectors(vectors)
-                .withExpr("dummy")
-                .withTravelTimestamp(-1L)
-                .build()
-        );
-
-        // guarantee timestamp must be greater than 0
-        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .addPartitionName("p2")
-                .withParams("{}")
-                .withOutFields(outputFields)
-                .withVectorFieldName("field1")
-                .withMetricType(MetricType.IP)
-                .withTopK(5)
-                .withVectors(vectors)
-                .withExpr("dummy")
-                .withGuaranteeTimestamp(-1L)
-                .build()
-        );
-
         // collection name is empty
         List<Float> vector1 = Collections.singletonList(0.1F);
         vectors.add(vector1);
@@ -2207,8 +2176,7 @@ class MilvusServiceClientTest {
                 .withVectors(vectors)
                 .withExpr("dummy")
                 .withRoundDecimal(5)
-                .withTravelTimestamp(1L)
-                .withGuaranteeTimestamp(1L)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
         testFuncByName("search", param);
 
@@ -2247,26 +2215,6 @@ class MilvusServiceClientTest {
                 .withOutFields(outputFields)
                 .addOutField("f2")
                 .withExpr("dummy")
-                .build()
-        );
-
-        // negative travel time stamp
-        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withOutFields(outputFields)
-                .withExpr("dummy")
-                .withTravelTimestamp(-1L)
-                .build()
-        );
-
-        // negative guarantee time stamp
-        assertThrows(ParamException.class, () -> QueryParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withOutFields(outputFields)
-                .withExpr("dummy")
-                .withGuaranteeTimestamp(-1L)
                 .build()
         );
 
@@ -2313,8 +2261,7 @@ class MilvusServiceClientTest {
                 .withOutFields(outputFields)
                 .addOutField("d1")
                 .withExpr("dummy")
-                .withTravelTimestamp(0L)
-                .withGuaranteeTimestamp(1L)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
 
         testFuncByName("query", param);

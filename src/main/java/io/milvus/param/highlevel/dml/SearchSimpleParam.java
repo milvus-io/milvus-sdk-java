@@ -145,19 +145,6 @@ public class SearchSimpleParam {
         /**
          * Specify a value to control the returned number of entities. Must be a positive value.
          * Default value is 10, will return without limit.
-         *
-         * @param limit a value to define the limit of returned entities
-         * @return <code>Builder</code>
-         */
-        @Deprecated
-        public Builder withLimit(int limit) {
-            this.limit = limit;
-            return this;
-        }
-
-        /**
-         * Specify a value to control the returned number of entities. Must be a positive value.
-         * Default value is 10, will return without limit.
          * To maintain consistency with the parameter type of the query interface, the field is declared as Long. In reality, the field is of type int.
          *
          * @param limit a value to define the limit of returned entities
