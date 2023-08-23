@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-@Epic("Index")
+@Epic("Insert")
 @Feature("Insert")
 public class InsertTest extends BaseTest {
   public String stringPKAndBinaryCollection;

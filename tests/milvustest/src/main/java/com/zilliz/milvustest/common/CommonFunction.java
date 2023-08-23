@@ -4,8 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.zilliz.milvustest.entity.FileBody;
 import com.zilliz.milvustest.entity.MilvusEntity;
 import com.zilliz.milvustest.util.MathUtil;
-import com.zilliz.milvustest.util.PropertyFilesUtil;
-import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.DataType;
 import io.milvus.param.*;
 import io.milvus.param.alias.CreateAliasParam;
@@ -18,8 +16,6 @@ import io.milvus.param.partition.CreatePartitionParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import javax.swing.text.FlowView;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -485,23 +481,33 @@ public class CommonFunction {
       case IVF_PQ:
         extraParm = "{\"nlist\":128, \"m\":16, \"nbits\":8}";
         break;
-      case ANNOY:
+/*      case ANNOY:
         extraParm = "{\"n_trees\":16}";
-        break;
+        break;*/
       case HNSW:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
         break;
-      case RHNSW_FLAT:
+     /* case RHNSW_FLAT:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
-        break;
-      case RHNSW_PQ:
+        break;*/
+/*      case RHNSW_PQ:
         extraParm = "{\"M\":16,\"efConstruction\":64, \"PQM\":16}";
         break;
       case RHNSW_SQ:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
-        break;
+        break;*/
       case BIN_IVF_FLAT:
-        extraParm = "";
+        extraParm = "{\"nlist\": 128}";
+        break;
+      case SCANN:
+        extraParm="{\"nlist\":1024}";
+        break;
+      case GPU_IVF_FLAT:
+        extraParm="{\"nlist\": 64}";
+        break;
+      case GPU_IVF_PQ:
+        extraParm="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
+        break;
       default:
         extraParm = "{\"nlist\":128}";
         break;
@@ -663,6 +669,35 @@ public class CommonFunction {
     for (int i = 0; i < num; i++) {
       JSONObject row = new JSONObject();
       row.put("book_id", (long) i);
+      row.put("word_count", (long) i);
+      row.put("extra_field", "String" + i);
+      row.put("extra_field2",  i);
+      // $innerJson
+      JSONObject innerJson = new JSONObject();
+      innerJson.put("int64", (long) i);
+      innerJson.put("varchar", "varchar"+i);
+      innerJson.put("int16", i);
+      innerJson.put("int32", i);
+      innerJson.put("int8", (short)i);
+      innerJson.put("float", (float)i);
+      innerJson.put("double", (double)i);
+      innerJson.put("bool", i % 2 == 0);
+      row.put("json_field", innerJson);
+      List<Float> vector = new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      row.put("book_intro", vector);
+      jsonList.add(row);
+    }
+    return jsonList;
+  }
+  public static List<JSONObject> generateVarcharPKDataWithDynamicFiledRow(int num) {
+    List<JSONObject> jsonList = new ArrayList<>();
+    Random ran = new Random();
+    for (int i = 0; i < num; i++) {
+      JSONObject row = new JSONObject();
+      row.put("book_name",  "StringPK"+i);
       row.put("word_count", (long) i);
       row.put("extra_field", "String" + i);
       row.put("extra_field2",  i);
