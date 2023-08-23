@@ -22,6 +22,7 @@ package io.milvus;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
@@ -341,7 +342,7 @@ public class GeneralExample {
                 .withVectorFieldName(VECTOR_FIELD)
                 .withExpr(expr)
                 .withParams(SEARCH_PARAM)
-                .withGuaranteeTimestamp(Constant.GUARANTEE_EVENTUALLY_TS)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
 
         R<SearchResults> response = milvusClient.search(searchParam);
