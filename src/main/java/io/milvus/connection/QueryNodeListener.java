@@ -1,5 +1,6 @@
 package io.milvus.connection;
 
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.SearchResults;
 import io.milvus.param.QueryNodeSingleSearch;
 import io.milvus.param.R;
@@ -32,7 +33,7 @@ public class QueryNodeListener implements Listener {
                 .withMetricType(singleSearch.getMetricType())
                 .withTopK(5)
                 .withRoundDecimal(-1)
-                .withGuaranteeTimestamp(1L)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
     }
 

@@ -85,18 +85,6 @@ public class QuerySimpleParam {
         /**
          * Specifies output fields (Optional).
          *
-         * @param outFields output fields
-         * @return <code>Builder</code>
-         */
-        @Deprecated
-        public Builder withOutFields(@NonNull List<String> outFields) {
-            this.outputFields.addAll(outFields);
-            return this;
-        }
-
-        /**
-         * Specifies output fields (Optional).
-         *
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
