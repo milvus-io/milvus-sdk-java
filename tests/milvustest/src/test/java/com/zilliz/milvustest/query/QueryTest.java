@@ -35,6 +35,7 @@ import org.testng.annotations.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.zilliz.milvustest.util.MathUtil.combine;
@@ -107,14 +108,13 @@ public class QueryTest extends BaseTest {
   @DataProvider(name = "IndexTypes")
   public Object[][] provideIndexType() {
     return new Object[][] {
-      {IndexType.IVF_FLAT},
-      {IndexType.IVF_SQ8},
-      {IndexType.IVF_PQ},
-      {IndexType.HNSW},
-      {IndexType.ANNOY},
-      {IndexType.RHNSW_FLAT},
-      {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ}
+            {IndexType.IVF_FLAT},
+            {IndexType.IVF_SQ8},
+            {IndexType.IVF_PQ},
+            {IndexType.HNSW},
+            {IndexType.SCANN},
+            {IndexType.GPU_IVF_FLAT},
+            {IndexType.GPU_IVF_PQ}
     };
   }
 
@@ -137,10 +137,7 @@ public class QueryTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
-      {MetricType.SUBSTRUCTURE},
-      {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.JACCARD}
     };
   }
 
@@ -818,12 +815,6 @@ public class QueryTest extends BaseTest {
   @Severity(SeverityLevel.CRITICAL)
   public void stringPKAndBinaryVectorQueryUsingEachIndex(
       IndexType indexType, MetricType metricType) {
-    boolean b =
-        metricType.equals(MetricType.SUBSTRUCTURE) || metricType.equals(MetricType.SUPERSTRUCTURE);
-
-    if (indexType.equals(IndexType.BIN_IVF_FLAT) && b) {
-      return;
-    }
     String stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
     // create index
     R<RpcStatus> rpcStatusR =
@@ -867,9 +858,7 @@ public class QueryTest extends BaseTest {
     R<QueryResults> queryResultsR = milvusClient.query(queryParam);
     QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
-    if (b) {
-      return;
-    }
+
     System.out.println(wrapperQuery.getFieldWrapper("book_name").getFieldData());
     System.out.println(wrapperQuery.getFieldWrapper("book_content").getFieldData());
     Assert.assertTrue(wrapperQuery.getFieldWrapper("book_name").getFieldData().size() > 10);
@@ -1031,7 +1020,7 @@ public class QueryTest extends BaseTest {
     CommonFunction.createIndexWithLoad(collectionWithDynamicField,IndexType.HNSW,MetricType.L2,CommonData.defaultVectorField);
     //query
 
-    List<String> outFields = Arrays.asList("extra_field");
+    List<String> outFields = Collections.singletonList("extra_field");
     QueryParam queryParam =
             QueryParam.newBuilder()
                     .withCollectionName(collectionWithDynamicField)

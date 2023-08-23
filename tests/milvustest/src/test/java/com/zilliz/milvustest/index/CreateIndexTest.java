@@ -50,16 +50,13 @@ public class CreateIndexTest extends BaseTest {
   @DataProvider(name = "IndexTypes")
   public Object[][] provideIndexType() {
     return new Object[][] {
-      {IndexType.FLAT},
-      {IndexType.IVF_FLAT},
-      {IndexType.IVF_SQ8},
-      {IndexType.IVF_PQ},
-      {IndexType.HNSW},
-/*      {IndexType.ANNOY},
-      {IndexType.RHNSW_FLAT},
-      {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ},*/
-      {IndexType.DISKANN}
+            {IndexType.IVF_FLAT},
+            {IndexType.IVF_SQ8},
+            {IndexType.IVF_PQ},
+            {IndexType.HNSW},
+            {IndexType.SCANN},
+            {IndexType.GPU_IVF_FLAT},
+            {IndexType.GPU_IVF_PQ}
     };
   }
 
@@ -77,10 +74,7 @@ public class CreateIndexTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
-      {MetricType.SUBSTRUCTURE},
-      {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.JACCARD}
     };
   }
 
@@ -150,11 +144,6 @@ public class CreateIndexTest extends BaseTest {
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/321")
   @Test(description = "Create index for collection Async", dataProvider = "BinaryIndex")
   public void createBinaryIndexAsync(IndexType indexType, MetricType metricType) {
-    if (indexType.equals(IndexType.BIN_IVF_FLAT)
-        && (metricType.equals(MetricType.SUBSTRUCTURE)
-            || metricType.equals(MetricType.SUPERSTRUCTURE))) {
-      return;
-    }
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
             CreateIndexParam.newBuilder()
@@ -180,11 +169,6 @@ public class CreateIndexTest extends BaseTest {
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/321")
   @Test(description = "Create index for collection sync", dataProvider = "BinaryIndex")
   public void createBinaryIndexSync(IndexType indexType, MetricType metricType) {
-    if (indexType.equals(IndexType.BIN_IVF_FLAT)
-        && (metricType.equals(MetricType.SUBSTRUCTURE)
-            || metricType.equals(MetricType.SUPERSTRUCTURE))) {
-      return;
-    }
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
             CreateIndexParam.newBuilder()

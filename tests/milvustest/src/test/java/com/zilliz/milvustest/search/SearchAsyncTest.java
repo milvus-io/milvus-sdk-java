@@ -103,10 +103,9 @@ public class SearchAsyncTest extends BaseTest {
       {IndexType.IVF_SQ8},
       {IndexType.IVF_PQ},
       {IndexType.HNSW},
-      {IndexType.ANNOY},
-      {IndexType.RHNSW_FLAT},
-      {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ}
+      {IndexType.SCANN},
+      {IndexType.GPU_IVF_FLAT},
+      {IndexType.GPU_IVF_PQ}
     };
   }
 
@@ -129,10 +128,7 @@ public class SearchAsyncTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
-      {MetricType.SUBSTRUCTURE},
-      {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.JACCARD}
     };
   }
 
@@ -1655,11 +1651,6 @@ public class SearchAsyncTest extends BaseTest {
       dataProvider = "BinaryIndex")
   public void stringPKAndBinaryVectorSearchAsyncWithEachIndex(
       IndexType indexType, MetricType metricType) {
-    boolean b =
-        metricType.equals(MetricType.SUBSTRUCTURE) || metricType.equals(MetricType.SUPERSTRUCTURE);
-    if (indexType.equals(IndexType.BIN_IVF_FLAT) && b) {
-      return;
-    }
     String stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
     // create index
     R<RpcStatus> rpcStatusR =
@@ -1710,9 +1701,6 @@ public class SearchAsyncTest extends BaseTest {
     ListenableFuture<R<SearchResults>> rListenableFuture = milvusClient.searchAsync(searchParam);
     try {
       Assert.assertEquals(rListenableFuture.get().getStatus().intValue(), 0);
-      if (b) {
-        return;
-      }
       SearchResultsWrapper searchResultsWrapper =
           new SearchResultsWrapper(rListenableFuture.get().getData().getResults());
       Assert.assertEquals(searchResultsWrapper.getFieldData("book_name", 0).size(), 2);

@@ -20,7 +20,7 @@ import org.testng.annotations.Test;
 
 import java.util.List;
 
-@Epic("Index")
+@Epic("Insert")
 @Feature("Delete")
 public class DeleteTest extends BaseTest {
   public String commonCollection;
