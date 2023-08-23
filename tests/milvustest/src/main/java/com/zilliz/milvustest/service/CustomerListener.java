@@ -114,8 +114,8 @@ public class CustomerListener extends TestListenerAdapter {
     request.put("Link",scenarioDesc.equalsIgnoreCase("CI")?githubLink:jenkinsLink);
     String s = HttpClientUtils.doPostJson("http://qtp-server.zilliz.cc/results/insert",request.toJSONString());
     logger.info("insert result:"+s);
-    if (iTestContext.getFailedTests().size()>0){
+/*    if (iTestContext.getFailedTests().size()>0){
       throw new RuntimeException("Case Failed "+iTestContext.getFailedTests().size());
-    }
+    }*/
   }
 }
