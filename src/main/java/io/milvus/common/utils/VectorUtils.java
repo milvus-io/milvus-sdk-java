@@ -17,9 +17,12 @@ public class VectorUtils {
             FieldType primaryField = optional.get();
             switch (primaryField.getDataType()) {
                 case Int64:
-                case VarChar:
                     List<String> primaryStringIds = primaryIds.stream().map(String::valueOf).collect(Collectors.toList());
                     expr = convertPksExpr(primaryStringIds, primaryField.getName());
+                    break;
+                case VarChar:
+                    List<String> primaryVarcharIds = primaryIds.stream().map(primaryId -> String.format("\"%s\"", primaryId)).collect(Collectors.toList());
+                    expr = convertPksExpr(primaryVarcharIds, primaryField.getName());
                     break;
                 default:
                     throw new ParamException("The primary key is not of type int64 or varchar, and the current operation is not supported.");
