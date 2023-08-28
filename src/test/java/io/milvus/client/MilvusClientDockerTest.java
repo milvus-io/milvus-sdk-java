@@ -29,6 +29,10 @@ import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.dml.UpsertParam;
+import io.milvus.param.highlevel.dml.DeleteIdsParam;
+import io.milvus.param.highlevel.dml.GetIdsParam;
+import io.milvus.param.highlevel.dml.response.DeleteResponse;
+import io.milvus.param.highlevel.dml.response.GetResponse;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DescribeIndexParam;
 import io.milvus.param.index.DropIndexParam;
@@ -1684,5 +1688,178 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testHighLevelGet() {
+        // collection schema
+        String field1Name = "id_field";
+        String field2Name = "vector_field";
+        FieldType int64PrimaryField = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .build();
+
+        FieldType varcharPrimaryField = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withDataType(DataType.VarChar)
+                .withName(field1Name)
+                .withMaxLength(128)
+                .build();
+
+        FieldType vectorField = FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDimension(dimension)
+                .build();
+
+        testCollectionHighLevelGet(int64PrimaryField, vectorField);
+        testCollectionHighLevelGet(varcharPrimaryField, vectorField);
+    }
+
+    @Test
+    void testHighLevelDelete() {
+        // collection schema
+        String field1Name = "id_field";
+        String field2Name = "vector_field";
+        FieldType int64PrimaryField = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .build();
+
+        FieldType varcharPrimaryField = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withDataType(DataType.VarChar)
+                .withName(field1Name)
+                .withMaxLength(128)
+                .build();
+
+        FieldType vectorField = FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDimension(dimension)
+                .build();
+
+        testCollectionHighLevelDelete(int64PrimaryField, vectorField);
+        testCollectionHighLevelDelete(varcharPrimaryField, vectorField);
+    }
+
+    void testCollectionHighLevelGet(FieldType primaryField, FieldType vectorField) {
+        // create collection
+        String randomCollectionName = generator.generate(10);
+        highLevelCreateCollection(primaryField, vectorField, randomCollectionName);
+
+        // insert data
+        List<String> primaryIds = new ArrayList<>();
+        int rowCount = 10;
+        List<JSONObject> rows = new ArrayList<>();
+        for (long i = 0L; i < rowCount; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(primaryField.getName(), primaryField.getDataType() == DataType.Int64 ? i : String.valueOf(i));
+            row.put(vectorField.getName(), generateFloatVectors(1).get(0));
+            rows.add(row);
+            primaryIds.add(String.valueOf(i));
+        }
+
+        InsertParam insertRowParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(rows)
+                .build();
+
+        R<MutationResult> insertRowResp = client.insert(insertRowParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertRowResp.getStatus().intValue());
+
+        testHighLevelGet(randomCollectionName, primaryIds);
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
+    }
+
+    private static void highLevelCreateCollection(FieldType primaryField, FieldType vectorField, String randomCollectionName) {
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withDescription("test")
+                .addFieldType(primaryField)
+                .addFieldType(vectorField)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(vectorField.getName())
+                .withIndexName("abv")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("{}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+    }
+
+    void testCollectionHighLevelDelete(FieldType primaryField, FieldType vectorField) {
+        // create collection & buildIndex & loadCollection
+        String randomCollectionName = generator.generate(10);
+        highLevelCreateCollection(primaryField, vectorField, randomCollectionName);
+
+        // insert data
+        List<String> primaryIds = new ArrayList<>();
+        int rowCount = 10;
+        List<JSONObject> rows = new ArrayList<>();
+        for (long i = 0L; i < rowCount; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(primaryField.getName(), primaryField.getDataType() == DataType.Int64 ? i : String.valueOf(i));
+            row.put(vectorField.getName(), generateFloatVectors(1).get(0));
+            rows.add(row);
+            primaryIds.add(String.valueOf(i));
+        }
+
+        InsertParam insertRowParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(rows)
+                .build();
+
+        R<MutationResult> insertRowResp = client.insert(insertRowParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertRowResp.getStatus().intValue());
+
+        // high level delete
+        testHighLevelDelete(randomCollectionName, primaryIds);
+        client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
+    }
+
+    private static void testHighLevelGet(String collectionName, List primaryIds) {
+        GetIdsParam getIdsParam = GetIdsParam.newBuilder()
+                .withCollectionName(collectionName)
+                .withPrimaryIds(primaryIds)
+                .build();
+
+        R<GetResponse> getResponseR = client.get(getIdsParam);
+        String outPutStr = String.format("collectionName:%s, primaryIds:%s, getResponseR:%s", collectionName, primaryIds, getResponseR.getData());
+        System.out.println(outPutStr);
+        Assertions.assertEquals(R.Status.Success.getCode(), getResponseR.getStatus().intValue());
+    }
+
+    private static void testHighLevelDelete(String collectionName, List primaryIds) {
+        DeleteIdsParam deleteIdsParam = DeleteIdsParam.newBuilder()
+                .withCollectionName(collectionName)
+                .withPrimaryIds(primaryIds)
+                .build();
+
+        R<DeleteResponse> deleteResponseR = client.delete(deleteIdsParam);
+        String outPutStr = String.format("collectionName:%s, primaryIds:%s, deleteResponseR:%s", collectionName, primaryIds, deleteResponseR);
+        System.out.println(outPutStr);
+        Assertions.assertEquals(R.Status.Success.getCode(), deleteResponseR.getStatus().intValue());
+        Assertions.assertEquals(primaryIds.size(), deleteResponseR.getData().getDeleteIds().size());
     }
 }
