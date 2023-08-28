@@ -137,7 +137,7 @@ public class TLSTest {
                 .search(SearchSimpleParam.newBuilder()
                 .withCollectionName(collectionName)
                 .withOffset(0L)
-                .withLimit(100)
+                .withLimit(100L)
                 .withFilter("book_id>5000")
                 .withVectors(search_vectors)
                 .withOutputFields(Lists.newArrayList("*"))
