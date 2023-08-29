@@ -2747,7 +2747,9 @@ class MilvusServiceClientTest {
 
         // for binary vector
         dim = 16;
-        byte[] binary = new byte[(int) dim * 2];
+        int bytesPerVec = (int) (dim/8);
+        int count = 2;
+        byte[] binary = new byte[bytesPerVec * count];
         for (int i = 0; i < binary.length; ++i) {
             binary[i] = (byte) i;
         }
@@ -2763,13 +2765,17 @@ class MilvusServiceClientTest {
 
         wrapper = new FieldDataWrapper(fieldData);
         assertEquals(dim, wrapper.getDim());
-        assertEquals(binary.length / dim, wrapper.getRowCount());
+        assertEquals(count, wrapper.getRowCount());
 
         List<?> binaryData = wrapper.getFieldData();
-        assertEquals(binary.length / dim, binaryData.size());
-        for (Object obj : binaryData) {
-            ByteBuffer vec = (ByteBuffer) obj;
-            assertEquals(dim, vec.position());
+        assertEquals(count, binaryData.size());
+        for(int i = 0; i < binaryData.size(); i++) {
+            ByteBuffer vec = (ByteBuffer) binaryData.get(i);
+            assertEquals(bytesPerVec, vec.limit());
+
+            for(int j = 0; j < bytesPerVec; j++) {
+                assertEquals(binary[i*bytesPerVec + j], vec.get(j));
+            }
         }
 
         // for scalar field

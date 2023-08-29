@@ -627,8 +627,9 @@ class MilvusClientDockerTest {
         CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withFieldName(field2Name)
-                .withIndexType(IndexType.BIN_FLAT)
-                .withMetricType(MetricType.SUPERSTRUCTURE)
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withExtraParam("{\"nlist\":64}")
+                .withMetricType(MetricType.JACCARD)
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(30L)
@@ -644,15 +645,17 @@ class MilvusClientDockerTest {
         assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // search with BIN_FLAT index
+        int searchTarget = 99;
         List<ByteBuffer> oneVector = new ArrayList<>();
-        oneVector.add(vectors.get(0));
+        oneVector.add(vectors.get(searchTarget));
 
         SearchParam searchOneParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withMetricType(MetricType.SUPERSTRUCTURE)
+                .withMetricType(MetricType.JACCARD)
                 .withTopK(5)
                 .withVectors(oneVector)
                 .withVectorFieldName(field2Name)
+                .addOutField(field2Name)
                 .build();
 
         R<SearchResults> searchOne = client.search(searchOneParam);
@@ -660,8 +663,16 @@ class MilvusClientDockerTest {
 
         SearchResultsWrapper oneResult = new SearchResultsWrapper(searchOne.getData().getResults());
         List<SearchResultsWrapper.IDScore> oneScores = oneResult.getIDScore(0);
-        System.out.println("The result of " + ids.get(0) + " with SUPERSTRUCTURE metric:");
+        System.out.println("The search result of id " + ids.get(searchTarget) + " with SUPERSTRUCTURE metric:");
         System.out.println(oneScores);
+
+        // verify the output vector, the top1 item is equal to the target vector
+        List<?> items = oneResult.getFieldData(field2Name, 0);
+        Assertions.assertEquals(items.size(), 5);
+        ByteBuffer firstItem = (ByteBuffer) items.get(0);
+        for (int i = 0; i < firstItem.limit(); ++i) {
+            Assertions.assertEquals(firstItem.get(i), vectors.get(searchTarget).get(i));
+        }
 
         // release collection
         ReleaseCollectionParam releaseCollectionParam = ReleaseCollectionParam.newBuilder()

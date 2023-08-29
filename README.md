@@ -37,7 +37,7 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
    - Gradle/Grails
 
         ```gradle
-        compile 'io.milvus:milvus-sdk-java:2.2.12'
+        implementation 'io.milvus:milvus-sdk-java:2.2.12'
         ```
 
 ### Examples
