@@ -74,11 +74,11 @@ public class FieldDataWrapper {
             case BinaryVector: {
                 int dim = getDim();
                 ByteString data = fieldData.getVectors().getBinaryVector();
-                if (data.size() % dim != 0) {
+                if ((data.size()*8) % dim != 0) {
                     throw new IllegalResponseException("Returned binary vector field data array size doesn't match dimension");
                 }
 
-                return data.size()/dim;
+                return (data.size()*8)/dim;
             }
             case Int64:
                 return fieldData.getScalars().getLongData().getDataList().size();
@@ -138,15 +138,16 @@ public class FieldDataWrapper {
             case BinaryVector: {
                 int dim = getDim();
                 ByteString data = fieldData.getVectors().getBinaryVector();
-                if (data.size() % dim != 0) {
+                if ((data.size()*8) % dim != 0) {
                     throw new IllegalResponseException("Returned binary vector field data array size doesn't match dimension");
                 }
 
                 List<ByteBuffer> packData = new ArrayList<>();
-                int count = data.size() / dim;
+                int bytePerVec = dim/8;
+                int count = data.size()/bytePerVec;
                 for (int i = 0; i < count; ++i) {
-                    ByteBuffer bf = ByteBuffer.allocate(dim);
-                    bf.put(data.substring(i * dim, (i + 1) * dim).toByteArray());
+                    ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
+                    bf.put(data.substring(i * bytePerVec, (i + 1) * bytePerVec).toByteArray());
                     packData.add(bf);
                 }
                 return packData;
