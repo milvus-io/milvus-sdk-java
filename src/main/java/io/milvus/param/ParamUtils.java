@@ -188,7 +188,7 @@ public class ParamUtils {
      * @param metric metric type
      */
     public static boolean IsFloatMetric(MetricType metric) {
-        return metric == MetricType.L2 || metric == MetricType.IP;
+        return metric == MetricType.L2 || metric == MetricType.IP || metric == MetricType.COSINE;
     }
 
     /**
@@ -197,7 +197,7 @@ public class ParamUtils {
      * @param metric metric type
      */
     public static boolean IsBinaryMetric(MetricType metric) {
-        return !IsFloatMetric(metric);
+        return metric != MetricType.INVALID && !IsFloatMetric(metric);
     }
 
     /**

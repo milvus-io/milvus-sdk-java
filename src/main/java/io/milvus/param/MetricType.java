@@ -25,9 +25,12 @@ package io.milvus.param;
  */
 public enum MetricType {
     INVALID,
+    // Only for float vectors
     L2,
     IP,
-    // Only supported for binary vectors
+    COSINE,
+
+    // Only for binary vectors
     HAMMING,
     JACCARD,
     ;
