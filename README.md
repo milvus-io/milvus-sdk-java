@@ -30,14 +30,14 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>2.2.12</version>
+            <version>2.2.13</version>
         </dependency>
        ```
 
    - Gradle/Grails
 
         ```gradle
-        implementation 'io.milvus:milvus-sdk-java:2.2.12'
+        implementation 'io.milvus:milvus-sdk-java:2.2.13'
         ```
 
 ### Examples

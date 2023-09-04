@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.2.13 (2023-09-04)
+
+### Improvement
+
+- Fix a bug that could not get binary vectors from search result
+- Fix a bug of high-level get/delete api
+
+
 ## milvus-sdk-java 2.2.12 (2023-08-10)
 
 ### Improvement
