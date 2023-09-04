@@ -1366,7 +1366,7 @@ class MilvusClientDockerTest {
                 .withFieldName(field2Name)
                 .withIndexName("abv")
                 .withIndexType(IndexType.FLAT)
-                .withMetricType(MetricType.L2)
+                .withMetricType(MetricType.COSINE)
                 .withExtraParam("{}")
                 .build();
 
@@ -1466,12 +1466,14 @@ class MilvusClientDockerTest {
             System.out.println("'extra_meta' is from dynamic field, value: " + extraMeta);
         }
 
-        // search
-        List<List<Float>> targetVectors = generateFloatVectors(2);
+        // search the No.11 and No.15
+        List<List<Float>> targetVectors = new ArrayList<>();
+        targetVectors.add(vectors.get(1));
+        targetVectors.add(vectors.get(5));
         int topK = 5;
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withMetricType(MetricType.L2)
+                .withMetricType(MetricType.COSINE)
                 .withTopK(topK)
                 .withVectors(targetVectors)
                 .withVectorFieldName(field2Name)
@@ -1495,6 +1497,8 @@ class MilvusClientDockerTest {
                 }
             }
         }
+        Assertions.assertEquals(results.getIDScore(0).get(0).getLongID(), 11L);
+        Assertions.assertEquals(results.getIDScore(1).get(0).getLongID(), 15L);
 
         // drop collection
         R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
