@@ -1,6 +1,14 @@
 # Changelog
 
-## milvus-sdk-java 2.3.0 (TBD)
+## milvus-sdk-java 2.3.1 (2023-09-05)
+
+### Improvement
+
+- Support COSINE metric type
+- Fix a bug that could not get binary vectors from search result
+- Fix a bug of high-level get/delete api
+
+## milvus-sdk-java 2.3.0 (2023-08-24)
 
 ### Feature
 
