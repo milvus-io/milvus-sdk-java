@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
+import io.milvus.param.LogLevel;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.*;
@@ -66,6 +67,13 @@ public interface MilvusClient {
      * @param timeUnit     time unit
      */
     MilvusClient withRetryInterval(long interval, TimeUnit timeUnit);
+
+    /**
+     * Set log level in runtime.
+     *
+     * @param level {@link LogLevel}
+     */
+    void setLogLevel(LogLevel level);
 
     /**
      * Disconnects from a Milvus server with timeout of 1 minute
