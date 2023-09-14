@@ -159,11 +159,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.timeoutMs = src.timeoutMs;
         this.retryTimes = src.retryTimes;
         this.retryIntervalMs = src.retryIntervalMs;
-    }
-
-    // set log level in runtime
-    public void setLogLevel(LogLevel level) {
-        logLevel = level;
+        this.logLevel = src.logLevel;
     }
 
     @Override
@@ -296,6 +292,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         String msg = String.format("Retry run out of %d retry times", this.retryTimes);
         logError(msg);
         return R.failed(new RuntimeException(msg));
+    }
+
+    @Override
+    public void setLogLevel(LogLevel level) {
+        logLevel = level;
     }
 
     @Override
