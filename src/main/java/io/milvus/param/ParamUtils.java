@@ -467,6 +467,8 @@ public class ParamUtils {
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (requestParam.getConsistencyLevel() == null) {
             builder.setUseDefaultConsistency(true);
+        } else {
+            builder.setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode());
         }
 
         return builder.build();
@@ -486,6 +488,8 @@ public class ParamUtils {
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (requestParam.getConsistencyLevel() == null) {
             builder.setUseDefaultConsistency(true);
+        } else {
+            builder.setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode());
         }
 
         // set offset and limit value.
