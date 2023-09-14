@@ -23,11 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.connection.ClusterFactory;
 import io.milvus.connection.ServerSetting;
 import io.milvus.grpc.*;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.MultiConnectParam;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.ServerAddress;
+import io.milvus.param.*;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
@@ -101,7 +97,6 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return new MilvusServiceClient(clusterConnectParam);
     }
 
-
     @Override
     public MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit) {
         return clusterFactory.getMaster().getClient().withTimeout(timeout, timeoutUnit);
@@ -122,6 +117,12 @@ public class MilvusMultiServiceClient implements MilvusClient {
         this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .forEach(serverSetting -> serverSetting.getClient().close());
         this.clusterFactory.close();
+    }
+
+    @Override
+    public void setLogLevel(LogLevel level) {
+        this.clusterFactory.getAvailableServerSettings().parallelStream()
+                .forEach(serverSetting -> serverSetting.getClient().setLogLevel(level));
     }
 
     @Override
