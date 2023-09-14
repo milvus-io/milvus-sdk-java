@@ -233,6 +233,7 @@ class MilvusMultiClientDockerTest {
 
     @Test
     void testFloatVectors() {
+        client.setLogLevel(LogLevel.Error);
         String randomCollectionName = generator.generate(10);
 
         // collection schema
