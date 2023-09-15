@@ -93,6 +93,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
                 .withSecure(secure)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
                 .withAuthorization(multiConnectParam.getAuthorization())
+                .withDatabaseName(multiConnectParam.getDatabaseName())
                 .build();
         return new MilvusServiceClient(clusterConnectParam);
     }
