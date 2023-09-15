@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.3.2 (2023-09-15)
+
+### Improvement
+
+- Fix the bug that consistency level is ignored in search() interface
+- Set log level for MilvusMultiServiceClient in runtime
+- Fix the bug the MilvusMultiServiceClient cannot specify database name
+
 ## milvus-sdk-java 2.3.1 (2023-09-05)
 
 ### Improvement
