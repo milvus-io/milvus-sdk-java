@@ -1,12 +1,19 @@
 # Changelog
 
+## milvus-sdk-java 2.2.14 (2023-09-15)
+
+### Improvement
+
+- Fix the bug that consistency level is ignored in search() interface
+- Set log level for MilvusMultiServiceClient in runtime
+- Fix the bug the MilvusMultiServiceClient cannot specify database name
+
 ## milvus-sdk-java 2.2.13 (2023-09-04)
 
 ### Improvement
 
 - Fix a bug that could not get binary vectors from search result
 - Fix a bug of high-level get/delete api
-
 
 ## milvus-sdk-java 2.2.12 (2023-08-10)
 
