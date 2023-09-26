@@ -80,7 +80,7 @@
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <lombok.version>1.18.22</lombok.version>
         <okhttp.version>4.9.2</okhttp.version>
-        <plexus.version>3.0.20</plexus.version>
+        <plexus.version>3.0.24</plexus.version>
         <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <os.maven.plugin.version>1.6.2</os.maven.plugin.version>
