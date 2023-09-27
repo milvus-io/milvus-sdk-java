@@ -265,7 +265,7 @@ public class ParamUtils {
                     .setBase(msgBase)
                     .setNumRows(requestParam.getRowCount());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-                insertBuilder.setDbName(requestParam.getDatabaseName());
+                upsertBuilder.setDbName(requestParam.getDatabaseName());
             }
             fillFieldsData(requestParam, wrapper);
         }
