@@ -1903,6 +1903,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
                     .addAllSegmentIDs(requestParam.getSegmentIDs())
+                    .setCollectionName(requestParam.getCollectionName())
+                    .setFlushTs(requestParam.getFlushTs())
                     .build();
 
             GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);

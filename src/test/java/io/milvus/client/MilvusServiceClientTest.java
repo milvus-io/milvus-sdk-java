@@ -2298,8 +2298,8 @@ class MilvusServiceClientTest {
     void getFlushState() {
         List<Long> ids = Arrays.asList(1L, 2L);
         GetFlushStateParam param = GetFlushStateParam.newBuilder()
-                .addSegmentID(1L)
-                .withSegmentIDs(ids)
+                .withCollectionName("dummy")
+                .withFlushTs(100L)
                 .build();
 
         testFuncByName("getFlushState", param);
