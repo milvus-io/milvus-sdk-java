@@ -79,8 +79,8 @@
         <junit.version>4.13.1</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <lombok.version>1.18.22</lombok.version>
-        <okhttp.version>4.9.2</okhttp.version>
-        <plexus.version>3.0.20</plexus.version>
+        <okhttp.version>4.10.0</okhttp.version>
+        <plexus.version>3.0.24</plexus.version>
         <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <os.maven.plugin.version>1.6.2</os.maven.plugin.version>
@@ -92,7 +92,7 @@
         <junit.jupiter.engine.version>5.1.0</junit.jupiter.engine.version>
         <jackson.version>2.12.7.1</jackson.version>
         <gson.version>2.9.0</gson.version>
-        <kotlin.version>1.6.0</kotlin.version>
+        <kotlin.version>1.6.20</kotlin.version>
         <version.fastjson>1.2.83</version.fastjson>
     </properties>
 
