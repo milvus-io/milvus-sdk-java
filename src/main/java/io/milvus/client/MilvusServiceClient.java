@@ -39,6 +39,8 @@ import io.milvus.param.credential.CreateCredentialParam;
 import io.milvus.param.credential.DeleteCredentialParam;
 import io.milvus.param.credential.ListCredUsersParam;
 import io.milvus.param.credential.UpdateCredentialParam;
+import io.milvus.param.database.CreateDatabaseParam;
+import io.milvus.param.database.DropDatabaseParam;
 import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;

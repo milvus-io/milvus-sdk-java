@@ -60,7 +60,7 @@ public class HasCollectionParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }

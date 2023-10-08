@@ -25,7 +25,7 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java</artifactId>
-    <version>2.3.2</version>
+    <version>2.3.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>io.milvus:milvus-sdk-java</name>
@@ -56,9 +56,17 @@
     </scm>
 
     <distributionManagement>
+        <!--正式版本-->
+        <repository>
+            <!-- nexus服务器中用户名：在settings.xml中<server>的id-->
+            <id>maven-releases</id>
+            <name>Releases repository</name>
+            <url>https://nexus.zilliz.cc/repository/maven-releases/</url>
+        </repository>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>maven-snapshots</id>
+            <name>Snapshots repository</name>
+            <url>https://nexus.zilliz.cc/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 

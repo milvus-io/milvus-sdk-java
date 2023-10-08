@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.param.collection;
+package io.milvus.param.database;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
@@ -25,13 +25,13 @@ import lombok.Getter;
 import lombok.NonNull;
 
 /**
- * Parameters for <code>createDatabase</code> interface.
+ * Parameters for <code>dropDatabase</code> interface.
  */
 @Getter
-public class CreateDatabaseParam {
+public class DropDatabaseParam {
     private final String databaseName;
 
-    private CreateDatabaseParam(@NonNull Builder builder) {
+    private DropDatabaseParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
     }
 
@@ -40,7 +40,7 @@ public class CreateDatabaseParam {
     }
 
     /**
-     * Builder for {@link CreateDatabaseParam} class.
+     * Builder for {@link DropDatabaseParam} class.
      */
     public static final class Builder {
         private String databaseName;
@@ -49,7 +49,7 @@ public class CreateDatabaseParam {
         }
 
         /**
-         * Sets the database name. Database name cannot be empty or null.
+         * Sets the databaseName name. Database name cannot be empty or null.
          *
          * @param databaseName database name
          * @return <code>Builder</code>
@@ -60,26 +60,25 @@ public class CreateDatabaseParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link CreateDatabaseParam} instance.
+         * Verifies parameters and creates a new {@link DropDatabaseParam} instance.
          *
-         * @return {@link CreateDatabaseParam}
+         * @return {@link DropDatabaseParam}
          */
-        public CreateDatabaseParam build() throws ParamException {
+        public DropDatabaseParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(databaseName, "Database name");
 
-            return new CreateDatabaseParam(this);
+            return new DropDatabaseParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link CreateDatabaseParam} instance.
+     * Constructs a <code>String</code> by {@link DropDatabaseParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "CreateDatabaseParam{" +
-                "databaseName='" + databaseName + '\'' +
-                '}';
+        return "DropDatabaseParam{" +
+                "databaseName='" + databaseName + '\'' + '}';
     }
 }

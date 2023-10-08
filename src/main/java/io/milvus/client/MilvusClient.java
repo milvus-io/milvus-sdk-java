@@ -27,6 +27,8 @@ import io.milvus.param.RpcStatus;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
+import io.milvus.param.database.CreateDatabaseParam;
+import io.milvus.param.database.DropDatabaseParam;
 import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
