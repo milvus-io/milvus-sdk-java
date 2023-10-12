@@ -41,32 +41,31 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         throw new ParamException("The field name doesn't exist");
     }
 
+    /**
+     * Note: this method only can return the first target vector's topk result
+     *       and its function is duplicated with getIDScore(), so we mark it as deprecated.
+     */
+    @Deprecated
     @Override
     public List<QueryResultsWrapper.RowRecord> getRowRecords() {
-        List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
-        long topK = results.getTopK();
-        for (int i = 0; i < topK; ++i) {
-            QueryResultsWrapper.RowRecord rowRecord = buildRowRecord(i);
-            records.add(rowRecord);
-        }
-        return records;
+        return getRowRecords(0);
     }
 
     /**
-     * Gets a row record from result.
-     *  Throws {@link ParamException} if the index is illegal.
-     *
-     * @return <code>RowRecord</code> a row record of the result
+     * Note: this method's function is duplicated with getIDScore(), it is for high-level search.
      */
-    protected QueryResultsWrapper.RowRecord buildRowRecord(long index) {
-        QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
-
-        List<IDScore> idScore = getIDScore(0);
-        record.put("id", idScore.get((int) index).getLongID());
-        record.put("distance", idScore.get((int)index).getScore());
-
-        buildRowRecord(record, index);
-        return record;
+    public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
+        List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
+        long topK = results.getTopK();
+        List<IDScore> idScore = getIDScore(indexOfTarget);
+        for (int i = 0; i < topK; ++i) {
+            QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
+            record.put("id", idScore.get(i).getLongID());
+            record.put("distance", idScore.get(i).getScore());
+            buildRowRecord(record, i);
+            records.add(record);
+        }
+        return records;
     }
 
     @Override
@@ -152,7 +151,10 @@ public class SearchResultsWrapper extends RowRecordWrapper {
                 idScores.add(new IDScore(strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
             }
         } else {
-            throw new IllegalResponseException("Result ids is illegal");
+            // in v2.3.3, return an empty list instead of throwing exception
+            // because search in an empty collection will run into this exception
+//            throw new IllegalResponseException("Result ids is illegal");
+            return idScores;
         }
 
         // set output fields
