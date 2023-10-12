@@ -19,6 +19,7 @@
 
 package io.milvus.param.highlevel.dml.response;
 
+import io.milvus.exception.ParamException;
 import io.milvus.response.QueryResultsWrapper;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +30,24 @@ import java.util.List;
  * Parameters for <code>search</code> interface.
  */
 @Builder
-@Getter
 public class SearchResponse {
-    public List<QueryResultsWrapper.RowRecord> rowRecords;
+    public List<List<QueryResultsWrapper.RowRecord>> rowRecords;
+
+    /**
+     * In old versions(<=2.3.2), this method only returns results of the first target vector
+     * Mark is as deprecated, keep it to compatible with the legacy code
+     */
+    @Deprecated
+    public List<QueryResultsWrapper.RowRecord> getRowRecords() {
+        return getRowRecords(0);
+    }
+
+    public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
+        if (indexOfTarget >= rowRecords.size()) {
+            throw new ParamException("The indexOfTarget value " + indexOfTarget
+                    + " exceeds results count " + rowRecords.size());
+        }
+
+        return rowRecords.get(indexOfTarget);
+    }
 }
