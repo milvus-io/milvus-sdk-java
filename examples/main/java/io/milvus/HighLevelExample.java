@@ -214,7 +214,7 @@ public class HighLevelExample {
 
         R<SearchResponse> response = milvusClient.search(searchSimpleParam);
         handleResponseStatus(response);
-        for (QueryResultsWrapper.RowRecord rowRecord : response.getData().getRowRecords()) {
+        for (QueryResultsWrapper.RowRecord rowRecord : response.getData().getRowRecords(0)) {
             System.out.println(rowRecord);
         }
         return response;
