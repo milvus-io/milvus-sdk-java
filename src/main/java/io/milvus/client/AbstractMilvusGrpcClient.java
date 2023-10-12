@@ -3034,7 +3034,11 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getData().getResults());
-            return R.success(SearchResponse.builder().rowRecords(searchResultsWrapper.getRowRecords()).build());
+            List<List<QueryResultsWrapper.RowRecord>> records = new ArrayList<>();
+            for (int i = 0; i < vectors.size(); ++i) {
+                records.add(searchResultsWrapper.getRowRecords(i));
+            }
+            return R.success(SearchResponse.builder().rowRecords(records).build());
         } catch (StatusRuntimeException e) {
             logError("Search RPC failed! Collection name:{}",
                     requestParam.getCollectionName(), e);
