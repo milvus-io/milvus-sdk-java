@@ -109,9 +109,7 @@ public class UpsertParam extends InsertParam {
                 ", partitionName='" + partitionName + '\'' +
                 ", rowCount=" + rowCount;
         if (!CollectionUtils.isEmpty(fields)) {
-            return baseStr +
-                    ", columnFields+" + fields +
-                    '}';
+            return baseStr + ", columns=" + fields + '}';
         } else {
             return baseStr + '}';
         }
