@@ -196,4 +196,15 @@ public class MathUtil {
     }
     return sb.toString();
   }
+
+  public static float generalRandomLargeThanFloat(float floatNum){
+    Random random=new Random();
+    return random.nextInt(10)+floatNum+1;
+  }
+
+  public static float generalRandomLessThanFloat(float floatNum){
+    Random random=new Random();
+    return floatNum-random.nextInt(5)-1;
+  }
+
 }

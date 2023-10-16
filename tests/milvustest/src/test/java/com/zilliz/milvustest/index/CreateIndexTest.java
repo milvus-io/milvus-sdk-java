@@ -67,7 +67,7 @@ public class CreateIndexTest extends BaseTest {
 
   @DataProvider(name = "MetricType")
   public Object[][] providerMetricType() {
-    return new Object[][] {{MetricType.L2}, {MetricType.IP}};
+    return new Object[][] {{MetricType.L2}, {MetricType.IP},{MetricType.COSINE}};
   }
 
   @DataProvider(name = "BinaryMetricType")
