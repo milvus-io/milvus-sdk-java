@@ -136,7 +136,7 @@ public class ConnectParam {
          * @param databaseName databaseName
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
