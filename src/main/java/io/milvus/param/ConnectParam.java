@@ -28,6 +28,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
 
 /**
  * Parameters for client connection.
@@ -353,12 +357,15 @@ public class ConnectParam {
                 this.databaseName = result.getDatabase();
             }
 
+            if(host.startsWith(HOST_HTTPS_PREFIX)){
+                this.secure = true;
+            }
+
             if (StringUtils.isNotEmpty(token)) {
                 this.authorization = Base64.getEncoder().encodeToString(String.format("%s", token).getBytes(StandardCharsets.UTF_8));
-                if (!token.contains(":")) {
+                if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
                     this.port = 443;
                 }
-                this.secure = true; //
             }
 
             if (port < 0 || port > 0xFFFF) {
