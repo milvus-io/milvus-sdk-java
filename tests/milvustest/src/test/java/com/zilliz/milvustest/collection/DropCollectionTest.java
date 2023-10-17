@@ -35,8 +35,7 @@ public class DropCollectionTest extends BaseTest {
 
   @BeforeClass(description = "Create collection before test",alwaysRun=true)
   public void provideCollectionName() {
-    String newCollection = CommonFunction.createNewCollection();
-    commonCollection = newCollection;
+    commonCollection = CommonFunction.createNewCollection();
   }
 
   @Severity(SeverityLevel.BLOCKER)

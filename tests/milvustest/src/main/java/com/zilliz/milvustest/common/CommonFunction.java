@@ -7,9 +7,7 @@ import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.DataType;
 import io.milvus.param.*;
 import io.milvus.param.alias.CreateAliasParam;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.partition.CreatePartitionParam;
@@ -432,8 +430,8 @@ public class CommonFunction {
     List<String> book_content_array = new ArrayList<>();
     List<List<Float>> book_intro_array = new ArrayList<>();
     for (long i = 0L; i < num; ++i) {
-      book_name_array.add(MathUtil.genRandomStringAndChinese(10) + "-" + i);
-      book_content_array.add(i + "-" + MathUtil.genRandomStringAndChinese(10));
+      book_name_array.add(MathUtil.genRandomStringAndChinese(5) + "-" + i);
+      book_content_array.add(i + "-" + MathUtil.genRandomStringAndChinese(5));
       List<Float> vector = new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
@@ -453,8 +451,8 @@ public class CommonFunction {
     List<String> book_name_array = new ArrayList<>();
     List<String> book_content_array = new ArrayList<>();
     for (long i = 0L; i < num; ++i) {
-      book_name_array.add(MathUtil.genRandomStringAndChinese(10) + "-" + i);
-      book_content_array.add(i + "-" + MathUtil.genRandomStringAndChinese(10));
+      book_name_array.add(MathUtil.genRandomStringAndChinese(5) + "-" + i);
+      book_content_array.add(i + "-" + MathUtil.genRandomStringAndChinese(5));
     }
     List<ByteBuffer> book_intro_array = generateBinaryVectors(num, 128);
     List<InsertParam.Field> fields = new ArrayList<>();
@@ -467,52 +465,52 @@ public class CommonFunction {
 
   // provide extra param
   public static String provideExtraParam(IndexType indexType) {
-    String extraParm;
+    String extraParam;
     switch (indexType) {
       case FLAT:
-        extraParm = "{}";
+        extraParam = "{}";
         break;
       case IVF_FLAT:
-        extraParm = "{\"nlist\":128}";
+        extraParam = "{\"nlist\":128}";
         break;
       case IVF_SQ8:
-        extraParm = "{\"nlist\":128}";
+        extraParam = "{\"nlist\":128}";
         break;
       case IVF_PQ:
-        extraParm = "{\"nlist\":128, \"m\":16, \"nbits\":8}";
+        extraParam = "{\"nlist\":128, \"m\":16, \"nbits\":8}";
         break;
 /*      case ANNOY:
         extraParm = "{\"n_trees\":16}";
         break;*/
       case HNSW:
-        extraParm = "{\"M\":16,\"efConstruction\":64}";
+        extraParam = "{\"M\":16,\"efConstruction\":64}";
         break;
      /* case RHNSW_FLAT:
-        extraParm = "{\"M\":16,\"efConstruction\":64}";
+        extraParam = "{\"M\":16,\"efConstruction\":64}";
         break;*/
 /*      case RHNSW_PQ:
-        extraParm = "{\"M\":16,\"efConstruction\":64, \"PQM\":16}";
+        extraParam = "{\"M\":16,\"efConstruction\":64, \"PQM\":16}";
         break;
       case RHNSW_SQ:
-        extraParm = "{\"M\":16,\"efConstruction\":64}";
+        extraParam = "{\"M\":16,\"efConstruction\":64}";
         break;*/
       case BIN_IVF_FLAT:
-        extraParm = "{\"nlist\": 128}";
+        extraParam = "{\"nlist\": 128}";
         break;
       case SCANN:
-        extraParm="{\"nlist\":1024}";
+        extraParam="{\"nlist\":1024,\"with_raw_data\":"+true+"}";
         break;
       case GPU_IVF_FLAT:
-        extraParm="{\"nlist\": 64}";
+        extraParam="{\"nlist\": 64}";
         break;
       case GPU_IVF_PQ:
-        extraParm="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
+        extraParam="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
         break;
       default:
-        extraParm = "{\"nlist\":128}";
+        extraParam = "{\"nlist\":128}";
         break;
     }
-    return extraParm;
+    return extraParam;
   }
 
   public static String createNewCollectionWithDynamicField() {
@@ -742,5 +740,49 @@ public class CommonFunction {
             .build());
 
   }
+
+  public static void prepareCollectionForSearch(String collection,String database){
+    List<InsertParam.Field> fields = generateData(2000);
+    milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collection)
+            .withDatabaseName(database)
+            .withFields(fields).build());
+    milvusClient.createIndex(
+            CreateIndexParam.newBuilder()
+                    .withCollectionName(collection)
+                    .withFieldName(CommonData.defaultVectorField)
+                    .withIndexName(CommonData.defaultIndex)
+                    .withMetricType(MetricType.L2)
+                    .withIndexType(IndexType.HNSW)
+                    .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                    .withSyncMode(Boolean.FALSE)
+                    .withDatabaseName(database)
+                    .build());
+    milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(collection)
+            .withDatabaseName(database)
+            .withSyncLoad(true)
+            .withSyncLoadWaitingTimeout(30L)
+            .withSyncLoadWaitingInterval(50L)
+            .build());
+
+  }
+
+  public static void clearCollection(String collection,String database){
+    milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
+            .withCollectionName(collection).build());
+    milvusClient.dropCollection(DropCollectionParam.newBuilder()
+            .withCollectionName(collection)
+            .withDatabaseName(database).build());
+  }
+
+  public static void insertDataIntoCollection(String collection,String database,int num){
+    List<InsertParam.Field> fields = generateData(num);
+    milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collection)
+            .withDatabaseName(database)
+            .withFields(fields).build());
+  }
+
 
 }
