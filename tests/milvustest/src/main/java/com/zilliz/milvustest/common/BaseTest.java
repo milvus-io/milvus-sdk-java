@@ -79,7 +79,8 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
     initStringPKCollection();
     // create String PK collection with  binary Vector
     initStringPKBinaryCollection();
-
+    // create database
+    milvusClient.createDatabase(CreateDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName1).build());
   }
 
   @AfterSuite(alwaysRun = true)
@@ -108,6 +109,8 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
     logger.info("delete Default Credential:" + CommonData.defaultUserName);
     milvusClient.deleteCredential(
         DeleteCredentialParam.newBuilder().withUsername(CommonData.defaultUserName).build());
+    milvusClient.dropDatabase(DropDatabaseParam.newBuilder()
+            .withDatabaseName(CommonData.databaseName1).build());
     milvusClient.close();
   }
 
