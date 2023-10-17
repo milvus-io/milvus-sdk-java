@@ -6,6 +6,7 @@ import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.MutationResult;
 import io.milvus.param.R;
 import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.DeleteParam;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.partition.CreatePartitionParam;
@@ -59,6 +60,33 @@ public class DeleteTest extends BaseTest {
     Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
   }
 
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "delete data in complex expression without load",groups = {"Smoke"})
+  public void deleteDataInComplexExpWithUnload() {
+    R<MutationResult> mutationResultR =
+            milvusClient.delete(
+                    DeleteParam.newBuilder()
+                            .withCollectionName(commonCollection)
+                            .withExpr("book_id <100")
+                            .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
+    Assert.assertTrue(mutationResultR.getException().getMessage().contains("collection not loaded"));
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "delete data in complex expression with load",groups = {"Smoke"},
+  dependsOnMethods = {"deleteDataInComplexExpWithUnload"})
+  public void deleteDataInComplexExpWithLoad() {
+    CommonFunction.prepareCollectionForSearch(commonCollection,"default");
+    R<MutationResult> mutationResultR =
+            milvusClient.delete(
+                    DeleteParam.newBuilder()
+                            .withCollectionName(commonCollection)
+                            .withExpr("book_id <100")
+                            .build());
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 0);
+  }
+
   @Severity(SeverityLevel.CRITICAL)
   @Test(description = "delete data in expression by partition ")
   public void deleteDataByPartition() {
@@ -74,7 +102,7 @@ public class DeleteTest extends BaseTest {
   }
 
   @Severity(SeverityLevel.NORMAL)
-  @Test(description = "delete data with invalid expression ")
+  @Test(description = "delete data with invalid expression ",dependsOnMethods = {"deleteDataInComplexExpWithLoad"})
   public void deleteDataInvalidExpression() {
     R<MutationResult> mutationResultR =
         milvusClient.delete(
@@ -82,9 +110,6 @@ public class DeleteTest extends BaseTest {
                 .withCollectionName(commonCollection)
                 .withExpr("book_id not in  [1,2,3]")
                 .build());
-    Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
-    Assert.assertEquals(
-        mutationResultR.getException().getMessage(),
-        "invalid plan node type, only pk in [1, 2] supported");
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 0);
   }
 }

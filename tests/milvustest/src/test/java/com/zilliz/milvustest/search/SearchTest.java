@@ -1861,4 +1861,62 @@ public class SearchTest extends BaseTest {
 
 
   }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Int PK and float vector search with each index", dataProvider = "FloatIndex")
+  public void searchReturnVector(IndexType indexType, MetricType metricType) {
+    String newCollection = CommonFunction.createNewCollection();
+    // create index
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createIndex(
+                    CreateIndexParam.newBuilder()
+                            .withCollectionName(newCollection)
+                            .withFieldName(CommonData.defaultVectorField)
+                            .withIndexName(CommonData.defaultIndex)
+                            .withMetricType(metricType)
+                            .withIndexType(indexType)
+                            .withExtraParam(CommonFunction.provideExtraParam(indexType))
+                            .withSyncMode(Boolean.FALSE)
+                            .build());
+    System.out.println("Create index" + rpcStatusR);
+    Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+    Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+    // Insert test data
+    List<InsertParam.Field> fields = CommonFunction.generateData(1000);
+    milvusClient.insert(
+            InsertParam.newBuilder().withCollectionName(newCollection).withFields(fields).build());
+    // load
+    milvusClient.loadCollection(
+            LoadCollectionParam.newBuilder()
+                    .withCollectionName(newCollection)
+                    .withSyncLoad(true)
+                    .withSyncLoadWaitingInterval(500L)
+                    .withSyncLoadWaitingTimeout(30L)
+                    .build());
+    // search
+    Integer SEARCH_K = 2; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("book_id",CommonData.defaultVectorField);
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(newCollection)
+                    .withMetricType(metricType)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName(CommonData.defaultVectorField)
+                    .withParams(SEARCH_PARAM)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertEquals(searchResultsWrapper.getFieldData(CommonData.defaultVectorField, 0).size(), 2);
+    System.out.println(searchResultsR.getData().getResults());
+    // drop collection
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
+  }
 }

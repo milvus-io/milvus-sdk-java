@@ -2,6 +2,7 @@ package com.zilliz.milvustest.flush;
 
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
+import io.milvus.grpc.FlushAllResponse;
 import io.milvus.grpc.FlushResponse;
 import io.milvus.param.R;
 import io.milvus.param.collection.FlushParam;
@@ -76,5 +77,12 @@ public class FlushTest extends BaseTest {
         Assert.assertEquals(flushResponseR.getStatus().intValue(), 0);
     Assert.assertTrue(
         flushResponseR.getData().getStatus().getReason().contains("can\'t find collection"));
+    }
+
+    @Severity(SeverityLevel.BLOCKER)
+    @Test(description = "flush all collection", enabled = true)
+    public void flushAllCollection(){
+        R<FlushAllResponse> flushAllResponseR = milvusClient.flushAll(true, 50, 300);
+        Assert.assertEquals(flushAllResponseR.getStatus().intValue(), 0);
     }
 }
