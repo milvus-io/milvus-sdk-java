@@ -92,7 +92,7 @@ public class MultiConnectParam extends ConnectParam {
          * @param databaseName databaseName
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
             super.withDatabaseName(databaseName);
             return this;
         }

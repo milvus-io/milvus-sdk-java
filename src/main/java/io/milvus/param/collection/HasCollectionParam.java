@@ -55,12 +55,12 @@ public class HasCollectionParam {
         }
 
         /**
-         * Sets the database name. Database name can be empty.
+         * Sets the database name.
          *
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
