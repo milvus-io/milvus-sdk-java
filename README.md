@@ -9,7 +9,7 @@ Java SDK for [Milvus](https://github.com/milvus-io/milvus). To contribute to thi
 ### Prerequisites
 
     -   Java 8 or higher
-    -   Apache Maven or Gradle/Grails
+    -   Apache Maven or Gradle
 
 The following table shows compatibilities between Milvus and Java SDK.
 
@@ -23,7 +23,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 
 ### Install Java SDK
 
-You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
+You can use **Apache Maven** or **Gradle** add Milvus SDK to your project.
 
    - Apache Maven
 
@@ -35,12 +35,18 @@ You can use **Apache Maven** or **Gradle**/**Grails** to download the SDK.
         </dependency>
        ```
 
-   - Gradle/Grails
+   - Gradle/Groovy
 
-        ```gradle
+        ```groovy
         implementation 'io.milvus:milvus-sdk-java:2.3.0'
         ```
 
+   - Gradle/Kotlin
+
+        ```kotlin
+        implementation("io.milvus:milvus-sdk-java:2.3.0")
+        ```
+        
 ### Examples
 
 Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
@@ -57,7 +63,7 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
     ```
   This is because SLF4J jar files need to be added into your application's classpath. SLF4J is required by Java SDK for logging purpose.
   
-  To fix this issue, you can use **Apache Maven** or **Gradle**/**Grails** to download the required jar files.
+  To fix this issue, you can use **Apache Maven** or **Gradle** to download the required jar files.
                                                                                                          
     - Apache Maven
     
@@ -69,8 +75,14 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
          </dependency>
         ```
     
-    - Gradle/Grails
+    - Gradle/Groovy
     
-         ```gradle
+         ```groovy
          compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
          ```
+    - Gradle/Kotlin
+    
+        ```kotlin
+        implementation("org.slf4j:slf4j-api:1.7.30")
+        ```
+ 
