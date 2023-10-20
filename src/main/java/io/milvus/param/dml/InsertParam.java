@@ -136,10 +136,10 @@ public class InsertParam {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
             if (CollectionUtils.isEmpty(fields) && CollectionUtils.isEmpty(rows)) {
-                throw new ParamException("Fields cannot be empty");
+                throw new ParamException("Fields and Rows are empty, use withFields() or withRows() to input data.");
             }
             if (CollectionUtils.isNotEmpty(fields) && CollectionUtils.isNotEmpty(rows)) {
-                throw new ParamException("Only one of Fields and Rows is allowed to be non-empty.");
+                throw new ParamException("Only one of Fields or Rows is allowed to be non-empty.");
             }
 
             int count;
@@ -219,9 +219,7 @@ public class InsertParam {
                 ", partitionName='" + partitionName + '\'' +
                 ", rowCount=" + rowCount;
         if (!CollectionUtils.isEmpty(fields)) {
-            return baseStr +
-                    ", columnFields+" + fields +
-                    '}';
+            return baseStr + ", columns=" + fields + '}';
         } else {
             return baseStr + '}';
         }
@@ -236,6 +234,7 @@ public class InsertParam {
      * If dataType is Varchar, values is List of String;
      * If dataType is FloatVector, values is List of List Float;
      * If dataType is BinaryVector, values is List of ByteBuffer;
+     * If dataType is Array, values can be List of List Boolean/Integer/Short/Long/Float/Double/String;
      *
      * Note:
      * If dataType is Int8/Int16/Int32, values is List of Integer or Short

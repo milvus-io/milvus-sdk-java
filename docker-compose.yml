@@ -14,7 +14,7 @@ services:
 
   minio:
     container_name: milvus-javasdk-test-minio
-    image: minio/minio:RELEASE.2022-03-17T06-34-49Z
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -32,7 +32,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-test-standalone
-    image: milvusdb/milvus:v2.3.0
+    image: milvusdb/milvus:master-20231020-5247ea3f
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcd:2379
@@ -59,7 +59,7 @@ services:
 
   minioslave:
     container_name: milvus-javasdk-test-minio-slave
-    image: minio/minio:RELEASE.2022-03-17T06-34-49Z
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
     ports:
       - "19000:9000"
       - "19001:9001"
@@ -77,7 +77,7 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-test-slave-standalone
-    image: milvusdb/milvus:v2.3.0
+    image: milvusdb/milvus:master-20231020-5247ea3f
     command: ["milvus", "run", "standalone"]
     environment:
       ETCD_ENDPOINTS: etcdslave:2379

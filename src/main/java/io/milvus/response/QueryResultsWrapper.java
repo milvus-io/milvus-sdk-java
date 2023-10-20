@@ -3,6 +3,7 @@ package io.milvus.response;
 import com.alibaba.fastjson.JSONObject;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 
 import io.milvus.response.basic.RowRecordWrapper;
 import lombok.Getter;
@@ -125,7 +126,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
             Object obj = fieldValues.get(keyName);
             if (obj == null) {
                 // find the value from dynamic field
-                Object meta = fieldValues.get("$meta");
+                Object meta = fieldValues.get(Constant.DYNAMIC_FIELD_NAME);
                 if (meta != null) {
                     JSONObject jsonMata = (JSONObject)meta;
                     Object innerObj = jsonMata.get(keyName);
