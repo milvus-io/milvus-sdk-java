@@ -3,10 +3,12 @@ package io.milvus.response;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ProtocolStringList;
 import io.milvus.exception.ParamException;
+import io.milvus.grpc.ArrayArray;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
 
+import io.milvus.grpc.ScalarField;
 import lombok.NonNull;
 
 import java.nio.ByteBuffer;
@@ -81,22 +83,24 @@ public class FieldDataWrapper {
                 return (data.size()*8)/dim;
             }
             case Int64:
-                return fieldData.getScalars().getLongData().getDataList().size();
+                return fieldData.getScalars().getLongData().getDataCount();
             case Int32:
             case Int16:
             case Int8:
-                return fieldData.getScalars().getIntData().getDataList().size();
+                return fieldData.getScalars().getIntData().getDataCount();
             case Bool:
-                return fieldData.getScalars().getBoolData().getDataList().size();
+                return fieldData.getScalars().getBoolData().getDataCount();
             case Float:
-                return fieldData.getScalars().getFloatData().getDataList().size();
+                return fieldData.getScalars().getFloatData().getDataCount();
             case Double:
-                return fieldData.getScalars().getDoubleData().getDataList().size();
+                return fieldData.getScalars().getDoubleData().getDataCount();
             case VarChar:
             case String:
-                return fieldData.getScalars().getStringData().getDataList().size();
+                return fieldData.getScalars().getStringData().getDataCount();
             case JSON:
-                return fieldData.getScalars().getJsonData().getDataList().size();
+                return fieldData.getScalars().getJsonData().getDataCount();
+            case Array:
+                return fieldData.getScalars().getArrayData().getDataCount();
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
@@ -112,6 +116,7 @@ public class FieldDataWrapper {
      *      float field return List of Float
      *      double field return List of Double
      *      varchar field return List of String
+     *      array field return List of List
      *      etc.
      *
      * Throws {@link IllegalResponseException} if the field type is illegal.
@@ -152,27 +157,53 @@ public class FieldDataWrapper {
                 }
                 return packData;
             }
+            case Array:
+                List<List<?>> array = new ArrayList<>();
+                ArrayArray arrArray = fieldData.getScalars().getArrayData();
+                for (int i = 0; i < arrArray.getDataCount(); i++) {
+                    ScalarField scalar = arrArray.getData(i);
+                    array.add(getScalarData(arrArray.getElementType(), scalar));
+                }
+                return array;
             case Int64:
-                return fieldData.getScalars().getLongData().getDataList();
             case Int32:
             case Int16:
             case Int8:
-                return fieldData.getScalars().getIntData().getDataList();
             case Bool:
-                return fieldData.getScalars().getBoolData().getDataList();
             case Float:
-                return fieldData.getScalars().getFloatData().getDataList();
             case Double:
-                return fieldData.getScalars().getDoubleData().getDataList();
             case VarChar:
             case String:
-                ProtocolStringList protoStrList = fieldData.getScalars().getStringData().getDataList();
-                return protoStrList.subList(0, protoStrList.size());
             case JSON:
-                List<ByteString> dataList = fieldData.getScalars().getJsonData().getDataList();
-                return dataList.stream().map(ByteString::toByteArray).collect(Collectors.toList());
+                return getScalarData(dt, fieldData.getScalars());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
+        }
+    }
+
+    private List<?> getScalarData(DataType dt, ScalarField scalar) {
+        switch (dt) {
+            case Int64:
+                return scalar.getLongData().getDataList();
+            case Int32:
+            case Int16:
+            case Int8:
+                return scalar.getIntData().getDataList();
+            case Bool:
+                return scalar.getBoolData().getDataList();
+            case Float:
+                return scalar.getFloatData().getDataList();
+            case Double:
+                return scalar.getDoubleData().getDataList();
+            case VarChar:
+            case String:
+                ProtocolStringList protoStrList = scalar.getStringData().getDataList();
+                return protoStrList.subList(0, protoStrList.size());
+            case JSON:
+                List<ByteString> dataList = scalar.getJsonData().getDataList();
+                return dataList.stream().map(ByteString::toByteArray).collect(Collectors.toList());
+            default:
+                return new ArrayList<>();
         }
     }
 
