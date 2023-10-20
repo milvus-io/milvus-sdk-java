@@ -43,6 +43,7 @@ public class FieldType {
     private final boolean autoID;
     private final boolean partitionKey;
     private final boolean isDynamic;
+    private final DataType elementType;
 
     private FieldType(@NonNull Builder builder){
         this.name = builder.name;
@@ -53,6 +54,7 @@ public class FieldType {
         this.autoID = builder.autoID;
         this.partitionKey = builder.partitionKey;
         this.isDynamic = builder.isDynamic;
+        this.elementType = builder.elementType;
     }
 
     public int getDimension() {
@@ -66,6 +68,14 @@ public class FieldType {
     public int getMaxLength() {
         if (typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
             return Integer.parseInt(typeParams.get(Constant.VARCHAR_MAX_LENGTH));
+        }
+
+        return 0;
+    }
+
+    public int getMaxCapacity() {
+        if (typeParams.containsKey(Constant.ARRAY_MAX_CAPACITY)) {
+            return Integer.parseInt(typeParams.get(Constant.ARRAY_MAX_CAPACITY));
         }
 
         return 0;
@@ -87,6 +97,7 @@ public class FieldType {
         private boolean autoID = false;
         private boolean partitionKey = false;
         private boolean isDynamic = false;
+        private DataType elementType = DataType.None; // only for Array type field
 
         private Builder() {
         }
@@ -142,6 +153,17 @@ public class FieldType {
         }
 
         /**
+         * Sets the element type for Array type field.
+         *
+         * @param elementType element type of the Array type field
+         * @return <code>Builder</code>
+         */
+        public Builder withElementType(@NonNull DataType elementType) {
+            this.elementType = elementType;
+            return this;
+        }
+
+        /**
          * Adds a parameter pair for the field.
          *
          * @param key parameter key
@@ -187,6 +209,21 @@ public class FieldType {
         }
 
         /**
+         * Sets the max capacity of an array field. The value must be greater than zero.
+         * The valid capacity value range is [1, 4096]
+         *
+         * @param maxCapacity max capacity of an array field
+         * @return <code>Builder</code>
+         */
+        public Builder withMaxCapacity(@NonNull Integer maxCapacity) {
+            if (maxCapacity <= 0 || maxCapacity >= 4096) {
+                throw new ParamException("Array field max capacity value must be within range [1, 4096]");
+            }
+            this.typeParams.put(Constant.ARRAY_MAX_CAPACITY, maxCapacity.toString());
+            return this;
+        }
+
+        /**
          * Enables auto-id function for the field. Note that the auto-id function can only be enabled on primary key field.
          * If auto-id function is enabled, Milvus will automatically generate unique ID for each entity,
          * thus you do not need to provide values for the primary key field when inserting.
@@ -223,7 +260,7 @@ public class FieldType {
         public FieldType build() throws ParamException {
             ParamUtils.CheckNullEmptyString(name, "Field name");
 
-            if (dataType == null || dataType == DataType.None) {
+            if (dataType == null || dataType == DataType.None || dataType == DataType.UNRECOGNIZED) {
                 throw new ParamException("Field data type is illegal");
             }
 
@@ -271,6 +308,25 @@ public class FieldType {
                 }
             }
 
+            // verify element type for Array field
+            if (dataType == DataType.Array) {
+                if (elementType == DataType.String) {
+                    throw new ParamException("String type is not supported, use Varchar instead");
+                }
+                if (elementType == DataType.None || elementType == DataType.Array
+                        || elementType == DataType.JSON || elementType == DataType.String
+                        || elementType == DataType.FloatVector || elementType == DataType.Float16Vector
+                        || elementType == DataType.BinaryVector || elementType == DataType.UNRECOGNIZED) {
+                    throw new ParamException("Unsupported element type");
+                }
+
+                if (!this.typeParams.containsKey(Constant.ARRAY_MAX_CAPACITY)) {
+                    throw new ParamException("Array field max capacity must be specified");
+                }
+                if (elementType == DataType.VarChar && !this.typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
+                    throw new ParamException("Varchar array field max length must be specified");
+                }
+            }
 
             return new FieldType(this);
         }
@@ -286,6 +342,7 @@ public class FieldType {
         return "FieldType{" +
                 "name='" + name + '\'' +
                 ", type='" + dataType.name() + '\'' +
+                ", elementType='" + elementType.name() + '\'' +
                 ", primaryKey=" + primaryKey +
                 ", partitionKey=" + partitionKey +
                 ", autoID=" + autoID +

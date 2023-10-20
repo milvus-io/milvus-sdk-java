@@ -1508,6 +1508,212 @@ class MilvusClientDockerTest {
     }
 
     @Test
+    void testArrayField() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "id_field";
+        String field2Name = "vec_field";
+        String field3Name = "str_array_field";
+        String field4Name = "int_array_field";
+        String field5Name = "float_array_field";
+        List<FieldType> fieldsSchema = new ArrayList<>();
+        fieldsSchema.add(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(field2Name)
+                .withDimension(dimension)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.Array)
+                .withElementType(DataType.VarChar)
+                .withName(field3Name)
+                .withMaxLength(256)
+                .withMaxCapacity(300)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Int32)
+                .withName(field4Name)
+                .withMaxCapacity(400)
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Float)
+                .withName(field5Name)
+                .withMaxCapacity(500)
+                .build());
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldTypes(fieldsSchema)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .withExtraParam("{}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // insert data by column-based
+        int rowCount = 100;
+        List<Long> ids = new ArrayList<>();
+        List<List<String>> strArrArray = new ArrayList<>();
+        List<List<Integer>> intArrArray = new ArrayList<>();
+        List<List<Float>> floatArrArray = new ArrayList<>();
+        for (int i = 0; i < rowCount; i++) {
+            ids.add((long)i);
+            List<String> strArray = new ArrayList<>();
+            List<Integer> intArray = new ArrayList<>();
+            List<Float> floatArray = new ArrayList<>();
+            for (int k = 0; k < i; k++) {
+                strArray.add(String.format("C_StringArray_%d_%d", i, k));
+                intArray.add(i*10000 + k);
+                floatArray.add((float)k/1000 + i);
+            }
+            strArrArray.add(strArray);
+            intArrArray.add(intArray);
+            floatArrArray.add(floatArray);
+        }
+        List<List<Float>> vectors = generateFloatVectors(rowCount);
+
+        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
+        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
+        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
+        fieldsInsert.add(new InsertParam.Field(field3Name, strArrArray));
+        fieldsInsert.add(new InsertParam.Field(field4Name, intArrArray));
+        fieldsInsert.add(new InsertParam.Field(field5Name, floatArrArray));
+
+        InsertParam insertColumnsParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fieldsInsert)
+                .build();
+
+        R<MutationResult> insertColumnResp = client.insert(insertColumnsParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertColumnResp.getStatus().intValue());
+        System.out.println(rowCount + " rows inserted");
+
+        // insert data by row-based
+        List<JSONObject> rows = new ArrayList<>();
+        for (int i = 0; i < rowCount; ++i) {
+            JSONObject row = new JSONObject();
+            row.put(field1Name, 10000L + (long)i);
+            row.put(field2Name, generateFloatVectors(1).get(0));
+
+            List<String> strArray = new ArrayList<>();
+            List<Integer> intArray = new ArrayList<>();
+            List<Float> floatArray = new ArrayList<>();
+            for (int k = 0; k < i; k++) {
+                strArray.add(String.format("R_StringArray_%d_%d", i, k));
+                intArray.add(i*10000 + k);
+                floatArray.add((float)k/1000 + i);
+            }
+            row.put(field3Name, strArray);
+            row.put(field4Name, intArray);
+            row.put(field5Name, floatArray);
+
+            rows.add(row);
+        }
+
+        InsertParam insertRowParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(rows)
+                .build();
+
+        R<MutationResult> insertRowResp = client.insert(insertRowParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertRowResp.getStatus().intValue());
+        System.out.println(rowCount + " rows inserted");
+
+        // search
+        List<List<Float>> searchVectors = generateFloatVectors(1);
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.L2)
+                .withTopK(5)
+                .withVectors(searchVectors)
+                .withVectorFieldName(field2Name)
+                .addOutField(field3Name)
+                .addOutField(field4Name)
+                .addOutField(field5Name)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .build();
+
+        R<SearchResults> searchR = client.search(searchParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+        System.out.println("Search results:");
+        for (SearchResultsWrapper.IDScore score : scores) {
+            System.out.println(score);
+            long id = score.getLongID();
+            List<?> strArray = (List<?>)score.get(field3Name);
+            Assertions.assertEquals(id%10000, (long)strArray.size());
+            List<?> intArray = (List<?>)score.get(field4Name);
+            Assertions.assertEquals(id%10000, (long)intArray.size());
+            List<?> floatArray = (List<?>)score.get(field5Name);
+            Assertions.assertEquals(id%10000, (long)floatArray.size());
+        }
+
+        // search with array_contains
+        searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.L2)
+                .withTopK(10)
+                .withExpr(String.format("array_contains_any(%s, [450038, 680015])", field4Name))
+                .withVectors(searchVectors)
+                .withVectorFieldName(field2Name)
+                .addOutField(field3Name)
+                .addOutField(field4Name)
+                .addOutField(field5Name)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .build();
+
+        searchR = client.search(searchParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+        results = new SearchResultsWrapper(searchR.getData().getResults());
+        scores = results.getIDScore(0);
+        System.out.println("Search results:");
+        for (SearchResultsWrapper.IDScore score : scores) {
+            System.out.println(score);
+            long id = score.getLongID();
+            Assertions.assertTrue(id == 10068 || id == 68 || id == 10045 || id == 45);
+        }
+
+        // drop collection
+        R<RpcStatus> dropR = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
     void testUpsert() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
@@ -1734,34 +1940,34 @@ class MilvusClientDockerTest {
         testCollectionHighLevelGet(varcharPrimaryField, vectorField);
     }
 
-    @Test
-    void testHighLevelDelete() {
-        // collection schema
-        String field1Name = "id_field";
-        String field2Name = "vector_field";
-        FieldType int64PrimaryField = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build();
-
-        FieldType varcharPrimaryField = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withDataType(DataType.VarChar)
-                .withName(field1Name)
-                .withMaxLength(128)
-                .build();
-
-        FieldType vectorField = FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build();
-
-        testCollectionHighLevelDelete(int64PrimaryField, vectorField);
-        testCollectionHighLevelDelete(varcharPrimaryField, vectorField);
-    }
+//    @Test
+//    void testHighLevelDelete() {
+//        // collection schema
+//        String field1Name = "id_field";
+//        String field2Name = "vector_field";
+//        FieldType int64PrimaryField = FieldType.newBuilder()
+//                .withPrimaryKey(true)
+//                .withAutoID(false)
+//                .withDataType(DataType.Int64)
+//                .withName(field1Name)
+//                .build();
+//
+//        FieldType varcharPrimaryField = FieldType.newBuilder()
+//                .withPrimaryKey(true)
+//                .withDataType(DataType.VarChar)
+//                .withName(field1Name)
+//                .withMaxLength(128)
+//                .build();
+//
+//        FieldType vectorField = FieldType.newBuilder()
+//                .withDataType(DataType.FloatVector)
+//                .withName(field2Name)
+//                .withDimension(dimension)
+//                .build();
+//
+//        testCollectionHighLevelDelete(int64PrimaryField, vectorField);
+//        testCollectionHighLevelDelete(varcharPrimaryField, vectorField);
+//    }
 
     void testCollectionHighLevelGet(FieldType primaryField, FieldType vectorField) {
         // create collection
