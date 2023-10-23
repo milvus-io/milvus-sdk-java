@@ -1,6 +1,29 @@
 # Changelog
 
-## milvus-sdk-java 2.3.0 (TBD)
+## milvus-sdk-java 2.3.2 (2023-10-25)
+
+### Feature
+
+- Support Array type field(new feature of Milvus v2.3.2)
+
+### Improvement
+
+- Fix a bug that consistency level is ignored in search() interface
+- Fix a bug the MilvusMultiServiceClient cannot specify database name
+- Fix a bug that high-level search API can only return the first vector's results
+- Upgrade dependencies to fix some vulnerabilities
+- Set log level for MilvusMultiServiceClient in runtime
+- Support insert dynamic values by column-based
+
+## milvus-sdk-java 2.3.1 (2023-09-05)
+
+### Improvement
+
+- Support COSINE metric type
+- Fix a bug that could not get binary vectors from search result
+- Fix a bug of high-level get/delete api
+
+## milvus-sdk-java 2.3.0 (2023-08-24)
 
 ### Feature
 
@@ -11,6 +34,21 @@
 
 - No longer support index: ANNOY, RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ
 - No longer support metric: TANIMOTO, SUPERSTRUCTURE, SUBSTRUCTURE
+
+## milvus-sdk-java 2.2.14 (2023-09-15)
+
+### Improvement
+
+- Fix the bug that consistency level is ignored in search() interface
+- Set log level for MilvusMultiServiceClient in runtime
+- Fix the bug the MilvusMultiServiceClient cannot specify database name
+
+## milvus-sdk-java 2.2.13 (2023-09-04)
+
+### Improvement
+
+- Fix a bug that could not get binary vectors from search result
+- Fix a bug of high-level get/delete api
 
 ## milvus-sdk-java 2.2.12 (2023-08-10)
 
