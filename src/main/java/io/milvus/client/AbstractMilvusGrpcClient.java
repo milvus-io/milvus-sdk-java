@@ -2883,7 +2883,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
             R<MutationResult> resultR = delete(deleteParam);
             MutationResultWrapper resultWrapper = new MutationResultWrapper(resultR.getData());
-            return R.success(DeleteResponse.builder().deleteIds(resultWrapper.getInsertIDs()).build());
+            return R.success(DeleteResponse.builder().deleteIds(resultWrapper.getDeleteIDs()).build());
         } catch (StatusRuntimeException e) {
             logError("Delete RPC failed! Collection name:{}",
                     requestParam.getCollectionName(), e);
