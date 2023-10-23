@@ -44,7 +44,7 @@ You can use **Apache Maven** or **Gradle** add Milvus SDK to your project.
    - Gradle/Kotlin
 
         ```kotlin
-        implementation("io.milvus:milvus-sdk-java:2.3.0")
+        implementation("io.milvus:milvus-sdk-java:2.3.2")
         ```
         
 ### Examples
