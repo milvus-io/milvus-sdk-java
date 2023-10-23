@@ -325,13 +325,15 @@ public class ParamUtils {
             List<JSONObject> rowFields = requestParam.getRows();
 
             if (CollectionUtils.isNotEmpty(columnFields)) {
-                checkAndSetColumnData(wrapper.getFields(), columnFields);
+                checkAndSetColumnData(wrapper, columnFields);
             } else {
                 checkAndSetRowData(wrapper, rowFields);
             }
         }
 
-        private void checkAndSetColumnData(List<FieldType> fieldTypes, List<InsertParam.Field> fields) {
+        private void checkAndSetColumnData(DescCollResponseWrapper wrapper, List<InsertParam.Field> fields) {
+            List<FieldType> fieldTypes = wrapper.getFields();
+
             // gen fieldData
             // make sure the field order must be consisted with collection schema
             for (FieldType fieldType : fieldTypes) {
@@ -353,6 +355,22 @@ public class ParamUtils {
                 if (!found && !fieldType.isAutoID()) {
                     String msg = "The field: " + fieldType.getName() + " is not provided.";
                     throw new ParamException(msg);
+                }
+            }
+
+            // deal with dynamicField
+            if (wrapper.getEnableDynamicField()) {
+                for (InsertParam.Field field : fields) {
+                    if (field.getName().equals(Constant.DYNAMIC_FIELD_NAME)) {
+                        FieldType dynamicType = FieldType.newBuilder()
+                                .withName(Constant.DYNAMIC_FIELD_NAME)
+                                .withDataType(DataType.JSON)
+                                .withIsDynamic(true)
+                                .build();
+                        checkFieldData(dynamicType, field);
+                        this.addFieldsData(genFieldData(dynamicType, field.getValues(), true));
+                        break;
+                    }
                 }
             }
         }
