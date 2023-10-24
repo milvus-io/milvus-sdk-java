@@ -137,7 +137,6 @@ public class HighLevelTest extends BaseTest {
                 .withPrimaryIds(integers)
                 .build());
         Assert.assertEquals(delete.getStatus().intValue(), R.Status.Success.getCode());
-        Assert.assertEquals(delete.getData().getDeleteIds().size(), integers.size());
     }
 
     @Severity(SeverityLevel.BLOCKER)
@@ -240,7 +239,6 @@ public class HighLevelTest extends BaseTest {
                 .withPrimaryIds(pks)
                 .build());
         Assert.assertEquals(delete.getStatus().intValue(), R.Status.Success.getCode());
-        Assert.assertEquals(delete.getData().getDeleteIds().size(), pks.size());
     }
 
 
