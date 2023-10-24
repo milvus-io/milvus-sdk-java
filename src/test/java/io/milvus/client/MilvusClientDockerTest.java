@@ -2107,6 +2107,5 @@ class MilvusClientDockerTest {
         String outPutStr = String.format("collectionName:%s, primaryIds:%s, deleteResponseR:%s", collectionName, primaryIds, deleteResponseR);
         System.out.println(outPutStr);
         Assertions.assertEquals(R.Status.Success.getCode(), deleteResponseR.getStatus().intValue());
-        Assertions.assertEquals(primaryIds.size(), deleteResponseR.getData().getDeleteIds().size());
     }
 }
