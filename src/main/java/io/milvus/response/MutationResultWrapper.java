@@ -1,5 +1,6 @@
 package io.milvus.response;
 
+import com.google.common.collect.Lists;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.MutationResult;
 
@@ -67,6 +68,21 @@ public class MutationResultWrapper {
             return result.getIDs().getStrId().getDataList();
         } else {
             throw new ParamException("No found insertIds, please check your requests");
+        }
+    }
+
+    /**
+     * Gets the ID array from returned by delete interface.
+     *
+     * @return List of Ids, ID array returned by delete interface
+     */
+    public List<?> getDeleteIDs() {
+        if (result.getIDs().hasIntId()) {
+            return result.getIDs().getIntId().getDataList();
+        } else if (result.getIDs().hasStrId()) {
+            return result.getIDs().getStrId().getDataList();
+        } else {
+            return Lists.newArrayList();
         }
     }
 
