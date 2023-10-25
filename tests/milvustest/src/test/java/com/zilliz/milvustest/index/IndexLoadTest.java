@@ -12,9 +12,7 @@ import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
-import io.qameta.allure.Issue;
-import io.qameta.allure.Severity;
-import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -23,6 +21,8 @@ import org.testng.annotations.Test;
 
 import static com.zilliz.milvustest.util.MathUtil.combine;
 
+@Epic("Index")
+@Feature("IndexLoad")
 public class IndexLoadTest extends BaseTest {
     public String collection;
     public String binaryCollection;

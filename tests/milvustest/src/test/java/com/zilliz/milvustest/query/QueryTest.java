@@ -47,6 +47,8 @@ public class QueryTest extends BaseTest {
   public String collectionWithJsonField;
   public String collectionWithDynamicField;
 
+  public String collectionWithArrayField;
+
   @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
@@ -65,6 +67,7 @@ public class QueryTest extends BaseTest {
             .build());
     collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
     collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
+    collectionWithArrayField= CommonFunction.createNewCollectionWithArrayField();
   }
 
   @DataProvider(name = "providerPartition")
@@ -94,6 +97,8 @@ public class QueryTest extends BaseTest {
             DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithArrayField).build());
   }
 
   @DataProvider(name = "providerConsistency")
@@ -1113,6 +1118,31 @@ public class QueryTest extends BaseTest {
     JSONObject jsonObject = (JSONObject) wrapperQuery.getRowRecords().get(0).get("json_field");
     String string_field = jsonObject.getString("string_field");
     Assert.assertTrue(string_field.contains("Str"));
+  }
+
+  @Test(description = "query collection with array field",groups = {"Smoke"})
+  @Severity(SeverityLevel.BLOCKER)
+  public void queryCollectionWithArrayField() {
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithArrayField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(),0);
+    CommonFunction.createIndexWithLoad(collectionWithArrayField,IndexType.HNSW,MetricType.L2,"float_vector");
+    //query
+    List<String> outFields = Arrays.asList("str_array_field","int_array_field","float_array_field");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithArrayField)
+                    .withOutFields(outFields)
+//                    .withExpr(expr)
+                    .withLimit(100L)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper("str_array_field").getFieldData().size()>=4);
 
   }
 
