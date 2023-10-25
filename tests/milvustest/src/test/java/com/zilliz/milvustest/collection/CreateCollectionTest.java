@@ -31,6 +31,8 @@ public class CreateCollectionTest extends BaseTest {
   public String stringPKCollection;
   public String maxFieldCollection;
 
+  public String arrayFieldCollection;
+
   @DataProvider(name = "collectionByDataProvider")
   public Object[][] provideCollectionName() {
     return new String[][] {{"collection_" + MathUtil.getRandomString(10)}};
@@ -53,6 +55,10 @@ public class CreateCollectionTest extends BaseTest {
     if (maxFieldCollection != null) {
       milvusClient.dropCollection(
           DropCollectionParam.newBuilder().withCollectionName(maxFieldCollection).build());
+    }
+    if (arrayFieldCollection != null) {
+      milvusClient.dropCollection(
+              DropCollectionParam.newBuilder().withCollectionName(arrayFieldCollection).build());
     }
   }
 
@@ -480,6 +486,63 @@ public class CreateCollectionTest extends BaseTest {
         throw new RuntimeException(e);
       }
     });
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Create collection with array fields")
+  public void createCollectionWithArrayField(){
+    arrayFieldCollection = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(128)
+                    .build();
+    FieldType fieldType3=
+            FieldType.newBuilder()
+                    .withName("str_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.VarChar)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    FieldType fieldType4=
+            FieldType.newBuilder()
+                    .withName("int_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.Int64)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    FieldType fieldType5=
+            FieldType.newBuilder()
+                    .withName("float_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.Float)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(arrayFieldCollection)
+                    .withDescription("Test" + arrayFieldCollection + "search")
+                    .withShardsNum(2)
+                    .addFieldType(fieldType1)
+                    .addFieldType(fieldType2)
+                    .addFieldType(fieldType3)
+                    .addFieldType(fieldType4)
+                    .addFieldType(fieldType5)
+                    .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
   }
 
 }

@@ -1,6 +1,7 @@
 package com.zilliz.milvustest.common;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.zilliz.milvustest.entity.FileBody;
 import com.zilliz.milvustest.entity.MilvusEntity;
 import com.zilliz.milvustest.util.MathUtil;
@@ -574,10 +575,10 @@ public class CommonFunction {
             .withName("json_field")
             .withDataType(DataType.JSON)
             .build();
-    FieldType fieldType7 = FieldType.newBuilder()
-            .withName("array_field")
-            .withDataType(DataType.Array)
-            .build();
+//    FieldType fieldType7 = FieldType.newBuilder()
+//            .withName("array_field")
+//            .withDataType(DataType.Array)
+//            .build();
     CreateCollectionParam createCollectionReq =
             CreateCollectionParam.newBuilder()
                     .withCollectionName(collectionName)
@@ -590,6 +591,61 @@ public class CommonFunction {
                     .addFieldType(fieldType5)
                     .addFieldType(fieldType6)
 //                    .addFieldType(fieldType7)
+                    .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    logger.info("create collection:" + collectionName);
+    return collectionName;
+  }
+
+  public static String createNewCollectionWithArrayField(){
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(128)
+                    .build();
+    FieldType fieldType3=
+            FieldType.newBuilder()
+                    .withName("str_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.VarChar)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    FieldType fieldType4=
+            FieldType.newBuilder()
+                    .withName("int_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.Int64)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    FieldType fieldType5=
+            FieldType.newBuilder()
+                    .withName("float_array_field")
+                    .withDataType(DataType.Array)
+                    .withElementType(DataType.Float)
+                    .withMaxLength(256)
+                    .withMaxCapacity(300)
+                    .build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .addFieldType(fieldType1)
+                    .addFieldType(fieldType2)
+                    .addFieldType(fieldType3)
+                    .addFieldType(fieldType4)
+                    .addFieldType(fieldType5)
                     .build();
     R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
     logger.info("create collection:" + collectionName);
@@ -637,6 +693,24 @@ public class CommonFunction {
     return jsonList;
   }
 
+  public static List<JSONObject> generateJsonDataWithArrayField(int num){
+    List<JSONObject> jsonList=new ArrayList<>();
+    Random ran = new Random();
+    for (int i = 0; i < num; i++) {
+      JSONObject row=new JSONObject();
+      row.put("int64_field",(long)i);
+      List<Float> vector=new ArrayList<>();
+      for (int k = 0; k < 128; ++k) {
+        vector.add(ran.nextFloat());
+      }
+      row.put("float_vector",vector);
+      row.put("str_array_field", Lists.newArrayList("str"+i,"str"+(i+1),"str"+(i+2)));
+      row.put("int_array_field",Lists.newArrayList((long)i,(long)(i+1),(long)(i+2)));
+      row.put("float_array_field",Lists.newArrayList((float)(i+0.1),(float)(i+0.2),(float)(i+0.2)));
+      jsonList.add(row);
+    }
+    return jsonList;
+  }
   public static List<InsertParam.Field> generateDataWithDynamicFiledColumn(int num) {
     Random ran = new Random();
     List<Long> book_id_array = new ArrayList<>();

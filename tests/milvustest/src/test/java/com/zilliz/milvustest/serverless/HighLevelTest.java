@@ -175,12 +175,13 @@ public class HighLevelTest extends BaseTest {
 
     @Severity(SeverityLevel.BLOCKER)
     @Test(description = "insert data into varchar PK Collection", groups = {"Smoke"}, dependsOnMethods = "listVarcharPKCollectionTest")
-    public void insertIntoVarcharPKCollectionTest() {
+    public void insertIntoVarcharPKCollectionTest() throws InterruptedException {
         List<JSONObject> jsonObjects = CommonFunction.generateVarcharPKDataWithDynamicFiledRow(10000);
         R<InsertResponse> insert = milvusClient.insert(InsertRowsParam.newBuilder()
                 .withCollectionName(varcharPKCollection)
                 .withRows(jsonObjects)
                 .build());
+        Thread.sleep(2000);
         Assert.assertEquals(insert.getStatus().intValue(), R.Status.Success.getCode());
         Assert.assertEquals(insert.getData().getInsertCount().intValue(), 10000);
     }
