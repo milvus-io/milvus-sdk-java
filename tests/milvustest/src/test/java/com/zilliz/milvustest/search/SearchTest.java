@@ -45,6 +45,8 @@ public class SearchTest extends BaseTest {
   public String collectionWithJsonField;
   public String collectionWithDynamicField;
 
+  public String collectionWithArrayField;
+
   @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
@@ -63,6 +65,7 @@ public class SearchTest extends BaseTest {
             .build());
     collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
     collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
+    collectionWithArrayField= CommonFunction.createNewCollectionWithArrayField();
   }
 
   @DataProvider(name="dynamicExpressions")
@@ -106,6 +109,8 @@ public class SearchTest extends BaseTest {
             DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithArrayField).build());
 
   }
 
@@ -1918,5 +1923,39 @@ public class SearchTest extends BaseTest {
     // drop collection
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(newCollection).build());
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Search with array field",groups = {"Smoke"})
+  public void searchWithArrayField(){
+    List<JSONObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withRows(jsonObjects)
+            .withCollectionName(collectionWithArrayField)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithLoad(collectionWithArrayField, IndexType.HNSW, MetricType.L2, "float_vector");
+    // search
+    Integer SEARCH_K = 10; // TopK
+    String SEARCH_PARAM = "{\"nprobe\":10}";
+    List<String> search_output_fields = Arrays.asList("str_array_field","int_array_field","float_array_field");
+    List<List<Float>> search_vectors = Arrays.asList(Arrays.asList(MathUtil.generateFloat(128)));
+    SearchParam searchParam =
+            SearchParam.newBuilder()
+                    .withCollectionName(collectionWithArrayField)
+                    .withMetricType(MetricType.L2)
+                    .withOutFields(search_output_fields)
+                    .withTopK(SEARCH_K)
+                    .withVectors(search_vectors)
+                    .withVectorFieldName("float_vector")
+                    .withParams(SEARCH_PARAM)
+//                    .withExpr(expr)
+                    .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                    .build();
+    R<SearchResults> searchResultsR = milvusClient.search(searchParam);
+    Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
+    SearchResultsWrapper searchResultsWrapper =
+            new SearchResultsWrapper(searchResultsR.getData().getResults());
+    Assert.assertTrue(searchResultsWrapper.getFieldData("str_array_field", 0).size()>=4);
   }
 }

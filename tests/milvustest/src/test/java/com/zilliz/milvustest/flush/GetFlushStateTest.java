@@ -60,7 +60,7 @@ public class GetFlushStateTest extends BaseTest {
   @Test(description = "Get flush state of specified segments.", dataProvider = "providerSegmentIds",groups = {"Smoke"})
   public void getFlushStateTest(Long segmentId, String collection) {
     R<GetFlushStateResponse> getFlushStateResponseR =
-        milvusClient.getFlushState(GetFlushStateParam.newBuilder().addSegmentID(segmentId).build());
+        milvusClient.getFlushState(GetFlushStateParam.newBuilder().withCollectionName(collection).build());
     Assert.assertEquals(getFlushStateResponseR.getStatus().intValue(), 0);
     Assert.assertTrue(getFlushStateResponseR.getData().getFlushed());
     System.out.println("Collection-" + collection + ":" + getFlushStateResponseR.getData());
