@@ -1244,11 +1244,7 @@ class MilvusClientDockerTest {
         indexTypes.put(IndexType.IVF_FLAT, "{\"nlist\":128}");
         indexTypes.put(IndexType.IVF_SQ8, "{\"nlist\":128}");
         indexTypes.put(IndexType.IVF_PQ, "{\"nlist\":128, \"m\":16, \"nbits\":8}");
-        indexTypes.put(IndexType.ANNOY, "{\"n_trees\":16}");
         indexTypes.put(IndexType.HNSW, "{\"M\":16,\"efConstruction\":64}");
-        indexTypes.put(IndexType.RHNSW_FLAT, "{\"M\":16,\"efConstruction\":64}");
-        indexTypes.put(IndexType.RHNSW_PQ, "{\"M\":16,\"efConstruction\":64, \"PQM\":16}");
-        indexTypes.put(IndexType.RHNSW_SQ, "{\"M\":16,\"efConstruction\":64}");
 
         List<MetricType> metricTypes = new ArrayList<>();
         metricTypes.add(MetricType.L2);
@@ -1297,8 +1293,8 @@ class MilvusClientDockerTest {
 
         // test all supported indexes
         List<MetricType> flatMetricTypes = new ArrayList<>();
-        flatMetricTypes.add(MetricType.SUBSTRUCTURE);
-        flatMetricTypes.add(MetricType.SUPERSTRUCTURE);
+        flatMetricTypes.add(MetricType.HAMMING);
+        flatMetricTypes.add(MetricType.JACCARD);
 
         for (MetricType metric : flatMetricTypes) {
             testIndex(randomCollectionName, field2Name, IndexType.BIN_FLAT, metric, "{}", Boolean.TRUE);
@@ -1308,7 +1304,6 @@ class MilvusClientDockerTest {
         List<MetricType> ivfMetricTypes = new ArrayList<>();
         ivfMetricTypes.add(MetricType.HAMMING);
         ivfMetricTypes.add(MetricType.JACCARD);
-        ivfMetricTypes.add(MetricType.TANIMOTO);
 
         for (MetricType metric : ivfMetricTypes) {
             testIndex(randomCollectionName, field2Name, IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.TRUE);
@@ -1394,11 +1389,11 @@ class MilvusClientDockerTest {
 
             // JSON field
             JSONObject info = new JSONObject();
-            info.put("row-based-info", i);
+            info.put("row_based_info", i);
             row.put(field3Name, info);
 
             // extra meta is automatically stored in dynamic field
-            row.put("extra_meta", i % 3 == 0);
+            row.put("row_based_extra", i % 3 == 0);
             row.put(generator.generate(5), 100);
 
             rows.add(row);
@@ -1416,12 +1411,17 @@ class MilvusClientDockerTest {
         // insert data by column-based
         List<Long> ids = new ArrayList<>();
         List<JSONObject> infos = new ArrayList<>();
+        List<JSONObject> dynamics = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(rowCount + i);
             JSONObject obj = new JSONObject();
-            obj.put("column-based-info", i);
+            obj.put("column_based_info", i);
             obj.put(generator.generate(5), i);
             infos.add(obj);
+
+            JSONObject dynamic = new JSONObject();
+            dynamic.put(String.format("column_based_extra_%d", i), i);
+            dynamics.add(dynamic);
         }
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
@@ -1429,6 +1429,7 @@ class MilvusClientDockerTest {
         fieldsInsert.add(new InsertParam.Field(field1Name, ids));
         fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
         fieldsInsert.add(new InsertParam.Field(field3Name, infos));
+        fieldsInsert.add(new InsertParam.Field(Constant.DYNAMIC_FIELD_NAME, dynamics));
 
         InsertParam insertColumnsParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -1451,8 +1452,8 @@ class MilvusClientDockerTest {
         System.out.println("Collection row count: " + stat.getRowCount());
 
         // retrieve rows
-        String expr = "extra_meta == true";
-        List<String> outputFields = Arrays.asList(field3Name, "extra_meta");
+        String expr = "row_based_extra == true";
+        List<String> outputFields = Arrays.asList(field3Name, "row_based_extra");
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -1464,13 +1465,11 @@ class MilvusClientDockerTest {
 
         QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
         List<QueryResultsWrapper.RowRecord> records = queryResultsWrapper.getRowRecords();
-        System.out.println("Query results:");
+        System.out.println("Query results with expr: " + expr);
         for (QueryResultsWrapper.RowRecord record:records) {
             System.out.println(record);
-            Object extraMeta = record.get("extra_meta");
-            if (extraMeta != null) {
-                System.out.println("'extra_meta' is from dynamic field, value: " + extraMeta);
-            }
+            Object extraMeta = record.get("row_based_extra");
+            System.out.println("'row_based_extra' is from dynamic field, value: " + extraMeta);
         }
 
         // search
@@ -1496,11 +1495,31 @@ class MilvusClientDockerTest {
             System.out.println("The result of No." + i + " target vector:");
             for (SearchResultsWrapper.IDScore score:scores) {
                 System.out.println(score);
-                Object extraMeta = score.get("extra_meta");
+                Object extraMeta = score.get("row_based_extra");
                 if (extraMeta != null) {
-                    System.out.println("'extra_meta' is from dynamic field, value: " + extraMeta);
+                    System.out.println("'row_based_extra' is from dynamic field, value: " + extraMeta);
                 }
             }
+        }
+
+        // retrieve dynamic values inserted by column-based
+        expr = "column_based_extra_1 == 1";
+        queryParam = QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr("column_based_extra_1 == 1")
+                .withOutFields(Collections.singletonList("*"))
+                .build();
+
+        queryR = client.query(queryParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+        queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+        records = queryResultsWrapper.getRowRecords();
+        System.out.println("Query results with expr: " + expr);
+        for (QueryResultsWrapper.RowRecord record:records) {
+            System.out.println(record);
+            long id = (long)record.get(field1Name);
+            Assertions.assertEquals((long)rowCount+1L, id);
         }
 
         // drop collection
