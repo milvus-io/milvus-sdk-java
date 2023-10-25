@@ -354,7 +354,7 @@ public class ConnectParam {
                 this.secure = result.isSecure();
                 this.host = result.getHostname();
                 this.port = result.getPort();
-                this.databaseName = result.getDatabase();
+                this.databaseName = StringUtils.isNotEmpty(result.getDatabase()) ? result.getDatabase() : this.databaseName;
             }
 
             if(host.startsWith(HOST_HTTPS_PREFIX)){
