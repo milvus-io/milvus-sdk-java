@@ -44,6 +44,7 @@ public class Constant {
     public static final String DEFAULT_INDEX_NAME = "";
     public final static String OFFSET = "offset";
     public final static String LIMIT = "limit";
+    public final static String DYNAMIC_FIELD_NAME = "$meta";
 
     // constant values for general
     public static final String TTL_SECONDS = "collection.ttl.seconds";
