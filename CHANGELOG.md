@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.2.15 (2023-11-03)
+
+### Improvement
+
+- Fix a bug that consistency level is ignored in search() interface
+- Fix a bug that high-level search API can only return the first vector's results
+- Support insert dynamic values by column-based
+
 ## milvus-sdk-java 2.2.14 (2023-09-15)
 
 ### Improvement
