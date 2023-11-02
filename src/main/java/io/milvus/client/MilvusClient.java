@@ -38,6 +38,7 @@ import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
+import io.milvus.param.resourcegroup.*;
 
 import java.util.concurrent.TimeUnit;
 
@@ -679,6 +680,53 @@ public interface MilvusClient {
      */
     R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam);
 
+    /**
+     * Create a resource group.
+     *
+     * @param requestParam {@link CreateResourceGroupParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam);
+
+    /**
+     * Drop a resource group.
+     *
+     * @param requestParam {@link DropResourceGroupParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam);
+
+    /**
+     * List resource groups.
+     *
+     * @param requestParam {@link ListResourceGroupsParam}
+     * @return {status:result code, data:ListResourceGroupsResponse{status}}
+     */
+    R<ListResourceGroupsResponse> listResourceGroups(ListResourceGroupsParam requestParam);
+
+    /**
+     * Describe a resource group.
+     *
+     * @param requestParam {@link DescribeResourceGroupParam}
+     * @return {status:result code, data:DescribeResourceGroupResponse{status}}
+     */
+    R<DescribeResourceGroupResponse> describeResourceGroup(DescribeResourceGroupParam requestParam);
+
+    /**
+     * Transfer a query node from source resource group to target resource_group.
+     *
+     * @param requestParam {@link TransferNodeParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> transferNode(TransferNodeParam requestParam);
+
+    /**
+     * Transfer a replica from source resource group to target resource_group.
+     *
+     * @param requestParam {@link TransferReplicaParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> transferReplica(TransferReplicaParam requestParam);
 
 
     ///////////////////// High Level API//////////////////////

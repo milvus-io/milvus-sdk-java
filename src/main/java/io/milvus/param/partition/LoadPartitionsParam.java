@@ -23,7 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ public class LoadPartitionsParam {
     private final long syncLoadWaitingTimeout;
     private final int replicaNumber;
     private final boolean refresh;
+    private final List<String> resourceGroups;
 
     private LoadPartitionsParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -53,6 +53,7 @@ public class LoadPartitionsParam {
         this.syncLoadWaitingTimeout = builder.syncLoadWaitingTimeout;
         this.replicaNumber = builder.replicaNumber;
         this.refresh = builder.refresh;
+        this.resourceGroups = builder.resourceGroups;
     }
 
     public static Builder newBuilder() {
@@ -90,6 +91,11 @@ public class LoadPartitionsParam {
         //   After loading a partition, call loadPartitions() again with refresh=TRUE,
         //   the server will look for new segments that are not loaded yet and tries to load them up.
         private Boolean refresh = Boolean.FALSE;
+
+        // resourceGroups:
+        //   Specify the target resource groups to load the replicas.
+        //   If not specified, the replicas will be loaded into the default resource group.
+        private List<String> resourceGroups = new ArrayList<>();
 
         private Builder() {
         }
@@ -203,6 +209,18 @@ public class LoadPartitionsParam {
          */
         public Builder withRefresh(@NonNull Boolean refresh) {
             this.refresh = refresh;
+            return this;
+        }
+
+        /**
+         * Specify the target resource groups to load the replicas.
+         * If not specified, the replicas will be loaded into the default resource group.
+         *
+         * @param resourceGroups a <code>List</code> of {@link String}
+         * @return <code>Builder</code>
+         */
+        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+            this.resourceGroups.addAll(resourceGroups);
             return this;
         }
 
