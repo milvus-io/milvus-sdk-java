@@ -37,6 +37,7 @@ import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
@@ -549,6 +550,36 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam) {
         return this.clusterFactory.getMaster().getClient().getLoadState(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().createResourceGroup(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().dropResourceGroup(requestParam);
+    }
+
+    @Override
+    public R<ListResourceGroupsResponse> listResourceGroups(ListResourceGroupsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().listResourceGroups(requestParam);
+    }
+
+    @Override
+    public R<DescribeResourceGroupResponse> describeResourceGroup(DescribeResourceGroupParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().describeResourceGroup(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> transferNode(TransferNodeParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().transferNode(requestParam);
+    }
+
+    @Override
+    public R<RpcStatus> transferReplica(TransferReplicaParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().transferReplica(requestParam);
     }
 
     ///////////////////// High Level API//////////////////////
