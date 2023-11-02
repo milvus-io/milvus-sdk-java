@@ -50,6 +50,7 @@ import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
@@ -624,7 +625,35 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         return retry(()-> super.getLoadState(requestParam));
     }
 
+    @Override
+    public R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam) {
+        return retry(()-> super.createResourceGroup(requestParam));
+    }
 
+    @Override
+    public R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam) {
+        return retry(()-> super.dropResourceGroup(requestParam));
+    }
+
+    @Override
+    public R<ListResourceGroupsResponse> listResourceGroups(ListResourceGroupsParam requestParam) {
+        return retry(()-> super.listResourceGroups(requestParam));
+    }
+
+    @Override
+    public R<DescribeResourceGroupResponse> describeResourceGroup(DescribeResourceGroupParam requestParam) {
+        return retry(()-> super.describeResourceGroup(requestParam));
+    }
+
+    @Override
+    public R<RpcStatus> transferNode(TransferNodeParam requestParam) {
+        return retry(()-> super.transferNode(requestParam));
+    }
+
+    @Override
+    public R<RpcStatus> transferReplica(TransferReplicaParam requestParam) {
+        return retry(()-> super.transferReplica(requestParam));
+    }
 
     @Override
     public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {

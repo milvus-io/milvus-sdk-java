@@ -44,6 +44,7 @@ import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
+import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import io.milvus.response.*;
 import lombok.NonNull;
@@ -567,6 +568,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
+                    .addAllResourceGroups(requestParam.getResourceGroups())
                     .setRefresh(requestParam.isRefresh());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
@@ -999,6 +1001,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
+                    .addAllResourceGroups(requestParam.getResourceGroups())
                     .setRefresh(requestParam.isRefresh());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
@@ -2817,6 +2820,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Override
     public R<CheckHealthResponse> checkHealth() {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -2837,6 +2841,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Override
     public R<GetVersionResponse> getVersion() {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -2856,6 +2861,198 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(e);
         }
     }
+
+    @Override
+    public R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            CreateResourceGroupRequest request = CreateResourceGroupRequest.newBuilder()
+                    .setResourceGroup(requestParam.getGroupName())
+                    .build();
+
+            Status response = blockingStub().createResourceGroup(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("CreateResourceGroup", response);
+            }
+            logDebug("CreateResourceGroup successfully! Resource group name:{}",
+                    requestParam.getGroupName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("CreateResourceGroup RPC failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("CreateResourceGroup failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            DropResourceGroupRequest request = DropResourceGroupRequest.newBuilder()
+                    .setResourceGroup(requestParam.getGroupName())
+                    .build();
+
+            Status response = blockingStub().dropResourceGroup(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("DropResourceGroup", response);
+            }
+            logDebug("DropResourceGroup successfully! Resource group name:{}",
+                    requestParam.getGroupName());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("DropResourceGroup RPC failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DropResourceGroup failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ListResourceGroupsResponse> listResourceGroups(ListResourceGroupsParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            ListResourceGroupsRequest request = ListResourceGroupsRequest.newBuilder()
+                    .build();
+
+            ListResourceGroupsResponse response = blockingStub().listResourceGroups(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("ListResourceGroups", response.getStatus());
+            }
+            logDebug("ListResourceGroups successfully!");
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("ListResourceGroups RPC failed!", e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("ListResourceGroups failed!", e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<DescribeResourceGroupResponse> describeResourceGroup(DescribeResourceGroupParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            DescribeResourceGroupRequest request = DescribeResourceGroupRequest.newBuilder()
+                    .setResourceGroup(requestParam.getGroupName())
+                    .build();
+
+            DescribeResourceGroupResponse response = blockingStub().describeResourceGroup(request);
+            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
+                return failedStatus("DescribeResourceGroup", response.getStatus());
+            }
+            logDebug("DescribeResourceGroup successfully! Resource group name:{}",
+                    requestParam.getGroupName());
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("DescribeResourceGroup RPC failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("DescribeResourceGroup failed! Resource group name:{}",
+                    requestParam.getGroupName(), e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> transferNode(TransferNodeParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            TransferNodeRequest request = TransferNodeRequest.newBuilder()
+                    .setSourceResourceGroup(requestParam.getSourceGroupName())
+                    .setTargetResourceGroup(requestParam.getTargetGroupName())
+                    .setNumNode(requestParam.getNodeNumber())
+                    .build();
+
+            Status response = blockingStub().transferNode(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("TransferNode", response);
+            }
+            logDebug("TransferNode successfully! Source group:{}, target group:{}, nodes number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("TransferNode RPC failed! Source group:{}, target group:{}, nodes number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("TransferNode failed! Source group:{}, target group:{}, nodes number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber(), e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> transferReplica(TransferReplicaParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logInfo(requestParam.toString());
+
+        try {
+            TransferReplicaRequest request = TransferReplicaRequest.newBuilder()
+                    .setSourceResourceGroup(requestParam.getSourceGroupName())
+                    .setTargetResourceGroup(requestParam.getTargetGroupName())
+                    .setCollectionName(requestParam.getCollectionName())
+                    .setDbName(requestParam.getDatabaseName())
+                    .setNumReplica(requestParam.getReplicaNumber())
+                    .build();
+
+            Status response = blockingStub().transferReplica(request);
+            if (response.getErrorCode() != ErrorCode.Success) {
+                return failedStatus("TransferReplica", response);
+            }
+            logDebug("TransferReplica successfully! Source group:{}, target group:{}, replica number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
+                    requestParam.getReplicaNumber());
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("TransferReplica RPC failed! Source group:{}, target group:{}, replica number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
+                    requestParam.getReplicaNumber(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("TransferReplica failed! Source group:{}, target group:{}, replica number:{}",
+                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
+                    requestParam.getReplicaNumber(), e);
+            return R.failed(e);
+        }
+    }
+
 
     ///////////////////// High Level API//////////////////////
     @Override
