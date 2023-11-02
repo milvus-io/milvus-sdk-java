@@ -27,6 +27,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -42,6 +44,7 @@ public class LoadCollectionParam {
     private final long syncLoadWaitingTimeout;
     private final int replicaNumber;
     private final boolean refresh;
+    private final List<String> resourceGroups;
 
     public LoadCollectionParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -51,6 +54,7 @@ public class LoadCollectionParam {
         this.syncLoadWaitingTimeout = builder.syncLoadWaitingTimeout;
         this.replicaNumber = builder.replicaNumber;
         this.refresh = builder.refresh;
+        this.resourceGroups = builder.resourceGroups;
     }
 
     public static Builder newBuilder() {
@@ -87,6 +91,11 @@ public class LoadCollectionParam {
         //   After loading a collection, call loadCollection() again with refresh=TRUE,
         //   the server will look for new segments that are not loaded yet and tries to load them up.
         private Boolean refresh = Boolean.FALSE;
+
+        // resourceGroups:
+        //   Specify the target resource groups to load the replicas.
+        //   If not specified, the replicas will be loaded into the default resource group.
+        private List<String> resourceGroups = new ArrayList<>();
 
         private Builder() {
         }
@@ -154,7 +163,7 @@ public class LoadCollectionParam {
         }
 
         /**
-         * Specify replica number to load
+         * Specify replica number to load, replica number must be greater than 0, default value is 1
          *
          * @param replicaNumber replica number
          * @return <code>Builder</code>
@@ -180,6 +189,18 @@ public class LoadCollectionParam {
         }
 
         /**
+         * Specify the target resource groups to load the replicas.
+         * If not specified, the replicas will be loaded into the default resource group.
+         *
+         * @param resourceGroups a <code>List</code> of {@link String}
+         * @return <code>Builder</code>
+         */
+        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+            this.resourceGroups.addAll(resourceGroups);
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link LoadCollectionParam} instance.
          *
          * @return {@link LoadCollectionParam}
@@ -201,6 +222,10 @@ public class LoadCollectionParam {
                     throw new ParamException("Sync load waiting timeout cannot be larger than "
                             + Constant.MAX_WAITING_LOADING_TIMEOUT.toString() + " seconds");
                 }
+            }
+
+            if (replicaNumber <= 0) {
+                throw new ParamException("Replica number must be greater than zero");
             }
 
             return new LoadCollectionParam(this);
