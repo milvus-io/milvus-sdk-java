@@ -17,6 +17,7 @@ io.milvus.param.highlevel.dml
 io.milvus.param.highlevel.dml.response
 io.milvus.param.index
 io.milvus.param.partition
+io.milvus.param.resourcegroup
 io.milvus.param.role
 io.milvus.response
 io.milvus.response.basic
