@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.3.3 (2023-11-08)
+
+### Feature
+
+- Support resource group interfaces
+
 ## milvus-sdk-java 2.3.2 (2023-10-25)
 
 ### Feature
