@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.3.3 (2023-11-08)
+
+### Feature
+
+- Support resource group interfaces
+
 ## milvus-sdk-java 2.3.2 (2023-10-25)
 
 ### Feature
@@ -34,6 +40,19 @@
 
 - No longer support index: ANNOY, RHNSW_FLAT, RHNSW_PQ, RHNSW_SQ
 - No longer support metric: TANIMOTO, SUPERSTRUCTURE, SUBSTRUCTURE
+
+
+## milvus-sdk-java 2.2.15 (2023-11-08)
+
+### Feature
+
+- Support resource group interfaces
+
+### Improvement
+
+- Fix a bug that high-level search API can only return the first vector's results
+- Upgrade dependencies to fix some vulnerabilities
+- Support insert dynamic values by column-based
 
 ## milvus-sdk-java 2.2.14 (2023-09-15)
 
