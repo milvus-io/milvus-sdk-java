@@ -73,7 +73,6 @@ public class R<T> {
             r.setStatus(e.getStatus());
         } else {
             r.setStatus(Status.Unknown.getCode());
-            r.exception = exception;
         }
         r.setException(exception);
         return r;
@@ -138,33 +137,33 @@ public class R<T> {
         // Server side error
         Success(0),
         UnexpectedError(1),
-        ConnectFailed(2),
-        PermissionDenied(3),
-        CollectionNotExists(4),
+        ConnectFailed(2),           // Deprecated
+        PermissionDenied(3),        // Deprecated
+        CollectionNotExists(4),     // Deprecated
         IllegalArgument(5),
-        IllegalDimension(7),
-        IllegalIndexType(8),
-        IllegalCollectionName(9),
-        IllegalTOPK(10),
-        IllegalRowRecord(11),
-        IllegalVectorID(12),
-        IllegalSearchResult(13),
-        FileNotFound(14),
-        MetaFailed(15),
-        CacheFailed(16),
-        CannotCreateFolder(17),
-        CannotCreateFile(18),
-        CannotDeleteFolder(19),
-        CannotDeleteFile(20),
-        BuildIndexError(21),
-        IllegalNLIST(22),
-        IllegalMetricType(23),
-        OutOfMemory(24),
-        IndexNotExist(25),
+        IllegalDimension(7),        // Deprecated
+        IllegalIndexType(8),        // Deprecated
+        IllegalCollectionName(9),   // Deprecated
+        IllegalTOPK(10),            // Deprecated
+        IllegalRowRecord(11),       // Deprecated
+        IllegalVectorID(12),        // Deprecated
+        IllegalSearchResult(13),    // Deprecated
+        FileNotFound(14),           // Deprecated
+        MetaFailed(15),             // Deprecated
+        CacheFailed(16),            // Deprecated
+        CannotCreateFolder(17),     // Deprecated
+        CannotCreateFile(18),       // Deprecated
+        CannotDeleteFolder(19),     // Deprecated
+        CannotDeleteFile(20),       // Deprecated
+        BuildIndexError(21),        // Deprecated
+        IllegalNLIST(22),           // Deprecated
+        IllegalMetricType(23),      // Deprecated
+        OutOfMemory(24),            // Deprecated
+        IndexNotExist(25),          // Deprecated
         EmptyCollection(26),
 
         // internal error code.
-        DDRequestRace(1000),
+        DDRequestRace(1000),        // Deprecated
 
         // Client side error
         RpcError(-1),
