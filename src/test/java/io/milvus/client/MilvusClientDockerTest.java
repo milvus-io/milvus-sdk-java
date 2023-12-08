@@ -163,8 +163,13 @@ class MilvusClientDockerTest {
     public static void setUp() {
         startDockerContainer();
 
-        ConnectParam connectParam = connectParamBuilder().withAuthorization("root", "Milvus").build();
-        client = new MilvusServiceClient(connectParam);
+        ConnectParam connectParam = connectParamBuilder()
+                .withAuthorization("root", "Milvus")
+                .build();
+        RetryParam retryParam = RetryParam.newBuilder()
+                .withMaxRetryTimes(10)
+                .build();
+        client = new MilvusServiceClient(connectParam).withRetry(retryParam).withTimeout(10, TimeUnit.SECONDS);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     }
 

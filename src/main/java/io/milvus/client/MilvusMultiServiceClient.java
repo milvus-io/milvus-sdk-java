@@ -105,6 +105,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public MilvusClient withRetry(RetryParam retryParam) {
+        return clusterFactory.getMaster().getClient().withRetry(retryParam);
+    }
+
+    @Override
     public MilvusClient withRetry(int retryTimes) {
         return clusterFactory.getMaster().getClient().withRetry(retryTimes);
     }
