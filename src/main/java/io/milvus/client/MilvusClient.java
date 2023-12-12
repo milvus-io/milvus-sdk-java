@@ -24,6 +24,7 @@ import io.milvus.grpc.*;
 import io.milvus.param.LogLevel;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.RetryParam;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
@@ -55,10 +56,18 @@ public interface MilvusClient {
     MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
     /**
+     * Sets the parameters for retry.
+     *
+     * @param retryParam {@link RetryParam}
+     */
+    MilvusClient withRetry(RetryParam retryParam);
+
+    /**
      * Number of retry attempts.
      *
      * @param retryTimes     number of retry attempts.
      */
+    @Deprecated
     MilvusClient withRetry(int retryTimes);
 
     /**
@@ -67,6 +76,7 @@ public interface MilvusClient {
      * @param interval     time interval between retry attempts.
      * @param timeUnit     time unit
      */
+    @Deprecated
     MilvusClient withRetryInterval(long interval, TimeUnit timeUnit);
 
     /**

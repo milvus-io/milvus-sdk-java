@@ -60,17 +60,20 @@ class MilvusServiceClientTest {
         return mockServer;
     }
 
-    private MilvusServiceClient startClient() {
+    private MilvusClient startClient() {
         String testHost = "localhost";
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost(testHost)
                 .withPort(testPort)
                 .build();
-        return new MilvusServiceClient(connectParam);
+        RetryParam retryParam = RetryParam.newBuilder()
+                .withMaxRetryTimes(2)
+                .build();
+        return new MilvusServiceClient(connectParam).withRetry(retryParam);
     }
 
     @SuppressWarnings("unchecked")
-    private <T, P> void invokeFunc(Method testFunc, MilvusServiceClient client, T param, int ret, boolean equalRet) {
+    private <T, P> void invokeFunc(Method testFunc, MilvusClient client, T param, int ret, boolean equalRet) {
         try {
             R<P> resp = (R<P>) testFunc.invoke(client, param);
             if (equalRet) {
@@ -88,7 +91,7 @@ class MilvusServiceClientTest {
     private <T, P> void testFuncByName(String funcName, T param) {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
         try {
             Class<?> clientClass = MilvusServiceClient.class;
             Method testFunc = clientClass.getMethod(funcName, param.getClass());
@@ -119,7 +122,7 @@ class MilvusServiceClientTest {
     private <T, P> void testAsyncFuncByName(String funcName, T param) {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         try {
             Class<?> clientClass = MilvusServiceClient.class;
@@ -498,7 +501,7 @@ class MilvusServiceClientTest {
     void getCollectionStatistics() {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         try {
             final String collectionName = "collection1";
@@ -632,7 +635,7 @@ class MilvusServiceClientTest {
     void loadCollection() {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         String collectionName = "collection1";
         LoadCollectionParam param = LoadCollectionParam.newBuilder()
@@ -1009,7 +1012,7 @@ class MilvusServiceClientTest {
     void loadPartitions() {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         String collectionName = "collection1";
         String partitionName = "partition1";
@@ -1324,7 +1327,7 @@ class MilvusServiceClientTest {
     void createIndex() {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         // createIndex() calls describeCollection() to check input
         CollectionSchema schema = CollectionSchema.newBuilder()
@@ -1513,7 +1516,7 @@ class MilvusServiceClientTest {
     void dropIndex() {
         // start mock server
         MockMilvusServer server = startServer();
-        MilvusServiceClient client = startClient();
+        MilvusClient client = startClient();
 
         DropIndexParam param = DropIndexParam.newBuilder()
                 .withCollectionName("collection1")
@@ -1720,7 +1723,7 @@ class MilvusServiceClientTest {
         {
             // start mock server
             MockMilvusServer server = startServer();
-            MilvusServiceClient client = startClient();
+            MilvusClient client = startClient();
 
             // test return ok with correct input
             mockServerImpl.setDescribeCollectionResponse(DescribeCollectionResponse.newBuilder()
@@ -1840,7 +1843,7 @@ class MilvusServiceClientTest {
         {
             // start mock server
             MockMilvusServer server = startServer();
-            MilvusServiceClient client = startClient();
+            MilvusClient client = startClient();
 
             // test return ok with insertAsync
             try {

@@ -19,22 +19,20 @@
 
 package io.milvus.exception;
 
+import io.milvus.grpc.ErrorCode;
+import io.milvus.param.R;
+
 /**
- * Base class of Milvus exceptions.
+ * Exception for error response from server side.
  */
-public class MilvusException extends RuntimeException {
-    protected Integer status;
-
-    public MilvusException(String msg, Integer status) {
-        super(msg);
-        this.status = status;
+public class ServerException extends MilvusException {
+    protected ErrorCode compatibleCode;
+    public ServerException(String msg, Integer code, ErrorCode compatibleCode) {
+        super(msg, code);
+        this.compatibleCode = compatibleCode;
     }
 
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
+    public ErrorCode getCompatibleCode() {
+        return compatibleCode;
     }
 }

@@ -323,13 +323,31 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
-    private <T> R<T> failedStatus(String requestName, io.milvus.grpc.Status status) {
-        String reason = status.getReason();
-        if (StringUtils.isEmpty(reason)) {
-            reason = "error code: " + status.getErrorCode().toString();
+    private void handleResponse(String requestInfo, io.milvus.grpc.Status status) {
+        // the server made a change for error code:
+        // for 2.2.x, error code is status.getErrorCode()
+        // for 2.3.x, error code is status.getCode(), and the status.getErrorCode()
+        // is also assigned according to status.getCode()
+        //
+        // For error cases:
+        // if we use 2.3.4 sdk to interact with 2.3.x server, getCode() is non-zero, getErrorCode() is non-zero
+        // if we use 2.3.4 sdk to interact with 2.2.x server, getCode() is zero, getErrorCode() is non-zero
+        // if we use <=2.3.3 sdk to interact with 2.2.x/2.3.x server, getCode() is not available, getErrorCode() is non-zero
+
+        if (status.getCode() != 0 || !status.getErrorCode().equals(ErrorCode.Success)) {
+            logError("{} failed, error code: {}, reason: {}", requestInfo,
+                    status.getCode() > 0 ? status.getCode() : status.getErrorCode().getNumber(),
+                    status.getReason());
+
+            // 2.3.4 sdk to interact with 2.2.x server, the getCode() is zero, here we reset its value to getErrorCode()
+            int code = status.getCode();
+            if (code == 0) {
+                code = status.getErrorCode().getNumber();
+            }
+            throw new ServerException(status.getReason(), code, status.getErrorCode());
         }
-        logError(requestName + " failed:{}", reason);
-        return R.failed(R.Status.valueOf(status.getErrorCode().getNumber()), reason);
+
+        logDebug("{} successfully!", requestInfo);
     }
 
     ///////////////////// API implementation //////////////////////
@@ -340,6 +358,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("HasCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             HasCollectionRequest.Builder builder = HasCollectionRequest.newBuilder()
@@ -351,21 +370,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             BoolResponse response = blockingStub().hasCollection(hasCollectionRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("HasCollectionRequest successfully!");
-                Boolean value = Optional.of(response)
-                        .map(BoolResponse::getValue)
-                        .orElse(false);
-                return R.success(value);
-            } else {
-                return failedStatus("HasCollectionRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            Boolean value = Optional.of(response)
+                    .map(BoolResponse::getValue)
+                    .orElse(false);
+            return R.success(value);
         } catch (StatusRuntimeException e) {
-            logError("HasCollectionRequest RPC failed:{}", requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("HasCollectionRequest failed:{}", requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -377,6 +391,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
 
         try {
             // Construct CreateDatabaseRequest
@@ -385,21 +400,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createDatabase(createDatabaseRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("CreateDatabaseRequest successfully! Database name:{}",
-                        requestParam.getDatabaseName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("CreateDatabaseRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateDatabaseRequest RPC failed! Database name:{}",
-                    requestParam.getDatabaseName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateDatabaseRequest failed! Database name:{}",
-                    requestParam.getDatabaseName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -410,24 +417,22 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
 
+        logInfo("ListDatabasesRequest");
+        String title = "ListDatabasesRequest";
+
         try {
             // Construct ListDatabasesRequest
             ListDatabasesRequest listDatabasesRequest = ListDatabasesRequest.newBuilder()
                     .build();
 
             ListDatabasesResponse response = blockingStub().listDatabases(listDatabasesRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("ListDatabasesRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("ListDatabasesRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListDatabasesRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListDatabasesRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -439,6 +444,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
 
         try {
             // Construct DropDatabaseRequest
@@ -447,21 +453,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropDatabase(dropDatabaseRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("DropDatabaseRequest successfully! Database name:{}",
-                        requestParam.getDatabaseName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("DropDatabaseRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropDatabaseRequest RPC failed! Database name:{}",
-                    requestParam.getDatabaseName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropDatabaseRequest failed! Database name:{}",
-                    requestParam.getDatabaseName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -473,6 +471,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             // Construct CollectionSchema Params
@@ -501,21 +500,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             CreateCollectionRequest createCollectionRequest = builder.build();
 
             Status response = blockingStub().createCollection(createCollectionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("CreateCollectionRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("CreateCollectionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateCollectionRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateCollectionRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -527,6 +518,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DropCollectionRequest.Builder builder = DropCollectionRequest.newBuilder()
@@ -537,21 +529,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DropCollectionRequest dropCollectionRequest = builder.build();
 
             Status response = blockingStub().dropCollection(dropCollectionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("DropCollectionRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("DropCollectionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropCollectionRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropCollectionRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -563,6 +547,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("LoadCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
@@ -578,10 +563,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().loadCollection(loadCollectionRequest);
-
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
-            }
+            handleResponse(title, response);
 
             // sync load, wait until collection finish loading
             if (requestParam.isSyncLoad()) {
@@ -589,16 +571,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
-            logDebug("LoadCollectionRequest successfully! Collection name:{}",
-                    requestParam.getCollectionName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) { // gRPC could throw this exception
-            logError("LoadCollectionRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) { // milvus exception for illegal response
-            logError("LoadCollectionRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exceptione:{}", title, e);
             return R.failed(e);
         }
     }
@@ -610,6 +588,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("ReleaseCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
@@ -617,21 +596,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().releaseCollection(releaseCollectionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("ReleaseCollectionRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("ReleaseCollectionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("ReleaseCollectionRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ReleaseCollectionRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -643,6 +614,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("RenameCollectionRequest collectionName:%s", requestParam.getOldCollectionName());
 
         try {
             RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
@@ -651,21 +623,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().renameCollection(renameCollectionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("RenameCollectionRequest successfully! Collection name:{}",
-                        requestParam.getOldCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("RenameCollectionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("RenameCollectionRequest RPC failed! Collection name:{}",
-                    requestParam.getOldCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("RenameCollectionRequest failed! Collection name:{}",
-                    requestParam.getOldCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -677,6 +641,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DescribeCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
@@ -687,18 +652,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DescribeCollectionRequest describeCollectionRequest = builder.build();
 
             DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("DescribeCollectionRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("DescribeCollectionRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("DescribeCollectionRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DescribeCollectionRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -710,6 +670,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetCollectionStatisticsRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             // flush collection if client command to do it(some times user may want to know the newest row count)
@@ -732,18 +694,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetCollectionStatisticsRequest getCollectionStatisticsRequest = builder.build();
 
             GetCollectionStatisticsResponse response = blockingStub().getCollectionStatistics(getCollectionStatisticsRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetCollectionStatisticsRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetCollectionStatisticsRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetCollectionStatisticsRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetCollectionStatisticsRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -755,6 +712,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "ShowCollectionsRequest";
 
         try {
             ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder()
@@ -766,18 +724,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             ShowCollectionsRequest showCollectionsRequest = builder.build();
 
             ShowCollectionsResponse response = blockingStub().showCollections(showCollectionsRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("ShowCollectionsRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("ShowCollectionsRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ShowCollectionsRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ShowCollectionsRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -789,6 +742,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("AlterCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             AlterCollectionRequest.Builder alterCollRequestBuilder = AlterCollectionRequest.newBuilder();
@@ -802,18 +756,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().alterCollection(alterCollectionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("AlterCollectionRequest successfully!");
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("AlterCollectionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("AlterCollectionRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("AlterCollectionRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -829,6 +778,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "FlushRequest";
 
         try {
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
@@ -846,15 +796,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncFlushWaitingTimeout());
             }
 
-            logDebug("FlushRequest successfully! Collection names:{}", requestParam.getCollectionNames());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("FlushRequest RPC failed! Collection names:{}",
-                    requestParam.getCollectionNames(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("FlushRequest failed! Collection names:{}",
-                    requestParam.getCollectionNames(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -868,7 +816,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
 
-        logInfo("start flushAll...");
+        logInfo("FlushAllRequest");
+        String title = "FlushAllRequest";
+
         try {
             FlushAllRequest flushAllRequest = FlushAllRequest.newBuilder().build();
             FlushAllResponse response = blockingStub().flushAll(flushAllRequest);
@@ -877,13 +827,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 waitForFlushAll(response, syncFlushAllWaitingInterval, syncFlushAllTimeout);
             }
 
-            logDebug("flushAll successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("flushAll RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("flushAll failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -895,6 +845,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreatePartitionRequest collectionName:%s, partitionName:%s",
+                requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
             CreatePartitionRequest createPartitionRequest = CreatePartitionRequest.newBuilder()
@@ -903,21 +855,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createPartition(createPartitionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("CreatePartitionRequest successfully! Collection name:{}, partition name:{}",
-                        requestParam.getCollectionName(), requestParam.getPartitionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("CreatePartitionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreatePartitionRequest RPC failed! Collection name:{}, partition name:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreatePartitionRequest failed! Collection name:{}, partition name:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -929,6 +873,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropPartitionRequest collectionName:%s, partitionName:%s",
+                requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
             DropPartitionRequest dropPartitionRequest = DropPartitionRequest.newBuilder()
@@ -937,21 +883,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropPartition(dropPartitionRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("DropPartitionRequest successfully! Collection name:{}, partition name:{}",
-                        requestParam.getCollectionName(), requestParam.getPartitionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("DropPartitionRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropPartitionRequest RPC failed! Collection name:{}, partition name:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropPartitionRequest failed! Collection name:{}, partition name:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -963,6 +901,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("HasPartitionRequest collectionName:%s, partitionName:%s",
+                requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
             HasPartitionRequest hasPartitionRequest = HasPartitionRequest.newBuilder()
@@ -971,19 +911,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             BoolResponse response = blockingStub().hasPartition(hasPartitionRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("HasPartitionRequest successfully!");
-                Boolean result = response.getValue();
-                return R.success(result);
-            } else {
-                return failedStatus("HasPartitionRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            Boolean result = response.getValue();
+            return R.success(result);
         } catch (StatusRuntimeException e) {
-            logError("HasPartitionRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("HasPartitionRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -995,6 +930,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("LoadPartitionsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             LoadPartitionsRequest.Builder builder = LoadPartitionsRequest.newBuilder()
@@ -1009,10 +945,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             LoadPartitionsRequest loadPartitionsRequest = builder.build();
 
             Status response = blockingStub().loadPartitions(loadPartitionsRequest);
-
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return R.failed(R.Status.valueOf(response.getErrorCode().getNumber()), response.getReason());
-            }
+            handleResponse(title, response);
 
             // sync load, wait until all partitions finish loading
             if (requestParam.isSyncLoad()) {
@@ -1020,16 +953,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         requestParam.getSyncLoadWaitingInterval(), requestParam.getSyncLoadWaitingTimeout());
             }
 
-            logDebug("LoadPartitionsRequest successfully! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-        } catch (StatusRuntimeException e) { // gRPC could throw this exception
-            logError("LoadPartitionsRequest RPC failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
-        } catch (Exception e) { // milvus exception for illegal response
-            logError("LoadPartitionsRequest failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1041,6 +970,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("ReleasePartitionsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             ReleasePartitionsRequest releasePartitionsRequest = ReleasePartitionsRequest.newBuilder()
@@ -1049,21 +979,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().releasePartitions(releasePartitionsRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("ReleasePartitionsRequest successfully! Collection name:{}, partition names:{}",
-                        requestParam.getCollectionName(), requestParam.getPartitionNames());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("ReleasePartitionsRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("ReleasePartitionsRequest RPC failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ReleasePartitionsRequest failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1075,6 +997,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetPartitionStatisticsRequest collectionName:%s, partitionName:%s",
+                requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
             // flush collection if client command to do it(some times user may want to know the newest row count)
@@ -1096,17 +1020,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetPartitionStatisticsResponse response =
                     blockingStub().getPartitionStatistics(getPartitionStatisticsRequest);
 
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetPartitionStatisticsRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("getPartitionStatistics", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetPartitionStatisticsRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetPartitionStatisticsRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1118,6 +1038,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("ShowPartitionsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             ShowPartitionsRequest showPartitionsRequest = ShowPartitionsRequest.newBuilder()
@@ -1126,18 +1047,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             ShowPartitionsResponse response = blockingStub().showPartitions(showPartitionsRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("ShowPartitionsRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("ShowPartitionsRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ShowPartitionsRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ShowPartitionsRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1149,6 +1065,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateAliasRequest collectionName:%s, alias:%s",
+                requestParam.getCollectionName(), requestParam.getAlias());
 
         try {
             CreateAliasRequest createAliasRequest = CreateAliasRequest.newBuilder()
@@ -1157,21 +1075,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createAlias(createAliasRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("CreateAliasRequest successfully! Collection name:{}, alias name:{}",
-                        requestParam.getCollectionName(), requestParam.getAlias());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("CreateAliasRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateAliasRequest RPC failed! Collection name:{}, alias name:{}",
-                    requestParam.getCollectionName(), requestParam.getAlias(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateAliasRequest failed! Collection name:{}, alias name:{}",
-                    requestParam.getCollectionName(), requestParam.getAlias(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1183,6 +1093,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropAliasRequest alias:%s", requestParam.getAlias());
 
         try {
             DropAliasRequest dropAliasRequest = DropAliasRequest.newBuilder()
@@ -1190,20 +1101,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropAlias(dropAliasRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("DropAliasRequest successfully! Alias name:{}", requestParam.getAlias());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("DropAliasRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropAliasRequest RPC failed! Alias name:{}",
-                    requestParam.getAlias(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropAliasRequest failed! Alias name:{}",
-                    requestParam.getAlias(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1215,6 +1119,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("AlterAliasRequest collectionName:%s, alias:%s",
+                requestParam.getCollectionName(), requestParam.getAlias());
 
         try {
             AlterAliasRequest alterAliasRequest = AlterAliasRequest.newBuilder()
@@ -1223,21 +1129,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().alterAlias(alterAliasRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("AlterAliasRequest successfully! Collection name:{}, alias name:{}",
-                        requestParam.getCollectionName(), requestParam.getAlias());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("AlterAliasRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("AlterAliasRequest RPC failed! Collection name:{}, alias name:{}",
-                    requestParam.getCollectionName(), requestParam.getAlias(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("AlterAliasRequest failed! Collection name:{}, alias name:{}",
-                    requestParam.getCollectionName(), requestParam.getAlias(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1249,6 +1147,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateIndexRequest collectionName:%s, fieldName:%s",
+                requestParam.getCollectionName(), requestParam.getFieldName());
 
         try {
             // get collection schema to check input
@@ -1256,10 +1156,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withDatabaseName(requestParam.getDatabaseName())
                     .withCollectionName(requestParam.getCollectionName());
             R<DescribeCollectionResponse> descResp = describeCollection(descBuilder.build());
-
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
@@ -1306,9 +1204,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             CreateIndexRequest createIndexRequest = builder.build();
 
             Status response = blockingStub().createIndex(createIndexRequest);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateIndexRequest", response);
-            }
+            handleResponse(title, response);
 
             if (requestParam.isSyncMode()) {
                 R<Boolean> res = waitForIndex(requestParam.getDatabaseName(), requestParam.getCollectionName(), requestParam.getIndexName(),
@@ -1319,16 +1215,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     return R.failed(R.Status.valueOf(res.getStatus()), res.getMessage());
                 }
             }
-            logDebug("CreateIndexRequest successfully! Collection name:{}， Field name:{}",
-                    requestParam.getCollectionName(), requestParam.getFieldName());
+            logDebug("{} in sync mode successfully!", title);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateIndexRequest RPC failed! Collection name:{}， Field name:{}",
-                    requestParam.getCollectionName(), requestParam.getFieldName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateIndexRequest failed! Collection name:{} ，Field name:{}",
-                    requestParam.getCollectionName(), requestParam.getFieldName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1340,6 +1233,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropIndexRequest collectionName:%s, indexName:%s",
+                requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
             DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
@@ -1348,21 +1243,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropIndex(dropIndexRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("DropIndexRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("DropIndexRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropIndexRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropIndexRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1374,6 +1261,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DescribeIndexRequest collectionName:%s, indexName:%s",
+                requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
             DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
@@ -1385,18 +1274,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DescribeIndexRequest describeIndexRequest = builder.build();
 
             DescribeIndexResponse response = blockingStub().describeIndex(describeIndexRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("DescribeIndexRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("DescribeIndexRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("DescribeIndexRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DescribeIndexRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1410,6 +1294,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetIndexStateRequest collectionName:%s, indexName:%s",
+                requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
             GetIndexStateRequest getIndexStateRequest = GetIndexStateRequest.newBuilder()
@@ -1418,18 +1304,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetIndexStateResponse response = blockingStub().getIndexState(getIndexStateRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetIndexStateRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetIndexStateRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetIndexStateRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetIndexStateRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1443,6 +1324,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetIndexBuildProgressRequest collectionName:%s, indexName:%s",
+                requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
             GetIndexBuildProgressRequest getIndexBuildProgressRequest = GetIndexBuildProgressRequest.newBuilder()
@@ -1451,20 +1334,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(getIndexBuildProgressRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetIndexBuildProgressRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetIndexBuildProgressRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetIndexBuildProgressRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetIndexBuildProgressRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1476,6 +1352,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DeleteRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DeleteRequest deleteRequest = DeleteRequest.newBuilder()
@@ -1486,21 +1363,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             MutationResult response = blockingStub().delete(deleteRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("DeleteRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(response);
-            } else {
-                return failedStatus("DeleteRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("DeleteRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DeleteRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1512,36 +1381,27 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("InsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                     .withDatabaseName(requestParam.getDatabaseName())
                     .withCollectionName(requestParam.getCollectionName());
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
             ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
             MutationResult response = blockingStub().insert(builderWraper.buildInsertRequest());
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("InsertRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(response);
-            } else {
-                return failedStatus("InsertRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("InsertRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("InsertRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1555,16 +1415,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("InsertAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
         DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                 .withDatabaseName(requestParam.getDatabaseName())
                 .withCollectionName(requestParam.getCollectionName());
         R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
         if (descResp.getStatus() != R.Status.Success.getCode()) {
-            logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
-            return Futures.immediateFuture(
-                    R.failed(new ClientNotConnectedException("Failed to describe collection")));
+            return Futures.immediateFuture(R.failed(descResp.getException()));
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
@@ -1577,28 +1435,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(MutationResult result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logDebug("insertAsync successfully! Collection name:{}",
-                                    requestParam.getCollectionName());
+                            logDebug("{} successfully!", title);
                         } else {
-                            logError("insertAsync failed! Collection name:{}\n{}",
-                                    requestParam.getCollectionName(), result.getStatus().getReason());
+                            logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable t) {
-                        logError("insertAsync failed:\n{}", t.getMessage());
+                        logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
                 MoreExecutors.directExecutor());
 
         Function<MutationResult, R<MutationResult>> transformFunc =
                 results -> {
-                    if (results.getStatus().getErrorCode() == ErrorCode.Success) {
-                        return R.success(results);
+                    Status status = results.getStatus();
+                    if (status.getCode() != 0 || status.getErrorCode() != ErrorCode.Success) {
+                        return R.failed(new ServerException(status.getReason(), status.getCode(), status.getErrorCode()));
                     } else {
-                        return R.failed(R.Status.valueOf(results.getStatus().getErrorCode().getNumber()),
-                                results.getStatus().getReason());
+                        return R.success(results);
                     }
                 };
 
@@ -1612,36 +1468,27 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("UpsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                     .withDatabaseName(requestParam.getDatabaseName())
                     .withCollectionName(requestParam.getCollectionName());
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
             ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
             MutationResult response = blockingStub().upsert(builderWraper.buildUpsertRequest());
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("UpsertRequest successfully! Collection name:{}",
-                        requestParam.getCollectionName());
-                return R.success(response);
-            } else {
-                return failedStatus("UpsertRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("UpsertRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("UpsertRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1654,16 +1501,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("UpsertAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
         DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                 .withDatabaseName(requestParam.getDatabaseName())
                 .withCollectionName(requestParam.getCollectionName());
         R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
         if (descResp.getStatus() != R.Status.Success.getCode()) {
-            logDebug("Failed to describe collection: {}", requestParam.getCollectionName());
-            return Futures.immediateFuture(
-                    R.failed(new ClientNotConnectedException("Failed to describe collection")));
+            return Futures.immediateFuture(R.failed(descResp.getException()));
         }
 
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
@@ -1676,28 +1521,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(MutationResult result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logDebug("upsertAsync successfully! Collection name:{}",
-                                    requestParam.getCollectionName());
+                            logDebug("{} successfully!", title);
                         } else {
-                            logError("upsertAsync failed! Collection name:{}\n{}",
-                                    requestParam.getCollectionName(), result.getStatus().getReason());
+                            logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable t) {
-                        logError("upsertAsync failed:\n{}", t.getMessage());
+                        logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
                 MoreExecutors.directExecutor());
 
         Function<MutationResult, R<MutationResult>> transformFunc =
                 results -> {
-                    if (results.getStatus().getErrorCode() == ErrorCode.Success) {
-                        return R.success(results);
+                    Status status = results.getStatus();
+                    if (status.getCode() != 0 || status.getErrorCode() != ErrorCode.Success) {
+                        return R.failed(new ServerException(status.getReason(), status.getCode(), status.getErrorCode()));
                     } else {
-                        return R.failed(R.Status.valueOf(results.getStatus().getErrorCode().getNumber()),
-                                results.getStatus().getReason());
+                        return R.success(results);
                     }
                 };
 
@@ -1711,6 +1554,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SearchRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
@@ -1718,19 +1562,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             //TODO: truncate distance value by round decimal
 
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("SearchRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("SearchRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SearchRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
-        } catch (ParamException e) {
-            logError("SearchRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1744,6 +1582,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SearchAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
         SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
         ListenableFuture<SearchResults> response = this.futureStub().search(searchRequest);
@@ -1754,28 +1593,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(SearchResults result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logDebug("searchAsync successfully! Collection name:{}",
-                                    requestParam.getCollectionName());
+                            logDebug("{} successfully!", title);
                         } else {
-                            logError("searchAsync failed! Collection name:{}\n{}",
-                                    requestParam.getCollectionName(), result.getStatus().getReason());
+                            logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable t) {
-                        logError("searchAsync failed:\n{}", t.getMessage());
+                        logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
                 MoreExecutors.directExecutor());
 
         Function<SearchResults, R<SearchResults>> transformFunc =
                 results -> {
-                    if (results.getStatus().getErrorCode() == ErrorCode.Success) {
-                        return R.success(results);
+                    Status status = results.getStatus();
+                    if (status.getCode() != 0 || status.getErrorCode() != ErrorCode.Success) {
+                        return R.failed(new ServerException(status.getReason(), status.getCode(), status.getErrorCode()));
                     } else {
-                        return R.failed(R.Status.valueOf(results.getStatus().getErrorCode().getNumber()),
-                                results.getStatus().getReason());
+                        return R.success(results);
                     }
                 };
 
@@ -1789,31 +1626,29 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("QueryRequest collectionName:%s, expr:%s",
+                requestParam.getCollectionName(), requestParam.getExpr());
 
         try {
             QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
             QueryResults response = this.blockingStub().query(queryRequest);
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("QueryRequest successfully!");
-                return R.success(response);
-            } else {
-                // Server side behavior: if a query expression could not filter out any result,
-                // or collection is empty, the server return ErrorCode.EmptyCollection.
-                // Here we give a general message for this case.
-                if (response.getStatus().getErrorCode() == ErrorCode.EmptyCollection) {
-                    logWarning("QueryRequest returns nothing: empty collection or improper expression");
-                    return R.failed(ErrorCode.EmptyCollection, "empty collection or improper expression");
-                }
-                return failedStatus("QueryRequest", response.getStatus());
+
+            // Keep this section to compatible with old v2.2.x versions
+            // Server side behavior: if a query expression could not filter out any result,
+            // or collection is empty, the server return ErrorCode.EmptyCollection.
+            // Here we give a general message for this case.
+            if (response.getStatus().getErrorCode() == ErrorCode.EmptyCollection) {
+                logWarning("QueryRequest returns nothing: empty collection or improper expression");
+                return R.failed(ErrorCode.EmptyCollection, "empty collection or improper expression");
             }
+
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-//            e.printStackTrace();
-            logError("QueryRequest RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("QueryRequest failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1827,6 +1662,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("QueryAsyncRequest collectionName:%s, expr:%s",
+                requestParam.getCollectionName(), requestParam.getExpr());
 
         QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
         ListenableFuture<QueryResults> response = this.futureStub().query(queryRequest);
@@ -1837,28 +1674,26 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     @Override
                     public void onSuccess(QueryResults result) {
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
-                            logDebug("queryAsync successfully! Collection name:{}",
-                                    requestParam.getCollectionName());
+                            logDebug("{} successfully!", title);
                         } else {
-                            logError("queryAsync failed! Collection name:{}\n{}",
-                                    requestParam.getCollectionName(), result.getStatus().getReason());
+                            logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
                     }
 
                     @Override
                     public void onFailure(@Nonnull Throwable t) {
-                        logError("queryAsync failed:\n{}", t.getMessage());
+                        logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
                 MoreExecutors.directExecutor());
 
         Function<QueryResults, R<QueryResults>> transformFunc =
                 results -> {
-                    if (results.getStatus().getErrorCode() == ErrorCode.Success) {
-                        return R.success(results);
+                    Status status = results.getStatus();
+                    if (status.getCode() != 0 || status.getErrorCode() != ErrorCode.Success) {
+                        return R.failed(new ServerException(status.getReason(), status.getCode(), status.getErrorCode()));
                     } else {
-                        return R.failed(R.Status.valueOf(results.getStatus().getErrorCode().getNumber()),
-                                results.getStatus().getReason());
+                        return R.success(results);
                     }
                 };
 
@@ -1872,6 +1707,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("QueryAsyncRequest request:%s", requestParam.getRequest());
 
         try {
             GetMetricsRequest getMetricsRequest = GetMetricsRequest.newBuilder()
@@ -1879,18 +1715,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetMetricsResponse response = blockingStub().getMetrics(getMetricsRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetMetricsRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetMetricsRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetMetricsRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetMetricsRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1902,6 +1733,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetFlushState collectionName:%s", requestParam.getCollectionName());
 
         try {
             GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
@@ -1911,18 +1743,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetFlushState successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetFlushState", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetFlushState RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetFlushState failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1934,6 +1761,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "GetFlushAllState";
 
         try {
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Flush).build();
@@ -1943,18 +1771,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetFlushAllStateResponse response = blockingStub().getFlushAllState(getFlushStateRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("getFlushAllState successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("getFlushAllState", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("getFlushAllState RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("getFlushAllState failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1966,6 +1789,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetPersistentSegmentInfoRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             GetPersistentSegmentInfoRequest getSegmentInfoRequest = GetPersistentSegmentInfoRequest.newBuilder()
@@ -1973,18 +1798,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetPersistentSegmentInfoResponse response = blockingStub().getPersistentSegmentInfo(getSegmentInfoRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetPersistentSegmentInfoRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetPersistentSegmentInfoRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetPersistentSegmentInfoRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetPersistentSegmentInfoRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -1996,6 +1816,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetQuerySegmentInfoRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             GetQuerySegmentInfoRequest getSegmentInfoRequest = GetQuerySegmentInfoRequest.newBuilder()
@@ -2003,18 +1825,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetQuerySegmentInfoResponse response = blockingStub().getQuerySegmentInfo(getSegmentInfoRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetQuerySegmentInfoRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetQuerySegmentInfoRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetQuerySegmentInfoRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetQuerySegmentInfoRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2026,14 +1843,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetReplicasRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName())
                     .build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             GetReplicasRequest getReplicasRequest = GetReplicasRequest.newBuilder()
@@ -2042,18 +1859,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetReplicasResponse response = blockingStub().getReplicas(getReplicasRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetReplicasRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetReplicasRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetReplicasRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetReplicasRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2065,6 +1877,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "LoadBalanceRequest";
 
         try {
             LoadBalanceRequest loadBalanceRequest = LoadBalanceRequest.newBuilder()
@@ -2074,18 +1887,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().loadBalance(loadBalanceRequest);
-
-            if (response.getErrorCode() == ErrorCode.Success) {
-                logDebug("LoadBalanceRequest successfully!");
-                return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
-            } else {
-                return failedStatus("LoadBalanceRequest", response);
-            }
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("LoadBalanceRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("LoadBalanceRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2097,6 +1905,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetCompactionStateRequest compactionID:%d", requestParam.getCompactionID());
 
         try {
             GetCompactionStateRequest getCompactionStateRequest = GetCompactionStateRequest.newBuilder()
@@ -2104,18 +1913,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetCompactionStateResponse response = blockingStub().getCompactionState(getCompactionStateRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetCompactionStateRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetCompactionStateRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetCompactionStateRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetCompactionStateRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2127,14 +1931,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("ManualCompactionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName())
                     .build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             ManualCompactionRequest manualCompactionRequest = ManualCompactionRequest.newBuilder()
@@ -2142,18 +1946,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             ManualCompactionResponse response = blockingStub().manualCompaction(manualCompactionRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("ManualCompactionRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("ManualCompactionRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ManualCompactionRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ManualCompactionRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2165,6 +1964,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetCompactionPlansRequest compactionID:%d", requestParam.getCompactionID());
 
         try {
             GetCompactionPlansRequest getCompactionPlansRequest = GetCompactionPlansRequest.newBuilder()
@@ -2172,18 +1972,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetCompactionPlansResponse response = blockingStub().getCompactionStateWithPlans(getCompactionPlansRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetCompactionPlansRequest successfully!");
-                return R.success(response);
-            } else {
-                return failedStatus("GetCompactionPlansRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetCompactionPlansRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetCompactionPlansRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2195,6 +1990,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateCredentialRequest userName:%s", requestParam.getUsername());
 
         try {
             CreateCredentialRequest createCredentialRequest = CreateCredentialRequest.newBuilder()
@@ -2203,20 +1999,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createCredential(createCredentialRequest);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateCredentialRequest", response);
-            }
-
-            logDebug("CreateCredentialRequest successfully! User name:{}",
-                    requestParam.getUsername());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateCredentialRequest RPC failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateCredentialRequest failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2228,6 +2017,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("UpdateCredentialRequest userName:%s", requestParam.getUsername());
 
         try {
             UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
@@ -2237,19 +2027,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().updateCredential(updateCredentialRequest);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("UpdateCredentialRequest", response);
-            }
-
-            logDebug("UpdateCredentialRequest successfully! User name:{}", requestParam.getUsername());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("UpdateCredentialRequest RPC failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("UpdateCredentialRequest failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2261,6 +2045,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DeleteCredentialRequest userName:%s", requestParam.getUsername());
 
         try {
             DeleteCredentialRequest deleteCredentialRequest = DeleteCredentialRequest.newBuilder()
@@ -2268,19 +2053,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().deleteCredential(deleteCredentialRequest);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DeleteCredentialRequest", response);
-            }
-
-            logDebug("DeleteCredentialRequest successfully! User name:{}", requestParam.getUsername());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DeleteCredentialRequest RPC failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DeleteCredentialRequest failed! User name:{}",
-                    requestParam.getUsername(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2292,23 +2071,20 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "ListCredUsersRequest";
 
         try {
             ListCredUsersRequest listCredUsersRequest = ListCredUsersRequest.newBuilder()
                     .build();
 
             ListCredUsersResponse response = blockingStub().listCredUsers(listCredUsersRequest);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("ListCredUsersRequest", response.getStatus());
-            }
-
-            logDebug("ListCredUsersRequest successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListCredUsersRequest RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListCredUsersRequest failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2324,6 +2100,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("AddUserToRoleRequest userName:%s, roleName:%s",
+                requestParam.getUserName(), requestParam.getRoleName());
 
         try {
             OperateUserRoleRequest request = OperateUserRoleRequest.newBuilder()
@@ -2333,19 +2111,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().operateUserRole(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("AddUserToRole", response);
-            }
-
-            logDebug("AddUserToRole successfully! Username:{}, Role name:{}", requestParam.getUserName(), request.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("AddUserToRole RPC failed! Username:{} Role name:{}",
-                    requestParam.getUserName(), requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("AddUserToRole failed! Username:{} Role name:{}",
-                    requestParam.getUserName(), requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2357,6 +2129,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("RemoveUserFromRoleRequest userName:%s, roleName:%s",
+                requestParam.getUserName(), requestParam.getRoleName());
 
         try {
             OperateUserRoleRequest request = OperateUserRoleRequest.newBuilder()
@@ -2366,19 +2140,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().operateUserRole(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("RemoveUserFromRole", response);
-            }
-
-            logDebug("RemoveUserFromRole successfully! User name:{}, Role name:{}", requestParam.getUserName(), request.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("RemoveUserFromRole RPC failed! User name:{} Role name:{}",
-                    requestParam.getUserName(), requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("RemoveUserFromRole failed! User name:{} Role name:{}",
-                    requestParam.getUserName(), requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2390,6 +2158,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("RemoveUserFromRoleRequest roleName:%s", requestParam.getRoleName());
 
         try {
             CreateRoleRequest request = CreateRoleRequest.newBuilder()
@@ -2399,18 +2168,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createRole(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateRoleRequest", response);
-            }
-            logDebug("CreateRoleRequest successfully! Role name:{}", requestParam.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateRoleRequest RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateRoleRequest failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2422,6 +2186,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropRoleRequest roleName:%s", requestParam.getRoleName());
 
         try {
             DropRoleRequest request = DropRoleRequest.newBuilder()
@@ -2429,18 +2194,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropRole(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DropRoleRequest", response);
-            }
-            logDebug("DropRoleRequest successfully! Role name:{}", requestParam.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropRoleRequest RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropRoleRequest failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2452,6 +2212,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SelectRoleRequest roleName:%s", requestParam.getRoleName());
 
         try {
             SelectRoleRequest request = SelectRoleRequest.newBuilder()
@@ -2462,18 +2223,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             SelectRoleResponse response = blockingStub().selectRole(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectRoleRequest", response.getStatus());
-            }
-            logDebug("SelectRoleRequest successfully! Role name:{}", requestParam.getRoleName());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectRoleRequest RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectRoleRequest failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2485,6 +2241,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SelectUserRequest userName:%s", requestParam.getUserName());
+
         try {
             SelectUserRequest request = SelectUserRequest.newBuilder()
                     .setUser(UserEntity.newBuilder().setName(requestParam.getUserName()).build())
@@ -2492,18 +2250,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             SelectUserResponse response = blockingStub().selectUser(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectUserRequest", response.getStatus());
-            }
-            logDebug("SelectUserRequest successfully! User name:{}", requestParam.getUserName());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectUserRequest RPC failed! User name:{}",
-                    requestParam.getUserName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectUserRequest failed! User name:{}",
-                    requestParam.getUserName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2515,6 +2268,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GrantRolePrivilegeRequest roleName:%s", requestParam.getRoleName());
 
         GrantEntity.Builder builder = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
@@ -2533,18 +2287,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().operatePrivilege(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("GrantRolePrivilege", response);
-            }
-            logDebug("GrantRolePrivilege successfully! Role name:{}", requestParam.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("GrantRolePrivilege RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GrantRolePrivilege failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2555,6 +2304,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("RevokeRolePrivilegeRequest roleName:%s", requestParam.getRoleName());
+
         try {
             OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
                     .setType(OperatePrivilegeType.Revoke)
@@ -2568,18 +2319,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().operatePrivilege(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("RevokeRolePrivilege", response);
-            }
-            logDebug("RevokeRolePrivilege successfully! Role name:{}", requestParam.getRoleName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("RevokeRolePrivilege RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("RevokeRolePrivilege failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2591,6 +2337,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SelectGrantForRoleRequest roleName:%s", requestParam.getRoleName());
 
         try {
             SelectGrantRequest request = SelectGrantRequest.newBuilder()
@@ -2600,18 +2347,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             SelectGrantResponse response = blockingStub().selectGrant(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrantForRole", response.getStatus());
-            }
-            logDebug("SelectGrantForRole successfully! Role name:{},", requestParam.getRoleName());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectGrantForRole RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectGrantForRole failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2622,6 +2364,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("SelectGrantForRoleAndObjectRequest roleName:%s", requestParam.getRoleName());
+
         try {
             SelectGrantRequest request = SelectGrantRequest.newBuilder()
                     .setEntity(GrantEntity.newBuilder()
@@ -2632,18 +2376,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             SelectGrantResponse response = blockingStub().selectGrant(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("SelectGrantForRoleAndObject", response.getStatus());
-            }
-            logDebug("SelectGrantForRoleAndObject successfully! Role name:{},", requestParam.getRoleName());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("SelectGrantForRoleAndObject RPC failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("SelectGrantForRoleAndObject failed! Role name:{}",
-                    requestParam.getRoleName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2655,6 +2394,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("BulkInsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             ImportRequest.Builder importRequest = ImportRequest.newBuilder()
@@ -2671,19 +2411,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
 
             ImportResponse response = blockingStub().import_(importRequest.build());
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("BulkInsert", response.getStatus());
-            }
-
-            logDebug("BulkInsert successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("BulkInsert RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("BulkInsert failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2695,6 +2429,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetBulkInsertStateRequest taskID:%d", requestParam.getTask());
 
         try {
             GetImportStateRequest getImportStateRequest = GetImportStateRequest.newBuilder()
@@ -2702,17 +2437,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetImportStateResponse response = blockingStub().getImportState(getImportStateRequest);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("GetBulkInsertState", response.getStatus());
-            }
-
-            logDebug("GetBulkInsertState successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetBulkInsertState RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetBulkInsertState failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2724,6 +2455,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("ListBulkInsertTasksRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             ListImportTasksRequest listImportTasksRequest = ListImportTasksRequest.newBuilder()
@@ -2732,17 +2465,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             ListImportTasksResponse response = blockingStub().listImportTasks(listImportTasksRequest);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("ListBulkInsertTasks", response.getStatus());
-            }
-
-            logDebug("ListBulkInsertTasks successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListBulkInsertTasks RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListBulkInsertTasks failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2754,6 +2483,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetLoadingProgressRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             GetLoadingProgressRequest getLoadingProgressRequest = GetLoadingProgressRequest.newBuilder()
@@ -2762,21 +2493,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             GetLoadingProgressResponse response = blockingStub().getLoadingProgress(getLoadingProgressRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetLoadingProgressRequest successfully! Collection name:{}, partition names:{}",
-                        requestParam.getCollectionName(), requestParam.getPartitionNames());
-                return R.success(response);
-            } else {
-                return failedStatus("GetLoadingProgressRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetLoadingProgressRequest RPC failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetLoadingProgressRequest failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2788,6 +2511,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("GetLoadStateRequest collectionName:%s",
+                requestParam.getCollectionName());
 
         try {
             GetLoadStateRequest.Builder builder = GetLoadStateRequest.newBuilder()
@@ -2797,25 +2522,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 builder.setDbName(requestParam.getDatabaseName());
             }
 
-            GetLoadStateRequest loadStateRequest = builder
-                    .build();
+            GetLoadStateRequest loadStateRequest = builder.build();
 
             GetLoadStateResponse response = blockingStub().getLoadState(loadStateRequest);
-
-            if (response.getStatus().getErrorCode() == ErrorCode.Success) {
-                logDebug("GetLoadStateRequest successfully! Collection name:{}, partition names:{}",
-                        requestParam.getCollectionName(), requestParam.getPartitionNames());
-                return R.success(response);
-            } else {
-                return failedStatus("GetLoadStateRequest", response.getStatus());
-            }
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetLoadStateRequest RPC failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetLoadStateRequest failed! Collection name:{}, partition names:{}",
-                    requestParam.getCollectionName(), requestParam.getPartitionNames(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2825,18 +2541,18 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
+
+        String title = "CheckHealthRequest";
+
         try {
             CheckHealthResponse response = blockingStub().checkHealth(CheckHealthRequest.newBuilder().build());
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CheckHealth", response.getStatus());
-            }
-            logDebug("CheckHealth successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("CheckHealth RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CheckHealth failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2846,18 +2562,18 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
+
+        String title = "GetVersionRequest";
+
         try {
             GetVersionResponse response = blockingStub().getVersion(GetVersionRequest.newBuilder().build());
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("GetVersion", response.getStatus());
-            }
-            logDebug("GetVersion successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("GetVersion RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("GetVersion failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2869,6 +2585,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("CreateResourceGroupRequest groupName:%s",
+                requestParam.getGroupName());
 
         try {
             CreateResourceGroupRequest request = CreateResourceGroupRequest.newBuilder()
@@ -2876,19 +2594,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().createResourceGroup(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("CreateResourceGroup", response);
-            }
-            logDebug("CreateResourceGroup successfully! Resource group name:{}",
-                    requestParam.getGroupName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateResourceGroup RPC failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateResourceGroup failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2900,6 +2612,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DropResourceGroupRequest groupName:%s",
+                requestParam.getGroupName());
 
         try {
             DropResourceGroupRequest request = DropResourceGroupRequest.newBuilder()
@@ -2907,19 +2621,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().dropResourceGroup(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DropResourceGroup", response);
-            }
-            logDebug("DropResourceGroup successfully! Resource group name:{}",
-                    requestParam.getGroupName());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("DropResourceGroup RPC failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DropResourceGroup failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2931,22 +2639,20 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = "ListResourceGroupsRequest";
 
         try {
             ListResourceGroupsRequest request = ListResourceGroupsRequest.newBuilder()
                     .build();
 
             ListResourceGroupsResponse response = blockingStub().listResourceGroups(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("ListResourceGroups", response.getStatus());
-            }
-            logDebug("ListResourceGroups successfully!");
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("ListResourceGroups RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListResourceGroups failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2958,6 +2664,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("DescribeResourceGroupRequest groupName:%s",
+                requestParam.getGroupName());
 
         try {
             DescribeResourceGroupRequest request = DescribeResourceGroupRequest.newBuilder()
@@ -2965,19 +2673,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             DescribeResourceGroupResponse response = blockingStub().describeResourceGroup(request);
-            if (response.getStatus().getErrorCode() != ErrorCode.Success) {
-                return failedStatus("DescribeResourceGroup", response.getStatus());
-            }
-            logDebug("DescribeResourceGroup successfully! Resource group name:{}",
-                    requestParam.getGroupName());
+            handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
-            logError("DescribeResourceGroup RPC failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("DescribeResourceGroup failed! Resource group name:{}",
-                    requestParam.getGroupName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -2989,6 +2691,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("TransferNodeRequest nodeNumber:%d, sourceGroup:%s, targetGroup:%s",
+                requestParam.getNodeNumber(), requestParam.getSourceGroupName(), requestParam.getTargetGroupName());
 
         try {
             TransferNodeRequest request = TransferNodeRequest.newBuilder()
@@ -2998,19 +2702,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().transferNode(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("TransferNode", response);
-            }
-            logDebug("TransferNode successfully! Source group:{}, target group:{}, nodes number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("TransferNode RPC failed! Source group:{}, target group:{}, nodes number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("TransferNode failed! Source group:{}, target group:{}, nodes number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(), requestParam.getNodeNumber(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3022,6 +2720,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logInfo(requestParam.toString());
+        String title = String.format("TransferReplicaRequest replicaNumber:%d, sourceGroup:%s, targetGroup:%s",
+                requestParam.getReplicaNumber(), requestParam.getSourceGroupName(), requestParam.getTargetGroupName());
 
         try {
             TransferReplicaRequest request = TransferReplicaRequest.newBuilder()
@@ -3033,22 +2733,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .build();
 
             Status response = blockingStub().transferReplica(request);
-            if (response.getErrorCode() != ErrorCode.Success) {
-                return failedStatus("TransferReplica", response);
-            }
-            logDebug("TransferReplica successfully! Source group:{}, target group:{}, replica number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
-                    requestParam.getReplicaNumber());
+            handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("TransferReplica RPC failed! Source group:{}, target group:{}, replica number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
-                    requestParam.getReplicaNumber(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("TransferReplica failed! Source group:{}, target group:{}, replica number:{}",
-                    requestParam.getSourceGroupName(), requestParam.getTargetGroupName(),
-                    requestParam.getReplicaNumber(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3061,7 +2752,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
-        
+        String title = "CreateSimpleCollectionRequest";
+
         try {
             // step1: create collection
             R<RpcStatus> createCollectionStatus = createCollection(requestParam.getCreateCollectionParam());
@@ -3084,13 +2776,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(loadCollectionStatus.getException());
             }
 
-            logDebug("CreateCollection successfully!");
+            logDebug("{} successfully!", title);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
-            logError("CreateCollection RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("CreateCollection failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3101,6 +2793,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = "ListCollectionsRequest";
         
         try {
             R<ShowCollectionsResponse> response = showCollections(requestParam.getShowCollectionsParam());
@@ -3113,10 +2806,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.success(ListCollectionsResponse.builder()
                     .collectionNames(showCollResponseWrapper.getCollectionNames()).build());
         } catch (StatusRuntimeException e) {
-            logError("ListCollections RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("ListCollections failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3127,6 +2820,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = "InsertRowsRequest";
         
         try {
             R<MutationResult> response = insert(requestParam.getInsertParam());
@@ -3135,14 +2829,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(response.getException());
             }
 
-            logDebug("Insert successfully!");
+            logDebug("{} successfully!", title);
             MutationResultWrapper wrapper = new MutationResultWrapper(response.getData());
             return R.success(InsertResponse.builder().insertIds(wrapper.getInsertIDs()).insertCount(wrapper.getInsertCount()).build());
         } catch (StatusRuntimeException e) {
-            logError("Insert RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("Insert failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3153,6 +2847,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = String.format("DeleteIdsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
@@ -3160,7 +2855,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
 
@@ -3170,15 +2865,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withExpr(expr)
                     .build();
             R<MutationResult> resultR = delete(deleteParam);
+            if (resultR.getStatus() != R.Status.Success.getCode()) {
+                return R.failed(resultR.getException());
+            }
+
             MutationResultWrapper resultWrapper = new MutationResultWrapper(resultR.getData());
             return R.success(DeleteResponse.builder().deleteIds(resultWrapper.getDeleteIDs()).build());
         } catch (StatusRuntimeException e) {
-            logError("Delete RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("Delete failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3189,15 +2886,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = "GetIdsRequest";
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName());
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
@@ -3214,15 +2911,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
             R<QueryResults> queryResp = query(queryParam);
+            if (queryResp.getStatus() != R.Status.Success.getCode()) {
+                return R.failed(queryResp.getException());
+            }
+
             QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryResp.getData());
             return R.success(GetResponse.builder().rowRecords(queryResultsWrapper.getRowRecords()).build());
         } catch (StatusRuntimeException e) {
-            logError("Get RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("Get failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3233,6 +2932,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = "QuerySimpleRequest";
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
@@ -3240,7 +2940,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper descCollWrapper = new DescCollResponseWrapper(descResp.getData());
@@ -3266,10 +2966,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response.getData());
             return R.success(QueryResponse.builder().rowRecords(queryWrapper.getRowRecords()).build());
         } catch (StatusRuntimeException e) {
-            logError("Query RPC failed!", e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("Query failed!", e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
@@ -3281,15 +2981,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
         logInfo(requestParam.toString());
+        String title = String.format("SearchSimpleRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
             DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName());
             R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-
             if (descResp.getStatus() != R.Status.Success.getCode()) {
                 logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(R.Status.valueOf(descResp.getStatus()), descResp.getMessage());
+                return R.failed(descResp.getException());
             }
 
             DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
@@ -3328,12 +3028,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             }
             return R.success(SearchResponse.builder().rowRecords(records).build());
         } catch (StatusRuntimeException e) {
-            logError("Search RPC failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
-            logError("Search failed! Collection name:{}",
-                    requestParam.getCollectionName(), e);
+            logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
     }
