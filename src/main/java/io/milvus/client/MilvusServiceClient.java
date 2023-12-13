@@ -316,8 +316,10 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
                     // for server-side returned error, only retry for rate limit
                     // in new error codes of v2.3, rate limit error value is 8
-                    if (!(serverException.getCompatibleCode() == ErrorCode.RateLimit
-                            || serverException.getStatus() == 8)) {
+                    if (retryParam.isRetryOnRateLimie() &&
+                            (serverException.getCompatibleCode() == ErrorCode.RateLimit ||
+                                    serverException.getStatus() == 8)) {
+                    } else {
                         return resp;
                     }
                 } else {
