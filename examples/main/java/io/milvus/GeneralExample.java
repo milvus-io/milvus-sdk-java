@@ -21,6 +21,7 @@ package io.milvus;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
+import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
@@ -44,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public class GeneralExample {
-    private static final MilvusServiceClient milvusClient;
+    private static final MilvusClient milvusClient;
 
     static {
         ConnectParam connectParam = ConnectParam.newBuilder()
@@ -52,7 +53,10 @@ public class GeneralExample {
                 .withPort(19530)
                 .withAuthorization("root","Milvus")
                 .build();
-        milvusClient = new MilvusServiceClient(connectParam);
+        RetryParam retryParam = RetryParam.newBuilder()
+                .withMaxRetryTimes(3)
+                .build();
+        milvusClient = new MilvusServiceClient(connectParam).withRetry(retryParam);
     }
 
     private static final String COLLECTION_NAME = "java_sdk_example_general";
