@@ -2862,6 +2862,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             String expr = VectorUtils.convertPksExpr(requestParam.getPrimaryIds(), wrapper);
             DeleteParam deleteParam = DeleteParam.newBuilder()
                     .withCollectionName(requestParam.getCollectionName())
+                    .withPartitionName(requestParam.getPartitionName())
                     .withExpr(expr)
                     .build();
             R<MutationResult> resultR = delete(deleteParam);
