@@ -64,9 +64,9 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <grpc.version>1.46.0</grpc.version>
-        <protobuf.version>3.19.6</protobuf.version>
-        <protoc.version>3.19.6</protoc.version>
+        <grpc.version>1.59.1</grpc.version>
+        <protobuf.version>3.24.0</protobuf.version>
+        <protoc.version>3.24.0</protoc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -76,7 +76,7 @@
         <commons.text.version>1.10.0</commons.text.version>
         <slf4j.api.version>1.7.30</slf4j.api.version>
         <log4j.slf4j.version>2.17.1</log4j.slf4j.version>
-        <junit.version>4.13.1</junit.version>
+        <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <lombok.version>1.18.22</lombok.version>
         <okhttp.version>4.10.0</okhttp.version>
@@ -91,7 +91,7 @@
         <junit.platform.version>1.1.0</junit.platform.version>
         <junit.jupiter.engine.version>5.1.0</junit.jupiter.engine.version>
         <jackson.version>2.12.7.1</jackson.version>
-        <gson.version>2.9.0</gson.version>
+        <gson.version>2.10.1</gson.version>
         <kotlin.version>1.6.20</kotlin.version>
         <version.fastjson>1.2.83</version.fastjson>
     </properties>
@@ -278,17 +278,17 @@
             </extension>
         </extensions>
         <plugins>
-                        <plugin>
-                            <groupId>org.sonatype.plugins</groupId>
-                            <artifactId>nexus-staging-maven-plugin</artifactId>
-                            <version>1.6.8</version>
-                            <extensions>true</extensions>
-                            <configuration>
-                                <serverId>ossrh</serverId>
-                                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                                <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                            </configuration>
-                        </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
