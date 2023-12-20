@@ -36,12 +36,13 @@ import java.util.List;
 @Getter
 @ToString
 public class DeleteIdsParam {
-
     private final String collectionName;
+    private final String partitionName;
     private final List<?> primaryIds;
 
     private DeleteIdsParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
         this.primaryIds = builder.primaryIds;
     }
 
@@ -54,6 +55,7 @@ public class DeleteIdsParam {
      */
     public static class Builder<T> {
         private String collectionName;
+        private String partitionName = "";
         private List<T> primaryIds = new ArrayList<>();
 
         private Builder() {
@@ -67,6 +69,17 @@ public class DeleteIdsParam {
          */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        /**
+         * Sets the partition name (Optional).
+         *
+         * @param partitionName partition name
+         * @return <code>Builder</code>
+         */
+        public Builder withPartitionName(@NonNull String partitionName) {
+            this.partitionName = partitionName;
             return this;
         }
 
