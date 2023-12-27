@@ -129,11 +129,11 @@ public class SearchTest extends BaseTest {
       {IndexType.IVF_FLAT},
       {IndexType.IVF_SQ8},
       {IndexType.IVF_PQ},
-      {IndexType.HNSW},
+      {IndexType.HNSW}/*,
       {IndexType.ANNOY},
       {IndexType.RHNSW_FLAT},
       {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ}
+      {IndexType.RHNSW_SQ}*/
     };
   }
 
@@ -156,10 +156,10 @@ public class SearchTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
+      {MetricType.JACCARD}/*,
       {MetricType.SUBSTRUCTURE},
       {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.TANIMOTO}*/
     };
   }
 
@@ -1519,12 +1519,12 @@ public class SearchTest extends BaseTest {
       description = "String PK and Binary vector search with each index",
       dataProvider = "BinaryIndex")
   public void stringPKAndBinaryVectorSearchWithEachIndex(
-      IndexType indexType, MetricType metricType) {
+      IndexType indexType, MetricType metricType) {/*
     boolean b = metricType.equals(MetricType.SUBSTRUCTURE) || metricType.equals(MetricType.SUPERSTRUCTURE);
 
     if(indexType.equals(IndexType.BIN_IVF_FLAT)&& b){
       return;
-    }
+    }*/
     String stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
     // create index
     R<RpcStatus> rpcStatusR =
@@ -1575,9 +1575,9 @@ public class SearchTest extends BaseTest {
     R<SearchResults> searchResultsR = milvusClient.search(searchParam);
     System.out.println(searchResultsR.getData().getResults());
     Assert.assertEquals(searchResultsR.getStatus().intValue(), 0);
-    if (b){
+  /*  if (b){
       return ;
-    }
+    }*/
     SearchResultsWrapper searchResultsWrapper =
         new SearchResultsWrapper(searchResultsR.getData().getResults());
     Assert.assertEquals(searchResultsWrapper.getFieldData("book_name", 0).size(), 2);

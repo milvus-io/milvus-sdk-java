@@ -474,21 +474,21 @@ public class CommonFunction {
       case IVF_PQ:
         extraParm = "{\"nlist\":128, \"m\":16, \"nbits\":8}";
         break;
-      case ANNOY:
+      /*case ANNOY:
         extraParm = "{\"n_trees\":16}";
-        break;
+        break;*/
       case HNSW:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
         break;
-      case RHNSW_FLAT:
+     /* case RHNSW_FLAT:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
         break;
       case RHNSW_PQ:
         extraParm = "{\"M\":16,\"efConstruction\":64, \"PQM\":16}";
-        break;
-      case RHNSW_SQ:
+        break;*/
+    /*  case RHNSW_SQ:
         extraParm = "{\"M\":16,\"efConstruction\":64}";
-        break;
+        break;*/
       case BIN_IVF_FLAT:
         extraParm = "";
       default:
