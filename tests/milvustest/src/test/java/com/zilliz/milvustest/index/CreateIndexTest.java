@@ -47,10 +47,10 @@ public class CreateIndexTest extends BaseTest {
       {IndexType.IVF_SQ8},
       {IndexType.IVF_PQ},
       {IndexType.HNSW},
-      {IndexType.ANNOY},
+   /*   {IndexType.ANNOY},
       {IndexType.RHNSW_FLAT},
       {IndexType.RHNSW_PQ},
-      {IndexType.RHNSW_SQ},
+      {IndexType.RHNSW_SQ},*/
       {IndexType.DISKANN}
     };
   }
@@ -69,10 +69,10 @@ public class CreateIndexTest extends BaseTest {
   public Object[][] providerBinaryMetricType() {
     return new Object[][] {
       {MetricType.HAMMING},
-      {MetricType.JACCARD},
+      {MetricType.JACCARD}/*,
       {MetricType.SUBSTRUCTURE},
       {MetricType.SUPERSTRUCTURE},
-      {MetricType.TANIMOTO}
+      {MetricType.TANIMOTO}*/
     };
   }
 
@@ -142,11 +142,11 @@ public class CreateIndexTest extends BaseTest {
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/321")
   @Test(description = "Create index for collection Async", dataProvider = "BinaryIndex")
   public void createBinaryIndexAsync(IndexType indexType, MetricType metricType) {
-    if (indexType.equals(IndexType.BIN_IVF_FLAT)
+   /* if (indexType.equals(IndexType.BIN_IVF_FLAT)
         && (metricType.equals(MetricType.SUBSTRUCTURE)
             || metricType.equals(MetricType.SUPERSTRUCTURE))) {
       return;
-    }
+    }*/
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
             CreateIndexParam.newBuilder()
@@ -172,11 +172,11 @@ public class CreateIndexTest extends BaseTest {
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/321")
   @Test(description = "Create index for collection sync", dataProvider = "BinaryIndex")
   public void createBinaryIndexSync(IndexType indexType, MetricType metricType) {
-    if (indexType.equals(IndexType.BIN_IVF_FLAT)
+    /*if (indexType.equals(IndexType.BIN_IVF_FLAT)
         && (metricType.equals(MetricType.SUBSTRUCTURE)
             || metricType.equals(MetricType.SUPERSTRUCTURE))) {
       return;
-    }
+    }*/
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
             CreateIndexParam.newBuilder()

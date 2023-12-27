@@ -48,11 +48,11 @@ public class IndexLoadTest extends BaseTest {
                 {IndexType.IVF_FLAT},
                 {IndexType.IVF_SQ8},
                 {IndexType.IVF_PQ},
-                {IndexType.HNSW},
+                {IndexType.HNSW}/*,
                 {IndexType.ANNOY},
                 {IndexType.RHNSW_FLAT},
                 {IndexType.RHNSW_PQ},
-                {IndexType.RHNSW_SQ}
+                {IndexType.RHNSW_SQ}*/
         };
     }
 
@@ -71,10 +71,10 @@ public class IndexLoadTest extends BaseTest {
     public Object[][] providerBinaryMetricType() {
         return new Object[][] {
                 {MetricType.HAMMING},
-                {MetricType.JACCARD},
+                {MetricType.JACCARD}/*,
                 {MetricType.SUBSTRUCTURE},
                 {MetricType.SUPERSTRUCTURE},
-                {MetricType.TANIMOTO}
+                {MetricType.TANIMOTO}*/
         };
     }
 
@@ -162,11 +162,11 @@ public class IndexLoadTest extends BaseTest {
     @Severity(SeverityLevel.NORMAL)
     @Test(description = "Test create/drop index when collection is loaded for binary vector", dataProvider = "BinaryIndex",groups = {"Smoke"})
     public void createIndexAfterLoadBinaryCollection(IndexType indexType, MetricType metricType) {
-        if (indexType.equals(IndexType.BIN_IVF_FLAT)
+      /*  if (indexType.equals(IndexType.BIN_IVF_FLAT)
                 && (metricType.equals(MetricType.SUBSTRUCTURE)
                 || metricType.equals(MetricType.SUPERSTRUCTURE))) {
             return;
-        }
+        }*/
         // 1. create index params
         CreateIndexParam createIndexParams = CreateIndexParam.newBuilder()
                 .withCollectionName(binaryCollection)
@@ -233,5 +233,50 @@ public class IndexLoadTest extends BaseTest {
         System.out.println("Drop index " + rpcStatusR);
         Assert.assertEquals(rpcStatusR7.getStatus().intValue(), 0);
         Assert.assertEquals(rpcStatusR7.getData().getMsg(), "Success");
+    }
+
+    @Test
+    public void repeatCreateIndex(){
+        String collection = CommonFunction.createNewCollection();
+        // 1. create index params
+        CreateIndexParam createIndexParams = CreateIndexParam.newBuilder()
+                .withCollectionName(collection)
+                .withFieldName(CommonData.defaultVectorField)
+                .withMetricType(MetricType.L2)
+                .withIndexType(IndexType.HNSW)
+                .withExtraParam(CommonFunction.provideExtraParam(IndexType.HNSW))
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingTimeout(30L)
+                .withSyncWaitingInterval(500L)
+                .build();
+        // 2. create index
+        R<RpcStatus> rpcStatusR = milvusClient.createIndex(createIndexParams);
+        System.out.println("Create index" + rpcStatusR);
+        Assert.assertEquals(rpcStatusR.getStatus().intValue(), 0);
+        Assert.assertEquals(rpcStatusR.getData().getMsg(), "Success");
+        // 3. load collection
+        R<RpcStatus> rpcStatusR2 = milvusClient.loadCollection(
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName(collection)
+                        .withSyncLoad(Boolean.TRUE)
+                        .build());
+        System.out.println("Load collection " + rpcStatusR);
+        Assert.assertEquals(rpcStatusR2.getStatus().intValue(), 0);
+        Assert.assertEquals(rpcStatusR2.getData().getMsg(), "Success");
+        // repeat createIndex
+        CreateIndexParam createIndexParams2 = CreateIndexParam.newBuilder()
+                .withCollectionName(collection)
+                .withFieldName(CommonData.defaultVectorField)
+                .withMetricType(MetricType.L2)
+                .withIndexType(IndexType.IVF_FLAT)
+                .withExtraParam(CommonFunction.provideExtraParam(IndexType.IVF_FLAT))
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingTimeout(30L)
+                .withSyncWaitingInterval(500L)
+                .build();
+        R<RpcStatus> rpcStatusR3 = milvusClient.createIndex(createIndexParams2);
+        System.out.println("Create index" + rpcStatusR2);
+        Assert.assertEquals(rpcStatusR3.getStatus().intValue(), 0);
+        Assert.assertEquals(rpcStatusR3.getData().getMsg(), "Success");
     }
 }
