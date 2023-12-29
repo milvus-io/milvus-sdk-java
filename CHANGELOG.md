@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.3.4 (TBD)
+
+### Improvement
+
+- Support backoff retry for RPC interfaces(consist with pymilvus)
+- Upgrade grpc from 1.46 to 1.59.1
+- Add withPartitionName for DeleteIdsParam
+
 ## milvus-sdk-java 2.3.3 (2023-11-08)
 
 ### Feature
