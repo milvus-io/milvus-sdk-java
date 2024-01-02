@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.2.16 (2024-1-02)
+
+### Improvement
+- Upgrade grpc from 1.46 to 1.59.1
+- Add withPartitionName for DeleteIdsParam
+
 ## milvus-sdk-java 2.2.15 (2023-11-08)
 
 ### Feature
