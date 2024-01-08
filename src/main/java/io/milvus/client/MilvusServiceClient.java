@@ -21,6 +21,9 @@ package io.milvus.client;
 
 import io.grpc.*;
 import io.grpc.Status;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
 import io.milvus.exception.MilvusException;
 import io.milvus.exception.ServerException;
@@ -60,10 +63,9 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Callable;
 
-import io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.NettyChannelBuilder;
-import io.netty.handler.ssl.SslContext;
-
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
