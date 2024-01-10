@@ -215,33 +215,6 @@ public class ParamUtils {
         return metric != MetricType.INVALID && !IsFloatMetric(metric);
     }
 
-    /**
-     * Checks if an index type is for vector field.
-     *
-     * @param idx index type
-     */
-    public static boolean IsVectorIndex(IndexType idx) {
-        return idx != IndexType.INVALID && idx.getCode() < IndexType.TRIE.getCode();
-    }
-
-    /**
-     * Checks if an index type is matched with data type.
-     *
-     * @param indexType index type
-     * @param dataType data type
-     */
-    public static boolean VerifyIndexType(IndexType indexType, DataType dataType) {
-        if (dataType == DataType.FloatVector) {
-            return (IsVectorIndex(indexType) && (indexType != IndexType.BIN_FLAT) && (indexType != IndexType.BIN_IVF_FLAT));
-        } else if (dataType == DataType.BinaryVector) {
-            return indexType == IndexType.BIN_FLAT || indexType == IndexType.BIN_IVF_FLAT;
-        } else if (dataType == DataType.VarChar) {
-            return indexType == IndexType.TRIE;
-        } else {
-            return indexType == IndexType.STL_SORT;
-        }
-    }
-
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
