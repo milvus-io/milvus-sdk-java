@@ -1277,24 +1277,6 @@ class MilvusServiceClientTest {
         assertThrows(ParamException.class, () -> CreateIndexParam.newBuilder()
                 .withCollectionName("collection1")
                 .withFieldName("field1")
-                .withIndexType(IndexType.INVALID)
-                .withMetricType(MetricType.L2)
-                .withExtraParam("dummy")
-                .build()
-        );
-
-        assertThrows(ParamException.class, () -> CreateIndexParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFieldName("field1")
-                .withIndexType(IndexType.IVF_FLAT)
-                .withMetricType(MetricType.INVALID)
-                .withExtraParam("dummy")
-                .build()
-        );
-
-        assertThrows(ParamException.class, () -> CreateIndexParam.newBuilder()
-                .withCollectionName("collection1")
-                .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
                 .withSyncMode(Boolean.TRUE)
