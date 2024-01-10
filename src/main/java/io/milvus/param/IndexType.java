@@ -27,6 +27,7 @@ import lombok.Getter;
  */
 public enum IndexType {
     INVALID,
+    None(0),
     //Only supported for float vectors
     FLAT(1),
     IVF_FLAT(2),

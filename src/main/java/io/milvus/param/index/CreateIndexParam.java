@@ -55,7 +55,7 @@ public class CreateIndexParam {
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
         this.indexType = builder.indexType;
-        if (builder.indexType != IndexType.INVALID) {
+        if (builder.indexType != IndexType.INVALID && builder.indexType != IndexType.None) {
             this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.getName());
         }
         if (builder.metricType != MetricType.INVALID) {
@@ -80,7 +80,7 @@ public class CreateIndexParam {
         private String databaseName;
         private String collectionName;
         private String fieldName;
-        private IndexType indexType = IndexType.INVALID;
+        private IndexType indexType = IndexType.None;
         private String indexName = Constant.DEFAULT_INDEX_NAME;
         private MetricType metricType = MetricType.INVALID;
         private String extraParam;

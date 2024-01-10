@@ -221,7 +221,7 @@ public class ParamUtils {
      * @param idx index type
      */
     public static boolean IsVectorIndex(IndexType idx) {
-        return idx != IndexType.INVALID && idx.getCode() < IndexType.TRIE.getCode();
+        return idx != IndexType.INVALID && idx != IndexType.None && idx.getCode() < IndexType.TRIE.getCode();
     }
 
     /**
@@ -231,7 +231,10 @@ public class ParamUtils {
      * @param dataType data type
      */
     public static boolean VerifyIndexType(IndexType indexType, DataType dataType) {
-        if (dataType == DataType.FloatVector) {
+        // if user not specify the indexType, auto select by kernal
+        if (indexType == IndexType.None) {
+            return true;
+        } else if (dataType == DataType.FloatVector) {
             return (IsVectorIndex(indexType) && (indexType != IndexType.BIN_FLAT) && (indexType != IndexType.BIN_IVF_FLAT));
         } else if (dataType == DataType.BinaryVector) {
             return indexType == IndexType.BIN_FLAT || indexType == IndexType.BIN_IVF_FLAT;
