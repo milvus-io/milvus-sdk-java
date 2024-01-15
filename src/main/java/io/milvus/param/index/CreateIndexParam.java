@@ -55,10 +55,10 @@ public class CreateIndexParam {
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
         this.indexType = builder.indexType;
-        if (builder.indexType != IndexType.INVALID) {
+        if (builder.indexType != IndexType.None) {
             this.extraParam.put(Constant.INDEX_TYPE, builder.indexType.getName());
         }
-        if (builder.metricType != MetricType.INVALID) {
+        if (builder.metricType != MetricType.None) {
             this.extraParam.put(Constant.METRIC_TYPE, builder.metricType.name());
         }
         if (builder.extraParam != null) {
@@ -80,9 +80,9 @@ public class CreateIndexParam {
         private String databaseName;
         private String collectionName;
         private String fieldName;
-        private IndexType indexType = IndexType.INVALID;
+        private IndexType indexType = IndexType.None;
         private String indexName = Constant.DEFAULT_INDEX_NAME;
-        private MetricType metricType = MetricType.INVALID;
+        private MetricType metricType = MetricType.None;
         private String extraParam;
 
         // syncMode:
@@ -235,16 +235,6 @@ public class CreateIndexParam {
 
             if (indexName == null || StringUtils.isBlank(indexName)) {
                 indexName = Constant.DEFAULT_INDEX_NAME;
-            }
-
-            if (indexType == IndexType.INVALID) {
-                throw new ParamException("Index type is required");
-            }
-
-            if (ParamUtils.IsVectorIndex(indexType)) {
-                if (metricType == MetricType.INVALID) {
-                    throw new ParamException("Metric type is required");
-                }
             }
 
             if (Objects.equals(syncMode, Boolean.TRUE)) {
