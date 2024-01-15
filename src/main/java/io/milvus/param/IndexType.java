@@ -26,7 +26,7 @@ import lombok.Getter;
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
  */
 public enum IndexType {
-    INVALID,
+    None(0),
     //Only supported for float vectors
     FLAT(1),
     IVF_FLAT(2),

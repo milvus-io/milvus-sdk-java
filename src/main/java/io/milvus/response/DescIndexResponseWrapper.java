@@ -84,7 +84,7 @@ public class DescIndexResponseWrapper {
                 return IndexType.valueOf(params.get(Constant.INDEX_TYPE).toUpperCase(Locale.ROOT));
             }
 
-            return IndexType.INVALID;
+            return IndexType.None;
         }
 
         public MetricType getMetricType() {

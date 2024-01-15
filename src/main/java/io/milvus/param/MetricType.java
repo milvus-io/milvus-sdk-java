@@ -24,6 +24,7 @@ package io.milvus.param;
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/metric.md">Similarity Metrics</a>
  */
 public enum MetricType {
+    None,
     INVALID,
     // Only for float vectors
     L2,
