@@ -1,0 +1,86 @@
+package io.milvus.v2.service.utility;
+
+import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
+import io.milvus.v2.service.utility.request.FlushReq;
+import io.milvus.v2.service.BaseService;
+import io.milvus.v2.service.utility.request.AlterAliasReq;
+import io.milvus.v2.service.utility.request.CreateAliasReq;
+import io.milvus.v2.service.utility.request.DropAliasReq;
+import io.milvus.v2.service.utility.response.DescribeAliasResp;
+import io.milvus.v2.service.utility.response.ListAliasResp;
+
+public class UtilityService extends BaseService {
+    public R<RpcStatus> flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
+        String title = String.format("Flush collection %s", request.getCollectionName());
+        io.milvus.grpc.FlushRequest flushRequest = io.milvus.grpc.FlushRequest.newBuilder()
+                .addCollectionNames(request.getCollectionName())
+                .build();
+        FlushResponse status = blockingStub.flush(flushRequest);
+        rpcUtils.handleResponse(title, status.getStatus());
+        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+    }
+
+    public R<RpcStatus> createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
+        String title = String.format("Create alias %s for collection %s", request.getAlias(), request.getCollectionName());
+        io.milvus.grpc.CreateAliasRequest createAliasRequest = io.milvus.grpc.CreateAliasRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setAlias(request.getAlias())
+                .build();
+        io.milvus.grpc.Status status = blockingStub.createAlias(createAliasRequest);
+        rpcUtils.handleResponse(title, status);
+        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+    }
+
+    public R<RpcStatus> dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
+        String title = String.format("Drop alias %s", request.getAlias());
+        io.milvus.grpc.DropAliasRequest dropAliasRequest = io.milvus.grpc.DropAliasRequest.newBuilder()
+                .setAlias(request.getAlias())
+                .build();
+        io.milvus.grpc.Status status = blockingStub.dropAlias(dropAliasRequest);
+        rpcUtils.handleResponse(title, status);
+        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+    }
+
+    public R<RpcStatus> alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
+        String title = String.format("Alter alias %s for collection %s", request.getAlias(), request.getCollectionName());
+        io.milvus.grpc.AlterAliasRequest alterAliasRequest = io.milvus.grpc.AlterAliasRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setAlias(request.getAlias())
+                .build();
+        io.milvus.grpc.Status status = blockingStub.alterAlias(alterAliasRequest);
+        rpcUtils.handleResponse(title, status);
+        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+    }
+
+    public R<DescribeAliasResp> describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String alias) {
+        String title = String.format("Describe alias %s", alias);
+        io.milvus.grpc.DescribeAliasRequest describeAliasRequest = io.milvus.grpc.DescribeAliasRequest.newBuilder()
+                .setAlias(alias)
+                .build();
+        io.milvus.grpc.DescribeAliasResponse response = blockingStub.describeAlias(describeAliasRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return R.success(DescribeAliasResp.builder()
+                .collectionName(response.getCollection())
+                .alias(response.getAlias())
+                .build());
+    }
+
+    public R<ListAliasResp> listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        String title = "List aliases";
+        io.milvus.grpc.ListAliasesRequest listAliasesRequest = io.milvus.grpc.ListAliasesRequest.newBuilder()
+                .build();
+        io.milvus.grpc.ListAliasesResponse response = blockingStub.listAliases(listAliasesRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return R.success(ListAliasResp.builder()
+                .collectionName(response.getCollectionName())
+                .alias(response.getAliasesList())
+                .build());
+    }
+}
