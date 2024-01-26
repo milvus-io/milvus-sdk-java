@@ -131,10 +131,6 @@ public class QueryNodeSingleSearch {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
 
-            if (metricType == MetricType.INVALID) {
-                throw new ParamException("Metric type is illegal");
-            }
-
             if (vectors == null || vectors.isEmpty()) {
                 throw new ParamException("Target vectors can not be empty");
             }
