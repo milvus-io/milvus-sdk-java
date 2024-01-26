@@ -25,7 +25,7 @@ package io.milvus.param;
  */
 public enum MetricType {
     None,
-    INVALID,
+
     // Only for float vectors
     L2,
     IP,
