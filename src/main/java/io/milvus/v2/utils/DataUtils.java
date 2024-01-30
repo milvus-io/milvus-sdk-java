@@ -14,7 +14,6 @@ import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.UpsertReq;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -37,7 +36,7 @@ public class DataUtils {
         insertBuilder = InsertRequest.newBuilder()
                 .setCollectionName(collectionName)
                 .setBase(msgBase)
-                .setNumRows(requestParam.getInsertData().size());
+                .setNumRows(requestParam.getData().size());
 //        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
 //            insertBuilder.setDbName(requestParam.getDatabaseName());
 //        }
@@ -60,7 +59,7 @@ public class DataUtils {
         upsertBuilder = UpsertRequest.newBuilder()
                 .setCollectionName(collectionName)
                 .setBase(msgBase)
-                .setNumRows(requestParam.getUpsertData().size());
+                .setNumRows(requestParam.getData().size());
 //        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
 //            upsertBuilder.setDbName(requestParam.getDatabaseName());
 //        }
@@ -104,7 +103,7 @@ public class DataUtils {
         }
 
         // convert insert data
-        List<JSONObject> rowFields = requestParam.getUpsertData();
+        List<JSONObject> rowFields = requestParam.getData();
 
         checkAndSetRowData(wrapper, rowFields);
 
@@ -130,7 +129,7 @@ public class DataUtils {
         }
 
         // convert insert data
-        List<JSONObject> rowFields = requestParam.getInsertData();
+        List<JSONObject> rowFields = requestParam.getData();
 
         checkAndSetRowData(wrapper, rowFields);
 

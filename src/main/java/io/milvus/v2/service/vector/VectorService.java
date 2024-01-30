@@ -1,20 +1,16 @@
 package io.milvus.v2.service.vector;
 
 import io.milvus.grpc.*;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
-import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.vector.request.*;
-import io.milvus.v2.service.vector.response.QueryResp;
-import io.milvus.v2.service.vector.response.GetResp;
-import io.milvus.v2.service.vector.response.SearchResp;
+import io.milvus.v2.service.vector.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +19,7 @@ public class VectorService extends BaseService {
     public CollectionService collectionService = new CollectionService();
     public IndexService indexService = new IndexService();
 
-    public R<RpcStatus> insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request){
+    public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         String title = String.format("InsertRequest collectionName:%s", request.getCollectionName());
         checkCollectionExist(blockingStub, request.getCollectionName());
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
@@ -32,10 +28,12 @@ public class VectorService extends BaseService {
 
         MutationResult response = blockingStub.insert(dataUtils.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
         rpcUtils.handleResponse(title, response.getStatus());
-        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        return InsertResp.builder()
+                .InsertCnt(response.getInsertCnt())
+                .build();
     }
 
-    public R<RpcStatus> upsert(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, UpsertReq request) {
+    public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, UpsertReq request) {
         String title = String.format("UpsertRequest collectionName:%s", request.getCollectionName());
 
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
@@ -46,60 +44,63 @@ public class VectorService extends BaseService {
 
         MutationResult response = milvusServiceBlockingStub.upsert(dataUtils.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
         rpcUtils.handleResponse(title, response.getStatus());
-        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        return UpsertResp.builder()
+                .upsertCnt(response.getInsertCnt())
+                .build();
     }
 
-    public R<QueryResp> query(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, QueryReq request) {
+    public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, QueryReq request) {
         String title = String.format("QueryRequest collectionName:%s", request.getCollectionName());
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
-        R<DescribeCollectionResp> descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
         if(request.getOutputFields() == null){
-            request.setOutputFields(descR.getData().getFieldNames());
+            request.setOutputFields(descR.getFieldNames());
+        }
+        if(request.getIds() != null){
+            request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
         }
         QueryResults response = milvusServiceBlockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
         rpcUtils.handleResponse(title, response.getStatus());
 
-        QueryResp res = QueryResp.builder()
+        return QueryResp.builder()
                 .queryResults(convertUtils.getEntities(response))
                 .build();
-        return R.success(res);
 
     }
 
-    public R<SearchResp> search(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, SearchReq request) {
+    public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, SearchReq request) {
         String title = String.format("SearchRequest collectionName:%s", request.getCollectionName());
 
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
-        R<DescribeCollectionResp> descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
         if (request.getVectorFieldName() == null) {
-            request.setVectorFieldName(descR.getData().getVectorFieldName().get(0));
+            request.setVectorFieldName(descR.getVectorFieldName().get(0));
         }
-        if(request.getOutFields() == null){
-            request.setOutFields(descR.getData().getFieldNames());
+        if(request.getOutputFields() == null){
+            request.setOutputFields(descR.getFieldNames());
         }
         DescribeIndexReq describeIndexReq = DescribeIndexReq.builder()
                 .collectionName(request.getCollectionName())
                 .fieldName(request.getVectorFieldName())
                 .build();
-        R<DescribeIndexResp> respR = indexService.describeIndex(milvusServiceBlockingStub, describeIndexReq);
+        DescribeIndexResp respR = indexService.describeIndex(milvusServiceBlockingStub, describeIndexReq);
 
-        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(respR.getData().getMetricType(), request);
+        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(respR.getMetricType(), request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
-        SearchResp searchResp = SearchResp.builder()
+        return SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
                 .build();
-        return R.success(searchResp);
     }
 
-    public R<RpcStatus> delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
+    public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
-        R<DescribeCollectionResp> respR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionResp respR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
         if(request.getExpr() == null){
-            request.setExpr(vectorUtils.getExprById(respR.getData().getPrimaryFieldName(), request.getIds()));
+            request.setExpr(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }
         DeleteRequest deleteRequest = DeleteRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -108,27 +109,22 @@ public class VectorService extends BaseService {
                 .build();
         MutationResult response = milvusServiceBlockingStub.delete(deleteRequest);
         rpcUtils.handleResponse(title, response.getStatus());
-        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        return DeleteResp.builder()
+                .deleteCnt(response.getDeleteCnt())
+                .build();
     }
 
-    public R<GetResp> get(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, GetReq request) {
+    public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, GetReq request) {
         String title = String.format("GetRequest collectionName:%s", request.getCollectionName());
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
-        DescribeCollectionReq describeCollectionReq = DescribeCollectionReq.builder()
-                .collectionName(request.getCollectionName())
-                .build();
-        R<DescribeCollectionResp> resp = collectionService.describeCollection(milvusServiceBlockingStub, describeCollectionReq);
-
-        String expr = vectorUtils.getExprById(resp.getData().getPrimaryFieldName(), request.getIds());
+        logger.debug(title);
         QueryReq queryReq = QueryReq.builder()
                 .collectionName(request.getCollectionName())
-                .expr(expr)
+                .ids(request.getIds())
                 .build();
-        R<QueryResp> queryResp = query(milvusServiceBlockingStub, queryReq);
+        QueryResp queryResp = query(milvusServiceBlockingStub, queryReq);
 
-        GetResp getResp = GetResp.builder()
-                .getResults(queryResp.getData().getQueryResults())
+        return GetResp.builder()
+                .getResults(queryResp.getQueryResults())
                 .build();
-        return R.success(getResp);
     }
 }

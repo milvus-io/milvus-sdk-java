@@ -1,10 +1,7 @@
 package io.milvus.v2.service.partition;
 
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.partition.request.*;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +18,7 @@ class PartitionTest extends BaseTest {
                 .collectionName("test")
                 .partitionName("test")
                 .build();
-        R<RpcStatus> res = client_v2.createPartition(req);
-        logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
+        client_v2.createPartition(req);
     }
 
     @Test
@@ -32,9 +27,7 @@ class PartitionTest extends BaseTest {
                 .collectionName("test")
                 .partitionName("test")
                 .build();
-        R<RpcStatus> res = client_v2.dropPartition(req);
-        logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
+        client_v2.dropPartition(req);
     }
 
     @Test
@@ -43,9 +36,7 @@ class PartitionTest extends BaseTest {
                 .collectionName("test")
                 .partitionName("_default")
                 .build();
-        R<Boolean> res = client_v2.hasPartition(req);
-        logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
+        Boolean res = client_v2.hasPartition(req);
     }
 
     @Test
@@ -53,9 +44,8 @@ class PartitionTest extends BaseTest {
         ListPartitionsReq req = ListPartitionsReq.builder()
                 .collectionName("test")
                 .build();
-        R<List<String>> res = client_v2.listPartitions(req);
+        List<String> res = client_v2.listPartitions(req);
         logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
     }
 
     @Test
@@ -66,9 +56,8 @@ class PartitionTest extends BaseTest {
                 .collectionName("test")
                 .partitionNames(partitionNames)
                 .build();
-        R<RpcStatus> res = client_v2.loadPartitions(req);
-        logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
+        client_v2.loadPartitions(req);
+
     }
 
     @Test
@@ -80,8 +69,7 @@ class PartitionTest extends BaseTest {
                 .collectionName("test")
                 .partitionNames(partitionNames)
                 .build();
-        R<RpcStatus> res = client_v2.releasePartitions(req);
-        logger.info("resp: {}", res);
-        Assertions.assertEquals(0, res.getStatus());
+        client_v2.releasePartitions(req);
+
     }
 }
