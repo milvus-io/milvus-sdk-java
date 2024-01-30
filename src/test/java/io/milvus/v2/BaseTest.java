@@ -83,6 +83,7 @@ public class BaseTest {
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
         when(blockingStub.renameCollection(any())).thenReturn(successStatus);
         when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.getCollectionStatistics(any())).thenReturn(GetCollectionStatisticsResponse.newBuilder().addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build()).setStatus(successStatus).build());
 
         // index api
         when(blockingStub.createIndex(any())).thenReturn(successStatus);
@@ -90,10 +91,10 @@ public class BaseTest {
         when(blockingStub.dropIndex(any())).thenReturn(successStatus);
 
         //vector api
-        when(blockingStub.insert(any())).thenReturn(MutationResult.newBuilder().build());
-        when(blockingStub.upsert(any())).thenReturn(MutationResult.newBuilder().build());
+        when(blockingStub.insert(any())).thenReturn(MutationResult.newBuilder().setInsertCnt(2L).build());
+        when(blockingStub.upsert(any())).thenReturn(MutationResult.newBuilder().setUpsertCnt(2L).build());
         when(blockingStub.query(any())).thenReturn(QueryResults.newBuilder().build());
-        when(blockingStub.delete(any())).thenReturn(MutationResult.newBuilder().build());
+        when(blockingStub.delete(any())).thenReturn(MutationResult.newBuilder().setDeleteCnt(2L).build());
         SearchResults searchResults = SearchResults.newBuilder()
                 .setResults(SearchResultData.newBuilder().addScores(1L).addTopks(0L).build())
                 .build();
@@ -129,6 +130,7 @@ public class BaseTest {
         when(blockingStub.dropAlias(any())).thenReturn(successStatus);
         when(blockingStub.alterAlias(any())).thenReturn(successStatus);
         when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
     }
     @AfterEach
     public void tearDown() throws InterruptedException {

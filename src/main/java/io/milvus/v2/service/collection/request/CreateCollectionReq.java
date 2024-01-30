@@ -15,7 +15,7 @@ public class CreateCollectionReq {
     @Builder.Default
     private String primaryFieldName = "id";
     @Builder.Default
-    private String primaryFieldType = DataType.VarChar.name();
+    private DataType primaryFieldType = DataType.Int64;
     @Builder.Default
     private Integer maxLength = 65535;
     @Builder.Default
@@ -23,5 +23,5 @@ public class CreateCollectionReq {
     @Builder.Default
     private String metricType = IndexParam.MetricType.IP.name();
     @Builder.Default
-    private Boolean autoID = Boolean.TRUE;
+    private Boolean autoID = Boolean.FALSE;
 }

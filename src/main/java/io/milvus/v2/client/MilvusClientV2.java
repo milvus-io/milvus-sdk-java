@@ -2,11 +2,10 @@ package io.milvus.v2.client;
 
 import io.grpc.ManagedChannel;
 import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
@@ -24,12 +23,11 @@ import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.AlterAliasReq;
 import io.milvus.v2.service.utility.request.CreateAliasReq;
 import io.milvus.v2.service.utility.request.DropAliasReq;
-import io.milvus.v2.service.utility.request.FlushReq;
+import io.milvus.v2.service.utility.response.DescribeAliasResp;
+import io.milvus.v2.service.utility.response.ListAliasResp;
 import io.milvus.v2.service.vector.VectorService;
 import io.milvus.v2.service.vector.request.*;
-import io.milvus.v2.service.vector.response.GetResp;
-import io.milvus.v2.service.vector.response.QueryResp;
-import io.milvus.v2.service.vector.response.SearchResp;
+import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.ClientUtils;
 import lombok.NonNull;
 import lombok.Setter;
@@ -87,9 +85,9 @@ public class MilvusClientV2 {
             blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         }
 
-        if (connectConfig.getDatabaseName() != null) {
+        if (connectConfig.getDbName() != null) {
             // check if database exists
-            clientUtils.checkDatabaseExist(this.blockingStub, connectConfig.getDatabaseName());
+            clientUtils.checkDatabaseExist(this.blockingStub, connectConfig.getDbName());
         }
     }
 
@@ -101,7 +99,7 @@ public class MilvusClientV2 {
         // check if database exists
         clientUtils.checkDatabaseExist(this.blockingStub, dbName);
         try {
-            this.connectConfig.setDatabaseName(dbName);
+            this.connectConfig.setDbName(dbName);
             this.close(3);
             this.connect(this.connectConfig);
         }catch (InterruptedException e){
@@ -113,20 +111,21 @@ public class MilvusClientV2 {
     /**
      * Fast Creates a collection in Milvus.
      *
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createCollection(CreateCollectionReq request) {
-        return collectionService.createCollection(this.blockingStub, request);
+    public void createCollection(CreateCollectionReq request) {
+        collectionService.createCollection(this.blockingStub, request);
     }
 
     /**
      * Creates a collection with Schema in Milvus.
      *
      * @param request create collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createCollectionWithSchema(CreateCollectionWithSchemaReq request) {
-        return collectionService.createCollectionWithSchema(this.blockingStub, request);
+    public void createCollectionWithSchema(CreateCollectionWithSchemaReq request) {
+        collectionService.createCollectionWithSchema(this.blockingStub, request);
+    }
+    public CreateCollectionWithSchemaReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
+        return collectionService.createSchema(enableDynamicField, description);
     }
 
     /**
@@ -134,7 +133,7 @@ public class MilvusClientV2 {
      *
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<ListCollectionsResp> listCollections(){
+    public ListCollectionsResp listCollections() {
         return collectionService.listCollections(this.blockingStub);
     }
 
@@ -142,10 +141,9 @@ public class MilvusClientV2 {
      * Drops a collection in Milvus.
      *
      * @param request drop collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropCollection(DropCollectionReq request){
-        return collectionService.dropCollection(this.blockingStub, request);
+    public void dropCollection(DropCollectionReq request) {
+        collectionService.dropCollection(this.blockingStub, request);
     }
     /**
      * Checks whether a collection exists in Milvus.
@@ -153,7 +151,7 @@ public class MilvusClientV2 {
      * @param request has collection request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<Boolean> hasCollection(HasCollectionReq request){
+    public Boolean hasCollection(HasCollectionReq request) {
         return collectionService.hasCollection(this.blockingStub, request);
     }
     /**
@@ -162,7 +160,7 @@ public class MilvusClientV2 {
      * @param request describe collection request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<DescribeCollectionResp> describeCollection(DescribeCollectionReq request){
+    public DescribeCollectionResp describeCollection(DescribeCollectionReq request) {
         return collectionService.describeCollection(this.blockingStub, request);
     }
     /**
@@ -171,35 +169,32 @@ public class MilvusClientV2 {
      * @param request get collection stats request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-//    public R<GetCollectionStatsResp> getCollectionStats(GetCollectionStatsReq request){
-//        return collectionService.getCollectionStats(this.blockingStub, request);
-//    }
+    public GetCollectionStatsResp getCollectionStats(GetCollectionStatsReq request) {
+        return collectionService.getCollectionStats(this.blockingStub, request);
+    }
     /**
      * rename collection in a collection in Milvus.
      *
      * @param request rename collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> renameCollection(RenameCollectionReq request){
-        return collectionService.renameCollection(this.blockingStub, request);
+    public void renameCollection(RenameCollectionReq request) {
+        collectionService.renameCollection(this.blockingStub, request);
     }
     /**
      * Loads a collection into memory in Milvus.
      *
      * @param request load collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> loadCollection(LoadCollectionReq request){
-        return collectionService.loadCollection(this.blockingStub, request);
+    public void loadCollection(LoadCollectionReq request) {
+        collectionService.loadCollection(this.blockingStub, request);
     }
     /**
      * Releases a collection from memory in Milvus.
      *
      * @param request release collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> releaseCollection(ReleaseCollectionReq request){
-        return collectionService.releaseCollection(this.blockingStub, request);
+    public void releaseCollection(ReleaseCollectionReq request) {
+        collectionService.releaseCollection(this.blockingStub, request);
     }
     /**
      * Checks whether a collection is loaded in Milvus.
@@ -207,7 +202,7 @@ public class MilvusClientV2 {
      * @param request get load state request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<Boolean> getLoadState(GetLoadStateReq request){
+    public Boolean getLoadState(GetLoadStateReq request) {
         return collectionService.getLoadState(this.blockingStub, request);
     }
 
@@ -216,19 +211,17 @@ public class MilvusClientV2 {
      * Creates an index for a specified field in a collection in Milvus.
      *
      * @param request create index request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createIndex(CreateIndexReq request){
-        return indexService.createIndex(this.blockingStub, request);
+    public void createIndex(CreateIndexReq request) {
+        indexService.createIndex(this.blockingStub, request);
     }
     /**
      * Drops an index for a specified field in a collection in Milvus.
      *
      * @param request drop index request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropIndex(DropIndexReq request){
-        return indexService.dropIndex(this.blockingStub, request);
+    public void dropIndex(DropIndexReq request) {
+        indexService.dropIndex(this.blockingStub, request);
     }
     /**
      * Checks whether an index exists for a specified field in a collection in Milvus.
@@ -236,7 +229,7 @@ public class MilvusClientV2 {
      * @param request describe index request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<DescribeIndexResp> describeIndex(DescribeIndexReq request){
+    public DescribeIndexResp describeIndex(DescribeIndexReq request) {
         return indexService.describeIndex(this.blockingStub, request);
     }
 
@@ -248,7 +241,7 @@ public class MilvusClientV2 {
      * @param request insert request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> insert(InsertReq request){
+    public InsertResp insert(InsertReq request) {
         return vectorService.insert(this.blockingStub, request);
     }
     /**
@@ -257,7 +250,7 @@ public class MilvusClientV2 {
      * @param request upsert request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> upsert(UpsertReq request){
+    public UpsertResp upsert(UpsertReq request) {
         return vectorService.upsert(this.blockingStub, request);
     }
     /**
@@ -266,7 +259,7 @@ public class MilvusClientV2 {
      * @param request delete request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> delete(DeleteReq request){
+    public DeleteResp delete(DeleteReq request) {
         return vectorService.delete(this.blockingStub, request);
     }
     /**
@@ -275,7 +268,7 @@ public class MilvusClientV2 {
      * @param request get request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<GetResp> get(GetReq request){
+    public GetResp get(GetReq request) {
         return vectorService.get(this.blockingStub, request);
     }
 
@@ -285,7 +278,7 @@ public class MilvusClientV2 {
      * @param request query request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<QueryResp> query(QueryReq request){
+    public QueryResp query(QueryReq request) {
         return vectorService.query(this.blockingStub, request);
     }
     /**
@@ -294,7 +287,7 @@ public class MilvusClientV2 {
      * @param request search request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<SearchResp> search(SearchReq request){
+    public SearchResp search(SearchReq request) {
         return vectorService.search(this.blockingStub, request);
     }
 
@@ -303,20 +296,18 @@ public class MilvusClientV2 {
      * Creates a partition in a collection in Milvus.
      *
      * @param request create partition request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createPartition(CreatePartitionReq request) {
-        return partitionService.createPartition(this.blockingStub, request);
+    public void createPartition(CreatePartitionReq request) {
+        partitionService.createPartition(this.blockingStub, request);
     }
 
     /**
      * Drops a partition in a collection in Milvus.
      *
      * @param request drop partition request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropPartition(DropPartitionReq request) {
-        return partitionService.dropPartition(this.blockingStub, request);
+    public void dropPartition(DropPartitionReq request) {
+        partitionService.dropPartition(this.blockingStub, request);
     }
 
     /**
@@ -325,7 +316,7 @@ public class MilvusClientV2 {
      * @param request has partition request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<Boolean> hasPartition(HasPartitionReq request) {
+    public Boolean hasPartition(HasPartitionReq request) {
         return partitionService.hasPartition(this.blockingStub, request);
     }
 
@@ -335,7 +326,7 @@ public class MilvusClientV2 {
      * @param request list partitions request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<List<String>> listPartitions(ListPartitionsReq request) {
+    public List<String> listPartitions(ListPartitionsReq request) {
         return partitionService.listPartitions(this.blockingStub, request);
     }
 
@@ -343,19 +334,17 @@ public class MilvusClientV2 {
      * Loads partitions in a collection in Milvus.
      *
      * @param request load partitions request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> loadPartitions(LoadPartitionsReq request) {
-        return partitionService.loadPartitions(this.blockingStub, request);
+    public void loadPartitions(LoadPartitionsReq request) {
+        partitionService.loadPartitions(this.blockingStub, request);
     }
     /**
      * Releases partitions in a collection in Milvus.
      *
      * @param request release partitions request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> releasePartitions(ReleasePartitionsReq request) {
-        return partitionService.releasePartitions(this.blockingStub, request);
+    public void releasePartitions(ReleasePartitionsReq request) {
+        partitionService.releasePartitions(this.blockingStub, request);
     }
     // rbac operations
     // user operations
@@ -364,7 +353,7 @@ public class MilvusClientV2 {
      *
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<List<String>> listUsers(){
+    public List<String> listUsers() {
         return userService.listUsers(this.blockingStub);
     }
     /**
@@ -373,35 +362,32 @@ public class MilvusClientV2 {
      * @param request describe user request
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<DescribeUserResp> describeUser(DescribeUserReq request){
+    public DescribeUserResp describeUser(DescribeUserReq request) {
         return userService.describeUser(this.blockingStub, request);
     }
     /**
      * create user
      *
      * @param request create user request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createUser(CreateUserReq request){
-        return userService.createUser(this.blockingStub, request);
+    public void createUser(CreateUserReq request) {
+        userService.createUser(this.blockingStub, request);
     }
     /**
      * change password
      *
      * @param request change password request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> updatePassword(UpdatePasswordReq request) {
-        return userService.updatePassword(this.blockingStub, request);
+    public void updatePassword(UpdatePasswordReq request) {
+        userService.updatePassword(this.blockingStub, request);
     }
     /**
      * drop user
      *
      * @param request drop user request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropUser(DropUserReq request){
-        return userService.dropUser(this.blockingStub, request);
+    public void dropUser(DropUserReq request) {
+        userService.dropUser(this.blockingStub, request);
     }
     // role operations
     /**
@@ -409,7 +395,7 @@ public class MilvusClientV2 {
      *
      * @return {status:result code, data:List<String>{msg: result message}}
      */
-    public R<List<String>> listRoles() {
+    public List<String> listRoles() {
         return roleService.listRoles(this.blockingStub);
     }
     /**
@@ -418,95 +404,95 @@ public class MilvusClientV2 {
      * @param request describe role request
      * @return {status:result code, data:DescribeRoleResp{msg: result message}}
      */
-    public R<DescribeRoleResp> describeRole(DescribeRoleReq request) {
+    public DescribeRoleResp describeRole(DescribeRoleReq request) {
         return roleService.describeRole(this.blockingStub, request);
     }
     /**
      * create role
      *
      * @param request create role request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createRole(CreateRoleReq request) {
-        return roleService.createRole(this.blockingStub, request);
+    public void createRole(CreateRoleReq request) {
+        roleService.createRole(this.blockingStub, request);
     }
     /**
      * drop role
      *
      * @param request drop role request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropRole(DropRoleReq request) {
-        return roleService.dropRole(this.blockingStub, request);
+    public void dropRole(DropRoleReq request) {
+        roleService.dropRole(this.blockingStub, request);
     }
     /**
      * grant privilege
      *
      * @param request grant privilege request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> grantPrivilege(GrantPrivilegeReq request) {
-        return roleService.grantPrivilege(this.blockingStub, request);
+    public void grantPrivilege(GrantPrivilegeReq request) {
+        roleService.grantPrivilege(this.blockingStub, request);
     }
     /**
      * revoke privilege
      *
      * @param request revoke privilege request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> revokePrivilege(RevokePrivilegeReq request) {
-        return roleService.revokePrivilege(this.blockingStub, request);
+    public void revokePrivilege(RevokePrivilegeReq request) {
+        roleService.revokePrivilege(this.blockingStub, request);
     }
     /**
      * grant role
      *
      * @param request grant role request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> grantRole(GrantRoleReq request) {
-        return roleService.grantRole(this.blockingStub, request);
+    public void grantRole(GrantRoleReq request) {
+        roleService.grantRole(this.blockingStub, request);
     }
     /**
      * revoke role
      *
      * @param request revoke role request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> revokeRole(RevokeRoleReq request) {
-        return roleService.revokeRole(this.blockingStub, request);
+    public void revokeRole(RevokeRoleReq request) {
+        roleService.revokeRole(this.blockingStub, request);
     }
 
     // Utility Operations
 
     /**
      * create aliases
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> createAlias(CreateAliasReq request) {
-        return utilityService.createAlias(this.blockingStub, request);
+    public void createAlias(CreateAliasReq request) {
+        utilityService.createAlias(this.blockingStub, request);
     }
     /**
      * drop aliases
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> dropAlias(DropAliasReq request) {
-        return utilityService.dropAlias(this.blockingStub, request);
+    public void dropAlias(DropAliasReq request) {
+        utilityService.dropAlias(this.blockingStub, request);
     }
     /**
      * alter aliases
-     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
-    public R<RpcStatus> alterAlias(AlterAliasReq request) {
-        return utilityService.alterAlias(this.blockingStub, request);
+    public void alterAlias(AlterAliasReq request) {
+        utilityService.alterAlias(this.blockingStub, request);
     }
     /**
-     * flush collection
-     * @param request flush request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * list aliases
+     *
+     * @return {status:result code, data:List<String>{msg: result message}}
      */
-    public R<RpcStatus> flush(FlushReq request) {
-        return utilityService.flush(this.blockingStub, request);
+    public ListAliasResp listAliases() {
+        return utilityService.listAliases(this.blockingStub);
     }
+    /**
+     * describe aliases
+     *
+     * @return {status:result code, data:DescribeAliasResp{msg: result message}}
+     */
+    public DescribeAliasResp describeAlias(String alias) {
+        return utilityService.describeAlias(this.blockingStub, alias);
+    }
+
     /**
      * close client
      *

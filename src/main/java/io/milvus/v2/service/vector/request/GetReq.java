@@ -12,5 +12,5 @@ public class GetReq {
     private String collectionName;
     @Builder.Default
     private String partitionName = "";
-    private List<?> ids;
+    private List<Object> ids;
 }

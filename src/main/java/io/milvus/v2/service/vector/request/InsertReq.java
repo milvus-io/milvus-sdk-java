@@ -5,15 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Data
 @SuperBuilder
 public class InsertReq {
     //private List<> fields;
-    private List<JSONObject> insertData;
+    private List<JSONObject> data;
     private String collectionName;
     @Builder.Default
     private String partitionName = "";

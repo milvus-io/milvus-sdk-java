@@ -30,8 +30,8 @@ public class ClientUtils {
         Metadata metadata = new Metadata();
 
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), Base64.getEncoder().encodeToString(connectConfig.getAuthorization().getBytes(StandardCharsets.UTF_8)));
-        if (StringUtils.isNotEmpty(connectConfig.getDatabaseName())) {
-            metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectConfig.getDatabaseName());
+        if (StringUtils.isNotEmpty(connectConfig.getDbName())) {
+            metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectConfig.getDbName());
         }
 
         try {

@@ -2,7 +2,6 @@ package io.milvus.v2.utils;
 
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.common.utils.JacksonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
@@ -11,23 +10,18 @@ import io.milvus.v2.service.vector.request.SearchReq;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class VectorUtils {
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
-        long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
-                request.getGuaranteeTimestamp(), request.getGracefulTime());
+//        long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
+//                request.getGuaranteeTimestamp(), request.getGracefulTime());
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .addAllPartitionNames(request.getPartitionNames())
                 .addAllOutputFields(request.getOutputFields())
-                .setExpr(request.getExpr())
-                .setTravelTimestamp(request.getTravelTimestamp())
-                .setGuaranteeTimestamp(guaranteeTimestamp);
+                .setExpr(request.getFilter());
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (request.getConsistencyLevel() == null) {
@@ -55,10 +49,10 @@ public class VectorUtils {
         }
 
         // ignore growing
-        builder.addQueryParams(KeyValuePair.newBuilder()
-                .setKey(Constant.IGNORE_GROWING)
-                .setValue(String.valueOf(request.isIgnoreGrowing()))
-                .build());
+//        builder.addQueryParams(KeyValuePair.newBuilder()
+//                .setKey(Constant.IGNORE_GROWING)
+//                .setValue(String.valueOf(request.isIgnoreGrowing()))
+//                .build());
 
         return builder.build();
 
@@ -101,7 +95,7 @@ public class VectorUtils {
         // prepare target vectors
         // TODO: check target vector dimension(use DescribeCollection get schema to compare)
         PlaceholderType plType = PlaceholderType.None;
-        List<?> vectors = request.getVectors();
+        List<?> vectors = request.getData();
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
             if (vector instanceof List) {
@@ -168,26 +162,26 @@ public class VectorUtils {
                         .setValue(String.valueOf(request.getOffset()))
                         .build());
 
-        if (null != request.getParams() && !request.getParams().isEmpty()) {
+        if (null != request.getSearchParams() && !request.getSearchParams().isEmpty()) {
             try {
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.PARAMS)
-                                .setValue(request.getParams())
+                                .setValue(request.getSearchParams())
                                 .build());
             } catch (IllegalArgumentException e) {
                 throw new ParamException(e.getMessage() + e.getCause().getMessage());
             }
         }
 
-        if (!request.getOutFields().isEmpty()) {
-            request.getOutFields().forEach(builder::addOutputFields);
+        if (!request.getOutputFields().isEmpty()) {
+            request.getOutputFields().forEach(builder::addOutputFields);
         }
 
         // always use expression since dsl is discarded
         builder.setDslType(DslType.BoolExprV1);
-        if (request.getExpr() != null && !request.getExpr().isEmpty()) {
-            builder.setDsl(request.getExpr());
+        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+            builder.setDsl(request.getFilter());
         }
 
         long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
