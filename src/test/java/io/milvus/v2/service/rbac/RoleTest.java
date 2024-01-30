@@ -1,11 +1,7 @@
 package io.milvus.v2.service.rbac;
 
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.rbac.request.*;
-import io.milvus.v2.service.rbac.response.DescribeRoleResp;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,9 +14,7 @@ class RoleTest extends BaseTest {
 
     @Test
     void testListRoles() {
-        R<List<String>> roles = client_v2.listRoles();
-        logger.info(roles.toString());
-        Assertions.assertEquals(roles.getStatus(), R.Status.Success.getCode());
+        List<String> roles = client_v2.listRoles();
     }
 
     @Test
@@ -28,9 +22,7 @@ class RoleTest extends BaseTest {
         CreateRoleReq request = CreateRoleReq.builder()
                 .roleName("test")
                 .build();
-        R<RpcStatus> statusR = client_v2.createRole(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.createRole(request);
     }
 
     @Test
@@ -38,9 +30,7 @@ class RoleTest extends BaseTest {
         DescribeRoleReq describeRoleReq = DescribeRoleReq.builder()
                 .roleName("db_rw")
                 .build();
-        R<DescribeRoleResp> statusR = client_v2.describeRole(describeRoleReq);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.describeRole(describeRoleReq);
     }
 
     @Test
@@ -48,9 +38,7 @@ class RoleTest extends BaseTest {
         DropRoleReq request = DropRoleReq.builder()
                 .roleName("test")
                 .build();
-        R<RpcStatus> statusR = client_v2.dropRole(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.dropRole(request);
     }
 
     @Test
@@ -61,9 +49,7 @@ class RoleTest extends BaseTest {
                 .objectType("")
                 .privilege("")
                 .build();
-        R<RpcStatus> statusR = client_v2.grantPrivilege(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.grantPrivilege(request);
     }
 
     @Test
@@ -74,9 +60,7 @@ class RoleTest extends BaseTest {
                 .objectType("")
                 .privilege("")
                 .build();
-        R<RpcStatus> statusR = client_v2.revokePrivilege(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.revokePrivilege(request);
     }
 
     @Test
@@ -85,9 +69,7 @@ class RoleTest extends BaseTest {
                 .roleName("db_ro")
                 .userName("test")
                 .build();
-        R<RpcStatus> statusR = client_v2.grantRole(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.grantRole(request);
     }
 
     @Test
@@ -96,8 +78,6 @@ class RoleTest extends BaseTest {
                 .roleName("db_ro")
                 .userName("test")
                 .build();
-        R<RpcStatus> statusR = client_v2.revokeRole(request);
-        logger.info(statusR.toString());
-        Assertions.assertEquals(statusR.getStatus(), R.Status.Success.getCode());
+        client_v2.revokeRole(request);
     }
 }

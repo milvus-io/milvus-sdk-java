@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 @Data
@@ -16,7 +14,7 @@ public class ConnectConfig {
     private String token;
     private String username;
     private String password;
-    private String databaseName;
+    private String dbName;
     @Builder.Default
     private long connectTimeoutMs = 10000;
     @Builder.Default

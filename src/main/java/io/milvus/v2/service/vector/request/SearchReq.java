@@ -16,9 +16,9 @@ public class SearchReq {
     private List<String> partitionNames = new ArrayList<>();
     private String vectorFieldName;
     private int topK;
-    private String expr;
-    private List<String> outFields;
-    private List<?> vectors;
+    private String filter;
+    private List<String> outputFields;
+    private List<?> data;
     private long offset;
     private long limit;
 
@@ -26,7 +26,7 @@ public class SearchReq {
     @Builder.Default
     private int roundDecimal = -1;
     @Builder.Default
-    private String params = "{\"nprobe\": 10}";
+    private String searchParams = "{}";
     private long guaranteeTimestamp;
     @Builder.Default
     private Long gracefulTime = 5000L;

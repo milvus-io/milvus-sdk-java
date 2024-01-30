@@ -15,13 +15,10 @@ public class QueryReq {
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
     private List<String> outputFields;
-    private String expr;
-    private long travelTimestamp;
-    private long guaranteeTimestamp;
-    private long gracefulTime;
+    private List<Object> ids;
+    private String filter;
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
     private long offset;
     private long limit;
-    private boolean ignoreGrowing;
 }

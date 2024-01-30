@@ -1,7 +1,6 @@
 package io.milvus.v2.utils;
 
 import io.milvus.grpc.*;
-import io.milvus.param.R;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
@@ -49,7 +48,7 @@ public class ConvertUtils {
                 .build()).collect(Collectors.toList());
     }
 
-    public R<DescribeIndexResp> convertToDescribeIndexResp(DescribeIndexResponse response) {
+    public DescribeIndexResp convertToDescribeIndexResp(DescribeIndexResponse response) {
         DescribeIndexResp describeIndexResp = DescribeIndexResp.builder()
                 .indexName(response.getIndexDescriptions(0).getIndexName())
                 .fieldName(response.getIndexDescriptions(0).getFieldName())
@@ -62,6 +61,6 @@ public class ConvertUtils {
                 describeIndexResp.setMetricType(param.getValue());
             }
         }
-        return R.success(describeIndexResp);
+        return describeIndexResp;
     }
 }

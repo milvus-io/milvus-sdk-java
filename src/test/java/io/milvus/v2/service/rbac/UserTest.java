@@ -1,11 +1,11 @@
 package io.milvus.v2.service.rbac;
 
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.v2.BaseTest;
-import io.milvus.v2.service.rbac.request.*;
+import io.milvus.v2.service.rbac.request.CreateUserReq;
+import io.milvus.v2.service.rbac.request.DescribeUserReq;
+import io.milvus.v2.service.rbac.request.DropUserReq;
+import io.milvus.v2.service.rbac.request.UpdatePasswordReq;
 import io.milvus.v2.service.rbac.response.DescribeUserResp;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,8 @@ class UserTest extends BaseTest {
 
     @Test
     void listUsers() {
-        R<List<String>> resp = client_v2.listUsers();
+        List<String> resp = client_v2.listUsers();
         logger.info("resp: {}", resp);
-        Assertions.assertEquals(resp.getStatus(), R.Status.Success.getCode());
     }
 
     @Test
@@ -27,9 +26,8 @@ class UserTest extends BaseTest {
         DescribeUserReq req = DescribeUserReq.builder()
                 .userName("test")
                 .build();
-        R<DescribeUserResp> resp = client_v2.describeUser(req);
+        DescribeUserResp resp = client_v2.describeUser(req);
         logger.info("resp: {}", resp);
-        Assertions.assertEquals(resp.getStatus(), R.Status.Success.getCode());
     }
 
     @Test
@@ -38,9 +36,8 @@ class UserTest extends BaseTest {
                 .userName("test")
                 .password("Zilliz@2023")
                 .build();
-        R<RpcStatus> resp = client_v2.createUser(req);
-        logger.info("resp: {}", resp);
-        Assertions.assertEquals(resp.getStatus(), R.Status.Success.getCode());
+        client_v2.createUser(req);
+
     }
 
     @Test
@@ -50,9 +47,7 @@ class UserTest extends BaseTest {
                 .password("Zilliz@2023")
                 .newPassword("Zilliz@2024")
                 .build();
-        R<RpcStatus> resp = client_v2.updatePassword(req);
-        logger.info("resp: {}", resp);
-        Assertions.assertEquals(resp.getStatus(), R.Status.Success.getCode());
+        client_v2.updatePassword(req);
     }
 
     @Test
@@ -60,8 +55,7 @@ class UserTest extends BaseTest {
         DropUserReq req = DropUserReq.builder()
                 .userName("test")
                 .build();
-        R<RpcStatus> resp = client_v2.dropUser(req);
-        logger.info("resp: {}", resp);
-        Assertions.assertEquals(resp.getStatus(), R.Status.Success.getCode());
+        client_v2.dropUser(req);
+
     }
 }

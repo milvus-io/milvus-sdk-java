@@ -7,4 +7,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class GetLoadStateReq {
     private String collectionName;
+    private String partitionName;
 }
