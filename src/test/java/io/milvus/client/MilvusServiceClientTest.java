@@ -1973,20 +1973,6 @@ class MilvusServiceClientTest {
                 .build()
         );
 
-        // metric type is invalid
-        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withParams("{}")
-                .withOutFields(outputFields)
-                .withVectorFieldName("field1")
-                .withMetricType(MetricType.INVALID)
-                .withTopK(5)
-                .withVectors(vectors)
-                .withExpr("dummy")
-                .build()
-        );
-
         // illegal topk value
         assertThrows(ParamException.class, () -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
@@ -2066,38 +2052,9 @@ class MilvusServiceClientTest {
                 .withExpr("dummy")
                 .build()
         );
-
-        // float vector metric type is illegal
-        List<List<Float>> vectors2 = Collections.singletonList(vector2);
-        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withParams("{}")
-                .withOutFields(outputFields)
-                .withVectorFieldName("field1")
-                .withMetricType(MetricType.JACCARD)
-                .withTopK(5)
-                .withVectors(vectors2)
-                .withExpr("dummy")
-                .build()
-        );
-
-        // binary vector metric type is illegal
-        List<ByteBuffer> binVectors2 = Collections.singletonList(buf2);
-        assertThrows(ParamException.class, () -> SearchParam.newBuilder()
-                .withCollectionName("collection1")
-                .withPartitionNames(partitions)
-                .withParams("{}")
-                .withOutFields(outputFields)
-                .withVectorFieldName("field1")
-                .withMetricType(MetricType.IP)
-                .withTopK(5)
-                .withVectors(binVectors2)
-                .withExpr("dummy")
-                .build()
-        );
-
+        
         // succeed float vector case
+        List<List<Float>> vectors2 = Collections.singletonList(vector2);
         assertDoesNotThrow(() -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)
@@ -2113,6 +2070,7 @@ class MilvusServiceClientTest {
         );
 
         // succeed binary vector case
+        List<ByteBuffer> binVectors2 = Collections.singletonList(buf2);
         assertDoesNotThrow(() -> SearchParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(partitions)

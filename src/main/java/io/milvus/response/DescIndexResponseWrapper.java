@@ -93,7 +93,7 @@ public class DescIndexResponseWrapper {
                 return MetricType.valueOf(params.get(Constant.METRIC_TYPE));
             }
 
-            return MetricType.INVALID;
+            return MetricType.None;
         }
 
         public String getExtraParam() {

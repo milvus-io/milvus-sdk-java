@@ -82,7 +82,7 @@ public class SearchParam {
     public static class Builder {
         private String collectionName;
         private final List<String> partitionNames = Lists.newArrayList();
-        private MetricType metricType = MetricType.L2;
+        private MetricType metricType = MetricType.None;
         private String vectorFieldName;
         private Integer topK;
         private String expr = "";
@@ -287,10 +287,6 @@ public class SearchParam {
                 throw new ParamException("The guarantee timestamp must be greater than 0");
             }
 
-            if (metricType == MetricType.INVALID) {
-                throw new ParamException("Metric type is invalid");
-            }
-
             if (vectors == null || vectors.isEmpty()) {
                 throw new ParamException("Target vectors can not be empty");
             }
@@ -309,11 +305,6 @@ public class SearchParam {
                         throw new ParamException("Target vector dimension must be equal");
                     }
                 }
-
-                // check metric type
-                if (!ParamUtils.IsFloatMetric(metricType)) {
-                    throw new ParamException("Target vector is float but metric type is incorrect");
-                }
             } else if (vectors.get(0) instanceof ByteBuffer) {
                 // binary vectors
                 ByteBuffer first = (ByteBuffer) vectors.get(0);
@@ -323,11 +314,6 @@ public class SearchParam {
                     if (dim != temp.position()) {
                         throw new ParamException("Target vector dimension must be equal");
                     }
-                }
-
-                // check metric type
-                if (!ParamUtils.IsBinaryMetric(metricType)) {
-                    throw new ParamException("Target vector is binary but metric type is incorrect");
                 }
             } else {
                 throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
