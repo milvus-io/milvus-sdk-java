@@ -4,13 +4,13 @@ import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
-import io.milvus.v2.service.collection.request.CreateCollectionWithSchemaReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SchemaUtils {
-    public static FieldSchema convertToGrpcFieldSchema(CreateCollectionWithSchemaReq.FieldSchema fieldSchema) {
+    public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
         FieldSchema schema = FieldSchema.newBuilder()
                 .setName(fieldSchema.getName())
                 .setDataType(DataType.valueOf(fieldSchema.getDataType().name()))
@@ -26,12 +26,12 @@ public class SchemaUtils {
         return schema;
     }
 
-    public static CreateCollectionWithSchemaReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
-        CreateCollectionWithSchemaReq.CollectionSchema collectionSchema = CreateCollectionWithSchemaReq.CollectionSchema.builder()
+    public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .description(schema.getDescription())
                 .enableDynamicField(schema.getEnableDynamicField())
                 .build();
-        List<CreateCollectionWithSchemaReq.FieldSchema> fieldSchemas = new ArrayList<>();
+        List<CreateCollectionReq.FieldSchema> fieldSchemas = new ArrayList<>();
         for (FieldSchema fieldSchema : schema.getFieldsList()) {
             fieldSchemas.add(convertFromGrpcFieldSchema(fieldSchema));
         }
@@ -39,8 +39,8 @@ public class SchemaUtils {
         return collectionSchema;
     }
 
-    private static CreateCollectionWithSchemaReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
-        CreateCollectionWithSchemaReq.FieldSchema schema = CreateCollectionWithSchemaReq.FieldSchema.builder()
+    private static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
+        CreateCollectionReq.FieldSchema schema = CreateCollectionReq.FieldSchema.builder()
                 .name(fieldSchema.getName())
                 .dataType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getDataType().name()))
                 .isPrimaryKey(fieldSchema.getIsPrimaryKey())

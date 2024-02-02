@@ -1,6 +1,6 @@
 package io.milvus.v2.service.collection.response;
 
-import io.milvus.v2.service.collection.request.CreateCollectionWithSchemaReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
@@ -19,6 +19,6 @@ public class DescribeCollectionResp {
     private Boolean enableDynamicField;
     private Boolean autoID;
 
-    private CreateCollectionWithSchemaReq.CollectionSchema collectionSchema;
+    private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
 }
