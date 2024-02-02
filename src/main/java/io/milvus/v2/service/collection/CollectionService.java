@@ -17,6 +17,11 @@ public class CollectionService extends BaseService {
     public IndexService indexService = new IndexService();
 
     public void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
+        if (request.getCollectionSchema() != null) {
+            //create collections with schema
+            createCollectionWithSchema(blockingStub, request);
+            return;
+        }
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
         FieldSchema vectorSchema = FieldSchema.newBuilder()
                 .setName(request.getVectorFieldName())
@@ -39,7 +44,7 @@ public class CollectionService extends BaseService {
                 .setName(request.getCollectionName())
                 .addFields(vectorSchema)
                 .addFields(idSchema)
-                .setEnableDynamicField(Boolean.TRUE)
+                .setEnableDynamicField(request.getEnableDynamicField())
                 .build();
 
 
@@ -65,7 +70,7 @@ public class CollectionService extends BaseService {
         loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
     }
 
-    public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionWithSchemaReq request) {
+    public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
@@ -74,7 +79,7 @@ public class CollectionService extends BaseService {
                 .setDescription(request.getCollectionSchema().getDescription())
                 .setEnableDynamicField(request.getCollectionSchema().getEnableDynamicField())
                 .build();
-        for (CreateCollectionWithSchemaReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
+        for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
             grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
         }
 
@@ -212,8 +217,8 @@ public class CollectionService extends BaseService {
         return getCollectionStatsResp;
     }
 
-    public CreateCollectionWithSchemaReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
-        return CreateCollectionWithSchemaReq.CollectionSchema.builder()
+    public CreateCollectionReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
+        return CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(enableDynamicField)
                 .description(description)
                 .build();

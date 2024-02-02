@@ -53,7 +53,7 @@ class CollectionTest extends BaseTest {
 //        fields.add(vectorSchema);
 //        fields.add(metaSchema);
 
-        CreateCollectionWithSchemaReq.CollectionSchema collectionSchema = CreateCollectionWithSchemaReq.CollectionSchema.builder()
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(Boolean.TRUE)
                 .build();
         collectionSchema.addPrimaryField("id", DataType.Int64, null, Boolean.TRUE, Boolean.FALSE);
@@ -66,12 +66,12 @@ class CollectionTest extends BaseTest {
                 .metricType(IndexParam.MetricType.L2)
                 .build();
 
-        CreateCollectionWithSchemaReq request = CreateCollectionWithSchemaReq.builder()
+        CreateCollectionReq request = CreateCollectionReq.builder()
                 .collectionName("test")
                 .collectionSchema(collectionSchema)
                 .indexParams(Collections.singletonList(indexParam))
                 .build();
-        client_v2.createCollectionWithSchema(request);
+        client_v2.createCollection(request);
     }
 
     @Test

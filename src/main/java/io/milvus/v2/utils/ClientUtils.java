@@ -5,12 +5,12 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
 import io.milvus.grpc.ListDatabasesRequest;
 import io.milvus.grpc.ListDatabasesResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.v2.client.ConnectConfig;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,8 +28,9 @@ public class ClientUtils {
         ManagedChannel channel = null;
 
         Metadata metadata = new Metadata();
-
-        metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), Base64.getEncoder().encodeToString(connectConfig.getAuthorization().getBytes(StandardCharsets.UTF_8)));
+        if (connectConfig.getAuthorization() != null) {
+            metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), Base64.getEncoder().encodeToString(connectConfig.getAuthorization().getBytes(StandardCharsets.UTF_8)));
+        }
         if (StringUtils.isNotEmpty(connectConfig.getDbName())) {
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectConfig.getDbName());
         }

@@ -5,7 +5,7 @@ import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.CreateCollectionWithSchemaReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.HasCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
@@ -41,16 +41,16 @@ public class Simple_Schema {
             TimeUnit.SECONDS.sleep(1);
         }
         // create collection
-        CreateCollectionWithSchemaReq.CollectionSchema collectionSchema = client.createSchema(Boolean.TRUE, "");
+        CreateCollectionReq.CollectionSchema collectionSchema = client.createSchema(Boolean.TRUE, "");
         collectionSchema.addPrimaryField("id", DataType.Int64, Boolean.TRUE, Boolean.FALSE);
         collectionSchema.addVectorField("vector", DataType.FloatVector, dim);
         collectionSchema.addScalarField("num", DataType.Int32);
 
-        CreateCollectionWithSchemaReq createCollectionReq = CreateCollectionWithSchemaReq.builder()
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
                 .collectionName(collectionName)
                 .collectionSchema(collectionSchema)
                 .build();
-        client.createCollectionWithSchema(createCollectionReq);
+        client.createCollection(createCollectionReq);
         //create index
         IndexParam indexParam = IndexParam.builder()
                 .fieldName("vector")
