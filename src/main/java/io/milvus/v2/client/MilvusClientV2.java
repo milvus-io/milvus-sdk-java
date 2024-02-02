@@ -109,29 +109,27 @@ public class MilvusClientV2 {
 
     //Collection Operations
     /**
-     * Fast Creates a collection in Milvus.
-     *
+     * Creates a collection in Milvus.
+     * @param request create collection request
      */
     public void createCollection(CreateCollectionReq request) {
         collectionService.createCollection(this.blockingStub, request);
     }
 
     /**
-     * Creates a collection with Schema in Milvus.
-     *
-     * @param request create collection request
+     * Creates a collection schema.
+     * @param enableDynamicField enable dynamic field
+     * @param description collection description
+     * @return CreateCollectionReq.CollectionSchema
      */
-    public void createCollectionWithSchema(CreateCollectionWithSchemaReq request) {
-        collectionService.createCollectionWithSchema(this.blockingStub, request);
-    }
-    public CreateCollectionWithSchemaReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
+    public CreateCollectionReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
         return collectionService.createSchema(enableDynamicField, description);
     }
 
     /**
      * list milvus collections
      *
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return List<String> collection names
      */
     public ListCollectionsResp listCollections() {
         return collectionService.listCollections(this.blockingStub);
@@ -149,7 +147,7 @@ public class MilvusClientV2 {
      * Checks whether a collection exists in Milvus.
      *
      * @param request has collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return Boolean
      */
     public Boolean hasCollection(HasCollectionReq request) {
         return collectionService.hasCollection(this.blockingStub, request);
@@ -158,7 +156,7 @@ public class MilvusClientV2 {
      * Gets the collection info in Milvus.
      *
      * @param request describe collection request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return DescribeCollectionResp
      */
     public DescribeCollectionResp describeCollection(DescribeCollectionReq request) {
         return collectionService.describeCollection(this.blockingStub, request);
@@ -167,7 +165,7 @@ public class MilvusClientV2 {
      * get collection stats for a collection in Milvus.
      *
      * @param request get collection stats request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return GetCollectionStatsResp
      */
     public GetCollectionStatsResp getCollectionStats(GetCollectionStatsReq request) {
         return collectionService.getCollectionStats(this.blockingStub, request);
@@ -200,7 +198,7 @@ public class MilvusClientV2 {
      * Checks whether a collection is loaded in Milvus.
      *
      * @param request get load state request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return Boolean
      */
     public Boolean getLoadState(GetLoadStateReq request) {
         return collectionService.getLoadState(this.blockingStub, request);
@@ -227,7 +225,7 @@ public class MilvusClientV2 {
      * Checks whether an index exists for a specified field in a collection in Milvus.
      *
      * @param request describe index request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return DescribeIndexResp
      */
     public DescribeIndexResp describeIndex(DescribeIndexReq request) {
         return indexService.describeIndex(this.blockingStub, request);
@@ -239,7 +237,7 @@ public class MilvusClientV2 {
      * Inserts vectors into a collection in Milvus.
      *
      * @param request insert request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return InsertResp
      */
     public InsertResp insert(InsertReq request) {
         return vectorService.insert(this.blockingStub, request);
@@ -248,7 +246,7 @@ public class MilvusClientV2 {
      * Upsert vectors into a collection in Milvus.
      *
      * @param request upsert request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return UpsertResp
      */
     public UpsertResp upsert(UpsertReq request) {
         return vectorService.upsert(this.blockingStub, request);
@@ -257,7 +255,7 @@ public class MilvusClientV2 {
      * Deletes vectors in a collection in Milvus.
      *
      * @param request delete request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return DeleteResp
      */
     public DeleteResp delete(DeleteReq request) {
         return vectorService.delete(this.blockingStub, request);
@@ -266,7 +264,7 @@ public class MilvusClientV2 {
      * Gets vectors in a collection in Milvus.
      *
      * @param request get request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return GetResp
      */
     public GetResp get(GetReq request) {
         return vectorService.get(this.blockingStub, request);
@@ -276,7 +274,7 @@ public class MilvusClientV2 {
      * Queries vectors in a collection in Milvus.
      *
      * @param request query request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return QueryResp
      */
     public QueryResp query(QueryReq request) {
         return vectorService.query(this.blockingStub, request);
@@ -285,7 +283,7 @@ public class MilvusClientV2 {
      * Searches vectors in a collection in Milvus.
      *
      * @param request search request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return SearchResp
      */
     public SearchResp search(SearchReq request) {
         return vectorService.search(this.blockingStub, request);
@@ -314,7 +312,7 @@ public class MilvusClientV2 {
      * Checks whether a partition exists in a collection in Milvus.
      *
      * @param request has partition request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return Boolean
      */
     public Boolean hasPartition(HasPartitionReq request) {
         return partitionService.hasPartition(this.blockingStub, request);
@@ -324,7 +322,7 @@ public class MilvusClientV2 {
      * Lists all partitions in a collection in Milvus.
      *
      * @param request list partitions request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return List<String> partition names
      */
     public List<String> listPartitions(ListPartitionsReq request) {
         return partitionService.listPartitions(this.blockingStub, request);
@@ -351,7 +349,7 @@ public class MilvusClientV2 {
     /**
      * list users
      *
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return List<String> usernames
      */
     public List<String> listUsers() {
         return userService.listUsers(this.blockingStub);
@@ -360,7 +358,7 @@ public class MilvusClientV2 {
      * describe user
      *
      * @param request describe user request
-     * @return {status:result code, data:RpcStatus{msg: result message}}
+     * @return DescribeUserResp
      */
     public DescribeUserResp describeUser(DescribeUserReq request) {
         return userService.describeUser(this.blockingStub, request);
@@ -393,7 +391,7 @@ public class MilvusClientV2 {
     /**
      * list roles
      *
-     * @return {status:result code, data:List<String>{msg: result message}}
+     * @return List<String> role names
      */
     public List<String> listRoles() {
         return roleService.listRoles(this.blockingStub);
@@ -402,7 +400,7 @@ public class MilvusClientV2 {
      * describe role
      *
      * @param request describe role request
-     * @return {status:result code, data:DescribeRoleResp{msg: result message}}
+     * @return DescribeRoleResp
      */
     public DescribeRoleResp describeRole(DescribeRoleReq request) {
         return roleService.describeRole(this.blockingStub, request);
@@ -479,7 +477,7 @@ public class MilvusClientV2 {
     /**
      * list aliases
      *
-     * @return {status:result code, data:List<String>{msg: result message}}
+     * @return List<String> alias names
      */
     public ListAliasResp listAliases() {
         return utilityService.listAliases(this.blockingStub);
@@ -487,7 +485,7 @@ public class MilvusClientV2 {
     /**
      * describe aliases
      *
-     * @return {status:result code, data:DescribeAliasResp{msg: result message}}
+     * @return DescribeAliasResp
      */
     public DescribeAliasResp describeAlias(String alias) {
         return utilityService.describeAlias(this.blockingStub, alias);

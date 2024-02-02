@@ -1,6 +1,5 @@
 package io.milvus.v2.common;
 
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import lombok.Getter;
 @Getter
 public enum ConsistencyLevel{
