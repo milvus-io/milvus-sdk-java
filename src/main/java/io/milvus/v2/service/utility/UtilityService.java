@@ -5,10 +5,7 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.v2.service.BaseService;
-import io.milvus.v2.service.utility.request.AlterAliasReq;
-import io.milvus.v2.service.utility.request.CreateAliasReq;
-import io.milvus.v2.service.utility.request.DropAliasReq;
-import io.milvus.v2.service.utility.request.FlushReq;
+import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.ListAliasResp;
 
@@ -52,10 +49,10 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, status);
     }
 
-    public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String alias) {
-        String title = String.format("Describe alias %s", alias);
+    public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
+        String title = String.format("Describe alias %s", request.getAlias());
         io.milvus.grpc.DescribeAliasRequest describeAliasRequest = io.milvus.grpc.DescribeAliasRequest.newBuilder()
-                .setAlias(alias)
+                .setAlias(request.getAlias())
                 .build();
         io.milvus.grpc.DescribeAliasResponse response = blockingStub.describeAlias(describeAliasRequest);
 
