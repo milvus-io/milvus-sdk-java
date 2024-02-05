@@ -22,6 +22,7 @@ import io.milvus.v2.service.rbac.response.DescribeUserResp;
 import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.AlterAliasReq;
 import io.milvus.v2.service.utility.request.CreateAliasReq;
+import io.milvus.v2.service.utility.request.DescribeAliasReq;
 import io.milvus.v2.service.utility.request.DropAliasReq;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.ListAliasResp;
@@ -487,8 +488,8 @@ public class MilvusClientV2 {
      *
      * @return DescribeAliasResp
      */
-    public DescribeAliasResp describeAlias(String alias) {
-        return utilityService.describeAlias(this.blockingStub, alias);
+    public DescribeAliasResp describeAlias(DescribeAliasReq request) {
+        return utilityService.describeAlias(this.blockingStub, request);
     }
 
     /**
