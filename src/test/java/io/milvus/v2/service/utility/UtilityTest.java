@@ -3,6 +3,7 @@ package io.milvus.v2.service.utility;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.utility.request.AlterAliasReq;
 import io.milvus.v2.service.utility.request.CreateAliasReq;
+import io.milvus.v2.service.utility.request.DescribeAliasReq;
 import io.milvus.v2.service.utility.request.DropAliasReq;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.ListAliasResp;
@@ -40,7 +41,10 @@ class UtilityTest extends BaseTest {
 
     @Test
     void describeAlias() {
-        DescribeAliasResp statusR = client_v2.describeAlias("test_alias");
+        DescribeAliasReq req = DescribeAliasReq.builder()
+                .alias("test_alias")
+                .build();
+        DescribeAliasResp statusR = client_v2.describeAlias(req);
     }
     @Test
     void listAliases() {
