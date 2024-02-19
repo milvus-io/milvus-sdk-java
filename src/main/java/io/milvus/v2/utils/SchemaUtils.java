@@ -23,6 +23,13 @@ public class SchemaUtils {
         if(fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();
         }
+        if (fieldSchema.getDataType() == io.milvus.v2.common.DataType.Array) {
+            schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_capacity").setValue(String.valueOf(fieldSchema.getMaxCapacity())).build()).build();
+            schema = schema.toBuilder().setElementType(DataType.valueOf(fieldSchema.getElementType().name())).build();
+            if (fieldSchema.getElementType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null) {
+                schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();
+            }
+        }
         return schema;
     }
 
