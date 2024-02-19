@@ -119,5 +119,7 @@ public class CreateCollectionReq {
         private Boolean isPrimaryKey = Boolean.FALSE;
         @Builder.Default
         private Boolean autoID = Boolean.FALSE;
+        private DataType elementType;
+        private Integer maxCapacity;
     }
 }
