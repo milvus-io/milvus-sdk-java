@@ -60,9 +60,15 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         long topK = results.getTopK();
         List<IDScore> idScore = getIDScore(indexOfTarget);
         for (int i = 0; i < topK; ++i) {
+            IDScore score = idScore.get(i);
             QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
-            record.put("id", idScore.get(i).getLongID());
-            record.put("distance", idScore.get(i).getScore());
+            if (score.getStrID().isEmpty()) {
+                record.put("id", score.getLongID());
+            } else {
+                record.put("id", score.getStrID());
+            }
+
+            record.put("distance", score.getScore());
             buildRowRecord(record, i);
             records.add(record);
         }
