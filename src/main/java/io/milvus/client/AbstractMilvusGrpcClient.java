@@ -29,7 +29,6 @@ import io.milvus.common.utils.JacksonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
 import io.milvus.grpc.*;
-import io.milvus.grpc.ObjectEntity;
 import io.milvus.param.*;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
@@ -1923,21 +1922,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("GetReplicasRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            R<DescribeCollectionResponse> descResp = describeCollection(DescribeCollectionParam.newBuilder()
-                    .withCollectionName(requestParam.getCollectionName())
-                    .build());
-            if (descResp.getStatus() != R.Status.Success.getCode()) {
-                return R.failed(descResp.getException());
-            }
-
             GetReplicasRequest.Builder builder = GetReplicasRequest.newBuilder()
-                    .setCollectionID(descResp.getData().getCollectionID())
+                    .setCollectionName(requestParam.getCollectionName())
                     .setWithShardNodes(requestParam.isWithShardNodes());
 
             if (StringUtils.isNotBlank(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
-
+            GetReplicasRequest getReplicasRequest = builder.build();
             GetReplicasResponse response = blockingStub().getReplicas(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
@@ -2694,6 +2686,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             CreateResourceGroupRequest request = CreateResourceGroupRequest.newBuilder()
                     .setResourceGroup(requestParam.getGroupName())
+                    .setConfig(requestParam.getConfig().toGRPC())
                     .build();
 
             Status response = blockingStub().createResourceGroup(request);
@@ -2847,6 +2840,28 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
+    @Override
+    public R<RpcStatus> updateResourceGroups(UpdateResourceGroupsParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+
+        try {
+            UpdateResourceGroupsRequest request = requestParam.toGRPC();
+
+            Status response = blockingStub().updateResourceGroups(request);
+            handleResponse(requestParam.toString(), response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", requestParam.toString(), e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", requestParam.toString(), e);
+            return R.failed(e);
+        }
+    }
 
     ///////////////////// High Level API//////////////////////
     @Override

@@ -1,4 +1,4 @@
-package io.milvus.utils;
+package io.milvus.common.utils;
 
 import lombok.Getter;
 import lombok.ToString;

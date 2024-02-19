@@ -350,7 +350,7 @@ public class ConnectParam {
         protected void verify() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
-                io.milvus.utils.URLParser result = new io.milvus.utils.URLParser(uri);
+                io.milvus.common.utils.URLParser result = new io.milvus.common.utils.URLParser(uri);
                 this.secure = result.isSecure();
                 this.host = result.getHostname();
                 this.port = result.getPort();
