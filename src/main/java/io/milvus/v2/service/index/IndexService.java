@@ -32,6 +32,16 @@ public class IndexService extends BaseService {
                                 .build())
                         .build();
             }
+            if (indexParam.getExtraParams() != null) {
+                for (String key : indexParam.getExtraParams().keySet()) {
+                    createIndexRequest = createIndexRequest.toBuilder()
+                            .addExtraParams(KeyValuePair.newBuilder()
+                                    .setKey(key)
+                                    .setValue(String.valueOf(indexParam.getExtraParams().get(key)))
+                                    .build())
+                            .build();
+                }
+            }
 
             Status status = milvusServiceBlockingStub.createIndex(createIndexRequest);
             rpcUtils.handleResponse(title, status);
