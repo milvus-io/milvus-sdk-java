@@ -32,8 +32,7 @@ public class ConnectConfig {
     private String serverPemPath;
     private String serverName;
 
-    @Builder.Default
-    private boolean secure = true;
+    private Boolean secure;
     @Builder.Default
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
@@ -54,5 +53,12 @@ public class ConnectConfig {
             return username + ":" + password;
         }
         return null;
+    }
+
+    public Boolean isSecure() {
+        if (secure != null) {
+            return secure;
+        }
+        return token != null || username != null || password != null;
     }
 }

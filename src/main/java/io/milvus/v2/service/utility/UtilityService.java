@@ -64,9 +64,10 @@ public class UtilityService extends BaseService {
                 .build();
     }
 
-    public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+    public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListAliasesReq request) {
         String title = "List aliases";
         io.milvus.grpc.ListAliasesRequest listAliasesRequest = io.milvus.grpc.ListAliasesRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
                 .build();
         io.milvus.grpc.ListAliasesResponse response = blockingStub.listAliases(listAliasesRequest);
 

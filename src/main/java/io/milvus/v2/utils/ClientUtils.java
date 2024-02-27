@@ -72,7 +72,7 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
-                if(connectConfig.isSecure()){
+                if (connectConfig.getSecure()) {
                     builder.useTransportSecurity();
                 }
                 if (StringUtils.isNotEmpty(connectConfig.getServerName())) {

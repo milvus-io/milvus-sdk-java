@@ -39,13 +39,17 @@ public class ConvertUtils {
         return entities;
     }
 
-    public List<SearchResp.SearchResult> getEntities(SearchResults response) {
+    public List<List<SearchResp.SearchResult>> getEntities(SearchResults response) {
         SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
-
-        return searchResultsWrapper.getIDScore(0).stream().map(idScore -> SearchResp.SearchResult.builder()
-                .fields(idScore.getFieldValues())
-                .score(idScore.getScore())
-                .build()).collect(Collectors.toList());
+        long numQueries = response.getResults().getNumQueries();
+        List<List<SearchResp.SearchResult>> searchResults = new ArrayList<>();
+        for (int i = 0; i < numQueries; i++) {
+            searchResults.add(searchResultsWrapper.getIDScore(i).stream().map(idScore -> SearchResp.SearchResult.builder()
+                    .fields(idScore.getFieldValues())
+                    .score(idScore.getScore())
+                    .build()).collect(Collectors.toList()));
+        }
+        return searchResults;
     }
 
     public DescribeIndexResp convertToDescribeIndexResp(DescribeIndexResponse response) {

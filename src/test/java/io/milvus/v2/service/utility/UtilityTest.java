@@ -1,10 +1,7 @@
 package io.milvus.v2.service.utility;
 
 import io.milvus.v2.BaseTest;
-import io.milvus.v2.service.utility.request.AlterAliasReq;
-import io.milvus.v2.service.utility.request.CreateAliasReq;
-import io.milvus.v2.service.utility.request.DescribeAliasReq;
-import io.milvus.v2.service.utility.request.DropAliasReq;
+import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.ListAliasResp;
 import org.junit.jupiter.api.Test;
@@ -48,6 +45,9 @@ class UtilityTest extends BaseTest {
     }
     @Test
     void listAliases() {
-        ListAliasResp statusR = client_v2.listAliases();
+        ListAliasesReq req = ListAliasesReq.builder()
+                .collectionName("test")
+                .build();
+        ListAliasResp statusR = client_v2.listAliases(req);
     }
 }
