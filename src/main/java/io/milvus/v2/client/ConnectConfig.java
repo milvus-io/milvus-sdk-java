@@ -2,6 +2,7 @@ package io.milvus.v2.client;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 import java.net.URI;
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 @Data
 @SuperBuilder
 public class ConnectConfig {
+    @NonNull
     private String uri;
     private String token;
     private String username;
