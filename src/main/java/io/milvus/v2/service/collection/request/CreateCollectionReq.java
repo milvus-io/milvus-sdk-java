@@ -4,6 +4,7 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class CreateCollectionReq {
+    @NonNull
     private String collectionName;
     private Integer dimension;
 
@@ -42,6 +44,7 @@ public class CreateCollectionReq {
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
         @Builder.Default
         private String description = "";
+        @NonNull
         private Boolean enableDynamicField;
 
         public CreateCollectionReq.FieldSchema getField(String fieldName) {
