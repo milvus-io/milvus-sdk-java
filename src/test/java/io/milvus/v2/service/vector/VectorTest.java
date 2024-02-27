@@ -18,16 +18,21 @@ class VectorTest extends BaseTest {
 
     @Test
     void testInsert() {
-        JSONObject vector = new JSONObject();
-        List<Float> vectorList = new ArrayList<>();
-        vectorList.add(1.0f);
-        vectorList.add(2.0f);
-        vector.put("vector", vectorList);
-        vector.put("id", 0L);
+
+        List<JSONObject> data = new ArrayList<>();
+        for (int i = 0; i < 100; i++) {
+            JSONObject vector = new JSONObject();
+            List<Float> vectorList = new ArrayList<>();
+            vectorList.add(1.0f);
+            vectorList.add(2.0f);
+            vector.put("vector", vectorList);
+            vector.put("id", (long) i);
+            data.add(vector);
+        }
 
         InsertReq request = InsertReq.builder()
-                .collectionName("test2")
-                .data(Collections.singletonList(vector))
+                .collectionName("test")
+                .data(data)
                 .build();
         InsertResp statusR = client_v2.insert(request);
         logger.info(statusR.toString());
@@ -83,7 +88,7 @@ class VectorTest extends BaseTest {
     void testDelete() {
         DeleteReq request = DeleteReq.builder()
                 .collectionName("test")
-                .expr("id > 0")
+                .filter("id > 0")
                 .build();
         DeleteResp statusR = client_v2.delete(request);
         logger.info(statusR.toString());

@@ -9,7 +9,7 @@ import java.util.Map;
 @Data
 @SuperBuilder
 public class SearchResp {
-    private List<SearchResult> searchResults;
+    private List<List<SearchResult>> searchResults;
 
     @Data
     @SuperBuilder

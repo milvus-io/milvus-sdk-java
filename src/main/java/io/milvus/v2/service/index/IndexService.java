@@ -6,7 +6,11 @@ import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.DropIndexReq;
+import io.milvus.v2.service.index.request.ListIndexesReq;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IndexService extends BaseService {
 
@@ -20,7 +24,7 @@ public class IndexService extends BaseService {
                     .setFieldName(indexParam.getFieldName())
                     .addExtraParams(KeyValuePair.newBuilder()
                             .setKey("index_type")
-                            .setValue(String.valueOf(indexParam.getIndexType()))
+                            .setValue(indexParam.getIndexType().getName())
                             .build())
                     .build();
             if(indexParam.getMetricType()!= null){
@@ -28,9 +32,19 @@ public class IndexService extends BaseService {
                 createIndexRequest = createIndexRequest.toBuilder()
                         .addExtraParams(KeyValuePair.newBuilder()
                                 .setKey("metric_type")
-                                .setValue(String.valueOf(indexParam.getMetricType()))
+                                .setValue(indexParam.getMetricType().name())
                                 .build())
                         .build();
+            }
+            if (indexParam.getExtraParams() != null) {
+                for (String key : indexParam.getExtraParams().keySet()) {
+                    createIndexRequest = createIndexRequest.toBuilder()
+                            .addExtraParams(KeyValuePair.newBuilder()
+                                    .setKey(key)
+                                    .setValue(String.valueOf(indexParam.getExtraParams().get(key)))
+                                    .build())
+                            .build();
+                }
             }
 
             Status status = milvusServiceBlockingStub.createIndex(createIndexRequest);
@@ -56,13 +70,37 @@ public class IndexService extends BaseService {
                 request.getCollectionName(), request.getFieldName(), request.getIndexName());
         DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setFieldName(request.getFieldName())
-                .setIndexName(request.getIndexName())
+//                .setFieldName(request.getFieldName())
+//                .setIndexName(request.getIndexName())
                 .build();
+        if (request.getFieldName() != null) {
+            describeIndexRequest = describeIndexRequest.toBuilder()
+                    .setFieldName(request.getFieldName())
+                    .build();
+        } else if (request.getIndexName() != null) {
+            describeIndexRequest = describeIndexRequest.toBuilder()
+                    .setIndexName(request.getIndexName())
+                    .build();
+        }
 
         DescribeIndexResponse response = milvusServiceBlockingStub.describeIndex(describeIndexRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
         return convertUtils.convertToDescribeIndexResp(response);
+    }
+
+    public List<String> listIndexes(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListIndexesReq request) {
+        String title = String.format("ListIndexesRequest collectionName:%s", request.getCollectionName());
+        DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .build();
+
+        DescribeIndexResponse response = blockingStub.describeIndex(describeIndexRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+        List<String> indexNames = new ArrayList<>();
+        response.getIndexDescriptionsList().forEach(index -> {
+            indexNames.add(index.getIndexName());
+        });
+        return indexNames;
     }
 }

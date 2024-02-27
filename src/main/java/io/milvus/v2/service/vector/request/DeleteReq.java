@@ -12,6 +12,6 @@ public class DeleteReq {
     private String collectionName;
     @Builder.Default
     private String partitionName = "";
-    private String expr;
+    private String filter;
     private List<Object> ids;
 }

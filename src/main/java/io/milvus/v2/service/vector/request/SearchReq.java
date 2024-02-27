@@ -6,7 +6,9 @@ import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @SuperBuilder
@@ -26,11 +28,18 @@ public class SearchReq {
     @Builder.Default
     private int roundDecimal = -1;
     @Builder.Default
-    private String searchParams = "{}";
+    private Map<String, Object> searchParams = new HashMap<>();
     private long guaranteeTimestamp;
     @Builder.Default
     private Long gracefulTime = 5000L;
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
     private boolean ignoreGrowing;
+
+//    public String getSearchParams() {
+//        Gson gson = new Gson();
+//        String res = gson.toJson(this.searchParams);
+//        System.out.println("searchParams: " + res);
+//        return res;
+//    }
 }

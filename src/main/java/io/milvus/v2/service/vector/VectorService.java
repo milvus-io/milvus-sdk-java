@@ -56,7 +56,7 @@ public class VectorService extends BaseService {
         if(request.getOutputFields() == null){
             request.setOutputFields(descR.getFieldNames());
         }
-        if(request.getIds() != null){
+        if (request.getIds() != null && request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
         }
         QueryResults response = milvusServiceBlockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
@@ -99,13 +99,13 @@ public class VectorService extends BaseService {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
         DescribeCollectionResp respR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
-        if(request.getExpr() == null){
-            request.setExpr(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
+        if (request.getFilter() == null) {
+            request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }
         DeleteRequest deleteRequest = DeleteRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setPartitionName(request.getPartitionName())
-                .setExpr(request.getExpr())
+                .setExpr(request.getFilter())
                 .build();
         MutationResult response = milvusServiceBlockingStub.delete(deleteRequest);
         rpcUtils.handleResponse(title, response.getStatus());

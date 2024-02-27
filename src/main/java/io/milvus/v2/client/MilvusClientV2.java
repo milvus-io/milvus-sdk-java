@@ -11,6 +11,7 @@ import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.DropIndexReq;
+import io.milvus.v2.service.index.request.ListIndexesReq;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.partition.PartitionService;
 import io.milvus.v2.service.partition.request.*;
@@ -20,10 +21,7 @@ import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.DescribeRoleResp;
 import io.milvus.v2.service.rbac.response.DescribeUserResp;
 import io.milvus.v2.service.utility.UtilityService;
-import io.milvus.v2.service.utility.request.AlterAliasReq;
-import io.milvus.v2.service.utility.request.CreateAliasReq;
-import io.milvus.v2.service.utility.request.DescribeAliasReq;
-import io.milvus.v2.service.utility.request.DropAliasReq;
+import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.DescribeAliasResp;
 import io.milvus.v2.service.utility.response.ListAliasResp;
 import io.milvus.v2.service.vector.VectorService;
@@ -232,6 +230,12 @@ public class MilvusClientV2 {
         return indexService.describeIndex(this.blockingStub, request);
     }
 
+    /**
+     * Lists all indexes in a collection in Milvus.
+     */
+    public List<String> listIndexes(ListIndexesReq request) {
+        return indexService.listIndexes(this.blockingStub, request);
+    }
     // Vector Operations
 
     /**
@@ -480,8 +484,8 @@ public class MilvusClientV2 {
      *
      * @return List<String> alias names
      */
-    public ListAliasResp listAliases() {
-        return utilityService.listAliases(this.blockingStub);
+    public ListAliasResp listAliases(ListAliasesReq request) {
+        return utilityService.listAliases(this.blockingStub, request);
     }
     /**
      * describe aliases

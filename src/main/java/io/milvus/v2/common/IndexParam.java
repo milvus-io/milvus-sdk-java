@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
+
 @Data
 @SuperBuilder
 public class IndexParam {
@@ -15,6 +17,7 @@ public class IndexParam {
     @Builder.Default
     private IndexType indexType = IndexType.AUTOINDEX;
     private MetricType metricType;
+    private Map<String, Object> extraParams;
 
     public String getIndexName() {
         if(indexName == null) {

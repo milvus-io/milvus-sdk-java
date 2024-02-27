@@ -5,6 +5,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.DropIndexReq;
+import io.milvus.v2.service.index.request.ListIndexesReq;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -54,5 +55,14 @@ class IndexTest extends BaseTest {
                 .fieldName("vector")
                 .build();
         client_v2.dropIndex(dropIndexReq);
+    }
+
+    @Test
+    void testListIndexes() {
+        ListIndexesReq listIndexesReq = ListIndexesReq.builder()
+                .collectionName("test")
+                .build();
+        List<String> indexNames = client_v2.listIndexes(listIndexesReq);
+        logger.info(indexNames.toString());
     }
 }

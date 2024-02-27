@@ -1,5 +1,6 @@
 package io.milvus.v2.utils;
 
+import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
@@ -10,7 +11,9 @@ import io.milvus.v2.service.vector.request.SearchReq;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class VectorUtils {
 
@@ -162,12 +165,14 @@ public class VectorUtils {
                         .setValue(String.valueOf(request.getOffset()))
                         .build());
 
-        if (null != request.getSearchParams() && !request.getSearchParams().isEmpty()) {
+        if (null != request.getSearchParams()) {
             try {
+                Gson gson = new Gson();
+                String searchParams = gson.toJson(request.getSearchParams());
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.PARAMS)
-                                .setValue(request.getSearchParams())
+                                .setValue(searchParams)
                                 .build());
             } catch (IllegalArgumentException e) {
                 throw new ParamException(e.getMessage() + e.getCause().getMessage());
