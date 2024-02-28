@@ -30,6 +30,7 @@ public class BaseTest {
 
         Status successStatus = Status.newBuilder().setCode(0).build();
         BoolResponse trueResponse = BoolResponse.newBuilder().setStatus(successStatus).setValue(Boolean.TRUE).build();
+        BoolResponse falseResponse = BoolResponse.newBuilder().setStatus(successStatus).setValue(Boolean.FALSE).build();
 
         CollectionSchema collectionSchema = CollectionSchema.newBuilder()
                 .setDescription("test")
@@ -78,11 +79,11 @@ public class BaseTest {
         when(blockingStub.createCollection(any(CreateCollectionRequest.class))).thenReturn(successStatus);
         when(blockingStub.loadCollection(any())).thenReturn(successStatus);
         when(blockingStub.releaseCollection(any())).thenReturn(successStatus);
+        when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setState(LoadState.LoadStateLoaded).setStatus(successStatus).build());
         when(blockingStub.dropCollection(any())).thenReturn(successStatus);
         when(blockingStub.hasCollection(any())).thenReturn(trueResponse);
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
         when(blockingStub.renameCollection(any())).thenReturn(successStatus);
-        when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.getCollectionStatistics(any())).thenReturn(GetCollectionStatisticsResponse.newBuilder().addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build()).setStatus(successStatus).build());
 
         // index api
