@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Smoke test for Java SDK">
+    <test name="Smoke Test">
+        <groups>
+            <run>
+                <include name="Smoke"/>
+            </run>
+        </groups>
+        <packages>
+            <package name="com.zilliz.milvustestv2.*">
+
+            </package>
+        </packages>
+    </test>
+<!--    <listeners>-->
+<!--        <listener class-name="com.zilliz.milvustestv2.listener.CustomerListener"/>-->
+<!--    </listeners>-->
+</suite>
