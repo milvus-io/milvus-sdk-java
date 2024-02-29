@@ -61,6 +61,8 @@ public class ConnectConfig {
         if (secure != null) {
             return secure;
         }
-        return token != null || username != null || password != null;
+        if (token == null && username == null && password == null) {
+            return false;
+        } else return token == null || !token.isEmpty();
     }
 }
