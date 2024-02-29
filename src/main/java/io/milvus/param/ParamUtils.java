@@ -197,24 +197,6 @@ public class ParamUtils {
         }
     }
 
-    /**
-     * Checks if a metric is for float vector.
-     *
-     * @param metric metric type
-     */
-    public static boolean IsFloatMetric(MetricType metric) {
-        return metric == MetricType.L2 || metric == MetricType.IP || metric == MetricType.COSINE;
-    }
-
-    /**
-     * Checks if a metric is for binary vector.
-     *
-     * @param metric metric type
-     */
-    public static boolean IsBinaryMetric(MetricType metric) {
-        return metric != MetricType.INVALID && !IsFloatMetric(metric);
-    }
-
     public static class InsertBuilderWrapper {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
@@ -485,11 +467,6 @@ public class ParamUtils {
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.METRIC_TYPE)
-                                .setValue(requestParam.getMetricType())
-                                .build())
-                .addSearchParams(
-                        KeyValuePair.newBuilder()
                                 .setKey(Constant.ROUND_DECIMAL)
                                 .setValue(String.valueOf(requestParam.getRoundDecimal()))
                                 .build())
@@ -498,6 +475,14 @@ public class ParamUtils {
                                 .setKey(Constant.IGNORE_GROWING)
                                 .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
                                 .build());
+
+        if (!Objects.equals(requestParam.getMetricType(), MetricType.None.name())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.METRIC_TYPE)
+                            .setValue(requestParam.getMetricType())
+                            .build());
+        }
 
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
             try {
