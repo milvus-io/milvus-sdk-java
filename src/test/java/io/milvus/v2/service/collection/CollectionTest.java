@@ -32,26 +32,6 @@ class CollectionTest extends BaseTest {
 
     @Test
     void testCreateCollectionWithSchema() {
-//        List<CreateCollectionWithSchemaReq.FieldSchema> fields = new ArrayList<>();
-//        CreateCollectionWithSchemaReq.FieldSchema idSchema = CreateCollectionWithSchemaReq.FieldSchema.builder()
-//                .name("id")
-//                .dataType(DataType.Int64)
-//                .isPrimaryKey(Boolean.TRUE)
-//                .autoID(Boolean.FALSE)
-//                .build();
-//        CreateCollectionWithSchemaReq.FieldSchema metaSchema = CreateCollectionWithSchemaReq.FieldSchema.builder()
-//                .name("meta")
-//                .dataType(DataType.VarChar)
-//                .build();
-//        CreateCollectionWithSchemaReq.FieldSchema vectorSchema = CreateCollectionWithSchemaReq.FieldSchema.builder()
-//                .name("vector")
-//                .dataType(DataType.FloatVector)
-//                .dimension(2)
-//                .build();
-//
-//        fields.add(idSchema);
-//        fields.add(vectorSchema);
-//        fields.add(metaSchema);
 
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(Boolean.TRUE)
@@ -78,6 +58,7 @@ class CollectionTest extends BaseTest {
     void testDropCollection() {
         DropCollectionReq req = DropCollectionReq.builder()
                 .collectionName("test")
+                .async(Boolean.FALSE)
                 .build();
         client_v2.dropCollection(req);
     }
@@ -120,6 +101,7 @@ class CollectionTest extends BaseTest {
     void testReleaseCollection() {
         ReleaseCollectionReq req = ReleaseCollectionReq.builder()
                 .collectionName("test")
+                .async(Boolean.FALSE)
                 .build();
         client_v2.releaseCollection(req);
     }
