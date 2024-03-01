@@ -95,6 +95,7 @@
         <kotlin.version>1.6.20</kotlin.version>
         <version.fastjson>1.2.83</version.fastjson>
         <mockito.version>5.8.0</mockito.version>
+        <testcontainers.version>1.19.6</testcontainers.version>
     </properties>
 
     <dependencyManagement>
@@ -189,6 +190,16 @@
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>milvus</artifactId>
+            <version>${testcontainers.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
