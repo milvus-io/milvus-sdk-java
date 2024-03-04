@@ -559,10 +559,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 builder.setDbName(requestParam.getDatabaseName());
             }
 
-            LoadCollectionRequest loadCollectionRequest = builder
-                    .build();
-
-            Status response = blockingStub().loadCollection(loadCollectionRequest);
+            Status response = blockingStub().loadCollection(builder.build());
             handleResponse(title, response);
 
             // sync load, wait until collection finish loading
@@ -591,11 +588,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("ReleaseCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            ReleaseCollectionRequest.Builder builder = ReleaseCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
 
-            Status response = blockingStub().releaseCollection(releaseCollectionRequest);
+            Status response = blockingStub().releaseCollection(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
