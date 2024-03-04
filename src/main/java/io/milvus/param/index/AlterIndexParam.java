@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.param.collection;
+package io.milvus.param.index;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
@@ -32,14 +32,16 @@ import java.util.Map;
  * Parameters for <code>alterCollection</code> interface.
  */
 @Getter
-public class AlterCollectionParam {
+public class AlterIndexParam {
     private final String collectionName;
     private final String databaseName;
+    private final String indexName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private AlterCollectionParam(@NonNull Builder builder) {
+    private AlterIndexParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
+        this.indexName = builder.indexName;
         this.properties.putAll(builder.properties);
     }
 
@@ -48,11 +50,12 @@ public class AlterCollectionParam {
     }
 
     /**
-     * Builder for {@link AlterCollectionParam} class.
+     * Builder for {@link AlterIndexParam} class.
      */
     public static final class Builder {
         private String collectionName;
         private String databaseName;
+        private String indexName;
 
         private final Map<String, String> properties = new HashMap<>();
 
@@ -83,20 +86,14 @@ public class AlterCollectionParam {
         }
 
         /**
-         * Collection time to live (TTL) is the expiration time of data in a collection.
-         * Expired data in the collection will be cleaned up and will not be involved in searches or queries.
-         * In server side, the default value is 0, which means TTL is disabled.
-         * Specify TTL in the unit of seconds.
+         * Set the index name. Index name cannot be empty or null.
          *
-         * @param ttlSeconds TTL seconds, value should be 0 or greater
+         * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withTTL(@NonNull Integer ttlSeconds) {
-            if (ttlSeconds < 0) {
-                throw new ParamException("The ttlSeconds value should be 0 or greater");
-            }
-
-            return this.withProperty(Constant.TTL_SECONDS, Integer.toString(ttlSeconds));
+        public Builder withIndexName(@NonNull String indexName) {
+            this.indexName = indexName;
+            return this;
         }
 
         /**
@@ -122,27 +119,29 @@ public class AlterCollectionParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link AlterCollectionParam} instance.
+         * Verifies parameters and creates a new {@link AlterIndexParam} instance.
          *
-         * @return {@link AlterCollectionParam}
+         * @return {@link AlterIndexParam}
          */
-        public AlterCollectionParam build() throws ParamException {
+        public AlterIndexParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+            ParamUtils.CheckNullEmptyString(indexName, "Index name");
 
-            return new AlterCollectionParam(this);
+            return new AlterIndexParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link AlterCollectionParam} instance.
+     * Constructs a <code>String</code> by {@link AlterIndexParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "AlterCollectionParam{" +
+        return "AlterIndexParam{" +
                 "collectionName='" + collectionName + '\'' +
                 "dbName='" + databaseName + '\'' +
+                "indexName='" + indexName + '\'' +
                 ", properties='" + properties.toString() + '\'' +
                 '}';
     }

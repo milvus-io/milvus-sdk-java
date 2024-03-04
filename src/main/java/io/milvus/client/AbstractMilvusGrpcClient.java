@@ -559,10 +559,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 builder.setDbName(requestParam.getDatabaseName());
             }
 
-            LoadCollectionRequest loadCollectionRequest = builder
-                    .build();
-
-            Status response = blockingStub().loadCollection(loadCollectionRequest);
+            Status response = blockingStub().loadCollection(builder.build());
             handleResponse(title, response);
 
             // sync load, wait until collection finish loading
@@ -591,11 +588,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("ReleaseCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
-                    .setCollectionName(requestParam.getCollectionName())
-                    .build();
+            ReleaseCollectionRequest.Builder builder = ReleaseCollectionRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
 
-            Status response = blockingStub().releaseCollection(releaseCollectionRequest);
+            Status response = blockingStub().releaseCollection(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -745,13 +744,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("AlterCollectionRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            AlterCollectionRequest.Builder alterCollRequestBuilder = AlterCollectionRequest.newBuilder();
+            AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder();
             List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
             if (CollectionUtils.isNotEmpty(propertiesList)) {
-                propertiesList.forEach(alterCollRequestBuilder::addProperties);
+                propertiesList.forEach(builder::addProperties);
+            }
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
             }
 
-            AlterCollectionRequest alterCollectionRequest = alterCollRequestBuilder
+            AlterCollectionRequest alterCollectionRequest = builder
                     .setCollectionName(requestParam.getCollectionName())
                     .build();
 
@@ -1300,6 +1302,42 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(getIndexBuildProgressRequest);
             handleResponse(title, response.getStatus());
             return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<RpcStatus> alterIndex(AlterIndexParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("AlterIndexRequest indexName:%s", requestParam.getIndexName());
+
+        try {
+            AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder();
+            List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
+            if (CollectionUtils.isNotEmpty(propertiesList)) {
+                propertiesList.forEach(builder::addExtraParams);
+            }
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            AlterIndexRequest alterIndexRequest = builder
+                    .setCollectionName(requestParam.getCollectionName())
+                    .setIndexName(requestParam.getIndexName())
+                    .build();
+
+            Status response = blockingStub().alterIndex(alterIndexRequest);
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);

@@ -340,6 +340,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> alterIndex(AlterIndexParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().alterIndex(requestParam);
+    }
+
+    @Override
     public R<MutationResult> insert(InsertParam requestParam) {
         List<R<MutationResult>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .map(serverSetting -> serverSetting.getClient().insert(requestParam))
