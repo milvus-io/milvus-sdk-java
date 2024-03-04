@@ -30,9 +30,11 @@ import lombok.NonNull;
  */
 @Getter
 public class ReleaseCollectionParam {
+    private final String databaseName;
     private final String collectionName;
 
     private ReleaseCollectionParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
 
@@ -44,9 +46,21 @@ public class ReleaseCollectionParam {
      * Builder for {@link ReleaseCollectionParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -80,6 +94,7 @@ public class ReleaseCollectionParam {
     @Override
     public String toString() {
         return "ReleaseCollectionParam{" +
+                "databaseName='" + databaseName + '\'' +
                 "collectionName='" + collectionName + '\'' + '}';
     }
 }

@@ -201,8 +201,7 @@ public interface MilvusClient {
     R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam);
 
     /**
-     * Alter collection.
-     * Currently, only support setting collection TTL with key `collection.ttl.seconds`
+     * Alter collection with key-value properties.
      *
      * @param requestParam {@link AlterCollectionParam}
      * @return {status:result code, data:RpcStatus{msg: result message}}
@@ -350,6 +349,14 @@ public interface MilvusClient {
      * @return {status:result code, data:GetIndexBuildProgressResponse{status,indexed_rows}}
      */
     R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam);
+
+    /**
+     * Alter index with key value properties.
+     *
+     * @param requestParam {@link AlterIndexParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> alterIndex(AlterIndexParam requestParam);
 
     /**
      * Inserts entities into a specified collection . Note that you don't need to
