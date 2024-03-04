@@ -37,9 +37,7 @@ public class DataUtils {
                 .setCollectionName(collectionName)
                 .setBase(msgBase)
                 .setNumRows(requestParam.getData().size());
-//        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-//            insertBuilder.setDbName(requestParam.getDatabaseName());
-//        }
+        upsertBuilder = null;
         fillFieldsData(requestParam, wrapper);
         return insertBuilder.build();
     }
@@ -60,9 +58,7 @@ public class DataUtils {
                 .setCollectionName(collectionName)
                 .setBase(msgBase)
                 .setNumRows(requestParam.getData().size());
-//        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-//            upsertBuilder.setDbName(requestParam.getDatabaseName());
-//        }
+        insertBuilder = null;
         fillFieldsData(requestParam, wrapper);
         return upsertBuilder.build();
     }
