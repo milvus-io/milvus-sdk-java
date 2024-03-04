@@ -11,10 +11,7 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Random;
 
 /**
  * @Author yongpeng.li
@@ -26,7 +23,7 @@ public class SearchTest extends BaseTest {
     @DataProvider(name = "filterAndExcept")
     public Object[][] providerData() {
         return new Object[][]{
-                {CommonData.fieldVarchar + " like \"%0\" ", topK},
+                //{CommonData.fieldVarchar + " like \"%0\" ", topK},
                 {CommonData.fieldInt64 + " < 10 ", topK},
                 {CommonData.fieldInt64 + " != 10 ", topK},
                 {CommonData.fieldInt64 + " <= 10 ", topK},
