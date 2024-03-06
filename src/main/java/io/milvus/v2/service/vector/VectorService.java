@@ -2,6 +2,8 @@ package io.milvus.v2.service.vector;
 
 import io.milvus.grpc.*;
 import io.milvus.response.DescCollResponseWrapper;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
@@ -84,7 +86,9 @@ public class VectorService extends BaseService {
                 .fieldName(request.getVectorFieldName())
                 .build();
         DescribeIndexResp respR = indexService.describeIndex(milvusServiceBlockingStub, describeIndexReq);
-
+        if (respR.getMetricType() == null) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "metric type not found");
+        }
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(respR.getMetricType(), request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);

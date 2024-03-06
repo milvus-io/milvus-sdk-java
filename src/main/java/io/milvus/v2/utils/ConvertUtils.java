@@ -52,12 +52,12 @@ public class ConvertUtils {
         return searchResults;
     }
 
-    public DescribeIndexResp convertToDescribeIndexResp(DescribeIndexResponse response) {
+    public DescribeIndexResp convertToDescribeIndexResp(IndexDescription response) {
         DescribeIndexResp describeIndexResp = DescribeIndexResp.builder()
-                .indexName(response.getIndexDescriptions(0).getIndexName())
-                .fieldName(response.getIndexDescriptions(0).getFieldName())
+                .indexName(response.getIndexName())
+                .fieldName(response.getFieldName())
                 .build();
-        List<KeyValuePair> params = response.getIndexDescriptions(0).getParamsList();
+        List<KeyValuePair> params = response.getParamsList();
         for(KeyValuePair param : params) {
             if (param.getKey().equals("index_type")) {
                 describeIndexResp.setIndexType(param.getValue());

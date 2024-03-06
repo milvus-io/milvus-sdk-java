@@ -2,6 +2,8 @@ package io.milvus.v2.service.index;
 
 import io.milvus.grpc.*;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
@@ -11,6 +13,7 @@ import io.milvus.v2.service.index.response.DescribeIndexResp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class IndexService extends BaseService {
 
@@ -76,8 +79,14 @@ public class IndexService extends BaseService {
 
         DescribeIndexResponse response = milvusServiceBlockingStub.describeIndex(describeIndexRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+        List<IndexDescription> indexs = response.getIndexDescriptionsList().stream().filter(index -> index.getIndexName().equals(request.getIndexName()) || index.getFieldName().equals(request.getFieldName())).collect(Collectors.toList());
+        if (indexs.isEmpty()) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Index not found");
+        } else if (indexs.size() > 1) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "More than one index found");
+        }
+        return convertUtils.convertToDescribeIndexResp(indexs.get(0));
 
-        return convertUtils.convertToDescribeIndexResp(response);
     }
 
     public List<String> listIndexes(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListIndexesReq request) {
@@ -85,7 +94,11 @@ public class IndexService extends BaseService {
         DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
-
+        if (request.getFieldName() != null) {
+            describeIndexRequest = describeIndexRequest.toBuilder()
+                    .setFieldName(request.getFieldName())
+                    .build();
+        }
         DescribeIndexResponse response = blockingStub.describeIndex(describeIndexRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         List<String> indexNames = new ArrayList<>();

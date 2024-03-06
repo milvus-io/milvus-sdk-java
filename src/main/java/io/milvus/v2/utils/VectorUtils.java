@@ -8,6 +8,7 @@ import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
+import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -80,7 +81,7 @@ public class VectorUtils {
         return guaranteeTimestamp;
     }
 
-    public SearchRequest ConvertToGrpcSearchRequest(String metricType, SearchReq request) {
+    public SearchRequest ConvertToGrpcSearchRequest(@NotNull String metricType, SearchReq request) {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
                 .setDbName("")
                 .setCollectionName(request.getCollectionName());
