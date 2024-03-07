@@ -44,6 +44,7 @@ public class CollectionService extends BaseService {
 
         CollectionSchema schema = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
+                .setDescription(request.getDescription())
                 .addFields(vectorSchema)
                 .addFields(idSchema)
                 .setEnableDynamicField(request.getEnableDynamicField())
@@ -70,33 +71,36 @@ public class CollectionService extends BaseService {
                         .build();
         indexService.createIndex(blockingStub, createIndexReq);
         //load collection
-        loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        try {
+            //TimeUnit.MILLISECONDS.sleep(1000);
+            loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        } catch (Exception e) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed" + e.getMessage());
+        }
     }
 
     public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
-        if (request.getEnableDynamicField() != null) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Please specify enableDynamicField in collection schema when creating collection with schema");
-        }
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
         CollectionSchema grpcSchema = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
-                .setDescription(request.getCollectionSchema().getDescription())
-                .setEnableDynamicField(request.getCollectionSchema().getEnableDynamicField())
+                .setDescription(request.getDescription())
+                .setEnableDynamicField(request.getEnableDynamicField())
                 .build();
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
-            grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(request.getPartitionKeyField(), fieldSchema)).build();
+            grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
         }
 
         //create collection
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchema.toByteString())
-                .setNumPartitions(request.getNumPartitions())
                 .setShardsNum(request.getNumShards())
                 .build();
-
+        if (request.getNumPartitions() != null) {
+            createCollectionRequest = createCollectionRequest.toBuilder().setNumPartitions(request.getNumPartitions()).build();
+        }
         Status createCollectionResponse = blockingStub.createCollection(createCollectionRequest);
         rpcUtils.handleResponse(title, createCollectionResponse);
 
@@ -236,10 +240,8 @@ public class CollectionService extends BaseService {
         return getCollectionStatsResp;
     }
 
-    public CreateCollectionReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
+    public CreateCollectionReq.CollectionSchema createSchema() {
         return CreateCollectionReq.CollectionSchema.builder()
-                .enableDynamicField(enableDynamicField)
-                .description(description)
                 .build();
     }
 

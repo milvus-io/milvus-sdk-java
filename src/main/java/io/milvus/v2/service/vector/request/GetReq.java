@@ -13,4 +13,5 @@ public class GetReq {
     @Builder.Default
     private String partitionName = "";
     private List<Object> ids;
+    private List<String> outputFields;
 }

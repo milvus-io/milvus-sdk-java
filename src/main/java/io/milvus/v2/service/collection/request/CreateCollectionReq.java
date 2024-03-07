@@ -2,6 +2,8 @@ package io.milvus.v2.service.collection.request;
 
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -15,6 +17,8 @@ import java.util.List;
 public class CreateCollectionReq {
     @NonNull
     private String collectionName;
+    @Builder.Default
+    private String description = "";
     private Integer dimension;
 
     @Builder.Default
@@ -29,11 +33,10 @@ public class CreateCollectionReq {
     private String metricType = IndexParam.MetricType.IP.name();
     @Builder.Default
     private Boolean autoID = Boolean.FALSE;
+
+    // used by quickly create collections and create collections with schema
     @Builder.Default
     private Boolean enableDynamicField = Boolean.TRUE;
-    private String partitionKeyField;
-    @Builder.Default
-    private Integer numPartitions = 64;
     @Builder.Default
     private Integer numShards = 1;
 
@@ -42,15 +45,40 @@ public class CreateCollectionReq {
 
     private List<IndexParam> indexParams;
 
+    //private String partitionKeyField;
+    private Integer numPartitions;
+
     @Data
     @SuperBuilder
     public static class CollectionSchema {
         @Builder.Default
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
-        @Builder.Default
-        private String description = "";
-        @NonNull
-        private Boolean enableDynamicField;
+
+        public void addField(AddFieldReq addFieldReq) {
+            CreateCollectionReq.FieldSchema fieldSchema = FieldSchema.builder()
+                    .name(addFieldReq.getFieldName())
+                    .dataType(addFieldReq.getDataType())
+                    .description(addFieldReq.getDescription())
+                    .isPrimaryKey(addFieldReq.getIsPrimaryKey())
+                    .isPartitionKey(addFieldReq.getIsPartitionKey())
+                    .autoID(addFieldReq.getAutoID())
+                    .build();
+            if (addFieldReq.getDataType().equals(DataType.Array)) {
+                if (addFieldReq.getElementType() == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Element type, maxCapacity are required for array field");
+                }
+                fieldSchema.setElementType(addFieldReq.getElementType());
+                fieldSchema.setMaxCapacity(addFieldReq.getMaxCapacity());
+            } else if (addFieldReq.getDataType().equals(DataType.VarChar)) {
+                fieldSchema.setMaxLength(addFieldReq.getMaxLength());
+            } else if (addFieldReq.getDataType().equals(DataType.FloatVector) || addFieldReq.getDataType().equals(DataType.BinaryVector)) {
+                if (addFieldReq.getDimension() == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is required for vector field");
+                }
+                fieldSchema.setDimension(addFieldReq.getDimension());
+            }
+            fieldSchemaList.add(fieldSchema);
+        }
 
         public CreateCollectionReq.FieldSchema getField(String fieldName) {
             for (CreateCollectionReq.FieldSchema field : fieldSchemaList) {
@@ -60,82 +88,22 @@ public class CreateCollectionReq {
             }
             return null;
         }
-
-        public void addPrimaryField(String fieldName, DataType dataType, Boolean autoID) {
-            // primary key field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .isPrimaryKey(Boolean.TRUE)
-                    .autoID(autoID)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
-
-        public void addPrimaryField(String fieldName, DataType dataType, Integer maxLength, Boolean autoID) {
-            // primary key field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .maxLength(maxLength)
-                    .isPrimaryKey(Boolean.TRUE)
-                    .autoID(autoID)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
-
-        public void addVectorField(String fieldName, DataType dataType, Integer dimension) {
-            // vector field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .dimension(dimension)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
-
-        public void addScalarField(String fieldName, DataType dataType) {
-            // scalar field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
-
-        public void addScalarField(String fieldName, DataType dataType, Integer maxLength) {
-            // scalar varchar field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .maxLength(maxLength)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
-
-        public void addScalarField(String fieldName, DataType dataType, DataType elementType, Integer maxCapacity) {
-            // array field
-            CreateCollectionReq.FieldSchema fieldSchema = FieldSchema.builder()
-                    .name(fieldName)
-                    .dataType(dataType)
-                    .elementType(elementType)
-                    .maxCapacity(maxCapacity)
-                    .build();
-            fieldSchemaList.add(fieldSchema);
-        }
     }
 
     @Data
     @SuperBuilder
     public static class FieldSchema {
-        //TODO: check here
         private String name;
+        @Builder.Default
+        private String description = "";
         private DataType dataType;
         @Builder.Default
         private Integer maxLength = 65535;
         private Integer dimension;
         @Builder.Default
         private Boolean isPrimaryKey = Boolean.FALSE;
+        @Builder.Default
+        private Boolean isPartitionKey = Boolean.FALSE;
         @Builder.Default
         private Boolean autoID = Boolean.FALSE;
         private DataType elementType;
