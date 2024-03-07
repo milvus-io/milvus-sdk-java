@@ -53,6 +53,7 @@ public class CollectionService extends BaseService {
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(schema.toByteString())
+                .setShardsNum(request.getNumShards())
                 .build();
 
         Status status = blockingStub.createCollection(createCollectionRequest);
@@ -74,6 +75,9 @@ public class CollectionService extends BaseService {
 
     public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
+        if (request.getEnableDynamicField() != null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Please specify enableDynamicField in collection schema when creating collection with schema");
+        }
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
         CollectionSchema grpcSchema = CollectionSchema.newBuilder()
@@ -82,13 +86,15 @@ public class CollectionService extends BaseService {
                 .setEnableDynamicField(request.getCollectionSchema().getEnableDynamicField())
                 .build();
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
-            grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
+            grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(request.getPartitionKeyField(), fieldSchema)).build();
         }
 
         //create collection
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchema.toByteString())
+                .setNumPartitions(request.getNumPartitions())
+                .setShardsNum(request.getNumShards())
                 .build();
 
         Status createCollectionResponse = blockingStub.createCollection(createCollectionRequest);
@@ -181,7 +187,7 @@ public class CollectionService extends BaseService {
         String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setReplicaNumber(request.getReplicaNum())
+                .setReplicaNumber(request.getNumReplicas())
                 .build();
         Status status = milvusServiceBlockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);

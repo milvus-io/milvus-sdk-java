@@ -8,9 +8,10 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SchemaUtils {
-    public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
+    public static FieldSchema convertToGrpcFieldSchema(String partitionKeyField, CreateCollectionReq.FieldSchema fieldSchema) {
         FieldSchema schema = FieldSchema.newBuilder()
                 .setName(fieldSchema.getName())
                 .setDataType(DataType.valueOf(fieldSchema.getDataType().name()))
@@ -19,6 +20,9 @@ public class SchemaUtils {
                 .build();
         if(fieldSchema.getDimension() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("dim").setValue(String.valueOf(fieldSchema.getDimension())).build()).build();
+        }
+        if (Objects.equals(fieldSchema.getName(), partitionKeyField)) {
+            schema = schema.toBuilder().setIsPrimaryKey(Boolean.TRUE).build();
         }
         if(fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();

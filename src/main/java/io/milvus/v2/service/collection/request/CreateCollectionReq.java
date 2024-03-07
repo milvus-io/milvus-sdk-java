@@ -31,6 +31,11 @@ public class CreateCollectionReq {
     private Boolean autoID = Boolean.FALSE;
     @Builder.Default
     private Boolean enableDynamicField = Boolean.TRUE;
+    private String partitionKeyField;
+    @Builder.Default
+    private Integer numPartitions = 64;
+    @Builder.Default
+    private Integer numShards = 1;
 
     // create collections with schema
     private CollectionSchema collectionSchema;
@@ -56,24 +61,24 @@ public class CreateCollectionReq {
             return null;
         }
 
-        public void addPrimaryField(String fieldName, DataType dataType, Boolean isPrimaryKey, Boolean autoID) {
+        public void addPrimaryField(String fieldName, DataType dataType, Boolean autoID) {
             // primary key field
             CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
                     .name(fieldName)
                     .dataType(dataType)
-                    .isPrimaryKey(isPrimaryKey)
+                    .isPrimaryKey(Boolean.TRUE)
                     .autoID(autoID)
                     .build();
             fieldSchemaList.add(fieldSchema);
         }
 
-        public void addPrimaryField(String fieldName, DataType dataType, Integer maxLength, Boolean isPrimaryKey, Boolean autoID) {
+        public void addPrimaryField(String fieldName, DataType dataType, Integer maxLength, Boolean autoID) {
             // primary key field
             CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
                     .name(fieldName)
                     .dataType(dataType)
                     .maxLength(maxLength)
-                    .isPrimaryKey(isPrimaryKey)
+                    .isPrimaryKey(Boolean.TRUE)
                     .autoID(autoID)
                     .build();
             fieldSchemaList.add(fieldSchema);
@@ -89,8 +94,17 @@ public class CreateCollectionReq {
             fieldSchemaList.add(fieldSchema);
         }
 
-        public void addScalarField(String fieldName, DataType dataType, Integer maxLength) {
+        public void addScalarField(String fieldName, DataType dataType) {
             // scalar field
+            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
+                    .name(fieldName)
+                    .dataType(dataType)
+                    .build();
+            fieldSchemaList.add(fieldSchema);
+        }
+
+        public void addScalarField(String fieldName, DataType dataType, Integer maxLength) {
+            // scalar varchar field
             CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
                     .name(fieldName)
                     .dataType(dataType)
@@ -99,11 +113,13 @@ public class CreateCollectionReq {
             fieldSchemaList.add(fieldSchema);
         }
 
-        public void addScalarField(String fieldName, DataType dataType) {
-            // scalar field
-            CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
+        public void addScalarField(String fieldName, DataType dataType, DataType elementType, Integer maxCapacity) {
+            // array field
+            CreateCollectionReq.FieldSchema fieldSchema = FieldSchema.builder()
                     .name(fieldName)
                     .dataType(dataType)
+                    .elementType(elementType)
+                    .maxCapacity(maxCapacity)
                     .build();
             fieldSchemaList.add(fieldSchema);
         }

@@ -42,7 +42,7 @@ public class Simple_Schema {
         }
         // create collection
         CreateCollectionReq.CollectionSchema collectionSchema = client.createSchema(Boolean.TRUE, "");
-        collectionSchema.addPrimaryField("id", DataType.Int64, Boolean.TRUE, Boolean.FALSE);
+        collectionSchema.addPrimaryField("id", DataType.Int64, Boolean.FALSE);
         collectionSchema.addVectorField("vector", DataType.FloatVector, dim);
         collectionSchema.addScalarField("num", DataType.Int32);
 

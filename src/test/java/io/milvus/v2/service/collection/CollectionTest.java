@@ -36,7 +36,7 @@ class CollectionTest extends BaseTest {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(Boolean.TRUE)
                 .build();
-        collectionSchema.addPrimaryField("id", DataType.Int64, null, Boolean.TRUE, Boolean.FALSE);
+        collectionSchema.addPrimaryField("id", DataType.Int64, Boolean.FALSE);
         collectionSchema.addVectorField("vector", DataType.FloatVector,8);
         collectionSchema.addScalarField("meta", DataType.VarChar, 100);
         collectionSchema.addScalarField("age", DataType.Int64);
