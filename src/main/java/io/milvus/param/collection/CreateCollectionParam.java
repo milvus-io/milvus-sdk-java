@@ -38,11 +38,11 @@ public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
     private final String description;
-    private final List<FieldType> fieldTypes;
     private final int partitionsNum;
     private final ConsistencyLevelEnum consistencyLevel;
     private final String databaseName;
 
+    private final List<FieldType> fieldTypes;
     private final boolean enableDynamicField;
 
     private CreateCollectionParam(@NonNull Builder builder) {
@@ -67,10 +67,11 @@ public class CreateCollectionParam {
         private String collectionName;
         private int shardsNum = 0; // default to 0, let server decide the value
         private String description = "";
-        private final List<FieldType> fieldTypes = new ArrayList<>();
+        private List<FieldType> fieldTypes = new ArrayList<>();
         private int partitionsNum = 0;
         private ConsistencyLevelEnum consistencyLevel = ConsistencyLevelEnum.BOUNDED;
         private String databaseName;
+        private CollectionSchemaParam schema;
 
         private boolean enableDynamicField;
         private Builder() {
@@ -113,10 +114,12 @@ public class CreateCollectionParam {
 
         /**
          * Sets the collection if enableDynamicField.
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param enableDynamicField enableDynamicField of the collection
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withEnableDynamicField(boolean enableDynamicField) {
             this.enableDynamicField = enableDynamicField;
             return this;
@@ -136,10 +139,12 @@ public class CreateCollectionParam {
         /**
          * Sets the schema of the collection. The schema cannot be empty or null.
          * @see FieldType
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
             this.fieldTypes.addAll(fieldTypes);
             return this;
@@ -148,10 +153,12 @@ public class CreateCollectionParam {
         /**
          * Adds a field schema.
          * @see FieldType
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder addFieldType(@NonNull FieldType fieldType) {
             this.fieldTypes.add(fieldType);
             return this;
@@ -184,6 +191,18 @@ public class CreateCollectionParam {
         }
 
         /**
+         * Sets the schema of collection.
+         *
+         *
+         * @param schema the schema of collection
+         * @return <code>Builder</code>
+         */
+        public Builder withSchema(@NonNull CollectionSchemaParam schema) {
+            this.schema = schema;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link CreateCollectionParam} instance.
          *
          * @return {@link CreateCollectionParam}
@@ -193,6 +212,15 @@ public class CreateCollectionParam {
 
             if (shardsNum < 0) {
                 throw new ParamException("ShardNum must be larger or equal to 0");
+            }
+
+            if (!fieldTypes.isEmpty() && schema != null) {
+                throw new ParamException("Please use either withFieldTypes(), addFieldType(), or withSchema(), and do not use them simultaneously.");
+            }
+
+            if (schema != null) {
+                fieldTypes = schema.getFieldTypes();
+                enableDynamicField = schema.isEnableDynamicField();
             }
 
             if (fieldTypes.isEmpty()) {
