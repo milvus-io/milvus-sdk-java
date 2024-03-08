@@ -29,6 +29,7 @@ import io.milvus.param.*;
 import io.milvus.param.alias.AlterAliasParam;
 import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
@@ -1197,6 +1198,12 @@ class MilvusServiceClientTest {
                 .withAlias("")
                 .build()
         );
+
+        CreateAliasParam param = CreateAliasParam.newBuilder()
+                .withCollectionName("collection1")
+                .withAlias("alias1")
+                .withDatabaseName("db1")
+                .build();
     }
 
     @Test
@@ -1222,6 +1229,7 @@ class MilvusServiceClientTest {
     void dropAlias() {
         DropAliasParam param = DropAliasParam.newBuilder()
                 .withAlias("alias1")
+                .withDatabaseName("db1")
                 .build();
 
         testFuncByName("dropAlias", param);
@@ -1230,17 +1238,23 @@ class MilvusServiceClientTest {
     @Test
     void alterAliasParam() {
         // test throw exception with illegal input
-        assertThrows(ParamException.class, () -> CreateAliasParam.newBuilder()
+        assertThrows(ParamException.class, () -> AlterAliasParam.newBuilder()
                 .withCollectionName("")
                 .withAlias("alias1")
                 .build()
         );
 
-        assertThrows(ParamException.class, () -> CreateAliasParam.newBuilder()
+        assertThrows(ParamException.class, () -> AlterAliasParam.newBuilder()
                 .withCollectionName("collection1")
                 .withAlias("")
                 .build()
         );
+
+        AlterAliasParam param = AlterAliasParam.newBuilder()
+                .withCollectionName("collection1")
+                .withAlias("alias1")
+                .withDatabaseName("db1")
+                .build();
     }
 
     @Test
@@ -1251,6 +1265,30 @@ class MilvusServiceClientTest {
                 .build();
 
         testFuncByName("alterAlias", param);
+    }
+
+    @Test
+    void listAliasesParam() {
+        // test throw exception with illegal input
+        assertThrows(ParamException.class, () -> ListAliasesParam.newBuilder()
+                .withCollectionName("")
+                .withDatabaseName("")
+                .build()
+        );
+
+        ListAliasesParam param = ListAliasesParam.newBuilder()
+                .withCollectionName("collection1")
+                .withDatabaseName("")
+                .build();
+    }
+
+    @Test
+    void listAliases() {
+        ListAliasesParam param = ListAliasesParam.newBuilder()
+                .withCollectionName("collection1")
+                .build();
+
+        testFuncByName("listAliases", param);
     }
 
     @Test
