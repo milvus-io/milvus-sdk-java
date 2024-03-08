@@ -8,7 +8,6 @@ import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
-import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -81,19 +80,12 @@ public class VectorUtils {
         return guaranteeTimestamp;
     }
 
-    public SearchRequest ConvertToGrpcSearchRequest(@NotNull String metricType, SearchReq request) {
+    public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setDbName("")
                 .setCollectionName(request.getCollectionName());
         if (!request.getPartitionNames().isEmpty()) {
             request.getPartitionNames().forEach(builder::addPartitionNames);
         }
-
-        builder.addSearchParams(
-                KeyValuePair.newBuilder()
-                        .setKey(Constant.METRIC_TYPE)
-                        .setValue(metricType)
-                        .build());
 
 
         // prepare target vectors
@@ -136,13 +128,12 @@ public class VectorUtils {
 
         ByteString byteStr = placeholderGroup.toByteString();
         builder.setPlaceholderGroup(byteStr);
-        //builder.setNq(request.getNQ());
 
         // search parameters
         builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.VECTOR_FIELD)
-                                .setValue(request.getVectorFieldName())
+                                .setValue(request.getAnnsField())
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
@@ -158,13 +149,13 @@ public class VectorUtils {
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.IGNORE_GROWING)
                                 .setValue(String.valueOf(request.isIgnoreGrowing()))
-                                .build());
-
-        builder.addSearchParams(
-                KeyValuePair.newBuilder()
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
                         .setKey(Constant.OFFSET)
                         .setValue(String.valueOf(request.getOffset()))
                         .build());
+
 
         if (null != request.getSearchParams()) {
             try {
