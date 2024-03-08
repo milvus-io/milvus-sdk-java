@@ -1071,12 +1071,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getAlias());
 
         try {
-            CreateAliasRequest createAliasRequest = CreateAliasRequest.newBuilder()
+            CreateAliasRequest.Builder builder = CreateAliasRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setAlias(requestParam.getAlias())
-                    .build();
+                    .setAlias(requestParam.getAlias());
 
-            Status response = blockingStub().createAlias(createAliasRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().createAlias(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1098,11 +1101,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("DropAliasRequest alias:%s", requestParam.getAlias());
 
         try {
-            DropAliasRequest dropAliasRequest = DropAliasRequest.newBuilder()
-                    .setAlias(requestParam.getAlias())
-                    .build();
+            DropAliasRequest.Builder builder = DropAliasRequest.newBuilder()
+                    .setAlias(requestParam.getAlias());
 
-            Status response = blockingStub().dropAlias(dropAliasRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().dropAlias(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1125,14 +1131,46 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getAlias());
 
         try {
-            AlterAliasRequest alterAliasRequest = AlterAliasRequest.newBuilder()
+            AlterAliasRequest.Builder builder = AlterAliasRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setAlias(requestParam.getAlias())
-                    .build();
+                    .setAlias(requestParam.getAlias());
 
-            Status response = blockingStub().alterAlias(alterAliasRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().alterAlias(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<ListAliasesResponse> listAliases(ListAliasesParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("ListAliasesRequest collectionName:%s", requestParam.getCollectionName());
+
+        try {
+            ListAliasesRequest.Builder builder = ListAliasesRequest.newBuilder()
+                    .setCollectionName(requestParam.getCollectionName());
+
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            ListAliasesResponse response = blockingStub().listAliases(builder.build());
+            handleResponse(title, response.getStatus());
+            return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
