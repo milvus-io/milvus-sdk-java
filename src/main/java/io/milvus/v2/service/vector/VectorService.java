@@ -9,8 +9,6 @@ import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.IndexService;
-import io.milvus.v2.service.index.request.DescribeIndexReq;
-import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import org.slf4j.Logger;
@@ -23,7 +21,7 @@ public class VectorService extends BaseService {
 
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         String title = String.format("InsertRequest collectionName:%s", request.getCollectionName());
-        checkCollectionExist(blockingStub, request.getCollectionName());
+
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName()).build();
         DescribeCollectionResponse descResp = blockingStub.describeCollection(describeCollectionRequest);
@@ -37,8 +35,6 @@ public class VectorService extends BaseService {
 
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, UpsertReq request) {
         String title = String.format("UpsertRequest collectionName:%s", request.getCollectionName());
-
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
 
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName()).build();
@@ -58,7 +54,7 @@ public class VectorService extends BaseService {
         } else if (request.getFilter() != null && request.getIds() != null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
+
         DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
 
         if (request.getIds() != null && request.getFilter() == null) {
@@ -76,21 +72,9 @@ public class VectorService extends BaseService {
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, SearchReq request) {
         String title = String.format("SearchRequest collectionName:%s", request.getCollectionName());
 
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
-        DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
-        if (request.getVectorFieldName() == null) {
-            request.setVectorFieldName(descR.getVectorFieldName().get(0));
-        }
+        //checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
 
-        DescribeIndexReq describeIndexReq = DescribeIndexReq.builder()
-                .collectionName(request.getCollectionName())
-                .fieldName(request.getVectorFieldName())
-                .build();
-        DescribeIndexResp respR = indexService.describeIndex(milvusServiceBlockingStub, describeIndexReq);
-        if (respR.getMetricType() == null) {
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "metric type not found");
-        }
-        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(respR.getMetricType(), request);
+        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
@@ -102,7 +86,6 @@ public class VectorService extends BaseService {
 
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
 
         if (request.getFilter() != null && request.getIds() != null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");

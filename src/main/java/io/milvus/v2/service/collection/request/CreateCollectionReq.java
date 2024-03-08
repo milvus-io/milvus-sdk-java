@@ -24,13 +24,13 @@ public class CreateCollectionReq {
     @Builder.Default
     private String primaryFieldName = "id";
     @Builder.Default
-    private DataType primaryFieldType = DataType.Int64;
+    private DataType idType = DataType.Int64;
     @Builder.Default
     private Integer maxLength = 65535;
     @Builder.Default
     private String vectorFieldName = "vector";
     @Builder.Default
-    private String metricType = IndexParam.MetricType.IP.name();
+    private String metricType = IndexParam.MetricType.COSINE.name();
     @Builder.Default
     private Boolean autoID = Boolean.FALSE;
 

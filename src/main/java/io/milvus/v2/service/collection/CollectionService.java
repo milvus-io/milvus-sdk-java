@@ -34,11 +34,11 @@ public class CollectionService extends BaseService {
 
         FieldSchema idSchema = FieldSchema.newBuilder()
                 .setName("id")
-                .setDataType(DataType.valueOf(request.getPrimaryFieldType().name()))
+                .setDataType(DataType.valueOf(request.getIdType().name()))
                 .setIsPrimaryKey(Boolean.TRUE)
                 .setAutoID(request.getAutoID())
                 .build();
-        if(request.getPrimaryFieldType().name().equals("VarChar") && request.getMaxLength() != null){
+        if (request.getIdType().name().equals("VarChar") && request.getMaxLength() != null) {
             idSchema = idSchema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(request.getMaxLength())).build()).build();
         }
 
@@ -153,8 +153,6 @@ public class CollectionService extends BaseService {
     }
 
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DescribeCollectionReq request) {
-        //check collection exists
-        checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
 
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
