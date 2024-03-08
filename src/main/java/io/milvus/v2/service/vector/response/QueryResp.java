@@ -14,6 +14,6 @@ public class QueryResp {
     @Data
     @SuperBuilder
     public static class QueryResult {
-        private Map<String, Object> fields;
+        private Map<String, Object> entity;
     }
 }

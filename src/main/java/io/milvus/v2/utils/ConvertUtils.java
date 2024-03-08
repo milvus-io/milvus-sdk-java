@@ -24,7 +24,7 @@ public class ConvertUtils {
             countField.put("count(*)", numOfEntities);
 
             QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
-                    .fields(countField)
+                    .entity(countField)
                     .build();
             entities.add(queryResult);
 
@@ -32,7 +32,7 @@ public class ConvertUtils {
         }
         queryResultsWrapper.getRowRecords().forEach(rowRecord -> {
             QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
-                    .fields(rowRecord.getFieldValues())
+                    .entity(rowRecord.getFieldValues())
                     .build();
             entities.add(queryResult);
         });
@@ -45,19 +45,20 @@ public class ConvertUtils {
         List<List<SearchResp.SearchResult>> searchResults = new ArrayList<>();
         for (int i = 0; i < numQueries; i++) {
             searchResults.add(searchResultsWrapper.getIDScore(i).stream().map(idScore -> SearchResp.SearchResult.builder()
-                    .fields(idScore.getFieldValues())
-                    .score(idScore.getScore())
+                    .entity(idScore.getFieldValues())
+                    .distance(idScore.getScore())
+                    .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
                     .build()).collect(Collectors.toList()));
         }
         return searchResults;
     }
 
-    public DescribeIndexResp convertToDescribeIndexResp(DescribeIndexResponse response) {
+    public DescribeIndexResp convertToDescribeIndexResp(IndexDescription response) {
         DescribeIndexResp describeIndexResp = DescribeIndexResp.builder()
-                .indexName(response.getIndexDescriptions(0).getIndexName())
-                .fieldName(response.getIndexDescriptions(0).getFieldName())
+                .indexName(response.getIndexName())
+                .fieldName(response.getFieldName())
                 .build();
-        List<KeyValuePair> params = response.getIndexDescriptions(0).getParamsList();
+        List<KeyValuePair> params = response.getParamsList();
         for(KeyValuePair param : params) {
             if (param.getKey().equals("index_type")) {
                 describeIndexResp.setIndexType(param.getValue());

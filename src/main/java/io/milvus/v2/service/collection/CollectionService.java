@@ -44,6 +44,7 @@ public class CollectionService extends BaseService {
 
         CollectionSchema schema = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
+                .setDescription(request.getDescription())
                 .addFields(vectorSchema)
                 .addFields(idSchema)
                 .setEnableDynamicField(request.getEnableDynamicField())
@@ -53,6 +54,7 @@ public class CollectionService extends BaseService {
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(schema.toByteString())
+                .setShardsNum(request.getNumShards())
                 .build();
 
         Status status = blockingStub.createCollection(createCollectionRequest);
@@ -69,7 +71,12 @@ public class CollectionService extends BaseService {
                         .build();
         indexService.createIndex(blockingStub, createIndexReq);
         //load collection
-        loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        try {
+            //TimeUnit.MILLISECONDS.sleep(1000);
+            loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        } catch (Exception e) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed" + e.getMessage());
+        }
     }
 
     public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
@@ -78,8 +85,8 @@ public class CollectionService extends BaseService {
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
         CollectionSchema grpcSchema = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
-                .setDescription(request.getCollectionSchema().getDescription())
-                .setEnableDynamicField(request.getCollectionSchema().getEnableDynamicField())
+                .setDescription(request.getDescription())
+                .setEnableDynamicField(request.getEnableDynamicField())
                 .build();
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
             grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
@@ -89,8 +96,11 @@ public class CollectionService extends BaseService {
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchema.toByteString())
+                .setShardsNum(request.getNumShards())
                 .build();
-
+        if (request.getNumPartitions() != null) {
+            createCollectionRequest = createCollectionRequest.toBuilder().setNumPartitions(request.getNumPartitions()).build();
+        }
         Status createCollectionResponse = blockingStub.createCollection(createCollectionRequest);
         rpcUtils.handleResponse(title, createCollectionResponse);
 
@@ -181,7 +191,7 @@ public class CollectionService extends BaseService {
         String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setReplicaNumber(request.getReplicaNum())
+                .setReplicaNumber(request.getNumReplicas())
                 .build();
         Status status = milvusServiceBlockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
@@ -230,10 +240,8 @@ public class CollectionService extends BaseService {
         return getCollectionStatsResp;
     }
 
-    public CreateCollectionReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
+    public CreateCollectionReq.CollectionSchema createSchema() {
         return CreateCollectionReq.CollectionSchema.builder()
-                .enableDynamicField(enableDynamicField)
-                .description(description)
                 .build();
     }
 

@@ -5,10 +5,7 @@ import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.HasCollectionReq;
-import io.milvus.v2.service.collection.request.LoadCollectionReq;
+import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -30,25 +27,27 @@ public class Simple_Schema {
     static Logger logger = LoggerFactory.getLogger(Simple_Schema.class);
     public void run() throws InterruptedException {
         ConnectConfig connectConfig = ConnectConfig.builder()
-                .uri("https://in01-****.aws-us-west-2.vectordb.zillizcloud.com:19531")
-                .token("******")
+                .uri("https://in01-***.aws-us-west-2.vectordb.zillizcloud.com:19531")
+                .token("***")
                 .build();
         MilvusClientV2 client = new MilvusClientV2(connectConfig);
         // check collection exists
         if (client.hasCollection(HasCollectionReq.builder().collectionName(collectionName).build())) {
             logger.info("collection exists");
             client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
-            TimeUnit.SECONDS.sleep(1);
         }
         // create collection
-        CreateCollectionReq.CollectionSchema collectionSchema = client.createSchema(Boolean.TRUE, "");
-        collectionSchema.addPrimaryField("id", DataType.Int64, Boolean.TRUE, Boolean.FALSE);
-        collectionSchema.addVectorField("vector", DataType.FloatVector, dim);
-        collectionSchema.addScalarField("num", DataType.Int32);
+        CreateCollectionReq.CollectionSchema collectionSchema = client.createSchema();
+        collectionSchema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).isPrimaryKey(Boolean.TRUE).autoID(Boolean.FALSE).description("id").build());
+        collectionSchema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(dim).build());
+        collectionSchema.addField(AddFieldReq.builder().fieldName("num").dataType(DataType.Int64).isPartitionKey(Boolean.TRUE).build());
+        collectionSchema.addField(AddFieldReq.builder().fieldName("array").dataType(DataType.Array).elementType(DataType.Int32).maxCapacity(10).description("array").build());
 
         CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
                 .collectionName(collectionName)
+                .description("simple collection")
                 .collectionSchema(collectionSchema)
+                .enableDynamicField(Boolean.FALSE)
                 .build();
         client.createCollection(createCollectionReq);
         //create index
@@ -61,6 +60,7 @@ public class Simple_Schema {
                 .indexParams(Collections.singletonList(indexParam))
                 .build();
         client.createIndex(createIndexReq);
+        TimeUnit.SECONDS.sleep(1);
         client.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
         //insert data
         List<JSONObject> insertData = new ArrayList<>();
@@ -71,9 +71,12 @@ public class Simple_Schema {
                 // generate random float vector
                 vectorList.add(new Random().nextFloat());
             }
+            List<Integer> array = new ArrayList<>();
+            array.add(i);
             jsonObject.put("id", (long) i);
             jsonObject.put("vector", vectorList);
-            jsonObject.put("num", i);
+            jsonObject.put("num", (long) i);
+            jsonObject.put("array", array);
             insertData.add(jsonObject);
         }
 
@@ -88,11 +91,13 @@ public class Simple_Schema {
                 .filter("id in [0]")
                 .build();
         QueryResp queryResp = client.query(queryReq);
+        queryResp.getQueryResults().get(0).getEntity().get("vector");
         System.out.println(queryResp);
         //search data
         SearchReq searchReq = SearchReq.builder()
                 .collectionName(collectionName)
                 .data(Collections.singletonList(insertData.get(0).get("vector")))
+                .outputFields(Collections.singletonList("vector"))
                 .topK(10)
                 .build();
         SearchResp searchResp = client.search(searchReq);
