@@ -16,7 +16,8 @@ public class SearchReq {
     private String collectionName;
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
-    private String vectorFieldName;
+    @Builder.Default
+    private String annsField = "";
     private int topK;
     private String filter;
     @Builder.Default
