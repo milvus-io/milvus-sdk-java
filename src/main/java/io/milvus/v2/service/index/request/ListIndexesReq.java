@@ -9,4 +9,5 @@ import lombok.experimental.SuperBuilder;
 public class ListIndexesReq {
     @NonNull
     private String collectionName;
+    private String fieldName;
 }

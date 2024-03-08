@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class Simple {
     Integer dim = 2;
@@ -36,19 +35,20 @@ public class Simple {
 
     public void run() throws InterruptedException {
         ConnectConfig connectConfig = ConnectConfig.builder()
-                .uri("https://in01-******.aws-us-west-2.vectordb.zillizcloud.com:19531")
-                .token("*****")
+                .uri("https://in01-***.aws-us-west-2.vectordb.zillizcloud.com:19531")
+                .token("***")
                 .build();
         MilvusClientV2 client = new MilvusClientV2(connectConfig);
         // check collection exists
         if (client.hasCollection(HasCollectionReq.builder().collectionName(collectionName).build())) {
             logger.info("collection exists");
             client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
-            TimeUnit.SECONDS.sleep(1);
+            logger.info("collection dropped");
         }
         // create collection
         CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
                 .collectionName(collectionName)
+                .description("simple collection")
                 .dimension(dim)
                 .build();
         client.createCollection(createCollectionReq);

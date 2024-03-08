@@ -19,12 +19,12 @@ public class SearchReq {
     private String vectorFieldName;
     private int topK;
     private String filter;
-    private List<String> outputFields;
+    @Builder.Default
+    private List<String> outputFields = new ArrayList<>();
     private List<?> data;
     private long offset;
     private long limit;
 
-    //private final Long NQ;
     @Builder.Default
     private int roundDecimal = -1;
     @Builder.Default
@@ -35,11 +35,4 @@ public class SearchReq {
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
     private boolean ignoreGrowing;
-
-//    public String getSearchParams() {
-//        Gson gson = new Gson();
-//        String res = gson.toJson(this.searchParams);
-//        System.out.println("searchParams: " + res);
-//        return res;
-//    }
 }
