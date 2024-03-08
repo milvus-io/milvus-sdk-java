@@ -13,13 +13,18 @@ public class SchemaUtils {
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
         FieldSchema schema = FieldSchema.newBuilder()
                 .setName(fieldSchema.getName())
+                .setDescription(fieldSchema.getDescription())
                 .setDataType(DataType.valueOf(fieldSchema.getDataType().name()))
                 .setIsPrimaryKey(fieldSchema.getIsPrimaryKey())
+                .setIsPartitionKey(fieldSchema.getIsPartitionKey())
                 .setAutoID(fieldSchema.getAutoID())
                 .build();
         if(fieldSchema.getDimension() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("dim").setValue(String.valueOf(fieldSchema.getDimension())).build()).build();
         }
+//        if (Objects.equals(fieldSchema.getName(), partitionKeyField)) {
+//            schema = schema.toBuilder().setIsPartitionKey(Boolean.TRUE).build();
+//        }
         if(fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();
         }
@@ -35,8 +40,6 @@ public class SchemaUtils {
 
     public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
-                .description(schema.getDescription())
-                .enableDynamicField(schema.getEnableDynamicField())
                 .build();
         List<CreateCollectionReq.FieldSchema> fieldSchemas = new ArrayList<>();
         for (FieldSchema fieldSchema : schema.getFieldsList()) {

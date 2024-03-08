@@ -2,6 +2,8 @@ package io.milvus.v2.service.vector;
 
 import io.milvus.grpc.*;
 import io.milvus.response.DescCollResponseWrapper;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
@@ -51,11 +53,14 @@ public class VectorService extends BaseService {
 
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, QueryReq request) {
         String title = String.format("QueryRequest collectionName:%s", request.getCollectionName());
+        if (request.getFilter() == null && request.getIds() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be null at the same time");
+        } else if (request.getFilter() != null && request.getIds() != null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
+        }
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
         DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
-        if(request.getOutputFields() == null){
-            request.setOutputFields(descR.getFieldNames());
-        }
+
         if (request.getIds() != null && request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
         }
@@ -76,15 +81,15 @@ public class VectorService extends BaseService {
         if (request.getVectorFieldName() == null) {
             request.setVectorFieldName(descR.getVectorFieldName().get(0));
         }
-        if(request.getOutputFields() == null){
-            request.setOutputFields(descR.getFieldNames());
-        }
+
         DescribeIndexReq describeIndexReq = DescribeIndexReq.builder()
                 .collectionName(request.getCollectionName())
                 .fieldName(request.getVectorFieldName())
                 .build();
         DescribeIndexResp respR = indexService.describeIndex(milvusServiceBlockingStub, describeIndexReq);
-
+        if (respR.getMetricType() == null) {
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "metric type not found");
+        }
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(respR.getMetricType(), request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);
@@ -98,6 +103,11 @@ public class VectorService extends BaseService {
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
         checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
+
+        if (request.getFilter() != null && request.getIds() != null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
+        }
+
         DescribeCollectionResp respR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
         if (request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
@@ -121,6 +131,10 @@ public class VectorService extends BaseService {
                 .collectionName(request.getCollectionName())
                 .ids(request.getIds())
                 .build();
+        if (request.getOutputFields() != null) {
+            queryReq.setOutputFields(request.getOutputFields());
+        }
+        // call query to get the result
         QueryResp queryResp = query(milvusServiceBlockingStub, queryReq);
 
         return GetResp.builder()

@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 public class LoadCollectionReq {
     private String collectionName;
     @Builder.Default
-    private Integer replicaNum = 1;
+    private Integer numReplicas = 1;
     @Builder.Default
     private Boolean async = Boolean.TRUE;
     @Builder.Default

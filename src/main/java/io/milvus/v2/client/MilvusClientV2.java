@@ -117,12 +117,10 @@ public class MilvusClientV2 {
 
     /**
      * Creates a collection schema.
-     * @param enableDynamicField enable dynamic field
-     * @param description collection description
      * @return CreateCollectionReq.CollectionSchema
      */
-    public CreateCollectionReq.CollectionSchema createSchema(Boolean enableDynamicField, String description) {
-        return collectionService.createSchema(enableDynamicField, description);
+    public CreateCollectionReq.CollectionSchema createSchema() {
+        return collectionService.createSchema();
     }
 
     /**
