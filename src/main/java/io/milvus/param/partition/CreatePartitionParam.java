@@ -23,16 +23,20 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>createPartition</code> interface.
  */
 @Getter
+@ToString
 public class CreatePartitionParam {
+    private final String databaseName;
     private final String collectionName;
     private final String partitionName;
 
     private CreatePartitionParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
     }
@@ -45,10 +49,22 @@ public class CreatePartitionParam {
      * Builder for {@link CreatePartitionParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -86,16 +102,4 @@ public class CreatePartitionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link CreatePartitionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreatePartitionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                '}';
-    }
 }

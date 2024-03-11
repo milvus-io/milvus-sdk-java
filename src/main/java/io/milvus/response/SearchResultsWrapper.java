@@ -57,8 +57,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      */
     public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
         List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
-        long topK = results.getTopK();
         List<IDScore> idScore = getIDScore(indexOfTarget);
+        long topK = Math.min(results.getTopK(), idScore.size());
         for (int i = 0; i < topK; ++i) {
             IDScore score = idScore.get(i);
             QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();

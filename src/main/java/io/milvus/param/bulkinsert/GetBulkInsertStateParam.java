@@ -22,11 +22,13 @@ package io.milvus.param.bulkinsert;
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getBulkInsertState</code> interface.
  */
 @Getter
+@ToString
 public class GetBulkInsertStateParam {
     private final Long task;
 
@@ -69,15 +71,4 @@ public class GetBulkInsertStateParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetBulkInsertStateParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetBulkInsertStateParam{" +
-                "taskID='" + task + '\'' +
-                '}';
-    }
 }

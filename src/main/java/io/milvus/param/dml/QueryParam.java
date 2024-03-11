@@ -26,6 +26,7 @@ import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,9 @@ import java.util.List;
  * Parameters for <code>query</code> interface.
  */
 @Getter
+@ToString
 public class QueryParam {
+    private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final List<String> outFields;
@@ -48,6 +51,7 @@ public class QueryParam {
     private final boolean ignoreGrowing;
 
     private QueryParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.outFields = builder.outFields;
@@ -69,6 +73,7 @@ public class QueryParam {
      * Builder for {@link QueryParam} class.
      */
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private final List<String> partitionNames = Lists.newArrayList();
         private final List<String> outFields = new ArrayList<>();
@@ -82,6 +87,17 @@ public class QueryParam {
         private Boolean ignoreGrowing = Boolean.FALSE;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -231,22 +247,4 @@ public class QueryParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link QueryParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "QueryParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionNames='" + partitionNames.toString() + '\'' +
-                ", outFields=" + outFields.toString() +
-                ", expr='" + expr + '\'' +
-                ", consistencyLevel='" + consistencyLevel + '\'' +
-                ", offset=" + offset +
-                ", limit=" + limit +
-                ", ignoreGrowing='" + ignoreGrowing + '\'' +
-                '}';
-    }
 }

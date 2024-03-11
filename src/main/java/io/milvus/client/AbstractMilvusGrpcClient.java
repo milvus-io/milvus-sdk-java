@@ -616,12 +616,18 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("RenameCollectionRequest collectionName:%s", requestParam.getOldCollectionName());
 
         try {
-            RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
+            RenameCollectionRequest.Builder builder = RenameCollectionRequest.newBuilder()
                     .setOldName(requestParam.getOldCollectionName())
-                    .setNewName(requestParam.getNewCollectionName())
-                    .build();
+                    .setNewName(requestParam.getNewCollectionName());
 
-            Status response = blockingStub().renameCollection(renameCollectionRequest);
+            if (StringUtils.isNotEmpty(requestParam.getOldDatabaseName())) {
+                builder.setDbName(requestParam.getOldDatabaseName());
+            }
+            if (StringUtils.isNotEmpty(requestParam.getNewDatabaseName())) {
+                builder.setNewDBName(requestParam.getNewDatabaseName());
+            }
+
+            Status response = blockingStub().renameCollection(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -848,12 +854,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
-            CreatePartitionRequest createPartitionRequest = CreatePartitionRequest.newBuilder()
+            CreatePartitionRequest.Builder builder = CreatePartitionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setPartitionName(requestParam.getPartitionName())
-                    .build();
+                    .setPartitionName(requestParam.getPartitionName());
 
-            Status response = blockingStub().createPartition(createPartitionRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().createPartition(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -876,12 +885,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
-            DropPartitionRequest dropPartitionRequest = DropPartitionRequest.newBuilder()
+            DropPartitionRequest.Builder builder = DropPartitionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setPartitionName(requestParam.getPartitionName())
-                    .build();
+                    .setPartitionName(requestParam.getPartitionName());
 
-            Status response = blockingStub().dropPartition(dropPartitionRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().dropPartition(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -904,12 +916,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getPartitionName());
 
         try {
-            HasPartitionRequest hasPartitionRequest = HasPartitionRequest.newBuilder()
+            HasPartitionRequest.Builder builder = HasPartitionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setPartitionName(requestParam.getPartitionName())
-                    .build();
+                    .setPartitionName(requestParam.getPartitionName());
 
-            BoolResponse response = blockingStub().hasPartition(hasPartitionRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            BoolResponse response = blockingStub().hasPartition(builder.build());
             handleResponse(title, response.getStatus());
             Boolean result = response.getValue();
             return R.success(result);
@@ -938,12 +953,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .addAllPartitionNames(requestParam.getPartitionNames())
                     .addAllResourceGroups(requestParam.getResourceGroups())
                     .setRefresh(requestParam.isRefresh());
+
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
-            LoadPartitionsRequest loadPartitionsRequest = builder.build();
 
-            Status response = blockingStub().loadPartitions(loadPartitionsRequest);
+            Status response = blockingStub().loadPartitions(builder.build());
             handleResponse(title, response);
 
             // sync load, wait until all partitions finish loading
@@ -972,12 +987,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("ReleasePartitionsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            ReleasePartitionsRequest releasePartitionsRequest = ReleasePartitionsRequest.newBuilder()
+            ReleasePartitionsRequest.Builder builder = ReleasePartitionsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .addAllPartitionNames(requestParam.getPartitionNames())
-                    .build();
+                    .addAllPartitionNames(requestParam.getPartitionNames());
 
-            Status response = blockingStub().releasePartitions(releasePartitionsRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().releasePartitions(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1011,14 +1029,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 }
             }
 
-            GetPartitionStatisticsRequest getPartitionStatisticsRequest = GetPartitionStatisticsRequest.newBuilder()
+            GetPartitionStatisticsRequest.Builder builder = GetPartitionStatisticsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setPartitionName(requestParam.getPartitionName())
-                    .build();
+                    .setPartitionName(requestParam.getPartitionName());
 
-            GetPartitionStatisticsResponse response =
-                    blockingStub().getPartitionStatistics(getPartitionStatisticsRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
 
+            GetPartitionStatisticsResponse response = blockingStub().getPartitionStatistics(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1040,12 +1059,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("ShowPartitionsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            ShowPartitionsRequest showPartitionsRequest = ShowPartitionsRequest.newBuilder()
+            ShowPartitionsRequest.Builder builder = ShowPartitionsRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .addAllPartitionNames(requestParam.getPartitionNames())
-                    .build();
+                    .addAllPartitionNames(requestParam.getPartitionNames());
 
-            ShowPartitionsResponse response = blockingStub().showPartitions(showPartitionsRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            ShowPartitionsResponse response = blockingStub().showPartitions(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1199,12 +1221,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setCollectionName(requestParam.getCollectionName())
                     .setFieldName(requestParam.getFieldName())
                     .setIndexName(requestParam.getIndexName());
+
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
-            CreateIndexRequest createIndexRequest = builder.build();
 
-            Status response = blockingStub().createIndex(createIndexRequest);
+            Status response = blockingStub().createIndex(builder.build());
             handleResponse(title, response);
 
             if (requestParam.isSyncMode()) {
@@ -1238,12 +1260,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
-            DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
+            DropIndexRequest.Builder builder = DropIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
+                    .setIndexName(requestParam.getIndexName());
 
-            Status response = blockingStub().dropIndex(dropIndexRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().dropIndex(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -1269,12 +1294,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setIndexName(requestParam.getIndexName());
+
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
-            DescribeIndexRequest describeIndexRequest = builder.build();
 
-            DescribeIndexResponse response = blockingStub().describeIndex(describeIndexRequest);
+            DescribeIndexResponse response = blockingStub().describeIndex(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1299,12 +1324,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
-            GetIndexStateRequest getIndexStateRequest = GetIndexStateRequest.newBuilder()
+            GetIndexStateRequest.Builder builder = GetIndexStateRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
+                    .setIndexName(requestParam.getIndexName());
 
-            GetIndexStateResponse response = blockingStub().getIndexState(getIndexStateRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetIndexStateResponse response = blockingStub().getIndexState(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1329,12 +1357,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getIndexName());
 
         try {
-            GetIndexBuildProgressRequest getIndexBuildProgressRequest = GetIndexBuildProgressRequest.newBuilder()
+            GetIndexBuildProgressRequest.Builder builder = GetIndexBuildProgressRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName())
-                    .build();
+                    .setIndexName(requestParam.getIndexName());
 
-            GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(getIndexBuildProgressRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetIndexBuildProgressResponse response = blockingStub().getIndexBuildProgress(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1356,14 +1387,17 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("DeleteRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            DeleteRequest deleteRequest = DeleteRequest.newBuilder()
+            DeleteRequest.Builder builder = DeleteRequest.newBuilder()
                     .setBase(MsgBase.newBuilder().setMsgType(MsgType.Delete).build())
                     .setCollectionName(requestParam.getCollectionName())
                     .setPartitionName(requestParam.getPartitionName())
-                    .setExpr(requestParam.getExpr())
-                    .build();
+                    .setExpr(requestParam.getExpr());
 
-            MutationResult response = blockingStub().delete(deleteRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            MutationResult response = blockingStub().delete(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1737,13 +1771,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("GetFlushState collectionName:%s", requestParam.getCollectionName());
 
         try {
-            GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
+            GetFlushStateRequest.Builder builder = GetFlushStateRequest.newBuilder()
                     .addAllSegmentIDs(requestParam.getSegmentIDs())
                     .setCollectionName(requestParam.getCollectionName())
-                    .setFlushTs(requestParam.getFlushTs())
-                    .build();
+                    .setFlushTs(requestParam.getFlushTs());
 
-            GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
+            if (StringUtils.isNotBlank(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetFlushStateResponse response = blockingStub().getFlushState(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1854,12 +1891,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return R.failed(descResp.getException());
             }
 
-            GetReplicasRequest getReplicasRequest = GetReplicasRequest.newBuilder()
+            GetReplicasRequest.Builder builder = GetReplicasRequest.newBuilder()
                     .setCollectionID(descResp.getData().getCollectionID())
-                    .setWithShardNodes(requestParam.isWithShardNodes())
-                    .build();
+                    .setWithShardNodes(requestParam.isWithShardNodes());
 
-            GetReplicasResponse response = blockingStub().getReplicas(getReplicasRequest);
+            if (StringUtils.isNotBlank(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetReplicasResponse response = blockingStub().getReplicas(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1881,13 +1921,20 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = "LoadBalanceRequest";
 
         try {
-            LoadBalanceRequest loadBalanceRequest = LoadBalanceRequest.newBuilder()
+            LoadBalanceRequest.Builder builder = LoadBalanceRequest.newBuilder()
                     .setSrcNodeID(requestParam.getSrcNodeID())
                     .addAllDstNodeIDs(requestParam.getDestNodeIDs())
-                    .addAllSealedSegmentIDs(requestParam.getSegmentIDs())
-                    .build();
+                    .addAllSealedSegmentIDs(requestParam.getSegmentIDs());
 
-            Status response = blockingStub().loadBalance(loadBalanceRequest);
+            if (StringUtils.isNotBlank(requestParam.getCollectionName())) {
+                builder.setCollectionName(requestParam.getCollectionName());
+            }
+
+            if (StringUtils.isNotBlank(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            Status response = blockingStub().loadBalance(builder.build());
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
@@ -2341,10 +2388,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("SelectGrantForRoleRequest roleName:%s", requestParam.getRoleName());
 
         try {
+            GrantEntity.Builder builder = GrantEntity.newBuilder()
+                    .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build());
+
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
             SelectGrantRequest request = SelectGrantRequest.newBuilder()
-                    .setEntity(GrantEntity.newBuilder()
-                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
-                            .build())
+                    .setEntity(builder.build())
                     .build();
 
             SelectGrantResponse response = blockingStub().selectGrant(request);
@@ -2398,20 +2450,24 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("BulkInsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            ImportRequest.Builder importRequest = ImportRequest.newBuilder()
+            ImportRequest.Builder builder = ImportRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .addAllFiles(requestParam.getFiles());
 
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
             if (StringUtils.isNotEmpty(requestParam.getPartitionName())) {
-                importRequest.setPartitionName(requestParam.getPartitionName());
+                builder.setPartitionName(requestParam.getPartitionName());
             }
 
             List<KeyValuePair> options = ParamUtils.AssembleKvPair(requestParam.getOptions());
             if (CollectionUtils.isNotEmpty(options)) {
-                options.forEach(importRequest::addOptions);
+                options.forEach(builder::addOptions);
             }
 
-            ImportResponse response = blockingStub().import_(importRequest.build());
+            ImportResponse response = blockingStub().import_(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -2460,12 +2516,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName());
 
         try {
-            ListImportTasksRequest listImportTasksRequest = ListImportTasksRequest.newBuilder()
+            ListImportTasksRequest.Builder builder = ListImportTasksRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setLimit(requestParam.getLimit())
-                    .build();
+                    .setLimit(requestParam.getLimit());
 
-            ListImportTasksResponse response = blockingStub().listImportTasks(listImportTasksRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            ListImportTasksResponse response = blockingStub().listImportTasks(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -2488,12 +2547,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName());
 
         try {
-            GetLoadingProgressRequest getLoadingProgressRequest = GetLoadingProgressRequest.newBuilder()
+            GetLoadingProgressRequest.Builder builder = GetLoadingProgressRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .addAllPartitionNames(requestParam.getPartitionNames())
-                    .build();
+                    .addAllPartitionNames(requestParam.getPartitionNames());
 
-            GetLoadingProgressResponse response = blockingStub().getLoadingProgress(getLoadingProgressRequest);
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
+            GetLoadingProgressResponse response = blockingStub().getLoadingProgress(builder.build());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -2519,6 +2581,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             GetLoadStateRequest.Builder builder = GetLoadStateRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .addAllPartitionNames(requestParam.getPartitionNames());
+
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }

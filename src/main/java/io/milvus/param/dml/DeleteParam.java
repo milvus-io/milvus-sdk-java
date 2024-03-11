@@ -24,17 +24,21 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>delete</code> interface.
  */
 @Getter
+@ToString
 public class DeleteParam {
+    protected final String databaseName;
     private final String collectionName;
     private final String partitionName;
     private final String expr;
 
     private DeleteParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.expr = builder.expr;
@@ -48,11 +52,23 @@ public class DeleteParam {
      * Builder for {@link DeleteParam} class.
      */
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName = "";
         private String expr;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -102,17 +118,4 @@ public class DeleteParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link DeleteParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "DeleteParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", expr='" + expr + '\'' +
-                '}';
-    }
 }

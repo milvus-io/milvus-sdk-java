@@ -22,6 +22,7 @@ package io.milvus.param.control;
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,12 +33,17 @@ import java.util.List;
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+17+--+Support+handoff+and+load+balance+segment+on+query+nodes">Handoff and load balance</a>
  */
 @Getter
+@ToString
 public class LoadBalanceParam {
+    private final String databaseName;
+    private final String collectionName;
     private final Long srcNodeID;
     private final List<Long> destNodeIDs;
     private final List<Long> segmentIDs;
 
     private LoadBalanceParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
         this.srcNodeID = builder.srcNodeID;
         this.destNodeIDs = builder.destNodeIDs;
         this.segmentIDs = builder.segmentIDs;
@@ -48,28 +54,38 @@ public class LoadBalanceParam {
     }
 
     /**
-     * Constructs a <code>String</code> by {@link LoadBalanceParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "LoadBalanceParam{" +
-                "srcNodeID='" + srcNodeID + '\'' +
-                "destNodeIDs='" + destNodeIDs.toString() + '\'' +
-                "segmentIDs='" + segmentIDs.toString() + '\'' +
-                '}';
-    }
-
-    /**
      * Builder for {@link LoadBalanceParam} class.
      */
     public static final class Builder {
+        private String databaseName;
+        private String collectionName;
         private final List<Long> destNodeIDs = new ArrayList<>();
         private final List<Long> segmentIDs = new ArrayList<>();
         private Long srcNodeID;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
+         * Sets the collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
+            return this;
         }
 
         /**
@@ -150,4 +166,5 @@ public class LoadBalanceParam {
             return new LoadBalanceParam(this);
         }
     }
+
 }

@@ -20,10 +20,10 @@
 package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.Objects;
 
@@ -31,11 +31,16 @@ import java.util.Objects;
  * Parameters for <code>renameCollection</code> interface.
  */
 @Getter
+@ToString
 public class RenameCollectionParam {
+    private final String oldDatabaseName;
+    private final String newDatabaseName;
     private final String oldCollectionName;
     private final String newCollectionName;
 
     public RenameCollectionParam(@NonNull Builder builder) {
+        this.oldDatabaseName = builder.oldDatabaseName;
+        this.newDatabaseName = builder.newDatabaseName;
         this.oldCollectionName = builder.oldCollectionName;
         this.newCollectionName = builder.newCollectionName;
     }
@@ -48,11 +53,35 @@ public class RenameCollectionParam {
      * Builder for {@link RenameCollectionParam} class.
      */
     public static final class Builder {
+        private String oldDatabaseName;
+        private String newDatabaseName;
         private String oldCollectionName;
 
         private String newCollectionName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the old database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withOldDatabaseName(String databaseName) {
+            this.oldDatabaseName = databaseName;
+            return this;
+        }
+
+        /**
+         * Sets the old database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withNewDatabaseName(String databaseName) {
+            this.newDatabaseName = databaseName;
+            return this;
         }
 
         /**
@@ -90,16 +119,4 @@ public class RenameCollectionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link RenameCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "RenameCollectionParam{" +
-                "oldCollectionName='" + oldCollectionName + '\'' +
-                ", NewCollectionName=" + newCollectionName + '\'' +
-                '}';
-    }
 }

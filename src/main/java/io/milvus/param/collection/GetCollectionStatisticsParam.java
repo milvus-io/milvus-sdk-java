@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getCollectionStatistics</code> interface.
  */
 @Getter
+@ToString
 public class GetCollectionStatisticsParam {
     private final String databaseName;
     private final String collectionName;
@@ -103,16 +105,4 @@ public class GetCollectionStatisticsParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetCollectionStatisticsParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetCollectionStatisticsParam{" +
-                "collectionName='" + collectionName + '\'' +
-                " flush=" + flushCollection +
-                '}';
-    }
 }

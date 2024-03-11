@@ -24,17 +24,21 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getPartitionStatistics</code> interface.
  */
 @Getter
+@ToString
 public class GetPartitionStatisticsParam {
+    private final String databaseName;
     private final String collectionName;
     private final String partitionName;
     private final boolean flushCollection;
 
     private GetPartitionStatisticsParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.flushCollection = builder.flushCollection;
@@ -48,6 +52,7 @@ public class GetPartitionStatisticsParam {
      * Builder for {@link GetPartitionStatisticsParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName;
 
@@ -56,6 +61,17 @@ public class GetPartitionStatisticsParam {
         private Boolean flushCollection = Boolean.FALSE;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -104,17 +120,4 @@ public class GetPartitionStatisticsParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetPartitionStatisticsParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetPartitionStatisticsParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", flush=" + flushCollection +
-                '}';
-    }
 }

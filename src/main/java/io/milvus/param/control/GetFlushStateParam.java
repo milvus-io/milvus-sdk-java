@@ -4,6 +4,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,14 +13,17 @@ import java.util.List;
  * Parameters for <code>getMetric</code> interface.
  */
 @Getter
+@ToString
 public class GetFlushStateParam {
-    private final List<Long> segmentIDs;
+    private final String databaseName;
     private final String collectionName;
+    private final List<Long> segmentIDs;
     private final Long flushTs;
 
     private GetFlushStateParam(@NonNull Builder builder) {
-        this.segmentIDs = builder.segmentIDs;
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.segmentIDs = builder.segmentIDs;
         this.flushTs = builder.flushTs;
     }
 
@@ -31,11 +35,23 @@ public class GetFlushStateParam {
      * Builder for {@link GetFlushStateParam} class.
      */
     public static final class Builder {
-        private final List<Long> segmentIDs = new ArrayList<>(); // deprecated
+        private String databaseName;
         private String collectionName;
+        private final List<Long> segmentIDs = new ArrayList<>(); // deprecated
         private Long flushTs = 0L;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -96,16 +112,4 @@ public class GetFlushStateParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetFlushStateParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetFlushStateParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", flushTs=" + flushTs +
-                '}';
-    }
 }

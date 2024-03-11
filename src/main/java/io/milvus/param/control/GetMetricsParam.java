@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getMetric</code> interface.
  */
 @Getter
+@ToString
 public class GetMetricsParam {
     private final String request;
 
@@ -75,15 +77,4 @@ public class GetMetricsParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetMetricsParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetMetricsParam{" +
-                "request='" + request + '\'' +
-                '}';
-    }
 }

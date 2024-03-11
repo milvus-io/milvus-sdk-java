@@ -21,30 +21,28 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
-import org.apache.commons.lang3.StringUtils;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * Parameters for <code>alterCollection</code> interface.
  */
 @Getter
+@ToString
 public class AlterCollectionParam {
     private final String collectionName;
+    private final String databaseName;
     private final Map<String, String> properties = new HashMap<>();
 
     private AlterCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
-        if (builder.ttlSeconds >= 0) {
-            this.properties.put(Constant.TTL_SECONDS, Integer.toString(builder.ttlSeconds));
-        }
+        this.databaseName = builder.databaseName;
+        this.properties.putAll(builder.properties);
     }
 
     public static Builder newBuilder() {
@@ -56,11 +54,9 @@ public class AlterCollectionParam {
      */
     public static final class Builder {
         private String collectionName;
+        private String databaseName;
 
-        // The ttlSeconds value should be 0 or greater.
-        // In server side, the default value is 0, which means TTL is disabled.
-        // Here we set ttlSeconds = -1 to avoid being overwritten with unconscious
-        private Integer ttlSeconds = -1;
+        private final Map<String, String> properties = new HashMap<>();
 
 
         private Builder() {
@@ -78,8 +74,20 @@ public class AlterCollectionParam {
         }
 
         /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
          * Collection time to live (TTL) is the expiration time of data in a collection.
          * Expired data in the collection will be cleaned up and will not be involved in searches or queries.
+         * In server side, the default value is 0, which means TTL is disabled.
          * Specify TTL in the unit of seconds.
          *
          * @param ttlSeconds TTL seconds, value should be 0 or greater
@@ -89,7 +97,19 @@ public class AlterCollectionParam {
             if (ttlSeconds < 0) {
                 throw new ParamException("The ttlSeconds value should be 0 or greater");
             }
-            this.ttlSeconds = ttlSeconds;
+
+            return this.withProperty(Constant.TTL_SECONDS, Integer.toString(ttlSeconds));
+        }
+
+        /**
+         * Basic method to set a key-value property.
+         *
+         * @param key the key
+         * @param value the value
+         * @return <code>Builder</code>
+         */
+        public Builder withProperty(@NonNull String key, @NonNull String value) {
+            this.properties.put(key, value);
             return this;
         }
 
@@ -105,16 +125,4 @@ public class AlterCollectionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link AlterCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "AlterCollectionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", properties='" + properties.toString() + '\'' +
-                '}';
-    }
 }

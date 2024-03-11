@@ -25,6 +25,7 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -33,6 +34,7 @@ import java.util.List;
  * Parameters for <code>insert</code> interface.
  */
 @Getter
+@ToString
 public class InsertParam {
     protected final List<Field> fields;
     protected final List<JSONObject> rows;
@@ -208,24 +210,6 @@ public class InsertParam {
     }
 
     /**
-     * Constructs a <code>String</code> by {@link InsertParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        String baseStr = "InsertParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", rowCount=" + rowCount;
-        if (!CollectionUtils.isEmpty(fields)) {
-            return baseStr + ", columns=" + fields + '}';
-        } else {
-            return baseStr + '}';
-        }
-    }
-
-    /**
      * Internal class for insert data.
      * If dataType is Bool, values is List of Boolean;
      * If dataType is Int64, values is List of Long;
@@ -242,6 +226,7 @@ public class InsertParam {
      *
      */
     @lombok.Builder
+    @ToString
     public static class Field {
         private final String name;
         private final List<?> values;
@@ -267,19 +252,6 @@ public class InsertParam {
          */
         public List<?> getValues() {
             return values;
-        }
-
-        /**
-         * Constructs a <code>String</code> by {@link InsertParam.Field} instance.
-         *
-         * @return <code>String</code>
-         */
-        @Override
-        public String toString() {
-            return "Field{" +
-                    "fieldName='" + name + '\'' +
-                    ", row_count=" + values.size() +
-                    '}';
         }
     }
 }

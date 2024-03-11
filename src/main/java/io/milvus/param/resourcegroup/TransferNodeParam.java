@@ -24,8 +24,10 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class TransferNodeParam {
     private final String sourceGroupName;
     private final String targetGroupName;
@@ -98,17 +100,4 @@ public class TransferNodeParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link TransferNodeParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "TransferNodeParam{" +
-                "sourceGroupName='" + sourceGroupName + '\'' +
-                "targetGroupName='" + targetGroupName + '\'' +
-                "nodeNumber='" + nodeNumber +
-                '}';
-    }
 }
