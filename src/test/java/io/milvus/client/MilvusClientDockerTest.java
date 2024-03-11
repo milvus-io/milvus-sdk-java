@@ -24,6 +24,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
@@ -1844,6 +1848,89 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testAlias() {
+        // collection schema
+        List<FieldType> fieldsSchema = new ArrayList<>();
+        fieldsSchema.add(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withDataType(DataType.Int64)
+                .withName("id")
+                .build());
+
+        fieldsSchema.add(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName("vector")
+                .withDimension(dimension)
+                .build());
+
+        // create collection A
+        R<RpcStatus> response = client.createCollection(CreateCollectionParam.newBuilder()
+                .withCollectionName("coll_A")
+                .withFieldTypes(fieldsSchema)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+
+        // create collection B
+        response = client.createCollection(CreateCollectionParam.newBuilder()
+                .withCollectionName("coll_B")
+                .withFieldTypes(fieldsSchema)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+
+        // create alias
+        response = client.createAlias(CreateAliasParam.newBuilder()
+                .withCollectionName("coll_A")
+                .withAlias("alias_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+
+        R<Boolean> has = client.hasCollection(HasCollectionParam.newBuilder()
+                .withCollectionName("alias_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), has.getStatus().intValue());
+        Assertions.assertEquals(has.getData(), true);
+
+        R<ListAliasesResponse> listResp = client.listAliases(ListAliasesParam.newBuilder()
+                .withCollectionName("coll_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), listResp.getStatus().intValue());
+        Assertions.assertEquals(listResp.getData().getAliases(0), "alias_A");
+        Assertions.assertEquals(listResp.getData().getCollectionName(), "coll_A");
+
+        // alter alias
+        response = client.alterAlias(AlterAliasParam.newBuilder()
+                .withAlias("alias_A")
+                .withCollectionName("coll_B")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), listResp.getStatus().intValue());
+
+        has = client.hasCollection(HasCollectionParam.newBuilder()
+                .withCollectionName("alias_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), has.getStatus().intValue());
+        Assertions.assertEquals(has.getData(), true);
+
+        listResp = client.listAliases(ListAliasesParam.newBuilder()
+                .withCollectionName("coll_B")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), listResp.getStatus().intValue());
+        Assertions.assertEquals(listResp.getData().getAliases(0), "alias_A");
+        Assertions.assertEquals(listResp.getData().getCollectionName(), "coll_B");
+
+        // drop alias
+        response = client.dropAlias(DropAliasParam.newBuilder()
+                .withAlias("alias_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
+
+        has = client.hasCollection(HasCollectionParam.newBuilder()
+                .withCollectionName("alias_A")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), has.getStatus().intValue());
+        Assertions.assertEquals(has.getData(), false);
     }
 
     @Test

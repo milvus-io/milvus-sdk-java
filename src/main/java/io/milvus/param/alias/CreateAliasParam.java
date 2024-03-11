@@ -12,10 +12,12 @@ import lombok.NonNull;
 @Getter
 public class CreateAliasParam {
     private final String collectionName;
+    private final String databaseName;
     private final String alias;
 
     private CreateAliasParam(@NonNull CreateAliasParam.Builder builder) {
         this.collectionName = builder.collectionName;
+        this.databaseName = builder.databaseName;
         this.alias = builder.alias;
     }
 
@@ -28,6 +30,7 @@ public class CreateAliasParam {
      */
     public static final class Builder {
         private String collectionName;
+        private String databaseName;
         private String alias;
 
         private Builder() {
@@ -41,6 +44,17 @@ public class CreateAliasParam {
          */
         public Builder withCollectionName(@NonNull String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
             return this;
         }
 
@@ -77,6 +91,7 @@ public class CreateAliasParam {
     public String toString() {
         return "CreateAliasParam{" +
                 "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
                 ", alias='" + alias + '\'' +
                 '}';
     }

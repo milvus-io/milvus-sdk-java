@@ -45,6 +45,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.Status respCreateAlias;
     private io.milvus.grpc.Status respDropAlias;
     private io.milvus.grpc.Status respAlterAlias;
+    private io.milvus.grpc.ListAliasesResponse respListAliases;
     private io.milvus.grpc.Status respCreateIndex;
     private io.milvus.grpc.DescribeIndexResponse respDescribeIndex;
     private io.milvus.grpc.GetIndexStateResponse respGetIndexState;
@@ -322,6 +323,19 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     public void setAlterAliasResponse(io.milvus.grpc.Status resp) {
         respAlterAlias = resp;
+    }
+
+    @Override
+    public void listAliases(io.milvus.grpc.ListAliasesRequest request,
+                           io.grpc.stub.StreamObserver<io.milvus.grpc.ListAliasesResponse> responseObserver) {
+        logger.info("MockServer receive listAliases() call");
+
+        responseObserver.onNext(respListAliases);
+        responseObserver.onCompleted();
+    }
+
+    public void setListAliasesResponse(io.milvus.grpc.ListAliasesResponse resp) {
+        respListAliases = resp;
     }
 
     @Override
