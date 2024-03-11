@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +35,7 @@ import java.util.Objects;
  * Parameters for <code>loadPartition</code> interface.
  */
 @Getter
+@ToString
 public class LoadPartitionsParam {
     private final String databaseName;
     private final String collectionName;
@@ -260,18 +263,4 @@ public class LoadPartitionsParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link LoadPartitionsParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "LoadPartitionsParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionNames.toString() + '\'' +
-                ", syncLoad=" + syncLoad +
-                ", syncLoadWaitingInterval=" + syncLoadWaitingInterval +
-                '}';
-    }
 }

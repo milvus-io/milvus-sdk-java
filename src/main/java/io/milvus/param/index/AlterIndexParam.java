@@ -24,6 +24,7 @@ import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.Map;
  * Parameters for <code>alterCollection</code> interface.
  */
 @Getter
+@ToString
 public class AlterIndexParam {
     private final String collectionName;
     private final String databaseName;
@@ -131,18 +133,4 @@ public class AlterIndexParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link AlterIndexParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "AlterIndexParam{" +
-                "collectionName='" + collectionName + '\'' +
-                "dbName='" + databaseName + '\'' +
-                "indexName='" + indexName + '\'' +
-                ", properties='" + properties.toString() + '\'' +
-                '}';
-    }
 }

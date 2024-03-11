@@ -25,6 +25,8 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ import java.util.List;
  * Parameters for <code>showCollections</code> interface.
  */
 @Getter
+@ToString
 public class ShowCollectionsParam {
     private final List<String> collectionNames;
     private final ShowType showType;
@@ -118,16 +121,4 @@ public class ShowCollectionsParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link ShowCollectionsParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ShowCollectionsParam{" +
-                "collectionNames='" + collectionNames.toString() + '\'' +
-                ", showType=" + showType.toString() +
-                '}';
-    }
 }

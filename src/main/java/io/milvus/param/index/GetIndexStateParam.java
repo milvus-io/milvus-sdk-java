@@ -25,17 +25,21 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>getIndexState</code> interface.
  */
 @Getter
+@ToString
 public class GetIndexStateParam {
+    private final String databaseName;
     private final String collectionName;
     private final String indexName;
 
     private GetIndexStateParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
     }
@@ -48,10 +52,22 @@ public class GetIndexStateParam {
      * Builder for {@link GetIndexStateParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String indexName = Constant.DEFAULT_INDEX_NAME;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -93,16 +109,4 @@ public class GetIndexStateParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetIndexStateParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetIndexStateParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", indexName='" + indexName + '\'' +
-                '}';
-    }
 }

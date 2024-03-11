@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import io.milvus.exception.ParamException;
 
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * Parameters for <code>upsert</code> interface.
  */
+@ToString
 public class UpsertParam extends InsertParam {
     private UpsertParam(@NonNull Builder builder) {
         super(builder);
@@ -97,21 +99,4 @@ public class UpsertParam extends InsertParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link UpsertParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        String baseStr = "UpsertParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", rowCount=" + rowCount;
-        if (!CollectionUtils.isEmpty(fields)) {
-            return baseStr + ", columns=" + fields + '}';
-        } else {
-            return baseStr + '}';
-        }
-    }
 }

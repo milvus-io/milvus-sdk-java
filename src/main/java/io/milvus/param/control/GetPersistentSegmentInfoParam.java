@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getPersistentSegmentInfo</code> interface.
  */
 @Getter
+@ToString
 public class GetPersistentSegmentInfoParam {
     private final String collectionName;
 
@@ -72,15 +74,4 @@ public class GetPersistentSegmentInfoParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetPersistentSegmentInfoParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetPersistentSegmentInfoParam{" +
-                "collectionName='" + collectionName + '\'' +
-                '}';
-    }
 }

@@ -23,6 +23,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,13 +35,16 @@ import java.util.Map;
  * Parameters for <code>bulkInsert</code> interface.
  */
 @Getter
+@ToString
 public class BulkInsertParam {
+    private final String databaseName;
     private final String collectionName;
     private final String partitionName;
     private final List<String> files;
     private final Map<String, String> options;
 
     private BulkInsertParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.files = builder.files;
@@ -55,11 +59,23 @@ public class BulkInsertParam {
      * Builder for {@link BulkInsertParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName;
         private final List<String> files = new ArrayList<>();
         private final Map<String, String> options = new HashMap<>();
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -143,18 +159,4 @@ public class BulkInsertParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link BulkInsertParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "BulkInsertParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionName='" + partitionName + '\'' +
-                ", files=" + files +
-                ", options=" + options +
-                '}';
-    }
 }

@@ -406,10 +406,13 @@ public class ParamUtils {
     @SuppressWarnings("unchecked")
     public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setDbName("")
                 .setCollectionName(requestParam.getCollectionName());
+
         if (!requestParam.getPartitionNames().isEmpty()) {
             requestParam.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
         }
 
         // prepare target vectors
@@ -538,6 +541,10 @@ public class ParamUtils {
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
                 .setGuaranteeTimestamp(guaranteeTimestamp);
+
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
+        }
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (requestParam.getConsistencyLevel() == null) {
