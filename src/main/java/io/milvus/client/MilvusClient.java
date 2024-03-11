@@ -310,6 +310,14 @@ public interface MilvusClient {
     R<RpcStatus> alterAlias(AlterAliasParam requestParam);
 
     /**
+     * List all alias for a collection.
+     *
+     * @param requestParam {@link ListAliasesParam}
+     * @return {status:result code, data:ListAliasesResponse{status, aliases}}
+     */
+    R<ListAliasesResponse> listAliases(ListAliasesParam requestParam);
+
+    /**
      * Creates an index on a vector field in the specified collection.
      * Note that index building is an async progress.
      *

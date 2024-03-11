@@ -309,6 +309,14 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<ListAliasesResponse> listAliases(ListAliasesParam requestParam) {
+        List<R<ListAliasesResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
+                .map(serverSetting -> serverSetting.getClient().listAliases(requestParam))
+                .collect(Collectors.toList());
+        return handleResponse(response);
+    }
+
+    @Override
     public R<RpcStatus> createIndex(CreateIndexParam requestParam) {
         List<R<RpcStatus>> response = this.clusterFactory.getAvailableServerSettings().parallelStream()
                 .map(serverSetting -> serverSetting.getClient().createIndex(requestParam))

@@ -6,16 +6,13 @@ import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
 
-/**
- * Parameters for <code>dropAlias</code> interface.
- */
 @Getter
-public class DropAliasParam {
-    private final String alias;
+public class ListAliasesParam {
+    private final String collectionName;
     private final String databaseName;
 
-    private DropAliasParam(@NonNull Builder builder) {
-        this.alias = builder.alias;
+    private ListAliasesParam(@NonNull Builder builder) {
+        this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
     }
 
@@ -24,23 +21,23 @@ public class DropAliasParam {
     }
 
     /**
-     * Builder for {@link DropAliasParam} class.
+     * Builder for {@link ListAliasesParam} class.
      */
     public static final class Builder {
-        private String alias;
+        private String collectionName;
         private String databaseName;
 
         private Builder() {
         }
 
         /**
-         * Sets collection alias. Collection alias cannot be empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
          *
-         * @param alias alias of the collection
+         * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withAlias(@NonNull String alias) {
-            this.alias = alias;
+        public Builder withCollectionName(@NonNull String collectionName) {
+            this.collectionName = collectionName;
             return this;
         }
 
@@ -56,26 +53,26 @@ public class DropAliasParam {
         }
 
         /**
-         * Verifies parameters and creates a new {@link DropAliasParam} instance.
+         * Verifies parameters and creates a new {@link ListAliasesParam} instance.
          *
-         * @return {@link DropAliasParam}
+         * @return {@link ListAliasesParam}
          */
-        public DropAliasParam build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(alias, "Alias");
+        public ListAliasesParam build() throws ParamException {
+            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
 
-            return new DropAliasParam(this);
+            return new ListAliasesParam(this);
         }
     }
 
     /**
-     * Constructs a <code>String</code> by {@link DropAliasParam} instance.
+     * Constructs a <code>String</code> by {@link ListAliasesParam} instance.
      *
      * @return <code>String</code>
      */
     @Override
     public String toString() {
-        return "DropAliasParam{" +
-                ", alias='" + alias + '\'' +
+        return "ListAliasesParam{" +
+                "collectionName='" + collectionName + '\'' +
                 "databaseName='" + databaseName + '\'' +
                 '}';
     }

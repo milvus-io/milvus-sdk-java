@@ -1,16 +1,15 @@
 package io.milvus.response;
 
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.CollectionSchema;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.DescribeCollectionResponse;
-import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Util class to wrap response of <code>describeCollection</code> interface.
@@ -186,6 +185,19 @@ public class DescCollResponseWrapper {
     }
 
     /**
+     * Get properties of the collection.
+     *
+     * @return List of String, aliases of the collection
+     */
+    public Map<String, String> getProperties() {
+        Map<String, String> pairs = new HashMap<>();
+        List<KeyValuePair> props = response.getPropertiesList();
+        props.forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
+
+        return pairs;
+    }
+
+    /**
      * Construct a <code>String</code> by {@link DescCollResponseWrapper} instance.
      *
      * @return <code>String</code>
@@ -201,6 +213,7 @@ public class DescCollResponseWrapper {
                 ", aliases:" + getAliases().toString() +
                 ", fields:" + getFields().toString() +
                 ", isDynamicFieldEnabled:" + isDynamicFieldEnabled() +
+                ", properties:" + getProperties() +
                 '}';
     }
 }
