@@ -24,8 +24,10 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class CreateResourceGroupParam {
     private final String groupName;
 
@@ -69,15 +71,4 @@ public class CreateResourceGroupParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link CreateResourceGroupParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateResourceGroupParam{" +
-                "groupName='" + groupName +
-                '}';
-    }
 }

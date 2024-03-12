@@ -5,11 +5,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>dropAlias</code> interface.
  */
 @Getter
+@ToString
 public class DropAliasParam {
     private final String alias;
     private final String databaseName;
@@ -67,16 +69,4 @@ public class DropAliasParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link DropAliasParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "DropAliasParam{" +
-                ", alias='" + alias + '\'' +
-                "databaseName='" + databaseName + '\'' +
-                '}';
-    }
 }

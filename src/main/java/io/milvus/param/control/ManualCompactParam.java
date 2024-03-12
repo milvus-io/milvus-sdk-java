@@ -4,6 +4,7 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>manualCompact</code> interface.
@@ -11,6 +12,7 @@ import lombok.NonNull;
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
 @Getter
+@ToString
 public class ManualCompactParam {
     private final String collectionName;
 
@@ -20,18 +22,6 @@ public class ManualCompactParam {
 
     public static Builder newBuilder() {
         return new Builder();
-    }
-
-    /**
-     * Constructs a <code>String</code> by {@link ManualCompactParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ManualCompactionParam{" +
-                "collectionName='" + collectionName + '\'' +
-                '}';
     }
 
     /**

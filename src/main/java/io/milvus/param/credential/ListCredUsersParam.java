@@ -3,8 +3,10 @@ package io.milvus.param.credential;
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class ListCredUsersParam {
 
     private ListCredUsersParam(@NonNull ListCredUsersParam.Builder builder) {
@@ -32,13 +34,4 @@ public class ListCredUsersParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link ListCredUsersParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ListCredUsersParam{}";
-    }
 }

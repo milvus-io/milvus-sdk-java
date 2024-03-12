@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>releaseCollection</code> interface.
  */
 @Getter
+@ToString
 public class ReleaseCollectionParam {
     private final String databaseName;
     private final String collectionName;
@@ -86,15 +88,4 @@ public class ReleaseCollectionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link ReleaseCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ReleaseCollectionParam{" +
-                "databaseName='" + databaseName + '\'' +
-                "collectionName='" + collectionName + '\'' + '}';
-    }
 }

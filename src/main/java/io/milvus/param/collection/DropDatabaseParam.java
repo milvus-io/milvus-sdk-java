@@ -23,11 +23,13 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>dropDatabase</code> interface.
  */
 @Getter
+@ToString
 public class DropDatabaseParam {
     private final String databaseName;
 
@@ -71,14 +73,4 @@ public class DropDatabaseParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link DropDatabaseParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "DropDatabaseParam{" +
-                "databaseName='" + databaseName + '\'' + '}';
-    }
 }
