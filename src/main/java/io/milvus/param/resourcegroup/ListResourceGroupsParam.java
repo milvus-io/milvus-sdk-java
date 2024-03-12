@@ -23,8 +23,10 @@ package io.milvus.param.resourcegroup;
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class ListResourceGroupsParam {
     private ListResourceGroupsParam(@NonNull Builder builder) {
     }

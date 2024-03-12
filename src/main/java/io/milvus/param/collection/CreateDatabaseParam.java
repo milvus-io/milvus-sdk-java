@@ -23,11 +23,13 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>createDatabase</code> interface.
  */
 @Getter
+@ToString
 public class CreateDatabaseParam {
     private final String databaseName;
 
@@ -71,15 +73,4 @@ public class CreateDatabaseParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link CreateDatabaseParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateDatabaseParam{" +
-                "databaseName='" + databaseName + '\'' +
-                '}';
-    }
 }

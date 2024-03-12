@@ -5,8 +5,10 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class ListAliasesParam {
     private final String collectionName;
     private final String databaseName;
@@ -64,16 +66,4 @@ public class ListAliasesParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link ListAliasesParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ListAliasesParam{" +
-                "collectionName='" + collectionName + '\'' +
-                "databaseName='" + databaseName + '\'' +
-                '}';
-    }
 }

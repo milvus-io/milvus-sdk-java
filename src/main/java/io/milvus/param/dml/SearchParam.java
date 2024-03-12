@@ -28,6 +28,8 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -35,7 +37,9 @@ import java.util.List;
  * Parameters for <code>search</code> interface.
  */
 @Getter
+@ToString
 public class SearchParam {
+    private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final String metricType;
@@ -54,6 +58,7 @@ public class SearchParam {
     private final boolean ignoreGrowing;
 
     private SearchParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.metricType = builder.metricType.name();
@@ -80,6 +85,7 @@ public class SearchParam {
      * Builder for {@link SearchParam} class.
      */
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private final List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.None;
@@ -97,7 +103,18 @@ public class SearchParam {
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
 
-       Builder() {
+        Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -323,25 +340,4 @@ public class SearchParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link SearchParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "SearchParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", partitionNames='" + partitionNames.toString() + '\'' +
-                ", metricType=" + metricType +
-                ", target vectors count=" + vectors.size() +
-                ", vectorFieldName='" + vectorFieldName + '\'' +
-                ", topK=" + topK +
-                ", nq=" + NQ +
-                ", expr='" + expr + '\'' +
-                ", params='" + params + '\'' +
-                ", consistencyLevel='" + consistencyLevel + '\'' +
-                ", ignoreGrowing='" + ignoreGrowing + '\'' +
-                '}';
-    }
 }

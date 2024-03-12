@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>dropCollection</code> interface.
  */
 @Getter
+@ToString
 public class DropCollectionParam {
     private final String collectionName;
     private final String databaseName;
@@ -86,14 +88,4 @@ public class DropCollectionParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link DropCollectionParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "DropCollectionParam{" +
-                "collectionName='" + collectionName + '\'' + '}';
-    }
 }

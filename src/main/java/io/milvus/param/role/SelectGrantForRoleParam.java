@@ -2,6 +2,7 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
+import io.milvus.param.partition.ShowPartitionsParam;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -9,10 +10,12 @@ import lombok.ToString;
 @Getter
 @ToString
 public class SelectGrantForRoleParam {
+    private final String databaseName;
 
     private final String roleName;
 
     private SelectGrantForRoleParam(@NonNull SelectGrantForRoleParam.Builder builder) {
+        this.databaseName = builder.databaseName;
         this.roleName = builder.roleName;
     }
 
@@ -24,9 +27,21 @@ public class SelectGrantForRoleParam {
      * Builder for {@link SelectGrantForRoleParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String roleName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

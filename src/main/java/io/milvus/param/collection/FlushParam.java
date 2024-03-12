@@ -6,6 +6,8 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,6 +17,7 @@ import java.util.Objects;
  * Note that the flush interface is not exposed currently.
  */
 @Getter
+@ToString
 public class FlushParam {
     private final String databaseName;
     private final List<String> collectionNames;
@@ -165,18 +168,4 @@ public class FlushParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link FlushParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "FlushParam{" +
-                "collectionNames='" + collectionNames + '\'' +
-                ", syncFlush=" + syncFlush.toString() +
-                ", syncFlushWaitingInterval=" + syncFlushWaitingInterval +
-                ", syncFlushWaitingTimeout=" + syncFlushWaitingTimeout +
-                '}';
-    }
 }

@@ -24,11 +24,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>getQuerySegmentInfo</code> interface.
  */
 @Getter
+@ToString
 public class GetQuerySegmentInfoParam {
     private final String collectionName;
 
@@ -72,15 +74,4 @@ public class GetQuerySegmentInfoParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link GetQuerySegmentInfoParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "GetQuerySegmentInfoParam{" +
-                "collectionName='" + collectionName + '\'' +
-                '}';
-    }
 }

@@ -20,20 +20,22 @@
 package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.LoadCollectionParam;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>listBulkInsertTasks</code> interface.
  */
 @Getter
+@ToString
 public class ListBulkInsertTasksParam {
+    private final String databaseName;
     private final String collectionName;
     private final int limit;
 
     private ListBulkInsertTasksParam(@NonNull Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.limit = builder.limit;
     }
@@ -46,6 +48,7 @@ public class ListBulkInsertTasksParam {
      * Builder for {@link ListBulkInsertTasksParam} class.
      */
     public static final class Builder {
+        private String databaseName;
         private String collectionName = ""; // empty string will list all tasks in the server side
 
         // The limit count of returned tasks, list all tasks if the value is 0
@@ -53,6 +56,17 @@ public class ListBulkInsertTasksParam {
         private Integer limit = 0;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**
@@ -92,16 +106,4 @@ public class ListBulkInsertTasksParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link ListBulkInsertTasksParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "ListBulkInsertTasksParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", limit=" + limit +
-                '}';
-    }
 }

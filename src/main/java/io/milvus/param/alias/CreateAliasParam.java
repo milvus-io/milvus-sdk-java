@@ -5,11 +5,13 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Parameters for <code>createAlias</code> interface.
  */
 @Getter
+@ToString
 public class CreateAliasParam {
     private final String collectionName;
     private final String databaseName;
@@ -82,17 +84,4 @@ public class CreateAliasParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link CreateAliasParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "CreateAliasParam{" +
-                "collectionName='" + collectionName + '\'' +
-                "databaseName='" + databaseName + '\'' +
-                ", alias='" + alias + '\'' +
-                '}';
-    }
 }

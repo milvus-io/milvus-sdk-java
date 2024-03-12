@@ -26,6 +26,8 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,7 @@ import java.util.Map;
  * @see CreateCollectionParam
  */
 @Getter
+@ToString
 public class FieldType {
     private final String name;
     private final boolean primaryKey;
@@ -332,21 +335,4 @@ public class FieldType {
         }
     }
 
-    /**
-     * Construct a <code>String</code> by {@link FieldType} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "FieldType{" +
-                "name='" + name + '\'' +
-                ", type='" + dataType.name() + '\'' +
-                ", elementType='" + elementType.name() + '\'' +
-                ", primaryKey=" + primaryKey +
-                ", partitionKey=" + partitionKey +
-                ", autoID=" + autoID +
-                ", params=" + typeParams +
-                '}';
-    }
 }

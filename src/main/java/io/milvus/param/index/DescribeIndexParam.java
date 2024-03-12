@@ -25,12 +25,14 @@ import io.milvus.param.ParamUtils;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>describeIndex</code> interface.
  */
 @Getter
+@ToString
 public class DescribeIndexParam {
     private final String databaseName;
     private final String collectionName;
@@ -104,16 +106,4 @@ public class DescribeIndexParam {
         }
     }
 
-    /**
-     * Constructs a <code>String</code> by {@link DescribeIndexParam} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "DescribeIndexParam{" +
-                "collectionName='" + collectionName + '\'' +
-                ", indexName='" + indexName + '\'' +
-                '}';
-    }
 }
