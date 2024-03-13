@@ -12,6 +12,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author yongpeng.li
@@ -23,7 +24,7 @@ public class SearchTest extends BaseTest {
     @DataProvider(name = "filterAndExcept")
     public Object[][] providerData() {
         return new Object[][]{
-                //{CommonData.fieldVarchar + " like \"%0\" ", topK},
+                {CommonData.fieldVarchar + " like \"%0\" ", topK},
                 {CommonData.fieldInt64 + " < 10 ", topK},
                 {CommonData.fieldInt64 + " != 10 ", topK},
                 {CommonData.fieldInt64 + " <= 10 ", topK},
@@ -62,13 +63,29 @@ public class SearchTest extends BaseTest {
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                .vectorFieldName(CommonData.fieldFloatVector)
+                .annsField(CommonData.fieldFloatVector)
                 .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
                 .topK(topK)
                 .build());
         System.out.println(search);
         Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
+    }
+
+    @Test(description = "default search output params return id and distance", groups = {"Smoke"})
+    public void searchWithDefaultOutput() {
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(CommonData.defaultFloatVectorCollection)
+                .filter(CommonData.fieldInt64 + " < 10 ")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .annsField(CommonData.fieldFloatVector)
+                .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
+                .topK(topK)
+                .build());
+        System.out.println(search);
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        Assert.assertEquals(search.getSearchResults().get(0).size(), topK);
+        Assert.assertEquals(search.getSearchResults().get(0).get(0).getEntity().keySet().size(),0);
     }
 
     @Test(description = "search in partition", groups = {"Smoke"}, dataProvider = "searchPartition")
@@ -78,7 +95,7 @@ public class SearchTest extends BaseTest {
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                .vectorFieldName(CommonData.fieldFloatVector)
+                .annsField(CommonData.fieldFloatVector)
                 .partitionNames(partitionName)
                 .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
                 .topK(topK)
@@ -95,7 +112,7 @@ public class SearchTest extends BaseTest {
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                .vectorFieldName(CommonData.fieldFloatVector)
+                .annsField(CommonData.fieldFloatVector)
                 .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
                 .topK(topK)
                 .build());

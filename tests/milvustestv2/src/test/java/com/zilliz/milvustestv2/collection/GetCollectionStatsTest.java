@@ -8,6 +8,7 @@ import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.vector.request.InsertReq;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -39,6 +40,6 @@ public class GetCollectionStatsTest extends BaseTest {
                 .collectionName(newCollectionName)
                 .build());
         // getCollectionStats is not accurate, so comment the assert
-        //Assert.assertEquals(collectionStats.getNumOfEntities().longValue(),CommonData.numberEntities);
+        Assert.assertEquals(collectionStats.getNumOfEntities().longValue(),CommonData.numberEntities);
     }
 }
