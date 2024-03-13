@@ -61,7 +61,7 @@ public class ReleasePartitionsTest extends BaseTest {
                     .collectionName(newCollection)
                     .outputFields(Lists.newArrayList("*"))
                     .consistencyLevel(ConsistencyLevel.STRONG)
-                    .vectorFieldName(CommonData.fieldFloatVector)
+                    .annsField(CommonData.fieldFloatVector)
                     .partitionNames(Lists.newArrayList(CommonData.partitionName))
                     .data(GenerateUtil.generateFloatVector(10, 3, CommonData.dim))
                     .topK(CommonData.topK)
