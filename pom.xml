@@ -74,7 +74,7 @@
         <versio.maven.source.plugin>3.2.1</versio.maven.source.plugin>
         <javax.annotation.version>1.2</javax.annotation.version>
         <commons.text.version>1.10.0</commons.text.version>
-        <slf4j.api.version>1.7.30</slf4j.api.version>
+        <slf4j.api.version>1.7.36</slf4j.api.version>
         <log4j.slf4j.version>2.17.1</log4j.slf4j.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
@@ -90,12 +90,22 @@
         <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
         <junit.platform.version>1.1.0</junit.platform.version>
         <junit.jupiter.engine.version>5.10.1</junit.jupiter.engine.version>
-        <jackson.version>2.12.7.1</jackson.version>
+        <jackson.version>2.16.1</jackson.version>
         <gson.version>2.10.1</gson.version>
         <kotlin.version>1.6.20</kotlin.version>
         <version.fastjson>1.2.83</version.fastjson>
         <mockito.version>5.8.0</mockito.version>
         <testcontainers.version>1.19.6</testcontainers.version>
+
+        <hadoop.version>2.6.0</hadoop.version>
+        <hbase.version>1.2.0</hbase.version>
+        <parquet.version>1.13.1</parquet.version>
+        <unirest.version>3.13.10</unirest.version>
+        <!--storage sdk-->
+        <aws-java-sdk-s3.version>1.12.312</aws-java-sdk-s3.version>
+        <minio-java-sdk.veresion>8.2.1</minio-java-sdk.veresion>
+        <azure-java-blob-sdk.version>12.24.0</azure-java-blob-sdk.version>
+        <azure-java-identity-sdk.version>1.10.1</azure-java-identity-sdk.version>
     </properties>
 
     <dependencyManagement>
@@ -106,6 +116,26 @@
                 <version>${grpc.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -163,16 +193,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
             <version>${commons-collections4.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -241,6 +261,77 @@
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
             <version>${version.fastjson}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-avro</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>${unirest.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-client</artifactId>
+            <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>netty</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-csv</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <!-- storage sdk-->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>${aws-java-sdk-s3.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <version>${aws-java-sdk-s3.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>${minio-java-sdk.veresion}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-storage-blob</artifactId>
+            <version>${azure-java-blob-sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-identity</artifactId>
+            <version>${azure-java-identity-sdk.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jna-platform</artifactId>
+                    <groupId>net.java.dev.jna</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
