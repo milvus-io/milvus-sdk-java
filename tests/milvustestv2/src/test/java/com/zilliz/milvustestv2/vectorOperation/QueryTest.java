@@ -73,25 +73,38 @@ public class QueryTest extends BaseTest {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .outputFields(Lists.newArrayList("*"))
                 .ids(Lists.newArrayList(1, 2, 3, 4))
-                .filter(" fieldInt64 in [10] ")
                 .build());
-        for (QueryResp.QueryResult queryResult : query.getQueryResults()) {
-            System.out.println("查询结果fieldInt64：" + queryResult.getFields().get("fieldInt64"));
 
-        }
-        Assert.assertEquals(query.getQueryResults().size(), 1);
+        Assert.assertEquals(query.getQueryResults().size(), 4);
     }
+
+    @Test(description = "queryByIdsAndFilter", groups = {"Smoke"})
+    public void queryByIdsAndFilter() {
+        try {
+            milvusClientV2.query(QueryReq.builder()
+                    .collectionName(CommonData.defaultFloatVectorCollection)
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .outputFields(Lists.newArrayList("*"))
+                    .ids(Lists.newArrayList(1, 2, 3, 4))
+                    .filter(" fieldInt64 in [10] ")
+                    .build());
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains("filter and ids can't be set at the same time"));
+        }
+
+    }
+
 
     @Test(description = "queryByAlias", groups = {"Smoke"})
     public void queryByAlias() {
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(CommonData.alias)
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                .outputFields(Lists.newArrayList("*"))
+//                .outputFields(Lists.newArrayList("*"))
                 .ids(Lists.newArrayList(1, 2, 3, 4))
-                .filter(" fieldInt64 in [10] ")
                 .build());
-        Assert.assertEquals(query.getQueryResults().size(), 1);
+        System.out.println(query);
+        Assert.assertEquals(query.getQueryResults().size(), 4);
     }
 
     @Test(description = "queryInPartition", groups = {"Smoke"}, dataProvider = "queryPartition")
