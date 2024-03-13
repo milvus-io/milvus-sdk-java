@@ -51,7 +51,6 @@ public class GrantPrivilegeTest extends BaseTest {
 
     @AfterMethod(alwaysRun = true)
     public void revokeRolePrivilege() {
-        System.out.println("after:" + privilege);
         milvusClientV2.revokePrivilege(RevokePrivilegeReq.builder()
                 .roleName(CommonData.roleName)
                 .privilege(privilege)

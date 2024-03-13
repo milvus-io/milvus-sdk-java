@@ -109,13 +109,13 @@ public class CommonFunction {
         fieldSchemaList.add(fieldFloatVector);
         CreateCollectionReq.CollectionSchema collectionSchema= CreateCollectionReq.CollectionSchema.builder()
                 .fieldSchemaList(fieldSchemaList)
-                .description("Auto test collection")
-                .enableDynamicField(false)
                 .build();
         CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
                 .collectionSchema(collectionSchema)
                 .collectionName(collectionName)
                 .enableDynamicField(false)
+                .description("collection desc")
+                .numShards(1)
                 .build();
         BaseTest.milvusClientV2.createCollection(createCollectionReq);
         log.info("create collection:" + collectionName);
@@ -274,7 +274,7 @@ public class CommonFunction {
                 .collectionName(collectionName)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                .vectorFieldName(CommonData.fieldFloatVector)
+                .annsField(CommonData.fieldFloatVector)
                 .data(GenerateUtil.generateFloatVector(10, 3, CommonData.dim))
                 .topK(CommonData.topK)
                 .build());
