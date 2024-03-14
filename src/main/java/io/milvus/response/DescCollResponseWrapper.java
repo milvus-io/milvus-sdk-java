@@ -3,6 +3,7 @@ package io.milvus.response;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
+import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
 
@@ -195,6 +196,18 @@ public class DescCollResponseWrapper {
         props.forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
 
         return pairs;
+    }
+
+    /**
+     * Get the collection schema of collection
+     *
+     * @return {@link CollectionSchemaParam} schema of the collection
+     */
+    public CollectionSchemaParam getSchema() {
+        return CollectionSchemaParam.newBuilder()
+                .withFieldTypes(getFields())
+                .withEnableDynamicField(getEnableDynamicField())
+                .build();
     }
 
     /**

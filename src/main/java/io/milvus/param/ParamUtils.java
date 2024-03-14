@@ -52,7 +52,7 @@ public class ParamUtils {
         checkFieldData(fieldSchema, values, false);
     }
 
-    private static void checkFieldData(FieldType fieldSchema, List<?> values, boolean verifyElementType) {
+    public static void checkFieldData(FieldType fieldSchema, List<?> values, boolean verifyElementType) {
         HashMap<DataType, String> errMsgs = getTypeErrorMsg();
         DataType dataType = verifyElementType ? fieldSchema.getElementType() : fieldSchema.getDataType();
 
