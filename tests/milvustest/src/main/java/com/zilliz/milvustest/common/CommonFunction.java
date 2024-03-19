@@ -858,5 +858,45 @@ public class CommonFunction {
             .withFields(fields).build());
   }
 
-
+  public  static  CollectionSchemaParam provideJsonCollectionSchema(){
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("float_field").withDataType(DataType.Float).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(128)
+                    .build();
+    FieldType fieldType4 = FieldType.newBuilder()
+            .withName("boolean_field")
+            .withDataType(DataType.Bool)
+            .build();
+    FieldType fieldType5 = FieldType.newBuilder()
+            .withName("string_field")
+            .withDataType(DataType.VarChar)
+            .withMaxLength(100)
+            .build();
+    FieldType fieldType6 = FieldType.newBuilder()
+            .withName("json_field")
+            .withDataType(DataType.JSON)
+            .build();
+//    FieldType fieldType7 = FieldType.newBuilder()
+//            .withName("array_field")
+//            .withDataType(DataType.Array)
+//            .build();
+    return CollectionSchemaParam.newBuilder()
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .addFieldType(fieldType4)
+            .addFieldType(fieldType5)
+            .addFieldType(fieldType6).build();
+  }
 }
