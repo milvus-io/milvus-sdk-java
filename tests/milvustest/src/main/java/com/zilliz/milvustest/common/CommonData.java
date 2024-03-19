@@ -24,6 +24,7 @@ public class CommonData {
   public static String defaultUserName = "UserNameAT";
   public static String defaultPassword = "Password123AT";
   public static String defaultBulkLoadPath = "./src/test/java/resources/temp/";
+  public static String defaultBulkWritePath = "./src/test/java/resources/temp/bulkWrite/";
   public static String defaultRowJson = "rowJson";
   public static String defaultRowStrJson = "rowStrJson";
   public static String defaultColJson = "colJson";
