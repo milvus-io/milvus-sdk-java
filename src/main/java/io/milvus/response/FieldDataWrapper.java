@@ -9,6 +9,7 @@ import io.milvus.grpc.FieldData;
 import io.milvus.exception.IllegalResponseException;
 
 import io.milvus.grpc.ScalarField;
+import io.milvus.param.ParamUtils;
 import lombok.NonNull;
 
 import java.nio.ByteBuffer;
@@ -31,7 +32,7 @@ public class FieldDataWrapper {
     }
 
     public boolean isVectorField() {
-        return fieldData.getType() == DataType.FloatVector || fieldData.getType() == DataType.BinaryVector;
+        return ParamUtils.isVectorDataType(fieldData.getType());
     }
 
     public boolean isJsonField() {
