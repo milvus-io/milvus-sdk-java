@@ -271,7 +271,7 @@ public class FieldType {
                 throw new ParamException("String type is not supported, use Varchar instead");
             }
 
-            if (dataType == DataType.FloatVector || dataType == DataType.BinaryVector) {
+            if (ParamUtils.isVectorDataType(dataType)) {
                 if (!typeParams.containsKey(Constant.VECTOR_DIM)) {
                     throw new ParamException("Vector field dimension must be specified");
                 }
@@ -317,9 +317,8 @@ public class FieldType {
                     throw new ParamException("String type is not supported, use Varchar instead");
                 }
                 if (elementType == DataType.None || elementType == DataType.Array
-                        || elementType == DataType.JSON || elementType == DataType.String
-                        || elementType == DataType.FloatVector || elementType == DataType.Float16Vector
-                        || elementType == DataType.BinaryVector || elementType == DataType.UNRECOGNIZED) {
+                        || elementType == DataType.JSON || ParamUtils.isVectorDataType(elementType)
+                        || elementType == DataType.UNRECOGNIZED) {
                     throw new ParamException("Unsupported element type");
                 }
 

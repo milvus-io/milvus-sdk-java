@@ -217,7 +217,7 @@ public class InsertParam {
      * If dataType is Double, values is List of Double;
      * If dataType is Varchar, values is List of String;
      * If dataType is FloatVector, values is List of List Float;
-     * If dataType is BinaryVector, values is List of ByteBuffer;
+     * If dataType is BinaryVector/Float16Vector/BFloat16Vector, values is List of ByteBuffer;
      * If dataType is Array, values can be List of List Boolean/Integer/Short/Long/Float/Double/String;
      *
      * Note:

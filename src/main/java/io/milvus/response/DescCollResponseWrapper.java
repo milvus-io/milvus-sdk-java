@@ -177,7 +177,7 @@ public class DescCollResponseWrapper {
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
             FieldSchema field = schema.getFields(i);
-            if (field.getDataType() == DataType.FloatVector || field.getDataType() == DataType.BinaryVector) {
+            if (ParamUtils.isVectorDataType(field.getDataType())) {
                 return ParamUtils.ConvertField(field);
             }
         }
