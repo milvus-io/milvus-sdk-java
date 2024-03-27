@@ -77,6 +77,11 @@ public class VectorService extends BaseService {
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);
+        while (response.getStatus().getCode() == 2200) {
+            //https://github.com/milvus-io/milvus/issues/29656
+            //issue fix, while the status code is 2200, retry the search request
+            response = milvusServiceBlockingStub.search(searchRequest);
+        }
         rpcUtils.handleResponse(title, response.getStatus());
 
         return SearchResp.builder()
