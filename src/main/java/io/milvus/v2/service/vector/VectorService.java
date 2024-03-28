@@ -14,6 +14,8 @@ import io.milvus.v2.service.vector.response.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
     public CollectionService collectionService = new CollectionService();
@@ -77,16 +79,7 @@ public class VectorService extends BaseService {
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
         SearchResults response = milvusServiceBlockingStub.search(searchRequest);
-        int retryCount = 3;
-        while (response.getStatus().getCode() == 2200) {
-            if (retryCount == 0) {
-                throw new MilvusClientException(ErrorCode.SERVER_ERROR, "retry search request failed");
-            }
-            //https://github.com/milvus-io/milvus/issues/29656
-            //issue fix, while the status code is 2200, retry the search request
-            response = milvusServiceBlockingStub.search(searchRequest);
-            retryCount--;
-        }
+
         rpcUtils.handleResponse(title, response.getStatus());
 
         return SearchResp.builder()
