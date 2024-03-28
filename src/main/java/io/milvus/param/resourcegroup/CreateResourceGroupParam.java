@@ -20,6 +20,7 @@
 
 package io.milvus.param.resourcegroup;
 
+import io.milvus.common.resourcegroup.ResourceGroupConfig;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
@@ -30,9 +31,11 @@ import lombok.ToString;
 @ToString
 public class CreateResourceGroupParam {
     private final String groupName;
+    private final ResourceGroupConfig config;
 
     private CreateResourceGroupParam(@NonNull Builder builder) {
         this.groupName = builder.groupName;
+        this.config = builder.config;
     }
 
     public static Builder newBuilder() {
@@ -44,6 +47,7 @@ public class CreateResourceGroupParam {
      */
     public static final class Builder {
         private String groupName;
+        private ResourceGroupConfig config;
 
         private Builder() {
         }
@@ -56,6 +60,17 @@ public class CreateResourceGroupParam {
          */
         public Builder withGroupName(@NonNull String groupName) {
             this.groupName = groupName;
+            return this;
+        }
+
+        /**
+         * Sets the resource group config.
+         * 
+         * @param config configuration of resource group
+         * @return <code>Builder</code>
+         */
+        public Builder withConfig(@NonNull ResourceGroupConfig config) {
+            this.config = config;
             return this;
         }
 

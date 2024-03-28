@@ -19,8 +19,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.milvus</groupId>
@@ -56,9 +56,11 @@
     </scm>
 
     <distributionManagement>
+        <!--正式版本-->
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <id>maven-snapshots</id>
+            <name>Snapshots repository</name>
+            <url>https://nexus.zilliz.cc/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -438,6 +440,7 @@
             </extension>
         </extensions>
         <plugins>
+            <!--
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -449,6 +452,7 @@
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
+        -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
@@ -466,9 +470,21 @@
                 <version>${protobuf.maven.plugin.version}</version>
                 <configuration>
                     <protoSourceRoot>src/main/milvus-proto/proto</protoSourceRoot>
-                    <protocArtifact>com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:${protoc.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                    <outputTargets>
+                        <outputTarget>
+                            <type>java</type>
+                            <outputDirectory>src/main/java</outputDirectory>
+                        </outputTarget>
+                        <outputTarget>
+                            <type>grpc-java</type>
+                            <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
+                            <outputDirectory>src/main/java</outputDirectory>
+                        </outputTarget>
+                    </outputTargets>
                 </configuration>
                 <executions>
                     <execution>
@@ -488,7 +504,7 @@
                         <id>enforce</id>
                         <configuration>
                             <rules>
-                                <requireUpperBoundDeps/>
+                                <requireUpperBoundDeps />
                             </rules>
                         </configuration>
                         <goals>
@@ -522,5 +538,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
