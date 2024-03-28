@@ -41,8 +41,8 @@ public class IndexParam {
 
     @Getter
     public enum IndexType {
-        INVALID,
-        //Only supported for float vectors
+        None(0),
+        // Only supported for float vectors
         FLAT(1),
         IVF_FLAT(2),
         IVF_SQ8(3),
@@ -52,20 +52,27 @@ public class IndexParam {
         AUTOINDEX(11),
         SCANN(12),
 
-        // GPU index
+        // GPU indexes only for float vectors
         GPU_IVF_FLAT(50),
         GPU_IVF_PQ(51),
+        GPU_BRUTE_FORCE(52),
+        GPU_CAGRA(53),
 
-        //Only supported for binary vectors
+        // Only supported for binary vectors
         BIN_FLAT(80),
         BIN_IVF_FLAT(81),
 
-        //Scalar field index start from here
-        //Only for varchar type field
+        // Only for varchar type field
         TRIE("Trie", 100),
-        //Only for scalar type field
-        STL_SORT(200),
+        // Only for scalar type field
+        STL_SORT(200), // only for numeric type field
+        INVERTED(201), // works for all scalar fields except JSON type field
+
+        // Only for sparse vectors
+        SPARSE_INVERTED_INDEX(300),
+        SPARSE_WAND(301)
         ;
+
         private final String name;
         private final int code;
 
