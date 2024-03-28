@@ -8,7 +8,7 @@ public enum CloudStorage {
     GCP("storage.googleapis.com", null),
     AZURE("%s.blob.core.windows.net", "accountName"),
     ALI("oss-%s.aliyuncs.com", "region"),
-    TC("cos.region.myqcloud.com", "region")
+    TC("cos.%s.myqcloud.com", "region")
     ;
 
     private String endpoint;
