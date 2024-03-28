@@ -32,6 +32,7 @@ import lombok.ToString;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.SortedMap;
 
 /**
  * Parameters for <code>search</code> interface.
@@ -238,6 +239,7 @@ public class SearchParam {
          * @param vectors list of target vectors:
          *                if vector type is FloatVector, vectors is List of List Float;
          *                if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer;
+         *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float];
          * @return <code>Builder</code>
          */
         public Builder withVectors(@NonNull List<?> vectors) {
@@ -310,6 +312,7 @@ public class SearchParam {
 
             if (vectors.get(0) instanceof List) {
                 // float vectors
+                // TODO: here only check the first element, potential risk
                 List<?> first = (List<?>) vectors.get(0);
                 if (!(first.get(0) instanceof Float)) {
                     throw new ParamException("Float vector field's value must be Lst<Float>");
@@ -324,6 +327,7 @@ public class SearchParam {
                 }
             } else if (vectors.get(0) instanceof ByteBuffer) {
                 // binary vectors
+                // TODO: here only check the first element, potential risk
                 ByteBuffer first = (ByteBuffer) vectors.get(0);
                 int dim = first.position();
                 for (int i = 1; i < vectors.size(); ++i) {
@@ -332,8 +336,18 @@ public class SearchParam {
                         throw new ParamException("Target vector dimension must be equal");
                     }
                 }
+            } else if (vectors.get(0) instanceof SortedMap) {
+                // sparse vectors, must be SortedMap<Long, Float>
+                // TODO: here only check the first element, potential risk
+                SortedMap<?, ?> map = (SortedMap<?, ?>) vectors.get(0);
+
+
             } else {
-                throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
+                String msg = "Search target vector type is illegal." +
+                        " Only allow List<Float> for FloatVector," +
+                        " ByteBuffer for BinaryVector/Float16Vector/BFloat16Vector," +
+                        " List<SortedMap<Long, Float>> for SparseFloatVector.";
+                throw new ParamException(msg);
             }
 
             return new SearchParam(this);
