@@ -30,14 +30,12 @@ public enum CloudStorage {
         return String.format(endpoint, replaceParams[0]);
     }
 
-    public String getObjectUrl(String bucketName, String commonPrefix, String region) {
+    public String getS3ObjectUrl(String bucketName, String commonPrefix, String region) {
         switch (this) {
             case AWS:
                 return String.format("https://s3.%s.amazonaws.com/%s/%s", region, bucketName, commonPrefix);
             case GCP:
                 return String.format("https://storage.cloud.google.com/%s/%s", bucketName, commonPrefix);
-            case AZURE:
-                return String.format("https://zillizvdctest.blob.core.windows.net/%s/%s", bucketName, commonPrefix);
             case TC:
                 return String.format("https://%s.cos.%s.myqcloud.com/%s", bucketName, region, commonPrefix);
             case ALI:
@@ -45,5 +43,12 @@ public enum CloudStorage {
             default:
                 throw new ParamException("no support others storage address");
         }
+    }
+
+    public String getAzureObjectUrl(String accountName, String containerName, String commonPrefix) {
+        if (this == CloudStorage.AZURE) {
+            return String.format("https://%s.blob.core.windows.net/%s/%s", accountName, containerName, commonPrefix);
+        }
+        throw new ParamException("no support others storage address");
     }
 }
