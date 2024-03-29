@@ -1,6 +1,23 @@
 # Changelog
 
-## milvus-sdk-java 2.3.4 (TBD)
+## milvus-sdk-java 2.3.5 (2024-03-29)
+
+### Feature
+
+- New MilvusClientV2 class to encapsulate RPC interfaces for good usability
+- Support ListAlias interface
+- Provide a BulkWriter tool for easily generating data files for import() interface
+
+### Improvement
+
+- Replace grpc-netty to grpc-netty-shared
+- Support creating index without specifying metricType and indexType
+- Support searching without specifying metricType
+- Fix a crash bug of SearchResutsWrapper when primary key is varchar type
+- Fix a bug of retry that doesn't return server errors
+- Fix some vulnerabilities
+
+## milvus-sdk-java 2.3.4 (2024-01-02)
 
 ### Improvement
 

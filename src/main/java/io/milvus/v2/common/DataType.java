@@ -20,9 +20,7 @@ public enum DataType {
     JSON(23),
 
     BinaryVector(100),
-    FloatVector(101),
-    Float16Vector(102),
-    BFloat16Vector(103);
+    FloatVector(101);
 
     private final int code;
     DataType(int code) {
