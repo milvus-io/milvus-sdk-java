@@ -37,6 +37,8 @@ import io.milvus.param.highlevel.collection.ListCollectionsParam;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.partition.*;
 import io.milvus.param.role.*;
 import io.milvus.param.resourcegroup.*;
@@ -828,4 +830,22 @@ public interface MilvusClient {
      * @return {status:result code, data: SearchResults{topK results}}
      */
     R<SearchResponse> search(SearchSimpleParam requestParam);
+
+
+    /**
+     * Get queryIterator based on scalar field(s) filtered by boolean expression.
+     * Note that the order of the returned entities cannot be guaranteed.
+     *
+     * @param requestParam {@link QueryIteratorParam}
+     * @return {status:result code,data: QueryIterator}
+     */
+    R<QueryIterator> queryIterator(QueryIteratorParam requestParam);
+
+    /**
+     * Get searchIterator based on a vector field. Use expression to do filtering before search.
+     *
+     * @param requestParam {@link SearchIteratorParam}
+     * @return {status:result code, data: SearchIterator}
+     */
+    R<SearchIterator> searchIterator(SearchIteratorParam requestParam);
 }

@@ -36,6 +36,8 @@ import io.milvus.param.highlevel.collection.ListCollectionsParam;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
@@ -671,6 +673,16 @@ public class MilvusMultiServiceClient implements MilvusClient {
     @Override
     public R<SearchResponse> search(SearchSimpleParam requestParam) {
         return this.clusterFactory.getMaster().getClient().search(requestParam);
+    }
+
+    @Override
+    public R<QueryIterator> queryIterator(QueryIteratorParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().queryIterator(requestParam);
+    }
+
+    @Override
+    public R<SearchIterator> searchIterator(SearchIteratorParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().searchIterator(requestParam);
     }
 
     private <T> R<T> handleResponse(List<R<T>> response) {
