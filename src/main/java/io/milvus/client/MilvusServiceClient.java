@@ -30,22 +30,12 @@ import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 
-import io.milvus.param.alias.AlterAliasParam;
-import io.milvus.param.alias.CreateAliasParam;
-import io.milvus.param.alias.DropAliasParam;
-import io.milvus.param.bulkinsert.BulkInsertParam;
-import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
-import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
+import io.milvus.param.alias.*;
+import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.CreateCredentialParam;
-import io.milvus.param.credential.DeleteCredentialParam;
-import io.milvus.param.credential.ListCredUsersParam;
-import io.milvus.param.credential.UpdateCredentialParam;
-import io.milvus.param.dml.DeleteParam;
-import io.milvus.param.dml.InsertParam;
-import io.milvus.param.dml.QueryParam;
-import io.milvus.param.dml.SearchParam;
+import io.milvus.param.credential.*;
+import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
 import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
@@ -489,6 +479,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
+    public R<ListAliasesResponse> listAliases(ListAliasesParam requestParam) {
+        return retry(()-> super.listAliases(requestParam));
+    }
+
+    @Override
     public R<RpcStatus> createIndex(CreateIndexParam requestParam) {
         return retry(()-> super.createIndex(requestParam));
     }
@@ -504,8 +499,23 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
+    public R<GetIndexStateResponse> getIndexState(@NonNull GetIndexStateParam requestParam) {
+        return retry(()-> super.getIndexState(requestParam));
+    }
+
+    @Override
+    public R<GetIndexBuildProgressResponse> getIndexBuildProgress(@NonNull GetIndexBuildProgressParam requestParam) {
+        return retry(()-> super.getIndexBuildProgress(requestParam));
+    }
+
+    @Override
     public R<MutationResult> insert(InsertParam requestParam) {
         return retry(()-> super.insert(requestParam));
+    }
+
+    @Override
+    public R<MutationResult> upsert(UpsertParam requestParam) {
+        return retry(()-> super.upsert(requestParam));
     }
 
     @Override
