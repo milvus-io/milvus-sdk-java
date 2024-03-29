@@ -328,14 +328,18 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                     return resp;
                 }
 
-                // print log, follow the pymilvus logic
-                if (k > 3) {
-                    logWarning(String.format("Retry(%d) with interval %dms. Reason: %s",
-                            k, retryIntervalMs, e.getMessage()));
-                }
-
-                // sleep for interval
-                if (k != maxRetryTimes) {
+                if (k >= maxRetryTimes) {
+                    // finish retry loop, return the response of the last retry
+                    String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
+                    logError(msg);
+                    return resp;
+                } else {
+                    // sleep for interval
+                    // print log, follow the pymilvus logic
+                    if (k > 3) {
+                        logWarning(String.format("Retry(%d) with interval %dms. Reason: %s",
+                                k, retryIntervalMs, e.getMessage()));
+                    }
                     TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
                 }
 
