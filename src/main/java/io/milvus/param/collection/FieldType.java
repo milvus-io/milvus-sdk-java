@@ -316,10 +316,9 @@ public class FieldType {
                 if (elementType == DataType.String) {
                     throw new ParamException("String type is not supported, use Varchar instead");
                 }
-                if (elementType == DataType.None || elementType == DataType.Array
-                        || elementType == DataType.JSON || elementType == DataType.String
-                        || elementType == DataType.FloatVector || elementType == DataType.Float16Vector
-                        || elementType == DataType.BinaryVector || elementType == DataType.UNRECOGNIZED) {
+                if (elementType == DataType.None || elementType == DataType.Array || elementType == DataType.JSON
+                        || elementType == DataType.FloatVector || elementType == DataType.BinaryVector
+                        || elementType == DataType.UNRECOGNIZED) {
                     throw new ParamException("Unsupported element type");
                 }
 
