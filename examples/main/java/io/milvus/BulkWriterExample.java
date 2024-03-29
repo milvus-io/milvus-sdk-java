@@ -89,12 +89,12 @@ public class BulkWriterExample {
      */
     public static class StorageConsts {
         public static final CloudStorage cloudStorage = CloudStorage.AWS;
-        public static final String STORAGE_ENDPOINT = cloudStorage.getEndpoint();
 
         /**
          * If using remote storage such as AWS S3, GCP GCS, Aliyun OSS, Tencent Cloud TOS,
          * please configure the following parameters.
          */
+        public static final String STORAGE_ENDPOINT = cloudStorage.getEndpoint();
         public static final String STORAGE_BUCKET = "storage.bucket";
         public static final String STORAGE_ACCESS_KEY = "storage.access.key";
         public static final String STORAGE_SECRET_KEY = "storage.secret.key";
@@ -531,7 +531,9 @@ public class BulkWriterExample {
     private void callCloudImport(List<List<String>> batchFiles, String collectionName) throws InterruptedException, MalformedURLException {
         System.out.println("\n===================== call cloudImport ====================");
 
-        String objectUrl = StorageConsts.cloudStorage.getObjectUrl(StorageConsts.STORAGE_BUCKET, ImportUtils.getCommonPrefix(batchFiles), StorageConsts.STORAGE_REGION);
+        String objectUrl = StorageConsts.cloudStorage == CloudStorage.AZURE
+                ? StorageConsts.cloudStorage.getAzureObjectUrl(StorageConsts.AZURE_ACCOUNT_NAME, StorageConsts.AZURE_CONTAINER_NAME, ImportUtils.getCommonPrefix(batchFiles))
+                : StorageConsts.cloudStorage.getS3ObjectUrl(StorageConsts.STORAGE_BUCKET, ImportUtils.getCommonPrefix(batchFiles), StorageConsts.STORAGE_REGION);
         String accessKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
         String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
 
