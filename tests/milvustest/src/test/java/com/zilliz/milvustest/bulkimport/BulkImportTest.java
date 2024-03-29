@@ -309,8 +309,9 @@ public class BulkImportTest extends BaseCloudTest {
         if (Objects.equals(PropertyFilesUtil.getRunValue("storageType"), "aws")) {
             cloudStorage = CloudStorage.AWS;
         }
-        String objectUrl = cloudStorage.getObjectUrl(PropertyFilesUtil.getRunValue("storageBucket"),
-                ImportUtils.getCommonPrefix(batchFiles), PropertyFilesUtil.getRunValue("storageRegion"));
+        String objectUrl = cloudStorage == CloudStorage.AZURE
+                ? cloudStorage.getAzureObjectUrl(PropertyFilesUtil.getRunValue("azureAccountName"), PropertyFilesUtil.getRunValue("azureContainerName"), ImportUtils.getCommonPrefix(batchFiles))
+                : cloudStorage.getS3ObjectUrl(PropertyFilesUtil.getRunValue("storageBucket"), ImportUtils.getCommonPrefix(batchFiles), PropertyFilesUtil.getRunValue("storageRegion"));
         String accessKey = cloudStorage == CloudStorage.AZURE ? PropertyFilesUtil.getRunValue("azureAccountName") : PropertyFilesUtil.getRunValue("storageAccessKey");
         String secretKey = cloudStorage == CloudStorage.AZURE ? PropertyFilesUtil.getRunValue("azureAccountKey") : PropertyFilesUtil.getRunValue("storageSecretKey");
 
