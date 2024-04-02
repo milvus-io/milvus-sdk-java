@@ -27,7 +27,7 @@ import lombok.Getter;
  */
 public enum IndexType {
     None(0),
-    //Only supported for float vectors
+    // Only supported for float vectors
     FLAT(1),
     IVF_FLAT(2),
     IVF_SQ8(3),
@@ -37,19 +37,22 @@ public enum IndexType {
     AUTOINDEX(11),
     SCANN(12),
 
-    // GPU index
+    // GPU indexes only for float vectors
     GPU_IVF_FLAT(50),
     GPU_IVF_PQ(51),
 
-    //Only supported for binary vectors
+    // Only supported for binary vectors
     BIN_FLAT(80),
     BIN_IVF_FLAT(81),
 
-    //Scalar field index start from here
-    //Only for varchar type field
+    // Only for varchar type field
     TRIE("Trie", 100),
-    //Only for scalar type field
+    // Only for scalar type field
     STL_SORT(200),
+
+    // Only for sparse vectors
+    SPARSE_INVERTED_INDEX(300),
+    SPARSE_WAND(301)
     ;
 
     @Getter

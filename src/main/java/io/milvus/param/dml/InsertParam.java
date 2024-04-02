@@ -218,7 +218,9 @@ public class InsertParam {
      * If dataType is Varchar, values is List of String;
      * If dataType is FloatVector, values is List of List Float;
      * If dataType is BinaryVector/Float16Vector/BFloat16Vector, values is List of ByteBuffer;
+     * If dataType is SparseFloatVector, values is List of SortedMap[Long, Float];
      * If dataType is Array, values can be List of List Boolean/Integer/Short/Long/Float/Double/String;
+     * If dataType is JSON, values is List of JSONObject;
      *
      * Note:
      * If dataType is Int8/Int16/Int32, values is List of Integer or Short

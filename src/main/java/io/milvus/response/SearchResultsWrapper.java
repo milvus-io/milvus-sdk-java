@@ -187,7 +187,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
                         Object value = wrapper.valueByIdx((int)offset + n);
                         if (wrapper.isJsonField()) {
-                            idScores.get(n).put(field.getFieldName(), JSONObject.parseObject(new String((byte[])value)));
+                            idScores.get(n).put(field.getFieldName(), FieldDataWrapper.ParseJSONObject(value));
                         } else {
                             idScores.get(n).put(field.getFieldName(), value);
                         }

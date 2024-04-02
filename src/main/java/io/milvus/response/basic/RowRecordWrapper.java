@@ -47,7 +47,7 @@ public abstract class RowRecordWrapper {
                     }
                     Object value = wrapper.valueByIdx((int)index);
                     if (wrapper.isJsonField()) {
-                        JSONObject jsonField = JSONObject.parseObject(new String((byte[])value));
+                        JSONObject jsonField = FieldDataWrapper.ParseJSONObject(value);
                         if (wrapper.isDynamicField()) {
                             for (String key: jsonField.keySet()) {
                                 record.put(key, jsonField.get(key));

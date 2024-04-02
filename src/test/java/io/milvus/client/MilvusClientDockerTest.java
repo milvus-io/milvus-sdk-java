@@ -69,7 +69,7 @@ class MilvusClientDockerTest {
     private static final int dimension = 128;
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.3.10");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.0-rc.1");
 
     @BeforeAll
     public static void setUp() {
@@ -137,6 +137,21 @@ class MilvusClientDockerTest {
                 vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
             }
             vectors.add(vector);
+        }
+        return vectors;
+
+    }
+
+    private List<SortedMap<Long, Float>> generateSparseVectors(int count) {
+        Random ran = new Random();
+        List<SortedMap<Long, Float>> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            SortedMap<Long, Float> sparse = new TreeMap<>();
+            int dim = ran.nextInt(10) + 1;
+            for (int i = 0; i < dim; ++i) {
+                sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
+            }
+            vectors.add(sparse);
         }
         return vectors;
 
@@ -654,6 +669,122 @@ class MilvusClientDockerTest {
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
             Assertions.assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+        }
+
+        // drop collection
+        DropCollectionParam dropParam = DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build();
+
+        R<RpcStatus> dropR = client.dropCollection(dropParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testSparseVector() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "field1";
+        String field2Name = "field2";
+        FieldType field1 = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .build();
+
+        FieldType field2 = FieldType.newBuilder()
+                .withDataType(DataType.SparseFloatVector)
+                .withName(field2Name)
+                .build();
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .addFieldType(field1)
+                .addFieldType(field2)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        int rowCount = 10000;
+        List<Long> ids = new ArrayList<>();
+        for (int i = 0; i < rowCount; i++) {
+            ids.add((long)i);
+        }
+        List<SortedMap<Long, Float>> vectors = generateSparseVectors(rowCount);
+        List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field(field1Name, ids));
+        fields.add(new InsertParam.Field(field2Name, vectors));
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fields)
+                .build();
+
+        R<MutationResult> insertR = client.insert(insertParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.SPARSE_INVERTED_INDEX)
+                .withMetricType(MetricType.IP)
+                .withExtraParam("{\"drop_ratio_build\":0.2}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // pick some vectors to search with index
+        int nq = 5;
+        List<Long> targetVectorIDs = new ArrayList<>();
+        List<SortedMap<Long, Float>> targetVectors = new ArrayList<>();
+        Random ran = new Random();
+        int randomIndex = ran.nextInt(rowCount);
+        for (int i = randomIndex; i < randomIndex + nq; ++i) {
+            targetVectorIDs.add(ids.get(i));
+            targetVectors.add(vectors.get(i));
+        }
+
+        System.out.println("Search target IDs:" + targetVectorIDs);
+        System.out.println("Search target vectors:" + targetVectors);
+
+        int topK = 5;
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.IP)
+                .withTopK(topK)
+                .withVectors(targetVectors)
+                .withVectorFieldName(field2Name)
+                .addOutField(field2Name)
+                .withParams("{\"drop_ratio_search\":0.2}")
+                .build();
+
+        R<SearchResults> searchR = client.search(searchParam);
+//        System.out.println(searchR);
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        for (int i = 0; i < targetVectors.size(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
+            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+            System.out.println(scores);
+            Assertions.assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+
+            Object v = scores.get(0).get(field2Name);
+            SortedMap<Long, Float> sparse = (SortedMap<Long, Float>)v;
+            Assertions.assertTrue(sparse.equals(targetVectors.get(i)));
         }
 
         // drop collection

@@ -271,7 +271,8 @@ public class FieldType {
                 throw new ParamException("String type is not supported, use Varchar instead");
             }
 
-            if (ParamUtils.isVectorDataType(dataType)) {
+            // SparseVector has no dimension, other vector types must have dimension
+            if (ParamUtils.isVectorDataType(dataType) && dataType != DataType.SparseFloatVector) {
                 if (!typeParams.containsKey(Constant.VECTOR_DIM)) {
                     throw new ParamException("Vector field dimension must be specified");
                 }
