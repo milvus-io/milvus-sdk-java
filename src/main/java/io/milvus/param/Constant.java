@@ -31,6 +31,7 @@ public class Constant {
     public static final String ARRAY_MAX_CAPACITY = "max_capacity";
     public static final String TOP_K = "topk";
     public static final String IGNORE_GROWING = "ignore_growing";
+    public static final String GROUP_BY_FIELD = "group_by_field";
     public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";
     public static final String ROUND_DECIMAL = "round_decimal";

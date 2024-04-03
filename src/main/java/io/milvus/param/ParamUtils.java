@@ -536,6 +536,14 @@ public class ParamUtils {
                             .build());
         }
 
+        if (!StringUtils.isEmpty(requestParam.getGroupByFieldName())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.GROUP_BY_FIELD)
+                            .setValue(requestParam.getGroupByFieldName())
+                            .build());
+        }
+
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
             try {
             Map<String, Object> paramMap = JacksonUtils.fromJson(requestParam.getParams(),Map.class);

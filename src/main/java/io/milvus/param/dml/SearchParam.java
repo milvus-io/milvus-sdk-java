@@ -57,6 +57,7 @@ public class SearchParam {
     private final Long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
     private final boolean ignoreGrowing;
+    private final String groupByFieldName;
 
     private SearchParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -76,6 +77,7 @@ public class SearchParam {
         this.gracefulTime = builder.gracefulTime;
         this.consistencyLevel = builder.consistencyLevel;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.groupByFieldName = builder.groupByFieldName;
     }
 
     public static Builder newBuilder() {
@@ -103,6 +105,7 @@ public class SearchParam {
         private Long gracefulTime = 5000L;
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
+        private String groupByFieldName;
 
         Builder() {
         }
@@ -282,6 +285,17 @@ public class SearchParam {
          */
         public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
+         * Sets field name to do grouping.
+         *
+         * @param groupByFieldName field name to do grouping
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+            this.groupByFieldName = groupByFieldName;
             return this;
         }
 

@@ -40,6 +40,8 @@ public enum IndexType {
     // GPU indexes only for float vectors
     GPU_IVF_FLAT(50),
     GPU_IVF_PQ(51),
+    GPU_BRUTE_FORCE(52),
+    GPU_CAGRA(53),
 
     // Only supported for binary vectors
     BIN_FLAT(80),
@@ -48,7 +50,8 @@ public enum IndexType {
     // Only for varchar type field
     TRIE("Trie", 100),
     // Only for scalar type field
-    STL_SORT(200),
+    STL_SORT(200), // only for numeric type field
+    INVERTED(201), // works for all scalar fields except JSON type field
 
     // Only for sparse vectors
     SPARSE_INVERTED_INDEX(300),
