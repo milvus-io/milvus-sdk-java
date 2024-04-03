@@ -465,6 +465,15 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         responseObserver.onCompleted();
     }
 
+    @Override
+    public void hybridSearch(io.milvus.grpc.HybridSearchRequest request,
+                             io.grpc.stub.StreamObserver<io.milvus.grpc.SearchResults> responseObserver) {
+        logger.info("MockServer receive hybridSearch() call");
+
+        responseObserver.onNext(respSearch);
+        responseObserver.onCompleted();
+    }
+
     public void setSearchResponse(io.milvus.grpc.SearchResults resp) {
         respSearch = resp;
     }

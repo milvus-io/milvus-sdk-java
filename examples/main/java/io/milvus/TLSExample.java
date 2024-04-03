@@ -17,17 +17,10 @@
  * under the License.
  */
 
-package io.milvus;
-
-import com.alibaba.fastjson.JSONObject;
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.*;
-import io.milvus.param.*;
-import io.milvus.param.collection.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.response.*;
-import java.util.*;
+import io.milvus.grpc.CheckHealthResponse;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.R;
 
 
 // Note: read the following description before running this example

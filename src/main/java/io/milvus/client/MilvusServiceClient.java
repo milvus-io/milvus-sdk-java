@@ -529,6 +529,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
+    public R<SearchResults> hybridSearch(HybridSearchParam requestParam) {
+        return retry(()-> super.hybridSearch(requestParam));
+    }
+
+    @Override
     public R<QueryResults> query(QueryParam requestParam) {
         return retry(()-> super.query(requestParam));
     }

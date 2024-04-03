@@ -17,8 +17,6 @@
  * under the License.
  */
 
-package io.milvus;
-
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -40,36 +38,7 @@ public class Float16VectorExample {
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";
     private static final Integer VECTOR_DIM = 128;
-
-    private static List<ByteBuffer> generateVectors(int count, boolean bfloat16) {
-        Random ran = new Random();
-        List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = VECTOR_DIM*2;
-        for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-            for (int i = 0; i < VECTOR_DIM; ++i) {
-                ByteDataBuffer bf = null;
-                if (bfloat16) {
-                    TFloat16 tt = TFloat16.scalarOf((float)ran.nextInt(VECTOR_DIM));
-                    bf = tt.asRawTensor().data();
-                } else {
-                    TBfloat16 tt = TBfloat16.scalarOf((float)ran.nextInt(VECTOR_DIM));
-                    bf = tt.asRawTensor().data();
-                }
-                vector.put(bf.getByte(0));
-                vector.put(bf.getByte(1));
-            }
-            vectors.add(vector);
-        }
-
-        return vectors;
-    }
-
-    private static void handleResponseStatus(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(r.getMessage());
-        }
-    }
+    
 
     private static void testFloat16(boolean bfloat16) {
         DataType dataType = bfloat16 ? DataType.BFloat16Vector : DataType.Float16Vector;
@@ -85,7 +54,7 @@ public class Float16VectorExample {
         R<Boolean> hasR = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                                     .withCollectionName(COLLECTION_NAME)
                                     .build());
-        handleResponseStatus(hasR);
+        CommonUtils.handleResponseStatus(hasR);
         if (hasR.getData()) {
             milvusClient.dropCollection(DropCollectionParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
@@ -113,7 +82,7 @@ public class Float16VectorExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .withFieldTypes(fieldsSchema)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection created");
 
         // Insert entities
@@ -122,7 +91,7 @@ public class Float16VectorExample {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
         }
-        List<ByteBuffer> vectors = generateVectors(rowCount, bfloat16);
+        List<ByteBuffer> vectors = CommonUtils.generateFloat16Vectors(VECTOR_DIM, rowCount, bfloat16);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(ID_FIELD, ids));
@@ -134,14 +103,14 @@ public class Float16VectorExample {
                 .build();
 
         R<MutationResult> insertR = milvusClient.insert(insertParam);
-        handleResponseStatus(insertR);
+        CommonUtils.handleResponseStatus(insertR);
 
         // Flush the data to storage for testing purpose
         // Note that no need to manually call flush interface in practice
         R<FlushResponse> flushR = milvusClient.flush(FlushParam.newBuilder().
                 addCollectionName(COLLECTION_NAME).
                 build());
-        handleResponseStatus(flushR);
+        CommonUtils.handleResponseStatus(flushR);
         System.out.println("Entities inserted");
 
         // Specify an index type on the vector field.
@@ -152,14 +121,14 @@ public class Float16VectorExample {
                 .withMetricType(MetricType.L2)
                 .withExtraParam("{\"nlist\":128}")
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Index created");
 
         // Call loadCollection() to enable automatically loading data into memory for searching
         ret = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection loaded");
 
         // Pick some vectors from the inserted vectors to search
@@ -177,7 +146,7 @@ public class Float16VectorExample {
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"nprobe\":32}")
                     .build());
-            handleResponseStatus(searchRet);
+            CommonUtils.handleResponseStatus(searchRet);
 
             // The search() allows multiple target vectors to search in a batch.
             // Here we only input one vector to search, get the result of No.0 vector to check
@@ -201,7 +170,7 @@ public class Float16VectorExample {
                 .withExpr(String.format("id == %d", n))
                 .addOutField(VECTOR_FIELD)
                 .build());
-        handleResponseStatus(queryR);
+        CommonUtils.handleResponseStatus(queryR);
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryR.getData());
         FieldDataWrapper field = queryWrapper.getFieldWrapper(VECTOR_FIELD);
         List<?> r = field.getFieldData();

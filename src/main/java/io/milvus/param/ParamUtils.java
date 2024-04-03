@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.param;
 
 import com.alibaba.fastjson.JSONObject;
@@ -9,10 +28,8 @@ import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.collection.FieldType;
-import io.milvus.param.dml.InsertParam;
-import io.milvus.param.dml.QueryParam;
-import io.milvus.param.dml.SearchParam;
-import io.milvus.param.dml.UpsertParam;
+import io.milvus.param.dml.*;
+import io.milvus.param.dml.ranker.BaseRanker;
 import io.milvus.response.DescCollResponseWrapper;
 import lombok.Builder;
 import lombok.Getter;
@@ -445,21 +462,8 @@ public class ParamUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
-        SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setCollectionName(requestParam.getCollectionName());
-
-        if (!requestParam.getPartitionNames().isEmpty()) {
-            requestParam.getPartitionNames().forEach(builder::addPartitionNames);
-        }
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.setDbName(requestParam.getDatabaseName());
-        }
-
-        // prepare target vectors
-        // TODO: check target vector dimension(use DescribeCollection get schema to compare)
+    private static ByteString convertPlaceholder(List<?> vectors) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
-        List<?> vectors = requestParam.getVectors();
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
             if (vector instanceof List) {
@@ -502,7 +506,23 @@ public class ParamUtils {
                 .addPlaceholders(plv)
                 .build();
 
-        ByteString byteStr = placeholderGroup.toByteString();
+        return placeholderGroup.toByteString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
+        SearchRequest.Builder builder = SearchRequest.newBuilder()
+                .setCollectionName(requestParam.getCollectionName());
+
+        if (!requestParam.getPartitionNames().isEmpty()) {
+            requestParam.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
+        }
+
+        // prepare target vectors
+        ByteString byteStr = convertPlaceholder(requestParam.getVectors());
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(requestParam.getNQ());
 
@@ -579,6 +599,95 @@ public class ParamUtils {
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
+        if (requestParam.getConsistencyLevel() == null) {
+            builder.setUseDefaultConsistency(true);
+        } else {
+            builder.setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode());
+        }
+
+        return builder.build();
+    }
+
+    public static SearchRequest convertAnnSearchParam(@NonNull AnnSearchParam annSearchParam,
+                                                      ConsistencyLevelEnum consistencyLevel) {
+        SearchRequest.Builder builder = SearchRequest.newBuilder();
+        ByteString byteStr = convertPlaceholder(annSearchParam.getVectors());
+        builder.setPlaceholderGroup(byteStr);
+        builder.setNq(annSearchParam.getNQ());
+
+        builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.VECTOR_FIELD)
+                                .setValue(annSearchParam.getVectorFieldName())
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.TOP_K)
+                                .setValue(String.valueOf(annSearchParam.getTopK()))
+                                .build());
+
+        if (!Objects.equals(annSearchParam.getMetricType(), MetricType.None.name())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.METRIC_TYPE)
+                            .setValue(annSearchParam.getMetricType())
+                            .build());
+        }
+
+        if (null != annSearchParam.getParams() && !annSearchParam.getParams().isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.PARAMS)
+                            .setValue(annSearchParam.getParams())
+                            .build());
+        }
+
+        // always use expression since dsl is discarded
+        builder.setDslType(DslType.BoolExprV1);
+        if (annSearchParam.getExpr() != null && !annSearchParam.getExpr().isEmpty()) {
+            builder.setDsl(annSearchParam.getExpr());
+        }
+
+        if (consistencyLevel == null) {
+            builder.setUseDefaultConsistency(true);
+        } else {
+            builder.setConsistencyLevelValue(consistencyLevel.getCode());
+        }
+
+        return builder.build();
+    }
+
+    public static HybridSearchRequest convertHybridSearchParam(@NonNull HybridSearchParam requestParam) throws ParamException {
+        HybridSearchRequest.Builder builder = HybridSearchRequest.newBuilder()
+                .setCollectionName(requestParam.getCollectionName());
+
+        if (!requestParam.getPartitionNames().isEmpty()) {
+            requestParam.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
+        }
+
+        for (AnnSearchParam req : requestParam.getSearchRequests()) {
+            SearchRequest searchRequest = ParamUtils.convertAnnSearchParam(req, requestParam.getConsistencyLevel());
+            builder.addRequests(searchRequest);
+        }
+
+        // set ranker
+        BaseRanker ranker = requestParam.getRanker();
+        Map<String, String> props = ranker.getProperties();
+        props.put("limit", String.format("%d", requestParam.getTopK()));
+        props.put("round_decimal", String.format("%d", requestParam.getRoundDecimal()));
+        List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(props);
+        if (CollectionUtils.isNotEmpty(propertiesList)) {
+            propertiesList.forEach(builder::addRankParams);
+        }
+
+        // output fields
+        if (!requestParam.getOutFields().isEmpty()) {
+            requestParam.getOutFields().forEach(builder::addOutputFields);
+        }
+
         if (requestParam.getConsistencyLevel() == null) {
             builder.setUseDefaultConsistency(true);
         } else {

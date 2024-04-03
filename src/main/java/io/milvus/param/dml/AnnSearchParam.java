@@ -17,30 +17,42 @@
  * under the License.
  */
 
-package io.milvus.param;
+package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.MetricType;
+import io.milvus.param.ParamUtils;
+
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.SortedMap;
 
 /**
- * Defined single search for query node listener send heartbeat.
+ * Parameters for <code>hybridSearch</code> interface.
  */
-public class QueryNodeSingleSearch {
+@Getter
+@ToString
+public class AnnSearchParam {
 
-    private final String collectionName;
-    private final MetricType metricType;
+    private final String metricType;
     private final String vectorFieldName;
+    private final int topK;
+    private final String expr;
     private final List<?> vectors;
+    private final Long NQ;
     private final String params;
 
-    private QueryNodeSingleSearch(@NonNull Builder builder) {
-        this.collectionName = builder.collectionName;
-        this.metricType = builder.metricType;
+    private AnnSearchParam(@NonNull Builder builder) {
+        this.metricType = builder.metricType.name();
         this.vectorFieldName = builder.vectorFieldName;
+        this.topK = builder.topK;
+        this.expr = builder.expr;
         this.vectors = builder.vectors;
+        this.NQ = builder.NQ;
         this.params = builder.params;
     }
 
@@ -48,48 +60,19 @@ public class QueryNodeSingleSearch {
         return new Builder();
     }
 
-    public String getCollectionName() {
-        return collectionName;
-    }
-
-    public MetricType getMetricType() {
-        return metricType;
-    }
-
-    public String getVectorFieldName() {
-        return vectorFieldName;
-    }
-
-    public List<?> getVectors() {
-        return vectors;
-    }
-
-    public String getParams() {
-        return params;
-    }
-
     /**
-     * Builder for {@link QueryNodeSingleSearch}
+     * Builder for {@link AnnSearchParam} class.
      */
     public static class Builder {
-        private String collectionName;
-        private MetricType metricType = MetricType.L2;
+        private MetricType metricType = MetricType.None;
         private String vectorFieldName;
+        private Integer topK;
+        private String expr = "";
         private List<?> vectors;
+        private Long NQ;
         private String params = "{}";
 
-        private Builder() {
-        }
-
-        /**
-         * Sets the collection name. Collection name cannot be empty or null.
-         *
-         * @param collectionName collection name
-         * @return <code>Builder</code>
-         */
-        public Builder withCollectionName(@NonNull String collectionName) {
-            this.collectionName = collectionName;
-            return this;
+        Builder() {
         }
 
         /**
@@ -115,18 +98,44 @@ public class QueryNodeSingleSearch {
         }
 
         /**
+         * Sets topK value of ANN search.
+         *
+         * @param topK topK value
+         * @return <code>Builder</code>
+         */
+        public Builder withTopK(@NonNull Integer topK) {
+            this.topK = topK;
+            return this;
+        }
+
+        /**
+         * Sets expression to filter out entities before searching (Optional).
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
+         *
+         * @param expr filtering expression
+         * @return <code>Builder</code>
+         */
+        public Builder withExpr(@NonNull String expr) {
+            this.expr = expr;
+            return this;
+        }
+
+        /**
          * Sets the target vectors.
+         * Note: currently, only support one vector for search.
          *
          * @param vectors list of target vectors:
-         *                if vector type is FloatVector, vectors is List of List Float
-         *                if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer
-         *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float]
+         *                if vector type is FloatVector, vectors is List of List Float;
+         *                if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer;
+         *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float];
          * @return <code>Builder</code>
          */
         public Builder withVectors(@NonNull List<?> vectors) {
             this.vectors = vectors;
+            this.NQ = (long) vectors.size();
             return this;
         }
+
 
         /**
          * Sets the search parameters specific to the index type.
@@ -142,24 +151,33 @@ public class QueryNodeSingleSearch {
             return this;
         }
 
+
         /**
-         * Verifies parameters and creates a new {@link QueryNodeSingleSearch} instance.
+         * Verifies parameters and creates a new {@link AnnSearchParam} instance.
          *
-         * @return {@link QueryNodeSingleSearch}
+         * @return {@link AnnSearchParam}
          */
-        public QueryNodeSingleSearch build() throws ParamException {
-            ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
+        public AnnSearchParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
+
+            if (topK <= 0) {
+                throw new ParamException("TopK value is illegal");
+            }
 
             if (vectors == null || vectors.isEmpty()) {
                 throw new ParamException("Target vectors can not be empty");
             }
 
+            if (vectors.size() != 1) {
+                throw new ParamException("Only support one vector for each AnnSearchParam");
+            }
+
             if (vectors.get(0) instanceof List) {
                 // float vectors
+                // TODO: here only check the first element, potential risk
                 List<?> first = (List<?>) vectors.get(0);
                 if (!(first.get(0) instanceof Float)) {
-                    throw new ParamException("Float vector field's value must be List<Float>");
+                    throw new ParamException("Float vector field's value must be Lst<Float>");
                 }
 
                 int dim = first.size();
@@ -171,6 +189,7 @@ public class QueryNodeSingleSearch {
                 }
             } else if (vectors.get(0) instanceof ByteBuffer) {
                 // binary vectors
+                // TODO: here only check the first element, potential risk
                 ByteBuffer first = (ByteBuffer) vectors.get(0);
                 int dim = first.position();
                 for (int i = 1; i < vectors.size(); ++i) {
@@ -179,11 +198,22 @@ public class QueryNodeSingleSearch {
                         throw new ParamException("Target vector dimension must be equal");
                     }
                 }
+            } else if (vectors.get(0) instanceof SortedMap) {
+                // sparse vectors, must be SortedMap<Long, Float>
+                // TODO: here only check the first element, potential risk
+                SortedMap<?, ?> map = (SortedMap<?, ?>) vectors.get(0);
+
+
             } else {
-                throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
+                String msg = "Search target vector type is illegal." +
+                        " Only allow List<Float> for FloatVector," +
+                        " ByteBuffer for BinaryVector/Float16Vector/BFloat16Vector," +
+                        " List<SortedMap<Long, Float>> for SparseFloatVector.";
+                throw new ParamException(msg);
             }
 
-            return new QueryNodeSingleSearch(this);
+            return new AnnSearchParam(this);
         }
     }
+
 }

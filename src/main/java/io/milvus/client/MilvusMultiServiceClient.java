@@ -421,6 +421,16 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<SearchResults> hybridSearch(HybridSearchParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().hybridSearch(requestParam);
+    }
+
+    @Override
+    public ListenableFuture<R<SearchResults>> hybridSearchAsync(HybridSearchParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().hybridSearchAsync(requestParam);
+    }
+
+    @Override
     public R<QueryResults> query(QueryParam requestParam) {
         return this.clusterFactory.getMaster().getClient().query(requestParam);
     }

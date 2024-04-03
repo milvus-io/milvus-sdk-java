@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -20,27 +39,7 @@ public class BinaryVectorExample {
     private static final String VECTOR_FIELD = "vector";
 
     private static final Integer VECTOR_DIM = 512;
-
-    private static List<ByteBuffer> generateVectors(int count) {
-        Random ran = new Random();
-        List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = VECTOR_DIM / 8;
-        for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-            for (int i = 0; i < byteCount; ++i) {
-                vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
-            }
-            vectors.add(vector);
-        }
-        return vectors;
-
-    }
-
-    private static void handleResponseStatus(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(r.getMessage());
-        }
-    }
+    
 
     public static void main(String[] args) {
         // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
@@ -53,7 +52,7 @@ public class BinaryVectorExample {
         R<Boolean> hasR = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(hasR);
+        CommonUtils.handleResponseStatus(hasR);
         if (hasR.getData()) {
             milvusClient.dropCollection(DropCollectionParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
@@ -81,7 +80,7 @@ public class BinaryVectorExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .withFieldTypes(fieldsSchema)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection created");
 
         // Insert entities
@@ -90,7 +89,7 @@ public class BinaryVectorExample {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
         }
-        List<ByteBuffer> vectors = generateVectors(rowCount);
+        List<ByteBuffer> vectors = CommonUtils.generateBinaryVectors(VECTOR_DIM, rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(ID_FIELD, ids));
@@ -102,14 +101,14 @@ public class BinaryVectorExample {
                 .build();
 
         R<MutationResult> insertR = milvusClient.insert(insertParam);
-        handleResponseStatus(insertR);
+        CommonUtils.handleResponseStatus(insertR);
 
         // Flush the data to storage for testing purpose
         // Note that no need to manually call flush interface in practice
         R<FlushResponse> flushR = milvusClient.flush(FlushParam.newBuilder().
                 addCollectionName(COLLECTION_NAME).
                 build());
-        handleResponseStatus(flushR);
+        CommonUtils.handleResponseStatus(flushR);
         System.out.println("Entities inserted");
 
         // Specify an index type on the vector field.
@@ -120,14 +119,14 @@ public class BinaryVectorExample {
                 .withMetricType(MetricType.HAMMING)
                 .withExtraParam("{\"nlist\":64}")
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Index created");
 
         // Call loadCollection() to enable automatically loading data into memory for searching
         ret = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection loaded");
 
         // Pick some vectors from the inserted vectors to search
@@ -145,7 +144,7 @@ public class BinaryVectorExample {
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"nprobe\":16}")
                     .build());
-            handleResponseStatus(searchRet);
+            CommonUtils.handleResponseStatus(searchRet);
 
             // The search() allows multiple target vectors to search in a batch.
             // Here we only input one vector to search, get the result of No.0 vector to check
@@ -175,7 +174,7 @@ public class BinaryVectorExample {
                 .withExpr(String.format("id == %d", n))
                 .addOutField(VECTOR_FIELD)
                 .build());
-        handleResponseStatus(queryR);
+        CommonUtils.handleResponseStatus(queryR);
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryR.getData());
         FieldDataWrapper field = queryWrapper.getFieldWrapper(VECTOR_FIELD);
         List<?> r = field.getFieldData();
