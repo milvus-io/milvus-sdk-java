@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -11,7 +30,6 @@ import io.milvus.response.FieldDataWrapper;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class SparseVectorExample {
@@ -19,26 +37,6 @@ public class SparseVectorExample {
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";
 
-    private static List<SortedMap<Long, Float>> generateVectors(int count) {
-        Random ran = new Random();
-        List<SortedMap<Long, Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            SortedMap<Long, Float> sparse = new TreeMap<>();
-            int dim = ran.nextInt(10) + 1;
-            for (int i = 0; i < dim; ++i) {
-                sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
-            }
-            vectors.add(sparse);
-        }
-        return vectors;
-
-    }
-
-    private static void handleResponseStatus(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(r.getMessage());
-        }
-    }
 
     public static void main(String[] args) {
         // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
@@ -51,7 +49,7 @@ public class SparseVectorExample {
         R<Boolean> hasR = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(hasR);
+        CommonUtils.handleResponseStatus(hasR);
         if (hasR.getData()) {
             milvusClient.dropCollection(DropCollectionParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
@@ -78,7 +76,7 @@ public class SparseVectorExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .withFieldTypes(fieldsSchema)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection created");
 
         // Insert entities
@@ -87,7 +85,7 @@ public class SparseVectorExample {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
         }
-        List<SortedMap<Long, Float>> vectors = generateVectors(rowCount);
+        List<SortedMap<Long, Float>> vectors = CommonUtils.generateSparseVectors(rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(ID_FIELD, ids));
@@ -99,14 +97,14 @@ public class SparseVectorExample {
                 .build();
 
         R<MutationResult> insertR = milvusClient.insert(insertParam);
-        handleResponseStatus(insertR);
+        CommonUtils.handleResponseStatus(insertR);
 
         // Flush the data to storage for testing purpose
         // Note that no need to manually call flush interface in practice
         R<FlushResponse> flushR = milvusClient.flush(FlushParam.newBuilder().
                 addCollectionName(COLLECTION_NAME).
                 build());
-        handleResponseStatus(flushR);
+        CommonUtils.handleResponseStatus(flushR);
         System.out.println("Entities inserted");
 
         // Specify an index type on the vector field.
@@ -117,14 +115,14 @@ public class SparseVectorExample {
                 .withMetricType(MetricType.IP)
                 .withExtraParam("{\"drop_ratio_build\":0.2}")
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Index created");
 
         // Call loadCollection() to enable automatically loading data into memory for searching
         ret = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(ret);
+        CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection loaded");
 
         // Pick some vectors from the inserted vectors to search
@@ -142,7 +140,7 @@ public class SparseVectorExample {
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"drop_ratio_search\":0.2}")
                     .build());
-            handleResponseStatus(searchRet);
+            CommonUtils.handleResponseStatus(searchRet);
 
             // The search() allows multiple target vectors to search in a batch.
             // Here we only input one vector to search, get the result of No.0 vector to check
@@ -166,7 +164,7 @@ public class SparseVectorExample {
                 .withExpr(String.format("id == %d", n))
                 .addOutField(VECTOR_FIELD)
                 .build());
-        handleResponseStatus(queryR);
+        CommonUtils.handleResponseStatus(queryR);
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryR.getData());
         FieldDataWrapper field = queryWrapper.getFieldWrapper(VECTOR_FIELD);
         List<?> r = field.getFieldData();

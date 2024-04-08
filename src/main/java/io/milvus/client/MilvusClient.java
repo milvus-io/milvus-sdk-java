@@ -426,6 +426,22 @@ public interface MilvusClient {
     ListenableFuture<R<SearchResults>> searchAsync(SearchParam requestParam);
 
     /**
+     * Conducts multi vector similarity search with a ranker for rearrangement.
+     *
+     * @param requestParam {@link HybridSearchParam}
+     * @return {status:result code, data: SearchResults{topK results}}
+     */
+    R<SearchResults> hybridSearch(HybridSearchParam requestParam);
+
+    /**
+     * Conducts multi vector similarity search asynchronously with a ranker for rearrangement.
+     *
+     * @param requestParam {@link HybridSearchParam}
+     * @return a <code>ListenableFuture</code> object which holds the object {status:result code, data: SearchResults{topK results}}
+     */
+    ListenableFuture<R<SearchResults>> hybridSearchAsync(HybridSearchParam requestParam);
+
+    /**
      * Queries entity(s) based on scalar field(s) filtered by boolean expression.
      * Note that the order of the returned entities cannot be guaranteed.
      *

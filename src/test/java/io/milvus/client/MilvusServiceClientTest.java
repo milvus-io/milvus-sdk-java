@@ -34,6 +34,8 @@ import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
+import io.milvus.param.dml.ranker.BaseRanker;
+import io.milvus.param.dml.ranker.RRFRanker;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.response.*;
@@ -2180,6 +2182,53 @@ class MilvusServiceClientTest {
 
         testFuncByName("search", param);
         testAsyncFuncByName("searchAsync", param);
+    }
+
+    @Test
+    void hybridSearch() {
+        List<List<Float>> vectors = new ArrayList<>();
+        List<Float> vector1 = Arrays.asList(0.1f, 0.2f);
+        vectors.add(vector1);
+        AnnSearchParam param1 = AnnSearchParam.newBuilder()
+                .withParams("{}")
+                .withVectorFieldName("field1")
+                .withMetricType(MetricType.IP)
+                .withTopK(5)
+                .withVectors(vectors)
+                .withExpr("dummy")
+                .build();
+
+        List<ByteBuffer> bVectors = new ArrayList<>();
+        ByteBuffer buf = ByteBuffer.allocate(2);
+        buf.put((byte) 1);
+        buf.put((byte) 2);
+        bVectors.add(buf);
+        AnnSearchParam param2 = AnnSearchParam.newBuilder()
+                .withParams("{}")
+                .withVectorFieldName("field2")
+                .withMetricType(MetricType.HAMMING)
+                .withTopK(5)
+                .withVectors(bVectors)
+                .withExpr("dummy")
+                .build();
+
+        List<String> partitions = Collections.singletonList("partition1");
+        List<String> outputFields = Collections.singletonList("field2");
+        HybridSearchParam param = HybridSearchParam.newBuilder()
+                .withCollectionName("collection1")
+                .withPartitionNames(partitions)
+                .withOutFields(outputFields)
+                .addOutField("f2")
+                .addSearchRequest(param1)
+                .addSearchRequest(param2)
+                .withTopK(15)
+                .withRoundDecimal(5)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
+                .withRanker(RRFRanker.newBuilder().withK(10).build())
+                .build();
+
+        testFuncByName("hybridSearch", param);
+        testAsyncFuncByName("hybridSearchAsync", param);
     }
 
     @Test

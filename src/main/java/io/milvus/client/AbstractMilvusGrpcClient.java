@@ -1694,6 +1694,74 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<SearchResults> hybridSearch(HybridSearchParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("HybridSearchRequest collectionName:%s", requestParam.getCollectionName());
+
+        try {
+            HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
+            SearchResults response = this.blockingStub().hybridSearch(searchRequest);
+            handleResponse(title, response.getStatus());
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public ListenableFuture<R<SearchResults>> hybridSearchAsync(HybridSearchParam requestParam) {
+        if (!clientIsReady()) {
+            return Futures.immediateFuture(
+                    R.failed(new ClientNotConnectedException("Client rpc channel is not ready")));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("HybridSearchAsyncRequest collectionName:%s", requestParam.getCollectionName());
+
+        HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
+        ListenableFuture<SearchResults> response = this.futureStub().hybridSearch(searchRequest);
+
+        Futures.addCallback(
+                response,
+                new FutureCallback<SearchResults>() {
+                    @Override
+                    public void onSuccess(SearchResults result) {
+                        if (result.getStatus().getErrorCode() == ErrorCode.Success) {
+                            logDebug("{} successfully!", title);
+                        } else {
+                            logError("{} failed:\n{}", title, result.getStatus().getReason());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@Nonnull Throwable t) {
+                        logError("{} failed:\n{}", title, t.getMessage());
+                    }
+                },
+                MoreExecutors.directExecutor());
+
+        Function<SearchResults, R<SearchResults>> transformFunc =
+                results -> {
+                    Status status = results.getStatus();
+                    if (status.getCode() != 0 || status.getErrorCode() != ErrorCode.Success) {
+                        return R.failed(new ServerException(status.getReason(), status.getCode(), status.getErrorCode()));
+                    } else {
+                        return R.success(results);
+                    }
+                };
+
+        return Futures.transform(response, transformFunc::apply, MoreExecutors.directExecutor());
+    }
+
+    @Override
     public R<QueryResults> query(@NonNull QueryParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));

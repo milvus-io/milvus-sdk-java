@@ -17,13 +17,11 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.storage;
+package io.milvus.param.dml.ranker;
 
+import java.util.HashMap;
+import java.util.Map;
 
-import java.io.InputStream;
-
-public interface StorageClient {
-    Long getObjectEntity(String bucketName, String objectKey) throws Exception;
-    boolean checkBucketExist(String bucketName) throws Exception;
-    void putObjectStream(InputStream inputStream, long contentLength, String bucketName, String objectKey) throws Exception;
+public abstract class BaseRanker {
+    public abstract Map<String, String> getProperties();
 }

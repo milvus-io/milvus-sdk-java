@@ -20,6 +20,7 @@
 package io.milvus.client;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -29,10 +30,9 @@ import io.milvus.param.alias.CreateAliasParam;
 import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.alias.ListAliasesParam;
 import io.milvus.param.collection.*;
-import io.milvus.param.dml.InsertParam;
-import io.milvus.param.dml.QueryParam;
-import io.milvus.param.dml.SearchParam;
-import io.milvus.param.dml.UpsertParam;
+import io.milvus.param.dml.*;
+import io.milvus.param.dml.ranker.RRFRanker;
+import io.milvus.param.dml.ranker.WeightedRanker;
 import io.milvus.param.highlevel.dml.DeleteIdsParam;
 import io.milvus.param.highlevel.dml.GetIdsParam;
 import io.milvus.param.highlevel.dml.response.DeleteResponse;
@@ -785,6 +785,164 @@ class MilvusClientDockerTest {
             Object v = scores.get(0).get(field2Name);
             SortedMap<Long, Float> sparse = (SortedMap<Long, Float>)v;
             Assertions.assertTrue(sparse.equals(targetVectors.get(i)));
+        }
+
+        // drop collection
+        DropCollectionParam dropParam = DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build();
+
+        R<RpcStatus> dropR = client.dropCollection(dropParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testMultipleVectorFields() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String idField = "id";
+        String floatVectorField = "float_vector";
+        String binaryVectorField = "binary_vector";
+        String sparseVectorField = "sparse_vector";
+        FieldType field1 = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(true)
+                .withDataType(DataType.Int64)
+                .withName(idField)
+                .build();
+
+        FieldType field2 = FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName(floatVectorField)
+                .withDimension(dimension)
+                .build();
+
+        FieldType field3 = FieldType.newBuilder()
+                .withDataType(DataType.BinaryVector)
+                .withName(binaryVectorField)
+                .withDimension(dimension)
+                .build();
+
+        FieldType field4 = FieldType.newBuilder()
+                .withDataType(DataType.SparseFloatVector)
+                .withName(sparseVectorField)
+                .build();
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldTypes(Lists.newArrayList(field1, field2, field3, field4))
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // insert data to multiple vector fields
+        int rowCount = 10000;
+        List<List<Float>> floatVectors = generateFloatVectors(rowCount);
+        List<ByteBuffer> binaryVectors = generateBinaryVectors(rowCount);
+        List<SortedMap<Long, Float>> sparseVectors = generateSparseVectors(rowCount);
+
+        List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field(floatVectorField, floatVectors));
+        fields.add(new InsertParam.Field(binaryVectorField, binaryVectors));
+        fields.add(new InsertParam.Field(sparseVectorField, sparseVectors));
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fields)
+                .build();
+
+        R<MutationResult> insertR = client.insert(insertParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // create indexes on multiple vector fields
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(floatVectorField)
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.COSINE)
+                .withExtraParam("{\"nlist\":64}")
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(binaryVectorField)
+                .withIndexType(IndexType.BIN_FLAT)
+                .withMetricType(MetricType.HAMMING)
+                .withExtraParam("{}")
+                .build();
+
+        createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(sparseVectorField)
+                .withIndexType(IndexType.SPARSE_INVERTED_INDEX)
+                .withMetricType(MetricType.IP)
+                .withExtraParam("{\"drop_ratio_build\":0.2}")
+                .build();
+
+        createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // search on multiple vector fields
+        AnnSearchParam param1 = AnnSearchParam.newBuilder()
+                .withVectorFieldName(floatVectorField)
+                .withVectors(generateFloatVectors(1))
+                .withMetricType(MetricType.COSINE)
+                .withParams("{\"nprobe\": 32}")
+                .withTopK(10)
+                .build();
+
+        AnnSearchParam param2 = AnnSearchParam.newBuilder()
+                .withVectorFieldName(binaryVectorField)
+                .withVectors(generateBinaryVectors(1))
+                .withMetricType(MetricType.HAMMING)
+                .withParams("{}")
+                .withTopK(5)
+                .build();
+
+        AnnSearchParam param3 = AnnSearchParam.newBuilder()
+                .withVectorFieldName(sparseVectorField)
+                .withVectors(generateSparseVectors(1))
+                .withMetricType(MetricType.IP)
+                .withParams("{\"drop_ratio_search\":0.2}")
+                .withTopK(7)
+                .build();
+
+        HybridSearchParam searchParam = HybridSearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .addOutField(sparseVectorField)
+                .addSearchRequest(param1)
+                .addSearchRequest(param2)
+                .addSearchRequest(param3)
+                .withTopK(3)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .withRanker(WeightedRanker.newBuilder()
+                        .withWeights(Lists.newArrayList(0.5f, 0.5f, 1.0f))
+                        .build())
+                .build();
+
+        R<SearchResults> searchR = client.hybridSearch(searchParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // print search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+        for (int i = 0; i < scores.size(); ++i) {
+            System.out.println(scores.get(i));
         }
 
         // drop collection
