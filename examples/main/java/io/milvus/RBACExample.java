@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+package io.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.ListCredUsersResponse;
@@ -28,6 +28,7 @@ import io.milvus.param.credential.CreateCredentialParam;
 import io.milvus.param.credential.ListCredUsersParam;
 import io.milvus.param.role.*;
 import org.apache.commons.lang3.Validate;
+
 
 public class RBACExample {
     private static final MilvusServiceClient milvusClient;

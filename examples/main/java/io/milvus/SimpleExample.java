@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+package io.milvus;
 
 import com.alibaba.fastjson.JSONObject;
 import io.milvus.client.MilvusServiceClient;
@@ -27,6 +27,7 @@ import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.response.*;
 import java.util.*;
+
 
 public class SimpleExample {
     private static final String COLLECTION_NAME = "java_sdk_example_simple";
