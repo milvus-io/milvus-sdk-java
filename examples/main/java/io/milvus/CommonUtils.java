@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.milvus;
 
 import io.milvus.param.R;
 import org.tensorflow.ndarray.buffer.ByteDataBuffer;
@@ -24,6 +25,7 @@ import org.tensorflow.types.TFloat16;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+
 
 public class CommonUtils {
 

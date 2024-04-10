@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.milvus;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
@@ -31,6 +32,7 @@ import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 
 import java.util.*;
+
 
 public class SparseVectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_sparse";

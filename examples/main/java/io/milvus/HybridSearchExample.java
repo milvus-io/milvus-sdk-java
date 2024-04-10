@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package io.milvus;
 
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
@@ -36,6 +37,7 @@ import io.milvus.response.SearchResultsWrapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 public class HybridSearchExample {
     private static final String HOST = "localhost";
