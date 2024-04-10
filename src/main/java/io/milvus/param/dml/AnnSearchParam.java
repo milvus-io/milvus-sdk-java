@@ -20,6 +20,7 @@
 package io.milvus.param.dml;
 
 import io.milvus.exception.ParamException;
+import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
@@ -45,6 +46,7 @@ public class AnnSearchParam {
     private final List<?> vectors;
     private final Long NQ;
     private final String params;
+    private final PlaceholderType plType;
 
     private AnnSearchParam(@NonNull Builder builder) {
         this.metricType = builder.metricType.name();
@@ -54,6 +56,7 @@ public class AnnSearchParam {
         this.vectors = builder.vectors;
         this.NQ = builder.NQ;
         this.params = builder.params;
+        this.plType = builder.plType;
     }
 
     public static Builder newBuilder() {
@@ -71,6 +74,11 @@ public class AnnSearchParam {
         private List<?> vectors;
         private Long NQ;
         private String params = "{}";
+
+        // plType is used to distinct vector type
+        // for Float16Vector/BFloat16Vector and BinaryVector, user input ByteBuffer
+        // the server cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
+        private PlaceholderType plType = PlaceholderType.None;
 
         Builder() {
         }
@@ -121,18 +129,67 @@ public class AnnSearchParam {
         }
 
         /**
-         * Sets the target vectors.
-         * Note: currently, only support one vector for search.
+         * Sets the target vectors to search on FloatVector field.
          *
-         * @param vectors list of target vectors:
-         *                if vector type is FloatVector, vectors is List of List Float;
-         *                if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer;
-         *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float];
+         * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withVectors(@NonNull List<?> vectors) {
+        public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
+            plType = PlaceholderType.FloatVector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on BinaryVector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            plType = PlaceholderType.BinaryVector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on Float16Vector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            plType = PlaceholderType.Float16Vector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on BFloat16Vector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            plType = PlaceholderType.BFloat16Vector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on SparseFloatVector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            plType = PlaceholderType.SparseFloatVector;
             return this;
         }
 
@@ -164,53 +221,11 @@ public class AnnSearchParam {
                 throw new ParamException("TopK value is illegal");
             }
 
-            if (vectors == null || vectors.isEmpty()) {
-                throw new ParamException("Target vectors can not be empty");
+            if (vectors.isEmpty()) {
+                throw new ParamException("At lease a vector is required for AnnSearchParam");
             }
 
-            if (vectors.size() != 1) {
-                throw new ParamException("Only support one vector for each AnnSearchParam");
-            }
-
-            if (vectors.get(0) instanceof List) {
-                // float vectors
-                // TODO: here only check the first element, potential risk
-                List<?> first = (List<?>) vectors.get(0);
-                if (!(first.get(0) instanceof Float)) {
-                    throw new ParamException("Float vector field's value must be Lst<Float>");
-                }
-
-                int dim = first.size();
-                for (int i = 1; i < vectors.size(); ++i) {
-                    List<?> temp = (List<?>) vectors.get(i);
-                    if (dim != temp.size()) {
-                        throw new ParamException("Target vector dimension must be equal");
-                    }
-                }
-            } else if (vectors.get(0) instanceof ByteBuffer) {
-                // binary vectors
-                // TODO: here only check the first element, potential risk
-                ByteBuffer first = (ByteBuffer) vectors.get(0);
-                int dim = first.position();
-                for (int i = 1; i < vectors.size(); ++i) {
-                    ByteBuffer temp = (ByteBuffer) vectors.get(i);
-                    if (dim != temp.position()) {
-                        throw new ParamException("Target vector dimension must be equal");
-                    }
-                }
-            } else if (vectors.get(0) instanceof SortedMap) {
-                // sparse vectors, must be SortedMap<Long, Float>
-                // TODO: here only check the first element, potential risk
-                SortedMap<?, ?> map = (SortedMap<?, ?>) vectors.get(0);
-
-
-            } else {
-                String msg = "Search target vector type is illegal." +
-                        " Only allow List<Float> for FloatVector," +
-                        " ByteBuffer for BinaryVector/Float16Vector/BFloat16Vector," +
-                        " List<SortedMap<Long, Float>> for SparseFloatVector.";
-                throw new ParamException(msg);
-            }
+            SearchParam.verifyVectors(vectors);
 
             return new AnnSearchParam(this);
         }

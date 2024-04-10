@@ -69,7 +69,7 @@ class MilvusClientDockerTest {
     private static final int dimension = 128;
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.0-rc.1");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240411-35f39593-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -900,7 +900,7 @@ class MilvusClientDockerTest {
         // search on multiple vector fields
         AnnSearchParam param1 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(floatVectorField)
-                .withVectors(generateFloatVectors(1))
+                .withFloatVectors(generateFloatVectors(1))
                 .withMetricType(MetricType.COSINE)
                 .withParams("{\"nprobe\": 32}")
                 .withTopK(10)
@@ -908,7 +908,7 @@ class MilvusClientDockerTest {
 
         AnnSearchParam param2 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(binaryVectorField)
-                .withVectors(generateBinaryVectors(1))
+                .withBinaryVectors(generateBinaryVectors(1))
                 .withMetricType(MetricType.HAMMING)
                 .withParams("{}")
                 .withTopK(5)
@@ -916,7 +916,7 @@ class MilvusClientDockerTest {
 
         AnnSearchParam param3 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(sparseVectorField)
-                .withVectors(generateSparseVectors(1))
+                .withSparseFloatVectors(generateSparseVectors(1))
                 .withMetricType(MetricType.IP)
                 .withParams("{\"drop_ratio_search\":0.2}")
                 .withTopK(7)

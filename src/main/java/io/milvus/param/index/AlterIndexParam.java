@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parameters for <code>alterCollection</code> interface.
+ * Parameters for <code>alterIndex</code> interface.
  */
 @Getter
 @ToString

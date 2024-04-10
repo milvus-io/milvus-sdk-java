@@ -180,7 +180,7 @@ public class HybridSearchExample {
                 .build());
         CommonUtils.handleResponseStatus(resp);
 
-        System.out.printf("%d entities inserted by rows", rowCount);
+        System.out.printf("%d entities inserted by rows\n", rowCount);
 
         // Insert entities by columns
         List<Long> ids = new ArrayList<>();
@@ -205,7 +205,7 @@ public class HybridSearchExample {
                 .build());
         CommonUtils.handleResponseStatus(resp);
 
-        System.out.printf("%d entities inserted by columns", rowCount);
+        System.out.printf("%d entities inserted by columns\n", rowCount);
 
         milvusClient.close();
     }
@@ -231,7 +231,7 @@ public class HybridSearchExample {
         // Note that only allow one vector for each sub request
         AnnSearchParam req1 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(FLOAT_VECTOR_FIELD)
-                .withVectors(CommonUtils.generateFloatVectors(FLOAT_VECTOR_DIM, 1))
+                .withFloatVectors(CommonUtils.generateFloatVectors(FLOAT_VECTOR_DIM, 1))
                 .withMetricType(FLOAT_VECTOR_METRIC)
                 .withParams("{\"nprobe\": 32}")
                 .withTopK(10)
@@ -239,14 +239,14 @@ public class HybridSearchExample {
 
         AnnSearchParam req2 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(BINARY_VECTOR_FIELD)
-                .withVectors(CommonUtils.generateBinaryVectors(BINARY_VECTOR_DIM, 1))
+                .withBinaryVectors(CommonUtils.generateBinaryVectors(BINARY_VECTOR_DIM, 1))
                 .withMetricType(BINARY_VECTOR_METRIC)
                 .withTopK(15)
                 .build();
 
 //        AnnSearchParam req3 = AnnSearchParam.newBuilder()
 //                .withVectorFieldName(FLOAT16_VECTOR_FIELD)
-//                .withVectors(CommonUtils.generateFloat16Vectors(FLOAT16_VECTOR_DIM, 1, false))
+//                .withFloat16Vectors(CommonUtils.generateFloat16Vectors(FLOAT16_VECTOR_DIM, 1, false))
 //                .withMetricType(FLOAT16_VECTOR_METRIC)
 //                .withParams("{\"es\":200}")
 //                .withTopK(20)
@@ -254,7 +254,7 @@ public class HybridSearchExample {
 
         AnnSearchParam req4 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(SPARSE_VECTOR_FIELD)
-                .withVectors(CommonUtils.generateSparseVectors(1))
+                .withSparseFloatVectors(CommonUtils.generateSparseVectors(1))
                 .withMetricType(SPARSE_VECTOR_METRIC)
                 .withParams("{\"drop_ratio_search\":0.2}")
                 .withTopK(20)

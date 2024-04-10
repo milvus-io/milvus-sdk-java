@@ -140,7 +140,7 @@ public class BinaryVectorExample {
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.HAMMING)
                     .withTopK(3)
-                    .withVectors(Collections.singletonList(targetVector))
+                    .withBinaryVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"nprobe\":16}")
