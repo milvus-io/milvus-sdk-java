@@ -462,7 +462,7 @@ public class ParamUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static ByteString convertPlaceholder(List<?> vectors) throws ParamException {
+    private static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
@@ -496,6 +496,11 @@ public class ParamUtils {
             }
         }
 
+        // force specify PlaceholderType
+        if (placeType != PlaceholderType.None) {
+            plType = placeType;
+        }
+
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
                 .setTag(Constant.VECTOR_TAG)
                 .setType(plType);
@@ -522,7 +527,7 @@ public class ParamUtils {
         }
 
         // prepare target vectors
-        ByteString byteStr = convertPlaceholder(requestParam.getVectors());
+        ByteString byteStr = convertPlaceholder(requestParam.getVectors(), requestParam.getPlType());
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(requestParam.getNQ());
 
@@ -611,7 +616,7 @@ public class ParamUtils {
     public static SearchRequest convertAnnSearchParam(@NonNull AnnSearchParam annSearchParam,
                                                       ConsistencyLevelEnum consistencyLevel) {
         SearchRequest.Builder builder = SearchRequest.newBuilder();
-        ByteString byteStr = convertPlaceholder(annSearchParam.getVectors());
+        ByteString byteStr = convertPlaceholder(annSearchParam.getVectors(), annSearchParam.getPlType());
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(annSearchParam.getNQ());
 

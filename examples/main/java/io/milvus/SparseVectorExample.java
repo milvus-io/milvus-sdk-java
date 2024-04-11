@@ -137,7 +137,7 @@ public class SparseVectorExample {
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.IP)
                     .withTopK(3)
-                    .withVectors(Collections.singletonList(targetVector))
+                    .withSparseFloatVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"drop_ratio_search\":0.2}")

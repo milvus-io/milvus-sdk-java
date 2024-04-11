@@ -138,7 +138,7 @@ public class SimpleExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withMetricType(MetricType.L2)
                 .withTopK(5)
-                .withVectors(Arrays.asList(vector))
+                .withFloatVectors(Arrays.asList(vector))
                 .withVectorFieldName(VECTOR_FIELD)
                 .withParams("{}")
                 .addOutField(TITLE_FIELD)

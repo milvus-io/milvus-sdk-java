@@ -2194,7 +2194,7 @@ class MilvusServiceClientTest {
                 .withVectorFieldName("field1")
                 .withMetricType(MetricType.IP)
                 .withTopK(5)
-                .withVectors(vectors)
+                .withFloatVectors(vectors)
                 .withExpr("dummy")
                 .build();
 
@@ -2208,7 +2208,7 @@ class MilvusServiceClientTest {
                 .withVectorFieldName("field2")
                 .withMetricType(MetricType.HAMMING)
                 .withTopK(5)
-                .withVectors(bVectors)
+                .withBinaryVectors(bVectors)
                 .withExpr("dummy")
                 .build();
 

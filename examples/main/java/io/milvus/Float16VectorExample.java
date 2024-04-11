@@ -137,15 +137,19 @@ public class Float16VectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             ByteBuffer targetVector = vectors.get(k);
-            R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
+            SearchParam.Builder builder = SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.L2)
                     .withTopK(3)
-                    .withVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)
-                    .withParams("{\"nprobe\":32}")
-                    .build());
+                    .withParams("{\"nprobe\":32}");
+            if (bfloat16) {
+                builder.withBFloat16Vectors(Collections.singletonList(targetVector));
+            } else {
+                builder.withFloat16Vectors(Collections.singletonList(targetVector));
+            }
+            R<SearchResults> searchRet = milvusClient.search(builder.build());
             CommonUtils.handleResponseStatus(searchRet);
 
             // The search() allows multiple target vectors to search in a batch.

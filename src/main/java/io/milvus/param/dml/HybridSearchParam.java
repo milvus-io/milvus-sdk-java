@@ -225,6 +225,15 @@ public class HybridSearchParam {
                 throw new ParamException("At least a search request is required");
             }
 
+            int vectorSize = 0;
+            for (AnnSearchParam req : searchRequests) {
+                if (vectorSize == 0) {
+                    vectorSize = req.getVectors().size();
+                } else if (vectorSize != req.getVectors().size()) {
+                    throw new ParamException("Vector number of each AnnSearchParam must be equal");
+                }
+            }
+
             if (topK <= 0) {
                 throw new ParamException("TopK value is illegal");
             }

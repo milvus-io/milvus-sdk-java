@@ -331,7 +331,7 @@ public class GeneralExample {
                 .withMetricType(MetricType.L2)
                 .withOutFields(outFields)
                 .withTopK(SEARCH_K)
-                .withVectors(vectors)
+                .withFloatVectors(vectors)
                 .withVectorFieldName(VECTOR_FIELD)
                 .withExpr(expr)
                 .withParams(SEARCH_PARAM)
