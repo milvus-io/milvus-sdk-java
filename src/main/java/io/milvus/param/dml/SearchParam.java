@@ -111,8 +111,8 @@ public class SearchParam {
         private String groupByFieldName;
 
         // plType is used to distinct vector type
-        // for Float16Vector/BFloat16Vector and BinaryVector, user input ByteBuffer
-        // the server cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
+        // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
+        // the sdk cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
         private PlaceholderType plType = PlaceholderType.None;
 
         Builder() {
@@ -246,14 +246,14 @@ public class SearchParam {
 
         /**
          * Sets the target vectors.
-         * Note: Deprecated in v2.4.0, for the reason that the server cannot know a ByteBuffer
+         * Note: Deprecated in v2.4.0, for the reason that the sdk cannot know a ByteBuffer
          *       is a BinarVector or Float16Vector/BFloat16Vector.
-         *       Replaced by withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors.
+         *       Replaced by withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors.
          *       It still works for FloatVector/BinarVector/SparseVector, don't use it for Float16Vector/BFloat16Vector.
          *
          * @param vectors list of target vectors:
          *                if vector type is FloatVector, vectors is List of List Float;
-         *                if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer;
+         *                if vector type is BinaryVector, vectors is List of ByteBuffer;
          *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float];
          * @return <code>Builder</code>
          */
@@ -273,7 +273,7 @@ public class SearchParam {
         public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.FloatVector;
+            this.plType = PlaceholderType.FloatVector;
             return this;
         }
 
@@ -286,7 +286,7 @@ public class SearchParam {
         public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.BinaryVector;
+            this.plType = PlaceholderType.BinaryVector;
             return this;
         }
 
@@ -299,7 +299,7 @@ public class SearchParam {
         public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.Float16Vector;
+            this.plType = PlaceholderType.Float16Vector;
             return this;
         }
 
@@ -312,7 +312,7 @@ public class SearchParam {
         public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.BFloat16Vector;
+            this.plType = PlaceholderType.BFloat16Vector;
             return this;
         }
 
@@ -325,7 +325,7 @@ public class SearchParam {
         public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.SparseFloatVector;
+            this.plType = PlaceholderType.SparseFloatVector;
             return this;
         }
 
