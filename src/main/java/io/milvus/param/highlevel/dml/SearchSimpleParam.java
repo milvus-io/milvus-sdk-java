@@ -120,9 +120,7 @@ public class SearchSimpleParam {
         /**
          * Sets the target vectors.
          *
-         * @param vectors list of target vectors:
-         *               if vector type is FloatVector, vectors is List of List Float;
-         *               if vector type is BinaryVector/Float16Vector/BFloat16Vector, vectors is List of ByteBuffer;
+         * @param vectors list of target vectors: List of List Float;
          * @return <code>Builder</code>
          */
         public Builder withVectors(@NonNull List<?> vectors) {

@@ -76,8 +76,8 @@ public class AnnSearchParam {
         private String params = "{}";
 
         // plType is used to distinct vector type
-        // for Float16Vector/BFloat16Vector and BinaryVector, user input ByteBuffer
-        // the server cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
+        // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
+        // the sdk cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
         private PlaceholderType plType = PlaceholderType.None;
 
         Builder() {
@@ -137,7 +137,7 @@ public class AnnSearchParam {
         public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.FloatVector;
+            this.plType = PlaceholderType.FloatVector;
             return this;
         }
 
@@ -150,7 +150,7 @@ public class AnnSearchParam {
         public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.BinaryVector;
+            this.plType = PlaceholderType.BinaryVector;
             return this;
         }
 
@@ -163,7 +163,7 @@ public class AnnSearchParam {
         public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.Float16Vector;
+            this.plType = PlaceholderType.Float16Vector;
             return this;
         }
 
@@ -176,7 +176,7 @@ public class AnnSearchParam {
         public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.BFloat16Vector;
+            this.plType = PlaceholderType.BFloat16Vector;
             return this;
         }
 
@@ -189,7 +189,7 @@ public class AnnSearchParam {
         public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
-            plType = PlaceholderType.SparseFloatVector;
+            this.plType = PlaceholderType.SparseFloatVector;
             return this;
         }
 
