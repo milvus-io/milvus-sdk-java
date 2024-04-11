@@ -72,11 +72,6 @@ public class GeneralExample {
     private static final Integer SEARCH_K = 5;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
 
-    private void handleResponseStatus(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(r.getMessage());
-        }
-    }
 
     private R<RpcStatus> createCollection(long timeoutMilliseconds) {
         System.out.println("========== createCollection() ==========");
@@ -112,7 +107,7 @@ public class GeneralExample {
                 .build();
         R<RpcStatus> response = milvusClient.withTimeout(timeoutMilliseconds, TimeUnit.MILLISECONDS)
                 .createCollection(createCollectionReq);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -131,7 +126,7 @@ public class GeneralExample {
         R<Boolean> response = milvusClient.hasCollection(HasCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response.getData().booleanValue();
     }
@@ -141,7 +136,7 @@ public class GeneralExample {
         R<RpcStatus> response = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -151,7 +146,7 @@ public class GeneralExample {
         R<RpcStatus> response = milvusClient.releaseCollection(ReleaseCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -161,7 +156,7 @@ public class GeneralExample {
         R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(response.getData());
         System.out.println(wrapper.toString());
         return response;
@@ -177,7 +172,7 @@ public class GeneralExample {
                 GetCollectionStatisticsParam.newBuilder()
                         .withCollectionName(COLLECTION_NAME)
                         .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(response.getData());
         System.out.println("Collection row count: " + wrapper.getRowCount());
         return response;
@@ -187,7 +182,7 @@ public class GeneralExample {
         System.out.println("========== showCollections() ==========");
         R<ShowCollectionsResponse> response = milvusClient.showCollections(ShowCollectionsParam.newBuilder()
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -198,7 +193,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -209,7 +204,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -220,7 +215,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withPartitionName(partitionName)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -231,7 +226,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .addPartitionName(partitionName)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -241,7 +236,7 @@ public class GeneralExample {
         R<ShowPartitionsResponse> response = milvusClient.showPartitions(ShowPartitionsParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -255,7 +250,7 @@ public class GeneralExample {
                 .withIndexType(IndexType.STL_SORT)
                 .withSyncMode(Boolean.TRUE)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
 
         // create index for vector field
         response = milvusClient.createIndex(CreateIndexParam.newBuilder()
@@ -267,7 +262,7 @@ public class GeneralExample {
                 .withExtraParam(INDEX_PARAM)
                 .withSyncMode(Boolean.TRUE)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -278,7 +273,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withIndexName(INDEX_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -289,7 +284,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withIndexName(INDEX_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -300,7 +295,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withIndexName(INDEX_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -312,7 +307,7 @@ public class GeneralExample {
                         .withCollectionName(COLLECTION_NAME)
                         .withIndexName(INDEX_NAME)
                         .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -325,7 +320,7 @@ public class GeneralExample {
                 .withExpr(expr)
                 .build();
         R<MutationResult> response = milvusClient.delete(build);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response.getData());
         return response;
     }
@@ -335,7 +330,7 @@ public class GeneralExample {
         long begin = System.currentTimeMillis();
 
         List<String> outFields = Collections.singletonList(AGE_FIELD);
-        List<List<Float>> vectors = generateFloatVectors(5);
+        List<List<Float>> vectors = CommonUtils.generateFloatVectors(VECTOR_DIM, 5);
 
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
@@ -354,7 +349,7 @@ public class GeneralExample {
         long cost = (end - begin);
         System.out.println("Search time cost: " + cost + "ms");
 
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         SearchResultsWrapper wrapper = new SearchResultsWrapper(response.getData().getResults());
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
@@ -376,7 +371,7 @@ public class GeneralExample {
                 .withOutFields(fields)
                 .build();
         R<QueryResults> response = milvusClient.query(test);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         QueryResultsWrapper wrapper = new QueryResultsWrapper(response.getData());
         System.out.println(ID_FIELD + ":" + wrapper.getFieldWrapper(ID_FIELD).getFieldData().toString());
         System.out.println(AGE_FIELD + ":" + wrapper.getFieldWrapper(AGE_FIELD).getFieldData().toString());
@@ -389,13 +384,13 @@ public class GeneralExample {
         R<ManualCompactionResponse> response = milvusClient.manualCompact(ManualCompactParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         return response;
     }
 
     private R<MutationResult> insertColumns(String partitionName, int count) {
         System.out.println("========== insertColumns() ==========");
-        List<List<Float>> vectors = generateFloatVectors(count);
+        List<List<Float>> vectors = CommonUtils.generateFloatVectors(VECTOR_DIM, count);
 
         Random ran = new Random();
         List<Integer> ages = new ArrayList<>();
@@ -414,7 +409,7 @@ public class GeneralExample {
                 .build();
 
         R<MutationResult> response = milvusClient.insert(insertParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         return response;
     }
 
@@ -426,7 +421,7 @@ public class GeneralExample {
         for (long i = 0L; i < count; ++i) {
             JSONObject row = new JSONObject();
             row.put(AGE_FIELD, ran.nextInt(99));
-            row.put(VECTOR_FIELD, generateFloatVector());
+            row.put(VECTOR_FIELD, CommonUtils.generateFloatVector(VECTOR_DIM));
 
             rowsData.add(row);
         }
@@ -438,31 +433,8 @@ public class GeneralExample {
                 .build();
 
         R<MutationResult> response = milvusClient.insert(insertParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         return response;
-    }
-
-    private List<List<Float>> generateFloatVectors(int count) {
-        Random ran = new Random();
-        List<List<Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            List<Float> vector = new ArrayList<>();
-            for (int i = 0; i < VECTOR_DIM; ++i) {
-                vector.add(ran.nextFloat());
-            }
-            vectors.add(vector);
-        }
-
-        return vectors;
-    }
-
-    private List<Float> generateFloatVector() {
-        Random ran = new Random();
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < VECTOR_DIM; ++i) {
-            vector.add(ran.nextFloat());
-        }
-        return vector;
     }
 
     public static void main(String[] args) {

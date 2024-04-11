@@ -75,31 +75,17 @@ public class HighLevelExample {
     private static final String BOOL_FIELD_NAME = "bool";
     private static final String FLOAT_FIELD_NAME = "float";
     private static final String DOUBLE_FIELD_NAME = "double";
-
-    private static void handleResponseStatus(R<?> r) {
-        if (r.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(r.getMessage());
-        }
-    }
+    
 
     private R<DescribeCollectionResponse> describeCollection() {
         System.out.println("========== describeCollection() ==========");
         R<DescribeCollectionResponse> response = milvusClient.describeCollection(DescribeCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .build());
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(response.getData());
         System.out.println(wrapper);
         return response;
-    }
-
-    private List<Float> generateFloatVector() {
-        Random ran = new Random();
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < VECTOR_DIM; ++i) {
-            vector.add(ran.nextFloat());
-        }
-        return vector;
     }
 
     // >>>>>>>>>>>>> high level api
@@ -114,7 +100,7 @@ public class HighLevelExample {
                 .build();
 
         R<RpcStatus> response = milvusClient.createCollection(createSimpleCollectionParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(JacksonUtils.toJsonString(response.getData()));
         return response;
     }
@@ -125,7 +111,7 @@ public class HighLevelExample {
                 .build();
 
         R<ListCollectionsResponse> response = milvusClient.listCollections(listCollectionsParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -137,7 +123,7 @@ public class HighLevelExample {
         for (long i = 0L; i < rowCount; ++i) {
             JSONObject row = new JSONObject();
             row.put(AGE_FIELD, ran.nextInt(99));
-            row.put(VECTOR_FIELD, generateFloatVector());
+            row.put(VECTOR_FIELD, CommonUtils.generateFloatVector(VECTOR_DIM));
 
             // $meta if collection EnableDynamicField, you can input this field not exist in schema, else deny
             row.put(INT32_FIELD_NAME, ran.nextInt());
@@ -166,7 +152,7 @@ public class HighLevelExample {
                 .build();
 
         R<InsertResponse> response = milvusClient.insert(insertRowsParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println("insertCount: " + response.getData().getInsertCount());
         System.out.println("insertIds: " + response.getData().getInsertIds());
         return response;
@@ -180,7 +166,7 @@ public class HighLevelExample {
                 .build();
 
         R<DeleteResponse> response = milvusClient.delete(deleteIdsParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         System.out.println(response);
         return response;
     }
@@ -193,7 +179,7 @@ public class HighLevelExample {
                 .build();
 
         R<GetResponse> response = milvusClient.get(getParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         for (QueryResultsWrapper.RowRecord rowRecord : response.getData().getRowRecords()) {
             System.out.println(rowRecord);
         }
@@ -204,7 +190,7 @@ public class HighLevelExample {
         System.out.println("========== high level search ==========");
         SearchSimpleParam searchSimpleParam = SearchSimpleParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withVectors(generateFloatVector())
+                .withVectors(CommonUtils.generateFloatVector(VECTOR_DIM))
                 .withFilter(filter)
                 .withLimit(100L)
                 .withOffset(0L)
@@ -213,7 +199,7 @@ public class HighLevelExample {
                 .build();
 
         R<SearchResponse> response = milvusClient.search(searchSimpleParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         for (QueryResultsWrapper.RowRecord rowRecord : response.getData().getRowRecords(0)) {
             System.out.println(rowRecord);
         }
@@ -234,7 +220,7 @@ public class HighLevelExample {
                 .build();
 
         R<QueryResponse> response = milvusClient.query(querySimpleParam);
-        handleResponseStatus(response);
+        CommonUtils.handleResponseStatus(response);
         for (QueryResultsWrapper.RowRecord rowRecord : response.getData().getRowRecords()) {
             System.out.println(rowRecord);
         }
