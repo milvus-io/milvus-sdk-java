@@ -20,26 +20,24 @@
 package io.milvus.client;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.*;
 import io.grpc.StatusRuntimeException;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
 import io.milvus.grpc.*;
-import io.milvus.grpc.ObjectEntity;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
-import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
@@ -3099,6 +3097,36 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             logError("{} failed! Exception:{}", title, e);
             return R.failed(e);
         }
+    }
+
+    @Override
+    public R<QueryIterator> queryIterator(QueryIteratorParam requestParam) {
+        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withDatabaseName(requestParam.getDatabaseName())
+                .withCollectionName(requestParam.getCollectionName());
+        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+        if (descResp.getStatus() != R.Status.Success.getCode()) {
+            logError("Failed to describe collection: {}", requestParam.getCollectionName());
+            return R.failed(descResp.getException());
+        }
+        DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
+        QueryIterator queryIterator = new QueryIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        return R.success(queryIterator);
+    }
+
+    @Override
+    public R<SearchIterator> searchIterator(SearchIteratorParam requestParam) {
+        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
+                .withDatabaseName(requestParam.getDatabaseName())
+                .withCollectionName(requestParam.getCollectionName());
+        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
+        if (descResp.getStatus() != R.Status.Success.getCode()) {
+            logError("Failed to describe collection: {}", requestParam.getCollectionName());
+            return R.failed(descResp.getException());
+        }
+        DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
+        SearchIterator searchIterator = new SearchIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        return R.success(searchIterator);
     }
 
     ///////////////////// Log Functions//////////////////////
