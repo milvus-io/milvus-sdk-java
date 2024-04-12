@@ -19,8 +19,8 @@
 
 package io.milvus.client;
 
-import io.grpc.*;
 import io.grpc.Status;
+import io.grpc.*;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
@@ -28,8 +28,9 @@ import io.grpc.stub.MetadataUtils;
 import io.milvus.exception.MilvusException;
 import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
-
 import io.milvus.param.alias.*;
 import io.milvus.param.bulkinsert.*;
 import io.milvus.param.collection.*;
@@ -50,12 +51,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Callable;
-
-import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
-import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import java.util.concurrent.TimeUnit;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
@@ -766,6 +763,16 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     @Override
     public R<SearchResponse> search(SearchSimpleParam requestParam) {
         return retry(()-> super.search(requestParam));
+    }
+
+    @Override
+    public R<QueryIterator> queryIterator(QueryIteratorParam requestParam) {
+        return retry(() -> super.queryIterator(requestParam));
+    }
+
+    @Override
+    public R<SearchIterator> searchIterator(SearchIteratorParam requestParam) {
+        return retry(() -> super.searchIterator(requestParam));
     }
 }
 

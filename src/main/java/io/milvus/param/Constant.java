@@ -47,7 +47,6 @@ public class Constant {
     public final static String OFFSET = "offset";
     public final static String LIMIT = "limit";
     public final static String DYNAMIC_FIELD_NAME = "$meta";
-
     // constant values for general
     public static final String TTL_SECONDS = "collection.ttl.seconds";
     public static final String MMAP_ENABLED = "mmap.enabled";
@@ -83,5 +82,16 @@ public class Constant {
     public static final Long LIMIT_DEFAULT = 100L;
     public static final Long OFFSET_DEFAULT = 0L;
     public static final String ALL_OUTPUT_FIELDS = "*";
+
+    public static final int MAX_BATCH_SIZE = 16384;
+    public static final int NO_CACHE_ID = -1;
+    public static final int UNLIMITED = -1;
+    public static final int DEFAULT_SEARCH_EXTENSION_RATE = 10;
+    public static final int MAX_FILTERED_IDS_COUNT_ITERATION = 100000;
+    public static final int MAX_TRY_TIME = 20;
+
+    public static final String RADIUS = "radius";
+    public static final String EF = "ef";
+    public static final String RANGE_FILTER = "range_filter";
 
 }

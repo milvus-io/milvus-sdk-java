@@ -44,10 +44,27 @@ public class CommonUtils {
         return vector;
     }
 
+    public static List<Float> generateFloatVector(int dimension, Float initValue) {
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < dimension; ++i) {
+            vector.add(initValue);
+        }
+        return vector;
+    }
+
     public static List<List<Float>> generateFloatVectors(int dimension, int count) {
         List<List<Float>> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
             List<Float> vector = generateFloatVector(dimension);
+            vectors.add(vector);
+        }
+        return vectors;
+    }
+
+    public static List<List<Float>> generateFixFloatVectors(int dimension, int count) {
+        List<List<Float>> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            List<Float> vector = generateFloatVector(dimension, (float)n);
             vectors.add(vector);
         }
         return vectors;
