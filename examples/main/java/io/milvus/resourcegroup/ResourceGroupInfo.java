@@ -15,7 +15,6 @@ public class ResourceGroupInfo {
     private Set<String> partialDatabases; // databases belong to this resource group partially, some collection is in
                                           // other resource group.
     private Set<NodeInfo> nodes; // actual query node in this resource group.
-    private Integer requestsNodeNum; // max query node in this resource group.
 
     private ResourceGroupInfo(@NonNull Builder builder) {
         this.resourceGroupName = builder.resourceGroupName;
@@ -32,7 +31,6 @@ public class ResourceGroupInfo {
         if (this.nodes == null) {
             this.nodes = new HashSet<NodeInfo>();
         }
-        this.requestsNodeNum = builder.requestsNodeNum;
     }
 
     public static Builder newBuilder() {
@@ -45,7 +43,6 @@ public class ResourceGroupInfo {
         private Set<String> fullDatabases;
         private Set<String> partialDatabases;
         private Set<NodeInfo> nodes; // actual query node in this resource group.
-        private Integer requestsNodeNum;
 
         public Builder withResourceGroupName(@NonNull String resourceGroupName) {
             this.resourceGroupName = resourceGroupName;
@@ -73,11 +70,6 @@ public class ResourceGroupInfo {
                 this.nodes = new HashSet<NodeInfo>();
             }
             this.nodes.add(node);
-            return this;
-        }
-
-        public Builder withRequestsNodeNum(@NonNull Integer requestsNodeNum) {
-            this.requestsNodeNum = requestsNodeNum;
             return this;
         }
 

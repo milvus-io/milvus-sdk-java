@@ -29,6 +29,12 @@ public class ResourceGroupExample {
     }
 
     public static void main(String[] args) throws Exception {
+        // It's a demo to show how to use resource group management.
+        // It create a database-level-resource-group-control (single replica)
+        // management.
+        // Declarative resource group API can also achieve
+        // replica-level-resource-group-control (multi-replica) management.
+
         printResourceGroupInfo();
         // Initialize the cluster with 1 resource group
         // default_rg: 1

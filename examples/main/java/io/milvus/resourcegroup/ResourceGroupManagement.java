@@ -68,9 +68,8 @@ public class ResourceGroupManagement {
 
             ResourceGroupInfo.Builder builder = ResourceGroupInfo.newBuilder()
                     .withResourceGroupName(resourceGroupName)
-                    .withRequestsNodeNum(resourceGroupInfo.getResourceGroup().getConfig().getRequests().getNodeNum())
                     .withConfig(new ResourceGroupConfig(resourceGroupInfo.getResourceGroup().getConfig()));
-            
+
             resourceGroupInfo.getResourceGroup().getNodesList().forEach(node -> {
                 builder.addAvailableNode(NodeInfo.newBuilder()
                         .withNodeId(node.getNodeId())
@@ -132,7 +131,7 @@ public class ResourceGroupManagement {
                         .withRequests(new ResourceGroupLimit(RECYCLE_RG_REQUEST_NODE_NUM))
                         .withLimits(new ResourceGroupLimit(RECYCLE_RG_LIMIT_NODE_NUM))
                         .build())
-                .build());        
+                .build());
         unwrap(resp);
         this.scaleResourceGroupTo(DEFAULT_RG, defaultResourceGroupNodeNum);
     }
@@ -231,10 +230,8 @@ public class ResourceGroupManagement {
      * @throws Exception
      */
     private String getCollectionResourceGroupName(String dbName, String collection) throws Exception {
-        R<GetLoadStateResponse> loaded = client.getLoadState(GetLoadStateParam.newBuilder().
-            withDatabaseName(dbName).
-            withCollectionName(collection).
-            build());
+        R<GetLoadStateResponse> loaded = client.getLoadState(
+                GetLoadStateParam.newBuilder().withDatabaseName(dbName).withCollectionName(collection).build());
         GetLoadStateResponse loadedState = unwrap(loaded);
 
         if (loadedState.getState() != LoadState.LoadStateLoaded) {
@@ -245,12 +242,16 @@ public class ResourceGroupManagement {
 
         // Get the current resource group of the collection.
         R<GetReplicasResponse> replicaResp = client
-                .getReplicas(GetReplicasParam.newBuilder().withCollectionName(collection).withDatabaseName(dbName).build());
+                .getReplicas(
+                        GetReplicasParam.newBuilder().withCollectionName(collection).withDatabaseName(dbName).build());
         GetReplicasResponse replicas = unwrap(replicaResp);
 
         if (replicas.getReplicasCount() > 1) {
-            // Multi replica is now supported now.
-            throw new RuntimeException(String.format("Replica number {} is greater than 1, did not support now",
+            // Multi replica is supported with multiple resource group.
+            // But current example only support single replica, so throw exception here.
+            // You can modify the code to support multi replicas.
+            throw new RuntimeException(String.format(
+                    "Replica number {} is greater than 1, did not support now in current example, you can modify the code to support it.",
                     replicas.getReplicasCount()));
         }
         if (replicas.getReplicasCount() == 0) {
