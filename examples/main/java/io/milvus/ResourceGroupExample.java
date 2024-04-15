@@ -21,7 +21,7 @@ public class ResourceGroupExample {
         manager = new ResourceGroupManagement(new MilvusServiceClient(connectParam));
     }
 
-    private static void printResourceGroupInfo() {
+    private static void printResourceGroupInfo() throws Exception {
         manager.listResourceGroups().forEach((name, rg) -> {
             System.out.println(name);
             System.out.println(gson.toJson(rg));
@@ -60,6 +60,16 @@ public class ResourceGroupExample {
         // downscale default_rg to 1
         manager.scaleResourceGroupTo(ResourceGroupManagement.DEFAULT_RG, 1);
         // default_rg: 1, rg1: 1, rg2: 2, recycle_rg: 1
+        printResourceGroupInfo();
+
+        manager.scaleResourceGroupTo(ResourceGroupManagement.DEFAULT_RG, 5);
+        manager.scaleResourceGroupTo(rgName1, 1);
+        manager.scaleResourceGroupTo(rgName2, 3);
+        // keep 8 query node in cluster.
+        printResourceGroupInfo();
+
+        // if there are replicas in other rg, transfer them to default together.
+        manager.transferDataBaseToResourceGroup("default", ResourceGroupManagement.DEFAULT_RG);
         printResourceGroupInfo();
     }
 }

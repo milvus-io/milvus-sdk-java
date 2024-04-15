@@ -73,7 +73,7 @@ public class ResourceGroupManagement {
             
             resourceGroupInfo.getResourceGroup().getNodesList().forEach(node -> {
                 builder.addAvailableNode(NodeInfo.newBuilder()
-                        .withNodeId(node.getNodeID())
+                        .withNodeId(node.getNodeId())
                         .withAddress(node.getAddress())
                         .withHostname(node.getHostname())
                         .build());
@@ -94,7 +94,9 @@ public class ResourceGroupManagement {
             Set<String> resourceGroupNames = new HashSet<>();
             for (String collection : showCollectionResponse.getCollectionNamesList()) {
                 String resourceGroupName = getCollectionResourceGroupName(dbName, collection);
-                resourceGroupNames.add(resourceGroupName);
+                if (resourceGroupName != null) {
+                    resourceGroupNames.add(resourceGroupName);
+                }
             }
 
             if (resourceGroupNames.size() == 0) {
