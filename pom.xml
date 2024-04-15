@@ -97,7 +97,7 @@
         <mockito.version>4.11.0</mockito.version>
         <testcontainers.version>1.19.6</testcontainers.version>
 
-        <hadoop.version>2.7.0</hadoop.version>
+        <hadoop.version>3.3.6</hadoop.version>
         <hbase.version>1.2.0</hbase.version>
         <parquet.version>1.13.1</parquet.version>
         <unirest.version>3.13.10</unirest.version>
@@ -325,6 +325,18 @@
                 <exclusion>
                     <artifactId>netty-all</artifactId>
                     <groupId>io.netty</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.reload4j</groupId>
+                    <artifactId>reload4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.nimbusds</groupId>
+                    <artifactId>nimbus-jose-jwt</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.woodstox</groupId>
+                    <artifactId>woodstox-core</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
