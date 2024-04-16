@@ -731,6 +731,15 @@ public interface MilvusClient {
      */
     R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam);
 
+
+    /**
+     * Update resource groups.
+     * 
+     * @param requestParam {@link UpdateResourceGroupsParam}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
+     */
+    R<RpcStatus> updateResourceGroups(UpdateResourceGroupsParam requestParam);
+
     /**
      * Drop a resource group.
      *
