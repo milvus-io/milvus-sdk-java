@@ -1,4 +1,44 @@
 # Changelog
+## milvus-sdk-java 2.4.0 (TBD)
+
+### Feature
+
+- Support new index type INVERTED/GPU_CAGRA
+- Support SparseFloatVector
+- Support Float16Vector/BFloat16Vector
+- Support SearchIterator/QueryIterator
+- Support multiple vector fields in one collection
+- Support hybrid-search on multiple vector fields
+
+### Improvement
+
+- Upgrade dependencies to fix some CVEs
+- Provide new methods withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors for SearchParam to explicitly input different type vectors
+
+## milvus-sdk-java 2.3.5 (2024-03-29)
+
+### Feature
+
+- New MilvusClientV2 class to encapsulate RPC interfaces for good usability
+- Support ListAlias interface
+- Provide a BulkWriter tool for easily generating data files for import() interface
+
+### Improvement
+
+- Replace grpc-netty to grpc-netty-shared
+- Support creating index without specifying metricType and indexType
+- Support searching without specifying metricType
+- Fix a crash bug of SearchResutsWrapper when primary key is varchar type
+- Fix a bug of retry that doesn't return server errors
+- Fix some vulnerabilities
+
+## milvus-sdk-java 2.3.4 (2024-01-02)
+
+### Improvement
+
+- Support backoff retry for RPC interfaces(consist with pymilvus)
+- Upgrade grpc from 1.46 to 1.59.1
+- Add withPartitionName for DeleteIdsParam
 
 ## milvus-sdk-java 2.3.3 (2023-11-08)
 
