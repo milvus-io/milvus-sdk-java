@@ -33,8 +33,8 @@ public class ConnectConfig {
     private String caPemPath;
     private String serverPemPath;
     private String serverName;
-
-    private Boolean secure;
+    @Builder.Default
+    private Boolean secure = false;
     @Builder.Default
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
@@ -58,11 +58,9 @@ public class ConnectConfig {
     }
 
     public Boolean isSecure() {
-        if (secure != null) {
-            return secure;
+        if(uri.startsWith("https")) {
+            return true;
         }
-        if (token == null && username == null && password == null) {
-            return false;
-        } else return token == null || !token.isEmpty();
+        return secure;
     }
 }
