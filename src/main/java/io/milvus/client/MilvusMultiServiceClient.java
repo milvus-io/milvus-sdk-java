@@ -604,6 +604,11 @@ public class MilvusMultiServiceClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> updateResourceGroups(UpdateResourceGroupsParam requestParam) {
+        return this.clusterFactory.getMaster().getClient().updateResourceGroups(requestParam);
+    }
+
+    @Override
     public R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam) {
         return this.clusterFactory.getMaster().getClient().dropResourceGroup(requestParam);
     }
