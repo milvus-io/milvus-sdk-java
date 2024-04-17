@@ -78,6 +78,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     private io.milvus.grpc.GetLoadingProgressResponse respGetLoadingProgress;
     private io.milvus.grpc.GetLoadStateResponse respGetLoadState;
+    private io.milvus.grpc.ConnectResponse respConnect;
 
     public MockMilvusServerImpl() {
     }
@@ -327,7 +328,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void listAliases(io.milvus.grpc.ListAliasesRequest request,
-                           io.grpc.stub.StreamObserver<io.milvus.grpc.ListAliasesResponse> responseObserver) {
+                            io.grpc.stub.StreamObserver<io.milvus.grpc.ListAliasesResponse> responseObserver) {
         logger.info("MockServer receive listAliases() call");
 
         responseObserver.onNext(respListAliases);
@@ -427,7 +428,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void import_(io.milvus.grpc.ImportRequest request,
-                       io.grpc.stub.StreamObserver<io.milvus.grpc.ImportResponse> responseObserver) {
+                        io.grpc.stub.StreamObserver<io.milvus.grpc.ImportResponse> responseObserver) {
         logger.info("MockServer receive import() call");
 
         responseObserver.onNext(respImport);
@@ -436,7 +437,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void getImportState(io.milvus.grpc.GetImportStateRequest request,
-                        io.grpc.stub.StreamObserver<io.milvus.grpc.GetImportStateResponse> responseObserver) {
+                               io.grpc.stub.StreamObserver<io.milvus.grpc.GetImportStateResponse> responseObserver) {
         logger.info("MockServer receive getImportState() call");
 
         responseObserver.onNext(respImportState);
@@ -445,7 +446,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void listImportTasks(io.milvus.grpc.ListImportTasksRequest request,
-                               io.grpc.stub.StreamObserver<io.milvus.grpc.ListImportTasksResponse> responseObserver) {
+                                io.grpc.stub.StreamObserver<io.milvus.grpc.ListImportTasksResponse> responseObserver) {
         logger.info("MockServer receive listImportTasks() call");
 
         responseObserver.onNext(respListImportTasks);
@@ -510,7 +511,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void getFlushState(io.milvus.grpc.GetFlushStateRequest request,
-                                         io.grpc.stub.StreamObserver<io.milvus.grpc.GetFlushStateResponse> responseObserver) {
+                              io.grpc.stub.StreamObserver<io.milvus.grpc.GetFlushStateResponse> responseObserver) {
         logger.info("MockServer receive getFlushState() call");
 
         responseObserver.onNext(respGetFlushState);
@@ -549,7 +550,7 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     @Override
     public void getReplicas(io.milvus.grpc.GetReplicasRequest request,
-                                    io.grpc.stub.StreamObserver<io.milvus.grpc.GetReplicasResponse> responseObserver) {
+                            io.grpc.stub.StreamObserver<io.milvus.grpc.GetReplicasResponse> responseObserver) {
         logger.info("MockServer receive getReplicas() call");
 
         responseObserver.onNext(respGetReplicas);
@@ -695,5 +696,17 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
 
     public void setGetLoadingProgress(GetLoadStateResponse respGetLoadState) {
         this.respGetLoadState = respGetLoadState;
+    }
+
+    public void setConnectResponse(io.milvus.grpc.ConnectResponse resp) {
+        this.respConnect = resp;
+    }
+
+    public void connect(io.milvus.grpc.ConnectRequest request,
+                        io.grpc.stub.StreamObserver<io.milvus.grpc.ConnectResponse> responseObserver) {
+        logger.info("MockServer receive connect() call");
+
+        responseObserver.onNext(respConnect);
+        responseObserver.onCompleted();
     }
 }

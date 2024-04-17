@@ -1,4 +1,4 @@
-/*
+ /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -22,6 +22,7 @@ package io.milvus.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -39,6 +40,7 @@ import io.milvus.param.partition.*;
 import io.milvus.response.*;
 import io.milvus.server.MockMilvusServer;
 import io.milvus.server.MockMilvusServerImpl;
+import io.milvus.server.MockServer;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -71,6 +73,25 @@ class MilvusServiceClientTest {
                 .withMaxRetryTimes(2)
                 .build();
         return new MilvusServiceClient(connectParam).withRetry(retryParam);
+    }
+
+    private MilvusClient startClientWithDBSpecified(String dbName) {
+        String testHost = "localhost";
+        ConnectParam connectParam = ConnectParam.newBuilder()
+                .withHost(testHost)
+                .withPort(testPort)
+                .withDatabaseName(dbName)
+                .build();
+        RetryParam retryParam = RetryParam.newBuilder()
+                .withMaxRetryTimes(2)
+                .build();
+        return new MilvusServiceClient(connectParam).withRetry(retryParam);
+    }
+
+    private MockServer startServerWithNoImpl() {
+        MockServer mockServer = new MockServer(testPort);
+        mockServer.start();
+        return mockServer;
     }
 
     @SuppressWarnings("unchecked")
@@ -135,7 +156,7 @@ class MilvusServiceClientTest {
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.Success.getCode(), response.getStatus());
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
-                    InterruptedException | ExecutionException e) {
+                     InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
                 fail();
@@ -158,7 +179,7 @@ class MilvusServiceClientTest {
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.ClientNotConnected.getCode(), response.getStatus());
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
-                    InterruptedException | ExecutionException e) {
+                     InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
                 fail();
@@ -2090,7 +2111,7 @@ class MilvusServiceClientTest {
                 .withExpr("dummy")
                 .build()
         );
-        
+
         // succeed float vector case
         List<List<Float>> vectors2 = Collections.singletonList(vector2);
         assertDoesNotThrow(() -> SearchParam.newBuilder()
@@ -3010,5 +3031,38 @@ class MilvusServiceClientTest {
         assertEquals(progress, String.valueOf(wrapper.getProgress()));
 
         assertFalse(wrapper.toString().isEmpty());
+    }
+
+    @Test
+    void connectToDBNotExists() {
+        // start mock server
+        MockMilvusServer server = startServer();
+
+        String dbName = "base";
+        String reason = "database not found[database=" + dbName + "]";
+        mockServerImpl.setConnectResponse(ConnectResponse.newBuilder()
+                .setStatus(Status.newBuilder().setCode(800).setReason(reason).build()).build());
+
+        Exception e = assertThrows(ClientNotConnectedException.class, () -> startClientWithDBSpecified(dbName));
+        assertTrue(e.getMessage().contains(reason));
+
+        server.stop();
+    }
+
+    @Test
+    void connectToServerWithNoImpl() {
+        // start an unknown server with no milvus service implementation
+        MockServer server = startServerWithNoImpl();
+        // start client
+        Exception e = assertThrows(ClientNotConnectedException.class, () -> startClient());
+        assertTrue(e.getMessage().contains(io.grpc.Status.Code.UNIMPLEMENTED.name()));
+
+        server.stop();
+    }
+
+    @Test
+    void connectToAddrWithNoResp() {
+        Exception e = assertThrows(ClientNotConnectedException.class, () -> startClient());
+        assertTrue(e.getMessage().contains(io.grpc.Status.Code.DEADLINE_EXCEEDED.name()));
     }
 }

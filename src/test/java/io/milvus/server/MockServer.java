@@ -19,26 +19,27 @@
 
 package io.milvus.server;
 
+import io.grpc.Server;
 import io.grpc.ServerBuilder;
-import io.milvus.grpc.MilvusServiceGrpc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MockMilvusServer extends MockServer {
-    private static final Logger logger = LoggerFactory.getLogger(MockMilvusServer.class.getName());
+import java.util.concurrent.TimeUnit;
 
-    private final MilvusServiceGrpc.MilvusServiceImplBase serviceImpl;
+public class MockServer {
 
-    public MockMilvusServer(int port, MilvusServiceGrpc.MilvusServiceImplBase impl) {
-        super(port);
-        serviceImpl = impl;
+    private static final Logger logger = LoggerFactory.getLogger(MockServer.class.getName());
+
+    protected Server rpcServer;
+    protected final int serverPort;
+
+    public MockServer(int port) {
+        serverPort = port;
     }
 
-    @Override
     public void start() {
         try {
             rpcServer = ServerBuilder.forPort(serverPort)
-                    .addService(serviceImpl)
                     .build()
                     .start();
         } catch (Exception e) {
@@ -47,6 +48,19 @@ public class MockMilvusServer extends MockServer {
         }
 
         logger.info("MockServer started on port: " + serverPort);
-        Runtime.getRuntime().addShutdownHook(new Thread(MockMilvusServer.this::stop));
+        Runtime.getRuntime().addShutdownHook(new Thread(MockServer.this::stop));
+    }
+
+    public void stop() {
+        if (rpcServer != null) {
+            logger.info("MockServer is shutting down...");
+            try {
+                rpcServer.shutdown().awaitTermination(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                logger.error("Failed to shutdown MockServer");
+            }
+            rpcServer = null;
+            logger.info("MockServer stopped");
+        }
     }
 }

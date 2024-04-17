@@ -25,6 +25,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
+import io.milvus.exception.ClientNotConnectedException;
 import io.milvus.exception.MilvusException;
 import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
@@ -138,6 +139,13 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         assert channel != null;
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);
+
+        R<ConnectResponse> connRespR = retry(() -> connect(connectParam.getConnectTimeoutMs()));
+        if (connRespR.getStatus() != R.Status.Success.getCode()) {
+            String msg = String.format("Failed connecting to server on %s:%d. %s.", connectParam.getHost(),
+                    connectParam.getPort(), connRespR.getException().getMessage());
+            throw new ClientNotConnectedException(msg);
+        }
     }
 
     protected MilvusServiceClient(MilvusServiceClient src) {
@@ -286,7 +294,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                             || code == Status.UNAUTHENTICATED.getCode()
                             || code == Status.INVALID_ARGUMENT.getCode()
                             || code == Status.ALREADY_EXISTS.getCode()
-                            || code == Status.RESOURCE_EXHAUSTED.getCode()) {
+                            || code == Status.RESOURCE_EXHAUSTED.getCode()
+                            || code == Status.UNIMPLEMENTED.getCode()) {
                         return resp;
                     }
 

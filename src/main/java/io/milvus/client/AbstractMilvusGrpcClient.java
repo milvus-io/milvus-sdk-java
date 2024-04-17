@@ -68,6 +68,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected abstract boolean clientIsReady();
 
+    private static final String SDK_TYPE = "Java";
+
     private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
                                           long waitingInterval, long timeout) throws IllegalResponseException {
         long tsBegin = System.currentTimeMillis();
@@ -346,6 +348,32 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logDebug("{} successfully!", requestInfo);
+    }
+
+    protected R<ConnectResponse> connect(long connectTimeoutMs) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+        String title = "Connect";
+        ClientInfo clientInfo = ClientInfo.newBuilder()
+                .setSdkType(SDK_TYPE)
+                .setLocalTime(String.valueOf(new Date()))
+                .build();
+        ConnectRequest connectRequest = ConnectRequest.newBuilder().setClientInfo(clientInfo).build();
+        try {
+            ConnectResponse response = this.blockingStub()
+                    .withWaitForReady()
+                    .withDeadlineAfter(connectTimeoutMs, TimeUnit.MILLISECONDS)
+                    .connect(connectRequest);
+            handleResponse(title, response.getStatus());
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(R.Status.ConnectFailed, e.getStatus().getCode().name());
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
     }
 
     ///////////////////// API implementation //////////////////////
@@ -2856,7 +2884,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         logDebug(requestParam.toString());
         String title = "ListCollectionsRequest";
-        
+
         try {
             R<ShowCollectionsResponse> response = showCollections(requestParam.getShowCollectionsParam());
             if(!Objects.equals(response.getStatus(), R.success().getStatus())){
@@ -2883,7 +2911,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         logDebug(requestParam.toString());
         String title = "InsertRowsRequest";
-        
+
         try {
             R<MutationResult> response = insert(requestParam.getInsertParam());
             if(!Objects.equals(response.getStatus(), R.success().getStatus())){
