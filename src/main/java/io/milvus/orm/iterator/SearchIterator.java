@@ -1,6 +1,7 @@
 package io.milvus.orm.iterator;
 
 import com.amazonaws.util.CollectionUtils;
+import com.amazonaws.util.StringUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
 import io.milvus.common.utils.ExceptionUtils;
@@ -21,10 +22,12 @@ import io.milvus.v2.utils.RpcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import static io.milvus.param.Constant.DEFAULT_SEARCH_EXTENSION_RATE;
 import static io.milvus.param.Constant.EF;
@@ -215,7 +218,7 @@ public class SearchIterator {
     }
 
     private SearchResultsWrapper executeNextSearch(Map<String, Object> params, String nextExpr, boolean toExtendBatch) {
-        SearchParam searchParam = SearchParam.newBuilder()
+        SearchParam.Builder searchParamBuilder = SearchParam.newBuilder()
                 .withDatabaseName(searchIteratorParam.getDatabaseName())
                 .withCollectionName(searchIteratorParam.getCollectionName())
                 .withPartitionNames(searchIteratorParam.getPartitionNames())
@@ -224,19 +227,45 @@ public class SearchIterator {
                 .withTopK(extendBatchSize(batchSize, toExtendBatch, params))
                 .withExpr(nextExpr)
                 .withOutFields(searchIteratorParam.getOutFields())
-                .withVectors(searchIteratorParam.getVectors())
                 .withRoundDecimal(searchIteratorParam.getRoundDecimal())
                 .withParams(JacksonUtils.toJsonString(params))
-                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing())
-                .build();
+                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing());
 
-        SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParam);
+        if (!StringUtils.isNullOrEmpty(searchIteratorParam.getGroupByFieldName())) {
+            searchParamBuilder.withGroupByFieldName(searchIteratorParam.getGroupByFieldName());
+        }
+        fillVectorsByPlType(searchParamBuilder);
+
+        SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParamBuilder.build());
         SearchResults response = blockingStub.search(searchRequest);
 
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
         return new SearchResultsWrapper(response.getResults());
+    }
+
+    private void fillVectorsByPlType(SearchParam.Builder searchParamBuilder) {
+        switch (searchIteratorParam.getPlType()) {
+            case FloatVector:
+                searchParamBuilder.withFloatVectors((List<List<Float>>) searchIteratorParam.getVectors());
+                break;
+            case BinaryVector:
+                searchParamBuilder.withBinaryVectors((List<ByteBuffer>) searchIteratorParam.getVectors());
+                break;
+            case Float16Vector:
+                searchParamBuilder.withFloat16Vectors((List<ByteBuffer>) searchIteratorParam.getVectors());
+                break;
+            case BFloat16Vector:
+                searchParamBuilder.withBFloat16Vectors((List<ByteBuffer>) searchIteratorParam.getVectors());
+                break;
+            case SparseFloatVector:
+                searchParamBuilder.withSparseFloatVectors((List<SortedMap<Long, Float>>) searchIteratorParam.getVectors());
+                break;
+            default:
+                searchParamBuilder.withVectors(searchIteratorParam.getVectors());
+                break;
+        }
     }
 
     private int extendBatchSize(int batchSize, boolean toExtendBatchSize, Map<String, Object> nextParams) {

@@ -22,6 +22,7 @@ package io.milvus.param.dml;
 import com.google.common.collect.Lists;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
+import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.SortedMap;
 
 import static io.milvus.param.Constant.UNLIMITED;
 
@@ -58,6 +60,8 @@ public class SearchIteratorParam {
     private final Long gracefulTime;
     private final ConsistencyLevelEnum consistencyLevel;
     private final boolean ignoreGrowing;
+    private final String groupByFieldName;
+    private final PlaceholderType plType;
 
     private final long batchSize;
 
@@ -79,6 +83,9 @@ public class SearchIteratorParam {
         this.gracefulTime = builder.gracefulTime;
         this.consistencyLevel = builder.consistencyLevel;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.groupByFieldName = builder.groupByFieldName;
+        this.plType = builder.plType;
+        
         this.batchSize = builder.batchSize;
     }
 
@@ -107,6 +114,12 @@ public class SearchIteratorParam {
         private Long gracefulTime = 5000L;
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
+        private String groupByFieldName;
+
+        // plType is used to distinct vector type
+        // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
+        // the sdk cannot distinct a ByteBuffer is a BinarVector or a Float16Vector
+        private PlaceholderType plType = PlaceholderType.None;
 
         private Long batchSize = 1000L;
 
@@ -241,15 +254,86 @@ public class SearchIteratorParam {
 
         /**
          * Sets the target vectors.
+         * Note: Deprecated in v2.4.0, for the reason that the sdk cannot know a ByteBuffer
+         *       is a BinarVector or Float16Vector/BFloat16Vector.
+         *       Replaced by withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors.
+         *       It still works for FloatVector/BinarVector/SparseVector, don't use it for Float16Vector/BFloat16Vector.
          *
          * @param vectors list of target vectors:
          *                if vector type is FloatVector, vectors is List of List Float;
          *                if vector type is BinaryVector, vectors is List of ByteBuffer;
+         *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float];
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withVectors(@NonNull List<?> vectors) {
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on FloatVector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            this.plType = PlaceholderType.FloatVector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on BinaryVector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            this.plType = PlaceholderType.BinaryVector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on Float16Vector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            this.plType = PlaceholderType.Float16Vector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on BFloat16Vector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            this.plType = PlaceholderType.BFloat16Vector;
+            return this;
+        }
+
+        /**
+         * Sets the target vectors to search on SparseFloatVector field.
+         *
+         * @param vectors target vectors to search
+         * @return <code>Builder</code>
+         */
+        public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
+            this.vectors = vectors;
+            this.NQ = (long) vectors.size();
+            this.plType = PlaceholderType.SparseFloatVector;
             return this;
         }
 
@@ -291,6 +375,17 @@ public class SearchIteratorParam {
         }
 
         /**
+         * Sets field name to do grouping.
+         *
+         * @param groupByFieldName field name to do grouping
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+            this.groupByFieldName = groupByFieldName;
+            return this;
+        }
+
+        /**
          * Specify a value to control the number of entities returned per batch. Must be a positive value.
          * Default value is 1000, will return without batchSize.
          *
@@ -323,51 +418,55 @@ public class SearchIteratorParam {
                 throw new ParamException("The guarantee timestamp must be greater than 0");
             }
 
-            if (vectors == null || vectors.isEmpty()) {
-                throw new ParamException("Target vectors can not be empty");
-            }
-
             if (metricType == MetricType.None) {
                 throw new ParamException("must specify metricType for search iterator");
             }
 
-            if (vectors.get(0) instanceof List) {
-                if (vectors.size() > 1) {
-                    throw new ParamException("Not support search iteration over multiple vectors at present");
-                }
+            verifyVectors(vectors);
+            return new SearchIteratorParam(this);
+        }
+    }
 
-                // float vectors
-                List<?> first = (List<?>) vectors.get(0);
-                if (!(first.get(0) instanceof Float)) {
-                    throw new ParamException("Float vector field's value must be Lst<Float>");
-                }
+    public static void verifyVectors(List<?> vectors) {
+        if (vectors == null || vectors.isEmpty()) {
+            throw new ParamException("Target vectors can not be empty");
+        }
 
-                int dim = first.size();
-                for (int i = 1; i < vectors.size(); ++i) {
-                    List<?> temp = (List<?>) vectors.get(i);
-                    if (dim != temp.size()) {
-                        throw new ParamException("Target vector dimension must be equal");
-                    }
-                }
-            } else if (vectors.get(0) instanceof ByteBuffer) {
-                // binary vectors
-                if (vectors.size() > 1) {
-                    throw new ParamException("Not support search iteration over multiple vectors at present");
-                }
-
-                ByteBuffer first = (ByteBuffer) vectors.get(0);
-                int dim = first.position();
-                for (int i = 1; i < vectors.size(); ++i) {
-                    ByteBuffer temp = (ByteBuffer) vectors.get(i);
-                    if (dim != temp.position()) {
-                        throw new ParamException("Target vector dimension must be equal");
-                    }
-                }
-            } else {
-                throw new ParamException("Target vector type must be List<Float> or ByteBuffer");
+        if (vectors.get(0) instanceof List) {
+            if (vectors.size() > 1) {
+                throw new ParamException("Not support search iteration over multiple vectors at present");
             }
 
-            return new SearchIteratorParam(this);
+            // float vectors
+            List<?> first = (List<?>) vectors.get(0);
+            if (!(first.get(0) instanceof Float)) {
+                throw new ParamException("Float vector field's value must be Lst<Float>");
+            }
+        } else if (vectors.get(0) instanceof ByteBuffer) {
+            // binary vectors
+            if (vectors.size() > 1) {
+                throw new ParamException("Not support search iteration over multiple vectors at present");
+            }
+        } else if (vectors.get(0) instanceof SortedMap) {
+            // SparseFloatVector
+            if (vectors.size() > 1) {
+                throw new ParamException("Not support search iteration over multiple vectors at present");
+            }
+
+            // TODO: here only check the first element, potential risk
+            SortedMap<?, ?> map = (SortedMap<?, ?>) vectors.get(0);
+            if (!(map.firstKey() instanceof Long)) {
+                throw new ParamException("key type of SparseFloatVector must be Long");
+            }
+            if (!(map.get(map.firstKey()) instanceof Float)) {
+                throw new ParamException("Value type of SparseFloatVector must be Float");
+            }
+        } else {
+            String msg = "Search target vector type is illegal." +
+                    " Only allow List<Float> for FloatVector," +
+                    " ByteBuffer for BinaryVector/Float16Vector/BFloat16Vector," +
+                    " List<SortedMap<Long, Float>> for SparseFloatVector.";
+            throw new ParamException(msg);
         }
     }
 
