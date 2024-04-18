@@ -278,6 +278,36 @@ class MilvusServiceClientTest {
     }
 
     @Test
+    void testConnect() {
+        ConnectParam connectParam = ConnectParam.newBuilder()
+                .withHost("localhost")
+                .withPort(testPort)
+                .withConnectTimeout(1000, TimeUnit.MILLISECONDS)
+                .build();
+        RetryParam retryParam = RetryParam.newBuilder()
+                .withMaxRetryTimes(2)
+                .build();
+
+        Exception e = assertThrows(RuntimeException.class, () -> {
+            MilvusClient client = new MilvusServiceClient(connectParam).withRetry(retryParam);
+        });
+        assertTrue(e.getMessage().contains("DEADLINE_EXCEEDED"));
+
+        MockMilvusServer server = startServer();
+        String dbName = "base";
+        String reason = "database not found[database=" + dbName + "]";
+        mockServerImpl.setConnectResponse(ConnectResponse.newBuilder()
+                .setStatus(Status.newBuilder().setCode(800).setReason(reason).build()).build());
+
+        e = assertThrows(RuntimeException.class, () -> {
+            MilvusClient client = new MilvusServiceClient(connectParam).withRetry(retryParam);
+        });
+        assertTrue(e.getMessage().contains(reason));
+
+        server.stop();
+    }
+
+    @Test
     void createCollectionParam() {
         // test throw exception with illegal input for FieldType
         assertThrows(ParamException.class, () ->
