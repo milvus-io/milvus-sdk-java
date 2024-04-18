@@ -56,12 +56,12 @@ public class GetReplicasParam {
         }
 
         /**
-         * Sets the database name. Database name cannot be empty or null.
-         * 
-         * @param databaseName
-         * @return
+         * Sets the database name. database name can be nil.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
