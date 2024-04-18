@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBase {
     private static final Logger logger = LoggerFactory.getLogger(MockMilvusServerImpl.class);
+    private io.milvus.grpc.ConnectResponse respConnect;
     private io.milvus.grpc.Status respCreateCollection;
     private io.milvus.grpc.DescribeCollectionResponse respDescribeCollection;
     private io.milvus.grpc.Status respDropCollection;
@@ -80,6 +81,19 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
     private io.milvus.grpc.GetLoadStateResponse respGetLoadState;
 
     public MockMilvusServerImpl() {
+    }
+
+    @Override
+    public void connect(io.milvus.grpc.ConnectRequest request,
+                        io.grpc.stub.StreamObserver<io.milvus.grpc.ConnectResponse> responseObserver) {
+        logger.info("MockServer receive connect() call");
+
+        responseObserver.onNext(respConnect);
+        responseObserver.onCompleted();
+    }
+
+    public void setConnectResponse(io.milvus.grpc.ConnectResponse resp) {
+        respConnect = resp;
     }
 
     @Override

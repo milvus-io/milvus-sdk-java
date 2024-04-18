@@ -53,6 +53,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
@@ -132,12 +135,25 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 channel = builder.build();
             }
         } catch (IOException e) {
-            logError("Failed to open credentials file, error:{}\n", e.getMessage());
+            String msg = "Failed to open credentials file. Error: " + e.getMessage();
+            logError(msg);
+            throw new RuntimeException(msg);
         }
 
         assert channel != null;
         blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         futureStub = MilvusServiceGrpc.newFutureStub(channel);
+
+        // calls a RPC Connect() to the remote server, and sends the client info to the server
+        // so that the server knows which client is interacting, especially for accesses log.
+        this.timeoutMs = connectParam.getConnectTimeoutMs(); // set this value to connectTimeoutMs to control the retry()
+        R<ConnectResponse> resp = this.retry(()->connect(connectParam));
+        if (resp.getStatus() != R.Status.Success.getCode()) {
+            String msg = "Failed to initialize connection. Error: " + resp.getMessage();
+            logError(msg);
+            throw new RuntimeException(msg);
+        }
+        this.timeoutMs = 0; // reset the timeout value to default
     }
 
     protected MilvusServiceClient(MilvusServiceClient src) {
@@ -343,6 +359,59 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
         logError(msg);
         return R.failed(new RuntimeException(msg));
+    }
+
+    /**
+     * This method is internal used, it calls a RPC Connect() to the remote server,
+     * and sends the client info to the server so that the server knows which client is interacting,
+     * especially for accesses log.
+     *
+     * The info includes:
+     * 1. username(if Authentication is enabled)
+     * 2. the client computer's name
+     * 3. sdk language type and version
+     * 4. the client's local time
+     */
+    private R<ConnectResponse> connect(@NonNull ConnectParam connectParam) {
+        ClientInfo info = ClientInfo.newBuilder()
+                .setSdkType("Java")
+                .setSdkVersion(getSDKVersion())
+                .setUser(connectParam.getUserName())
+                .setHost(getHostName())
+                .setLocalTime(getLocalTimeStr())
+                .build();
+        ConnectRequest req = ConnectRequest.newBuilder().setClientInfo(info).build();
+        ConnectResponse resp = this.blockingStub.withWaitForReady()
+                .withDeadlineAfter(connectParam.getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
+                .connect(req);
+        if (resp.getStatus().getCode() != 0 || !resp.getStatus().getErrorCode().equals(ErrorCode.Success)) {
+            throw new RuntimeException("Failed to initialize connection. Error: " + resp.getStatus().getReason());
+        }
+        return R.success(resp);
+    }
+
+    private String getHostName() {
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            return address.getHostName();
+        } catch (UnknownHostException e) {
+            logWarning("Failed to get host name! Exception:{}", e);
+            return "Unknown";
+        }
+    }
+
+    private String getLocalTimeStr() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.toString();
+    }
+
+    private String getSDKVersion() {
+        Package pkg = MilvusServiceClient.class.getPackage();
+        String ver = pkg.getImplementationVersion();
+        if (ver == null) {
+            return "";
+        }
+        return ver;
     }
 
     @Override
