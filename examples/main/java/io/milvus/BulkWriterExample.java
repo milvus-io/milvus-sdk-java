@@ -78,16 +78,20 @@ public class BulkWriterExample {
      * you need to configure it accordingly; Otherwise, you can ignore it.
      */
     public static class StorageConsts {
-        public static final CloudStorage cloudStorage = CloudStorage.AWS;
+        public static final CloudStorage cloudStorage = CloudStorage.MINIO;
 
         /**
-         * If using remote storage such as AWS S3, GCP GCS, Aliyun OSS, Tencent Cloud TOS,
+         * If using remote storage such as AWS S3, GCP GCS, Aliyun OSS, Tencent Cloud TOS, Minio
          * please configure the following parameters.
          */
-        public static final String STORAGE_ENDPOINT = cloudStorage.getEndpoint();
+        public static final String STORAGE_ENDPOINT = cloudStorage.getEndpoint("http://127.0.0.1:9000");
         public static final String STORAGE_BUCKET = "storage.bucket";
         public static final String STORAGE_ACCESS_KEY = "storage.access.key";
         public static final String STORAGE_SECRET_KEY = "storage.secret.key";
+        /**
+         * if using local storage such as Minio
+         * Please set this parameter to empty.
+         */
         public static final String STORAGE_REGION = "storage.region";
 
         /**

@@ -23,6 +23,7 @@ import io.milvus.exception.ParamException;
 import org.apache.commons.lang3.StringUtils;
 
 public enum CloudStorage {
+    MINIO("%s", "minioAddress"),
     AWS("s3.amazonaws.com", null),
     GCP("storage.googleapis.com", null),
     AZURE("%s.blob.core.windows.net", "accountName"),
@@ -60,7 +61,7 @@ public enum CloudStorage {
             case ALI:
                 return String.format("https://%s.oss-%s.aliyuncs.com/%s", bucketName, region, commonPrefix);
             default:
-                throw new ParamException("no support others storage address");
+                throw new ParamException("no support others remote storage address");
         }
     }
 
@@ -68,6 +69,6 @@ public enum CloudStorage {
         if (this == CloudStorage.AZURE) {
             return String.format("https://%s.blob.core.windows.net/%s/%s", accountName, containerName, commonPrefix);
         }
-        throw new ParamException("no support others storage address");
+        throw new ParamException("no support others remote storage address");
     }
 }
