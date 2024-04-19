@@ -11,6 +11,7 @@ io.milvus.common.constant
 io.milvus.common.utils
 io.milvus.connection
 io.milvus.exception
+io.milvus.orm.iterator
 io.milvus.param
 io.milvus.param.alias
 io.milvus.param.bulkinsert
