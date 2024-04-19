@@ -57,6 +57,7 @@ public class ConnectParam {
     private final String caPemPath;
     private final String serverPemPath;
     private final String serverName;
+    private final String userName;
 
     protected ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
@@ -77,6 +78,7 @@ public class ConnectParam {
         this.caPemPath = builder.caPemPath;
         this.serverPemPath = builder.serverPemPath;
         this.serverName = builder.serverName;
+        this.userName = builder.userName;
     }
 
     public static Builder newBuilder() {
@@ -108,6 +110,11 @@ public class ConnectParam {
         protected boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private String authorization = Base64.getEncoder().encodeToString("root:milvus".getBytes(StandardCharsets.UTF_8));
+
+        // username/password is encoded into authorization, this member is to keep the origin username for MilvusServiceClient.connect()
+        // The MilvusServiceClient.connect() is to send the client info to the server so that the server knows which client is interacting
+        // If the username is unknown, send it as an empty string.
+        private String userName = "";
 
         protected Builder() {
         }
@@ -262,6 +269,7 @@ public class ConnectParam {
          */
         public Builder withAuthorization(String username, String password) {
             this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
+            this.userName = username;
             return this;
         }
 
