@@ -226,10 +226,12 @@ public class ConnectParam {
         /**
          * Enables the secure for client channel.
          *
+         * Deprecated from v2.3.6, this flag is auto-detected, no need to specify
+         *
          * @param enable true keep-alive
          * @return <code>Builder</code>
          */
-        @java.lang.Deprecated
+        @Deprecated
         public Builder secure(boolean enable) {
             secure = enable;
             return this;
@@ -275,17 +277,21 @@ public class ConnectParam {
 
         /**
          * Sets secure the authorization for this connection, set to True to enable TLS
+         *
+         * Deprecated from v2.3.6, this flag is auto-detected, no need to specify
+         *
          * @param secure boolean
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withSecure(boolean secure) {
             this.secure = secure;
             return this;
         }
 
         /**
-         * Sets the secure for this connection
-         * @param authorization the authorization info that has included the encoded username and password info
+         * Sets the authorization for this connection
+         * @param authorization the encoded authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
         public Builder withAuthorization(@NonNull String authorization) {

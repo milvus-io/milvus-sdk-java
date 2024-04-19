@@ -165,7 +165,6 @@ public class BulkWriterExample {
                 .withHost(HOST)
                 .withPort(PORT)
                 .withAuthorization(USER_NAME, MilvusConsts.PASSWORD)
-                .withSecure(true)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
         System.out.println("\nConnected");
