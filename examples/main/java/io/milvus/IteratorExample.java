@@ -54,8 +54,6 @@ public class IteratorExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
-                .withSecure(true)
-                .withAuthorization("root","Milvus")
                 .build();
         RetryParam retryParam = RetryParam.newBuilder()
                 .withMaxRetryTimes(3)
