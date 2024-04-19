@@ -1,5 +1,15 @@
 # Changelog
 
+## milvus-sdk-java 2.3.6 (TBD)
+
+### Feature
+
+- Support SearchIterator/QueryIterator
+
+### Improvement
+
+- Upgrade dependencies to fix some CVEs
+
 ## milvus-sdk-java 2.3.5 (2024-03-29)
 
 ### Feature
