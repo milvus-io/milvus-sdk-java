@@ -1,5 +1,5 @@
 # Changelog
-## milvus-sdk-java 2.4.0 (TBD)
+## milvus-sdk-java 2.4.0 (2024-04-22)
 
 ### Feature
 
@@ -14,6 +14,16 @@
 
 - Upgrade dependencies to fix some CVEs
 - Provide new methods withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors for SearchParam to explicitly input different type vectors
+
+## milvus-sdk-java 2.3.6 (2024-04-22)
+
+### Feature
+
+- Support SearchIterator/QueryIterator
+
+### Improvement
+
+- Upgrade dependencies to fix some CVEs
 
 ## milvus-sdk-java 2.3.5 (2024-03-29)
 
