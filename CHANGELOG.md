@@ -1,6 +1,6 @@
 # Changelog
 
-## milvus-sdk-java 2.3.6 (TBD)
+## milvus-sdk-java 2.3.6 (2024-04-22)
 
 ### Feature
 
