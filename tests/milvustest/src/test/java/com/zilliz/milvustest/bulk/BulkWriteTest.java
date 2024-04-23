@@ -45,13 +45,13 @@ import java.util.Objects;
 public class BulkWriteTest extends BaseTest {
     String newCollection="";
     CollectionSchemaParam collectionSchemaParam;
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void initTestData(){
         newCollection = CommonFunction.createNewCollectionWithJSONField();
         collectionSchemaParam = CommonFunction.provideJsonCollectionSchema();
     }
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void clearTestData(){
         milvusClient.dropCollection(DropCollectionParam.newBuilder()
                 .withCollectionName(newCollection).build());
@@ -106,7 +106,7 @@ public class BulkWriteTest extends BaseTest {
         Assert.assertEquals(collectionStatistics2.getData().getStats(0).getValue(), "10000");
     }
 
-    @Test(description = "bulk remote write test",groups = {"Smoke"})
+    @Test(description = "bulk remote write test")
     public void bulkRemoteWriteTest() throws IOException, InterruptedException, NoSuchAlgorithmException, InvalidKeyException {
         StorageConnectParam connectParam;
         if (Objects.equals(PropertyFilesUtil.getRunValue("storageType"), "azure")) {
