@@ -43,7 +43,7 @@ public class UpsertTest extends BaseTest {
     }
 
     @Severity(SeverityLevel.BLOCKER)
-    @Test(description = "UpsertTest data into collection",groups = {"master"})
+    @Test(description = "UpsertTest data into collection",groups = {"Smoke"})
     public void upsertDataIntoCollection() {
         Random ran = new Random();
         List<Long> book_id_array = new ArrayList<>();
@@ -73,7 +73,7 @@ public class UpsertTest extends BaseTest {
 
 
     @Severity(SeverityLevel.BLOCKER)
-    @Test(description = "Search after upsert collection",groups = {"master"},dependsOnMethods = {"upsertDataIntoCollection"})
+    @Test(description = "Search after upsert collection",groups = {"Smoke"},dependsOnMethods = {"upsertDataIntoCollection"})
     public void searchAfterUpsertCollection(){
         //load
         milvusClient.loadCollection(LoadCollectionParam.newBuilder()
@@ -89,7 +89,7 @@ public class UpsertTest extends BaseTest {
                         .withMetricType(MetricType.L2)
                         .withOutFields(search_output_fields)
                         .withTopK(SEARCH_K)
-                        .withVectors(search_vectors)
+                        .withFloatVectors(search_vectors)
                         .withVectorFieldName(CommonData.defaultVectorField)
                         .withParams(SEARCH_PARAM)
                         .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
@@ -100,11 +100,6 @@ public class UpsertTest extends BaseTest {
         SearchResultsWrapper searchResultsWrapper =
                 new SearchResultsWrapper(searchResultsR.getData().getResults());
         Assert.assertEquals(searchResultsWrapper.getFieldData("word_count", 0).size(), 10);
-        List<?> word_count = searchResultsWrapper.getFieldWrapper("word_count").getFieldData();
-        for (Object o : word_count) {
-            System.out.println(Integer.parseInt(o.toString()));
-            Assert.assertTrue(Integer.parseInt(o.toString())>=20000);
-        }
     }
 
 

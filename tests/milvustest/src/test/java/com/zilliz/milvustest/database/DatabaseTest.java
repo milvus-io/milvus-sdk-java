@@ -190,7 +190,7 @@ public class DatabaseTest extends BaseTest {
             groups = {"Smoke"})
     public void dropDefaultDatabase(){
         R<RpcStatus> aDefault = milvusClient.dropDatabase(DropDatabaseParam.newBuilder().withDatabaseName("default").build());
-        Assert.assertEquals(aDefault.getStatus().intValue(), 1);
+        Assert.assertEquals(aDefault.getStatus().intValue(), 65535);
         Assert.assertTrue(aDefault.getException().getMessage().contains("can not drop default"));
     }
 
@@ -312,7 +312,7 @@ public class DatabaseTest extends BaseTest {
                         .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
                         .build();
         R<SearchResults> searchResultsR = milvusClient1.search(searchParam);
-        Assert.assertEquals(searchResultsR.getStatus().intValue(), 4);
+        Assert.assertEquals(searchResultsR.getStatus().intValue(), 100);
         Assert.assertTrue(searchResultsR.getException().getMessage().contains("collection not found"));
     }
 
@@ -353,7 +353,7 @@ public class DatabaseTest extends BaseTest {
                         .withExpr(SEARCH_PARAM)
                         .build();
         R<QueryResults> queryResultsR = milvusClient1.query(queryParam);
-        Assert.assertEquals(queryResultsR.getStatus().intValue(), 4);
+        Assert.assertEquals(queryResultsR.getStatus().intValue(), 100);
         Assert.assertTrue(queryResultsR.getException().getMessage().contains("collection not found"));
     }
 

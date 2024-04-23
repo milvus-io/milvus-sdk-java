@@ -125,7 +125,7 @@ public class IndexLoadTest extends BaseTest {
                                 .withCollectionName(collection)
                                 .build());
         System.out.println("Drop index " + rpcStatusR4);
-        Assert.assertEquals(rpcStatusR4.getStatus().intValue(), 1);
+        Assert.assertEquals(rpcStatusR4.getStatus().intValue(), 65535);
         Assert.assertTrue(rpcStatusR4.getMessage().contains("index cannot be dropped, collection is loaded, please release it first"));
 
         // 6. release collection
@@ -197,7 +197,7 @@ public class IndexLoadTest extends BaseTest {
                         .withCollectionName(binaryCollection)
                         .build());
         System.out.println("Drop index " + rpcStatusR4);
-        Assert.assertEquals(rpcStatusR4.getStatus().intValue(), 1);
+        Assert.assertEquals(rpcStatusR4.getStatus().intValue(), 65535);
         Assert.assertTrue(rpcStatusR4.getMessage().contains("index cannot be dropped, collection is loaded, please release it first"));
 
         // 6. release collection

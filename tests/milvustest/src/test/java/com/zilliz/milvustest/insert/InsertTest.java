@@ -37,11 +37,19 @@ public class InsertTest extends BaseTest {
   public String collectionWithJsonField;
   public String collectionWithDynamicField;
 
+  public String collectionWithFloat16Vector;
+  public String collectionWithBF16Vector;
+  private String collectionWithSparseVector;
+  private String collectionWithMultiVector;
   @BeforeClass(description = "provider collection",alwaysRun = true)
   public void providerData() {
     stringPKAndBinaryCollection = CommonFunction.createStringPKAndBinaryCollection();
     collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
     collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
+    collectionWithFloat16Vector = CommonFunction.createFloat16Collection();
+    collectionWithBF16Vector = CommonFunction.createBf16Collection();
+    collectionWithSparseVector = CommonFunction.createSparseFloatVectorCollection();
+    collectionWithMultiVector = CommonFunction.createMultiVectorCollection();
   }
 
   @AfterClass(description = "delete test data",alwaysRun = true)
@@ -52,6 +60,15 @@ public class InsertTest extends BaseTest {
         DropCollectionParam.newBuilder().withCollectionName(collectionWithJsonField).build());
     milvusClient.dropCollection(
         DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithFloat16Vector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithBF16Vector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithSparseVector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithMultiVector).build());
+
 
   }
 
@@ -467,4 +484,52 @@ public class InsertTest extends BaseTest {
             .withRows(jsonObjects)
             .build());
   }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert data into float16 vector collection ",groups = {"Smoke"})
+  public void insertDataIntoFloat16VectorCollection(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithFloat16Vector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithFloat16Vector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+  }
+
+  @Severity(SeverityLevel.BLOCKER)
+  @Test(description = "Insert data into bf16 vector collection ",groups = {"Smoke"})
+  public void insertDataIntoBf16VectorCollection(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithBF16Vector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithBF16Vector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+  }
+
+  @Test(description = "Insert data into sparse vector collection ",groups = {"Smoke"})
+  public void insertDataIntoSparseVectorCollection(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithSparseFloatVector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithSparseVector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+  }
+
+  @Test(description = "Insert data into multi vector collection ",groups = {"Smoke"})
+  public void insertDataIntoMultiVectorCollection(){
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithMultiVector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithMultiVector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    Assert.assertEquals(insert.getData().getSuccIndexCount(),1000);
+  }
+
+
 }

@@ -1,11 +1,13 @@
 package com.zilliz.milvustest.collection;
 
 import com.zilliz.milvustest.common.BaseTest;
+import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.DataType;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.DropCollectionParam;
 import io.milvus.param.collection.FieldType;
@@ -33,6 +35,13 @@ public class CreateCollectionTest extends BaseTest {
 
   public String arrayFieldCollection;
 
+  public String float16FieldCollection;
+  public String bf16FieldCollection;
+
+  public String sparseVectorCollection;
+
+  public String multiVectorCollection;
+
   @DataProvider(name = "collectionByDataProvider")
   public Object[][] provideCollectionName() {
     return new String[][] {{"collection_" + MathUtil.getRandomString(10)}};
@@ -59,6 +68,22 @@ public class CreateCollectionTest extends BaseTest {
     if (arrayFieldCollection != null) {
       milvusClient.dropCollection(
               DropCollectionParam.newBuilder().withCollectionName(arrayFieldCollection).build());
+    }
+    if (float16FieldCollection != null) {
+      milvusClient.dropCollection(
+              DropCollectionParam.newBuilder().withCollectionName(float16FieldCollection).build());
+    }
+    if (bf16FieldCollection != null) {
+      milvusClient.dropCollection(
+              DropCollectionParam.newBuilder().withCollectionName(bf16FieldCollection).build());
+    }
+    if (sparseVectorCollection != null) {
+      milvusClient.dropCollection(
+              DropCollectionParam.newBuilder().withCollectionName(sparseVectorCollection).build());
+    }
+    if (multiVectorCollection != null) {
+      milvusClient.dropCollection(
+              DropCollectionParam.newBuilder().withCollectionName(multiVectorCollection).build());
     }
   }
 
@@ -544,5 +569,140 @@ public class CreateCollectionTest extends BaseTest {
     Assert.assertEquals(collection.getStatus().toString(), "0");
     Assert.assertEquals(collection.getData().getMsg(), "Success");
   }
+
+  @Test(description = "Create collection with float16 field",groups = {"Smoke"})
+  public void createCollectionWithFloat16Vector(){
+    float16FieldCollection = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.Float16Vector)
+                    .withDimension(128)
+                    .build();
+    CollectionSchemaParam schemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(float16FieldCollection)
+                    .withDescription("Test" + float16FieldCollection + "search")
+                    .withShardsNum(2)
+                    .withSchema(schemaParam)
+                    .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+  }
+
+  @Test(description = "Create collection with bf16 field",groups = {"Smoke"})
+  public void createCollectionWithBf16Vector(){
+    bf16FieldCollection = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.BFloat16Vector)
+                    .withDimension(128)
+                    .build();
+    CollectionSchemaParam schemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(bf16FieldCollection)
+                    .withDescription("Test" + bf16FieldCollection + "search")
+                    .withShardsNum(2)
+                    .withSchema(schemaParam)
+                    .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+  }
+
+  @Test(description = "Create collection with sparse vector field",groups = {"Smoke"})
+  public void createCollectionWithSparseVector(){
+    sparseVectorCollection = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("int64_field")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder()
+                    .withName("float_vector")
+                    .withDataType(DataType.SparseFloatVector)
+                    .build();
+    CollectionSchemaParam schemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(sparseVectorCollection)
+                    .withDescription("Test" + sparseVectorCollection + "search")
+                    .withShardsNum(2)
+                    .withSchema(schemaParam)
+                    .build();
+    R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+  }
+
+  @Test(description = "Create collection with multi vector ",groups = {"Smoke"})
+  public void createCollectionWithMultiVector(){
+    multiVectorCollection = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultVectorField)
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    FieldType fieldType4 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultBinaryVectorField)
+                    .withDataType(DataType.BinaryVector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    FieldType fieldType5 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultSparseVectorField)
+                    .withDataType(DataType.SparseFloatVector)
+                    .build();
+    CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder()
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .addFieldType(fieldType4)
+            .addFieldType(fieldType5)
+            .build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(multiVectorCollection)
+                    .withDescription("Test" + multiVectorCollection + "search")
+                    .withShardsNum(1)
+                    .withSchema(collectionSchemaParam)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    Assert.assertEquals(collection.getStatus().toString(), "0");
+    Assert.assertEquals(collection.getData().getMsg(), "Success");
+  }
+
 
 }
