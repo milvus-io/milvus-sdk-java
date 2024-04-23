@@ -207,4 +207,41 @@ public class MathUtil {
     return floatNum-random.nextInt(5)-1;
   }
 
+  public static short floatToFloat16(float value) {
+    int f = Float.floatToRawIntBits(value);
+    int s = (f >> 16) & 0x8000;
+    int e = ((f >> 23) & 0xff) - 127;
+    int m = f & 0x7fffff;
+
+    if (e <= -15) {
+      // 如果指数小于等于-15，则将float16值设为0
+      return 0;
+    }
+    if (e > 16) {
+      // 如果指数大于16，则将float16值设为最大值
+      return (short) (s | 0x7bff);
+    }
+    if (e <= 0) {
+      m = (m | 0x800000) >> (1 - e);
+      return (short) (s | (m >> 13));
+    }
+    if (e < 24) {
+      return (short) (s | ((e + 112) << 10) | (m >> 13));
+    }
+
+    return (short) (s | 0x7c00);
+     }
+
+  public static short floatToBF16(float value) {
+    int floatValueBits = Float.floatToIntBits(value);
+    int sign = (floatValueBits >> 31) & 0x1;
+    int exponent = ((floatValueBits >> 23) & 0xFF) - 127 + 15;
+    int mantissa = (floatValueBits & 0x7FFFFF) >> 13;
+
+    short bf16Value = (short) ((sign << 15) | (exponent << 10) | mantissa);
+    return bf16Value;
+  }
+
+
+
 }

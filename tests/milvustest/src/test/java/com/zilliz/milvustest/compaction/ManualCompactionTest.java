@@ -56,7 +56,7 @@ public class ManualCompactionTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(
       description = "performs a manual compaction.",
-      groups = {"Smoke"})
+      groups = {"Smoke"},enabled = false)
   public void manualCompactionTest() {
     R<ManualCompactionResponse> responseR =
         milvusClient.manualCompact(

@@ -7,7 +7,6 @@ import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.DataType;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.QueryResults;
 import io.milvus.param.IndexType;
@@ -49,6 +48,13 @@ public class QueryTest extends BaseTest {
 
   public String collectionWithArrayField;
 
+  private String collectionWithSparseVector;
+
+  private String collectionWithMultiVector;
+  private String collectionWithFloat16Vector;
+  private String collectionWithBf16Vector;
+
+
   @BeforeClass(description = "load collection first",alwaysRun = true)
   public void loadCollection() {
     milvusClient.loadCollection(
@@ -68,6 +74,10 @@ public class QueryTest extends BaseTest {
     collectionWithJsonField= CommonFunction.createNewCollectionWithJSONField();
     collectionWithDynamicField= CommonFunction.createNewCollectionWithDynamicField();
     collectionWithArrayField= CommonFunction.createNewCollectionWithArrayField();
+    collectionWithSparseVector = CommonFunction.createSparseFloatVectorCollection();
+    collectionWithFloat16Vector=CommonFunction.createFloat16Collection();
+    collectionWithBf16Vector=CommonFunction.createBf16Collection();
+    collectionWithMultiVector = CommonFunction.createMultiVectorCollection();
   }
 
   @DataProvider(name = "providerPartition")
@@ -99,6 +109,14 @@ public class QueryTest extends BaseTest {
             DropCollectionParam.newBuilder().withCollectionName(collectionWithDynamicField).build());
     milvusClient.dropCollection(
             DropCollectionParam.newBuilder().withCollectionName(collectionWithArrayField).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithSparseVector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithMultiVector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithFloat16Vector).build());
+    milvusClient.dropCollection(
+            DropCollectionParam.newBuilder().withCollectionName(collectionWithBf16Vector).build());
   }
 
   @DataProvider(name = "providerConsistency")
@@ -214,6 +232,14 @@ public class QueryTest extends BaseTest {
       {" book_name like \"国%\" and book_name >\"abc\" "},
       {" book_name like \"国%\" and book_content like\"1%\" "},
       {" book_name like \"国%\" and book_content > \"1\" "}
+    };
+  }
+
+  @DataProvider(name="sparseIndex")
+  public Object[][] provideSparseIndex(){
+    return new IndexType[][]{
+            {IndexType.SPARSE_INVERTED_INDEX}
+            ,{IndexType.SPARSE_WAND}
     };
   }
 
@@ -1146,6 +1172,110 @@ public class QueryTest extends BaseTest {
 
   }
 
+  @Test(description = "query collection with sparse vector",groups = {"Smoke"},dataProvider = "sparseIndex")
+  public void queryCollectionWithSparseVector(IndexType indexType) {
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithSparseFloatVector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithSparseVector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithLoad(collectionWithSparseVector, indexType, MetricType.IP, CommonData.defaultSparseVectorField);
+    //query
+    List<String> outFields = Collections.singletonList("*");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithSparseVector)
+                    .withOutFields(outFields)
+//                    .withExpr(expr)
+                    .withLimit(100L).withOffset(100L)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper(CommonData.defaultSparseVectorField).getFieldData().size() >= 4);
+  }
+
+  @Test(description = "query collection with float16 vector",groups = {"Smoke"},dataProvider = "FloatIndex")
+  public void queryCollectionWithFloat16Vector(IndexType indexType,MetricType metricType) {
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithFloat16Vector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithFloat16Vector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithLoad(collectionWithFloat16Vector, indexType, metricType, CommonData.defaultFloat16VectorField);
+    //query
+    List<String> outFields = Collections.singletonList("*");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithFloat16Vector)
+                    .withOutFields(outFields)
+                    .withLimit(100L).withOffset(10L)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper(CommonData.defaultFloat16VectorField).getFieldData().size() >= 4);
+  }
+
+  @Test(description = "query collection with bf16 vector",groups = {"Smoke"},dataProvider = "FloatIndex")
+  public void queryCollectionWithBF16Vector(IndexType indexType,MetricType metricType) {
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithBF16Vector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithBf16Vector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithLoad(collectionWithBf16Vector, indexType, metricType, CommonData.defaultBF16VectorField);
+    //query
+    List<String> outFields = Collections.singletonList("*");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithBf16Vector)
+                    .withOutFields(outFields)
+                    .withLimit(100L).withOffset(10L)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper(CommonData.defaultBF16VectorField).getFieldData().size() >= 4);
+  }
 
 
-}
+  @Test(description = "query collection with multi vector",groups = {"Smoke"})
+  @Severity(SeverityLevel.BLOCKER)
+  public void queryCollectionWithMultiVector() {
+    List<InsertParam.Field> fields = CommonFunction.generateDataWithMultiVector(1000);
+    R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
+            .withCollectionName(collectionWithMultiVector)
+            .withFields(fields)
+            .build());
+    Assert.assertEquals(insert.getStatus().intValue(), 0);
+    CommonFunction.createIndexWithoutLoad(collectionWithMultiVector, IndexType.HNSW, MetricType.L2, CommonData.defaultVectorField);
+    CommonFunction.createIndexWithoutLoad(collectionWithMultiVector, IndexType.BIN_FLAT, MetricType.HAMMING, CommonData.defaultBinaryVectorField);
+    CommonFunction.createIndexWithoutLoad(collectionWithMultiVector, IndexType.SPARSE_INVERTED_INDEX, MetricType.IP, CommonData.defaultSparseVectorField);
+    CommonFunction.createIndexWithoutLoad(collectionWithMultiVector, IndexType.HNSW, MetricType.L2, CommonData.defaultFloat16VectorField);
+
+    R<RpcStatus> rpcStatusR = milvusClient.loadCollection(LoadCollectionParam.newBuilder()
+            .withCollectionName(collectionWithMultiVector)
+            .withSyncLoad(true).build());
+    System.out.println(rpcStatusR);
+    //query
+    List<String> outFields = Collections.singletonList("*");
+    QueryParam queryParam =
+            QueryParam.newBuilder()
+                    .withCollectionName(collectionWithMultiVector)
+                    .withOutFields(outFields)
+//                    .withExpr(expr)
+                    .withLimit(100L).withOffset(100L)
+                    .build();
+    R<QueryResults> queryResultsR = milvusClient.query(queryParam);
+    QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
+    Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
+    Assert.assertTrue(wrapperQuery.getFieldWrapper(CommonData.defaultVectorField).getFieldData().size() >= 4);
+
+  }
+
+
+  }
