@@ -29,7 +29,7 @@ import java.util.List;
 @SpringBootTest(classes = MilvustestApplication.class)
 @WebAppConfiguration
 public class BaseCloudTest extends AbstractTestNGSpringContextTests {
-  public static final Logger logger= LoggerFactory.getLogger(BaseCloudTest.class);
+//  public static final Logger logger= LoggerFactory.getLogger(BaseCloudTest.class);
   public static final MilvusServiceClient milvusCloudClient =
           new MilvusServiceClient(
                   ConnectParam.newBuilder()
@@ -47,7 +47,7 @@ public class BaseCloudTest extends AbstractTestNGSpringContextTests {
                           .withSecure(true)
                           .build());
 
-  @BeforeSuite(alwaysRun = true)
+//  @BeforeSuite(alwaysRun = true)
   public void initCollection() {
     logger.info(
         "**************************************************BeforeSuit**********************");
@@ -67,7 +67,7 @@ public class BaseCloudTest extends AbstractTestNGSpringContextTests {
     milvusCloudClient.createDatabase(CreateDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName1).build());
   }
 
-  @AfterSuite(alwaysRun = true)
+//  @AfterSuite(alwaysRun = true)
   public void cleanTestData() {
     logger.info(
         "**************************************************AfterSuit**********************");

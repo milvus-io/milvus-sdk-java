@@ -15,11 +15,10 @@ import io.milvus.param.partition.CreatePartitionParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.zilliz.milvustest.common.BaseTest.milvusClient;
 
@@ -161,6 +160,94 @@ public class CommonFunction {
     return collectionName;
   }
 
+  public static String createFloat16Collection(){
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultFloat16VectorField)
+                    .withDataType(DataType.Float16Vector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).addFieldType(fieldType3).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .withSchema(collectionSchemaParam)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    logger.info("create collection:" + collectionName);
+    return collectionName;
+  }
+  public static String createBf16Collection(){
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultBF16VectorField)
+                    .withDataType(DataType.BFloat16Vector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).addFieldType(fieldType3).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .withSchema(collectionSchemaParam)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    logger.info("create collection:" + collectionName);
+    return collectionName;
+  }
+
+  public static String createSparseFloatVectorCollection(){
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultSparseVectorField)
+                    .withDataType(DataType.SparseFloatVector)
+                    .build();
+    CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder().addFieldType(fieldType1).addFieldType(fieldType2).addFieldType(fieldType3).build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .withSchema(collectionSchemaParam)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    logger.info("create collection:" + collectionName);
+    return collectionName;
+  }
+
   // String pk,float vector collection
   public static String createStringPKCollection() {
     String collectionName = "Collection_" + MathUtil.getRandomString(10);
@@ -279,6 +366,68 @@ public class CommonFunction {
     return milvusEntity;
   }
 
+  public static String createMultiVectorCollection(){
+    String collectionName = "Collection_" + MathUtil.getRandomString(10);
+    FieldType fieldType1 =
+            FieldType.newBuilder()
+                    .withName("book_id")
+                    .withDataType(DataType.Int64)
+                    .withPrimaryKey(true)
+                    .withAutoID(false)
+                    .build();
+    FieldType fieldType2 =
+            FieldType.newBuilder().withName("word_count").withDataType(DataType.Int64).build();
+    FieldType fieldType3 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultVectorField)
+                    .withDataType(DataType.FloatVector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    FieldType fieldType4 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultBinaryVectorField)
+                    .withDataType(DataType.BinaryVector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    FieldType fieldType5 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultSparseVectorField)
+                    .withDataType(DataType.SparseFloatVector)
+                    .build();
+    FieldType fieldType6 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultFloat16VectorField)
+                    .withDataType(DataType.Float16Vector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    FieldType fieldType7 =
+            FieldType.newBuilder()
+                    .withName(CommonData.defaultBF16VectorField)
+                    .withDataType(DataType.BFloat16Vector)
+                    .withDimension(CommonData.dim)
+                    .build();
+    CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder()
+            .addFieldType(fieldType1)
+            .addFieldType(fieldType2)
+            .addFieldType(fieldType3)
+            .addFieldType(fieldType4)
+            .addFieldType(fieldType5)
+            .addFieldType(fieldType6)
+//            .addFieldType(fieldType7)
+            .build();
+    CreateCollectionParam createCollectionReq =
+            CreateCollectionParam.newBuilder()
+                    .withCollectionName(collectionName)
+                    .withDescription("Test" + collectionName + "search")
+                    .withShardsNum(2)
+                    .withSchema(collectionSchemaParam)
+                    .build();
+    R<RpcStatus> collection = BaseTest.milvusClient.createCollection(createCollectionReq);
+    System.out.println("create c:"+collection);
+    logger.info("create multi vector collection:" + collectionName);
+    return collectionName;
+  }
+
   public static List<InsertParam.Field> generateData(int num) {
     Random ran = new Random();
     List<Long> book_id_array = new ArrayList<>();
@@ -286,7 +435,7 @@ public class CommonFunction {
     List<List<Float>> book_intro_array = new ArrayList<>();
     for (long i = 0L; i < num; ++i) {
       book_id_array.add(i);
-      word_count_array.add(i + 10000);
+      word_count_array.add(1L);
       List<Float> vector = new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
@@ -299,6 +448,129 @@ public class CommonFunction {
     fields.add(new InsertParam.Field(CommonData.defaultVectorField, book_intro_array));
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
+  }
+
+  public static SortedMap<Long, Float> generateSparseVector() {
+    Random ran = new Random();
+    SortedMap<Long, Float> sparse = new TreeMap<>();
+    int dim = ran.nextInt(CommonData.dim) + 1;
+    for (int i = 0; i < dim; ++i) {
+      sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
+    }
+    return sparse;
+  }
+  public static List<InsertParam.Field> generateDataWithSparseFloatVector(int num) {
+    Random ran = new Random();
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+    List<SortedMap<Long, Float>> book_intro_array = new ArrayList<>();
+    for (long i = 0L; i < num; ++i) {
+      book_id_array.add(i);
+      word_count_array.add(1L);
+      SortedMap<Long, Float> sparse = generateSparseVector();
+      book_intro_array.add(sparse);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(new InsertParam.Field(CommonData.defaultSparseVectorField, book_intro_array));
+    return fields;
+  }
+
+  public static List<InsertParam.Field> generateDataWithMultiVector(int num) {
+    Random ran = new Random();
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+
+    List<SortedMap<Long, Float>> sparseVectorList = new ArrayList<>();
+    for (long i = 0L; i < num; ++i) {
+      book_id_array.add(i);
+      word_count_array.add(1L);
+      SortedMap<Long, Float> sparse = generateSparseVector();
+      sparseVectorList.add(sparse);
+    }
+    List<List<Float>> floatVector = generateFloatVectors(num,CommonData.dim);
+    List<ByteBuffer> binaryVectorList = generateBinaryVectors(num, CommonData.dim);
+    List<ByteBuffer> float16VectorList = generateFloat16Vectors(CommonData.dim,num);
+    List<ByteBuffer> bf16VectorList = generateBF16Vectors(CommonData.dim, num);
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(new InsertParam.Field(CommonData.defaultVectorField, floatVector));
+    fields.add(new InsertParam.Field(CommonData.defaultSparseVectorField, sparseVectorList));
+    fields.add(new InsertParam.Field(CommonData.defaultBinaryVectorField, binaryVectorList));
+    fields.add(new InsertParam.Field(CommonData.defaultFloat16VectorField,float16VectorList));
+//    fields.add(new InsertParam.Field(CommonData.defaultBF16VectorField,bf16VectorList));
+    return fields;
+  }
+  public static List<InsertParam.Field> generateDataWithBF16Vector(int num) {
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+    List<ByteBuffer> book_intro_array = generateBF16Vectors(CommonData.dim, num);
+    for (long i = 0L; i < num; ++i) {
+      book_id_array.add(i);
+      word_count_array.add(1L);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(new InsertParam.Field(CommonData.defaultBF16VectorField, book_intro_array));
+    // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
+    return fields;
+  }
+
+  public static List<InsertParam.Field> generateDataWithFloat16Vector(int num) {
+    Random ran = new Random();
+    List<Long> book_id_array = new ArrayList<>();
+    List<Long> word_count_array = new ArrayList<>();
+    List<ByteBuffer> book_intro_array = generateFloat16Vectors(CommonData.dim, num);
+    for (long i = 0L; i < num; ++i) {
+      book_id_array.add(i);
+      word_count_array.add(1L);
+    }
+    List<InsertParam.Field> fields = new ArrayList<>();
+    fields.add(new InsertParam.Field("book_id", book_id_array));
+    fields.add(new InsertParam.Field("word_count", word_count_array));
+    fields.add(new InsertParam.Field(CommonData.defaultFloat16VectorField, book_intro_array));
+    // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
+    return fields;
+  }
+
+  public static List<ByteBuffer> generateFloat16Vectors(int VECTOR_DIM,int count) {
+    Random ran = new Random();
+    List<ByteBuffer> vectors = new ArrayList<>();
+    int byteCount = VECTOR_DIM*2;
+    for (int n = 0; n < count; ++n) {
+      ByteBuffer vector = ByteBuffer.allocate(byteCount);
+      for (int i = 0; i < VECTOR_DIM; ++i) {
+        short halfFloatValue = MathUtil.floatToFloat16(count+0.1f);
+        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.putShort(halfFloatValue);
+        buffer.flip();
+        vector.put(buffer.get(0));
+        vector.put(buffer.get(1));
+      }
+      vectors.add(vector);
+    }
+
+    return vectors;
+  }
+  public static List<ByteBuffer> generateBF16Vectors(int VECTOR_DIM,int count) {
+    List<ByteBuffer> vectors = new ArrayList<>();
+    int byteCount = VECTOR_DIM*2;
+    for (int n = 0; n < count; ++n) {
+      ByteBuffer vector = ByteBuffer.allocate(byteCount);
+      for (int i = 0; i < VECTOR_DIM; ++i) {
+        short halfFloatValue = MathUtil.floatToBF16(count+0.1f);
+        ByteBuffer buffer = ByteBuffer.allocate(2);
+        buffer.putShort(halfFloatValue);
+        buffer.flip();
+        vector.put(buffer.get(0));
+        vector.put(buffer.get(1));
+      }
+      vectors.add(vector);
+    }
+    return vectors;
   }
   public static List<InsertParam.Field> generateDataWithPartitionKey(int num) {
     Random ran = new Random();
@@ -472,7 +744,7 @@ public class CommonFunction {
         extraParam = "{}";
         break;
       case IVF_FLAT:
-        extraParam = "{\"nlist\":128}";
+        extraParam = "{\"nlist\":32,\"nprobe\":32}";
         break;
       case IVF_SQ8:
         extraParam = "{\"nlist\":128}";
@@ -506,6 +778,10 @@ public class CommonFunction {
         break;
       case GPU_IVF_PQ:
         extraParam="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
+        break;
+      case SPARSE_INVERTED_INDEX:
+      case SPARSE_WAND:
+        extraParam="{\"drop_ratio_search\":0.2}";
         break;
       default:
         extraParam = "{\"nlist\":128}";
@@ -793,13 +1069,30 @@ public class CommonFunction {
     }
     return jsonList;
   }
-  public static void createIndexWithLoad(String collection, IndexType indexType, MetricType metricType, String fieldName){
+  public static void createIndexWithoutLoad(String collection, IndexType indexType, MetricType metricType, String fieldName){
+    milvusClient.flush(FlushParam.newBuilder().withCollectionNames(Lists.newArrayList(collection)).build());
     R<RpcStatus> rpcStatusR =
             milvusClient.createIndex(
                     CreateIndexParam.newBuilder()
                             .withCollectionName(collection)
                             .withFieldName(fieldName)
-                            .withIndexName(CommonData.defaultIndex)
+                            .withMetricType(metricType)
+                            .withIndexType(indexType)
+                            .withIndexName("idx_"+fieldName)
+                            .withExtraParam(CommonFunction.provideExtraParam(indexType))
+                            .withSyncMode(Boolean.FALSE)
+                            .build());
+
+
+  }
+  public static void createIndexWithLoad(String collection, IndexType indexType, MetricType metricType, String fieldName){
+    milvusClient.flush(FlushParam.newBuilder().withCollectionNames(Lists.newArrayList(collection)).withSyncFlush(true).build());
+    R<RpcStatus> rpcStatusR =
+            milvusClient.createIndex(
+                    CreateIndexParam.newBuilder()
+                            .withCollectionName(collection)
+                            .withFieldName(fieldName)
+                            .withIndexName("idx_"+fieldName)
                             .withMetricType(metricType)
                             .withIndexType(indexType)
                             .withExtraParam(CommonFunction.provideExtraParam(indexType))
@@ -899,4 +1192,55 @@ public class CommonFunction {
             .addFieldType(fieldType5)
             .addFieldType(fieldType6).build();
   }
+
+  // 实现float到float16的转换
+  private static short floatToFloat16(float value) {
+    int floatBits = Float.floatToIntBits(value);
+    int sign = (floatBits >> 16) & 0x8000; // 符号位
+    int exponent = ((floatBits >> 23) & 0xFF) - 127 + 15; // 指数位
+    int significand = floatBits & 0x7FFFFF; // 尾数位
+
+    if (exponent <= 0) {
+      if (exponent < -10) {
+        // 浮点数太小，直接转为0
+        return (short) sign;
+      }
+      // 将尾数位向右移动
+      significand = (significand | 0x800000) >> (1 - exponent);
+      // 考虑舍入
+      if ((significand & 0x1000) == 0x1000) {
+        significand += 0x2000;
+        if ((significand & 0x800000) == 0x800000) {
+          significand = 0;
+          exponent++;
+        }
+      }
+      exponent = 0;
+    } else if (exponent == 0xFF - 127 + 15) {
+      if (significand == 0) {
+        // 正无穷大
+        return (short) (sign | 0x7C00);
+      } else {
+        // NaN
+        significand >>= 13;
+        return (short) (sign | 0x7C00 | significand | (significand == 0 ? 1 : 0));
+      }
+    } else {
+      // 正常情况下，只需要移动尾数位
+      if ((significand & 0x1000) == 0x1000) {
+        significand += 0x2000;
+        if ((significand & 0x800000) == 0x800000) {
+          significand = 0;
+          exponent++;
+        }
+      }
+      if (exponent > 30) {
+        // 浮点数太大，转为正无穷大
+        return (short) (sign | 0x7C00);
+      }
+    }
+
+    return (short) (sign | (exponent << 10) | (significand >> 13));
+  }
+
 }

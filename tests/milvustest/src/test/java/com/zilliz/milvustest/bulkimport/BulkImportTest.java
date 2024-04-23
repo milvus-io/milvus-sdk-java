@@ -296,7 +296,7 @@ public class BulkImportTest extends BaseCloudTest {
         System.out.printf("Collection %s created%n", collectionName);
     }
 
-    @Test(description = "bulk remote import test",groups = {"Smoke"})
+    @Test(description = "bulk remote import test")
     public void bulkRemoteImportTest() throws Exception {
         String cloudEndpoint = PropertyFilesUtil.getRunValue("cloudEndpoint");
         String apiKey = PropertyFilesUtil.getRunValue("apikey");

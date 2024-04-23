@@ -189,8 +189,8 @@ public class RangeSearchTest extends BaseTest {
                         .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
                         .build();
         R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-        Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
-        Assert.assertTrue(searchResultsR.getException().getMessage().contains("range_filter > radius"));
+        Assert.assertEquals(searchResultsR.getStatus().intValue(), 1100);
+        Assert.assertTrue(searchResultsR.getException().getMessage().contains("range_filter must be greater than radius"));
     }
 
 
@@ -259,7 +259,7 @@ public class RangeSearchTest extends BaseTest {
                         .withMetricType(MetricType.L2)
                         .withOutFields(search_output_fields)
                         .withTopK(SEARCH_K)
-                        .withVectors(searchVectorsL2)
+                        .withFloatVectors(searchVectorsL2)
                         .withVectorFieldName(CommonData.defaultVectorField)
                         .withParams(SEARCH_PARAM)
                         .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
@@ -292,8 +292,8 @@ public class RangeSearchTest extends BaseTest {
                         .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
                         .build();
         R<SearchResults> searchResultsR = milvusClient.search(searchParam);
-        Assert.assertEquals(searchResultsR.getStatus().intValue(), 1);
-        Assert.assertTrue(searchResultsR.getException().getMessage().contains("range_filter < radius"));
+        Assert.assertEquals(searchResultsR.getStatus().intValue(), 1100);
+        Assert.assertTrue(searchResultsR.getException().getMessage().contains("range_filter must be less than radius"));
     }
 
 

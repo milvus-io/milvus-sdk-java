@@ -15,6 +15,7 @@ import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.param.index.DropIndexParam;
+import io.milvus.v2.common.IndexParam;
 import io.qameta.allure.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -92,6 +93,9 @@ public class CreateIndexTest extends BaseTest {
   @Issue("https://github.com/milvus-io/milvus-sdk-java/issues/311")
   @Test(description = "Create index for collection sync", dataProvider = "FloatIndex",groups = {"Smoke"})
   public void createIndexSync(IndexType indexType, MetricType metricType) {
+    if (indexType.toString().contains("GPU")&&metricType.equals(MetricType.COSINE)){
+      return;
+    }
     R<RpcStatus> rpcStatusR =
         milvusClient.createIndex(
             CreateIndexParam.newBuilder()

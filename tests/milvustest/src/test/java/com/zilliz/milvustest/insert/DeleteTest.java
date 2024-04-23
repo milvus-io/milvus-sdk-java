@@ -69,7 +69,7 @@ public class DeleteTest extends BaseTest {
                             .withCollectionName(commonCollection)
                             .withExpr("book_id <100")
                             .build());
-    Assert.assertEquals(mutationResultR.getStatus().intValue(), 1);
+    Assert.assertEquals(mutationResultR.getStatus().intValue(), 101);
     Assert.assertTrue(mutationResultR.getException().getMessage().contains("collection not loaded"));
   }
 

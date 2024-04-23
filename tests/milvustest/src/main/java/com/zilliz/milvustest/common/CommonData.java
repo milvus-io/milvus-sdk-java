@@ -16,6 +16,9 @@ public class CommonData {
   public static String defaultVectorField = "book_intro";
   public static String defaultPartitionField="book_name";
   public static String defaultBinaryVectorField = "BinaryVectorFieldAutoTest";
+  public static String defaultFloat16VectorField = "Float16VectorField";
+  public static String defaultBF16VectorField = "BF16VectorField";
+  public static String defaultSparseVectorField = "SparseFloatVectorField";
   public static String defaultIndex = "FloatVectorIndex";
 
   public static String defaultBinaryIndex = "BinaryVectorIndex";
@@ -33,5 +36,7 @@ public class CommonData {
   public static String defaultRoleName2 = "roleTest2";
   public static String databaseName1="db1";
   public static String databaseName2="db2";
+
+  public static int dim=128;
 }
 
