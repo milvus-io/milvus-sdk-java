@@ -800,6 +800,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
+    public R<RpcStatus> updateResourceGroups(UpdateResourceGroupsParam requestParam) {
+        return retry(()-> super.updateResourceGroups(requestParam));
+    }
+
+    @Override
     public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {
         return retry(()-> super.createCollection(requestParam));
     }
