@@ -1,6 +1,7 @@
 package io.milvus.common.resourcegroup;
 
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.NonNull;
 import lombok.Getter;
@@ -17,13 +18,13 @@ public class ResourceGroupConfig {
         this.limits = builder.limits;
 
         if (null == builder.from) {
-            this.from = List.of();
+            this.from = new ArrayList<>();
         } else {
             this.from = builder.from;
         }
 
         if (null == builder.to) {
-            this.to = List.of();
+            this.to = new ArrayList<>();
         } else {
             this.to = builder.to;
         }
