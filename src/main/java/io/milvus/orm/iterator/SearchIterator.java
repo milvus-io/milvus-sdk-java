@@ -227,6 +227,7 @@ public class SearchIterator {
                 .withVectors(searchIteratorParam.getVectors())
                 .withRoundDecimal(searchIteratorParam.getRoundDecimal())
                 .withParams(JacksonUtils.toJsonString(params))
+                .withMetricType(MetricType.valueOf(searchIteratorParam.getMetricType()))
                 .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing())
                 .build();
 
