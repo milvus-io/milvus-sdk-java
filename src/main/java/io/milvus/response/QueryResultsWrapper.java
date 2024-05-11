@@ -19,7 +19,7 @@
 
 package io.milvus.response;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
@@ -147,7 +147,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
                 // find the value from dynamic field
                 Object meta = fieldValues.get(Constant.DYNAMIC_FIELD_NAME);
                 if (meta != null) {
-                    JSONObject jsonMata = (JSONObject)meta;
+                    JsonObject jsonMata = (JsonObject)meta;
                     Object innerObj = jsonMata.get(keyName);
                     if (innerObj != null) {
                         return innerObj;

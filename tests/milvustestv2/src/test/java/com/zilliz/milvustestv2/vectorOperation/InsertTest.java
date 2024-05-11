@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.vectorOperation;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
@@ -35,7 +35,7 @@ public class InsertTest extends BaseTest {
 
     @Test(description = "insert test",groups = {"Smoke"})
     public void insert(){
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder()
                 .data(jsonObjects)
                 .collectionName(newCollectionName)
@@ -45,7 +45,7 @@ public class InsertTest extends BaseTest {
 
     @Test(description = "insert simple collection test",groups = {"Smoke"})
     public void insertIntoSimpleCollection(){
-        List<JSONObject> jsonObjects = CommonFunction.generateSimpleData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleData(CommonData.numberEntities, CommonData.dim);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder()
                 .data(jsonObjects)
                 .collectionName(simpleCollectionName)

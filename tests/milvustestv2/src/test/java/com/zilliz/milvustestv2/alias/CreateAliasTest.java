@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.alias;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
@@ -32,7 +32,7 @@ public class CreateAliasTest extends BaseTest {
     public void providerCollection(){
         aliasName="a_"+ GenerateUtil.getRandomString(10);
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(CommonData.fieldFloatVector)

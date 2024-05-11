@@ -1,10 +1,10 @@
 package com.zilliz.milvustestv2.rbac;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.utils.FileUtils;
+import io.milvus.grpc.JSONArray;
 import io.milvus.grpc.PrivilegeEntity;
 import io.milvus.param.role.RevokeRolePrivilegeParam;
 import io.milvus.v2.service.rbac.request.*;
@@ -28,12 +28,12 @@ public class GrantPrivilegeTest extends BaseTest {
     public Object[][] providerPrivilegeList() {
         File jsonFile = new File("./src/test/resources/testdata/privilege.json");
         String str = FileUtils.getStr(jsonFile);
-        JSONArray jsonArray = JSONObject.parseArray(str);
+        JsonArray jsonArray = new Gson().fromJson(str, JsonArray.class);
         Object[][] objects = new Object[jsonArray.size()][3];
         for (int i = 0; i < jsonArray.size(); i++) {
-            objects[i][0] = ((JSONObject) jsonArray.get(i)).getString("object");
-            objects[i][1] = ((JSONObject) jsonArray.get(i)).getString("objectName");
-            objects[i][2] = ((JSONObject) jsonArray.get(i)).getString("privilege");
+            objects[i][0] = jsonArray.get(i).getAsJsonObject().get("object").getAsString();
+            objects[i][1] = jsonArray.get(i).getAsJsonObject().get("objectName").getAsString();
+            objects[i][2] = jsonArray.get(i).getAsJsonObject().get("privilege").getAsString();
         }
         return objects;
     }

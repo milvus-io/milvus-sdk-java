@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.tls;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
@@ -111,7 +111,7 @@ public class TLSTest {
                         .build();
         R<RpcStatus> collection = milvusClient.createCollection(createCollectionReq);
         // insert data
-        List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(10000);
+        List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(10000);
         R<InsertResponse> insert = milvusClient.insert(InsertRowsParam.newBuilder()
                 .withCollectionName(collectionName)
                 .withRows(jsonObjects)

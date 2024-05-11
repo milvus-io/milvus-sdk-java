@@ -93,7 +93,6 @@
         <jackson.version>2.16.1</jackson.version>
         <gson.version>2.10.1</gson.version>
         <kotlin.version>1.9.10</kotlin.version>
-        <version.fastjson>1.2.83</version.fastjson>
         <mockito.version>4.11.0</mockito.version>
         <testcontainers.version>1.19.6</testcontainers.version>
 
@@ -291,11 +290,6 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>${gson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>${version.fastjson}</version>
         </dependency>
 
         <dependency>

@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.serverless;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
@@ -72,7 +72,7 @@ public class HighLevelTest extends BaseTest {
     @Severity(SeverityLevel.BLOCKER)
     @Test(description = "insert data into Collection", groups = {"Smoke"}, dependsOnMethods = "listCollectionTest")
     public void insertIntoCollectionTest() {
-        List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(10000);
+        List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(10000);
         R<InsertResponse> insert = milvusClient.insert(InsertRowsParam.newBuilder()
                 .withCollectionName(commonCollection)
                 .withRows(jsonObjects)
@@ -176,7 +176,7 @@ public class HighLevelTest extends BaseTest {
     @Severity(SeverityLevel.BLOCKER)
     @Test(description = "insert data into varchar PK Collection", groups = {"Smoke"}, dependsOnMethods = "listVarcharPKCollectionTest")
     public void insertIntoVarcharPKCollectionTest() throws InterruptedException {
-        List<JSONObject> jsonObjects = CommonFunction.generateVarcharPKDataWithDynamicFiledRow(10000);
+        List<JsonObject> jsonObjects = CommonFunction.generateVarcharPKDataWithDynamicFiledRow(10000);
         R<InsertResponse> insert = milvusClient.insert(InsertRowsParam.newBuilder()
                 .withCollectionName(varcharPKCollection)
                 .withRows(jsonObjects)

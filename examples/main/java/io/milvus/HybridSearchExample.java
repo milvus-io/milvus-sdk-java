@@ -18,7 +18,8 @@
  */
 package io.milvus;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
@@ -160,14 +161,15 @@ public class HybridSearchExample {
         long idCount = 0;
         int rowCount = 10000;
         // Insert entities by rows
-        List<JSONObject> rows = new ArrayList<>();
+        List<JsonObject> rows = new ArrayList<>();
+        Gson gson = new Gson();
         for (long i = 1L; i <= rowCount; ++i) {
-            JSONObject row = new JSONObject();
-            row.put(ID_FIELD, idCount++);
-            row.put(FLOAT_VECTOR_FIELD, CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM));
-            row.put(BINARY_VECTOR_FIELD, CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM));
-            row.put(FLOAT16_VECTOR_FIELD, CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false));
-            row.put(SPARSE_VECTOR_FIELD, CommonUtils.generateSparseVector());
+            JsonObject row = new JsonObject();
+            row.addProperty(ID_FIELD, idCount++);
+            row.add(FLOAT_VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+            row.add(BINARY_VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+            row.add(FLOAT16_VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false).array()));
+            row.add(SPARSE_VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateSparseVector()));
             rows.add(row);
         }
 
@@ -275,8 +277,8 @@ public class HybridSearchExample {
         for (int k = 0; k < NQ; k++) {
             System.out.printf("============= Search result of No.%d vector =============\n", k);
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
-            for (int i = 0; i < scores.size(); ++i) {
-                System.out.println(scores.get(i));
+            for (SearchResultsWrapper.IDScore score : scores) {
+                System.out.println(score);
             }
         }
     }
