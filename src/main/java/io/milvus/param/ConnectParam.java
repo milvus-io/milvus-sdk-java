@@ -369,6 +369,9 @@ public class ConnectParam {
                 this.host = result.getHostname();
                 this.port = result.getPort();
                 this.databaseName = StringUtils.isNotEmpty(result.getDatabase()) ? result.getDatabase() : this.databaseName;
+                if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
+                    this.port = 443;
+                }
             }
 
             if(host.startsWith(HOST_HTTPS_PREFIX)){
@@ -377,9 +380,6 @@ public class ConnectParam {
 
             if (StringUtils.isNotEmpty(token)) {
                 this.authorization = Base64.getEncoder().encodeToString(String.format("%s", token).getBytes(StandardCharsets.UTF_8));
-                if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
-                    this.port = 443;
-                }
             }
 
             if (port < 0 || port > 0xFFFF) {
