@@ -35,8 +35,8 @@ public class Simple {
 
     public void run() throws InterruptedException {
         ConnectConfig connectConfig = ConnectConfig.builder()
-                .uri("https://in01-***.aws-us-west-2.vectordb.zillizcloud.com:19531")
-                .token("***")
+                .uri("https://in01-35fa7c38b80968b.gcp-us-west1.vectordb-uat3.zillizcloud.com:443")
+                .token("d1e0236065e0900c28d3d52562da34a637558a377f3555e64ed6d2b1da890d9d803a73eb59c321faf162ef07e574f9ebf9d82764")
                 .build();
         MilvusClientV2 client = new MilvusClientV2(connectConfig);
         // check collection exists
@@ -58,6 +58,7 @@ public class Simple {
         //insert data
         List<JSONObject> insertData = new ArrayList<>();
         for(int i = 0; i < 6; i++){
+
             JSONObject jsonObject = new JSONObject();
             List<Float> vectorList = new ArrayList<>();
             for(int j = 0; j < dim; j++){
