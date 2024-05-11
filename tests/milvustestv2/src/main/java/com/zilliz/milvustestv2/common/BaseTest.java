@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.common;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.Milvustestv2Application;
 import com.zilliz.milvustestv2.config.ConnectInfoConfig;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
@@ -60,7 +60,7 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
         CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultFloatVectorCollection);
         milvusClientV2.createAlias(CreateAliasReq.builder().collectionName(CommonData.defaultFloatVectorCollection).alias(CommonData.alias).build());
         // insert data
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).data(jsonObjects).build());
         CommonFunction.createVectorIndex(CommonData.defaultFloatVectorCollection,CommonData.fieldFloatVector, IndexParam.IndexType.AUTOINDEX, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
@@ -69,9 +69,9 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameA);
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameB);
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameC);
-        List<JSONObject> jsonObjectsA = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
-        List<JSONObject> jsonObjectsB = CommonFunction.generateDefaultData(CommonData.numberEntities*2, CommonData.dim);
-        List<JSONObject> jsonObjectsC = CommonFunction.generateDefaultData(CommonData.numberEntities*3, CommonData.dim);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjectsB = CommonFunction.generateDefaultData(CommonData.numberEntities*2, CommonData.dim);
+        List<JsonObject> jsonObjectsC = CommonFunction.generateDefaultData(CommonData.numberEntities*3, CommonData.dim);
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameB).data(jsonObjectsB).build());
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameC).data(jsonObjectsC).build());

@@ -1,6 +1,6 @@
 package io.milvus.v2.examples;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.DataType;
@@ -63,9 +63,10 @@ public class Simple_Schema {
         TimeUnit.SECONDS.sleep(1);
         client.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
         //insert data
-        List<JSONObject> insertData = new ArrayList<>();
+        List<JsonObject> insertData = new ArrayList<>();
+        Gson gson = new Gson();
         for(int i = 0; i < 6; i++){
-            JSONObject jsonObject = new JSONObject();
+            JsonObject jsonObject = new JsonObject();
             List<Float> vectorList = new ArrayList<>();
             for(int j = 0; j < dim; j++){
                 // generate random float vector
@@ -73,10 +74,10 @@ public class Simple_Schema {
             }
             List<Integer> array = new ArrayList<>();
             array.add(i);
-            jsonObject.put("id", (long) i);
-            jsonObject.put("vector", vectorList);
-            jsonObject.put("num", (long) i);
-            jsonObject.put("array", array);
+            jsonObject.addProperty("id", (long) i);
+            jsonObject.add("vector", gson.toJsonTree(vectorList).getAsJsonArray());
+            jsonObject.addProperty("num", (long) i);
+            jsonObject.add("array", gson.toJsonTree(array).getAsJsonArray());
             insertData.add(jsonObject);
         }
 

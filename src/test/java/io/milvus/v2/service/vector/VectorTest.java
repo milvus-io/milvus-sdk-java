@@ -1,6 +1,6 @@
 package io.milvus.v2.service.vector;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
@@ -19,14 +19,15 @@ class VectorTest extends BaseTest {
     @Test
     void testInsert() {
 
-        List<JSONObject> data = new ArrayList<>();
+        List<JsonObject> data = new ArrayList<>();
+        Gson gson = new Gson();
         for (int i = 0; i < 100; i++) {
-            JSONObject vector = new JSONObject();
+            JsonObject vector = new JsonObject();
             List<Float> vectorList = new ArrayList<>();
             vectorList.add(1.0f);
             vectorList.add(2.0f);
-            vector.put("vector", vectorList);
-            vector.put("id", (long) i);
+            vector.add("vector", gson.toJsonTree(vectorList));
+            vector.addProperty("id", (long) i);
             data.add(vector);
         }
 
@@ -41,12 +42,12 @@ class VectorTest extends BaseTest {
     @Test
     void testUpsert() {
 
-        JSONObject jsonObject = new JSONObject();
+        JsonObject jsonObject = new JsonObject();
         List<Float> vectorList = new ArrayList<>();
         vectorList.add(2.0f);
         vectorList.add(3.0f);
-        jsonObject.put("vector", vectorList);
-        jsonObject.put("id", 0L);
+        jsonObject.add("vector", new Gson().toJsonTree(vectorList));
+        jsonObject.addProperty("id", 0L);
         UpsertReq request = UpsertReq.builder()
                 .collectionName("test")
                 .data(Collections.singletonList(jsonObject))

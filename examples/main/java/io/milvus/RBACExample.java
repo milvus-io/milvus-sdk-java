@@ -109,23 +109,28 @@ public class RBACExample {
         // create a role
         R<RpcStatus> resp = createRole("role1");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "create role fail!");
+        System.out.println("role1 created");
 
         //create user
         resp = createUser("user", "pwd123456");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "create user fail!");
+        System.out.println("user created");
 
         // grant privilege to role.
         // grant object is all collections, grant object type is Collection, and the privilege is CreateCollection
         resp = grantRolePrivilege("role1","Global","*",  "CreateCollection");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "bind privileges to role fail!");
+        System.out.println("grant privilege to role1");
 
         // bind role to user
         resp = grantUserRole("user", "role1");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "bind role to user fail!");
+        System.out.println("bind role1 to user");
 
         // revoke privilege from role
         resp = revokeRolePrivilege("role1","Global","*",  "CreateCollection");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "revoke privileges to role fail!");
+        System.out.println("revoke privilege from role1");
 
         // list role
         R<SelectRoleResponse> resp1 = selectRole("role1");
@@ -134,5 +139,6 @@ public class RBACExample {
         // delete a role
         resp = dropRole("role1");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "drop role fail!");
+        System.out.println("delete role1");
     }
 }

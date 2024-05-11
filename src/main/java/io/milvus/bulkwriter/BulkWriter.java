@@ -19,12 +19,11 @@
 
 package io.milvus.bulkwriter;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
+import com.google.gson.*;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.TypeSize;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.grpc.DataType;
+import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
@@ -35,9 +34,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
 public abstract class BulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(BulkWriter.class);
@@ -50,6 +50,8 @@ public abstract class BulkWriter {
     protected int totalRowCount;
     protected Buffer buffer;
     protected ReentrantLock bufferLock;
+
+    private static final Gson GSON_INSTANCE = new Gson();
 
     protected BulkWriter(CollectionSchemaParam collectionSchema, int chunkSize, BulkFileType fileType) {
         this.collectionSchema = collectionSchema;
@@ -94,11 +96,11 @@ public abstract class BulkWriter {
         return oldBuffer;
     }
 
-    public void appendRow(JSONObject row) throws IOException, InterruptedException {
-        verifyRow(row);
+    public void appendRow(JsonObject row) throws IOException, InterruptedException {
+        Map<String, Object> rowValues = verifyRow(row);
 
         bufferLock.lock();
-        buffer.appendRow(row);
+        buffer.appendRow(rowValues);
         bufferLock.unlock();
     }
 
@@ -113,42 +115,95 @@ public abstract class BulkWriter {
         return "";
     }
 
-    private void verifyRow(JSONObject row) {
+    private Map<String, Object> verifyRow(JsonObject row) {
         int rowSize = 0;
+        Map<String, Object> rowValues = new HashMap<>();
         for (FieldType fieldType : collectionSchema.getFieldTypes()) {
+            String fieldName = fieldType.getName();
             if (fieldType.isPrimaryKey() && fieldType.isAutoID()) {
-                if (row.containsKey(fieldType.getName())) {
-                    String msg = String.format("The primary key field '%s' is auto-id, no need to provide", fieldType.getName());
+                if (row.has(fieldName)) {
+                    String msg = String.format("The primary key field '%s' is auto-id, no need to provide", fieldName);
                     ExceptionUtils.throwUnExpectedException(msg);
                 } else {
                     continue;
                 }
             }
 
-            if (!row.containsKey(fieldType.getName())) {
-                String msg = String.format("The field '%s' is missed in the row", fieldType.getName());
+            if (!row.has(fieldName)) {
+                String msg = String.format("The field '%s' is missed in the row", fieldName);
                 ExceptionUtils.throwUnExpectedException(msg);
             }
 
-            switch (fieldType.getDataType()) {
+            JsonElement obj = row.get(fieldName);
+            if (obj == null || obj.isJsonNull()) {
+                String msg = String.format("Illegal value for field '%s', value is null", fieldName);
+                ExceptionUtils.throwUnExpectedException(msg);
+            }
+
+            DataType dataType = fieldType.getDataType();
+            switch (dataType) {
                 case BinaryVector:
-                case FloatVector:
-                    rowSize += verifyVector(row.get(fieldType.getName()), fieldType);
+                case FloatVector: {
+                    Pair<Object, Integer> objectAndSize = verifyVector(obj, fieldType);
+                    rowValues.put(fieldName, objectAndSize.getLeft());
+                    rowSize += objectAndSize.getRight();
                     break;
-                case VarChar:
-                    rowSize += verifyVarchar(row.get(fieldType.getName()), fieldType, false);
+                }
+                case VarChar: {
+                    Pair<Object, Integer> objectAndSize = verifyVarchar(obj, fieldType);
+                    rowValues.put(fieldName, objectAndSize.getLeft());
+                    rowSize += objectAndSize.getRight();
                     break;
-                case JSON:
-                    Pair<Object, Integer> objectRowSize = verifyJSON(row.get(fieldType.getName()), fieldType);
-                    row.put(fieldType.getName(), objectRowSize.getLeft());
-                    rowSize += objectRowSize.getRight();
+                }
+                case JSON: {
+                    Pair<Object, Integer> objectAndSize = verifyJSON(obj, fieldType);
+                    rowValues.put(fieldName, objectAndSize.getLeft());
+                    rowSize += objectAndSize.getRight();
                     break;
-                case Array:
-                    rowSize += verifyArray(row.get(fieldType.getName()), fieldType);
+                }
+                case Array: {
+                    Pair<Object, Integer> objectAndSize = verifyArray(obj, fieldType);
+                    rowValues.put(fieldName, objectAndSize.getLeft());
+                    rowSize += objectAndSize.getRight();
+                    break;
+                }
+                case Bool:
+                case Int8:
+                case Int16:
+                case Int32:
+                case Int64:
+                case Float:
+                case Double:
+                    Pair<Object, Integer> objectAndSize = verifyScalar(obj, fieldType);
+                    rowValues.put(fieldName, objectAndSize.getLeft());
+                    rowSize += objectAndSize.getRight();
                     break;
                 default:
-                    rowSize += TypeSize.getSize(fieldType.getDataType());
+                    String msg = String.format("Unsupported data type of field '%s', not implemented in BulkWriter.", fieldName);
+                    ExceptionUtils.throwUnExpectedException(msg);
             }
+        }
+
+        // process dynamic values
+        if (this.collectionSchema.isEnableDynamicField()) {
+            JsonObject dynamicValues = new JsonObject();
+            if (row.has(DYNAMIC_FIELD_NAME)) {
+                JsonElement value = row.get(DYNAMIC_FIELD_NAME);
+                if (!(value instanceof JsonObject)) {
+                    String msg = String.format("Dynamic field '%s' value should be JSON dict format", DYNAMIC_FIELD_NAME);
+                    ExceptionUtils.throwUnExpectedException(msg);
+                }
+                dynamicValues = (JsonObject) value;
+            }
+
+            for (String key : row.keySet()) {
+                if (!key.equals(DYNAMIC_FIELD_NAME) && !rowValues.containsKey(key)) {
+                    dynamicValues.add(key, row.get(key));
+                }
+            }
+            String strValues = dynamicValues.toString();
+            rowValues.put(DYNAMIC_FIELD_NAME, strValues);
+            rowSize += strValues.length();
         }
 
         bufferLock.lock();
@@ -156,67 +211,88 @@ public abstract class BulkWriter {
         bufferRowCount += 1;
         totalRowCount += 1;
         bufferLock.unlock();
+
+        return rowValues;
     }
 
-    private Integer verifyVector(Object object, FieldType fieldType) {
+    private Pair<Object, Integer> verifyVector(JsonElement object, FieldType fieldType) {
         if (fieldType.getDataType() == DataType.FloatVector) {
-            ParamUtils.checkFieldData(fieldType, Lists.newArrayList(object), false);
-            return ((List<?>)object).size() * 4;
+            Object vector = ParamUtils.checkFieldValue(fieldType, object);
+            return Pair.of(vector, ((List<?>)vector).size() * 4);
         } else {
-            ParamUtils.checkFieldData(fieldType, Lists.newArrayList(object), false);
-            return ((ByteBuffer)object).position();
+            Object vector = ParamUtils.checkFieldValue(fieldType, object);
+            return Pair.of(vector, ((ByteBuffer)vector).position());
         }
     }
 
-    private Integer verifyVarchar(Object object, FieldType fieldType, boolean verifyElementType) {
-        ParamUtils.checkFieldData(fieldType, Lists.newArrayList(object), verifyElementType);
-
-        return String.valueOf(object).length();
+    private Pair<Object, Integer> verifyVarchar(JsonElement object, FieldType fieldType) {
+        Object varchar = ParamUtils.checkFieldValue(fieldType, object);
+        return Pair.of(varchar, String.valueOf(varchar).length());
     }
 
-    private Pair<Object, Integer> verifyJSON(Object object, FieldType fieldType) {
-        int size = 0;
-        if (object instanceof String) {
-            size = String.valueOf(object).length();
-            object = tryConvertJson(fieldType.getName(), object);
-        } else if (object instanceof JSONObject) {
-            size = ((JSONObject) object).toJSONString().length();
-        } else {
-            String msg = String.format("Illegal JSON value for field '%s', type mismatch", fieldType.getName());
-            ExceptionUtils.throwUnExpectedException(msg);
-        }
-        return Pair.of(object, size);
+    private Pair<Object, Integer> verifyJSON(JsonElement object, FieldType fieldType) {
+        String str = object.toString();
+        return Pair.of(str, str.length());
     }
 
-    private Integer verifyArray(Object object, FieldType fieldType) {
-        ParamUtils.checkFieldData(fieldType, (List<?>)object, true);
+    private Pair<Object, Integer> verifyArray(JsonElement object, FieldType fieldType) {
+        Object array = ParamUtils.checkFieldValue(fieldType, object);
 
         int rowSize = 0;
         DataType elementType = fieldType.getElementType();
         if (TypeSize.contains(elementType)) {
-            rowSize = TypeSize.getSize(elementType) * ((List<?>)object).size();
+            rowSize = TypeSize.getSize(elementType) * ((List<?>)array).size();
         } else if (elementType == DataType.VarChar) {
-            for (String ele : (List<String>) object) {
-                rowSize += verifyVarchar(ele, fieldType, true);
+            for (String str : (List<String>) array) {
+                rowSize += str.length();
             }
         } else {
             String msg = String.format("Unsupported element type for array field '%s'", fieldType.getName());
             ExceptionUtils.throwUnExpectedException(msg);
         }
 
-        return rowSize;
+        return Pair.of(array, rowSize);
     }
 
-    private Object tryConvertJson(String fieldName, Object object) {
-        if (object instanceof String) {
-            try {
-                return JSONObject.parseObject(String.valueOf(object));
-            } catch (Exception e) {
-                String msg = String.format("Illegal JSON value for field '%s', type mismatch or illegal format, error: %s", fieldName, e);
+    private Pair<Object, Integer> verifyScalar(JsonElement object, FieldType fieldType) {
+        if (!object.isJsonPrimitive()) {
+            String msg = String.format("Unsupported value type for field '%s'", fieldType.getName());
+            ExceptionUtils.throwUnExpectedException(msg);
+        }
+
+        JsonPrimitive value = object.getAsJsonPrimitive();
+        DataType dataType = fieldType.getDataType();
+        String fieldName = fieldType.getName();
+        if (dataType == DataType.Bool) {
+            if (!value.isBoolean()) {
+                String msg = String.format("Unsupported value type for field '%s', value is not boolean", fieldName);
                 ExceptionUtils.throwUnExpectedException(msg);
             }
+            return Pair.of(value.getAsBoolean(), TypeSize.getSize(dataType));
+        } else {
+            if (!value.isNumber()) {
+                String msg = String.format("Unsupported value type for field '%s', value is not a number", fieldName);
+                ExceptionUtils.throwUnExpectedException(msg);
+            }
+
+            switch (dataType) {
+                case Int8:
+                case Int16:
+                    return Pair.of(value.getAsShort(), TypeSize.getSize(dataType));
+                case Int32:
+                    return Pair.of(value.getAsInt(), TypeSize.getSize(dataType));
+                case Int64:
+                    return Pair.of(value.getAsLong(), TypeSize.getSize(dataType));
+                case Float:
+                    return Pair.of(value.getAsFloat(), TypeSize.getSize(dataType));
+                case Double:
+                    return Pair.of(value.getAsDouble(), TypeSize.getSize(dataType));
+                default:
+                    String msg = String.format("Field '%s' is not a scalar field", fieldName);
+                    ExceptionUtils.throwUnExpectedException(msg);
+            }
         }
-        return object;
+        return Pair.of(null, null);
     }
 
     private boolean hasPrimaryField(List<FieldType> fieldTypes) {

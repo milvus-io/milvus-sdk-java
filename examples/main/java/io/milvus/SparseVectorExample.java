@@ -18,6 +18,8 @@
  */
 package io.milvus;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
@@ -81,7 +83,7 @@ public class SparseVectorExample {
         CommonUtils.handleResponseStatus(ret);
         System.out.println("Collection created");
 
-        // Insert entities
+        // Insert entities by columns
         int rowCount = 10000;
         List<Long> ids = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
@@ -93,12 +95,26 @@ public class SparseVectorExample {
         fieldsInsert.add(new InsertParam.Field(ID_FIELD, ids));
         fieldsInsert.add(new InsertParam.Field(VECTOR_FIELD, vectors));
 
-        InsertParam insertParam = InsertParam.newBuilder()
+        R<MutationResult> insertR = milvusClient.insert(InsertParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFields(fieldsInsert)
-                .build();
+                .build());
+        CommonUtils.handleResponseStatus(insertR);
 
-        R<MutationResult> insertR = milvusClient.insert(insertParam);
+        // Insert entities by rows
+        List<JsonObject> rows = new ArrayList<>();
+        Gson gson = new Gson();
+        for (long i = 1L; i <= rowCount; ++i) {
+            JsonObject row = new JsonObject();
+            row.addProperty(ID_FIELD, rowCount + i);
+            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateSparseVector()));
+            rows.add(row);
+        }
+
+        insertR = milvusClient.insert(InsertParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withRows(rows)
+                .build());
         CommonUtils.handleResponseStatus(insertR);
 
         // Flush the data to storage for testing purpose
