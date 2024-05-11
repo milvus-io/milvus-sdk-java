@@ -26,7 +26,7 @@ public class MilvusClientConstant {
 
         public final static String HOST_HTTP_PREFIX = "http://";
 
-        public final static String CLOUD_SERVERLESS_URI_REGEX = "^https://in03-.{20,}zilliz.*.(com|cn)$";
+        public final static String CLOUD_SERVERLESS_URI_REGEX = "^(https://in03-.{20,}zilliz.*.(com|cn))|(https://in0\\d{1}-.{15,}serverless.*zilliz.*.(com|cn))$";
     }
     public static class StringValue {
         public final static String COLON = ":";
