@@ -138,7 +138,7 @@ public class QueryIterator {
         }
         String filteredPKStr;
         if (primaryField.getDataType() == DataType.VarChar) {
-            filteredPKStr = primaryField.getName() + " > " + "\\" + nextId + "\\";
+            filteredPKStr = primaryField.getName() + " > " + "\"" + nextId + "\"";
         } else {
             filteredPKStr = primaryField.getName() + " > " + nextId;
         }
