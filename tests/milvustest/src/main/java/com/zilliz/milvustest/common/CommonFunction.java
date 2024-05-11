@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.common;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustest.entity.FileBody;
 import com.zilliz.milvustest.entity.MilvusEntity;
@@ -652,61 +652,63 @@ public class CommonFunction {
     return collectionName;
   }
 
-  public static List<JSONObject> generateJsonData(int num){
-    List<JSONObject> jsonList=new ArrayList<>();
+  public static List<JsonObject> generateJsonData(int num){
+    List<JsonObject> jsonList=new ArrayList<>();
     Random ran = new Random();
+    Gson gson = new Gson();
     for (int i = 0; i < num; i++) {
-      JSONObject row=new JSONObject();
-      row.put("int64_field",(long)i);
-      row.put("float_field",(float)i);
+      JsonObject row=new JsonObject();
+      row.addProperty("int64_field",(long)i);
+      row.addProperty("float_field",(float)i);
       List<Float> vector=new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
       }
-      row.put("float_vector",vector);
-      row.put("string_field","Str"+i);
-      row.put("boolean_field",i % 2 == 0);
-      JSONObject jsonObject=new JSONObject();
-      jsonObject.put("int64_field", (long)i);
-      jsonObject.put("float_field", (float)i);
-      jsonObject.put("string_field", "Str"+i);
-      jsonObject.put("boolean_field",i % 2 == 0);
-      jsonObject.put("int8", (short)i);
-      jsonObject.put("floatF", (float)i);
-      jsonObject.put("doubleF", (double)i);
-      jsonObject.put("bool", i % 2 == 0);
-      jsonObject.put("array_field",Arrays.asList(i,i+1,i+2));
+      row.add("float_vector",gson.toJsonTree(vector));
+      row.addProperty("string_field","Str"+i);
+      row.addProperty("boolean_field",i % 2 == 0);
+      JsonObject jsonObject=new JsonObject();
+      jsonObject.addProperty("int64_field", (long)i);
+      jsonObject.addProperty("float_field", (float)i);
+      jsonObject.addProperty("string_field", "Str"+i);
+      jsonObject.addProperty("boolean_field",i % 2 == 0);
+      jsonObject.addProperty("int8", (short)i);
+      jsonObject.addProperty("floatF", (float)i);
+      jsonObject.addProperty("doubleF", (double)i);
+      jsonObject.addProperty("bool", i % 2 == 0);
+      jsonObject.add("array_field",gson.toJsonTree(Arrays.asList(i,i+1,i+2)));
       // $innerJson
-      JSONObject innerJson = new JSONObject();
-      innerJson.put("int64", (long)i);
-      innerJson.put("varchar", "Str"+i);
-      innerJson.put("int16", i);
-      innerJson.put("int32", i);
-      innerJson.put("int8", (short)i);
-      innerJson.put("floatF", (float)i);
-      innerJson.put("doubleF", (double)i);
-      innerJson.put("bool", i % 2 == 0);
-      jsonObject.put("inner_json",innerJson);
-      row.put("json_field",jsonObject);
+      JsonObject innerJson = new JsonObject();
+      innerJson.addProperty("int64", (long)i);
+      innerJson.addProperty("varchar", "Str"+i);
+      innerJson.addProperty("int16", i);
+      innerJson.addProperty("int32", i);
+      innerJson.addProperty("int8", (short)i);
+      innerJson.addProperty("floatF", (float)i);
+      innerJson.addProperty("doubleF", (double)i);
+      innerJson.addProperty("bool", i % 2 == 0);
+      jsonObject.add("inner_json",innerJson);
+      row.add("json_field",jsonObject);
       jsonList.add(row);
     }
     return jsonList;
   }
 
-  public static List<JSONObject> generateJsonDataWithArrayField(int num){
-    List<JSONObject> jsonList=new ArrayList<>();
+  public static List<JsonObject> generateJsonDataWithArrayField(int num){
+    List<JsonObject> jsonList=new ArrayList<>();
     Random ran = new Random();
+    Gson gson = new Gson();
     for (int i = 0; i < num; i++) {
-      JSONObject row=new JSONObject();
-      row.put("int64_field",(long)i);
+      JsonObject row=new JsonObject();
+      row.addProperty("int64_field",(long)i);
       List<Float> vector=new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
       }
-      row.put("float_vector",vector);
-      row.put("str_array_field", Lists.newArrayList("str"+i,"str"+(i+1),"str"+(i+2)));
-      row.put("int_array_field",Lists.newArrayList((long)i,(long)(i+1),(long)(i+2)));
-      row.put("float_array_field",Lists.newArrayList((float)(i+0.1),(float)(i+0.2),(float)(i+0.2)));
+      row.add("float_vector",gson.toJsonTree(vector));
+      row.add("str_array_field", gson.toJsonTree(Lists.newArrayList("str"+i,"str"+(i+1),"str"+(i+2))));
+      row.add("int_array_field", gson.toJsonTree(Lists.newArrayList((long)i,(long)(i+1),(long)(i+2))));
+      row.add("float_array_field", gson.toJsonTree(Lists.newArrayList((float)(i+0.1),(float)(i+0.2),(float)(i+0.2))));
       jsonList.add(row);
     }
     return jsonList;
@@ -735,60 +737,62 @@ public class CommonFunction {
     // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
-  public static List<JSONObject> generateDataWithDynamicFiledRow(int num) {
-    List<JSONObject> jsonList = new ArrayList<>();
+  public static List<JsonObject> generateDataWithDynamicFiledRow(int num) {
+    List<JsonObject> jsonList = new ArrayList<>();
     Random ran = new Random();
+    Gson gson = new Gson();
     for (int i = 0; i < num; i++) {
-      JSONObject row = new JSONObject();
-      row.put("book_id", (long) i);
-      row.put("word_count", (long) i);
-      row.put("extra_field", "String" + i);
-      row.put("extra_field2",  i);
+      JsonObject row = new JsonObject();
+      row.addProperty("book_id", (long) i);
+      row.addProperty("word_count", (long) i);
+      row.addProperty("extra_field", "String" + i);
+      row.addProperty("extra_field2",  i);
       // $innerJson
-      JSONObject innerJson = new JSONObject();
-      innerJson.put("int64", (long) i);
-      innerJson.put("varchar", "varchar"+i);
-      innerJson.put("int16", i);
-      innerJson.put("int32", i);
-      innerJson.put("int8", (short)i);
-      innerJson.put("float", (float)i);
-      innerJson.put("double", (double)i);
-      innerJson.put("bool", i % 2 == 0);
-      row.put("json_field", innerJson);
+      JsonObject innerJson = new JsonObject();
+      innerJson.addProperty("int64", (long) i);
+      innerJson.addProperty("varchar", "varchar"+i);
+      innerJson.addProperty("int16", i);
+      innerJson.addProperty("int32", i);
+      innerJson.addProperty("int8", (short)i);
+      innerJson.addProperty("float", (float)i);
+      innerJson.addProperty("double", (double)i);
+      innerJson.addProperty("bool", i % 2 == 0);
+      row.add("json_field", innerJson);
       List<Float> vector = new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
       }
-      row.put("book_intro", vector);
+      row.add("book_intro", gson.toJsonTree(vector));
       jsonList.add(row);
     }
     return jsonList;
   }
-  public static List<JSONObject> generateVarcharPKDataWithDynamicFiledRow(int num) {
-    List<JSONObject> jsonList = new ArrayList<>();
+  public static List<JsonObject> generateVarcharPKDataWithDynamicFiledRow(int num) {
+    List<JsonObject> jsonList = new ArrayList<>();
     Random ran = new Random();
+    Gson gson = new Gson();
     for (int i = 0; i < num; i++) {
-      JSONObject row = new JSONObject();
-      row.put("book_name",  "StringPK"+i);
-      row.put("word_count", (long) i);
-      row.put("extra_field", "String" + i);
-      row.put("extra_field2",  i);
+      JsonObject row = new JsonObject();
+      row.addProperty("book_name",  "StringPK"+i);
+      row.addProperty("word_count", (long) i);
+      row.addProperty("extra_field", "String" + i);
+      row.addProperty("extra_field2",  i);
       // $innerJson
-      JSONObject innerJson = new JSONObject();
-      innerJson.put("int64", (long) i);
-      innerJson.put("varchar", "varchar"+i);
-      innerJson.put("int16", i);
-      innerJson.put("int32", i);
-      innerJson.put("int8", (short)i);
-      innerJson.put("float", (float)i);
-      innerJson.put("double", (double)i);
-      innerJson.put("bool", i % 2 == 0);
-      row.put("json_field", innerJson);
+      JsonObject innerJson = new JsonObject();
+      innerJson.addProperty("int64", (long) i);
+      innerJson.addProperty("varchar", "varchar"+i);
+      innerJson.addProperty("int16", i);
+      innerJson.addProperty("int32", i);
+      innerJson.addProperty("int8", (short)i);
+      innerJson.addProperty("float", (float)i);
+      innerJson.addProperty("double", (double)i);
+      innerJson.addProperty("bool", i % 2 == 0);
+      row.add("json_field", innerJson);
       List<Float> vector = new ArrayList<>();
       for (int k = 0; k < 128; ++k) {
         vector.add(ran.nextFloat());
       }
-      row.put("book_intro", vector);
+      row.add("book_intro", gson.toJsonTree(vector));
       jsonList.add(row);
     }
     return jsonList;

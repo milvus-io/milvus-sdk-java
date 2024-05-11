@@ -19,7 +19,7 @@
 
 package io.milvus.param.dml;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
@@ -37,7 +37,7 @@ import java.util.List;
 @ToString
 public class InsertParam {
     protected final List<Field> fields;
-    protected final List<JSONObject> rows;
+    protected final List<JsonObject> rows;
 
     protected final String databaseName;
     protected final String collectionName;
@@ -65,7 +65,7 @@ public class InsertParam {
         protected String collectionName;
         protected String partitionName = "";
         protected List<InsertParam.Field> fields;
-        protected List<JSONObject> rows;
+        protected List<JsonObject> rows;
         protected int rowCount;
 
         protected Builder() {
@@ -120,11 +120,31 @@ public class InsertParam {
         /**
          * Sets the row data to insert. The rows list cannot be empty.
          *
+         * Internal class for insert data.
+         * If dataType is Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar, use JsonObject.addProperty(key, value) to input;
+         * If dataType is FloatVector, use JsonObject.add(key, gson.toJsonTree(List[Float]) to input;
+         * If dataType is BinaryVector/Float16Vector/BFloat16Vector, use JsonObject.add(key, gson.toJsonTree(byte[])) to input;
+         * If dataType is SparseFloatVector, use JsonObject.add(key, gson.toJsonTree(SortedMap[Long, Float])) to input;
+         * If dataType is Array, use JsonObject.add(key, gson.toJsonTree(List of Boolean/Integer/Short/Long/Float/Double/String)) to input;
+         * If dataType is JSON, use JsonObject.add(key, JsonElement) to input;
+         *
+         * Note:
+         * 1. For scalar numeric values, value will be cut according to the type of the field.
+         * For example:
+         *   An Int8 field named "XX", you set the value to be 128 by JsonObject.add("XX", 128), the value 128 is cut to -128.
+         *   An Int64 field named "XX", you set the value to be 3.9 by JsonObject.add("XX", 3.9), the value 3.9 is cut to 3.
+         *
+         * 2. String value can be parsed to numeric/boolean type if the value is valid.
+         * For example:
+         *   A Bool field named "XX", you set the value to be "TRUE" by JsonObject.add("XX", "TRUE"), the string "TRUE" is parsed as true.
+         *   A Float field named "XX", you set the value to be "3.5" by JsonObject.add("XX", "3.5", the string "3.5" is parsed as 3.5.
+         *
+         *
          * @param rows insert row data
          * @return <code>Builder</code>
-         * @see JSONObject
+         * @see JsonObject
          */
-        public Builder withRows(@NonNull List<JSONObject> rows) {
+        public Builder withRows(@NonNull List<JsonObject> rows) {
             this.rows = rows;
             return this;
         }
@@ -191,7 +211,7 @@ public class InsertParam {
         }
 
         protected void checkRows() {
-            for (JSONObject row : rows) {
+            for (JsonObject row : rows) {
                 if (row == null) {
                     throw new ParamException("Row cannot be null." +
                             " If the field is auto-id, just ignore it from withRows()");
@@ -219,6 +239,7 @@ public class InsertParam {
      * If dataType is FloatVector, values is List of List Float;
      * If dataType is BinaryVector, values is List of ByteBuffer;
      * If dataType is Array, values can be List of List Boolean/Integer/Short/Long/Float/Double/String;
+     * If dataType is JSON, values is List of gson.JsonObject;
      *
      * Note:
      * If dataType is Int8/Int16/Int32, values is List of Integer or Short

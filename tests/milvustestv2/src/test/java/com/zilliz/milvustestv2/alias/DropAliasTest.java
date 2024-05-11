@@ -1,6 +1,5 @@
 package com.zilliz.milvustestv2.alias;
 
-import com.alibaba.fastjson.JSONObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;

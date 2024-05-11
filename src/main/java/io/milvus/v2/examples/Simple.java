@@ -1,6 +1,6 @@
 package io.milvus.v2.examples;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.exception.MilvusClientException;
@@ -56,16 +56,17 @@ public class Simple {
         logger.info(String.valueOf(client.listCollections()));
         logger.info(String.valueOf(client.describeCollection(DescribeCollectionReq.builder().collectionName(collectionName).build())));
         //insert data
-        List<JSONObject> insertData = new ArrayList<>();
+        List<JsonObject> insertData = new ArrayList<>();
+        Gson gson = new Gson();
         for(int i = 0; i < 6; i++){
-            JSONObject jsonObject = new JSONObject();
+            JsonObject jsonObject = new JsonObject();
             List<Float> vectorList = new ArrayList<>();
             for(int j = 0; j < dim; j++){
                 // generate random float vector
                 vectorList.add(new Random().nextFloat());
             }
-            jsonObject.put("id", (long) i);
-            jsonObject.put("vector", vectorList);
+            jsonObject.addProperty("id", (long) i);
+            jsonObject.add("vector", gson.toJsonTree(vectorList).getAsJsonArray());
             insertData.add(jsonObject);
         }
         InsertReq insertReq = InsertReq.builder()

@@ -1,11 +1,10 @@
 package io.milvus.param.dml;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 
 import lombok.NonNull;
 import lombok.ToString;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
 
@@ -81,9 +80,9 @@ public class UpsertParam extends InsertParam {
          *
          * @param rows insert row data
          * @return <code>Builder</code>
-         * @see JSONObject
+         * @see JsonObject
          */
-        public Builder withRows(@NonNull List<JSONObject> rows) {
+        public Builder withRows(@NonNull List<JsonObject> rows) {
             super.withRows(rows);
             return this;
         }

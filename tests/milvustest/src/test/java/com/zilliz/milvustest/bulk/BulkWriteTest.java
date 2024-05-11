@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.bulk;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -59,7 +59,7 @@ public class BulkWriteTest extends BaseTest {
                 .build();
         LocalBulkWriter localBulkWriter=new LocalBulkWriter(localBulkWriterParam);
 
-        List<JSONObject> jsonObjects = CommonFunction.generateJsonData(10000);
+        List<JsonObject> jsonObjects = CommonFunction.generateJsonData(10000);
         jsonObjects.forEach(x->{
             try {
                 localBulkWriter.appendRow(x);
@@ -97,5 +97,4 @@ public class BulkWriteTest extends BaseTest {
                 .build());
         Assert.assertEquals(collectionStatistics2.getData().getStats(0).getValue(), "10000");
     }
-
 }

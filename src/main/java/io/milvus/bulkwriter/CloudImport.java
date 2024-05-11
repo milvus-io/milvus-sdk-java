@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CloudImport {
+    private static final Gson GSON_INSTANCE = new Gson();
+
     public static BulkImportResponse bulkImport(String url, String apiKey, String objectUrl,
                                                 String accessKey, String secretKey, String clusterId, String collectionName) throws MalformedURLException {
         String requestURL;
@@ -35,7 +37,7 @@ public class CloudImport {
         params.put("collectionName", collectionName);
 
         String body = postRequest(requestURL, apiKey, params, 60 * 1000);
-        RestfulResponse<BulkImportResponse> response = new Gson().fromJson(body, new TypeToken<RestfulResponse<BulkImportResponse>>(){}.getType());
+        RestfulResponse<BulkImportResponse> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<BulkImportResponse>>(){}.getType());
         handleResponse(url, response);
         return response.getData();
     }
@@ -54,7 +56,7 @@ public class CloudImport {
         params.put("jobId", jobId);
 
         String body = getRequest(requestURL, apiKey, params, 60 * 1000);
-        RestfulResponse<GetImportProgressResponse> response = new Gson().fromJson(body, new TypeToken<RestfulResponse<GetImportProgressResponse>>(){}.getType());
+        RestfulResponse<GetImportProgressResponse> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<GetImportProgressResponse>>(){}.getType());
         handleResponse(url, response);
         return response.getData();
     }
@@ -74,7 +76,7 @@ public class CloudImport {
         params.put("currentPage", currentPage);
 
         String body = getRequest(requestURL, apiKey, params, 60 * 1000);
-        RestfulResponse<ListImportJobsResponse> response = new Gson().fromJson(body, new TypeToken<RestfulResponse<ListImportJobsResponse>>(){}.getType());
+        RestfulResponse<ListImportJobsResponse> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<ListImportJobsResponse>>(){}.getType());
         handleResponse(url, response);
         return response.getData();
     }

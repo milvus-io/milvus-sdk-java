@@ -1,6 +1,6 @@
 package io.milvus.response.basic;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.FieldData;
 import io.milvus.response.FieldDataWrapper;
@@ -47,10 +47,11 @@ public abstract class RowRecordWrapper {
                     }
                     Object value = wrapper.valueByIdx((int)index);
                     if (wrapper.isJsonField()) {
-                        JSONObject jsonField = JSONObject.parseObject(new String((byte[])value));
-                        if (wrapper.isDynamicField()) {
-                            for (String key: jsonField.keySet()) {
-                                record.put(key, jsonField.get(key));
+                        JsonElement jsonField = FieldDataWrapper.ParseJSONObject(value);
+                        if (wrapper.isDynamicField() && jsonField instanceof JsonObject) {
+                            JsonObject jsonObj = (JsonObject) jsonField;
+                            for (String key: jsonObj.keySet()) {
+                                record.put(key, FieldDataWrapper.ValueOfJSONElement(jsonObj.get(key)));
                             }
                         } else {
                             record.put(field.getFieldName(), jsonField);

@@ -1,7 +1,6 @@
 package com.zilliz.milvustest.businessflow;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
 import com.zilliz.milvustest.util.FileUtils;
@@ -61,12 +60,12 @@ public class ConcurrentTest {
     public Object[][] providerPrivilegeList() {
         File jsonFile=new File("./src/test/java/resources/testdata/privilege.json");
         String str = FileUtils.getStr(jsonFile);
-        JSONArray jsonArray = JSONObject.parseArray(str);
+        JsonArray jsonArray = new Gson().fromJson(str, JsonArray.class);
         objects=new Object[jsonArray.size()][3];
         for (int i = 0; i < jsonArray.size(); i++) {
-            objects[i][0]=((JSONObject)jsonArray.get(i)).getString("object");
-            objects[i][1]=((JSONObject)jsonArray.get(i)).getString("objectName");
-            objects[i][2]=((JSONObject)jsonArray.get(i)).getString("privilege");
+            objects[i][0]=jsonArray.get(i).getAsJsonObject.get("object").getAsString();
+            objects[i][1]=jsonArray.get(i)).getAsJsonObject.get("objectName").getAsString();
+            objects[i][2]=jsonArray.get(i)).getAsJsonObject.get("privilege").getAsString();
         }
 
         return objects;

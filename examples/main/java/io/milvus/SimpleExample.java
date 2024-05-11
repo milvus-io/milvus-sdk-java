@@ -19,7 +19,8 @@
 
 package io.milvus;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
@@ -104,13 +105,14 @@ public class SimpleExample {
         System.out.println("Collection created");
 
         // Insert 10 records into the collection
-        List<JSONObject> rows = new ArrayList<>();
+        Gson gson = new Gson();
+        List<JsonObject> rows = new ArrayList<>();
         for (long i = 1L; i <= 10; ++i) {
-            JSONObject row = new JSONObject();
-            row.put(ID_FIELD, i);
+            JsonObject row = new JsonObject();
+            row.addProperty(ID_FIELD, i);
             List<Float> vector = Arrays.asList((float)i, (float)i, (float)i, (float)i);
-            row.put(VECTOR_FIELD, vector);
-            row.put(TITLE_FIELD, "Tom and Jerry " + i);
+            row.add(VECTOR_FIELD, gson.toJsonTree(vector));
+            row.addProperty(TITLE_FIELD, "Tom and Jerry " + i);
             rows.add(row);
         }
 
