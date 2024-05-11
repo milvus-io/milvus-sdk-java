@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.3.7 (2024-05-11)
+
+### Bug
+
+- Unable to connect Zilliz cloud new severless instances
+- SearchIterator cannot work for Varchar type primary key
+- Fix some minor bugs of SearchIterator
+
 ## milvus-sdk-java 2.3.6 (2024-04-22)
 
 ### Feature
