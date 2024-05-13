@@ -21,6 +21,11 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
+import io.grpc.CallOptions;
+import io.grpc.Channel;
+import io.grpc.ClientCall;
+import io.grpc.ClientInterceptor;
+import io.grpc.MethodDescriptor;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
@@ -199,6 +204,13 @@ class MilvusServiceClientTest {
         long keepAliveTimeMs = 2;
         long keepAliveTimeoutMs = 3;
         long idleTimeoutMs = 5;
+        List<ClientInterceptor> clientInterceptors = new ArrayList<>();
+        clientInterceptors.add(new ClientInterceptor() {
+            @Override
+            public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+                return null;
+            }
+        });
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost(host)
                 .withPort(port)
@@ -207,6 +219,7 @@ class MilvusServiceClientTest {
                 .withKeepAliveTimeout(keepAliveTimeoutMs, TimeUnit.MILLISECONDS)
                 .keepAliveWithoutCalls(true)
                 .withIdleTimeout(idleTimeoutMs, TimeUnit.MILLISECONDS)
+                .withClientInterceptors(clientInterceptors)
                 .build();
         System.out.println(connectParam.toString());
 
@@ -217,6 +230,7 @@ class MilvusServiceClientTest {
         assertEquals(keepAliveTimeoutMs, connectParam.getKeepAliveTimeoutMs());
         assertTrue(connectParam.isKeepAliveWithoutCalls());
         assertEquals(idleTimeoutMs, connectParam.getIdleTimeoutMs());
+        assertEquals(clientInterceptors, connectParam.getClientInterceptors());
 
         assertThrows(ParamException.class, () ->
                 ConnectParam.newBuilder()

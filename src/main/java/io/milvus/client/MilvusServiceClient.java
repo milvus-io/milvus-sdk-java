@@ -51,6 +51,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.net.InetAddress;
@@ -75,6 +77,10 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
         }
 
+        List<ClientInterceptor> clientInterceptors = new ArrayList<>();
+        clientInterceptors.add(MetadataUtils.newAttachHeadersInterceptor(metadata));
+        clientInterceptors.addAll(connectParam.getClientInterceptors());
+
         try {
             if (StringUtils.isNotEmpty(connectParam.getServerPemPath())) {
                 // one-way tls
@@ -90,7 +96,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .intercept(clientInterceptors);
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -111,7 +117,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .intercept(clientInterceptors);
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
