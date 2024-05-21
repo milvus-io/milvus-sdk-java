@@ -16,6 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 public class VectorUtils {
+    private static final Gson GSON_INSTANCE = new Gson();
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
 //        long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
@@ -159,8 +160,7 @@ public class VectorUtils {
 
         if (null != request.getSearchParams()) {
             try {
-                Gson gson = new Gson();
-                String searchParams = gson.toJson(request.getSearchParams());
+                String searchParams = GSON_INSTANCE.toJson(request.getSearchParams());
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.PARAMS)

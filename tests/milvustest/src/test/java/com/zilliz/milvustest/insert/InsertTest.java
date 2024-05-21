@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.insert;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -441,7 +441,7 @@ public class InsertTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Insert data into collection with JSON field",groups = {"Smoke"})
   public void insertDataCollectionWithJsonField(){
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(100);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonData(100);
     System.out.println(jsonObjects);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withCollectionName(collectionWithJsonField)
@@ -453,7 +453,7 @@ public class InsertTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Insert data into collection with Dynamic field",groups = {"Smoke"})
   public void insertDataCollectionWithDynamicField(){
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withCollectionName(collectionWithDynamicField)
             .withRows(jsonObjects)
@@ -465,7 +465,7 @@ public class InsertTest extends BaseTest {
   @Test(description = "Insert data into collection with Dynamic field use column data",expectedExceptions = ParamException.class)
   public void insertDataCollectionWithDynamicFieldUseColumnData(){
     List<InsertParam.Field> fields = CommonFunction.generateDataWithDynamicFiledColumn(100);
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(100);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonData(100);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withCollectionName(collectionWithDynamicField)
             .withFields(fields)
@@ -477,7 +477,7 @@ public class InsertTest extends BaseTest {
   @Test(description = "Insert data into collection with Dynamic field",expectedExceptions = ParamException.class)
   public void insertFieldsAndRowsData(){
     List<InsertParam.Field> fields = CommonFunction.generateDataWithDynamicFiledColumn(100);
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(100);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withCollectionName(collectionWithDynamicField)
             .withFields(fields)

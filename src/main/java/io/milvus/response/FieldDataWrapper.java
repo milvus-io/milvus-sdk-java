@@ -19,7 +19,7 @@
 
 package io.milvus.response;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.google.protobuf.ProtocolStringList;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -317,8 +317,12 @@ public class FieldDataWrapper {
 
     public String getAsString(int index, String paramName) throws IllegalResponseException {
         if (isJsonField()) {
-            JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.getString(paramName);
+            JsonElement jsonElement = parseObjectData(index);
+            if (jsonElement instanceof JsonObject) {
+                return ((JsonObject)jsonElement).get(paramName).getAsString();
+            } else {
+                throw new IllegalResponseException("The JSON element is not a dict");
+            }
         }
         throw new IllegalResponseException("Only JSON type support this operation");
     }
@@ -339,12 +343,26 @@ public class FieldDataWrapper {
         throw new IllegalResponseException("Only JSON type support this operation");
     }
 
+    /**
+     * Gets a field's value by field name.
+     *
+     * @param index which row
+     * @param paramName which field
+     * @return returns Long for integer value, returns Double for decimal value,
+     *   returns String for string value, returns JsonElement for JSON object and Array.
+     */
     public Object get(int index, String paramName) throws IllegalResponseException {
-        if (isJsonField()) {
-            JSONObject jsonObject = parseObjectData(index);
-            return jsonObject.get(paramName);
+        if (!isJsonField()) {
+            throw new IllegalResponseException("Only JSON type support this operation");
         }
-        throw new IllegalResponseException("Only JSON type support this operation");
+
+        JsonElement jsonElement = parseObjectData(index);
+        if (!(jsonElement instanceof JsonObject)) {
+            throw new IllegalResponseException("The JSON element is not a dict");
+        }
+
+        JsonElement element = ((JsonObject)jsonElement).get(paramName);
+        return ValueOfJSONElement(element);
     }
 
     public Object valueByIdx(int index) throws ParamException {
@@ -355,18 +373,39 @@ public class FieldDataWrapper {
         return data.get(index);
     }
 
-    private JSONObject parseObjectData(int index) {
+    private JsonElement parseObjectData(int index) {
         Object object = valueByIdx(index);
         return ParseJSONObject(object);
     }
 
-    public static JSONObject ParseJSONObject(Object object) {
+    public static JsonElement ParseJSONObject(Object object) {
         if (object instanceof String) {
-            return JSONObject.parseObject((String)object);
+            return JsonParser.parseString((String)object);
         } else if (object instanceof byte[]) {
-            return JSONObject.parseObject(new String((byte[]) object));
+            return JsonParser.parseString(new String((byte[]) object));
         } else {
             throw new IllegalResponseException("Illegal type value for JSON parser");
         }
+    }
+
+    public static Object ValueOfJSONElement(JsonElement element) {
+        if (element == null || element.isJsonNull()) {
+            return null;
+        }
+        if (element.isJsonPrimitive()) {
+            JsonPrimitive primitive = (JsonPrimitive) element;
+            if (primitive.isString()) {
+                return primitive.getAsString();
+            } else if (primitive.isBoolean()) {
+                return primitive.getAsBoolean();
+            } else if (primitive.isNumber()) {
+                if (primitive.getAsBigDecimal().scale() == 0) {
+                    return primitive.getAsLong();
+                } else {
+                    return primitive.getAsDouble();
+                }
+            }
+        }
+        return element;
     }
 }

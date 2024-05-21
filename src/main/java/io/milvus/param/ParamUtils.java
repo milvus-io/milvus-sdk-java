@@ -19,12 +19,11 @@
 
 package io.milvus.param;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.common.collect.Lists;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.JacksonUtils;
-import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.collection.FieldType;
@@ -47,27 +46,51 @@ import java.util.stream.Collectors;
  * Utility functions for param classes
  */
 public class ParamUtils {
-    public static HashMap<DataType, String> getTypeErrorMsg() {
+    private static final Gson GSON_INSTANCE = new Gson();
+
+    private static HashMap<DataType, String> getTypeErrorMsgForColumnInsert() {
         final HashMap<DataType, String> typeErrMsg = new HashMap<>();
-        typeErrMsg.put(DataType.None, "Type mismatch for field '%s': the field type is illegal");
-        typeErrMsg.put(DataType.Bool, "Type mismatch for field '%s': Bool field value type must be Boolean");
-        typeErrMsg.put(DataType.Int8, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
-        typeErrMsg.put(DataType.Int16, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
-        typeErrMsg.put(DataType.Int32, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer");
-        typeErrMsg.put(DataType.Int64, "Type mismatch for field '%s': Int64 field value type must be Long");
-        typeErrMsg.put(DataType.Float, "Type mismatch for field '%s': Float field value type must be Float");
-        typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be Double");
-        typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be String");
-        typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be String");
-        typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be List<Float>");
-        typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be ByteBuffer");
-        typeErrMsg.put(DataType.Float16Vector, "Type mismatch for field '%s': Float16 vector field's value type must be ByteBuffer");
-        typeErrMsg.put(DataType.BFloat16Vector, "Type mismatch for field '%s': BFloat16 vector field's value type must be ByteBuffer");
-        typeErrMsg.put(DataType.SparseFloatVector, "Type mismatch for field '%s': SparseFloatVector vector field's value type must be SortedMap");
+        typeErrMsg.put(DataType.None, "Type mismatch for field '%s': the field type is illegal.");
+        typeErrMsg.put(DataType.Bool, "Type mismatch for field '%s': Bool field value type must be Boolean.");
+        typeErrMsg.put(DataType.Int8, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer.");
+        typeErrMsg.put(DataType.Int16, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer.");
+        typeErrMsg.put(DataType.Int32, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be Short or Integer.");
+        typeErrMsg.put(DataType.Int64, "Type mismatch for field '%s': Int64 field value type must be Long.");
+        typeErrMsg.put(DataType.Float, "Type mismatch for field '%s': Float field value type must be Float.");
+        typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be Double.");
+        typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be String."); // actually String type is useless
+        typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be String, and the string length must shorter than max_length.");
+        typeErrMsg.put(DataType.Array, "Type mismatch for field '%s': Array field value type must be List<Object>, each object type must be element_type, and the array length must be shorter than max_capacity.");
+        typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be List<Float>.");
+        typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be ByteBuffer.");
+        typeErrMsg.put(DataType.Float16Vector, "Type mismatch for field '%s': Float16 vector field's value type must be ByteBuffer.");
+        typeErrMsg.put(DataType.BFloat16Vector, "Type mismatch for field '%s': BFloat16 vector field's value type must be ByteBuffer.");
+        typeErrMsg.put(DataType.SparseFloatVector, "Type mismatch for field '%s': SparseFloatVector vector field's value type must be SortedMap<Long, Float>.");
         return typeErrMsg;
     }
 
-    private static void checkFieldData(FieldType fieldSchema, InsertParam.Field fieldData) {
+    private static HashMap<DataType, String> getTypeErrorMsgForRowInsert() {
+        final HashMap<DataType, String> typeErrMsg = new HashMap<>();
+        typeErrMsg.put(DataType.None, "Type mismatch for field '%s': the field type is illegal.");
+        typeErrMsg.put(DataType.Bool, "Type mismatch for field '%s': Bool field value type must be JsonPrimitive.");
+        typeErrMsg.put(DataType.Int8, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be JsonPrimitive of boolean.");
+        typeErrMsg.put(DataType.Int16, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be JsonPrimitive of number.");
+        typeErrMsg.put(DataType.Int32, "Type mismatch for field '%s': Int32/Int16/Int8 field value type must be JsonPrimitive of number.");
+        typeErrMsg.put(DataType.Int64, "Type mismatch for field '%s': Int64 field value type must be JsonPrimitive of number.");
+        typeErrMsg.put(DataType.Float, "Type mismatch for field '%s': Float field value type must be JsonPrimitive of number.");
+        typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be JsonPrimitive of number.");
+        typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be JsonPrimitive of string."); // actually String type is useless
+        typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be JsonPrimitive of string, and the string length must shorter than max_length.");
+        typeErrMsg.put(DataType.Array, "Type mismatch for field '%s': Array field value type must be JsonArray, each object type must be element_type, and the array length must be shorter than max_capacity.");
+        typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be JsonArray of List<Float>.");
+        typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be JsonArray of byte[].");
+        typeErrMsg.put(DataType.Float16Vector, "Type mismatch for field '%s': Float16 vector field's value type must be JsonArray of byte[].");
+        typeErrMsg.put(DataType.BFloat16Vector, "Type mismatch for field '%s': BFloat16 vector field's value type must be JsonArray of byte[].");
+        typeErrMsg.put(DataType.SparseFloatVector, "Type mismatch for field '%s': SparseFloatVector vector field's value type must be JsonObject of Map<Long, Float>.");
+        return typeErrMsg;
+    }
+
+    public static void checkFieldData(FieldType fieldSchema, InsertParam.Field fieldData) {
         List<?> values = fieldData.getValues();
         checkFieldData(fieldSchema, values, false);
     }
@@ -85,7 +108,7 @@ public class ParamUtils {
     }
 
     public static void checkFieldData(FieldType fieldSchema, List<?> values, boolean verifyElementType) {
-        HashMap<DataType, String> errMsgs = getTypeErrorMsg();
+        HashMap<DataType, String> errMsgs = getTypeErrorMsgForColumnInsert();
         DataType dataType = verifyElementType ? fieldSchema.getElementType() : fieldSchema.getDataType();
 
         if (verifyElementType && values.size() > fieldSchema.getMaxCapacity()) {
@@ -134,7 +157,7 @@ public class ParamUtils {
                     int real_dim = calculateBinVectorDim(dataType, v.position());
                     if (real_dim != dim) {
                         String msg = "Incorrect dimension for field '%s': the no.%d vector's dimension: %d is not equal to field's dimension: %d";
-                        throw new ParamException(String.format(msg, fieldSchema.getName(), i, v.position()*8, dim));
+                        throw new ParamException(String.format(msg, fieldSchema.getName(), i, real_dim, dim));
                     }
                 }
                 break;
@@ -151,13 +174,8 @@ public class ParamUtils {
                         String msg = "Not allow empty SortedMap for sparse vector field '%s'";
                         throw new ParamException(String.format(msg, fieldSchema.getName()));
                     }
-                    if (!(m.firstKey() instanceof Long)) {
-                        String msg = "The key of SortedMap must be Long for sparse vector field '%s'";
-                        throw new ParamException(String.format(msg, fieldSchema.getName()));
-                    }
-                    if (!(m.get(m.firstKey()) instanceof Float)) {
-                        String msg = "The value of SortedMap must be Float for sparse vector field '%s'";
-                        throw new ParamException(String.format(msg, fieldSchema.getName()));
+                    if (!(m.firstKey() instanceof Long) || !(m.get(m.firstKey()) instanceof Float)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
                 }
                 break;
@@ -204,11 +222,14 @@ public class ParamUtils {
                     if (!(value instanceof String)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
+                    if (((String) value).length() > fieldSchema.getMaxLength()) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
                 }
                 break;
             case JSON:
                 for (Object value : values) {
-                    if (!(value instanceof JSONObject)) {
+                    if (!(value instanceof JsonElement)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
                 }
@@ -219,12 +240,153 @@ public class ParamUtils {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
 
-                    List<?> temp = (List<?>)value;
-                    checkFieldData(fieldSchema, temp, true);
+                    List<?> array = (List<?>)value;
+                    if (array.size() > fieldSchema.getMaxCapacity()) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                    checkFieldData(fieldSchema, array, true);
                 }
                 break;
             default:
-                throw new IllegalResponseException("Unsupported data type returned by FieldData");
+                throw new ParamException("Unsupported data type returned by FieldData");
+        }
+    }
+
+    public static Object checkFieldValue(FieldType fieldSchema, JsonElement value) {
+        HashMap<DataType, String> errMsgs = getTypeErrorMsgForRowInsert();
+        DataType dataType = fieldSchema.getDataType();
+
+        switch (dataType) {
+            case FloatVector: {
+                if (!(value.isJsonArray())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                int dim = fieldSchema.getDimension();
+                try {
+                    List<Float> vector = GSON_INSTANCE.fromJson(value, new TypeToken<List<Float>>() {}.getType());
+                    if (vector.size() != dim) {
+                        String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
+                        throw new ParamException(String.format(msg, fieldSchema.getName(), vector.size(), dim));
+                    }
+                    return vector; // return List<Float> for genFieldData()
+                } catch (JsonSyntaxException e) {
+                    throw new ParamException(String.format("Unable to convert JsonArray to List<Float> for field '%s'. Reason: %s",
+                            fieldSchema.getName(), e.getCause().getMessage()));
+                }
+            }
+            case BinaryVector:
+            case Float16Vector:
+            case BFloat16Vector: {
+                if (!(value.isJsonArray())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                int dim = fieldSchema.getDimension();
+                try {
+                    byte[] v = GSON_INSTANCE.fromJson(value, new TypeToken<byte[]>() {}.getType());
+                    int real_dim = calculateBinVectorDim(dataType, v.length);
+                    if (real_dim != dim) {
+                        String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
+                        throw new ParamException(String.format(msg, fieldSchema.getName(), real_dim, dim));
+                    }
+                    return ByteBuffer.wrap(v); // return ByteBuffer for genFieldData()
+                } catch (JsonSyntaxException e) {
+                    throw new ParamException(String.format("Unable to convert JsonArray to List<Float> for field '%s'. Reason: %s",
+                            fieldSchema.getName(), e.getCause().getMessage()));
+                }
+            }
+            case SparseFloatVector:
+                if (!(value.isJsonObject())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                try {
+                    // return SortedMap<Long, Float> for genFieldData()
+                    return GSON_INSTANCE.fromJson(value, new TypeToken<SortedMap<Long, Float>>() {}.getType());
+                } catch (JsonSyntaxException e) {
+                    throw new ParamException(String.format("Unable to convert JsonObject to SortedMap<Long, Float> for field '%s'. Reason: %s",
+                            fieldSchema.getName(), e.getCause().getMessage()));
+                }
+            case Int64:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return value.getAsLong(); // return long for genFieldData()
+            case Int32:
+            case Int16:
+            case Int8:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return value.getAsInt(); // return int for genFieldData()
+            case Bool:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return value.getAsBoolean(); // return boolean for genFieldData()
+            case Float:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return value.getAsFloat(); // return float for genFieldData()
+            case Double:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return value.getAsDouble(); // return double for genFieldData()
+            case VarChar:
+            case String:
+                if (!(value.isJsonPrimitive())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                JsonPrimitive p = value.getAsJsonPrimitive();
+                if (!p.isString()) {
+                    throw new ParamException(String.format("JsonPrimitive should be String type for field '%s'", fieldSchema.getName()));
+                }
+
+                String str = p.getAsString();
+                if (str.length() > fieldSchema.getMaxLength()) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return str; // return String for genFieldData()
+            case JSON:
+                return value; // return JsonElement for genFieldData()
+            case Array:
+                if (!(value.isJsonArray())) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+
+                List<Object> array = convertJsonArray(value.getAsJsonArray(), fieldSchema.getElementType(), fieldSchema.getName());
+                if (array.size() > fieldSchema.getMaxCapacity()) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                }
+                return array; // return List<Object> for genFieldData()
+            default:
+                throw new ParamException("Unsupported data type returned by FieldData");
+        }
+    }
+
+    public static List<Object> convertJsonArray(JsonArray jsonArray, DataType elementType, String fieldName) {
+        try {
+            switch (elementType) {
+                case Int64:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Long>>() {}.getType());
+                case Int32:
+                case Int16:
+                case Int8:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Integer>>() {}.getType());
+                case Bool:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Boolean>>() {}.getType());
+                case Float:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Float>>() {}.getType());
+                case Double:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
+                case VarChar:
+                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
+                default:
+                    throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
+            }
+        } catch (JsonSyntaxException e) {
+            throw new ParamException(String.format("Unable to convert JsonArray to List<Object> for field '%s'. Reason: %s",
+                    fieldName, e.getCause().getMessage()));
         }
     }
 
@@ -335,7 +497,7 @@ public class ParamUtils {
 
             // convert insert data
             List<InsertParam.Field> columnFields = requestParam.getFields();
-            List<JSONObject> rowFields = requestParam.getRows();
+            List<JsonObject> rowFields = requestParam.getRows();
 
             if (CollectionUtils.isNotEmpty(columnFields)) {
                 checkAndSetColumnData(wrapper, columnFields);
@@ -388,7 +550,7 @@ public class ParamUtils {
             }
         }
 
-        private void checkAndSetRowData(DescCollResponseWrapper wrapper, List<JSONObject> rows) {
+        private void checkAndSetRowData(DescCollResponseWrapper wrapper, List<JsonObject> rows) {
             List<FieldType> fieldTypes = wrapper.getFields();
 
             Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
@@ -399,22 +561,21 @@ public class ParamUtils {
                             .withIsDynamic(true)
                             .build())
                     .data(new LinkedList<>()).build();
-            for (JSONObject row : rows) {
+            for (JsonObject row : rows) {
                 for (FieldType fieldType : fieldTypes) {
                     String fieldName = fieldType.getName();
                     InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, InsertDataInfo.builder()
                             .fieldType(fieldType).data(new LinkedList<>()).build());
 
                     // check normalField
-                    Object rowFieldData = row.get(fieldName);
-                    if (rowFieldData != null) {
+                    JsonElement rowFieldData = row.get(fieldName);
+                    if (rowFieldData != null && !rowFieldData.isJsonNull()) {
                         if (fieldType.isAutoID()) {
                             String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
                             throw new ParamException(msg);
                         }
-                        checkFieldData(fieldType, Lists.newArrayList(rowFieldData), false);
-
-                        insertDataInfo.getData().add(rowFieldData);
+                        Object fieldValue = checkFieldValue(fieldType, rowFieldData);
+                        insertDataInfo.getData().add(fieldValue);
                         nameInsertInfo.put(fieldName, insertDataInfo);
                     } else {
                         // check if autoId
@@ -427,10 +588,10 @@ public class ParamUtils {
 
                 // deal with dynamicField
                 if (wrapper.getEnableDynamicField()) {
-                    JSONObject dynamicField = new JSONObject();
+                    JsonObject dynamicField = new JsonObject();
                     for (String rowFieldName : row.keySet()) {
                         if (!nameInsertInfo.containsKey(rowFieldName)) {
-                            dynamicField.put(rowFieldName, row.get(rowFieldName));
+                            dynamicField.add(rowFieldName, row.get(rowFieldName));
                         }
                     }
                     insertDynamicDataInfo.getData().add(dynamicField);
@@ -781,11 +942,11 @@ public class ParamUtils {
         return vectorDataType.contains(dataType);
     }
 
-    private static FieldData genFieldData(FieldType fieldType, List<?> objects) {
+    public static FieldData genFieldData(FieldType fieldType, List<?> objects) {
         return genFieldData(fieldType, objects, Boolean.FALSE);
     }
 
-    private static FieldData genFieldData(FieldType fieldType, List<?> objects, boolean isDynamic) {
+    public static FieldData genFieldData(FieldType fieldType, List<?> objects, boolean isDynamic) {
         if (objects == null) {
             throw new ParamException("Cannot generate FieldData from null object");
         }
@@ -830,9 +991,9 @@ public class ParamUtils {
             for (Object object : objects) {
                 ByteBuffer buf = (ByteBuffer) object;
                 if (totalBuf == null) {
-                    totalBuf = ByteBuffer.allocate(buf.position() * objects.size());
+                    totalBuf = ByteBuffer.allocate(buf.limit() * objects.size());
                     totalBuf.put(buf.array());
-                    dim = calculateBinVectorDim(dataType, buf.position());
+                    dim = calculateBinVectorDim(dataType, buf.limit());
                 } else {
                     totalBuf.put(buf.array());
                 }
@@ -951,7 +1112,7 @@ public class ParamUtils {
                 return ScalarField.newBuilder().setStringData(stringArray).build();
             }
             case JSON: {
-                List<ByteString> byteStrings = objects.stream().map(p -> ByteString.copyFromUtf8(((JSONObject) p).toJSONString()))
+                List<ByteString> byteStrings = objects.stream().map(p -> ByteString.copyFromUtf8(p.toString()))
                         .collect(Collectors.toList());
                 JSONArray jsonArray = JSONArray.newBuilder().addAllData(byteStrings).build();
                 return ScalarField.newBuilder().setJsonData(jsonArray).build();

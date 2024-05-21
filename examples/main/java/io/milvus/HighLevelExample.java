@@ -18,7 +18,8 @@
  */
 package io.milvus;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
@@ -111,30 +112,31 @@ public class HighLevelExample {
 
     private R<InsertResponse> insertRows(int rowCount) {
         System.out.println("========== high level insertRows ==========");
-        List<JSONObject> rowsData = new ArrayList<>();
+        List<JsonObject> rowsData = new ArrayList<>();
         Random ran = new Random();
+        Gson gson = new Gson();
         for (long i = 0L; i < rowCount; ++i) {
-            JSONObject row = new JSONObject();
-            row.put(AGE_FIELD, ran.nextInt(99));
-            row.put(VECTOR_FIELD, CommonUtils.generateFloatVector(VECTOR_DIM));
+            JsonObject row = new JsonObject();
+            row.addProperty(AGE_FIELD, ran.nextInt(99));
+            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
 
             // $meta if collection EnableDynamicField, you can input this field not exist in schema, else deny
-            row.put(INT32_FIELD_NAME, ran.nextInt());
-            row.put(INT64_FIELD_NAME, ran.nextLong());
-            row.put(VARCHAR_FIELD_NAME, "测试varchar");
-            row.put(FLOAT_FIELD_NAME, ran.nextFloat());
-            row.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-            row.put(BOOL_FIELD_NAME, ran.nextBoolean());
+            row.addProperty(INT32_FIELD_NAME, ran.nextInt());
+            row.addProperty(INT64_FIELD_NAME, ran.nextLong());
+            row.addProperty(VARCHAR_FIELD_NAME, String.format("varchar_%d", i));
+            row.addProperty(FLOAT_FIELD_NAME, ran.nextFloat());
+            row.addProperty(DOUBLE_FIELD_NAME, ran.nextDouble());
+            row.addProperty(BOOL_FIELD_NAME, ran.nextBoolean());
 
             // $json
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(INT32_FIELD_NAME, ran.nextInt());
-            jsonObject.put(INT64_FIELD_NAME, ran.nextLong());
-            jsonObject.put(VARCHAR_FIELD_NAME, "测试varchar");
-            jsonObject.put(FLOAT_FIELD_NAME, ran.nextFloat());
-            jsonObject.put(DOUBLE_FIELD_NAME, ran.nextDouble());
-            jsonObject.put(BOOL_FIELD_NAME, ran.nextBoolean());
-            row.put(USER_JSON_FIELD, jsonObject);
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty(INT32_FIELD_NAME, ran.nextInt());
+            jsonObject.addProperty(INT64_FIELD_NAME, ran.nextLong());
+            jsonObject.addProperty(VARCHAR_FIELD_NAME, String.format("varchar_%d", i));
+            jsonObject.addProperty(FLOAT_FIELD_NAME, ran.nextFloat());
+            jsonObject.addProperty(DOUBLE_FIELD_NAME, ran.nextDouble());
+            jsonObject.addProperty(BOOL_FIELD_NAME, ran.nextBoolean());
+            row.add(USER_JSON_FIELD, jsonObject);
 
             rowsData.add(row);
         }

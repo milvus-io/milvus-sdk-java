@@ -19,7 +19,7 @@
 
 package io.milvus.param.dml.ranker;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,8 +44,8 @@ public class RRFRanker extends BaseRanker {
 
     @Override
     public Map<String, String> getProperties() {
-        JSONObject params = new JSONObject();
-        params.put("k", this.k);
+        JsonObject params = new JsonObject();
+        params.addProperty("k", this.k);
 
         Map<String, String> props = new HashMap<>();
         props.put("strategy", "rrf");

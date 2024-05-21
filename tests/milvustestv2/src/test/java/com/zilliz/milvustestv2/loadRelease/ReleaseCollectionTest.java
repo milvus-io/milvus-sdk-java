@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.loadRelease;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
@@ -26,7 +26,7 @@ public class ReleaseCollectionTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         CommonFunction.createVectorIndex(newCollectionName,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder()

@@ -1,7 +1,7 @@
 package com.zilliz.milvustest.util;
 
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
@@ -271,7 +271,7 @@ public class HttpClientUtils {
                 }*/
                 // 模拟表单
                 //UrlEncodedFormEntity entity = new UrlEncodedFormEntity(param, "utf-8");
-                HttpEntity entity1=new StringEntity(JSON.toJSONString(param),"utf-8");
+                HttpEntity entity1=new StringEntity(new Gson().toJson(param),"utf-8");
                 httpPost.setEntity(entity1);
             }
             // 执行http请求
