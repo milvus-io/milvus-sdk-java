@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.vectorOperation;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
@@ -24,7 +24,7 @@ public class UpsertTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
     }
 
@@ -35,7 +35,7 @@ public class UpsertTest extends BaseTest {
 
     @Test(description = "upsert collection",groups = {"Smoke"})
     public void upsert(){
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(10, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(10, CommonData.dim);
         UpsertResp upsert = milvusClientV2.upsert(UpsertReq.builder()
                 .collectionName(newCollectionName)
                 .data(jsonObjects)
@@ -47,9 +47,9 @@ public class UpsertTest extends BaseTest {
     @Test(description = "upsert collection",groups = {"Smoke"})
     public void simpleUpsert(){
         String collection=CommonFunction.createSimpleCollection(128,null);
-        List<JSONObject> jsonObjects = CommonFunction.generateSimpleData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleData(CommonData.numberEntities, CommonData.dim);
         milvusClientV2.insert(InsertReq.builder().collectionName(collection).data(jsonObjects).build());
-        List<JSONObject> jsonObjectsNew = CommonFunction.generateSimpleData(10, CommonData.dim);
+        List<JsonObject> jsonObjectsNew = CommonFunction.generateSimpleData(10, CommonData.dim);
         UpsertResp upsert = milvusClientV2.upsert(UpsertReq.builder()
                 .collectionName(collection)
                 .data(jsonObjectsNew)

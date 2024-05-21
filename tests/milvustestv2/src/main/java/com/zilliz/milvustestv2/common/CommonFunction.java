@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.common;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
 
@@ -128,34 +128,35 @@ public class CommonFunction {
      * @param dim 维度
      * @return List<JsonObject>
      */
-    public static List<JSONObject> generateDefaultData(long num,int dim){
-        List<JSONObject> jsonList=new ArrayList<>();
+    public static List<JsonObject> generateDefaultData(long num,int dim){
+        List<JsonObject> jsonList=new ArrayList<>();
         Random ran = new Random();
+        Gson gson = new Gson();
         for (long i = 0; i < num; i++) {
-            JSONObject row=new JSONObject();
-            row.put(CommonData.fieldInt64,i);
-            row.put(CommonData.fieldInt32,(int)i%32767);
-            row.put(CommonData.fieldInt16,(int)i%32767);
-            row.put(CommonData.fieldInt8,(short)i%127);
-            row.put(CommonData.fieldDouble,(double)i);
-            row.put(CommonData.fieldArray, Arrays.asList(i,i+1,i+2));
-            row.put(CommonData.fieldBool, i % 2 == 0);
-            row.put(CommonData.fieldVarchar,"Str"+i);
-            row.put(CommonData.fieldFloat,(float)i);
+            JsonObject row=new JsonObject();
+            row.addProperty(CommonData.fieldInt64,i);
+            row.addProperty(CommonData.fieldInt32,(int)i%32767);
+            row.addProperty(CommonData.fieldInt16,(int)i%32767);
+            row.addProperty(CommonData.fieldInt8,(short)i%127);
+            row.addProperty(CommonData.fieldDouble,(double)i);
+            row.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i,i+1,i+2)));
+            row.addProperty(CommonData.fieldBool, i % 2 == 0);
+            row.addProperty(CommonData.fieldVarchar,"Str"+i);
+            row.addProperty(CommonData.fieldFloat,(float)i);
             List<Float> vector=new ArrayList<>();
             for (int k = 0; k < dim; ++k) {
                 vector.add(ran.nextFloat());
             }
-            row.put(CommonData.fieldFloatVector,vector);
-            JSONObject json = new JSONObject();
-            json.put(CommonData.fieldInt64,(int)i%32767);
-            json.put(CommonData.fieldInt32,(int)i%32767);
-            json.put(CommonData.fieldDouble,(double)i);
-            json.put(CommonData.fieldArray, Arrays.asList(i,i+1,i+2));
-            json.put(CommonData.fieldBool, i % 2 == 0);
-            json.put(CommonData.fieldVarchar,"Str"+i);
-            json.put(CommonData.fieldFloat,(float)i);
-            row.put(CommonData.fieldJson,json);
+            row.add(CommonData.fieldFloatVector, gson.toJsonTree(vector));
+            JsonObject json = new JsonObject();
+            json.addProperty(CommonData.fieldInt64,(int)i%32767);
+            json.addProperty(CommonData.fieldInt32,(int)i%32767);
+            json.addProperty(CommonData.fieldDouble,(double)i);
+            json.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i,i+1,i+2)));
+            json.addProperty(CommonData.fieldBool, i % 2 == 0);
+            json.addProperty(CommonData.fieldVarchar,"Str"+i);
+            json.addProperty(CommonData.fieldFloat,(float)i);
+            row.add(CommonData.fieldJson,json);
             jsonList.add(row);
         }
         return jsonList;
@@ -167,17 +168,18 @@ public class CommonFunction {
      * @param dim 维度
      * @return List<JsonObject>
      */
-    public static List<JSONObject> generateSimpleData(long num,int dim){
-        List<JSONObject> jsonList=new ArrayList<>();
+    public static List<JsonObject> generateSimpleData(long num,int dim){
+        List<JsonObject> jsonList=new ArrayList<>();
         Random ran = new Random();
+        Gson gson = new Gson();
         for (long i = 0; i < num; i++) {
-            JSONObject row = new JSONObject();
-            row.put(CommonData.simplePk, i);
+            JsonObject row = new JsonObject();
+            row.addProperty(CommonData.simplePk, i);
             List<Float> vector=new ArrayList<>();
             for (int k = 0; k < dim; ++k) {
                 vector.add(ran.nextFloat());
             }
-            row.put(CommonData.simpleVector,vector);
+            row.add(CommonData.simpleVector, gson.toJsonTree(vector));
             jsonList.add(row);
         }
         return jsonList;

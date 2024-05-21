@@ -28,6 +28,8 @@ import org.apache.parquet.schema.Types;
 
 import java.util.List;
 
+import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
+
 public class ParquetUtils {
     public static MessageType parseCollectionSchema(CollectionSchemaParam collectionSchema) {
         List<FieldType> fieldTypes = collectionSchema.getFieldTypes();
@@ -86,6 +88,11 @@ public class ParquetUtils {
                     break;
 
             }
+        }
+
+        if (collectionSchema.isEnableDynamicField()) {
+            messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
+                    .named(DYNAMIC_FIELD_NAME);
         }
         return messageTypeBuilder.named("schema");
     }

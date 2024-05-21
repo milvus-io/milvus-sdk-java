@@ -19,7 +19,7 @@
 
 package io.milvus.bulkwriter;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.param.collection.CollectionSchemaParam;
@@ -67,7 +67,8 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
         this.makeDir();
     }
 
-    public void appendRow(JSONObject rowData) throws IOException, InterruptedException {
+    @Override
+    public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
 
 //        only one thread can enter this section to persist data,

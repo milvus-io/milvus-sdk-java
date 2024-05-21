@@ -1,7 +1,7 @@
 package com.zilliz.milvustest.service;
 
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustest.util.HttpClientUtils;
 import com.zilliz.milvustest.util.PropertyFilesUtil;
 import org.slf4j.Logger;
@@ -98,21 +98,21 @@ public class CustomerListener extends TestListenerAdapter {
             : System.getProperty("SDKBranch");
     String jenkinsLink="https://qa-jenkins.milvus.io/job/Java-sdk-test-nightly/"+BuildId+"/";
     String githubLink="https://github.com/milvus-io/milvus-sdk-java/actions/workflows/java_sdk_ci_test.yaml";
-    JSONObject request=new JSONObject();
-    request.put("Product","Milvus");
-    request.put("Category","Function");
-    request.put("Date", LocalDate.now().toString());
-    request.put("Scenario",scenarioDesc);
-    request.put("Branch",SDKBranch);
-    request.put("ImageName","2.2.0");
-    request.put("SDK","java");
-    request.put("MilvusMode","standalone");
-    request.put("MqMode","rocksMq");
-    request.put("TestResult",passRate==100?"pass":"fail");
-    request.put("PassRate", passRate);
-    request.put("RunningTime", costTime);
-    request.put("Link",scenarioDesc.equalsIgnoreCase("CI")?githubLink:jenkinsLink);
-    String s = HttpClientUtils.doPostJson("http://qtp-server.zilliz.cc/results/insert",request.toJSONString());
+    JsonObject request=new JsonObject();
+    request.addProperty("Product","Milvus");
+    request.addProperty("Category","Function");
+    request.addProperty("Date", LocalDate.now().toString());
+    request.addProperty("Scenario",scenarioDesc);
+    request.addProperty("Branch",SDKBranch);
+    request.addProperty("ImageName","2.2.0");
+    request.addProperty("SDK","java");
+    request.addProperty("MilvusMode","standalone");
+    request.addProperty("MqMode","rocksMq");
+    request.addProperty("TestResult",passRate==100?"pass":"fail");
+    request.addProperty("PassRate", passRate);
+    request.addProperty("RunningTime", costTime);
+    request.addProperty("Link",scenarioDesc.equalsIgnoreCase("CI")?githubLink:jenkinsLink);
+    String s = HttpClientUtils.doPostJson("http://qtp-server.zilliz.cc/results/insert",request.toString());
     logger.info("insert result:"+s);
 /*    if (iTestContext.getFailedTests().size()>0){
       throw new RuntimeException("Case Failed "+iTestContext.getFailedTests().size());

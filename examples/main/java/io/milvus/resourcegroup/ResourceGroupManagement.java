@@ -207,7 +207,7 @@ public class ResourceGroupManagement {
         for (String collection : showCollectionResponse.getCollectionNamesList()) {
             String currentResourceGroupName = getCollectionResourceGroupName(dbName, collection);
             // skip if the collection is not loaded or is already added to resourceGroup.
-            if (currentResourceGroupName == null || currentResourceGroupName == resourceGroupName) {
+            if (currentResourceGroupName == null || currentResourceGroupName.equals(resourceGroupName)) {
                 continue;
             }
             R<RpcStatus> status = client.transferReplica(TransferReplicaParam.newBuilder()

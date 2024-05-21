@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.bulk;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -67,7 +67,7 @@ public class BulkWriteTest extends BaseTest {
                 .build();
         LocalBulkWriter localBulkWriter=new LocalBulkWriter(localBulkWriterParam);
 
-        List<JSONObject> jsonObjects = CommonFunction.generateJsonData(10000);
+        List<JsonObject> jsonObjects = CommonFunction.generateJsonData(10000);
         jsonObjects.forEach(x->{
             try {
                 localBulkWriter.appendRow(x);
@@ -136,14 +136,15 @@ public class BulkWriteTest extends BaseTest {
                 .build();
         try (RemoteBulkWriter remoteBulkWriter = new RemoteBulkWriter(bulkWriterParam)) {
             // append rows
+            Gson gson = new Gson();
             for (int i = 0; i < 10; i++) {
-                JSONObject row = new JSONObject();
-                row.put("string_field", "path_" + i);
-                row.put("float_vector", GeneratorUtils.genFloatVector(128));
-                row.put("int64_field", (long)i);
-                row.put("boolean_field", false);
-                row.put("json_field", new JSONObject());
-                row.put("float_field", (float)i);
+                JsonObject row = new JsonObject();
+                row.addProperty("string_field", "path_" + i);
+                row.add("float_vector", gson.toJsonTree(GeneratorUtils.genFloatVector(128)));
+                row.addProperty("int64_field", (long)i);
+                row.addProperty("boolean_field", false);
+                row.add("json_field", new JsonObject());
+                row.addProperty("float_field", (float)i);
 
                 remoteBulkWriter.appendRow(row);
             }
