@@ -19,7 +19,6 @@
 
 package io.milvus;
 
-import com.alibaba.fastjson.JSONObject;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.param.*;

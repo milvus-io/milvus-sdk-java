@@ -1,6 +1,6 @@
 package com.zilliz.milvustestv2.loadRelease;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
@@ -38,7 +38,7 @@ public class ReleasePartitionsTest extends BaseTest {
                 .collectionName(newCollection)
                 .partitionName(CommonData.partitionName)
                 .build());
-        List<JSONObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollection).partitionName(CommonData.partitionName).data(jsonObjects).build());
         CommonFunction.createVectorIndex(newCollection,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder()

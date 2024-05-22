@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.query;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -1016,7 +1016,7 @@ public class QueryTest extends BaseTest {
   @Test(description = "query collection with dynamic field",groups = {"Smoke"},dataProvider = "dynamicExpressions")
   @Severity(SeverityLevel.BLOCKER)
   public void queryCollectionWithDynamicField(String expr) {
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithDynamicField)
@@ -1044,7 +1044,7 @@ public class QueryTest extends BaseTest {
   @Test(description = "query collection with dynamic field use inner json field",groups = {"Smoke"},dataProvider = "dynamicExpressions")
   @Severity(SeverityLevel.BLOCKER)
   public void queryWithDynamicFieldUseInnerJsonField(String expr) {
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithDynamicField)
@@ -1068,7 +1068,7 @@ public class QueryTest extends BaseTest {
   @Test(description = "query collection with dynamic field use nonexistent field name")
   @Severity(SeverityLevel.NORMAL)
   public void queryWithDynamicFieldUseNonexistentFiledName() {
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithDynamicField)
@@ -1096,7 +1096,7 @@ public class QueryTest extends BaseTest {
   @Test(description = "query collection with json field",groups = {"Smoke"},dataProvider = "jsonExpressions")
   @Severity(SeverityLevel.BLOCKER)
   public void queryCollectionWithJsonField(String expr) {
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonData(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithJsonField)
@@ -1115,15 +1115,15 @@ public class QueryTest extends BaseTest {
     QueryResultsWrapper wrapperQuery = new QueryResultsWrapper(queryResultsR.getData());
     Assert.assertEquals(queryResultsR.getStatus().intValue(), 0);
     Assert.assertTrue(wrapperQuery.getFieldWrapper("json_field").getFieldData().size()>=4);
-    JSONObject jsonObject = (JSONObject) wrapperQuery.getRowRecords().get(0).get("json_field");
-    String string_field = jsonObject.getString("string_field");
+    JsonObject jsonObject = (JsonObject) wrapperQuery.getRowRecords().get(0).get("json_field");
+    String string_field = jsonObject.get("string_field").getAsString();
     Assert.assertTrue(string_field.contains("Str"));
   }
 
   @Test(description = "query collection with array field",groups = {"Smoke"})
   @Severity(SeverityLevel.BLOCKER)
   public void queryCollectionWithArrayField() {
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithArrayField)

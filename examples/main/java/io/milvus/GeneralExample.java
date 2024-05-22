@@ -19,8 +19,9 @@
 
 package io.milvus;
 
-import com.alibaba.fastjson.JSONObject;
-import com.google.protobuf.ByteString;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
@@ -128,7 +129,7 @@ public class GeneralExample {
                 .build());
         CommonUtils.handleResponseStatus(response);
         System.out.println(response);
-        return response.getData().booleanValue();
+        return response.getData();
     }
 
     private R<RpcStatus> loadCollection() {
@@ -158,7 +159,7 @@ public class GeneralExample {
                 .build());
         CommonUtils.handleResponseStatus(response);
         DescCollResponseWrapper wrapper = new DescCollResponseWrapper(response.getData());
-        System.out.println(wrapper.toString());
+        System.out.println(wrapper);
         return response;
     }
 
@@ -416,12 +417,13 @@ public class GeneralExample {
     private R<MutationResult> insertRows(String partitionName, int count) {
         System.out.println("========== insertRows() ==========");
 
-        List<JSONObject> rowsData = new ArrayList<>();
+        List<JsonObject> rowsData = new ArrayList<>();
         Random ran = new Random();
+        Gson gson = new Gson();
         for (long i = 0L; i < count; ++i) {
-            JSONObject row = new JSONObject();
-            row.put(AGE_FIELD, ran.nextInt(99));
-            row.put(VECTOR_FIELD, CommonUtils.generateFloatVector(VECTOR_DIM));
+            JsonObject row = new JsonObject();
+            row.addProperty(AGE_FIELD, ran.nextInt(99));
+            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
 
             rowsData.add(row);
         }
@@ -507,7 +509,7 @@ public class GeneralExample {
         System.out.println("Search with index");
         example.searchFace(searchExpr);
 
-        String deleteExpr = ID_FIELD + " in " + deleteIds.toString();
+        String deleteExpr = ID_FIELD + " in " + deleteIds;
         example.delete(partitionName, deleteExpr);
         String queryExpr = AGE_FIELD + " == 60";
         example.query(queryExpr);

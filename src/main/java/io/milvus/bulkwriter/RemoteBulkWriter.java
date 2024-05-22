@@ -1,6 +1,6 @@
 package io.milvus.bulkwriter;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
 import com.azure.storage.blob.models.BlobErrorCode;
 import com.azure.storage.blob.models.BlobStorageException;
 import com.google.common.collect.Lists;
@@ -48,7 +48,7 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     }
 
     @Override
-    public void appendRow(JSONObject rowData) throws IOException, InterruptedException {
+    public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
     }
 

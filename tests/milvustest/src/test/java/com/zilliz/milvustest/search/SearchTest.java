@@ -1,6 +1,7 @@
 package com.zilliz.milvustest.search;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.JsonObject;
+import com.google.common.collect.Lists;
 import com.zilliz.milvustest.common.BaseTest;
 import com.zilliz.milvustest.common.CommonData;
 import com.zilliz.milvustest.common.CommonFunction;
@@ -1165,6 +1166,7 @@ public class SearchTest extends BaseTest {
                 .withPartitionName(usePart ? CommonData.defaultPartition : "")
                 .withExpr("book_id in [1,2,3]")
                 .build());
+
     Assert.assertEquals(mutationResultR.getData().getDeleteCnt(), 3L);
     Thread.sleep(2000);
     Integer SEARCH_K = 2; // TopK
@@ -1754,7 +1756,7 @@ public class SearchTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Search with DynamicField.", groups = {"Smoke"},dataProvider = "dynamicExpressions")
   public void searchWithDynamicField(String expr){
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithDynamicField)
@@ -1790,7 +1792,7 @@ public class SearchTest extends BaseTest {
   @Severity(SeverityLevel.NORMAL)
   @Test(description = "Search with DynamicField use nonexistent field name")
   public void searchWithDynamicFieldUseNonexistentFiledName(){
-    List<JSONObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateDataWithDynamicFiledRow(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithDynamicField)
@@ -1826,7 +1828,7 @@ public class SearchTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Search with JSON field.", groups = {"Smoke"},dataProvider = "jsonExpressions")
   public void searchWithJsonField(String expr) {
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonData(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonData(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithJsonField)
@@ -1860,8 +1862,8 @@ public class SearchTest extends BaseTest {
     String string_field = json_field.getAsString(0, "string_field");
     Assert.assertTrue(string_field.contains("Str"));
     // 按照行
-    JSONObject jsonObject= (JSONObject) searchResultsWrapper.getIDScore(0).get(0).get("json_field");
-    String string = jsonObject.getString("string_field");
+    JsonObject jsonObject= (JsonObject) searchResultsWrapper.getIDScore(0).get(0).get("json_field");
+    String string = jsonObject.get("string_field").getAsString();
     Assert.assertTrue(string.contains("Str"));
 
 
@@ -1928,7 +1930,7 @@ public class SearchTest extends BaseTest {
   @Severity(SeverityLevel.BLOCKER)
   @Test(description = "Search with array field",groups = {"Smoke"})
   public void searchWithArrayField(){
-    List<JSONObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
+    List<JsonObject> jsonObjects = CommonFunction.generateJsonDataWithArrayField(1000);
     R<MutationResult> insert = milvusClient.insert(InsertParam.newBuilder()
             .withRows(jsonObjects)
             .withCollectionName(collectionWithArrayField)

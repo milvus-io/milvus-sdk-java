@@ -1,6 +1,6 @@
 package io.milvus.bulkwriter;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.google.common.collect.Lists;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.common.utils.ExceptionUtils;
@@ -37,6 +37,8 @@ public class Buffer {
     private Map<String, List<Object>> buffer;
     private Map<String, FieldType> fields;
 
+    private static final Gson GSON_INSTANCE = new Gson();
+
     public Buffer(CollectionSchemaParam collectionSchema, BulkFileType fileType) {
         this.collectionSchema = collectionSchema;
         this.fileType = fileType;
@@ -72,27 +74,12 @@ public class Buffer {
         return null;
     }
 
-    public void appendRow(JSONObject row) {
-        Map<String, Object> dynamicValues = new HashMap<>();
-        if (row.containsKey(DYNAMIC_FIELD_NAME) && !(row.get(DYNAMIC_FIELD_NAME) instanceof Map)) {
-            String msg = String.format("Dynamic field '%s' value should be JSON format", DYNAMIC_FIELD_NAME);
-            ExceptionUtils.throwUnExpectedException(msg);
-        }
-
+    public void appendRow(Map<String, Object> row) {
         for (String key : row.keySet()) {
-            if (DYNAMIC_FIELD_NAME.equals(key)) {
-                dynamicValues.putAll((Map<String, Object>) row.get(key));
-                continue;
+            if (key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField()) {
+                continue; // skip dynamic field if it is disabled
             }
-            if (!buffer.containsKey(key)) {
-                dynamicValues.put(key, row.get(key));
-            } else {
-                buffer.get(key).add(row.get(key));
-            }
-        }
-
-        if (buffer.containsKey(DYNAMIC_FIELD_NAME)) {
-            buffer.get(DYNAMIC_FIELD_NAME).add(dynamicValues);
+            buffer.get(key).add(row.get(key));
         }
     }
 
@@ -153,6 +140,12 @@ public class Buffer {
                 configuration)) {
 
             Map<String, FieldType> nameFieldType = collectionSchema.getFieldTypes().stream().collect(Collectors.toMap(FieldType::getName, e -> e));
+            if (collectionSchema.isEnableDynamicField()) {
+                nameFieldType.put(DYNAMIC_FIELD_NAME, FieldType.newBuilder()
+                        .withName(DYNAMIC_FIELD_NAME)
+                        .withDataType(DataType.JSON)
+                        .build());
+            }
 
             List<String> fieldNameList = Lists.newArrayList(buffer.keySet());
             int size = buffer.get(fieldNameList.get(0)).size();
@@ -175,30 +168,31 @@ public class Buffer {
     }
 
     private void appendGroup(Group group, String paramName, Object value, FieldType fieldType) {
-        switch (fieldType.getDataType()) {
+        DataType dataType = fieldType.getDataType();
+        switch (dataType) {
             case Int8:
             case Int16:
+                group.append(paramName, (Short)value);
+                break;
             case Int32:
-                group.append(paramName, Integer.parseInt(value.toString()));
+                group.append(paramName, (Integer)value);
                 break;
             case Int64:
-                group.append(paramName, Long.parseLong(value.toString()));
+                group.append(paramName, (Long)value);
                 break;
             case Float:
-                group.append(paramName, Float.parseFloat(value.toString()));
+                group.append(paramName, (Float)value);
                 break;
             case Double:
-                group.append(paramName, Double.parseDouble(value.toString()));
+                group.append(paramName, (Double)value);
                 break;
             case Bool:
-                group.append(paramName, Boolean.parseBoolean(value.toString()));
+                group.append(paramName, (Boolean)value);
                 break;
             case VarChar:
             case String:
-                group.append(paramName, String.valueOf(value));
-                break;
             case JSON:
-                group.append(paramName, ((JSONObject) value).toJSONString());
+                group.append(paramName, (String)value);
                 break;
             case FloatVector:
                 addFloatArray(group, paramName, (List<Float>) value);
@@ -207,7 +201,8 @@ public class Buffer {
                 addBinaryVector(group, paramName, (ByteBuffer) value);
                 break;
             case Array:
-                switch (fieldType.getElementType()) {
+                DataType elementType = fieldType.getElementType();
+                switch (elementType) {
                     case Int8:
                     case Int16:
                     case Int32:

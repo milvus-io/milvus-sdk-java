@@ -1,6 +1,6 @@
 package com.zilliz.milvustest.bulkimport;
 
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.*;
 import com.zilliz.milvustest.common.BaseCloudTest;
 import com.zilliz.milvustest.util.PropertyFilesUtil;
 import io.milvus.bulkwriter.CloudImport;
@@ -235,33 +235,33 @@ public class BulkImportTest extends BaseCloudTest {
         try (RemoteBulkWriter remoteBulkWriter = buildRemoteBulkWriter(collectionSchema, BulkFileType.PARQUET)) {
             System.out.println("Append rows");
             int batchCount = 10;
-
+            Gson gson = new Gson();
             for (int i = 0; i < batchCount; ++i) {
-                JSONObject rowObject = new JSONObject();
+                JsonObject rowObject = new JsonObject();
 
                 // scalar field
-                rowObject.put("id", i);
-                rowObject.put("bool", i % 5 == 0);
-                rowObject.put("int8", i % 128);
-                rowObject.put("int16", i % 1000);
-                rowObject.put("int32", i % 100000);
-                rowObject.put("float", i / 3);
-                rowObject.put("double", i / 7);
-                rowObject.put("varchar", "varchar_" + i);
-                rowObject.put("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
+                rowObject.addProperty("id", i);
+                rowObject.addProperty("bool", i % 5 == 0);
+                rowObject.addProperty("int8", i % 128);
+                rowObject.addProperty("int16", i % 1000);
+                rowObject.addProperty("int32", i % 100000);
+                rowObject.addProperty("float", i / 3);
+                rowObject.addProperty("double", i / 7);
+                rowObject.addProperty("varchar", "varchar_" + i);
+                rowObject.addProperty("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
 
                 // vector field
-                rowObject.put("vector", false ? GeneratorUtils.generatorBinaryVector(128) : GeneratorUtils.generatorFloatValue(128));
+                rowObject.add("vector", gson.toJsonTree(GeneratorUtils.generatorFloatValue(128)));
 
                 // array field
-                rowObject.put("arrayInt64", GeneratorUtils.generatorLongValue(10));
-                rowObject.put("arrayVarchar", GeneratorUtils.generatorVarcharValue(10, 10));
-                rowObject.put("arrayInt8", GeneratorUtils.generatorInt8Value(10));
-                rowObject.put("arrayInt16", GeneratorUtils.generatorInt16Value(10));
-                rowObject.put("arrayInt32", GeneratorUtils.generatorInt32Value(10));
-                rowObject.put("arrayFloat", GeneratorUtils.generatorFloatValue(10));
-                rowObject.put("arrayDouble", GeneratorUtils.generatorDoubleValue(10));
-                rowObject.put("arrayBool", GeneratorUtils.generatorBoolValue(10));
+                rowObject.add("arrayInt64", gson.toJsonTree(GeneratorUtils.generatorLongValue(10)));
+                rowObject.add("arrayVarchar", gson.toJsonTree(GeneratorUtils.generatorVarcharValue(10, 10)));
+                rowObject.add("arrayInt8", gson.toJsonTree(GeneratorUtils.generatorInt8Value(10)));
+                rowObject.add("arrayInt16", gson.toJsonTree(GeneratorUtils.generatorInt16Value(10)));
+                rowObject.add("arrayInt32", gson.toJsonTree(GeneratorUtils.generatorInt32Value(10)));
+                rowObject.add("arrayFloat", gson.toJsonTree(GeneratorUtils.generatorFloatValue(10)));
+                rowObject.add("arrayDouble", gson.toJsonTree(GeneratorUtils.generatorDoubleValue(10)));
+                rowObject.add("arrayBool", gson.toJsonTree(GeneratorUtils.generatorBoolValue(10)));
 
                 remoteBulkWriter.appendRow(rowObject);
             }
