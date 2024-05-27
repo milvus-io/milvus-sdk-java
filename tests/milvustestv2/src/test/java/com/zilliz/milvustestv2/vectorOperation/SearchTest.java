@@ -6,11 +6,14 @@ import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.SearchResp;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -58,13 +61,16 @@ public class SearchTest extends BaseTest {
 
     @Test(description = "search", groups = {"Smoke"}, dataProvider = "filterAndExcept")
     public void search(String filter, int expect) {
+        List<List<Float>> vectors = GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim);
+        List<BaseVector> data = new ArrayList<>();
+        vectors.forEach((v)->{data.add(new FloatVec(v));});
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .annsField(CommonData.fieldFloatVector)
-                .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
+                .data(data)
                 .topK(topK)
                 .build());
         System.out.println(search);
@@ -74,12 +80,15 @@ public class SearchTest extends BaseTest {
 
     @Test(description = "default search output params return id and distance", groups = {"Smoke"})
     public void searchWithDefaultOutput() {
+        List<List<Float>> vectors = GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim);
+        List<BaseVector> data = new ArrayList<>();
+        vectors.forEach((v)->{data.add(new FloatVec(v));});
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
                 .filter(CommonData.fieldInt64 + " < 10 ")
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .annsField(CommonData.fieldFloatVector)
-                .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
+                .data(data)
                 .topK(topK)
                 .build());
         System.out.println(search);
@@ -90,6 +99,9 @@ public class SearchTest extends BaseTest {
 
     @Test(description = "search in partition", groups = {"Smoke"}, dataProvider = "searchPartition")
     public void searchInPartition(List<String> partitionName, String filter, int expect) {
+        List<List<Float>> vectors = GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim);
+        List<BaseVector> data = new ArrayList<>();
+        vectors.forEach((v)->{data.add(new FloatVec(v));});
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
                 .filter(filter)
@@ -97,7 +109,7 @@ public class SearchTest extends BaseTest {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .annsField(CommonData.fieldFloatVector)
                 .partitionNames(partitionName)
-                .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
+                .data(data)
                 .topK(topK)
                 .build());
         System.out.println(search);
@@ -107,13 +119,16 @@ public class SearchTest extends BaseTest {
 
     @Test(description = "search by alias", groups = {"Smoke"}, dataProvider = "filterAndExcept")
     public void searchByAlias(String filter, int expect) {
+        List<List<Float>> vectors = GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim);
+        List<BaseVector> data = new ArrayList<>();
+        vectors.forEach((v)->{data.add(new FloatVec(v));});
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .collectionName(CommonData.alias)
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .annsField(CommonData.fieldFloatVector)
-                .data(GenerateUtil.generateFloatVector(CommonData.nq, 3, CommonData.dim))
+                .data(data)
                 .topK(topK)
                 .build());
         System.out.println(search);

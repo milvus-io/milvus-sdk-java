@@ -623,7 +623,7 @@ public class ParamUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
+    public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
@@ -800,13 +800,15 @@ public class ParamUtils {
                             .build());
         }
 
+        // params
+        String params = "{}";
         if (null != annSearchParam.getParams() && !annSearchParam.getParams().isEmpty()) {
-            builder.addSearchParams(
-                    KeyValuePair.newBuilder()
-                            .setKey(Constant.PARAMS)
-                            .setValue(annSearchParam.getParams())
-                            .build());
+            params = annSearchParam.getParams();
         }
+        builder.addSearchParams(KeyValuePair.newBuilder()
+                .setKey(Constant.PARAMS)
+                .setValue(params)
+                .build());
 
         // always use expression since dsl is discarded
         builder.setDslType(DslType.BoolExprV1);
