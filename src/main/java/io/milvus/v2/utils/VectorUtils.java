@@ -1,26 +1,40 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.v2.utils;
 
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
-import io.milvus.v2.service.vector.request.QueryReq;
-import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.param.ParamUtils;
+import io.milvus.v2.service.vector.request.*;
+import io.milvus.v2.service.vector.request.data.*;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class VectorUtils {
     private static final Gson GSON_INSTANCE = new Gson();
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
-//        long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
-//                request.getGuaranteeTimestamp(), request.getGracefulTime());
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .addAllPartitionNames(request.getPartitionNames())
@@ -62,7 +76,7 @@ public class VectorUtils {
 
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
+    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel,
                                               long guaranteeTimestamp, Long gracefulTime){
         if(consistencyLevel == null){
             return 1L;
@@ -90,44 +104,20 @@ public class VectorUtils {
 
 
         // prepare target vectors
-        // TODO: check target vector dimension(use DescribeCollection get schema to compare)
-        PlaceholderType plType = PlaceholderType.None;
-        List<?> vectors = request.getData();
-        List<ByteString> byteStrings = new ArrayList<>();
-        for (Object vector : vectors) {
-            if (vector instanceof List) {
-                plType = PlaceholderType.FloatVector;
-                List<Float> list = (List<Float>) vector;
-                ByteBuffer buf = ByteBuffer.allocate(Float.BYTES * list.size());
-                buf.order(ByteOrder.LITTLE_ENDIAN);
-                list.forEach(buf::putFloat);
-
-                byte[] array = buf.array();
-                ByteString bs = ByteString.copyFrom(array);
-                byteStrings.add(bs);
-            } else if (vector instanceof ByteBuffer) {
-                plType = PlaceholderType.BinaryVector;
-                ByteBuffer buf = (ByteBuffer) vector;
-                byte[] array = buf.array();
-                ByteString bs = ByteString.copyFrom(array);
-                byteStrings.add(bs);
-            } else {
-                String msg = "Search target vector type is illegal(Only allow List<Float> or ByteBuffer)";
-                throw new ParamException(msg);
+        List<BaseVector> vectors = request.getData();
+        if (vectors.isEmpty()) {
+            throw new ParamException("Target vectors list of search request is empty.");
+        }
+        PlaceholderType plType = vectors.get(0).getPlaceholderType();
+        List<Object> data = new ArrayList<>();
+        for (BaseVector vector : vectors) {
+            if (vector.getPlaceholderType() != plType) {
+                throw new ParamException("Different types of target vectors in a search request is not allowed.");
             }
+            data.add(vector.getData());
         }
 
-        PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
-                .setTag(Constant.VECTOR_TAG)
-                .setType(plType);
-        byteStrings.forEach(pldBuilder::addValues);
-
-        PlaceholderValue plv = pldBuilder.build();
-        PlaceholderGroup placeholderGroup = PlaceholderGroup.newBuilder()
-                .addPlaceholders(plv)
-                .build();
-
-        ByteString byteStr = placeholderGroup.toByteString();
+        ByteString byteStr = ParamUtils.convertPlaceholder(data, plType);
         builder.setPlaceholderGroup(byteStr);
 
         // search parameters
@@ -181,7 +171,7 @@ public class VectorUtils {
             builder.setDsl(request.getFilter());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(ConsistencyLevelEnum.valueOf(request.getConsistencyLevel().name()),
+        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(),
                 request.getGuaranteeTimestamp(), request.getGracefulTime());
         //builder.setTravelTimestamp(request.getTravelTimestamp());
         builder.setGuaranteeTimestamp(guaranteeTimestamp);

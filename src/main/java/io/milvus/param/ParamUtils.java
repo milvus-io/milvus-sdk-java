@@ -92,11 +92,7 @@ public class ParamUtils {
         if (dataType == DataType.BinaryVector) {
             return byteCount*8; // for BinaryVector, each byte is 8 dimensions
         } else {
-            if (byteCount%2 != 0) {
-                String msg = "Incorrect byte count for %s type field, byte count is %d, cannot be evenly divided by 2";
-                throw new ParamException(String.format(msg, dataType.name(), byteCount));
-            }
-            return byteCount/2; // for float16/bfloat16, each dimension is 2 bytes
+            throw new ParamException(String.format("%s is not binary vector type", dataType.name()));
         }
     }
 
@@ -584,21 +580,8 @@ public class ParamUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
-        SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setCollectionName(requestParam.getCollectionName());
-
-        if (!requestParam.getPartitionNames().isEmpty()) {
-            requestParam.getPartitionNames().forEach(builder::addPartitionNames);
-        }
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.setDbName(requestParam.getDatabaseName());
-        }
-
-        // prepare target vectors
-        // TODO: check target vector dimension(use DescribeCollection get schema to compare)
+    public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
-        List<?> vectors = requestParam.getVectors();
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
             if (vector instanceof List) {
@@ -618,9 +601,15 @@ public class ParamUtils {
                 ByteString bs = ByteString.copyFrom(array);
                 byteStrings.add(bs);
             } else {
-                String msg = "Search target vector type is illegal(Only allow List<Float> or ByteBuffer)";
+                String msg = "Search target vector type is illegal." +
+                        " Only allow List<Float> for FloatVector, ByteBuffer for BinaryVector";
                 throw new ParamException(msg);
             }
+        }
+
+        // force specify PlaceholderType
+        if (placeType != PlaceholderType.None) {
+            plType = placeType;
         }
 
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
@@ -633,7 +622,23 @@ public class ParamUtils {
                 .addPlaceholders(plv)
                 .build();
 
-        ByteString byteStr = placeholderGroup.toByteString();
+        return placeholderGroup.toByteString();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
+        SearchRequest.Builder builder = SearchRequest.newBuilder()
+                .setCollectionName(requestParam.getCollectionName());
+
+        if (!requestParam.getPartitionNames().isEmpty()) {
+            requestParam.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+            builder.setDbName(requestParam.getDatabaseName());
+        }
+
+        // prepare target vectors
+        ByteString byteStr = convertPlaceholder(requestParam.getVectors(), PlaceholderType.None);
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(requestParam.getNQ());
 
