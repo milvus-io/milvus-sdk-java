@@ -32,8 +32,6 @@ import io.milvus.response.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import org.tensorflow.ndarray.buffer.ByteDataBuffer;
-import org.tensorflow.types.*;
 
 public class Float16VectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_float16";
