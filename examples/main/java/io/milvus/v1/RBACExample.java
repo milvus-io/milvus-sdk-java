@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus;
+package io.milvus.v1;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.ListCredUsersResponse;

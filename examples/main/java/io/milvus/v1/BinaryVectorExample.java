@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -25,25 +25,26 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.response.*;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.response.FieldDataWrapper;
+import io.milvus.response.QueryResultsWrapper;
+import io.milvus.response.SearchResultsWrapper;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 
-
-public class Float16VectorExample {
-    private static final String COLLECTION_NAME = "java_sdk_example_float16";
+public class BinaryVectorExample {
+    private static final String COLLECTION_NAME = "java_sdk_example_sparse";
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";
-    private static final Integer VECTOR_DIM = 128;
+
+    private static final Integer VECTOR_DIM = 512;
     
 
-    private static void testFloat16(boolean bfloat16) {
-        DataType dataType = bfloat16 ? DataType.BFloat16Vector : DataType.Float16Vector;
-        System.out.printf("=================== %s ===================\n", dataType.name());
-
+    public static void main(String[] args) {
         // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
         MilvusServiceClient milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
                 .withHost("localhost")
@@ -52,8 +53,8 @@ public class Float16VectorExample {
 
         // drop the collection if you don't need the collection anymore
         R<Boolean> hasR = milvusClient.hasCollection(HasCollectionParam.newBuilder()
-                                    .withCollectionName(COLLECTION_NAME)
-                                    .build());
+                .withCollectionName(COLLECTION_NAME)
+                .build());
         CommonUtils.handleResponseStatus(hasR);
         if (hasR.getData()) {
             milvusClient.dropCollection(DropCollectionParam.newBuilder()
@@ -71,7 +72,7 @@ public class Float16VectorExample {
                         .build(),
                 FieldType.newBuilder()
                         .withName(VECTOR_FIELD)
-                        .withDataType(dataType)
+                        .withDataType(DataType.BinaryVector)
                         .withDimension(VECTOR_DIM)
                         .build()
         );
@@ -91,7 +92,7 @@ public class Float16VectorExample {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
         }
-        List<ByteBuffer> vectors = CommonUtils.generateFloat16Vectors(VECTOR_DIM, rowCount, bfloat16);
+        List<ByteBuffer> vectors = CommonUtils.generateBinaryVectors(VECTOR_DIM, rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(ID_FIELD, ids));
@@ -109,7 +110,7 @@ public class Float16VectorExample {
         for (long i = 1L; i <= rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty(ID_FIELD, rowCount + i);
-            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloat16Vector(VECTOR_DIM, bfloat16).array()));
+            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateBinaryVector(VECTOR_DIM).array()));
             rows.add(row);
         }
 
@@ -131,9 +132,9 @@ public class Float16VectorExample {
         ret = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withFieldName(VECTOR_FIELD)
-                .withIndexType(IndexType.IVF_FLAT)
-                .withMetricType(MetricType.L2)
-                .withExtraParam("{\"nlist\":128}")
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withMetricType(MetricType.HAMMING)
+                .withExtraParam("{\"nlist\":64}")
                 .build());
         CommonUtils.handleResponseStatus(ret);
         System.out.println("Index created");
@@ -151,19 +152,15 @@ public class Float16VectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             ByteBuffer targetVector = vectors.get(k);
-            SearchParam.Builder builder = SearchParam.newBuilder()
+            R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
-                    .withMetricType(MetricType.L2)
+                    .withMetricType(MetricType.HAMMING)
                     .withTopK(3)
+                    .withBinaryVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)
-                    .withParams("{\"nprobe\":32}");
-            if (bfloat16) {
-                builder.withBFloat16Vectors(Collections.singletonList(targetVector));
-            } else {
-                builder.withFloat16Vectors(Collections.singletonList(targetVector));
-            }
-            R<SearchResults> searchRet = milvusClient.search(builder.build());
+                    .withParams("{\"nprobe\":16}")
+                    .build());
             CommonUtils.handleResponseStatus(searchRet);
 
             // The search() allows multiple target vectors to search in a batch.
@@ -172,7 +169,13 @@ public class Float16VectorExample {
             List<SearchResultsWrapper.IDScore> scores = resultsWrapper.getIDScore(0);
             System.out.printf("The result of No.%d target vector:\n", i);
             for (SearchResultsWrapper.IDScore score : scores) {
-                System.out.println(score);
+                System.out.printf("ID: %d, Score: %f, Vector: ", score.getLongID(), score.getScore());
+                ByteBuffer vector = (ByteBuffer)score.get(VECTOR_FIELD);
+                vector.rewind();
+                while (vector.hasRemaining()) {
+                    System.out.print(Integer.toBinaryString(vector.get()));
+                }
+                System.out.println();
             }
             if (scores.get(0).getLongID() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
@@ -195,8 +198,8 @@ public class Float16VectorExample {
         if (r.isEmpty()) {
             throw new RuntimeException("The query result is empty");
         } else {
-            ByteBuffer bf = (ByteBuffer) r.get(0);
-            if (!bf.equals(vectors.get(n))) {
+            ByteBuffer vector = (ByteBuffer) r.get(0);
+            if (vector.compareTo(vectors.get(n)) != 0) {
                 throw new RuntimeException("The query result is incorrect");
             }
         }
@@ -209,10 +212,5 @@ public class Float16VectorExample {
         System.out.println("Collection dropped");
 
         milvusClient.close();
-    }
-
-    public static void main(String[] args) {
-        testFloat16(true);
-        testFloat16(false);
     }
 }
