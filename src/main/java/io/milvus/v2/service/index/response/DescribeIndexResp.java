@@ -22,6 +22,8 @@ package io.milvus.v2.service.index.response;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
+
 @Data
 @SuperBuilder
 public class DescribeIndexResp {
@@ -29,4 +31,5 @@ public class DescribeIndexResp {
     private String indexType;
     private String metricType;
     private String fieldName;
+    private Map<String, Object> extraParams;
 }

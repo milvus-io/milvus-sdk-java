@@ -1,4 +1,4 @@
-package io.milvus.resourcegroup;
+package io.milvus.v1.resourcegroup;
 
 import java.util.Arrays;
 import java.util.HashMap;

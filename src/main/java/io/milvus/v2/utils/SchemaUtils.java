@@ -74,10 +74,15 @@ public class SchemaUtils {
                 .dataType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getDataType().name()))
                 .isPrimaryKey(fieldSchema.getIsPrimaryKey())
                 .autoID(fieldSchema.getAutoID())
+                .elementType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getElementType().name()))
                 .build();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
             if(keyValuePair.getKey().equals("dim")){
                 schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
+            } else if(keyValuePair.getKey().equals("max_length")){
+                schema.setMaxLength(Integer.parseInt(keyValuePair.getValue()));
+            } else if(keyValuePair.getKey().equals("max_capacity")){
+                schema.setMaxCapacity(Integer.parseInt(keyValuePair.getValue()));
             }
         }
         return schema;

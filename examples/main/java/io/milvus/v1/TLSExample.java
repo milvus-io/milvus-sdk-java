@@ -16,12 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus;
+package io.milvus.v1;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.CheckHealthResponse;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.R;
+
+import java.io.File;
+import java.net.URL;
 
 
 // Note: read the following description before running this example
@@ -49,12 +52,14 @@ import io.milvus.param.R;
 public class TLSExample {
 
     private static void oneWayAuth() {
-        String path = ClassLoader.getSystemResource("").getPath();
+        ClassLoader classLoader = BulkWriterExample.class.getClassLoader();
+        URL resourceUrl = classLoader.getResource("tls");
+        String path = new File(resourceUrl.getFile()).getAbsolutePath();
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
                 .withServerName("localhost")
-                .withServerPemPath(path + "/tls/server.pem")
+                .withServerPemPath(path + "/server.pem")
                 .build();
         MilvusServiceClient milvusClient = new MilvusServiceClient(connectParam);
 
@@ -67,14 +72,16 @@ public class TLSExample {
     }
 
     private static void twoWayAuth() {
-        String path = ClassLoader.getSystemResource("").getPath();
+        ClassLoader classLoader = BulkWriterExample.class.getClassLoader();
+        URL resourceUrl = classLoader.getResource("tls");
+        String path = new File(resourceUrl.getFile()).getAbsolutePath();
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
                 .withServerName("localhost")
-                .withCaPemPath(path + "/tls/ca.pem")
-                .withClientKeyPath(path + "/tls/client.key")
-                .withClientPemPath(path + "/tls/client.pem")
+                .withCaPemPath(path + "/ca.pem")
+                .withClientKeyPath(path + "/client.key")
+                .withClientPemPath(path + "/client.pem")
                 .build();
         MilvusServiceClient milvusClient = new MilvusServiceClient(connectParam);
 
