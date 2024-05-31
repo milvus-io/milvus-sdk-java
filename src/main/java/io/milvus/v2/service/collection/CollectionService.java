@@ -43,6 +43,11 @@ public class CollectionService extends BaseService {
             createCollectionWithSchema(blockingStub, request);
             return;
         }
+
+        if (request.getDimension() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is undefined.");
+        }
+
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
         FieldSchema vectorSchema = FieldSchema.newBuilder()
                 .setName(request.getVectorFieldName())
@@ -172,12 +177,12 @@ public class CollectionService extends BaseService {
     }
 
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DescribeCollectionReq request) {
-
+        String title = String.format("DescribeCollectionRequest collectionName:%s", request.getCollectionName());
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
         DescribeCollectionResponse response = milvusServiceBlockingStub.describeCollection(describeCollectionRequest);
-
+        rpcUtils.handleResponse(title, response.getStatus());
         DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
                 .collectionName(response.getCollectionName())
                 .description(response.getSchema().getDescription())

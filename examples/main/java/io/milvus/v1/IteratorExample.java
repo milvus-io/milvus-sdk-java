@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.common.collect.Lists;
 import io.milvus.client.MilvusClient;

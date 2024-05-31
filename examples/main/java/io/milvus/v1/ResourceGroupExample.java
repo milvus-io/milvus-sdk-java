@@ -1,9 +1,9 @@
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.resourcegroup.ResourceGroupManagement;
+import io.milvus.v1.resourcegroup.ResourceGroupManagement;
 import io.milvus.param.ConnectParam;
 
 public class ResourceGroupExample {
