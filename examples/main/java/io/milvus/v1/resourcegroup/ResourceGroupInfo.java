@@ -1,4 +1,4 @@
-package io.milvus.resourcegroup;
+package io.milvus.v1.resourcegroup;
 
 import java.util.HashSet;
 import java.util.Set;

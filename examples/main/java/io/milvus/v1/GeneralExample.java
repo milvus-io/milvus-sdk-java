@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

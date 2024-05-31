@@ -31,8 +31,7 @@ volumes/
 *.iml
 
 # Example files
-examples/main/java/io/milvus/tls/*
-!examples/main/java/io/milvus/tls/gen.sh
-!examples/main/java/io/milvus/tls/openssl.cnf
-/src/main/java/io/milvus/v2/examples/*
-/src/main/java/io/milvus/v2/examples/ManageCollectionDemo.java
+examples/main/resources/tls/*
+!examples/main/resources/tls/gen.sh
+!examples/main/resources/tls/openssl.cnf
+
