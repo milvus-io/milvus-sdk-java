@@ -32,6 +32,13 @@ import io.milvus.response.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
+import org.tensorflow.Tensor;
+import org.tensorflow.ndarray.Shape;
+import org.tensorflow.ndarray.buffer.ByteDataBuffer;
+import org.tensorflow.ndarray.buffer.DataBuffers;
+import org.tensorflow.types.TBfloat16;
+import org.tensorflow.types.TFloat16;
+
 
 public class Float16VectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_float16";
@@ -202,6 +209,44 @@ public class Float16VectorExample {
         }
         System.out.println("Query result is correct");
 
+        // insert a single row
+        JsonObject row = new JsonObject();
+        row.addProperty(ID_FIELD, 9999999);
+        List<Float> newVector = CommonUtils.generateFloatVector(VECTOR_DIM);
+        ByteBuffer vector16Buf = encodeTF(newVector, bfloat16);
+        row.add(VECTOR_FIELD, gson.toJsonTree(vector16Buf.array()));
+        insertR = milvusClient.insert(InsertParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withRows(Collections.singletonList(row))
+                .build());
+        CommonUtils.handleResponseStatus(insertR);
+
+        // retrieve the single row
+        queryR = milvusClient.query(QueryParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withExpr("id == 9999999")
+                .addOutField(VECTOR_FIELD)
+                .build());
+        CommonUtils.handleResponseStatus(queryR);
+        queryWrapper = new QueryResultsWrapper(queryR.getData());
+        field = queryWrapper.getFieldWrapper(VECTOR_FIELD);
+        r = field.getFieldData();
+        if (r.isEmpty()) {
+            throw new RuntimeException("The retrieve result is empty");
+        } else {
+            ByteBuffer outBuf = (ByteBuffer) r.get(0);
+            List<Float> outVector = decodeTF(outBuf, bfloat16);
+            if (outVector.size() != newVector.size()) {
+                throw new RuntimeException("The retrieve result is incorrect");
+            }
+            for (int i = 0; i < outVector.size(); i++) {
+                if (!isFloat16Eauql(outVector.get(i), newVector.get(i), bfloat16)) {
+                    throw new RuntimeException("The retrieve result is incorrect");
+                }
+            }
+        }
+        System.out.println("Retrieve result is correct");
+
         // drop the collection if you don't need the collection anymore
         milvusClient.dropCollection(DropCollectionParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
@@ -210,6 +255,51 @@ public class Float16VectorExample {
 
         milvusClient.close();
     }
+
+    private static ByteBuffer encodeTF(List<Float> vector, boolean bfloat16) {
+        ByteBuffer buf = ByteBuffer.allocate(vector.size() * 2);
+        for (Float value : vector) {
+            ByteDataBuffer bf;
+            if (bfloat16) {
+                TBfloat16 tt = TBfloat16.scalarOf(value);
+                bf = tt.asRawTensor().data();
+            } else {
+                TFloat16 tt = TFloat16.scalarOf(value);
+                bf = tt.asRawTensor().data();
+            }
+            buf.put(bf.getByte(0));
+            buf.put(bf.getByte(1));
+        }
+        return buf;
+    }
+
+    private static List<Float> decodeTF(ByteBuffer buf, boolean bfloat16) {
+        int dim = buf.limit()/2;
+        ByteDataBuffer bf = DataBuffers.of(buf.array());
+        List<Float> vec = new ArrayList<>();
+        if (bfloat16) {
+            TBfloat16 tf = Tensor.of(TBfloat16.class, Shape.of(dim), bf);
+            for (long k = 0; k < tf.size(); k++) {
+                vec.add(tf.getFloat(k));
+            }
+        } else {
+            TFloat16 tf = Tensor.of(TFloat16.class, Shape.of(dim), bf);
+            for (long k = 0; k < tf.size(); k++) {
+                vec.add(tf.getFloat(k));
+            }
+        }
+
+        return vec;
+    }
+
+    private static boolean isFloat16Eauql(Float a, Float b, boolean bfloat16) {
+        if (bfloat16) {
+            return Math.abs(a - b) <= 0.01f;
+        } else {
+            return Math.abs(a - b) <= 0.001f;
+        }
+    }
+
 
     public static void main(String[] args) {
         testFloat16(true);

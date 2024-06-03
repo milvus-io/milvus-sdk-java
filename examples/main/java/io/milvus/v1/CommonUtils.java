@@ -96,10 +96,10 @@ public class CommonUtils {
         for (int i = 0; i < dimension; ++i) {
             ByteDataBuffer bf;
             if (bfloat16) {
-                TFloat16 tt = TFloat16.scalarOf((float)ran.nextInt(dimension));
+                TBfloat16 tt = TBfloat16.scalarOf((float)ran.nextInt(dimension));
                 bf = tt.asRawTensor().data();
             } else {
-                TBfloat16 tt = TBfloat16.scalarOf((float)ran.nextInt(dimension));
+                TFloat16 tt = TFloat16.scalarOf((float)ran.nextInt(dimension));
                 bf = tt.asRawTensor().data();
             }
             vector.put(bf.getByte(0));
