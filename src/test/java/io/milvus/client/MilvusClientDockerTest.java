@@ -354,6 +354,27 @@ class MilvusClientDockerTest {
         ShowPartResponseWrapper infoPart = new ShowPartResponseWrapper(showPartR.getData());
         System.out.println("Partition info: " + infoPart.toString());
 
+        // query
+        Long fetchID = ids.get(0);
+        List<Float> fetchVector = vectors.get(0);
+        R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(String.format("%s == %d", field1Name, fetchID))
+                .addOutField(field2Name)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
+        QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        Assertions.assertEquals(1L, fetchField.getRowCount());
+        List<?> fetchObj = fetchField.getFieldData();
+        Assertions.assertEquals(1, fetchObj.size());
+        Assertions.assertInstanceOf(List.class, fetchObj.get(0));
+        List<Float> fetchResult = (List<Float>) fetchObj.get(0);
+        Assertions.assertEquals(fetchVector.size(), fetchResult.size());
+        for (int i = 0; i < fetchResult.size(); i++) {
+            Assertions.assertEquals(fetchVector.get(i), fetchResult.get(i));
+        }
+
         // query vectors to verify
         List<Long> queryIDs = new ArrayList<>();
         List<Double> compareWeights = new ArrayList<>();
@@ -450,6 +471,7 @@ class MilvusClientDockerTest {
                 .withVectorFieldName(field2Name)
                 .withParams("{\"ef\":64}")
                 .addOutField(field4Name)
+                .addOutField(field2Name)
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
@@ -462,7 +484,15 @@ class MilvusClientDockerTest {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
-            Assertions.assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+            Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
+
+            Object obj = scores.get(0).get(field2Name);
+            Assertions.assertInstanceOf(List.class, obj);
+            List<Float> outputVec = (List<Float>)obj;
+            Assertions.assertEquals(targetVectors.get(i).size(), outputVec.size());
+            for (int k = 0; k < outputVec.size(); k++) {
+                Assertions.assertEquals(targetVectors.get(i).get(k), outputVec.get(k));
+            }
         }
 
         List<?> fieldData = results.getFieldData(field4Name, 0);
@@ -597,6 +627,24 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
+        // query
+        Long fetchID = ids1.get(0);
+        ByteBuffer fetchVector = vectors.get(0);
+        R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(String.format("%s == %d", field1Name, fetchID))
+                .addOutField(field2Name)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
+        QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        Assertions.assertEquals(1L, fetchField.getRowCount());
+        List<?> fetchObj = fetchField.getFieldData();
+        Assertions.assertEquals(1, fetchObj.size());
+        Assertions.assertInstanceOf(ByteBuffer.class, fetchObj.get(0));
+        ByteBuffer fetchBuffer = (ByteBuffer) fetchObj.get(0);
+        Assertions.assertArrayEquals(fetchVector.array(), fetchBuffer.array());
+
         // search with BIN_FLAT index
         int searchTarget = 99;
         List<ByteBuffer> oneVector = new ArrayList<>();
@@ -623,9 +671,7 @@ class MilvusClientDockerTest {
         List<?> items = oneResult.getFieldData(field2Name, 0);
         Assertions.assertEquals(items.size(), 5);
         ByteBuffer firstItem = (ByteBuffer) items.get(0);
-        for (int i = 0; i < firstItem.limit(); ++i) {
-            Assertions.assertEquals(firstItem.get(i), vectors.get(searchTarget).get(i));
-        }
+        Assertions.assertArrayEquals(vectors.get(searchTarget).array(), firstItem.array());
 
         // release collection
         ReleaseCollectionParam releaseCollectionParam = ReleaseCollectionParam.newBuilder()
@@ -773,6 +819,28 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
+        // query
+        Long fetchID = ids.get(0);
+        SortedMap<Long, Float> fetchVector = vectors.get(0);
+        R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(String.format("%s == %d", field1Name, fetchID))
+                .addOutField(field2Name)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
+        QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        Assertions.assertEquals(1L, fetchField.getRowCount());
+        List<?> fetchObj = fetchField.getFieldData();
+        Assertions.assertEquals(1, fetchObj.size());
+        Assertions.assertInstanceOf(SortedMap.class, fetchObj.get(0));
+        SortedMap<Long, Float> fetchSparse = (SortedMap<Long, Float>) fetchObj.get(0);
+        Assertions.assertEquals(fetchVector.size(), fetchSparse.size());
+        for (Long key : fetchVector.keySet()) {
+            Assertions.assertTrue(fetchSparse.containsKey(key));
+            Assertions.assertEquals(fetchVector.get(key), fetchSparse.get(key));
+        }
+
         // pick some vectors to search with index
         int nq = 5;
         List<Long> targetVectorIDs = new ArrayList<>();
@@ -813,6 +881,11 @@ class MilvusClientDockerTest {
             Object v = scores.get(0).get(field2Name);
             SortedMap<Long, Float> sparse = (SortedMap<Long, Float>)v;
             Assertions.assertTrue(sparse.equals(targetVectors.get(i)));
+            Assertions.assertEquals(targetVectors.get(i).size(), sparse.size());
+            for (Long key : sparse.keySet()) {
+                Assertions.assertTrue(targetVectors.get(i).containsKey(key));
+                Assertions.assertEquals(sparse.get(key), targetVectors.get(i).get(key));
+            }
         }
 
         // drop collection
