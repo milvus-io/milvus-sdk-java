@@ -56,4 +56,5 @@ public class SearchReq {
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
     private boolean ignoreGrowing;
+    private String groupByFieldName;
 }
