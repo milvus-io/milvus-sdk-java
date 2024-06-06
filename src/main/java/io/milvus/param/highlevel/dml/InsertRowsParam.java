@@ -74,8 +74,7 @@ public class InsertRowsParam {
          * Internal class for insert data.
          * If dataType is Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar, use JsonObject.addProperty(key, value) to input;
          * If dataType is FloatVector, use JsonObject.add(key, gson.toJsonTree(List[Float])) to input;
-         * If dataType is BinaryVector/Float16Vector/BFloat16Vector, use JsonObject.add(key, gson.toJsonTree(byte[])) to input;
-         * If dataType is SparseFloatVector, use JsonObject.add(key, gson.toJsonTree(SortedMap[Long, Float])) to input;
+         * If dataType is BinaryVector, use JsonObject.add(key, gson.toJsonTree(byte[])) to input;
          * If dataType is Array, use JsonObject.add(key, gson.toJsonTree(List of Boolean/Integer/Short/Long/Float/Double/String)) to input;
          * If dataType is JSON, use JsonObject.add(key, JsonElement) to input;
          *

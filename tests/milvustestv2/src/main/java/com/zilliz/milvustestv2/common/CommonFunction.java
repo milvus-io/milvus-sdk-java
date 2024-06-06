@@ -12,6 +12,8 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
 import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.SearchResp;
 import lombok.extern.slf4j.Slf4j;
 
@@ -272,12 +274,15 @@ public class CommonFunction {
     }
 
     public static SearchResp defaultSearch(String collectionName){
+        List<List<Float>> vectors = GenerateUtil.generateFloatVector(10, 3, CommonData.dim);
+        List<BaseVector> data = new ArrayList<>();
+        vectors.forEach((v)->{data.add(new FloatVec(v));});
         return BaseTest.milvusClientV2.search(SearchReq.builder()
                 .collectionName(collectionName)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .annsField(CommonData.fieldFloatVector)
-                .data(GenerateUtil.generateFloatVector(10, 3, CommonData.dim))
+                .data(data)
                 .topK(CommonData.topK)
                 .build());
     }

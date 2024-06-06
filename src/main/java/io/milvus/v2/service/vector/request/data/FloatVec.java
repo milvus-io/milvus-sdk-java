@@ -17,13 +17,26 @@
  * under the License.
  */
 
-package io.milvus.v2.service.utility.request;
+package io.milvus.v2.service.vector.request.data;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
 
-@Data
-@SuperBuilder
-public class FlushReq {
-    private String collectionName;
+import io.milvus.grpc.PlaceholderType;
+import java.util.List;
+
+public class FloatVec implements BaseVector {
+    private final List<Float> data;
+
+    public FloatVec(List<Float> data) {
+        this.data = data;
+    }
+
+    @Override
+    public PlaceholderType getPlaceholderType() {
+        return PlaceholderType.FloatVector;
+    }
+
+    @Override
+    public Object getData() {
+        return this.data;
+    }
 }
