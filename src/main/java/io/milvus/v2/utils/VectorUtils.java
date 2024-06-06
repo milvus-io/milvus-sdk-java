@@ -166,6 +166,14 @@ public class VectorUtils {
             }
         }
 
+        if (request.getGroupByFieldName() != null && !request.getGroupByFieldName().isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.GROUP_BY_FIELD)
+                            .setValue(request.getGroupByFieldName())
+                            .build());
+        }
+
         if (!request.getOutputFields().isEmpty()) {
             request.getOutputFields().forEach(builder::addOutputFields);
         }
