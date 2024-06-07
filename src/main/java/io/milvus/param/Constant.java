@@ -50,6 +50,8 @@ public class Constant {
     // constant values for general
     public static final String TTL_SECONDS = "collection.ttl.seconds";
     public static final String MMAP_ENABLED = "mmap.enabled";
+    public static final String DATABASE_REPLICA_NUMBER = "database.replica.number";
+    public static final String DATABASE_RESOURCE_GROUPS = "database.resource_groups";
 
     // max value for waiting loading collection/partition interval, unit: millisecond
     public static final Long MAX_WAITING_LOADING_INTERVAL = 2000L;
