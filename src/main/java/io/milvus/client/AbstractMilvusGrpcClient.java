@@ -463,6 +463,59 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
+    public R<RpcStatus> alterDatabase(AlterDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("AlterDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
+
+        try {
+            List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
+            AlterDatabaseRequest alterDatabaseRequest = AlterDatabaseRequest.newBuilder()
+                .setDbName(requestParam.getDatabaseName())
+                .addAllProperties(propertiesList)
+                .build();
+
+            Status response = blockingStub().alterDatabase(alterDatabaseRequest);
+            handleResponse(title, response);
+            return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
+    public R<DescribeDatabaseResponse> describeDatabase(DescribeDatabaseParam requestParam) {
+        if (!clientIsReady()) {
+            return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
+        }
+
+        logDebug(requestParam.toString());
+        String title = String.format("DescribeDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
+        try {
+            DescribeDatabaseRequest describeDatabaseRequest = DescribeDatabaseRequest.newBuilder()
+                .setDbName(requestParam.getDatabaseName())
+                .build();
+
+            DescribeDatabaseResponse response = blockingStub().describeDatabase(describeDatabaseRequest);
+            handleResponse(title, response.getStatus());
+            return R.success(response);
+        } catch (StatusRuntimeException e) {
+            logError("{} RPC failed! Exception:{}", title, e);
+            return R.failed(e);
+        } catch (Exception e) {
+            logError("{} failed! Exception:{}", title, e);
+            return R.failed(e);
+        }
+    }
+
+    @Override
     public R<RpcStatus> createCollection(@NonNull CreateCollectionParam requestParam) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
