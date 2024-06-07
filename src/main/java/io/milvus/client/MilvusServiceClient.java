@@ -440,6 +440,16 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
+    public R<RpcStatus> alterDatabase(AlterDatabaseParam requestParam) {
+        return retry(()-> super.alterDatabase(requestParam));
+    }
+
+    @Override
+    public R<DescribeDatabaseResponse> describeDatabase(DescribeDatabaseParam requestParam) {
+        return retry(()-> super.describeDatabase(requestParam));
+    }
+
+    @Override
     public R<RpcStatus> createCollection(CreateCollectionParam requestParam) {
         return retry(()-> super.createCollection(requestParam));
     }

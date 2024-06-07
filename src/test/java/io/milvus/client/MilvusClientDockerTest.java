@@ -79,7 +79,7 @@ class MilvusClientDockerTest {
     protected static final Gson GSON_INSTANCE = new Gson();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.0-20240416-ffb6edd4-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240605-443197bd-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -2743,5 +2743,40 @@ class MilvusClientDockerTest {
             }
         }
         Assertions.assertEquals(50, counter);
+    }
+
+    @Test
+    void testDatabase() {
+        String dbName = "test_database";
+        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder().withDatabaseName(dbName).build();
+        R<RpcStatus> createResponse = client.createDatabase(createDatabaseParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createResponse.getStatus().intValue());
+
+        // check database props
+        DescribeDatabaseParam describeDBParam = DescribeDatabaseParam.newBuilder().withDatabaseName(dbName).build();
+        R<DescribeDatabaseResponse> describeResponse = client.describeDatabase(describeDBParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), describeResponse.getStatus().intValue());
+        DescDBResponseWrapper describeDBWrapper = new DescDBResponseWrapper(describeResponse.getData());
+        Assertions.assertEquals(dbName, describeDBWrapper.getDatabaseName());
+        Assertions.assertEquals(0, describeDBWrapper.getReplicaNumber());
+        Assertions.assertEquals(0, describeDBWrapper.getResourceGroups().size());
+
+        // alter database props
+        AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder().withDatabaseName(dbName).withReplicaNumber(3).WithResourceGroups(Arrays.asList("rg1", "rg2", "rg3")).build();
+        R<RpcStatus> alterDatabaseResponse = client.alterDatabase(alterDatabaseParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), alterDatabaseResponse.getStatus().intValue());
+
+        // check database props
+        describeResponse = client.describeDatabase(describeDBParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), describeResponse.getStatus().intValue());
+        describeDBWrapper = new DescDBResponseWrapper(describeResponse.getData());
+        Assertions.assertEquals(dbName, describeDBWrapper.getDatabaseName());
+        Assertions.assertEquals(3, describeDBWrapper.getReplicaNumber());
+        Assertions.assertEquals(3, describeDBWrapper.getResourceGroups().size());
+
+
+        DropDatabaseParam dropDatabaseParam = DropDatabaseParam.newBuilder().withDatabaseName(dbName).build();
+        R<RpcStatus> dropResponse = client.dropDatabase(dropDatabaseParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), dropResponse.getStatus().intValue());
     }
 }
