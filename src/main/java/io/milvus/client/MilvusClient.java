@@ -138,14 +138,16 @@ public interface MilvusClient {
     R<ListDatabasesResponse> listDatabases();
 
     /**
-     * Alter database with key value pair
+     * Alter database with key value pair. (Available from Milvus v2.4.4)
+     *
      * @param requestParam {@link AlterDatabaseParam}
      * @return  {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> alterDatabase(AlterDatabaseParam requestParam);
 
     /**
-     * show detail of database base, such as replica number and resource groups
+     * Show detail of database base, such as replica number and resource groups. (Available from Milvus v2.4.4)
+     *
      * @param requestParam {@link DescribeDatabaseParam}
      * @return {status:result code, data:DescribeDatabaseResponse{replica_number,resource_groups}}
      */
