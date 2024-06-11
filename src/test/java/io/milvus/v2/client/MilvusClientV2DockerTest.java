@@ -64,7 +64,7 @@ class MilvusClientV2DockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.1");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240605-443197bd-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -1058,5 +1058,55 @@ class MilvusClientV2DockerTest {
         Map<String, Object> extraParams = descResp.getExtraParams();
         Assertions.assertTrue(extraParams.containsKey("nlist"));
         Assertions.assertEquals("64", extraParams.get("nlist"));
+    }
+
+    @Test
+    void testCacheCollectionSchema() {
+        String randomCollectionName = generator.generate(10);
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .autoID(true)
+                .dimension(dimension)
+                .build());
+
+        // insert
+        JsonObject row = new JsonObject();
+        row.add("vector", GSON_INSTANCE.toJsonTree(generateFloatVectors(1).get(0)));
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+
+        // drop collection
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // create a new collection with the same name, different schema
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .autoID(true)
+                .dimension(100)
+                .build());
+
+        // insert wrong data
+        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
+
+        // insert correct data
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < 100; ++i) {
+            vector.add(RANDOM.nextFloat());
+        }
+        row.add("vector", GSON_INSTANCE.toJsonTree(vector));
+        insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, insertResp.getInsertCnt());
     }
 }

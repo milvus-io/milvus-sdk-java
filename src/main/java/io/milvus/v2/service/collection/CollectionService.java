@@ -183,6 +183,10 @@ public class CollectionService extends BaseService {
                 .build();
         DescribeCollectionResponse response = milvusServiceBlockingStub.describeCollection(describeCollectionRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+        return convertDescCollectionResp(response);
+    }
+
+    public static DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
         DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
                 .collectionName(response.getCollectionName())
                 .description(response.getSchema().getDescription())
@@ -195,7 +199,6 @@ public class CollectionService extends BaseService {
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
                 .build();
-
         return describeCollectionResp;
     }
 
