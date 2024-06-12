@@ -33,7 +33,7 @@ public class DescribeCollectionResp {
     private Long numOfPartitions;
 
     private List<String> fieldNames;
-    private List<String> vectorFieldName;
+    private List<String> vectorFieldNames;
     private String primaryFieldName;
     private Boolean enableDynamicField;
     private Boolean autoID;

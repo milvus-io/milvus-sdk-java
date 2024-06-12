@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection;
 
 import io.milvus.grpc.*;
+import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -195,7 +196,7 @@ public class CollectionService extends BaseService {
                 .autoID(response.getSchema().getFieldsList().stream().anyMatch(FieldSchema::getAutoID))
                 .enableDynamicField(response.getSchema().getEnableDynamicField())
                 .fieldNames(response.getSchema().getFieldsList().stream().map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
-                .vectorFieldName(response.getSchema().getFieldsList().stream().filter(fieldSchema -> fieldSchema.getDataType() == DataType.FloatVector || fieldSchema.getDataType() == DataType.BinaryVector).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
+                .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
                 .build();
