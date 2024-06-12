@@ -444,7 +444,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(randomCollectionName, descResp.getCollectionName());
         Assertions.assertEquals("dummy", descResp.getDescription());
         Assertions.assertEquals(2, descResp.getNumOfPartitions());
-        Assertions.assertEquals(1, descResp.getVectorFieldName().size());
+        Assertions.assertEquals(1, descResp.getVectorFieldNames().size());
         Assertions.assertEquals("id", descResp.getPrimaryFieldName());
         Assertions.assertTrue(descResp.getEnableDynamicField());
         Assertions.assertFalse(descResp.getAutoID());
@@ -732,6 +732,12 @@ class MilvusClientV2DockerTest {
                 .indexParams(indexParams)
                 .build();
         client.createCollection(requestCreate);
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(16, descResp.getFieldNames().size());
+        Assertions.assertEquals(3, descResp.getVectorFieldNames().size());
 
         // insert rows
         long count = 10000;
