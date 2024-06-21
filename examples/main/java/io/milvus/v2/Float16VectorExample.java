@@ -27,7 +27,7 @@ import java.util.*;
 
 
 public class Float16VectorExample {
-    private static final String COLLECTION_NAME = "java_sdk_example_float16";
+    private static final String COLLECTION_NAME = "java_sdk_example_float16_vector";
     private static final String ID_FIELD = "id";
     private static final String FP16_VECTOR_FIELD = "fp16_vector";
     private static final String BF16_VECTOR_FIELD = "bf16_vector";

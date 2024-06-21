@@ -51,7 +51,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
             if (fieldName.compareTo(field.getFieldName()) == 0) {
-                return new FieldDataWrapper(field);
+                return getFieldWrapperInternal(field);
             }
         }
 
@@ -95,7 +95,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
     public long getRowCount() {
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
-            FieldDataWrapper wrapper = new FieldDataWrapper(field);
+            FieldDataWrapper wrapper = getFieldWrapperInternal(field);
             return wrapper.getRowCount();
         }
 
@@ -135,7 +135,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
          * If the key name is in dynamic field, return the value from the dynamic field.
          * Throws {@link ParamException} if the key name doesn't exist.
          *
-         * @return {@link FieldDataWrapper}
+         * @return {@link Object}
          */
         public Object get(String keyName) throws ParamException {
             if (fieldValues.isEmpty()) {

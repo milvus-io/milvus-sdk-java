@@ -27,10 +27,23 @@ import io.milvus.response.QueryResultsWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class RowRecordWrapper {
+    // a cache for output fields
+    private ConcurrentHashMap<String, FieldDataWrapper> outputFieldsData = new ConcurrentHashMap<>();
 
     public abstract List<QueryResultsWrapper.RowRecord> getRowRecords();
+
+    protected FieldDataWrapper getFieldWrapperInternal(FieldData field) {
+        if (outputFieldsData.containsKey(field.getFieldName())) {
+            return outputFieldsData.get(field.getFieldName());
+        }
+
+        FieldDataWrapper wrapper = new FieldDataWrapper(field);
+        outputFieldsData.put(field.getFieldName(), wrapper);
+        return wrapper;
+    }
 
     /**
      * Get the dynamic field. Only available when a collection's dynamic field is enabled.
@@ -42,7 +55,7 @@ public abstract class RowRecordWrapper {
         List<FieldData> fields = getFieldDataList();
         for (FieldData field : fields) {
             if (field.getIsDynamic()) {
-                return new FieldDataWrapper(field);
+                return getFieldWrapperInternal(field);
             }
         }
 
@@ -60,7 +73,7 @@ public abstract class RowRecordWrapper {
             boolean isField = false;
             for (FieldData field : getFieldDataList()) {
                 if (outputKey.equals(field.getFieldName())) {
-                    FieldDataWrapper wrapper = new FieldDataWrapper(field);
+                    FieldDataWrapper wrapper = getFieldWrapperInternal(field);
                     if (index < 0 || index >= wrapper.getRowCount()) {
                         throw new ParamException("Index out of range");
                     }

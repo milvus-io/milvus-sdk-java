@@ -5,8 +5,6 @@ import io.milvus.v2.client.*;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
-import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.*;
@@ -21,7 +19,7 @@ public class SimpleExample {
                 .build();
         MilvusClientV2 client = new MilvusClientV2(config);
 
-        String collectionName = "simple_test";
+        String collectionName = "java_sdk_example_simple";
         // drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(collectionName)

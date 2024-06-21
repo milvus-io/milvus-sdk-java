@@ -28,6 +28,8 @@ import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.QueryIteratorParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.response.QueryResultsWrapper;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.QueryIteratorReq;
 import io.milvus.v2.utils.RpcUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,6 +60,25 @@ public class QueryIterator {
         this.blockingStub = blockingStub;
         this.primaryField = primaryField;
         this.queryIteratorParam = queryIteratorParam;
+
+        this.batchSize = (int) queryIteratorParam.getBatchSize();
+        this.expr = queryIteratorParam.getExpr();
+        this.limit = queryIteratorParam.getLimit();
+        this.offset = queryIteratorParam.getOffset();
+        this.rpcUtils = new RpcUtils();
+
+        seek();
+    }
+
+    public QueryIterator(QueryIteratorReq queryIteratorReq,
+                         MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                         CreateCollectionReq.FieldSchema primaryField) {
+        this.iteratorCache = new IteratorCache();
+        this.blockingStub = blockingStub;
+        IteratorAdapterV2 adapter = new IteratorAdapterV2();
+        this.queryIteratorParam = adapter.convertV2Req(queryIteratorReq);
+        this.primaryField = adapter.convertV2Field(primaryField);
+
 
         this.batchSize = (int) queryIteratorParam.getBatchSize();
         this.expr = queryIteratorParam.getExpr();
