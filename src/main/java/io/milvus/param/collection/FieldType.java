@@ -219,7 +219,7 @@ public class FieldType {
          * @return <code>Builder</code>
          */
         public Builder withMaxCapacity(@NonNull Integer maxCapacity) {
-            if (maxCapacity <= 0 || maxCapacity >= 4096) {
+            if (maxCapacity <= 0 || maxCapacity > 4096) {
                 throw new ParamException("Array field max capacity value must be within range [1, 4096]");
             }
             this.typeParams.put(Constant.ARRAY_MAX_CAPACITY, maxCapacity.toString());
