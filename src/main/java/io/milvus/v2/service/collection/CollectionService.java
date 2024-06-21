@@ -58,7 +58,7 @@ public class CollectionService extends BaseService {
                 .build();
 
         FieldSchema idSchema = FieldSchema.newBuilder()
-                .setName("id")
+                .setName(request.getPrimaryFieldName())
                 .setDataType(DataType.valueOf(request.getIdType().name()))
                 .setIsPrimaryKey(Boolean.TRUE)
                 .setAutoID(request.getAutoID())
@@ -75,11 +75,11 @@ public class CollectionService extends BaseService {
                 .setEnableDynamicField(request.getEnableDynamicField())
                 .build();
 
-
         CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(schema.toByteString())
                 .setShardsNum(request.getNumShards())
+                .setConsistencyLevelValue(request.getConsistencyLevel().getCode())
                 .build();
 
         Status status = blockingStub.createCollection(createCollectionRequest);
@@ -88,7 +88,7 @@ public class CollectionService extends BaseService {
         //create index
         IndexParam indexParam = IndexParam.builder()
                         .metricType(IndexParam.MetricType.valueOf(request.getMetricType()))
-                        .fieldName("vector")
+                        .fieldName(request.getVectorFieldName())
                         .build();
         CreateIndexReq createIndexReq = CreateIndexReq.builder()
                         .indexParams(Collections.singletonList(indexParam))

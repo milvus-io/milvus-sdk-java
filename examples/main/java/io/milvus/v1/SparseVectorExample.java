@@ -168,9 +168,15 @@ public class SparseVectorExample {
             for (SearchResultsWrapper.IDScore score : scores) {
                 System.out.println(score);
             }
-            if (scores.get(0).getLongID() != k) {
+
+            SearchResultsWrapper.IDScore firstScore = scores.get(0);
+            if (firstScore.getLongID() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
-                        scores.get(0).getLongID(), k));
+                        firstScore.getLongID(), k));
+            }
+            SortedMap<Long, Float> sparse = (SortedMap<Long, Float>) firstScore.get(VECTOR_FIELD);
+            if (!sparse.equals(targetVector)) {
+                throw new RuntimeException("The query result is incorrect");
             }
         }
         System.out.println("Search result is correct");

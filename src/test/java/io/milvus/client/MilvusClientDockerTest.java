@@ -28,6 +28,7 @@ import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
 import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
@@ -51,6 +52,7 @@ import io.milvus.param.index.GetIndexStateParam;
 import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.response.*;
+
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.text.RandomStringGenerator;
 import org.apache.logging.log4j.LogManager;
@@ -75,6 +77,8 @@ class MilvusClientDockerTest {
     protected static MilvusClient client;
     protected static RandomStringGenerator generator;
     protected static final int dimension = 128;
+    protected static final float FLOAT16_PRECISION = 0.001f;
+    protected static final float BFLOAT16_PRECISION = 0.01f;
 
     protected static final Gson GSON_INSTANCE = new Gson();
 
@@ -886,6 +890,226 @@ class MilvusClientDockerTest {
                 Assertions.assertTrue(targetVectors.get(i).containsKey(key));
                 Assertions.assertEquals(sparse.get(key), targetVectors.get(i).get(key));
             }
+        }
+
+        // drop collection
+        DropCollectionParam dropParam = DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build();
+
+        R<RpcStatus> dropR = client.dropCollection(dropParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), dropR.getStatus().intValue());
+    }
+
+    @Test
+    void testFloat16Vector() {
+        String randomCollectionName = generator.generate(10);
+
+        // collection schema
+        String field1Name = "id";
+        String field2Name = "float16_vector";
+        String field3Name = "bfloat16_vector";
+        FieldType field1 = FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName(field1Name)
+                .build();
+
+        FieldType field2 = FieldType.newBuilder()
+                .withDataType(DataType.Float16Vector)
+                .withName(field2Name)
+                .withDimension(dimension)
+                .build();
+
+        FieldType field3 = FieldType.newBuilder()
+                .withDataType(DataType.BFloat16Vector)
+                .withName(field3Name)
+                .withDimension(dimension)
+                .build();
+
+        // create collection
+        CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .addFieldType(field1)
+                .addFieldType(field2)
+                .addFieldType(field3)
+                .build();
+
+        R<RpcStatus> createR = client.createCollection(createParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // create index
+        R<RpcStatus> createIndexR = client.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.COSINE)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        createIndexR = client.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field3Name)
+                .withIndexType(IndexType.IVF_FLAT)
+                .withMetricType(MetricType.COSINE)
+                .withExtraParam("{\"nlist\": 128}")
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        // load collection
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        // generate vectors
+        int rowCount = 10000;
+        List<List<Float>> vectors = generateFloatVectors(rowCount);
+
+        // insert by column-based
+        List<ByteBuffer> fp16Vectors = new ArrayList<>();
+        List<ByteBuffer> bf16Vectors = new ArrayList<>();
+        List<Long> ids = new ArrayList<>();
+        for (int i = 0; i < 5000; i++) {
+            ids.add((long)i);
+            List<Float> vector = vectors.get(i);
+            ByteBuffer fp16Vector = Float16Utils.f32VectorToFp16Buffer(vector);
+            fp16Vectors.add(fp16Vector);
+            ByteBuffer bf16Vector = Float16Utils.f32VectorToBf16Buffer(vector);
+            bf16Vectors.add(bf16Vector);
+        }
+
+        List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field(field1Name, ids));
+        fields.add(new InsertParam.Field(field2Name, fp16Vectors));
+        fields.add(new InsertParam.Field(field3Name, bf16Vectors));
+
+        R<MutationResult> insertColumnResp = client.insert(InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fields)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertColumnResp.getStatus().intValue());
+        System.out.println(ids.size() + " rows inserted");
+
+        // insert by row-based
+        List<JsonObject> rows = new ArrayList<>();
+        for (int i = 0; i < 5000; i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty(field1Name, i + 5000);
+
+            List<Float> vector = vectors.get(i + 5000);
+            ByteBuffer fp16Vector = Float16Utils.f32VectorToFp16Buffer(vector);
+            row.add(field2Name, GSON_INSTANCE.toJsonTree(fp16Vector.array()));
+            ByteBuffer bf16Vector = Float16Utils.f32VectorToBf16Buffer(vector);
+            row.add(field3Name, GSON_INSTANCE.toJsonTree(bf16Vector.array()));
+            rows.add(row);
+        }
+
+        insertColumnResp = client.insert(InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(rows)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertColumnResp.getStatus().intValue());
+        System.out.println(rows.size() + " rows inserted");
+
+        // query
+        List<Long> targetIDs = Arrays.asList(100L, 8888L);
+        String expr = String.format("%s in %s", field1Name, targetIDs);
+        R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr(expr)
+                .addOutField(field2Name)
+                .addOutField(field3Name)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
+
+        // verify query result
+        QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
+        List<QueryResultsWrapper.RowRecord> records = fetchWrapper.getRowRecords();
+        Assertions.assertEquals(targetIDs.size(), records.size());
+        for (int i = 0; i < records.size(); i++) {
+            QueryResultsWrapper.RowRecord record = records.get(i);
+            Assertions.assertEquals(targetIDs.get(i), record.get(field1Name));
+            Assertions.assertInstanceOf(ByteBuffer.class, record.get(field2Name));
+            Assertions.assertInstanceOf(ByteBuffer.class, record.get(field3Name));
+
+            List<Float> originVector = vectors.get(targetIDs.get(i).intValue());
+            ByteBuffer buf1 = (ByteBuffer) record.get(field2Name);
+            List<Float> fp16Vec = Float16Utils.fp16BufferToVector(buf1);
+            Assertions.assertEquals(fp16Vec.size(), originVector.size());
+            for (int k = 0; k < fp16Vec.size(); k++) {
+                Assertions.assertTrue(Math.abs(fp16Vec.get(k) - originVector.get(k)) <= FLOAT16_PRECISION);
+            }
+
+            ByteBuffer buf2 = (ByteBuffer) record.get(field3Name);
+            List<Float> bf16Vec = Float16Utils.bf16BufferToVector(buf2);
+            Assertions.assertEquals(bf16Vec.size(), originVector.size());
+            for (int k = 0; k < bf16Vec.size(); k++) {
+                Assertions.assertTrue(Math.abs(bf16Vec.get(k) - originVector.get(k)) <= BFLOAT16_PRECISION);
+            }
+        }
+
+        // search float16 vector
+        long targetID = new Random().nextInt(rowCount);
+        List<Float> originVector = vectors.get((int) targetID);
+        ByteBuffer fp16Vector = Float16Utils.f32VectorToFp16Buffer(originVector);
+
+        int topK = 5;
+        R<SearchResults> searchR = client.search(SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.COSINE)
+                .withTopK(topK)
+                .withFloat16Vectors(Collections.singletonList(fp16Vector))
+                .withVectorFieldName(field2Name)
+                .addOutField(field2Name)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result of float16
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+        System.out.println("The result of float16 vector(ID = " + targetID + "):");
+        System.out.println(scores);
+        Assertions.assertEquals(topK, scores.size());
+        Assertions.assertEquals(targetID, scores.get(0).getLongID());
+
+        Object v = scores.get(0).get(field2Name);
+        Assertions.assertInstanceOf(ByteBuffer.class, v);
+        List<Float> fp16Vec = Float16Utils.fp16BufferToVector((ByteBuffer)v);
+        Assertions.assertEquals(fp16Vec.size(), originVector.size());
+        for (int k = 0; k < fp16Vec.size(); k++) {
+            Assertions.assertTrue(Math.abs(fp16Vec.get(k) - originVector.get(k)) <= FLOAT16_PRECISION);
+        }
+
+        // search bfloat16 vector
+        ByteBuffer bf16Vector = Float16Utils.f32VectorToBf16Buffer(vectors.get((int) targetID));
+        searchR = client.search(SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.COSINE)
+                .withTopK(topK)
+                .withParams("{\"nprobe\": 16}")
+                .withBFloat16Vectors(Collections.singletonList(bf16Vector))
+                .withVectorFieldName(field3Name)
+                .addOutField(field3Name)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result of bfloat16
+        results = new SearchResultsWrapper(searchR.getData().getResults());
+        scores = results.getIDScore(0);
+        System.out.println("The result of bfloat16 vector(ID = " + targetID + "):");
+        System.out.println(scores);
+        Assertions.assertEquals(topK, scores.size());
+        Assertions.assertEquals(targetID, scores.get(0).getLongID());
+
+        v = scores.get(0).get(field3Name);
+        Assertions.assertInstanceOf(ByteBuffer.class, v);
+        List<Float> bf16Vec = Float16Utils.bf16BufferToVector((ByteBuffer)v);
+        Assertions.assertEquals(bf16Vec.size(), originVector.size());
+        for (int k = 0; k < bf16Vec.size(); k++) {
+            Assertions.assertTrue(Math.abs(bf16Vec.get(k) - originVector.get(k)) <= BFLOAT16_PRECISION);
         }
 
         // drop collection

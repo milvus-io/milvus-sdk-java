@@ -364,6 +364,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withExpr(expr)
                 .withOutFields(fields)
+                .withLimit(10L)
                 .build();
         R<QueryResults> response = milvusClient.query(test);
         CommonUtils.handleResponseStatus(response);

@@ -18,8 +18,13 @@
  */
 package io.milvus.v1;
 
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.param.R;
+
+import org.tensorflow.Tensor;
+import org.tensorflow.ndarray.Shape;
 import org.tensorflow.ndarray.buffer.ByteDataBuffer;
+import org.tensorflow.ndarray.buffer.DataBuffers;
 import org.tensorflow.types.TBfloat16;
 import org.tensorflow.types.TFloat16;
 
@@ -70,9 +75,11 @@ public class CommonUtils {
         return vectors;
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer generateBinaryVector(int dimension) {
         Random ran = new Random();
         int byteCount = dimension / 8;
+        // binary vector doesn't care endian since each byte is independent
         ByteBuffer vector = ByteBuffer.allocate(byteCount);
         for (int i = 0; i < byteCount; ++i) {
             vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
@@ -89,38 +96,150 @@ public class CommonUtils {
         return vectors;
     }
 
-    public static ByteBuffer generateFloat16Vector(int dimension, boolean bfloat16) {
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static TBfloat16 genTensorflowBF16Vector(int dimension) {
         Random ran = new Random();
-        int byteCount = dimension*2;
-        ByteBuffer vector = ByteBuffer.allocate(byteCount);
-        for (int i = 0; i < dimension; ++i) {
-            ByteDataBuffer bf;
-            if (bfloat16) {
-                TBfloat16 tt = TBfloat16.scalarOf((float)ran.nextInt(dimension));
-                bf = tt.asRawTensor().data();
-            } else {
-                TFloat16 tt = TFloat16.scalarOf((float)ran.nextInt(dimension));
-                bf = tt.asRawTensor().data();
-            }
-            vector.put(bf.getByte(0));
-            vector.put(bf.getByte(1));
+        float[] array = new float[dimension];
+        for (int n = 0; n < dimension; ++n) {
+            array[n] = ran.nextFloat();
         }
-        return vector;
+
+        return TBfloat16.vectorOf(array);
     }
 
-    public static List<ByteBuffer> generateFloat16Vectors(int dimension, int count, boolean bfloat16) {
-        List<ByteBuffer> vectors = new ArrayList<>();
+    public static List<TBfloat16> genTensorflowBF16Vectors(int dimension, int count) {
+        List<TBfloat16> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = generateFloat16Vector(dimension, bfloat16);
+           TBfloat16 vector = genTensorflowBF16Vector(dimension);
             vectors.add(vector);
+        }
+
+        return vectors;
+    }
+
+    public static ByteBuffer encodeTensorBF16Vector(TBfloat16 vector) {
+        ByteDataBuffer tensorBuf = vector.asRawTensor().data();
+        ByteBuffer buf = ByteBuffer.allocate((int)tensorBuf.size());
+        for (long i = 0; i < tensorBuf.size(); i++) {
+            buf.put(tensorBuf.getByte(i));
+        }
+        return buf;
+    }
+
+    public static List<ByteBuffer> encodeTensorBF16Vectors(List<TBfloat16> vectors) {
+        List<ByteBuffer> buffers = new ArrayList<>();
+        for (TBfloat16 tf : vectors) {
+            ByteBuffer bf = encodeTensorBF16Vector(tf);
+            buffers.add(bf);
+        }
+        return buffers;
+    }
+
+    public static TBfloat16 decodeTensorBF16Vector(ByteBuffer buf) {
+        if (buf.limit()%2 != 0) {
+            return null;
+        }
+        int dim = buf.limit()/2;
+        ByteDataBuffer bf = DataBuffers.of(buf.array());
+        return Tensor.of(TBfloat16.class, Shape.of(dim), bf);
+    }
+
+
+    public static TFloat16 genTensorflowFP16Vector(int dimension) {
+        Random ran = new Random();
+        float[] array = new float[dimension];
+        for (int n = 0; n < dimension; ++n) {
+            array[n] = ran.nextFloat();
+        }
+
+        return TFloat16.vectorOf(array);
+    }
+
+    public static List<TFloat16> genTensorflowFP16Vectors(int dimension, int count) {
+        List<TFloat16> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            TFloat16 vector = genTensorflowFP16Vector(dimension);
+            vectors.add(vector);
+        }
+
+        return vectors;
+    }
+
+    public static ByteBuffer encodeTensorFP16Vector(TFloat16 vector) {
+        ByteDataBuffer tensorBuf = vector.asRawTensor().data();
+        ByteBuffer buf = ByteBuffer.allocate((int)tensorBuf.size());
+        for (long i = 0; i < tensorBuf.size(); i++) {
+            buf.put(tensorBuf.getByte(i));
+        }
+        return buf;
+    }
+
+    public static List<ByteBuffer> encodeTensorFP16Vectors(List<TFloat16> vectors) {
+        List<ByteBuffer> buffers = new ArrayList<>();
+        for (TFloat16 tf : vectors) {
+            ByteBuffer bf = encodeTensorFP16Vector(tf);
+            buffers.add(bf);
+        }
+        return buffers;
+    }
+
+    public static TFloat16 decodeTensorFP16Vector(ByteBuffer buf) {
+        if (buf.limit()%2 != 0) {
+            return null;
+        }
+        int dim = buf.limit()/2;
+        ByteDataBuffer bf = DataBuffers.of(buf.array());
+        return Tensor.of(TFloat16.class, Shape.of(dim), bf);
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static ByteBuffer encodeFloat16Vector(List<Float> originVector, boolean bfloat16) {
+        if (bfloat16) {
+            return Float16Utils.f32VectorToBf16Buffer(originVector);
+        } else {
+            return Float16Utils.f32VectorToFp16Buffer(originVector);
+        }
+    }
+
+    public static List<Float> decodeFloat16Vector(ByteBuffer buf, boolean bfloat16) {
+        if (bfloat16) {
+            return Float16Utils.bf16BufferToVector(buf);
+        } else {
+            return Float16Utils.fp16BufferToVector(buf);
+        }
+    }
+
+    public static List<ByteBuffer> encodeFloat16Vectors(List<List<Float>> originVectors, boolean bfloat16) {
+        List<ByteBuffer> vectors = new ArrayList<>();
+        for (List<Float> originVector : originVectors) {
+            if (bfloat16) {
+                vectors.add(Float16Utils.f32VectorToBf16Buffer(originVector));
+            } else {
+                vectors.add(Float16Utils.f32VectorToFp16Buffer(originVector));
+            }
         }
         return vectors;
     }
 
+    public static ByteBuffer generateFloat16Vector(int dimension, boolean bfloat16) {
+        List<Float> originalVector = generateFloatVector(dimension);
+        return encodeFloat16Vector(originalVector, bfloat16);
+    }
+
+    public static List<ByteBuffer> generateFloat16Vectors(int dimension, int count, boolean bfloat16) {
+        List<ByteBuffer> vectors = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            ByteBuffer buf = generateFloat16Vector(dimension, bfloat16);
+            vectors.add((buf));
+        }
+        return vectors;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static SortedMap<Long, Float> generateSparseVector() {
         Random ran = new Random();
         SortedMap<Long, Float> sparse = new TreeMap<>();
-        int dim = ran.nextInt(10) + 1;
+        int dim = ran.nextInt(10) + 10;
         for (int i = 0; i < dim; ++i) {
             sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
         }

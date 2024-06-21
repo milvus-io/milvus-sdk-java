@@ -22,6 +22,7 @@ package io.milvus.v2.client;
 import com.google.gson.*;
 
 import com.google.gson.reflect.TypeToken;
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -40,6 +41,7 @@ import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.*;
 import io.milvus.v2.service.vector.response.*;
+import io.netty.buffer.ByteBuf;
 import org.apache.commons.text.RandomStringGenerator;
 
 import org.junit.jupiter.api.Assertions;
@@ -64,7 +66,7 @@ class MilvusClientV2DockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240605-443197bd-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.4");
 
     @BeforeAll
     public static void setUp() {
@@ -115,6 +117,16 @@ class MilvusClientV2DockerTest {
         }
         return vectors;
 
+    }
+
+    private ByteBuffer generateFloat16Vector() {
+        List<Float> vector = generateFolatVector();
+        return Float16Utils.f32VectorToFp16Buffer(vector);
+    }
+
+    private ByteBuffer generateBFloat16Vector() {
+        List<Float> vector = generateFolatVector();
+        return Float16Utils.f32VectorToBf16Buffer(vector);
     }
 
     private SortedMap<Long, Float> generateSparseVector() {
@@ -316,6 +328,16 @@ class MilvusClientV2DockerTest {
                     }
                     case BinaryVector: {
                         ByteBuffer vector = generateBinaryVector();
+                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
+                        break;
+                    }
+                    case Float16Vector: {
+                        ByteBuffer vector = generateFloat16Vector();
+                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
+                        break;
+                    }
+                    case BFloat16Vector: {
+                        ByteBuffer vector = generateBFloat16Vector();
                         row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
                         break;
                     }
@@ -614,6 +636,133 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(topk, results.size());
             Assertions.assertEquals(targetIDs.get(i), results.get(0).getId());
         }
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testFloat16Vectors() {
+        String randomCollectionName = generator.generate(10);
+
+        // build a collection with two vector fields
+        String float16Field = "float16_vector";
+        String bfloat16Field = "bfloat16_vector";
+        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(float16Field)
+                .dataType(DataType.Float16Vector)
+                .dimension(dimension)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(bfloat16Field)
+                .dataType(DataType.BFloat16Vector)
+                .dimension(dimension)
+                .build());
+
+        List<IndexParam> indexes = new ArrayList<>();
+        Map<String,Object> extraParams = new HashMap<>();
+        extraParams.put("nlist",64);
+        indexes.add(IndexParam.builder()
+                .fieldName(float16Field)
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.COSINE)
+                .extraParams(extraParams)
+                .build());
+        indexes.add(IndexParam.builder()
+                .fieldName(bfloat16Field)
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexes)
+                .build();
+        client.createCollection(requestCreate);
+
+        // insert 10000 rows
+        long count = 10000;
+        List<JsonObject> data = generateRandomData(collectionSchema, count);
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // update one row
+        long targetID = 99;
+        JsonObject row = data.get((int)targetID);
+        List<Float> originVector = new ArrayList<>();
+        for (int i = 0; i < dimension; ++i) {
+            originVector.add((float)1/(i+1));
+        }
+        System.out.println("Original float32 vector: " + originVector);
+        row.add(float16Field, GSON_INSTANCE.toJsonTree(Float16Utils.f32VectorToFp16Buffer(originVector).array()));
+        row.add(bfloat16Field, GSON_INSTANCE.toJsonTree(Float16Utils.f32VectorToBf16Buffer(originVector).array()));
+
+        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
+
+        int topk = 10;
+        // search the float16 vector field
+        {
+            SearchResp searchResp = client.search(SearchReq.builder()
+                    .collectionName(randomCollectionName)
+                    .annsField(float16Field)
+                    .data(Collections.singletonList(new Float16Vec(originVector)))
+                    .topK(topk)
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .outputFields(Collections.singletonList(float16Field))
+                    .build());
+            List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+            Assertions.assertEquals(1, searchResults.size());
+            List<SearchResp.SearchResult> results = searchResults.get(0);
+            Assertions.assertEquals(topk, results.size());
+            SearchResp.SearchResult firstResult = results.get(0);
+            Assertions.assertEquals(targetID, (long) firstResult.getId());
+            Map<String, Object> entity = firstResult.getEntity();
+            Assertions.assertInstanceOf(ByteBuffer.class, entity.get(float16Field));
+            ByteBuffer outputBuf = (ByteBuffer) entity.get(float16Field);
+            List<Float> outputVector = Float16Utils.fp16BufferToVector(outputBuf);
+            for (int i = 0; i < outputVector.size(); i++) {
+                Assertions.assertEquals(originVector.get(i), outputVector.get(i), 0.001f);
+            }
+            System.out.println("Output float16 vector: " + outputVector);
+        }
+
+        // search the bfloat16 vector field
+        {
+            SearchResp searchResp = client.search(SearchReq.builder()
+                    .collectionName(randomCollectionName)
+                    .annsField(bfloat16Field)
+                    .data(Collections.singletonList(new BFloat16Vec(originVector)))
+                    .topK(topk)
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .outputFields(Collections.singletonList(bfloat16Field))
+                    .build());
+            List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+            Assertions.assertEquals(1, searchResults.size());
+            List<SearchResp.SearchResult> results = searchResults.get(0);
+            Assertions.assertEquals(topk, results.size());
+            SearchResp.SearchResult firstResult = results.get(0);
+            Assertions.assertEquals(targetID, (long) firstResult.getId());
+            Map<String, Object> entity = firstResult.getEntity();
+            Assertions.assertInstanceOf(ByteBuffer.class, entity.get(bfloat16Field));
+            ByteBuffer outputBuf = (ByteBuffer) entity.get(bfloat16Field);
+            List<Float> outputVector = Float16Utils.bf16BufferToVector(outputBuf);
+            for (int i = 0; i < outputVector.size(); i++) {
+                Assertions.assertEquals(originVector.get(i), outputVector.get(i), 0.01f);
+            }
+            System.out.println("Output bfloat16 vector: " + outputVector);
+        }
+
+        // get row count
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(count, rowCount);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
