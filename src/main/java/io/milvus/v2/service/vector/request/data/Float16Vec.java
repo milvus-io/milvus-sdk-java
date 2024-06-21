@@ -19,9 +19,11 @@
 
 package io.milvus.v2.service.vector.request.data;
 
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.grpc.PlaceholderType;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 public class Float16Vec implements BaseVector {
     private final ByteBuffer data;
@@ -32,6 +34,15 @@ public class Float16Vec implements BaseVector {
     public Float16Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
+
+    /**
+     * Construct a float16 vector by a float32 array.
+     * Note that all the float32 values will be cast to float16 values and store into ByteBuffer.
+     */
+    public Float16Vec(List<Float> data) {
+        this.data = Float16Utils.f32VectorToFp16Buffer(data);
+    }
+
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.Float16Vector;

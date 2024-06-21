@@ -218,6 +218,10 @@ public class FieldDataWrapper {
                 List<ByteBuffer> packData = new ArrayList<>();
                 for (int i = 0; i < count; ++i) {
                     ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
+                    // binary vector doesn't care endian since each byte is independent
+                    // fp16/bf16 vector is sensetive to endian because each dim occupies 2 bytes,
+                    // milvus server stores fp16/bf16 vector as little endian
+                    bf.order(ByteOrder.LITTLE_ENDIAN);
                     bf.put(data.substring(i * bytePerVec, (i + 1) * bytePerVec).toByteArray());
                     packData.add(bf);
                 }
@@ -237,6 +241,7 @@ public class FieldDataWrapper {
                     long num = bf.limit()/8; // each uint+float pair is 8 bytes
                     for (long j = 0; j < num; j++) {
                         // here we convert an uint 4-bytes to a long value
+                        // milvus server requires sparse vector to be transfered in little endian
                         ByteBuffer pBuf = ByteBuffer.allocate(Long.BYTES);
                         pBuf.order(ByteOrder.LITTLE_ENDIAN);
                         int offset = 8*(int)j;

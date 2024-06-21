@@ -103,7 +103,7 @@ public class GeneratorUtils {
         Random random = new Random();
 
         for (int i = 0; i < dim; i++) {
-            rawVector[i] = random.nextInt(2); // 生成随机的 0 或 1
+            rawVector[i] = random.nextInt(2); // random 0 or 1
         }
 
         return rawVector;
@@ -121,6 +121,7 @@ public class GeneratorUtils {
             }
         }
 
+        // binary vector doesn't care endian since each byte is independent
         ByteBuffer byteBuffer = ByteBuffer.allocate(byteCount);
         for (byte b : binaryArray) {
             byteBuffer.put(b);

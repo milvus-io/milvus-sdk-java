@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection.request;
 
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
@@ -67,6 +68,9 @@ public class CreateCollectionReq {
     //private String partitionKeyField;
     private Integer numPartitions;
 
+    @Builder.Default
+    private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
+
     @Data
     @SuperBuilder
     public static class CollectionSchema {
@@ -90,7 +94,8 @@ public class CreateCollectionReq {
                 fieldSchema.setMaxCapacity(addFieldReq.getMaxCapacity());
             } else if (addFieldReq.getDataType().equals(DataType.VarChar)) {
                 fieldSchema.setMaxLength(addFieldReq.getMaxLength());
-            } else if (addFieldReq.getDataType().equals(DataType.FloatVector) || addFieldReq.getDataType().equals(DataType.BinaryVector)) {
+            } else if (addFieldReq.getDataType().equals(DataType.FloatVector) || addFieldReq.getDataType().equals(DataType.BinaryVector) ||
+                    addFieldReq.getDataType().equals(DataType.Float16Vector) || addFieldReq.getDataType().equals(DataType.BFloat16Vector)) {
                 if (addFieldReq.getDimension() == null) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is required for vector field");
                 }

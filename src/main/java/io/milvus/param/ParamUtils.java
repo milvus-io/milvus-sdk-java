@@ -631,13 +631,16 @@ public class ParamUtils {
                 plType = PlaceholderType.FloatVector;
                 List<Float> list = (List<Float>) vector;
                 ByteBuffer buf = ByteBuffer.allocate(Float.BYTES * list.size());
-                buf.order(ByteOrder.LITTLE_ENDIAN);
+                buf.order(ByteOrder.LITTLE_ENDIAN); // most of operating systems default little endian
                 list.forEach(buf::putFloat);
 
                 byte[] array = buf.array();
                 ByteString bs = ByteString.copyFrom(array);
                 byteStrings.add(bs);
             } else if (vector instanceof ByteBuffer) {
+                // for fp16/bf16 vector, each vector is a ByteBuffer with little endian
+                // for binary vector, each vector is a ByteBuffer no matter which endian
+                // the endian of each ByteBuffer is already specified by the caller
                 plType = PlaceholderType.BinaryVector;
                 ByteBuffer buf = (ByteBuffer) vector;
                 byte[] array = buf.array();
@@ -989,7 +992,9 @@ public class ParamUtils {
                 dataType == DataType.BFloat16Vector) {
             ByteBuffer totalBuf = null;
             int dim = 0;
-            // each object is ByteBuffer
+            // for fp16/bf16 vector, each vector is a ByteBuffer with little endian
+            // for binary vector, each vector is a ByteBuffer no matter which endian
+            // no need to set totalBuf endian since it is treated as byte array
             for (Object object : objects) {
                 ByteBuffer buf = (ByteBuffer) object;
                 if (totalBuf == null) {
@@ -1019,14 +1024,16 @@ public class ParamUtils {
     }
 
     private static ByteString genSparseFloatBytes(SortedMap<Long, Float> sparse) {
+        // milvus server requires sparse vector to be transfered in little endian
         ByteBuffer buf = ByteBuffer.allocate((Integer.BYTES + Float.BYTES) * sparse.size());
-        buf.order(ByteOrder.LITTLE_ENDIAN); // Milvus uses little endian by default
+        buf.order(ByteOrder.LITTLE_ENDIAN);
         for (Map.Entry<Long, Float> entry : sparse.entrySet()) {
             long k = entry.getKey();
             if (k < 0 || k >= (long)Math.pow(2.0, 32.0)-1) {
                 throw new ParamException("Sparse vector index must be positive and less than 2^32-1");
             }
             // here we construct a binary from the long key
+            // milvus server requires sparse vector to be transfered in little endian
             ByteBuffer lBuf = ByteBuffer.allocate(Long.BYTES);
             lBuf.order(ByteOrder.LITTLE_ENDIAN);
             lBuf.putLong(k);
