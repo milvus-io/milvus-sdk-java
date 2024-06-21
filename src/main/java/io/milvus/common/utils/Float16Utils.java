@@ -203,7 +203,7 @@ public class Float16Utils {
     /**
      * Converts a ByteBuffer to a fp16/bf16 vector stored in short array.
      */
-    public static List<Short> BufferToF16Vector(ByteBuffer buf) {
+    public static List<Short> bufferToF16Vector(ByteBuffer buf) {
         buf.rewind(); // reset the read position
         List<Short> vector = new ArrayList<>();
         ShortBuffer sbuf = buf.asShortBuffer();

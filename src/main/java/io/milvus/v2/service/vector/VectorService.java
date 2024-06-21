@@ -21,11 +21,13 @@ package io.milvus.v2.service.vector;
 
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.orm.iterator.*;
 import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.CollectionService;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.IndexService;
@@ -174,6 +176,22 @@ public class VectorService extends BaseService {
         return SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
                 .build();
+    }
+
+    public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                           QueryIteratorReq request) {
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
+        return new QueryIterator(request, blockingStub, pkField);
+    }
+
+    public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                            SearchIteratorReq request) {
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
+        return new SearchIterator(request, blockingStub, pkField);
     }
 
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
