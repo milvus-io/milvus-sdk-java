@@ -864,7 +864,7 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.IP)
                 .withTopK(topK)
-                .withVectors(targetVectors)
+                .withSparseFloatVectors(targetVectors)
                 .withVectorFieldName(field2Name)
                 .addOutField(field2Name)
                 .withParams("{\"drop_ratio_search\":0.2}")
@@ -880,11 +880,14 @@ class MilvusClientDockerTest {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
-            Assertions.assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+            if (targetVectorIDs.get(i) != scores.get(0).getLongID()) {
+                System.out.println(targetVectors.get(i));
+            }
+            Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
 
             Object v = scores.get(0).get(field2Name);
             SortedMap<Long, Float> sparse = (SortedMap<Long, Float>)v;
-            Assertions.assertTrue(sparse.equals(targetVectors.get(i)));
+            Assertions.assertEquals(sparse, targetVectors.get(i));
             Assertions.assertEquals(targetVectors.get(i).size(), sparse.size());
             for (Long key : sparse.keySet()) {
                 Assertions.assertTrue(targetVectors.get(i).containsKey(key));

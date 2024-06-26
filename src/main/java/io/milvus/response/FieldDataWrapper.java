@@ -45,6 +45,7 @@ import static io.milvus.grpc.DataType.JSON;
  */
 public class FieldDataWrapper {
     private final FieldData fieldData;
+    private List<?> cacheData = null;
 
     public FieldDataWrapper(@NonNull FieldData fieldData) {
         this.fieldData = fieldData;
@@ -182,6 +183,15 @@ public class FieldDataWrapper {
      * @return <code>List</code>
      */
     public List<?> getFieldData() throws IllegalResponseException {
+        if (cacheData != null) {
+            return cacheData;
+        }
+
+        cacheData = getFieldDataInternal();
+        return cacheData;
+    }
+
+    private List<?> getFieldDataInternal() throws IllegalResponseException {
         DataType dt = fieldData.getType();
         switch (dt) {
             case FloatVector: {
