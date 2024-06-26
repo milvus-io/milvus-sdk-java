@@ -65,7 +65,7 @@ public class ConvertUtils {
         for (int i = 0; i < numQueries; i++) {
             searchResults.add(searchResultsWrapper.getIDScore(i).stream().map(idScore -> SearchResp.SearchResult.builder()
                     .entity(idScore.getFieldValues())
-                    .distance(idScore.getScore())
+                    .score(idScore.getScore())
                     .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
                     .build()).collect(Collectors.toList()));
         }

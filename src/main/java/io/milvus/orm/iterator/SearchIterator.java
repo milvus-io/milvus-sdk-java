@@ -468,7 +468,7 @@ public class SearchIterator {
     }
 
     private float getDistance(QueryResultsWrapper.RowRecord record) {
-        return (float) record.get("distance");
+        return (float) record.get("score");
     }
 
     // Avoiding precision loss when converting to exponent notation.

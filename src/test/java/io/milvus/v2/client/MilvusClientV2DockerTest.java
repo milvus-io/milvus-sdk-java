@@ -1361,9 +1361,9 @@ class MilvusClientV2DockerTest {
             }
 
             for (QueryResultsWrapper.RowRecord record : res) {
-                Assertions.assertInstanceOf(Float.class, record.get("distance"));
-                Assertions.assertTrue((float)record.get("distance") >= 5.0);
-                Assertions.assertTrue((float)record.get("distance") <= 50.0);
+                Assertions.assertInstanceOf(Float.class, record.get("score"));
+                Assertions.assertTrue((float)record.get("score") >= 5.0);
+                Assertions.assertTrue((float)record.get("score") <= 50.0);
 
                 Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
                 Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
@@ -1407,7 +1407,7 @@ class MilvusClientV2DockerTest {
                 counter++;
             }
         }
-        System.out.println(String.format("There are %d items match distance between [5.0, 50.0]", counter));
+        System.out.println(String.format("There are %d items match score between [5.0, 50.0]", counter));
 
         // query iterator
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
