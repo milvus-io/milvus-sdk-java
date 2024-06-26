@@ -50,7 +50,7 @@ public class HybridSearchExample {
                 .build());
     }
 
-    private static final String COLLECTION_NAME = "java_sdk_example_hybrid_search";
+    private static final String COLLECTION_NAME = "java_sdk_example_hybrid_search_v1";
     private static final String ID_FIELD = "ID";
 
     private static final String FLOAT_VECTOR_FIELD = "float_vector";

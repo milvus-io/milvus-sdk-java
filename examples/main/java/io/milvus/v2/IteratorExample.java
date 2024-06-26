@@ -26,7 +26,7 @@ import io.milvus.v2.service.vector.response.QueryResp;
 import java.util.*;
 
 public class IteratorExample {
-    private static final String COLLECTION_NAME = "java_sdk_example_iterator";
+    private static final String COLLECTION_NAME = "java_sdk_example_iterator_v2";
     private static final String ID_FIELD = "userID";
     private static final String AGE_FIELD = "userAge";
     private static final String VECTOR_FIELD = "userFace";

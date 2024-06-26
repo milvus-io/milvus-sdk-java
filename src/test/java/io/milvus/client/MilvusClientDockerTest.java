@@ -83,7 +83,7 @@ class MilvusClientDockerTest {
     protected static final Gson GSON_INSTANCE = new Gson();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240605-443197bd-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.4");
 
     @BeforeAll
     public static void setUp() {
