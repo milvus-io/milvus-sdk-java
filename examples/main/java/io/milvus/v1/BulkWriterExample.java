@@ -135,8 +135,8 @@ public class BulkWriterExample {
         public static final String OBJECT_SECRET_KEY = "_your_storage_secret_key_";
     }
 
-    private static final String SIMPLE_COLLECTION_NAME = "for_bulkwriter";
-    private static final String ALL_TYPES_COLLECTION_NAME = "all_types_for_bulkwriter";
+    private static final String SIMPLE_COLLECTION_NAME = "java_sdk_bulkwriter_simple_v1";
+    private static final String ALL_TYPES_COLLECTION_NAME = "java_sdk_bulkwriter_all_v1";
     private static final Integer DIM = 512;
     private MilvusClient milvusClient;
 

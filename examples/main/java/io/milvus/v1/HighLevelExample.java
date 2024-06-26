@@ -52,7 +52,7 @@ public class HighLevelExample {
         milvusClient = new MilvusServiceClient(connectParam);
     }
 
-    private static final String COLLECTION_NAME = "java_sdk_example_hl";
+    private static final String COLLECTION_NAME = "java_sdk_example_highlevel_v1";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final String USER_JSON_FIELD = "userJson";
