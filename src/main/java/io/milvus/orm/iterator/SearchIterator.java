@@ -7,10 +7,7 @@ import com.google.common.collect.Lists;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.common.utils.JacksonUtils;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.grpc.SearchRequest;
-import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.*;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
@@ -18,16 +15,15 @@ import io.milvus.param.dml.SearchIteratorParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.SearchIteratorReq;
 import io.milvus.v2.utils.RpcUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.util.*;
 
 import static io.milvus.param.Constant.DEFAULT_SEARCH_EXTENSION_RATE;
 import static io.milvus.param.Constant.EF;
@@ -74,6 +70,28 @@ public class SearchIterator {
         this.batchSize = (int) searchIteratorParam.getBatchSize();
         this.expr = searchIteratorParam.getExpr();
         this.topK = searchIteratorParam.getTopK();
+        this.rpcUtils = new RpcUtils();
+
+        initParams();
+        checkForSpecialIndexParam();
+        checkRmRangeSearchParameters();
+        initSearchIterator();
+    }
+
+    // to support V2
+    public SearchIterator(SearchIteratorReq searchIteratorReq,
+                          MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                          CreateCollectionReq.FieldSchema primaryField) {
+        this.iteratorCache = new IteratorCache();
+        this.blockingStub = blockingStub;
+        IteratorAdapterV2 adapter = new IteratorAdapterV2();
+        this.searchIteratorParam = adapter.convertV2Req(searchIteratorReq);
+        this.primaryField = adapter.convertV2Field(primaryField);
+        this.metricType = this.searchIteratorParam.getMetricType();
+
+        this.batchSize = (int) this.searchIteratorParam.getBatchSize();
+        this.expr = this.searchIteratorParam.getExpr();
+        this.topK = this.searchIteratorParam.getTopK();
         this.rpcUtils = new RpcUtils();
 
         initParams();
@@ -178,7 +196,7 @@ public class SearchIterator {
         tailBand = getDistance(lastHit);
         String msg = String.format("set up init parameter for searchIterator width:%s tail_band:%s", width, tailBand);
         logger.debug(msg);
-        System.out.println(msg);
+//        System.out.println(msg);
     }
 
     private void updateFilteredIds(SearchResultsWrapper searchResultsWrapper) {

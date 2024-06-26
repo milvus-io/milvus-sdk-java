@@ -37,7 +37,7 @@ import java.util.*;
 
 
 public class SparseVectorExample {
-    private static final String COLLECTION_NAME = "java_sdk_example_sparse";
+    private static final String COLLECTION_NAME = "java_sdk_example_sparse_vector";
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";
 
