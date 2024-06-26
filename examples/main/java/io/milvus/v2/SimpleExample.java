@@ -19,7 +19,7 @@ public class SimpleExample {
                 .build();
         MilvusClientV2 client = new MilvusClientV2(config);
 
-        String collectionName = "java_sdk_example_simple";
+        String collectionName = "java_sdk_example_simple_v2";
         // drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(collectionName)
@@ -81,7 +81,7 @@ public class SimpleExample {
         System.out.println("\nSearch results:");
         for (List<SearchResp.SearchResult> results : searchResults) {
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %d, Distance: %f, %s\n", (long)result.getId(), result.getDistance(), result.getEntity().toString());
+                System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
             }
         }
     }

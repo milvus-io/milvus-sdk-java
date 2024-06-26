@@ -54,7 +54,7 @@ public class GeneralExample {
         milvusClient = new MilvusServiceClient(connectParam).withRetry(retryParam);
     }
 
-    private static final String COLLECTION_NAME = "java_sdk_example_general";
+    private static final String COLLECTION_NAME = "java_sdk_example_general_v1";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 64;
