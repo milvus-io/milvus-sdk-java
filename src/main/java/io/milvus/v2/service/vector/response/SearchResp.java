@@ -34,7 +34,7 @@ public class SearchResp {
     @SuperBuilder
     public static class SearchResult {
         private Map<String, Object> entity;
-        private Float distance;
+        private Float score;
         private Object id;
     }
 }
