@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 public class IndexService extends BaseService {
 
-    public void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, CreateIndexReq request) {
+    public void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         for(IndexParam indexParam : request.getIndexParams()) {
             String title = String.format("CreateIndexRequest collectionName:%s, fieldName:%s",
                     request.getCollectionName(), indexParam.getFieldName());
@@ -69,12 +69,12 @@ public class IndexService extends BaseService {
                 }
             }
 
-            Status status = milvusServiceBlockingStub.createIndex(createIndexRequest);
+            Status status = blockingStub.createIndex(createIndexRequest);
             rpcUtils.handleResponse(title, status);
         }
     }
 
-    public void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DropIndexReq request) {
+    public void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexReq request) {
         String title = String.format("DropIndexRequest collectionName:%s, fieldName:%s, indexName:%s",
                 request.getCollectionName(), request.getFieldName(), request.getIndexName());
         DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
@@ -83,11 +83,11 @@ public class IndexService extends BaseService {
                 .setIndexName(request.getIndexName() == null ? "" : request.getIndexName())
                 .build();
 
-        Status status = milvusServiceBlockingStub.dropIndex(dropIndexRequest);
+        Status status = blockingStub.dropIndex(dropIndexRequest);
         rpcUtils.handleResponse(title, status);
     }
 
-    public DescribeIndexResp describeIndex(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DescribeIndexReq request) {
+    public DescribeIndexResp describeIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeIndexReq request) {
         String title = String.format("DescribeIndexRequest collectionName:%s, fieldName:%s, indexName:%s",
                 request.getCollectionName(), request.getFieldName(), request.getIndexName());
         DescribeIndexRequest describeIndexRequest = DescribeIndexRequest.newBuilder()
@@ -96,7 +96,7 @@ public class IndexService extends BaseService {
                 .setIndexName(request.getIndexName() == null ? "" : request.getIndexName())
                 .build();
 
-        DescribeIndexResponse response = milvusServiceBlockingStub.describeIndex(describeIndexRequest);
+        DescribeIndexResponse response = blockingStub.describeIndex(describeIndexRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         List<IndexDescription> indexs = response.getIndexDescriptionsList().stream().filter(index -> index.getIndexName().equals(request.getIndexName()) || index.getFieldName().equals(request.getFieldName())).collect(Collectors.toList());
         if (indexs.isEmpty()) {
