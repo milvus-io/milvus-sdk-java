@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus;
+package io.milvus.v1;
 
 import io.milvus.param.R;
 
@@ -67,9 +67,11 @@ public class CommonUtils {
         return vectors;
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer generateBinaryVector(int dimension) {
         Random ran = new Random();
         int byteCount = dimension / 8;
+        // binary vector doesn't care endian since each byte is independent
         ByteBuffer vector = ByteBuffer.allocate(byteCount);
         for (int i = 0; i < byteCount; ++i) {
             vector.put((byte) ran.nextInt(Byte.MAX_VALUE));

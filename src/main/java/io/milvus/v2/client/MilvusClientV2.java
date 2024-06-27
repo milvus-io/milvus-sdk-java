@@ -21,6 +21,8 @@ package io.milvus.v2.client;
 
 import io.grpc.ManagedChannel;
 import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
@@ -309,6 +311,27 @@ public class MilvusClientV2 {
      */
     public SearchResp search(SearchReq request) {
         return vectorService.search(this.blockingStub, request);
+    }
+
+    /**
+     * Get queryIterator based on scalar field(s) filtered by boolean expression.
+     * Note that the order of the returned entities cannot be guaranteed.
+     *
+     * @param request {@link QueryIteratorReq}
+     * @return {status:result code,data: QueryIterator}
+     */
+    public QueryIterator queryIterator(QueryIteratorReq request) {
+        return vectorService.queryIterator(this.blockingStub, request);
+    }
+
+    /**
+     * Get searchIterator based on a vector field. Use expression to do filtering before search.
+     *
+     * @param request {@link SearchIteratorReq}
+     * @return {status:result code, data: SearchIterator}
+     */
+    public SearchIterator searchIterator(SearchIteratorReq request) {
+        return vectorService.searchIterator(this.blockingStub, request);
     }
 
     // Partition Operations

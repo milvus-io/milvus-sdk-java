@@ -19,49 +19,106 @@
 
 package io.milvus.v2.service.vector;
 
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.orm.iterator.*;
 import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.CollectionService;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
+import io.milvus.v2.utils.RpcUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
     public CollectionService collectionService = new CollectionService();
     public IndexService indexService = new IndexService();
+    private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
+
+    /**
+     * This method is for insert/upsert requests to reduce the rpc call of describeCollection()
+     * Always try to get the collection info from cache.
+     * If the cache doesn't have the collection info, call describeCollection() and cache it.
+     * If insert/upsert get server error, remove the cached collection info.
+     */
+    private DescribeCollectionResponse getCollectionInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                         String databaseName, String collectionName) {
+        String key = combineCacheKey(databaseName, collectionName);
+        DescribeCollectionResponse info = cacheCollectionInfo.get(key);
+        if (info == null) {
+            String msg = String.format("Fail to describe collection '%s'", collectionName);
+            DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                    .setCollectionName(collectionName);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+                msg = String.format("Fail to describe collection '%s' in database '%s'",
+                        collectionName, databaseName);
+            }
+            DescribeCollectionRequest describeCollectionRequest = builder.build();
+            DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
+            new RpcUtils().handleResponse(msg, response.getStatus());
+            info = response;
+            cacheCollectionInfo.put(key, info);
+        }
+
+        return info;
+    }
+
+    private String combineCacheKey(String databaseName, String collectionName) {
+        if (collectionName == null || StringUtils.isBlank(collectionName)) {
+            throw new ParamException("Collection name is empty, not able to get collection info.");
+        }
+        String key = collectionName;
+        if (StringUtils.isNotEmpty(databaseName)) {
+            key = String.format("%s|%s", databaseName, collectionName);
+        }
+        return key;
+    }
+
+    /**
+     * insert/upsert return an error, but is not a RateLimit error,
+     * clean the cache so that the next insert will call describeCollection() to get the latest info.
+     */
+    private void cleanCacheIfFailed(Status status, String databaseName, String collectionName) {
+        if ((status.getCode() != 0 && status.getCode() != 8) ||
+                (!status.getErrorCode().equals(io.milvus.grpc.ErrorCode.Success) &&
+                        status.getErrorCode() != io.milvus.grpc.ErrorCode.RateLimit)) {
+            cacheCollectionInfo.remove(combineCacheKey(databaseName, collectionName));
+        }
+    }
 
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         String title = String.format("InsertRequest collectionName:%s", request.getCollectionName());
 
-        DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName()).build();
-        DescribeCollectionResponse descResp = blockingStub.describeCollection(describeCollectionRequest);
+        // TODO: set the database name
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
 
         MutationResult response = blockingStub.insert(dataUtils.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
+        cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return InsertResp.builder()
                 .InsertCnt(response.getInsertCnt())
                 .build();
     }
 
-    public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, UpsertReq request) {
+    public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
         String title = String.format("UpsertRequest collectionName:%s", request.getCollectionName());
 
-        DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName()).build();
-        DescribeCollectionResponse descResp = milvusServiceBlockingStub.describeCollection(describeCollectionRequest);
-
-        MutationResult response = milvusServiceBlockingStub.upsert(dataUtils.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
+        // TODO: set the database name
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        MutationResult response = blockingStub.upsert(dataUtils.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
+        cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return UpsertResp.builder()
                 .upsertCnt(response.getInsertCnt())
@@ -106,6 +163,22 @@ public class VectorService extends BaseService {
                 .build();
     }
 
+    public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                       QueryIteratorReq request) {
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
+        return new QueryIterator(request, blockingStub, pkField);
+    }
+
+    public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                         SearchIteratorReq request) {
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
+        return new SearchIterator(request, blockingStub, pkField);
+    }
+
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
 
@@ -113,7 +186,8 @@ public class VectorService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-        DescribeCollectionResp respR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionResponse descResp = getCollectionInfo(milvusServiceBlockingStub, "", request.getCollectionName());
+        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
         if (request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }

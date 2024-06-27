@@ -16,8 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -40,12 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Note:
-// Due do a technical limitation, the Milvus 2.0 not allow to create multi-vector-fields within a collection.
-// So this example only create a single vector field in the collection, but we suppose the next version
-// should support this function.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public class HighLevelExample {
     private static final MilvusServiceClient milvusClient;
@@ -59,7 +52,7 @@ public class HighLevelExample {
         milvusClient = new MilvusServiceClient(connectParam);
     }
 
-    private static final String COLLECTION_NAME = "java_sdk_example_hl";
+    private static final String COLLECTION_NAME = "java_sdk_example_highlevel_v1";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final String USER_JSON_FIELD = "userJson";

@@ -16,21 +16,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.milvus;
-
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.common.utils.JacksonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.ManualCompactParam;
-import io.milvus.param.dml.*;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.response.*;
@@ -38,12 +38,6 @@ import io.milvus.response.*;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Note:
-// Due do a technical limitation, the Milvus 2.0 not allow to create multi-vector-fields within a collection.
-// So this example only create a single vector field in the collection, but we suppose the next version
-// should support this function.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 public class GeneralExample {
     private static final MilvusClient milvusClient;
@@ -60,7 +54,7 @@ public class GeneralExample {
         milvusClient = new MilvusServiceClient(connectParam).withRetry(retryParam);
     }
 
-    private static final String COLLECTION_NAME = "java_sdk_example_general";
+    private static final String COLLECTION_NAME = "java_sdk_example_general_v1";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 64;
@@ -72,7 +66,7 @@ public class GeneralExample {
 
     private static final Integer SEARCH_K = 5;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
-
+    
 
     private R<RpcStatus> createCollection(long timeoutMilliseconds) {
         System.out.println("========== createCollection() ==========");
@@ -370,6 +364,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withExpr(expr)
                 .withOutFields(fields)
+                .withLimit(10L)
                 .build();
         R<QueryResults> response = milvusClient.query(test);
         CommonUtils.handleResponseStatus(response);

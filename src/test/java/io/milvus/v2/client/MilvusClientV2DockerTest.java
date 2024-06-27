@@ -19,16 +19,27 @@
 
 package io.milvus.v2.client;
 
+import com.google.common.collect.Lists;
 import com.google.gson.*;
-
 import com.google.gson.reflect.TypeToken;
+
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.AddFieldReq;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.partition.request.CreatePartitionReq;
+import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.index.request.CreateIndexReq;
+import io.milvus.v2.service.index.request.DescribeIndexReq;
+import io.milvus.v2.service.index.request.DropIndexReq;
+import io.milvus.v2.service.index.response.DescribeIndexResp;
+import io.milvus.v2.service.partition.request.*;
+import io.milvus.v2.service.utility.request.AlterAliasReq;
+import io.milvus.v2.service.utility.request.CreateAliasReq;
+import io.milvus.v2.service.utility.request.DropAliasReq;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.response.*;
@@ -56,7 +67,7 @@ class MilvusClientV2DockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.1");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.3.13");
 
     @BeforeAll
     public static void setUp() {
@@ -275,6 +286,7 @@ class MilvusClientV2DockerTest {
                     case JSON: {
                         JsonObject jsonObj = new JsonObject();
                         jsonObj.addProperty(String.format("JSON_%d", i), i);
+                        jsonObj.add("flags", GSON_INSTANCE.toJsonTree(new long[]{i, i+1, i + 2}));
                         row.add(field.getName(), jsonObj);
                         break;
                     }
@@ -334,6 +346,18 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(arrStrOri, arrStr);
     }
 
+    private long getRowCount(String collectionName) {
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(collectionName)
+                .filter("")
+                .outputFields(Collections.singletonList("count(*)"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(1, queryResults.size());
+        return (long)queryResults.get(0).getEntity().get("count(*)");
+    }
+
 
     @Test
     void testFloatVectors() {
@@ -359,6 +383,7 @@ class MilvusClientV2DockerTest {
 
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
+                .description("dummy")
                 .collectionSchema(collectionSchema)
                 .indexParams(Collections.singletonList(indexParam))
                 .build();
@@ -390,15 +415,41 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1, upsertResp.getUpsertCnt());
 
         // get row count
-        QueryResp queryResp = client.query(QueryReq.builder()
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(count + 1, rowCount);
+
+        // describe collection
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
-                .filter("")
-                .outputFields(Collections.singletonList("count(*)"))
-                .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        Assertions.assertEquals(1, queryResults.size());
-        Assertions.assertEquals(count + 1, queryResults.get(0).getEntity().get("count(*)"));
+        Assertions.assertEquals(randomCollectionName, descResp.getCollectionName());
+        Assertions.assertEquals("dummy", descResp.getDescription());
+        Assertions.assertEquals(2, descResp.getNumOfPartitions());
+        Assertions.assertEquals(1, descResp.getVectorFieldNames().size());
+        Assertions.assertEquals("id", descResp.getPrimaryFieldName());
+        Assertions.assertTrue(descResp.getEnableDynamicField());
+        Assertions.assertFalse(descResp.getAutoID());
+
+        List<String> fieldNames = descResp.getFieldNames();
+        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fieldNames.size());
+        CreateCollectionReq.CollectionSchema schema = descResp.getCollectionSchema();
+        for (String name : fieldNames) {
+            CreateCollectionReq.FieldSchema f1 = collectionSchema.getField(name);
+            CreateCollectionReq.FieldSchema f2 = schema.getField(name);
+            Assertions.assertNotNull(f1);
+            Assertions.assertNotNull(f2);
+            Assertions.assertEquals(f1.getName(), f2.getName());
+            Assertions.assertEquals(f1.getDescription(), f2.getDescription());
+            Assertions.assertEquals(f1.getDataType(), f2.getDataType());
+            Assertions.assertEquals(f1.getDimension(), f2.getDimension());
+            Assertions.assertEquals(f1.getMaxLength(), f2.getMaxLength());
+            Assertions.assertEquals(f1.getIsPrimaryKey(), f2.getIsPrimaryKey());
+            Assertions.assertEquals(f1.getIsPartitionKey(), f2.getIsPartitionKey());
+            if (f1.getDataType() == io.milvus.v2.common.DataType.Array) {
+                Assertions.assertEquals(f1.getElementType(), f2.getElementType());
+                Assertions.assertEquals(f1.getMaxCapacity(), f2.getMaxCapacity());
+            }
+        }
 
         // search in partition
         SearchResp searchResp = client.search(SearchReq.builder()
@@ -468,6 +519,14 @@ class MilvusClientV2DockerTest {
             verifyOutput(row, entity);
         }
 
+        // query
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(6, queryResults.size());
+
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
 
@@ -509,15 +568,8 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
         // get row count
-        QueryResp queryResp = client.query(QueryReq.builder()
-                .collectionName(randomCollectionName)
-                .filter("")
-                .outputFields(Collections.singletonList("count(*)"))
-                .consistencyLevel(ConsistencyLevel.STRONG)
-                .build());
-        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        Assertions.assertEquals(1, queryResults.size());
-        Assertions.assertEquals(count, queryResults.get(0).getEntity().get("count(*)"));
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(count, rowCount);
 
         // search in collection
         int nq = 5;
@@ -528,7 +580,7 @@ class MilvusClientV2DockerTest {
             JsonObject row = data.get(RANDOM.nextInt((int)count));
             targetIDs.add(row.get("id").getAsLong());
             byte[] vector = GSON_INSTANCE.fromJson(row.get(vectorFieldName), new TypeToken<byte[]>() {}.getType());
-            targetVectors.add(new BinaryVec(ByteBuffer.wrap(vector)));
+            targetVectors.add(new BinaryVec(vector));
         }
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(randomCollectionName)
@@ -543,6 +595,475 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(topk, results.size());
             Assertions.assertEquals(targetIDs.get(i), results.get(0).getId());
         }
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testDeleteUpsert() {
+        String randomCollectionName = generator.generate(10);
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("pk")
+                .dataType(DataType.VarChar)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("float_vector")
+                .dataType(DataType.FloatVector)
+                .dimension(4)
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("float_vector")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.L2)
+                .extraParams(new HashMap<String,Object>(){{put("nlist", 64);}})
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+
+        // insert
+        List<JsonObject> data = new ArrayList<>();
+        Gson gson = new Gson();
+        for (int i = 0; i < 10; i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty("pk", String.format("pk_%d", i));
+            row.add("float_vector", gson.toJsonTree(new float[]{(float)i, (float)(i + 1), (float)(i + 2), (float)(i + 3)}));
+            data.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(10, insertResp.getInsertCnt());
+
+        // delete
+        DeleteResp deleteResp = client.delete(DeleteReq.builder()
+                .collectionName(randomCollectionName)
+                .ids(Arrays.asList("pk_5", "pk_8"))
+                .build());
+        Assertions.assertEquals(2, deleteResp.getDeleteCnt());
+
+        // get row count
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(8L, rowCount);
+
+        // upsert
+        List<JsonObject> dataUpdate = new ArrayList<>();
+        JsonObject row1 = new JsonObject();
+        row1.addProperty("pk", "pk_5");
+        row1.add("float_vector", gson.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
+        dataUpdate.add(row1);
+        JsonObject row2 = new JsonObject();
+        row2.addProperty("pk", "pk_2");
+        row2.add("float_vector", gson.toJsonTree(new float[]{2.0f, 2.0f, 2.0f, 2.0f}));
+        dataUpdate.add(row2);
+        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(dataUpdate)
+                .build());
+        Assertions.assertEquals(2, upsertResp.getUpsertCnt());
+
+        // get row count
+        rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(9L, rowCount);
+
+        // verify
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter("pk == \"pk_2\" or pk == \"pk_5\"")
+                .outputFields(Collections.singletonList("*"))
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(2, queryResults.size());
+
+        QueryResp.QueryResult result1 = queryResults.get(0);
+        Map<String, Object> entity1 = result1.getEntity();
+        Assertions.assertTrue(entity1.containsKey("pk"));
+        Assertions.assertEquals("pk_2", entity1.get("pk"));
+        Assertions.assertTrue(entity1.containsKey("float_vector"));
+        Assertions.assertTrue(entity1.get("float_vector") instanceof List);
+        List<Float> vector1 = (List<Float>) entity1.get("float_vector");
+        for (Float f : vector1) {
+            Assertions.assertEquals(2.0f, f);
+        }
+
+        QueryResp.QueryResult result2 = queryResults.get(1);
+        Map<String, Object> entity2 = result2.getEntity();
+        Assertions.assertTrue(entity2.containsKey("pk"));
+        Assertions.assertEquals("pk_5", entity2.get("pk"));
+        Assertions.assertTrue(entity2.containsKey("float_vector"));
+        Assertions.assertTrue(entity2.get("float_vector") instanceof List);
+        List<Float> vector2 = (List<Float>) entity2.get("float_vector");
+        for (Float f : vector2) {
+            Assertions.assertEquals(5.0f, f);
+        }
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testAlias() {
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName("AAA")
+                .description("desc_A")
+                .dimension(100)
+                .build());
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName("BBB")
+                .description("desc_B")
+                .dimension(50)
+                .build());
+
+        client.createAlias(CreateAliasReq.builder()
+                .collectionName("BBB")
+                .alias("CCC")
+                .build());
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName("CCC")
+                .build());
+        Assertions.assertEquals("desc_B", descResp.getDescription());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName("BBB")
+                .build());
+
+        Assertions.assertThrows(MilvusClientException.class, ()->client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName("CCC")
+                .build()));
+
+        client.alterAlias(AlterAliasReq.builder()
+                .collectionName("AAA")
+                .alias("CCC")
+                .build());
+
+        descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName("CCC")
+                .build());
+        Assertions.assertEquals("desc_A", descResp.getDescription());
+
+        client.dropAlias(DropAliasReq.builder()
+                .alias("CCC")
+                .build());
+
+        Assertions.assertThrows(MilvusClientException.class, ()->client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName("CCC")
+                .build()));
+    }
+
+    @Test
+    void testPartition() {
+        String randomCollectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .dimension(4)
+                .build());
+
+        client.createPartition(CreatePartitionReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionName("P1")
+                .build());
+
+        client.createPartition(CreatePartitionReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionName("P2")
+                .build());
+
+        List<String> partitions = client.listPartitions(ListPartitionsReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(3, partitions.size());
+        Assertions.assertTrue(partitions.contains("P1"));
+        Assertions.assertTrue(partitions.contains("P2"));
+        Assertions.assertTrue(partitions.contains("_default"));
+
+        Boolean has = client.hasPartition(HasPartitionReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionName("P1")
+                .build());
+        Assertions.assertTrue(has);
+
+        client.releasePartitions(ReleasePartitionsReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionNames(Collections.singletonList("P1"))
+                .build());
+
+        client.dropPartition(DropPartitionReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionName("P1")
+                .build());
+
+        has = client.hasPartition(HasPartitionReq.builder()
+                .collectionName(randomCollectionName)
+                .partitionName("P1")
+                .build());
+        Assertions.assertFalse(has);
+
+        partitions = client.listPartitions(ListPartitionsReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(2, partitions.size());
+        Assertions.assertFalse(partitions.contains("P1"));
+    }
+
+    @Test
+    void testIndex() {
+        String randomCollectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .dimension(dimension)
+                .build());
+
+        client.releaseCollection(ReleaseCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX.name(), descResp.getIndexType());
+
+        client.dropIndex(DropIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+
+        IndexParam param = IndexParam.builder()
+                .fieldName("vector")
+                .indexName("XXX")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.COSINE)
+                .extraParams(new HashMap<String,Object>(){{put("nlist", 64);}})
+                .build();
+
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(Collections.singletonList(param))
+                .build());
+
+        descResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+        Assertions.assertEquals("XXX", descResp.getIndexName());
+        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT.name(), descResp.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.COSINE.name(), descResp.getMetricType());
+        Map<String, Object> extraParams = descResp.getExtraParams();
+        Assertions.assertTrue(extraParams.containsKey("nlist"));
+        Assertions.assertEquals("64", extraParams.get("nlist"));
+    }
+
+    @Test
+    void testCacheCollectionSchema() {
+        String randomCollectionName = generator.generate(10);
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .autoID(true)
+                .dimension(dimension)
+                .build());
+
+        // insert
+        JsonObject row = new JsonObject();
+        row.add("vector", GSON_INSTANCE.toJsonTree(generateFloatVectors(1).get(0)));
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+
+        // drop collection
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // create a new collection with the same name, different schema
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .autoID(true)
+                .dimension(100)
+                .build());
+
+        // insert wrong data
+        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
+
+        // insert correct data
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < 100; ++i) {
+            vector.add(RANDOM.nextFloat());
+        }
+        row.add("vector", GSON_INSTANCE.toJsonTree(vector));
+        insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+    }
+
+    @Test
+    public void testIterator() {
+        String randomCollectionName = generator.generate(10);
+        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("float_vector")
+                .dataType(DataType.FloatVector)
+                .dimension(dimension)
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("float_vector")
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.L2)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+
+        // insert rows
+        long count = 10000;
+        List<JsonObject> data = generateRandomData(collectionSchema, count);
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // get row count
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(count, rowCount);
+
+        // search iterator
+        SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
+                .collectionName(randomCollectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .batchSize(20L)
+                .vectorFieldName("float_vector")
+                .vectors(Collections.singletonList(new FloatVec(generateFolatVector())))
+                .expr("int64_field > 500 && int64_field < 1000")
+                .params("{\"range_filter\": 5.0, \"radius\": 50.0}")
+                .topK(1000)
+                .metricType(IndexParam.MetricType.L2)
+                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
+                .build());
+
+        int counter = 0;
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> res = searchIterator.next();
+            if (res.isEmpty()) {
+                System.out.println("search iteration finished, close");
+                searchIterator.close();
+                break;
+            }
+
+            for (QueryResultsWrapper.RowRecord record : res) {
+                Assertions.assertInstanceOf(Float.class, record.get("score"));
+                Assertions.assertTrue((float)record.get("score") >= 5.0);
+                Assertions.assertTrue((float)record.get("score") <= 50.0);
+
+                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
+                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
+                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
+                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
+                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
+                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
+                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
+                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
+
+                long int64Val = (long)record.get("int64_field");
+                Assertions.assertTrue(int64Val > 500L && int64Val < 1000L);
+
+                String varcharVal = (String)record.get("varchar_field");
+                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
+
+                JsonObject jsonObj = (JsonObject)record.get("json_field");
+                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
+
+                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
+                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
+
+                List<Float> floatVector = (List<Float>)record.get("float_vector");
+                Assertions.assertEquals(dimension, floatVector.size());
+
+                counter++;
+            }
+        }
+        System.out.println(String.format("There are %d items match distance between [5.0, 50.0]", counter));
+
+        // query iterator
+        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+                .collectionName(randomCollectionName)
+                .expr("int64_field < 300")
+                .outputFields(Lists.newArrayList("*"))
+                .batchSize(50L)
+                .offset(5)
+                .limit(400)
+                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
+                .build());
+
+        counter = 0;
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
+            if (res.isEmpty()) {
+                System.out.println("query iteration finished, close");
+                queryIterator.close();
+                break;
+            }
+
+            for (QueryResultsWrapper.RowRecord record : res) {
+                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
+                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
+                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
+                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
+                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
+                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
+                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
+                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
+                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
+
+                long int64Val = (long)record.get("int64_field");
+                Assertions.assertTrue(int64Val < 300L);
+
+                String varcharVal = (String)record.get("varchar_field");
+                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
+
+                JsonObject jsonObj = (JsonObject)record.get("json_field");
+                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
+
+                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
+                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
+
+                List<Float> floatVector = (List<Float>)record.get("float_vector");
+                Assertions.assertEquals(dimension, floatVector.size());
+
+                counter++;
+            }
+        }
+        Assertions.assertEquals(295, counter);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }

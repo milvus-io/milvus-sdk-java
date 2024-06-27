@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -61,12 +62,63 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
     protected LogLevel logLevel = LogLevel.Info;
+    private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
 
     protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
 
     protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
 
     protected abstract boolean clientIsReady();
+
+    /**
+     * This method is for insert/upsert requests to reduce the rpc call of describeCollection()
+     * Always try to get the collection info from cache.
+     * If the cache doesn't have the collection info, call describeCollection() and cache it.
+     * If insert/upsert get server error, remove the cached collection info.
+     */
+    private DescribeCollectionResponse getCollectionInfo(String databaseName, String collectionName) {
+        String key = combineCacheKey(databaseName, collectionName);
+        DescribeCollectionResponse info = cacheCollectionInfo.get(key);
+        if (info == null) {
+            String msg = String.format("Fail to describe collection '%s'", collectionName);
+            DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                    .setCollectionName(collectionName);
+            if (StringUtils.isNotEmpty(databaseName)) {
+                builder.setDbName(databaseName);
+                msg = String.format("Fail to describe collection '%s' in database '%s'",
+                        collectionName, databaseName);
+            }
+            DescribeCollectionRequest describeCollectionRequest = builder.build();
+            DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
+            handleResponse(msg, response.getStatus());
+            info = response;
+            cacheCollectionInfo.put(key, info);
+        }
+
+        return info;
+    }
+
+    private String combineCacheKey(String databaseName, String collectionName) {
+        if (collectionName == null || StringUtils.isBlank(collectionName)) {
+            throw new ParamException("Collection name is empty, not able to get collection info.");
+        }
+        String key = collectionName;
+        if (StringUtils.isNotEmpty(databaseName)) {
+            key = String.format("%s|%s", databaseName, collectionName);
+        }
+        return key;
+    }
+
+    /**
+     * insert/upsert return an error, but is not a RateLimit error,
+     * clean the cache so that the next insert will call describeCollection() to get the latest info.
+     */
+    private void cleanCacheIfFailed(Status status, String databaseName, String collectionName) {
+        if ((status.getCode() != 0 && status.getCode() != 8) ||
+                (!status.getErrorCode().equals(ErrorCode.Success) && status.getErrorCode() != ErrorCode.RateLimit)) {
+            cacheCollectionInfo.remove(combineCacheKey(databaseName, collectionName));
+        }
+    }
 
     private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
                                           long waitingInterval, long timeout) throws IllegalResponseException {
@@ -528,6 +580,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().dropCollection(dropCollectionRequest);
             handleResponse(title, response);
+            cacheCollectionInfo.remove(combineCacheKey(requestParam.getDatabaseName(), requestParam.getCollectionName()));
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1417,17 +1470,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("InsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
-                    .withDatabaseName(requestParam.getDatabaseName())
-                    .withCollectionName(requestParam.getCollectionName());
-            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-            if (descResp.getStatus() != R.Status.Success.getCode()) {
-                return R.failed(descResp.getException());
-            }
-
-            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+            DescribeCollectionResponse descResp = getCollectionInfo(requestParam.getDatabaseName(),
+                    requestParam.getCollectionName());
+            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp);
             ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
             MutationResult response = blockingStub().insert(builderWraper.buildInsertRequest());
+            cleanCacheIfFailed(response.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1450,15 +1498,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logDebug(requestParam.toString());
         String title = String.format("InsertAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
-        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
-                .withDatabaseName(requestParam.getDatabaseName())
-                .withCollectionName(requestParam.getCollectionName());
-        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-        if (descResp.getStatus() != R.Status.Success.getCode()) {
-            return Futures.immediateFuture(R.failed(descResp.getException()));
-        }
-
-        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+        DescribeCollectionResponse descResp = getCollectionInfo(requestParam.getDatabaseName(),
+                requestParam.getCollectionName());
+        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp);
         ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
         ListenableFuture<MutationResult> response = futureStub().insert(builderWraper.buildInsertRequest());
 
@@ -1467,6 +1509,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 new FutureCallback<MutationResult>() {
                     @Override
                     public void onSuccess(MutationResult result) {
+                        cleanCacheIfFailed(result.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
                         } else {
@@ -1504,17 +1547,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("UpsertRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
-                    .withDatabaseName(requestParam.getDatabaseName())
-                    .withCollectionName(requestParam.getCollectionName());
-            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-            if (descResp.getStatus() != R.Status.Success.getCode()) {
-                return R.failed(descResp.getException());
-            }
-
-            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+            DescribeCollectionResponse descResp = getCollectionInfo(requestParam.getDatabaseName(),
+                    requestParam.getCollectionName());
+            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp);
             ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
             MutationResult response = blockingStub().upsert(builderWraper.buildUpsertRequest());
+            cleanCacheIfFailed(response.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
             handleResponse(title, response.getStatus());
             return R.success(response);
         } catch (StatusRuntimeException e) {
@@ -1536,15 +1574,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logDebug(requestParam.toString());
         String title = String.format("UpsertAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
-        DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
-                .withDatabaseName(requestParam.getDatabaseName())
-                .withCollectionName(requestParam.getCollectionName());
-        R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-        if (descResp.getStatus() != R.Status.Success.getCode()) {
-            return Futures.immediateFuture(R.failed(descResp.getException()));
-        }
-
-        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+        DescribeCollectionResponse descResp = getCollectionInfo(requestParam.getDatabaseName(),
+                requestParam.getCollectionName());
+        DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp);
         ParamUtils.InsertBuilderWrapper builderWraper = new ParamUtils.InsertBuilderWrapper(requestParam, wrapper);
         ListenableFuture<MutationResult> response = futureStub().upsert(builderWraper.buildUpsertRequest());
 
@@ -1553,6 +1585,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 new FutureCallback<MutationResult>() {
                     @Override
                     public void onSuccess(MutationResult result) {
+                        cleanCacheIfFailed(result.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
                         } else {
@@ -2912,14 +2945,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("DeleteIdsRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
-            DescribeCollectionParam.Builder builder = DescribeCollectionParam.newBuilder()
-                    .withCollectionName(requestParam.getCollectionName());
-            R<DescribeCollectionResponse> descResp = describeCollection(builder.build());
-            if (descResp.getStatus() != R.Status.Success.getCode()) {
-                logError("Failed to describe collection: {}", requestParam.getCollectionName());
-                return R.failed(descResp.getException());
-            }
-            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp.getData());
+            DescribeCollectionResponse descResp = getCollectionInfo("", requestParam.getCollectionName());
+            DescCollResponseWrapper wrapper = new DescCollResponseWrapper(descResp);
 
             String expr = VectorUtils.convertPksExpr(requestParam.getPrimaryIds(), wrapper);
             DeleteParam deleteParam = DeleteParam.newBuilder()
