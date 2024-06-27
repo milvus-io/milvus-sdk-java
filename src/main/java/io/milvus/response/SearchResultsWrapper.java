@@ -54,7 +54,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
             if (fieldName.compareTo(field.getFieldName()) == 0) {
-                return new FieldDataWrapper(field);
+                return getFieldWrapperInternal(field);
             }
         }
 
@@ -117,7 +117,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         for (int i = 0; i < results.getFieldsDataCount(); ++i) {
             FieldData data = results.getFieldsData(i);
             if (fieldName.compareTo(data.getFieldName()) == 0) {
-                wrapper = new FieldDataWrapper(data);
+                wrapper = getFieldWrapperInternal(data);
             }
         }
 
@@ -195,10 +195,10 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             FieldDataWrapper dynamicField = null;
             for (FieldData field : fields) {
                 if (field.getIsDynamic()) {
-                    dynamicField = new FieldDataWrapper(field);
+                    dynamicField = getFieldWrapperInternal(field);
                 }
                 if (outputKey.equals(field.getFieldName())) {
-                    FieldDataWrapper wrapper = new FieldDataWrapper(field);
+                    FieldDataWrapper wrapper = getFieldWrapperInternal(field);
                     for (int n = 0; n < k; ++n) {
                         if ((offset + n) >= wrapper.getRowCount()) {
                             throw new ParamException("Illegal values length of output fields");

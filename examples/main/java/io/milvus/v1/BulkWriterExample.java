@@ -1,4 +1,22 @@
-package io.milvus;
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package io.milvus.v1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -7,12 +25,12 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import io.milvus.bulkwriter.BulkWriter;
-import io.milvus.bulkwriter.CloudImport;
-import io.milvus.bulkwriter.LocalBulkWriter;
-import io.milvus.bulkwriter.LocalBulkWriterParam;
-import io.milvus.bulkwriter.RemoteBulkWriter;
-import io.milvus.bulkwriter.RemoteBulkWriterParam;
+import io.milvus.bulkwriter.*;
+import io.milvus.bulkwriter.common.clientenum.BulkFileType;
+import io.milvus.bulkwriter.common.clientenum.CloudStorage;
+import io.milvus.bulkwriter.common.utils.GeneratorUtils;
+import io.milvus.bulkwriter.common.utils.ImportUtils;
+import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.bulkwriter.connect.AzureConnectParam;
 import io.milvus.bulkwriter.connect.S3ConnectParam;
 import io.milvus.bulkwriter.connect.StorageConnectParam;
@@ -21,34 +39,12 @@ import io.milvus.bulkwriter.response.GetImportProgressResponse;
 import io.milvus.bulkwriter.response.ListImportJobsResponse;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.bulkwriter.common.clientenum.BulkFileType;
-import io.milvus.bulkwriter.common.clientenum.CloudStorage;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.bulkwriter.common.utils.GeneratorUtils;
-import io.milvus.bulkwriter.common.utils.ImportUtils;
-import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.GetCollectionStatisticsResponse;
-import io.milvus.grpc.GetImportStateResponse;
-import io.milvus.grpc.ImportResponse;
-import io.milvus.grpc.ImportState;
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.grpc.QueryResults;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
+import io.milvus.grpc.*;
+import io.milvus.param.*;
 import io.milvus.param.bulkinsert.BulkInsertParam;
 import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
-import io.milvus.param.collection.CollectionSchemaParam;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.FlushParam;
-import io.milvus.param.collection.GetCollectionStatisticsParam;
-import io.milvus.param.collection.HasCollectionParam;
-import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.*;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.GetCollStatResponseWrapper;
@@ -68,19 +64,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static io.milvus.BulkWriterExample.MilvusConsts.HOST;
-import static io.milvus.BulkWriterExample.MilvusConsts.PORT;
-import static io.milvus.BulkWriterExample.MilvusConsts.USER_NAME;
-
 
 public class BulkWriterExample {
     // milvus
-    public static class MilvusConsts {
-        public static final String HOST = "127.0.0.1";
-        public static final Integer PORT = 19530;
-        public static final String USER_NAME = "user.name";
-        public static final String PASSWORD = "password";
-    }
+    public static final String HOST = "127.0.0.1";
+    public static final Integer PORT = 19530;
+    public static final String USER_NAME = "user.name";
+    public static final String PASSWORD = "password";
 
     private static final Gson GSON_INSTANCE = new Gson();
 
@@ -145,8 +135,8 @@ public class BulkWriterExample {
         public static final String OBJECT_SECRET_KEY = "_your_storage_secret_key_";
     }
 
-    private static final String SIMPLE_COLLECTION_NAME = "for_bulkwriter";
-    private static final String ALL_TYPES_COLLECTION_NAME = "all_types_for_bulkwriter";
+    private static final String SIMPLE_COLLECTION_NAME = "java_sdk_bulkwriter_simple_v1";
+    private static final String ALL_TYPES_COLLECTION_NAME = "java_sdk_bulkwriter_all_v1";
     private static final Integer DIM = 512;
     private MilvusClient milvusClient;
 
@@ -170,7 +160,7 @@ public class BulkWriterExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost(HOST)
                 .withPort(PORT)
-                .withAuthorization(USER_NAME, MilvusConsts.PASSWORD)
+                .withAuthorization(USER_NAME, PASSWORD)
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
         System.out.println("\nConnected");

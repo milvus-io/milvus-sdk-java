@@ -21,6 +21,8 @@ package io.milvus.v2.service.vector.request.data;
 
 
 import io.milvus.grpc.PlaceholderType;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class FloatVec implements BaseVector {
@@ -28,6 +30,13 @@ public class FloatVec implements BaseVector {
 
     public FloatVec(List<Float> data) {
         this.data = data;
+    }
+
+    public FloatVec(float[] data) {
+        this.data = new ArrayList<>();
+        for (float f : data) {
+            this.data.add(f);
+        }
     }
 
     @Override

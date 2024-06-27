@@ -16,8 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -30,8 +29,9 @@ import io.milvus.param.index.*;
 import io.milvus.response.*;
 import java.util.*;
 
+
 public class SimpleExample {
-    private static final String COLLECTION_NAME = "java_sdk_example_simple";
+    private static final String COLLECTION_NAME = "java_sdk_example_simple_v1";
     private static final String ID_FIELD = "book_id";
     private static final String VECTOR_FIELD = "book_intro";
     private static final String TITLE_FIELD = "book_title";

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus;
+package io.milvus.v1;
 
 import com.google.common.collect.Lists;
 import io.milvus.client.MilvusClient;
@@ -61,7 +61,7 @@ public class IteratorExample {
         milvusClient = new MilvusServiceClient(connectParam).withRetry(retryParam);
     }
 
-    private static final String COLLECTION_NAME = "test_iterator";
+    private static final String COLLECTION_NAME = "java_sdk_example_iterator_v1";
     private static final String ID_FIELD = "userID";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 8;

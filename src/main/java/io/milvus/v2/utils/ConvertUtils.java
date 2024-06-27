@@ -77,14 +77,18 @@ public class ConvertUtils {
                 .indexName(response.getIndexName())
                 .fieldName(response.getFieldName())
                 .build();
+        Map<String, Object> extraParams = new HashMap<>();
         List<KeyValuePair> params = response.getParamsList();
         for(KeyValuePair param : params) {
             if (param.getKey().equals("index_type")) {
                 describeIndexResp.setIndexType(param.getValue());
-            }else if (param.getKey().equals("metric_type")) {
+            } else if (param.getKey().equals("metric_type")) {
                 describeIndexResp.setMetricType(param.getValue());
+            } else {
+                extraParams.put(param.getKey(), param.getValue());
             }
         }
+        describeIndexResp.setExtraParams(extraParams);
         return describeIndexResp;
     }
 }
