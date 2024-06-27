@@ -25,26 +25,19 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
-import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
-import io.milvus.v2.service.collection.response.ListCollectionsResp;
+import io.milvus.v2.service.collection.response.*;
 import io.milvus.v2.service.index.IndexService;
-import io.milvus.v2.service.index.request.CreateIndexReq;
-import io.milvus.v2.service.index.request.DescribeIndexReq;
-import io.milvus.v2.service.index.request.DropIndexReq;
-import io.milvus.v2.service.index.request.ListIndexesReq;
-import io.milvus.v2.service.index.response.DescribeIndexResp;
+import io.milvus.v2.service.index.request.*;
+import io.milvus.v2.service.index.response.*;
 import io.milvus.v2.service.partition.PartitionService;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.rbac.RoleService;
 import io.milvus.v2.service.rbac.UserService;
 import io.milvus.v2.service.rbac.request.*;
-import io.milvus.v2.service.rbac.response.DescribeRoleResp;
-import io.milvus.v2.service.rbac.response.DescribeUserResp;
+import io.milvus.v2.service.rbac.response.*;
 import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.*;
-import io.milvus.v2.service.utility.response.DescribeAliasResp;
-import io.milvus.v2.service.utility.response.ListAliasResp;
+import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.VectorService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
@@ -162,6 +155,14 @@ public class MilvusClientV2 {
         collectionService.dropCollection(this.blockingStub, request);
     }
     /**
+     * Alter a collection in Milvus.
+     *
+     * @param request alter collection request
+     */
+    public void alterCollection(AlterCollectionReq request) {
+        collectionService.alterCollection(this.blockingStub, request);
+    }
+    /**
      * Checks whether a collection exists in Milvus.
      *
      * @param request has collection request
@@ -238,6 +239,14 @@ public class MilvusClientV2 {
      */
     public void dropIndex(DropIndexReq request) {
         indexService.dropIndex(this.blockingStub, request);
+    }
+    /**
+     * Alter an index in Milvus.
+     *
+     * @param request alter index request
+     */
+    public void alterIndex(AlterIndexReq request) {
+        indexService.alterIndex(this.blockingStub, request);
     }
     /**
      * Checks whether an index exists for a specified field in a collection in Milvus.
