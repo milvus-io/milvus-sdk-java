@@ -117,7 +117,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         for (int i = 0; i < results.getFieldsDataCount(); ++i) {
             FieldData data = results.getFieldsData(i);
             if (fieldName.compareTo(data.getFieldName()) == 0) {
-                wrapper = new FieldDataWrapper(data);
+                wrapper = getFieldWrapperInternal(data);
             }
         }
 
