@@ -31,6 +31,7 @@ volumes/
 *.iml
 
 # Example files
+examples/bulk_writer
 examples/main/java/io/milvus/tls/*
 !examples/main/java/io/milvus/tls/gen.sh
 !examples/main/java/io/milvus/tls/openssl.cnf

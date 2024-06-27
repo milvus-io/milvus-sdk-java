@@ -87,7 +87,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
                 record.put("id", score.getStrID());
             }
 
-            record.put("distance", score.getScore());
+            record.put("score", score.getScore());
             buildRowRecord(record, i);
             records.add(record);
         }
@@ -156,7 +156,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         List<IDScore> idScores = new ArrayList<>();
 
-        // set id and distance
+        // set id and score
         IDs ids = results.getIds();
         if (ids.hasIntId()) {
             LongArray longIDs = ids.getIntId();
