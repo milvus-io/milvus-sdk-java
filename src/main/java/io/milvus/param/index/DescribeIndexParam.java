@@ -37,11 +37,13 @@ public class DescribeIndexParam {
     private final String databaseName;
     private final String collectionName;
     private final String indexName;
+    private final String fieldName;
 
     private DescribeIndexParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
+        this.fieldName = builder.fieldName;
     }
 
     public static Builder newBuilder() {
@@ -55,6 +57,7 @@ public class DescribeIndexParam {
         private String databaseName;
         private String collectionName;
         private String indexName = "";
+        private String fieldName = "";
 
         private Builder() {
         }
@@ -87,8 +90,20 @@ public class DescribeIndexParam {
          * @param indexName field name
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withIndexName(String indexName) {
             this.indexName = indexName;
+            return this;
+        }
+
+        /**
+         * Sets the target field name. Field name can be empty or null.
+         * If no field name is specified, then return all this collection indexes.
+         * @param fieldName field name
+         * @return <code>Builder</code>
+         */
+        public Builder withFieldName(String fieldName) {
+            this.fieldName = fieldName;
             return this;
         }
 

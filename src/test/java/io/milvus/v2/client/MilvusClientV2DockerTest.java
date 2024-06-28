@@ -31,6 +31,7 @@ import io.milvus.param.Constant;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
@@ -60,6 +61,7 @@ import org.testcontainers.milvus.MilvusContainer;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientV2DockerTest {
@@ -578,7 +580,7 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
-    void testBinaryVectors() {
+    void testBinaryVectors() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
         String vectorFieldName = "binary_vector";
@@ -1197,13 +1199,16 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX.name(), descResp.getIndexType());
+        DescribeIndexResp.IndexDesc desc = descResp.getIndexDescByFieldName("vector");
+        Assertions.assertEquals("vector", desc.getFieldName());
+        Assertions.assertFalse(desc.getIndexName().isEmpty());
+        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX, desc.getIndexType());
 
         properties.clear();
         properties.put(Constant.MMAP_ENABLED, "true");
         client.alterIndex(AlterIndexReq.builder()
                 .collectionName(randomCollectionName)
-                .indexName(descResp.getIndexName())
+                .indexName(desc.getIndexName())
                 .properties(properties)
                 .build());
 
@@ -1229,10 +1234,13 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-        Assertions.assertEquals("XXX", descResp.getIndexName());
-        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT.name(), descResp.getIndexType());
-        Assertions.assertEquals(IndexParam.MetricType.COSINE.name(), descResp.getMetricType());
-        Map<String, Object> extraParams = descResp.getExtraParams();
+
+        desc = descResp.getIndexDescByFieldName("vector");
+        Assertions.assertEquals("vector", desc.getFieldName());
+        Assertions.assertEquals("XXX", desc.getIndexName());
+        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.COSINE, desc.getMetricType());
+        Map<String, String> extraParams = desc.getExtraParams();
         Assertions.assertTrue(extraParams.containsKey("nlist"));
         Assertions.assertEquals("64", extraParams.get("nlist"));
     }
