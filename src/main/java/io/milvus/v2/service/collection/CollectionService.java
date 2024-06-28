@@ -26,14 +26,15 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.request.*;
-import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
-import io.milvus.v2.service.collection.response.ListCollectionsResp;
+import io.milvus.v2.service.collection.response.*;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.utils.SchemaUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
+import java.util.List;
 
 public class CollectionService extends BaseService {
     public IndexService indexService = new IndexService();
@@ -143,10 +144,10 @@ public class CollectionService extends BaseService {
         }
     }
 
-    public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub) {
+    public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         ShowCollectionsRequest showCollectionsRequest = ShowCollectionsRequest.newBuilder()
                 .build();
-        ShowCollectionsResponse response = milvusServiceBlockingStub.showCollections(showCollectionsRequest);
+        ShowCollectionsResponse response = blockingStub.showCollections(showCollectionsRequest);
         ListCollectionsResp listCollectionsResp = ListCollectionsResp.builder()
                 .collectionNames(response.getCollectionNamesList())
                 .build();
@@ -154,35 +155,54 @@ public class CollectionService extends BaseService {
         return listCollectionsResp;
     }
 
-    public void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DropCollectionReq request) {
+    public void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
 
         String title = String.format("DropCollectionRequest collectionName:%s", request.getCollectionName());
         DropCollectionRequest dropCollectionRequest = DropCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
-        Status status = milvusServiceBlockingStub.dropCollection(dropCollectionRequest);
+        Status status = blockingStub.dropCollection(dropCollectionRequest);
         rpcUtils.handleResponse(title, status);
 
         if (request.getAsync()) {
-            WaitForDropCollection(milvusServiceBlockingStub, request);
+            WaitForDropCollection(blockingStub, request);
         }
     }
 
-    public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, HasCollectionReq request) {
+    public void alterCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionReq request) {
+        String title = String.format("AlterCollectionRequest collectionName:%s", request.getCollectionName());
+        AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder();
+        List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
+        if (CollectionUtils.isNotEmpty(propertiesList)) {
+            propertiesList.forEach(builder::addProperties);
+        }
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        AlterCollectionRequest alterCollectionRequest = builder
+                .setCollectionName(request.getCollectionName())
+                .build();
+
+        Status response = blockingStub.alterCollection(alterCollectionRequest);
+        rpcUtils.handleResponse(title, response);
+    }
+
+    public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
         HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
-        BoolResponse response = milvusServiceBlockingStub.hasCollection(hasCollectionRequest);
+        BoolResponse response = blockingStub.hasCollection(hasCollectionRequest);
         rpcUtils.handleResponse("HasCollectionRequest", response.getStatus());
         return response.getValue();
     }
 
-    public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DescribeCollectionReq request) {
+    public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
         String title = String.format("DescribeCollectionRequest collectionName:%s", request.getCollectionName());
         DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
-        DescribeCollectionResponse response = milvusServiceBlockingStub.describeCollection(describeCollectionRequest);
+        DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         return convertDescCollectionResp(response);
     }
@@ -203,42 +223,42 @@ public class CollectionService extends BaseService {
         return describeCollectionResp;
     }
 
-    public void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, RenameCollectionReq request) {
+    public void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
         String title = String.format("RenameCollectionRequest collectionName:%s", request.getCollectionName());
         RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
                 .setOldName(request.getCollectionName())
                 .setNewName(request.getNewCollectionName())
                 .build();
-        Status status = milvusServiceBlockingStub.renameCollection(renameCollectionRequest);
+        Status status = blockingStub.renameCollection(renameCollectionRequest);
         rpcUtils.handleResponse(title, status);
     }
 
-    public void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, LoadCollectionReq request) {
+    public void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setReplicaNumber(request.getNumReplicas())
                 .build();
-        Status status = milvusServiceBlockingStub.loadCollection(loadCollectionRequest);
+        Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
         if (request.getAsync()) {
-            WaitForLoadCollection(milvusServiceBlockingStub, request);
+            WaitForLoadCollection(blockingStub, request);
         }
     }
 
-    public void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, ReleaseCollectionReq request) {
+    public void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         String title = String.format("ReleaseCollectionRequest collectionName:%s", request.getCollectionName());
         ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
-        Status status = milvusServiceBlockingStub.releaseCollection(releaseCollectionRequest);
+        Status status = blockingStub.releaseCollection(releaseCollectionRequest);
         rpcUtils.handleResponse(title, status);
         if (request.getAsync()) {
-            waitForCollectionRelease(milvusServiceBlockingStub, request);
+            waitForCollectionRelease(blockingStub, request);
         }
     }
 
-    public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, GetLoadStateReq request) {
+    public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
         // getLoadState
         String title = String.format("GetLoadStateRequest collectionName:%s", request.getCollectionName());
         GetLoadStateRequest getLoadStateRequest = GetLoadStateRequest.newBuilder()
@@ -247,7 +267,7 @@ public class CollectionService extends BaseService {
         if(request.getPartitionName() != null) {
             getLoadStateRequest = getLoadStateRequest.toBuilder().addPartitionNames(request.getPartitionName()).build();
         }
-        GetLoadStateResponse response = milvusServiceBlockingStub.getLoadState(getLoadStateRequest);
+        GetLoadStateResponse response = blockingStub.getLoadState(getLoadStateRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         return response.getState() == LoadState.LoadStateLoaded;
     }
@@ -271,13 +291,13 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
-    public void waitForCollectionRelease(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, ReleaseCollectionReq request) {
+    public void waitForCollectionRelease(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         boolean isLoaded = true;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (isLoaded) {
             // Call the getLoadState method
-            isLoaded = getLoadState(milvusServiceBlockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
+            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
             if (isLoaded) {
                 // Check if timeout is exceeded
                 if (System.currentTimeMillis() - startTime > request.getTimeout()) {
@@ -295,13 +315,13 @@ public class CollectionService extends BaseService {
         }
     }
 
-    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, LoadCollectionReq request) {
+    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         boolean isLoaded = false;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (!isLoaded) {
             // Call the getLoadState method
-            isLoaded = getLoadState(milvusServiceBlockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
+            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
             if (!isLoaded) {
                 // Check if timeout is exceeded
                 if (System.currentTimeMillis() - startTime > request.getTimeout()) {
@@ -319,13 +339,13 @@ public class CollectionService extends BaseService {
         }
     }
 
-    private void WaitForDropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DropCollectionReq request) {
+    private void WaitForDropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
         boolean hasCollection = true;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (hasCollection) {
             // Call the getLoadState method
-            hasCollection = hasCollection(milvusServiceBlockingStub, HasCollectionReq.builder().collectionName(request.getCollectionName()).build());
+            hasCollection = hasCollection(blockingStub, HasCollectionReq.builder().collectionName(request.getCollectionName()).build());
             if (hasCollection) {
                 // Check if timeout is exceeded
                 if (System.currentTimeMillis() - startTime > request.getTimeout()) {

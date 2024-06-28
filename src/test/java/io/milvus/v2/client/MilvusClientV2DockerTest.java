@@ -27,6 +27,7 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.param.Constant;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
@@ -34,6 +35,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.index.request.AlterIndexReq;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.DropIndexReq;
@@ -1183,11 +1185,27 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
 
+        Map<String, String> properties = new HashMap<>();
+        properties.put(Constant.TTL_SECONDS, "10");
+        properties.put(Constant.MMAP_ENABLED, "true");
+        client.alterCollection(AlterCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .properties(properties)
+                .build());
+
         DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
         Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX.name(), descResp.getIndexType());
+
+        properties.clear();
+        properties.put(Constant.MMAP_ENABLED, "true");
+        client.alterIndex(AlterIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexName(descResp.getIndexName())
+                .properties(properties)
+                .build());
 
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
