@@ -5,9 +5,11 @@ import io.milvus.grpc.DescribeIndexResponse;
 
 import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
+import io.milvus.param.IndexBuildState;
 import io.milvus.param.MetricType;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.util.*;
 
@@ -30,8 +32,7 @@ public class DescIndexResponseWrapper {
         List<IndexDesc> results = new ArrayList<>();
         List<IndexDescription> descriptions = response.getIndexDescriptionsList();
         descriptions.forEach((desc)->{
-            IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
-            desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
+            IndexDesc res = convertIndexDescInternal(desc);
             results.add(res);
         });
 
@@ -46,12 +47,9 @@ public class DescIndexResponseWrapper {
      * @return {@link IndexDesc} description of the index
      */
     public IndexDesc getIndexDescByFieldName(@NonNull String fieldName) {
-        for (int i = 0; i < response.getIndexDescriptionsCount(); ++i) {
-            IndexDescription desc = response.getIndexDescriptions(i);
+        for (IndexDescription desc : response.getIndexDescriptionsList()) {
             if (fieldName.compareTo(desc.getFieldName()) == 0) {
-                IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
-                desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
-                return res;
+                return convertIndexDescInternal(desc);
             }
         }
 
@@ -59,14 +57,49 @@ public class DescIndexResponseWrapper {
     }
 
     /**
+     * Get index description by index name.
+     * Return null if the index doesn't exist
+     *
+     * @param indexName index name to get index description
+     * @return {@link IndexDesc} description of the index
+     */
+    public IndexDesc getIndexDescByIndexName(@NonNull String indexName) {
+        for (IndexDescription desc : response.getIndexDescriptionsList()) {
+            if (indexName.compareTo(desc.getIndexName()) == 0) {
+                return convertIndexDescInternal(desc);
+            }
+        }
+
+        return null;
+    }
+
+    private IndexDesc convertIndexDescInternal(IndexDescription desc) {
+        IndexDesc res = new IndexDesc(desc.getFieldName(), desc.getIndexName(), desc.getIndexID());
+        res.indexedRows = desc.getIndexedRows();
+        res.totalRows = desc.getTotalRows();
+        res.pendingIndexRows = desc.getPendingIndexRows();
+        res.indexState = IndexBuildState.valueOf(desc.getState().name());
+        res.indexFailedReason = desc.getIndexStateFailReason();
+        desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
+        return res;
+    }
+
+    /**
      * Internal-use class to wrap response of <code>describeIndex</code> interface.
      */
     @Getter
+    @ToString
     public static final class IndexDesc {
         private final String fieldName;
         private final String indexName;
         private final long id;
         private final Map<String, String> params = new HashMap<>();
+
+        long indexedRows = 0;
+        long totalRows = 0;
+        long pendingIndexRows = 0;
+        private IndexBuildState indexState = IndexBuildState.IndexStateNone;
+        String indexFailedReason = "";
 
         public IndexDesc(@NonNull String fieldName, @NonNull String indexName, long id) {
             this.fieldName = fieldName;
@@ -81,7 +114,7 @@ public class DescIndexResponseWrapper {
         public IndexType getIndexType() {
             if (this.params.containsKey(Constant.INDEX_TYPE)) {
                 // may throw IllegalArgumentException
-                return IndexType.valueOf(params.get(Constant.INDEX_TYPE).toUpperCase(Locale.ROOT));
+                return IndexType.valueOf(params.get(Constant.INDEX_TYPE).toUpperCase());
             }
 
             return IndexType.None;
@@ -104,24 +137,5 @@ public class DescIndexResponseWrapper {
 
             return "";
         }
-
-        @Override
-        public String toString() {
-            return "IndexDesc(fieldName: " + getFieldName() + " indexName: " + getIndexName() +
-                    " id: " + getId() + " indexType: " + getIndexType().name() + " metricType: " +
-                    getMetricType().name() + " extraParam: " + getExtraParam() + ")";
-        }
-    }
-
-    /**
-     * Construct a <code>String</code> by {@link DescIndexResponseWrapper} instance.
-     *
-     * @return <code>String</code>
-     */
-    @Override
-    public String toString() {
-        return "Index description{" +
-                getIndexDescriptions().toString() +
-                '}';
     }
 }
