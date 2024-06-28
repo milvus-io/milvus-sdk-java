@@ -124,7 +124,7 @@ public class VectorService extends BaseService {
                 .build();
     }
 
-    public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, QueryReq request) {
+    public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
         String title = String.format("QueryRequest collectionName:%s", request.getCollectionName());
         if (request.getFilter() == null && request.getIds() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be null at the same time");
@@ -132,12 +132,12 @@ public class VectorService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-        DescribeCollectionResp descR = collectionService.describeCollection(milvusServiceBlockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionResp descR = collectionService.describeCollection(blockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
 
         if (request.getIds() != null && request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
         }
-        QueryResults response = milvusServiceBlockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
+        QueryResults response = blockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
         rpcUtils.handleResponse(title, response.getStatus());
 
         return QueryResp.builder()
@@ -146,14 +146,14 @@ public class VectorService extends BaseService {
 
     }
 
-    public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, SearchReq request) {
+    public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
         String title = String.format("SearchRequest collectionName:%s", request.getCollectionName());
 
-        //checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
+        //checkCollectionExist(blockingStub, request.getCollectionName());
 
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
-        SearchResults response = milvusServiceBlockingStub.search(searchRequest);
+        SearchResults response = blockingStub.search(searchRequest);
 
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -162,14 +162,14 @@ public class VectorService extends BaseService {
                 .build();
     }
 
-    public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, HybridSearchReq request) {
+    public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
         String title = String.format("HybridSearchRequest collectionName:%s", request.getCollectionName());
 
-        //checkCollectionExist(milvusServiceBlockingStub, request.getCollectionName());
+        //checkCollectionExist(blockingStub, request.getCollectionName());
 
         HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
 
-        SearchResults response = milvusServiceBlockingStub.hybridSearch(searchRequest);
+        SearchResults response = blockingStub.hybridSearch(searchRequest);
 
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -194,14 +194,14 @@ public class VectorService extends BaseService {
         return new SearchIterator(request, blockingStub, pkField);
     }
 
-    public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, DeleteReq request) {
+    public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
 
         if (request.getFilter() != null && request.getIds() != null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-        DescribeCollectionResponse descResp = getCollectionInfo(milvusServiceBlockingStub, "", request.getCollectionName());
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
         DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
         if (request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
@@ -211,14 +211,14 @@ public class VectorService extends BaseService {
                 .setPartitionName(request.getPartitionName())
                 .setExpr(request.getFilter())
                 .build();
-        MutationResult response = milvusServiceBlockingStub.delete(deleteRequest);
+        MutationResult response = blockingStub.delete(deleteRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
                 .build();
     }
 
-    public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub milvusServiceBlockingStub, GetReq request) {
+    public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReq request) {
         String title = String.format("GetRequest collectionName:%s", request.getCollectionName());
         logger.debug(title);
         QueryReq queryReq = QueryReq.builder()
@@ -229,7 +229,7 @@ public class VectorService extends BaseService {
             queryReq.setOutputFields(request.getOutputFields());
         }
         // call query to get the result
-        QueryResp queryResp = query(milvusServiceBlockingStub, queryReq);
+        QueryResp queryResp = query(blockingStub, queryReq);
 
         return GetResp.builder()
                 .getResults(queryResp.getQueryResults())
