@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection.response;
 
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -29,6 +30,7 @@ import java.util.List;
 @SuperBuilder
 public class DescribeCollectionResp {
     private String collectionName;
+    private String databaseName;
     private String description;
     private Long numOfPartitions;
 
@@ -40,4 +42,5 @@ public class DescribeCollectionResp {
 
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
+    private ConsistencyLevel consistencyLevel;
 }
