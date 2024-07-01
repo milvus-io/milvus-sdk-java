@@ -104,8 +104,7 @@ public class IndexService extends BaseService {
         } else if (indexs.size() > 1) {
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, "More than one index found");
         }
-        return convertUtils.convertToDescribeIndexResp(indexs.get(0));
-
+        return convertUtils.convertToDescribeIndexResp(indexs);
     }
 
     public List<String> listIndexes(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListIndexesReq request) {

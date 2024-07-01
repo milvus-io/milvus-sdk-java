@@ -60,7 +60,7 @@ public class IndexParam {
 
     @Getter
     public enum IndexType {
-        INVALID,
+        NONE,
         //Only supported for float vectors
         FLAT(1),
         IVF_FLAT(2),

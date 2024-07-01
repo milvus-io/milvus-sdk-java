@@ -30,6 +30,4 @@ public enum ConsistencyLevelEnum {
         }
         return null;
     }
-
-
 }

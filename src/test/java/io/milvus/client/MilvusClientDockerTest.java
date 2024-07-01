@@ -149,7 +149,6 @@ class MilvusClientDockerTest {
             vectors.add(vector);
         }
         return vectors;
-
     }
 
     @Test
@@ -201,6 +200,8 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
                 .withFieldTypes(fieldsSchema)
+                .withShardsNum(3)
+                .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -210,8 +211,18 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .build());
 
-        DescCollResponseWrapper desc = new DescCollResponseWrapper(response.getData());
-        System.out.println(desc.toString());
+        DescCollResponseWrapper collDescWrapper = new DescCollResponseWrapper(response.getData());
+        Assertions.assertEquals(randomCollectionName, collDescWrapper.getCollectionName());
+        Assertions.assertEquals("default", collDescWrapper.getDatabaseName());
+        Assertions.assertEquals("test", collDescWrapper.getCollectionDescription());
+        Assertions.assertEquals(3, collDescWrapper.getShardNumber());
+        Assertions.assertEquals(fieldsSchema.size(), collDescWrapper.getFields().size());
+        FieldType primaryField = collDescWrapper.getPrimaryField();
+        Assertions.assertFalse(primaryField.isAutoID());
+        CollectionSchemaParam schema = collDescWrapper.getSchema();
+        Assertions.assertFalse(schema.isEnableDynamicField());
+        Assertions.assertEquals(ConsistencyLevelEnum.EVENTUALLY, collDescWrapper.getConsistencyLevel());
+        System.out.println(collDescWrapper);
 
         R<ShowPartitionsResponse> spResp = client.showPartitions(ShowPartitionsParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -276,6 +287,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), statPartR.getStatus().intValue());
 
         GetPartStatResponseWrapper statPart = new GetPartStatResponseWrapper(statPartR.getData());
+        Assertions.assertEquals(rowCount, statPart.getRowCount());
         System.out.println("Partition row count: " + statPart.getRowCount());
 
         // create index on scalar field
@@ -313,7 +325,17 @@ class MilvusClientDockerTest {
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
-        DescIndexResponseWrapper indexDesc = new DescIndexResponseWrapper(descIndexR.getData());
+        DescIndexResponseWrapper indexDescWrapper = new DescIndexResponseWrapper(descIndexR.getData());
+        DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(field2Name);
+        Assertions.assertNotNull(indexDesc);
+        Assertions.assertEquals(field2Name, indexDesc.getFieldName());
+        Assertions.assertEquals("abv", indexDesc.getIndexName());
+        Assertions.assertEquals(IndexType.HNSW, indexDesc.getIndexType());
+        Assertions.assertEquals(MetricType.L2, indexDesc.getMetricType());
+        Assertions.assertEquals(rowCount, indexDesc.getTotalRows());
+        Assertions.assertEquals(rowCount, indexDesc.getIndexedRows());
+        Assertions.assertEquals(0L, indexDesc.getPendingIndexRows());
+        Assertions.assertTrue(indexDesc.getIndexFailedReason().isEmpty());
         System.out.println("Index description: " + indexDesc.toString());
 
         // load collection
@@ -479,7 +501,7 @@ class MilvusClientDockerTest {
     }
 
     @Test
-    void testBinaryVectors() {
+    void testBinaryVectors() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
@@ -510,6 +532,21 @@ class MilvusClientDockerTest {
 
         R<RpcStatus> createR = client.createCollection(createParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // create index
+        CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName(field2Name)
+                .withIndexType(IndexType.BIN_IVF_FLAT)
+                .withExtraParam("{\"nlist\":64}")
+                .withMetricType(MetricType.JACCARD)
+                .withSyncMode(Boolean.TRUE)
+                .withSyncWaitingInterval(500L)
+                .withSyncWaitingTimeout(30L)
+                .build();
+
+        R<RpcStatus> createIndexR2 = client.createIndex(indexParam2);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR2.getStatus().intValue());
 
         int rowCount = 10000;
         List<ByteBuffer> vectors = generateBinaryVectors(rowCount);
@@ -561,20 +598,33 @@ class MilvusClientDockerTest {
         System.out.println("Collection row count: " + stat.getRowCount());
         Assertions.assertEquals(rowCount, stat.getRowCount());
 
-        // create index
-        CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
-                .withIndexType(IndexType.BIN_IVF_FLAT)
-                .withExtraParam("{\"nlist\":64}")
-                .withMetricType(MetricType.JACCARD)
-                .withSyncMode(Boolean.TRUE)
-                .withSyncWaitingInterval(500L)
-                .withSyncWaitingTimeout(30L)
-                .build();
+        // check index
+        while(true) {
+            DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
+                    .withCollectionName(randomCollectionName)
+                    .withFieldName(field2Name)
+                    .build();
+            R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
+            Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
-        R<RpcStatus> createIndexR2 = client.createIndex(indexParam2);
-        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR2.getStatus().intValue());
+            DescIndexResponseWrapper indexDescWrapper = new DescIndexResponseWrapper(descIndexR.getData());
+            DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(field2Name);
+            Assertions.assertNotNull(indexDesc);
+            if (indexDesc.getTotalRows() != indexDesc.getIndexedRows()) {
+                System.out.println("Waiting index to be finished...");
+                TimeUnit.SECONDS.sleep(1);
+                continue;
+            }
+            Assertions.assertEquals(field2Name, indexDesc.getFieldName());
+            Assertions.assertEquals(IndexType.BIN_IVF_FLAT, indexDesc.getIndexType());
+            Assertions.assertEquals(MetricType.JACCARD, indexDesc.getMetricType());
+            Assertions.assertEquals(rowCount, indexDesc.getTotalRows());
+            Assertions.assertEquals(rowCount, indexDesc.getIndexedRows());
+            Assertions.assertEquals(0L, indexDesc.getPendingIndexRows());
+            Assertions.assertTrue(indexDesc.getIndexFailedReason().isEmpty());
+            System.out.println("Index description: " + indexDesc);
+            break;
+        }
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
@@ -635,14 +685,6 @@ class MilvusClientDockerTest {
 
         R<RpcStatus> createIndexR = client.createIndex(indexParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
-
-        // get index description
-        DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withIndexName(indexParam.getIndexName())
-                .build();
-        R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
-        Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
         // load collection
         R<RpcStatus> loadR2 = client.loadCollection(LoadCollectionParam.newBuilder()

@@ -25,9 +25,11 @@ import com.google.gson.reflect.TypeToken;
 
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.param.Constant;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
@@ -55,6 +57,7 @@ import org.testcontainers.milvus.MilvusContainer;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientV2DockerTest {
@@ -531,7 +534,7 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
-    void testBinaryVectors() {
+    void testBinaryVectors() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
         String vectorFieldName = "binary_vector";
@@ -824,7 +827,6 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .dimension(dimension)
                 .build());
-
         client.releaseCollection(ReleaseCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
@@ -833,13 +835,15 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX.name(), descResp.getIndexType());
+        DescribeIndexResp.IndexDesc desc = descResp.getIndexDescByFieldName("vector");
+        Assertions.assertEquals("vector", desc.getFieldName());
+        Assertions.assertFalse(desc.getIndexName().isEmpty());
+        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX, desc.getIndexType());
 
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-
         IndexParam param = IndexParam.builder()
                 .fieldName("vector")
                 .indexName("XXX")
@@ -847,20 +851,21 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(new HashMap<String,Object>(){{put("nlist", 64);}})
                 .build();
-
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .indexParams(Collections.singletonList(param))
                 .build());
-
         descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-        Assertions.assertEquals("XXX", descResp.getIndexName());
-        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT.name(), descResp.getIndexType());
-        Assertions.assertEquals(IndexParam.MetricType.COSINE.name(), descResp.getMetricType());
-        Map<String, Object> extraParams = descResp.getExtraParams();
+
+        desc = descResp.getIndexDescByFieldName("vector");
+        Assertions.assertEquals("vector", desc.getFieldName());
+        Assertions.assertEquals("XXX", desc.getIndexName());
+        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.COSINE, desc.getMetricType());
+        Map<String, String> extraParams = desc.getExtraParams();
         Assertions.assertTrue(extraParams.containsKey("nlist"));
         Assertions.assertEquals("64", extraParams.get("nlist"));
     }
