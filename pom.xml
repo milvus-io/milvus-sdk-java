@@ -108,7 +108,7 @@
         <aws-java-sdk-s3.version>1.12.687</aws-java-sdk-s3.version>
         <minio-java-sdk.veresion>8.5.7</minio-java-sdk.veresion>
         <azure-java-blob-sdk.version>12.25.3</azure-java-blob-sdk.version>
-        <azure-java-identity-sdk.version>1.10.1</azure-java-identity-sdk.version>
+        <azure-java-identity-sdk.version>1.12.2</azure-java-identity-sdk.version>
     </properties>
 
     <dependencyManagement>
