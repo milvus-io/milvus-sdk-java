@@ -23,6 +23,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.bulkwriter.*;
@@ -58,6 +59,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -73,6 +75,8 @@ public class BulkWriterExample {
     public static final String PASSWORD = "password";
 
     private static final Gson GSON_INSTANCE = new Gson();
+
+    private static final List<Integer> QUERY_IDS = Lists.newArrayList(100, 5000);
 
 
     /**
@@ -138,6 +142,7 @@ public class BulkWriterExample {
     private static final String SIMPLE_COLLECTION_NAME = "java_sdk_bulkwriter_simple_v1";
     private static final String ALL_TYPES_COLLECTION_NAME = "java_sdk_bulkwriter_all_v1";
     private static final Integer DIM = 512;
+    private static final Integer ARRAY_CAPACITY = 10;
     private MilvusClient milvusClient;
 
     public static void main(String[] args) throws Exception {
@@ -149,7 +154,7 @@ public class BulkWriterExample {
         );
 
         exampleSimpleCollection(exampleBulkWriter, fileTypes);
-        exampleAllTypeCollectionRemote(exampleBulkWriter, fileTypes);
+        exampleAllTypesCollectionRemote(exampleBulkWriter, fileTypes);
 
         // to call cloud import api, you need to apply a cloud service from Zilliz Cloud(https://zilliz.com/cloud)
         // exampleCloudImport();
@@ -167,7 +172,7 @@ public class BulkWriterExample {
     }
 
     private static void exampleSimpleCollection(BulkWriterExample exampleBulkWriter, List<BulkFileType> fileTypes) throws Exception {
-        CollectionSchemaParam collectionSchema = exampleBulkWriter.buildSimpleCollection();
+        CollectionSchemaParam collectionSchema = exampleBulkWriter.buildSimpleSchema();
         exampleBulkWriter.createCollection(SIMPLE_COLLECTION_NAME, collectionSchema, false);
 
         for (BulkFileType fileType : fileTypes) {
@@ -182,31 +187,23 @@ public class BulkWriterExample {
         parallelAppend(collectionSchema);
     }
 
-    private static void exampleAllTypeCollectionRemote(BulkWriterExample exampleBulkWriter, List<BulkFileType> fileTypes) throws Exception {
-        // float vectors + all scalar types, use bulkInsert interface
+    private static void exampleAllTypesCollectionRemote(BulkWriterExample exampleBulkWriter, List<BulkFileType> fileTypes) throws Exception {
+        // 4 types vectors + all scalar types + dynamic field enabled, use bulkInsert interface
         for (BulkFileType fileType : fileTypes) {
-            CollectionSchemaParam collectionSchema = buildAllTypeSchema(false, true);
-            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(false, collectionSchema, fileType);
+            CollectionSchemaParam collectionSchema = buildAllTypesSchema();
+            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(collectionSchema, fileType);
             exampleBulkWriter.callBulkInsert(collectionSchema, batchFiles);
-            exampleBulkWriter.retrieveImportData(false);
+            exampleBulkWriter.retrieveImportData();
         }
 
-        // binary vectors + all scalar types, use bulkInsert interface
-        for (BulkFileType fileType : fileTypes) {
-            CollectionSchemaParam collectionSchema = buildAllTypeSchema(true, true);
-            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(true, collectionSchema, fileType);
-            exampleBulkWriter.callBulkInsert(collectionSchema, batchFiles);
-            exampleBulkWriter.retrieveImportData(true);
-        }
-
-//        // float vectors + all scalar types, use cloud import api.
+//        // 4 types vectors + all scalar types + dynamic field enabled, use cloud import api.
 //        // You need to apply a cloud service from Zilliz Cloud(https://zilliz.com/cloud)
 //        for (BulkFileType fileType : fileTypes) {
-//            CollectionSchemaParam collectionSchema = buildAllTypeSchema(false, true);
-//            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(false, collectionSchema, fileType);
+//            CollectionSchemaParam collectionSchema = buildAllTypesSchema();
+//            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(collectionSchema, fileType);
 //            exampleBulkWriter.createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
 //            exampleBulkWriter.callCloudImport(batchFiles, ALL_TYPES_COLLECTION_NAME);
-//            exampleBulkWriter.retrieveImportData(false);
+//            exampleBulkWriter.retrieveImportData();
 //        }
     }
 
@@ -355,8 +352,8 @@ public class BulkWriterExample {
         }
     }
 
-    private List<List<String>> allTypesRemoteWriter(boolean binVec, CollectionSchemaParam collectionSchema, BulkFileType fileType) throws Exception {
-        System.out.printf("\n===================== all field types (%s) binary_vector=%s ====================%n", fileType.name(), binVec);
+    private List<List<String>> allTypesRemoteWriter(CollectionSchemaParam collectionSchema, BulkFileType fileType) throws Exception {
+        System.out.printf("\n===================== all field types (%s) ====================%n", fileType.name());
 
         try (RemoteBulkWriter remoteBulkWriter = buildRemoteBulkWriter(collectionSchema, fileType)) {
             System.out.println("Append rows");
@@ -377,19 +374,29 @@ public class BulkWriterExample {
                 rowObject.addProperty("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
 
                 // vector field
-                rowObject.add("vector",
-                        binVec ? GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorBinaryVector(128).array()) :
-                                GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorFloatValue(128)));
+                rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(CommonUtils.generateFloatVector(DIM)));
+                rowObject.add("binary_vector", GSON_INSTANCE.toJsonTree(CommonUtils.generateBinaryVector(DIM).array()));
+                rowObject.add("float16_vector", GSON_INSTANCE.toJsonTree(CommonUtils.generateFloat16Vector(DIM, false).array()));
+                rowObject.add("sparse_vector", GSON_INSTANCE.toJsonTree(CommonUtils.generateSparseVector()));
 
                 // array field
-                rowObject.add("arrayInt64", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorLongValue(10)));
-                rowObject.add("arrayVarchar", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorVarcharValue(10, 10)));
-                rowObject.add("arrayInt8", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt8Value(10)));
-                rowObject.add("arrayInt16", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt16Value(10)));
-                rowObject.add("arrayInt32", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt32Value(10)));
-                rowObject.add("arrayFloat", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorFloatValue(10)));
-                rowObject.add("arrayDouble", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorDoubleValue(10)));
-                rowObject.add("arrayBool", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorBoolValue(10)));
+                rowObject.add("array_bool", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorBoolValue(10)));
+                rowObject.add("array_int8", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt8Value(10)));
+                rowObject.add("array_int16", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt16Value(10)));
+                rowObject.add("array_int32", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorInt32Value(10)));
+                rowObject.add("array_int64", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorLongValue(10)));
+                rowObject.add("array_varchar", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorVarcharValue(10, 10)));
+                rowObject.add("array_float", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorFloatValue(10)));
+                rowObject.add("array_double", GSON_INSTANCE.toJsonTree(GeneratorUtils.generatorDoubleValue(10)));
+
+                // dynamic fields
+                if (collectionSchema.isEnableDynamicField()) {
+                    rowObject.addProperty("dynamic", "dynamic_" + i);
+                }
+
+                if (QUERY_IDS.contains(i)) {
+                    System.out.println(rowObject);
+                }
 
                 remoteBulkWriter.appendRow(rowObject);
             }
@@ -580,41 +587,91 @@ public class BulkWriterExample {
         System.out.printf("Collection %s created%n", collectionName);
     }
 
-    private void retrieveImportData(boolean binVec) {
-        createIndex(binVec);
+    private void retrieveImportData() {
+        createIndex();
 
-        List<Integer> ids = Lists.newArrayList(100, 5000);
-        System.out.printf("Load collection and query items %s%n", ids);
+        System.out.printf("Load collection and query items %s%n", QUERY_IDS);
         loadCollection();
 
-        String expr = String.format("id in %s", ids);
+        String expr = String.format("id in %s", QUERY_IDS);
         System.out.println(expr);
 
-        List<QueryResultsWrapper.RowRecord> rowRecords = query(expr, Lists.newArrayList("*", "vector"));
+        List<QueryResultsWrapper.RowRecord> rowRecords = query(expr, Lists.newArrayList("*"));
         System.out.println("Query results:");
         for (QueryResultsWrapper.RowRecord record : rowRecords) {
-            System.out.println(record);
+            JsonObject rowObject = new JsonObject();
+            // scalar field
+            rowObject.addProperty("id", (Long)record.get("id"));
+            rowObject.addProperty("bool", (Boolean) record.get("bool"));
+            rowObject.addProperty("int8", (Integer) record.get("int8"));
+            rowObject.addProperty("int16", (Integer) record.get("int16"));
+            rowObject.addProperty("int32", (Integer) record.get("int32"));
+            rowObject.addProperty("float", (Float) record.get("float"));
+            rowObject.addProperty("double", (Double) record.get("double"));
+            rowObject.addProperty("varchar", (String) record.get("varchar"));
+            rowObject.add("json", (JsonElement) record.get("json"));
+
+            // vector field
+            rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(record.get("float_vector")));
+            rowObject.add("binary_vector", GSON_INSTANCE.toJsonTree(((ByteBuffer)record.get("binary_vector")).array()));
+            rowObject.add("float16_vector", GSON_INSTANCE.toJsonTree(((ByteBuffer)record.get("float16_vector")).array()));
+            rowObject.add("sparse_vector", GSON_INSTANCE.toJsonTree(record.get("sparse_vector")));
+
+            // array field
+            rowObject.add("array_bool", GSON_INSTANCE.toJsonTree(record.get("array_bool")));
+            rowObject.add("array_int8", GSON_INSTANCE.toJsonTree(record.get("array_int8")));
+            rowObject.add("array_int16", GSON_INSTANCE.toJsonTree(record.get("array_int16")));
+            rowObject.add("array_int32", GSON_INSTANCE.toJsonTree(record.get("array_int32")));
+            rowObject.add("array_int64", GSON_INSTANCE.toJsonTree(record.get("array_int64")));
+            rowObject.add("array_varchar", GSON_INSTANCE.toJsonTree(record.get("array_varchar")));
+            rowObject.add("array_float", GSON_INSTANCE.toJsonTree(record.get("array_float")));
+            rowObject.add("array_double", GSON_INSTANCE.toJsonTree(record.get("array_double")));
+
+            // dynamic field
+            rowObject.addProperty("dynamic", (String) record.get("dynamic"));
+
+            System.out.println(rowObject);
         }
     }
 
-    private void createIndex(boolean binVec) {
+    private void createIndex() {
         System.out.println("Create index...");
         checkMilvusClientIfExist();
-        CreateIndexParam.Builder builder = CreateIndexParam.newBuilder()
+
+        R<RpcStatus> response = milvusClient.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(ALL_TYPES_COLLECTION_NAME)
-                .withFieldName("vector")
-                .withIndexName("index_name")
-                .withSyncMode(Boolean.TRUE);
+                .withFieldName("float_vector")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+        ExceptionUtils.handleResponseStatus(response);
 
-        if (binVec) {
-            builder.withIndexType(IndexType.BIN_FLAT);
-            builder.withMetricType(MetricType.HAMMING);
-        } else {
-            builder.withIndexType(IndexType.FLAT);
-            builder.withMetricType(MetricType.L2);
-        }
+        response = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(ALL_TYPES_COLLECTION_NAME)
+                .withFieldName("binary_vector")
+                .withIndexType(IndexType.BIN_FLAT)
+                .withMetricType(MetricType.HAMMING)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+        ExceptionUtils.handleResponseStatus(response);
 
-        R<RpcStatus> response = milvusClient.createIndex(builder.build());
+        response = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(ALL_TYPES_COLLECTION_NAME)
+                .withFieldName("float16_vector")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.IP)
+                .withSyncMode(Boolean.TRUE)
+                .build());
+        ExceptionUtils.handleResponseStatus(response);
+
+        response = milvusClient.createIndex(CreateIndexParam.newBuilder()
+                .withCollectionName(ALL_TYPES_COLLECTION_NAME)
+                .withFieldName("sparse_vector")
+                .withIndexType(IndexType.SPARSE_WAND)
+                .withMetricType(MetricType.IP)
+                .withSyncMode(Boolean.TRUE)
+                .build());
         ExceptionUtils.handleResponseStatus(response);
     }
 
@@ -694,7 +751,7 @@ public class BulkWriterExample {
         System.out.println(GSON_INSTANCE.toJson(listImportJobsResponse));
     }
 
-    private CollectionSchemaParam buildSimpleCollection() {
+    private CollectionSchemaParam buildSimpleSchema() {
         FieldType fieldType1 = FieldType.newBuilder()
                 .withName("id")
                 .withDataType(DataType.Int64)
@@ -722,163 +779,148 @@ public class BulkWriterExample {
                 .withMaxLength(512)
                 .build();
 
-        CollectionSchemaParam collectionSchema = CollectionSchemaParam.newBuilder()
+        return CollectionSchemaParam.newBuilder()
                 .addFieldType(fieldType1)
                 .addFieldType(fieldType2)
                 .addFieldType(fieldType3)
                 .addFieldType(fieldType4)
                 .build();
-
-        return collectionSchema;
     }
 
-    private static CollectionSchemaParam buildAllTypeSchema(boolean binVec, boolean hasArray) {
+    private static CollectionSchemaParam buildAllTypesSchema() {
+        List<FieldType> fieldTypes = new ArrayList<>();
         // scalar field
-        FieldType fieldType1 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("id")
                 .withDataType(DataType.Int64)
                 .withPrimaryKey(true)
                 .withAutoID(false)
-                .build();
+                .build());
 
-        FieldType fieldType2 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("bool")
                 .withDataType(DataType.Bool)
-                .build();
+                .build());
 
-        FieldType fieldType3 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("int8")
                 .withDataType(DataType.Int8)
-                .build();
+                .build());
 
-        FieldType fieldType4 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("int16")
                 .withDataType(DataType.Int16)
-                .build();
+                .build());
 
-        FieldType fieldType5 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("int32")
                 .withDataType(DataType.Int32)
-                .build();
+                .build());
 
-        FieldType fieldType6 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("float")
                 .withDataType(DataType.Float)
-                .build();
+                .build());
 
-        FieldType fieldType7 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("double")
                 .withDataType(DataType.Double)
-                .build();
+                .build());
 
-        FieldType fieldType8 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("varchar")
                 .withDataType(DataType.VarChar)
                 .withMaxLength(512)
-                .build();
+                .build());
 
-        FieldType fieldType9 = FieldType.newBuilder()
+        fieldTypes.add(FieldType.newBuilder()
                 .withName("json")
                 .withDataType(DataType.JSON)
-                .build();
+                .build());
 
-        // vector field
-        FieldType fieldType10;
-        if (binVec) {
-            fieldType10 = FieldType.newBuilder()
-                    .withName("vector")
-                    .withDataType(DataType.BinaryVector)
-                    .withDimension(128)
-                    .build();
-        } else {
-            fieldType10 = FieldType.newBuilder()
-                    .withName("vector")
-                    .withDataType(DataType.FloatVector)
-                    .withDimension(128)
-                    .build();
-        }
+        // vector fields
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("float_vector")
+                .withDataType(DataType.FloatVector)
+                .withDimension(DIM)
+                .build());
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("binary_vector")
+                .withDataType(DataType.BinaryVector)
+                .withDimension(DIM)
+                .build());
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("float16_vector")
+                .withDataType(DataType.Float16Vector)
+                .withDimension(DIM)
+                .build());
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("sparse_vector")
+                .withDataType(DataType.SparseFloatVector)
+                .build());
+
+        // array fields
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_bool")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Bool)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_int8")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Int8)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_int16")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Int16)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_int32")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Int32)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_int64")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Int64)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_varchar")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.VarChar)
+                .withMaxLength(512)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_float")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Float)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
+
+        fieldTypes.add(FieldType.newBuilder()
+                .withName("array_double")
+                .withDataType(DataType.Array)
+                .withElementType(DataType.Double)
+                .withMaxCapacity(ARRAY_CAPACITY)
+                .build());
 
         CollectionSchemaParam.Builder schemaBuilder = CollectionSchemaParam.newBuilder()
-                .withEnableDynamicField(false)
-                .addFieldType(fieldType1)
-                .addFieldType(fieldType2)
-                .addFieldType(fieldType3)
-                .addFieldType(fieldType4)
-                .addFieldType(fieldType5)
-                .addFieldType(fieldType6)
-                .addFieldType(fieldType7)
-                .addFieldType(fieldType8)
-                .addFieldType(fieldType9)
-                .addFieldType(fieldType10);
+                .withEnableDynamicField(true)
+                .withFieldTypes(fieldTypes);
 
-        // array field
-        if (hasArray) {
-            FieldType fieldType11 = FieldType.newBuilder()
-                    .withName("arrayInt64")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Int64)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType12 = FieldType.newBuilder()
-                    .withName("arrayVarchar")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.VarChar)
-                    .withMaxLength(10)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType13 = FieldType.newBuilder()
-                    .withName("arrayInt8")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Int8)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType14 = FieldType.newBuilder()
-                    .withName("arrayInt16")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Int16)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType15 = FieldType.newBuilder()
-                    .withName("arrayInt32")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Int32)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType16 = FieldType.newBuilder()
-                    .withName("arrayFloat")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Float)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType17 = FieldType.newBuilder()
-                    .withName("arrayDouble")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Double)
-                    .withMaxCapacity(10)
-                    .build();
-
-            FieldType fieldType18 = FieldType.newBuilder()
-                    .withName("arrayBool")
-                    .withDataType(DataType.Array)
-                    .withElementType(DataType.Bool)
-                    .withMaxCapacity(10)
-                    .build();
-
-            schemaBuilder.addFieldType(fieldType11)
-                    .addFieldType(fieldType12)
-                    .addFieldType(fieldType13)
-                    .addFieldType(fieldType14)
-                    .addFieldType(fieldType15)
-                    .addFieldType(fieldType16)
-                    .addFieldType(fieldType17)
-                    .addFieldType(fieldType18);
-        }
         return schemaBuilder.build();
     }
 

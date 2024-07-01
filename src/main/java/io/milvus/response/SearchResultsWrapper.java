@@ -317,6 +317,13 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             return obj;
         }
 
+        /**
+         * Test if a key exists
+         */
+        public boolean contains(String keyName) {
+            return fieldValues.containsKey(keyName);
+        }
+
         @Override
         public String toString() {
             List<String> pairs = new ArrayList<>();
