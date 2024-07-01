@@ -1401,7 +1401,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
-                    .setIndexName(requestParam.getIndexName());
+                    .setIndexName(requestParam.getIndexName())
+                    .setFieldName(requestParam.getFieldName());
 
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());

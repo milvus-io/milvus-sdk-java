@@ -19,6 +19,7 @@
 
 package io.milvus.response;
 
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
@@ -26,10 +27,7 @@ import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Util class to wrap response of <code>describeCollection</code> interface.
@@ -41,11 +39,6 @@ public class DescCollResponseWrapper {
         this.response = response;
     }
 
-    public boolean getEnableDynamicField() {
-        CollectionSchema schema = response.getSchema();
-        return schema.getEnableDynamicField();
-    }
-
     /**
      * Get name of the collection.
      *
@@ -54,6 +47,15 @@ public class DescCollResponseWrapper {
     public String getCollectionName() {
         CollectionSchema schema = response.getSchema();
         return schema.getName();
+    }
+
+    /**
+     * Get database name of the collection.
+     *
+     * @return <code>String</code> name of the database
+     */
+    public String getDatabaseName() {
+        return response.getDbName();
     }
 
     /**
@@ -82,6 +84,16 @@ public class DescCollResponseWrapper {
      */
     public int getShardNumber() {
         return response.getShardsNum();
+    }
+
+    /**
+     * Get consistency level of the collection.
+     *
+     * @return <code>ConsistencyLevelEnum</code> consistency level of the collection
+     */
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        // may throw IllegalArgumentException
+        return ConsistencyLevelEnum.valueOf(response.getConsistencyLevel().name().toUpperCase());
     }
 
     /**
@@ -138,6 +150,13 @@ public class DescCollResponseWrapper {
         }
 
         return null;
+    }
+
+    // duplicated with isDynamicFieldEnabled()
+    @Deprecated
+    public boolean getEnableDynamicField() {
+        CollectionSchema schema = response.getSchema();
+        return schema.getEnableDynamicField();
     }
 
     /**
@@ -245,7 +264,7 @@ public class DescCollResponseWrapper {
     public CollectionSchemaParam getSchema() {
         return CollectionSchemaParam.newBuilder()
                 .withFieldTypes(getFields())
-                .withEnableDynamicField(getEnableDynamicField())
+                .withEnableDynamicField(isDynamicFieldEnabled())
                 .build();
     }
 
@@ -258,6 +277,7 @@ public class DescCollResponseWrapper {
     public String toString() {
         return "Collection Description{" +
                 "name:'" + getCollectionName() + '\'' +
+                ", databaseName:'" + getDatabaseName() + '\'' +
                 ", description:'" + getCollectionDescription() + '\'' +
                 ", id:" + getCollectionID() +
                 ", shardNumber:" + getShardNumber() +
@@ -265,6 +285,7 @@ public class DescCollResponseWrapper {
                 ", aliases:" + getAliases().toString() +
                 ", fields:" + getFields().toString() +
                 ", isDynamicFieldEnabled:" + isDynamicFieldEnabled() +
+                ", consistencyLevel:" + getConsistencyLevel().name() +
                 ", properties:" + getProperties() +
                 '}';
     }
