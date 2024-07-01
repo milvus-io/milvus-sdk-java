@@ -20,8 +20,11 @@
 package io.milvus.v2.utils;
 
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
+import io.milvus.v2.common.IndexBuildState;
+import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
@@ -72,23 +75,41 @@ public class ConvertUtils {
         return searchResults;
     }
 
-    public DescribeIndexResp convertToDescribeIndexResp(IndexDescription response) {
-        DescribeIndexResp describeIndexResp = DescribeIndexResp.builder()
-                .indexName(response.getIndexName())
-                .fieldName(response.getFieldName())
-                .build();
-        Map<String, Object> extraParams = new HashMap<>();
-        List<KeyValuePair> params = response.getParamsList();
-        for(KeyValuePair param : params) {
-            if (param.getKey().equals("index_type")) {
-                describeIndexResp.setIndexType(param.getValue());
-            } else if (param.getKey().equals("metric_type")) {
-                describeIndexResp.setMetricType(param.getValue());
-            } else {
-                extraParams.put(param.getKey(), param.getValue());
+    public DescribeIndexResp convertToDescribeIndexResp(List<IndexDescription> response) {
+        List<DescribeIndexResp.IndexDesc> descs = new ArrayList<>();
+        for (IndexDescription description : response) {
+            Map<String, String> extraParams = new HashMap<>();
+            List<KeyValuePair> params = description.getParamsList();
+            IndexParam.IndexType indexType = IndexParam.IndexType.None;
+            IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
+            for(KeyValuePair param : params) {
+                if (param.getKey().equals(Constant.INDEX_TYPE)) {
+                    // may throw IllegalArgumentException
+                    indexType = IndexParam.IndexType.valueOf(param.getValue().toUpperCase());
+                } else if (param.getKey().equals(Constant.METRIC_TYPE)) {
+                    // may throw IllegalArgumentException
+                    metricType = IndexParam.MetricType.valueOf(param.getValue());
+                } else {
+                    extraParams.put(param.getKey(), param.getValue());
+                }
             }
+
+            DescribeIndexResp.IndexDesc desc = DescribeIndexResp.IndexDesc.builder()
+                    .indexName(description.getIndexName())
+                    .fieldName(description.getFieldName())
+                    .id(description.getIndexID())
+                    .indexType(indexType)
+                    .metricType(metricType)
+                    .totalRows(description.getTotalRows())
+                    .indexedRows(description.getIndexedRows())
+                    .pendingIndexRows(description.getPendingIndexRows())
+                    .indexState(IndexBuildState.valueOf(description.getState().name()))
+                    .indexFailedReason(description.getIndexStateFailReason())
+                    .extraParams(extraParams)
+                    .build();
+            descs.add(desc);
         }
-        describeIndexResp.setExtraParams(extraParams);
-        return describeIndexResp;
+
+        return DescribeIndexResp.builder().indexDescriptions(descs).build();
     }
 }
