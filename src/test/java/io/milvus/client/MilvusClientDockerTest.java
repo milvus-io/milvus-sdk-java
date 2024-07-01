@@ -25,7 +25,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.bulkwriter.LocalBulkWriter;
 import io.milvus.bulkwriter.LocalBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
-import io.milvus.bulkwriter.common.utils.GeneratorUtils;
 import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
@@ -55,8 +54,6 @@ import io.milvus.response.*;
 
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.text.RandomStringGenerator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -73,14 +70,16 @@ import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientDockerTest {
-    private static final Logger logger = LogManager.getLogger("MilvusClientTest");
     protected static MilvusClient client;
     protected static RandomStringGenerator generator;
-    protected static final int dimension = 128;
+    protected static final int DIMENSION = 128;
+    protected static final int ARRAY_CAPACITY = 100;
     protected static final float FLOAT16_PRECISION = 0.001f;
     protected static final float BFLOAT16_PRECISION = 0.01f;
 
     protected static final Gson GSON_INSTANCE = new Gson();
+
+    private static final Random RANDOM = new Random();
 
     @Container
     private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.4");
@@ -112,61 +111,397 @@ class MilvusClientDockerTest {
         return ConnectParam.newBuilder().withUri(milvusUri);
     }
 
-    protected List<List<Float>> generateFloatVectors(int count) {
-        Random ran = new Random();
+    private List<Float> generateFloatVector() {
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < DIMENSION; ++i) {
+            vector.add(RANDOM.nextFloat());
+        }
+        return vector;
+    }
+
+    private List<List<Float>> generateFloatVectors(int count) {
         List<List<Float>> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
-            List<Float> vector = new ArrayList<>();
-            for (int i = 0; i < dimension; ++i) {
-                vector.add(ran.nextFloat());
-            }
-            vectors.add(vector);
+            vectors.add(generateFloatVector());
         }
 
         return vectors;
     }
 
-    protected List<List<Float>> normalizeFloatVectors(List<List<Float>> src) {
-        for (List<Float> vector : src) {
-            double total = 0.0;
-            for (Float val : vector) {
-                total = total + val * val;
-            }
-            float squre = (float) Math.sqrt(total);
-            for (int i = 0; i < vector.size(); ++i) {
-                vector.set(i, vector.get(i) / squre);
-            }
+    private ByteBuffer generateBinaryVector() {
+        int byteCount = DIMENSION / 8;
+        ByteBuffer vector = ByteBuffer.allocate(byteCount);
+        for (int i = 0; i < byteCount; ++i) {
+            vector.put((byte) RANDOM.nextInt(Byte.MAX_VALUE));
         }
-
-        return src;
+        return vector;
     }
 
-    protected List<ByteBuffer> generateBinaryVectors(int count) {
-        Random ran = new Random();
+    private List<ByteBuffer> generateBinaryVectors(int count) {
         List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = dimension / 8;
         for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-            for (int i = 0; i < byteCount; ++i) {
-                vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
-            }
-            vectors.add(vector);
+            vectors.add(generateBinaryVector());
         }
         return vectors;
     }
 
-    protected List<SortedMap<Long, Float>> generateSparseVectors(int count) {
-        Random ran = new Random();
+    private ByteBuffer generateFloat16Vector() {
+        List<Float> vector = generateFloatVector();
+        return Float16Utils.f32VectorToFp16Buffer(vector);
+    }
+
+    private List<ByteBuffer> generateFloat16Vectors(int count) {
+        List<ByteBuffer> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            vectors.add(generateFloat16Vector());
+        }
+        return vectors;
+    }
+
+    private ByteBuffer generateBFloat16Vector() {
+        List<Float> vector = generateFloatVector();
+        return Float16Utils.f32VectorToBf16Buffer(vector);
+    }
+
+    private List<ByteBuffer> generateBFloat16Vectors(int count) {
+        List<ByteBuffer> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            vectors.add(generateBFloat16Vector());
+        }
+        return vectors;
+    }
+
+    private SortedMap<Long, Float> generateSparseVector() {
+        SortedMap<Long, Float> sparse = new TreeMap<>();
+        int dim = RANDOM.nextInt(10) + 10;
+        for (int i = 0; i < dim; ++i) {
+            sparse.put((long) RANDOM.nextInt(1000000), RANDOM.nextFloat());
+        }
+        return sparse;
+    }
+
+    private List<SortedMap<Long, Float>> generateSparseVectors(int count) {
         List<SortedMap<Long, Float>> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
-            SortedMap<Long, Float> sparse = new TreeMap<>();
-            int dim = ran.nextInt(10) + 1;
-            for (int i = 0; i < dim; ++i) {
-                sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
-            }
-            vectors.add(sparse);
+            vectors.add(generateSparseVector());
         }
         return vectors;
+    }
+
+    private CollectionSchemaParam buildSchema(boolean strID, boolean autoID, boolean enabledDynamicSchema, List<DataType> fieldTypes) {
+        CollectionSchemaParam.Builder builder = CollectionSchemaParam.newBuilder()
+                .withEnableDynamicField(enabledDynamicSchema);
+
+        if (strID) {
+            builder.addFieldType(FieldType.newBuilder()
+                    .withPrimaryKey(true)
+                    .withDataType(DataType.VarChar)
+                    .withMaxLength(200)
+                    .withName("id")
+                    .build());
+        } else {
+            builder.addFieldType(FieldType.newBuilder()
+                    .withPrimaryKey(true)
+                    .withAutoID(autoID)
+                    .withDataType(DataType.Int64)
+                    .withName("id")
+                    .build());
+        }
+
+        for (DataType dataType : fieldTypes) {
+            if (dataType == DataType.Array) {
+                builder.addFieldType(FieldType.newBuilder()
+                        .withDataType(dataType)
+                        .withName(dataType.name() + "_int32")
+                        .withElementType(DataType.Int32)
+                        .withMaxCapacity(ARRAY_CAPACITY)
+                        .build());
+                builder.addFieldType(FieldType.newBuilder()
+                        .withDataType(dataType)
+                        .withName(dataType.name() + "_float")
+                        .withElementType(DataType.Float)
+                        .withMaxCapacity(ARRAY_CAPACITY)
+                        .build());
+                builder.addFieldType(FieldType.newBuilder()
+                        .withDataType(dataType)
+                        .withName(dataType.name() + "_varchar")
+                        .withElementType(DataType.VarChar)
+                        .withMaxLength(200)
+                        .withMaxCapacity(ARRAY_CAPACITY)
+                        .build());
+            } else {
+                FieldType.Builder fieldBuilder = FieldType.newBuilder()
+                        .withDataType(dataType)
+                        .withName(dataType.name());
+
+                if (dataType == DataType.VarChar) {
+                    fieldBuilder.withMaxLength(60000);
+                } else if (ParamUtils.isVectorDataType(dataType) && dataType != DataType.SparseFloatVector) {
+                    fieldBuilder.withDimension(DIMENSION);
+                }
+
+                builder.addFieldType(fieldBuilder.build());
+            }
+        }
+
+        return builder.build();
+    }
+
+    private List<?> generateRandomArray(FieldType field) {
+        DataType dataType = field.getDataType();
+        if (dataType != DataType.Array) {
+            Assertions.fail();
+        }
+
+        DataType eleType = field.getElementType();
+        int eleCnt = RANDOM.nextInt(field.getMaxCapacity());
+        switch (eleType) {
+            case Bool: {
+                List<Boolean> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(i%10 == 0);
+                }
+                return values;
+            }
+            case Int8:
+            case Int16: {
+                List<Short> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add((short)RANDOM.nextInt(256));
+                }
+                return values;
+            }
+            case Int32: {
+                List<Integer> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(RANDOM.nextInt());
+                }
+                return values;
+            }
+            case Int64: {
+                List<Long> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(RANDOM.nextLong());
+                }
+                return values;
+            }
+            case Float: {
+                List<Float> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(RANDOM.nextFloat());
+                }
+                return values;
+            }
+            case Double: {
+                List<Double> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(RANDOM.nextDouble());
+                }
+                return values;
+            }
+            case VarChar: {
+                List<String> values = new ArrayList<>();
+                for (int i = 0; i < eleCnt; i++) {
+                    values.add(String.format("varchar_arr_%d", i));
+                }
+                return values;
+            }
+            default:
+                Assertions.fail();
+        }
+        return null;
+    }
+
+    private List<InsertParam.Field> generateColumnsData(CollectionSchemaParam schema, int count, int idStart) {
+        List<InsertParam.Field> columns = new ArrayList<>();
+        List<FieldType> fieldTypes = schema.getFieldTypes();
+        for (FieldType fieldType : fieldTypes) {
+            if (fieldType.isAutoID()) {
+                continue;
+            }
+            switch (fieldType.getDataType()) {
+                case Bool: {
+                    List<Boolean> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add(i%3==0 ? true : false);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Int8:
+                case Int16: {
+                    List<Short> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add((short) (i%128));
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Int32: {
+                    List<Integer> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add(i);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Int64: {
+                    List<Long> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add((long)i);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Float: {
+                    List<Float> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add((float)i/3);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Double: {
+                    List<Double> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add((double)i/7);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case VarChar: {
+                    List<String> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add(String.format("varchar_%d", i));
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case JSON: {
+                    List<JsonObject> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        JsonObject info = new JsonObject();
+                        info.addProperty("json", i);
+                        data.add(info);
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Array: {
+                    List<List<?>> data = new ArrayList<>();
+                    for (int i = idStart; i < idStart + count; ++i) {
+                        data.add(generateRandomArray(fieldType));
+                    }
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case FloatVector: {
+                    List<List<Float>> data = generateFloatVectors(count);
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case BinaryVector: {
+                    List<ByteBuffer> data = generateBinaryVectors(count);
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case Float16Vector: {
+                    List<ByteBuffer> data = generateFloat16Vectors(count);
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case BFloat16Vector: {
+                    List<ByteBuffer> data = generateBFloat16Vectors(count);
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                case SparseFloatVector: {
+                    List<SortedMap<Long, Float>> data = generateSparseVectors(count);
+                    columns.add(new InsertParam.Field(fieldType.getName(), data));
+                    break;
+                }
+                default:
+                    Assertions.fail();
+            }
+        }
+
+        if (schema.isEnableDynamicField()) {
+            List<JsonObject> data = new ArrayList<>();
+            for (int i = idStart; i < idStart + count; ++i) {
+                JsonObject info = new JsonObject();
+                info.addProperty("dynamic", i);
+                data.add(info);
+            }
+            columns.add(new InsertParam.Field(Constant.DYNAMIC_FIELD_NAME, data));
+        }
+        return columns;
+    }
+
+    private List<JsonObject> generateRowsData(CollectionSchemaParam schema, int count, int idStart) {
+        List<JsonObject> rows = new ArrayList<>();
+        List<FieldType> fieldTypes = schema.getFieldTypes();
+        for (int i = idStart; i < idStart + count; ++i) {
+            JsonObject row = new JsonObject();
+            for (FieldType fieldType : fieldTypes) {
+                if (fieldType.isAutoID()) {
+                    continue;
+                }
+                switch (fieldType.getDataType()) {
+                    case Bool:
+                        row.addProperty(fieldType.getName(), i % 3 == 0);
+                        break;
+                    case Int8:
+                    case Int16:
+                        row.addProperty(fieldType.getName(), (short)(i%128));
+                        break;
+                    case Int32:
+                        row.addProperty(fieldType.getName(), i);
+                        break;
+                    case Int64:
+                        row.addProperty(fieldType.getName(), (long)i);
+                        break;
+                    case Float:
+                        row.addProperty(fieldType.getName(), (float)i/3);
+                        break;
+                    case Double:
+                        row.addProperty(fieldType.getName(), (float)i/7);
+                        break;
+                    case VarChar:
+                        row.addProperty(fieldType.getName(), String.format("varchar_%d", i));
+                        break;
+                    case JSON:
+                        JsonObject info = new JsonObject();
+                        info.addProperty("json", i);
+                        row.add(fieldType.getName(), info);
+                        break;
+                    case Array:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateRandomArray(fieldType)));
+                        break;
+                    case FloatVector:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateFloatVector()));
+                        break;
+                    case BinaryVector:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateBinaryVector().array()));
+                        break;
+                    case Float16Vector:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateFloat16Vector().array()));
+                        break;
+                    case BFloat16Vector:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateBFloat16Vector().array()));
+                        break;
+                    case SparseFloatVector:
+                        row.add(fieldType.getName(), GSON_INSTANCE.toJsonTree(generateSparseVector()));
+                        break;
+                    default:
+                        Assertions.fail();
+                }
+            }
+            if (schema.isEnableDynamicField()) {
+                row.addProperty("dynamic", i);
+            }
+            rows.add(row);
+        }
+        return rows;
     }
 
     @Test
@@ -174,50 +509,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "long_field";
-        String field2Name = "vec_field";
-        String field3Name = "bool_field";
-        String field4Name = "double_field";
-        String field5Name = "int_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Bool)
-                .withName(field3Name)
-                .withDescription("gender")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Double)
-                .withName(field4Name)
-                .withDescription("weight")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Int8)
-                .withName(field5Name)
-                .withDescription("age")
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Arrays.asList(DataType.FloatVector, DataType.Bool, DataType.Double, DataType.Int8));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .withShardsNum(3)
                 .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .build();
@@ -234,12 +533,12 @@ class MilvusClientDockerTest {
         Assertions.assertEquals("default", collDescWrapper.getDatabaseName());
         Assertions.assertEquals("test", collDescWrapper.getCollectionDescription());
         Assertions.assertEquals(3, collDescWrapper.getShardNumber());
-        Assertions.assertEquals(fieldsSchema.size(), collDescWrapper.getFields().size());
+        Assertions.assertEquals(schema.getFieldTypes().size(), collDescWrapper.getFields().size());
         Assertions.assertEquals(1, collDescWrapper.getVectorFields().size());
         FieldType primaryField = collDescWrapper.getPrimaryField();
         Assertions.assertFalse(primaryField.isAutoID());
-        CollectionSchemaParam schema = collDescWrapper.getSchema();
-        Assertions.assertFalse(schema.isEnableDynamicField());
+        CollectionSchemaParam fetchSchema = collDescWrapper.getSchema();
+        Assertions.assertFalse(fetchSchema.isEnableDynamicField());
         Assertions.assertEquals(ConsistencyLevelEnum.EVENTUALLY, collDescWrapper.getConsistencyLevel());
         System.out.println(collDescWrapper);
 
@@ -252,31 +551,12 @@ class MilvusClientDockerTest {
         List<ShowPartResponseWrapper.PartitionInfo> parts = wra.getPartitionsInfo();
         System.out.println("Partition num: "+parts.size());
 
-
         // insert data
         int rowCount = 10000;
-        List<Long> ids = new ArrayList<>();
-        List<Boolean> genders = new ArrayList<>();
-        List<Double> weights = new ArrayList<>();
-        List<Short> ages = new ArrayList<>();
-        for (long i = 0L; i < rowCount; ++i) {
-            ids.add(i);
-            genders.add(i % 3 == 0 ? Boolean.TRUE : Boolean.FALSE);
-            weights.add(((double) (i + 1) / 100));
-            ages.add((short) ((i + 1) % 99));
-        }
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
-
-        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
-        fieldsInsert.add(new InsertParam.Field(field5Name, ages));
-        fieldsInsert.add(new InsertParam.Field(field4Name, weights));
-        fieldsInsert.add(new InsertParam.Field(field3Name, genders));
-        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
-
+        List<InsertParam.Field> columnsData = generateColumnsData(schema, rowCount, 0);
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFields(fieldsInsert)
+                .withFields(columnsData)
                 .build();
 
         R<MutationResult> insertR = client.withTimeout(10, TimeUnit.SECONDS).insert(insertParam);
@@ -312,7 +592,7 @@ class MilvusClientDockerTest {
         // create index on scalar field
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field5Name)
+                .withFieldName(DataType.Int8.name())
                 .withIndexType(IndexType.STL_SORT)
                 .withSyncMode(Boolean.TRUE)
                 .build();
@@ -323,7 +603,7 @@ class MilvusClientDockerTest {
         // create index on vector field
         indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexName("abv")
                 .withIndexType(IndexType.HNSW)
                 .withMetricType(MetricType.L2)
@@ -339,15 +619,15 @@ class MilvusClientDockerTest {
         // get index description
         DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withIndexName(indexParam.getIndexName())
+                .withFieldName(DataType.FloatVector.name())
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
         DescIndexResponseWrapper indexDescWrapper = new DescIndexResponseWrapper(descIndexR.getData());
-        DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(field2Name);
+        DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(DataType.FloatVector.name());
         Assertions.assertNotNull(indexDesc);
-        Assertions.assertEquals(field2Name, indexDesc.getFieldName());
+        Assertions.assertEquals(DataType.FloatVector.name(), indexDesc.getFieldName());
         Assertions.assertEquals("abv", indexDesc.getIndexName());
         Assertions.assertEquals(IndexType.HNSW, indexDesc.getIndexType());
         Assertions.assertEquals(MetricType.L2, indexDesc.getMetricType());
@@ -381,16 +661,16 @@ class MilvusClientDockerTest {
         System.out.println("Partition info: " + infoPart.toString());
 
         // query
-        Long fetchID = ids.get(0);
-        List<Float> fetchVector = vectors.get(0);
+        Long fetchID = 100L;
+        List<Float> fetchVector = (List<Float>)columnsData.get(1).getValues().get(fetchID.intValue());
         R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == %d", field1Name, fetchID))
-                .addOutField(field2Name)
+                .withExpr(String.format("id == %d", fetchID))
+                .addOutField(DataType.FloatVector.name())
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
         QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
-        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(DataType.FloatVector.name());
         Assertions.assertEquals(1L, fetchField.getRowCount());
         List<?> fetchObj = fetchField.getFieldData();
         Assertions.assertEquals(1, fetchObj.size());
@@ -408,11 +688,14 @@ class MilvusClientDockerTest {
         Random ran = new Random();
         int randomIndex = ran.nextInt(rowCount - nq);
         for (int i = randomIndex; i < randomIndex + nq; ++i) {
-            queryIDs.add(ids.get(i));
-            compareWeights.add(weights.get(i));
+            Assertions.assertInstanceOf(Long.class, columnsData.get(0).getValues().get(i));
+            queryIDs.add((Long)columnsData.get(0).getValues().get(i));
+            Assertions.assertInstanceOf(Double.class, columnsData.get(3).getValues().get(i));
+            compareWeights.add((Double) columnsData.get(3).getValues().get(i));
         }
-        String expr = field1Name + " in " + queryIDs.toString();
-        List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field5Name);
+        String expr = "id in " + queryIDs;
+        List<String> outputFields = Arrays.asList("id", DataType.FloatVector.name(), DataType.Bool.name(),
+                DataType.Double.name(), DataType.Int8.name());
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -430,8 +713,8 @@ class MilvusClientDockerTest {
             System.out.println(wrapper.getFieldData());
             Assertions.assertEquals(nq, wrapper.getFieldData().size());
 
-            if (fieldName.compareTo(field1Name) == 0) {
-                List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
+            if (fieldName.compareTo("id") == 0) {
+                List<?> out = queryResultsWrapper.getFieldWrapper("id").getFieldData();
                 Assertions.assertEquals(nq, out.size());
                 for (Object o : out) {
                     long id = (Long) o;
@@ -443,19 +726,19 @@ class MilvusClientDockerTest {
         // Note: the query() return vectors are not in same sequence to the input
         // here we cannot compare vector one by one
         // the boolean also cannot be compared
-        if (outputFields.contains(field2Name)) {
-            Assertions.assertTrue(queryResultsWrapper.getFieldWrapper(field2Name).isVectorField());
-            List<?> out = queryResultsWrapper.getFieldWrapper(field2Name).getFieldData();
+        if (outputFields.contains(DataType.FloatVector.name())) {
+            Assertions.assertTrue(queryResultsWrapper.getFieldWrapper(DataType.FloatVector.name()).isVectorField());
+            List<?> out = queryResultsWrapper.getFieldWrapper(DataType.FloatVector.name()).getFieldData();
             Assertions.assertEquals(nq, out.size());
         }
 
-        if (outputFields.contains(field3Name)) {
-            List<?> out = queryResultsWrapper.getFieldWrapper(field3Name).getFieldData();
+        if (outputFields.contains(DataType.Bool.name())) {
+            List<?> out = queryResultsWrapper.getFieldWrapper(DataType.Bool.name()).getFieldData();
             Assertions.assertEquals(nq, out.size());
         }
 
-        if (outputFields.contains(field4Name)) {
-            List<?> out = queryResultsWrapper.getFieldWrapper(field4Name).getFieldData();
+        if (outputFields.contains(DataType.Double.name())) {
+            List<?> out = queryResultsWrapper.getFieldWrapper(DataType.Double.name()).getFieldData();
             Assertions.assertEquals(nq, out.size());
             for (Object o : out) {
                 double d = (Double) o;
@@ -465,7 +748,7 @@ class MilvusClientDockerTest {
 
         // query with offset and limit
         int queryLimit = 5;
-        expr = field5Name + " > 1"; // "age > 1"
+        expr = DataType.Int8.name() + " > 1";
         queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -477,15 +760,15 @@ class MilvusClientDockerTest {
 
         queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
         // we didn't set the output fields, only primary key field is returned
-        List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
+        List<?> out = queryResultsWrapper.getFieldWrapper("id").getFieldData();
         Assertions.assertEquals(queryLimit, out.size());
 
         // pick some vectors to search
         List<Long> targetVectorIDs = new ArrayList<>();
         List<List<Float>> targetVectors = new ArrayList<>();
         for (int i = randomIndex; i < randomIndex + nq; ++i) {
-            targetVectorIDs.add(ids.get(i));
-            targetVectors.add(vectors.get(i));
+            targetVectorIDs.add((Long)columnsData.get(0).getValues().get(i));
+            targetVectors.add((List<Float>)columnsData.get(1).getValues().get(i));
         }
 
         int topK = 5;
@@ -493,11 +776,11 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
                 .withTopK(topK)
-                .withVectors(targetVectors)
-                .withVectorFieldName(field2Name)
+                .withFloatVectors(targetVectors)
+                .withVectorFieldName(DataType.FloatVector.name())
                 .withParams("{\"ef\":64}")
-                .addOutField(field4Name)
-                .addOutField(field2Name)
+                .addOutField(DataType.Double.name())
+                .addOutField(DataType.FloatVector.name())
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
@@ -512,7 +795,7 @@ class MilvusClientDockerTest {
             System.out.println(scores);
             Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
 
-            Object obj = scores.get(0).get(field2Name);
+            Object obj = scores.get(0).get(DataType.FloatVector.name());
             Assertions.assertInstanceOf(List.class, obj);
             List<Float> outputVec = (List<Float>)obj;
             Assertions.assertEquals(targetVectors.get(i).size(), outputVec.size());
@@ -521,9 +804,9 @@ class MilvusClientDockerTest {
             }
         }
 
-        List<?> fieldData = results.getFieldData(field4Name, 0);
+        List<?> fieldData = results.getFieldData(DataType.Double.name(), 0);
         Assertions.assertEquals(topK, fieldData.size());
-        fieldData = results.getFieldData(field4Name, nq - 1);
+        fieldData = results.getFieldData(DataType.Double.name(), nq - 1);
         Assertions.assertEquals(topK, fieldData.size());
 
         // release collection
@@ -554,29 +837,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "field1";
-        String field2Name = "field2";
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(true)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("hello")
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.BinaryVector)
-                .withName(field2Name)
-                .withDescription("world")
-                .withDimension(dimension)
-                .build();
+        CollectionSchemaParam schema = buildSchema(false, true, false,
+                Collections.singletonList(DataType.BinaryVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .addFieldType(field1)
-                .addFieldType(field2)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -585,7 +853,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.BinaryVector.name())
                 .withIndexType(IndexType.BIN_IVF_FLAT)
                 .withExtraParam("{\"nlist\":64}")
                 .withMetricType(MetricType.JACCARD)
@@ -598,42 +866,31 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), createIndexR2.getStatus().intValue());
 
         int rowCount = 10000;
-        List<ByteBuffer> vectors = generateBinaryVectors(rowCount);
         // insert data by columns
-        List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(field2Name, vectors.subList(0, 5000))); // no need to provide id here since this field is auto_id
-
+        List<InsertParam.Field> columnsData = generateColumnsData(schema, rowCount, 0);
         R<MutationResult> insertR1 = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFields(fields)
+                .withFields(columnsData)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR1.getStatus().intValue());
 
         MutationResultWrapper insertResultWrapper = new MutationResultWrapper(insertR1.getData());
         System.out.println(insertResultWrapper.getInsertCount() + " rows inserted");
         List<Long> ids1 = insertResultWrapper.getLongIDs(); // get returned IDs(generated by server-side)
+        Assertions.assertEquals(rowCount, ids1.size());
 
         // Insert entities by rows
-        List<JsonObject> rows = new ArrayList<>();
-        for (int i = 5000; i < rowCount; ++i) {
-            JsonObject row = new JsonObject();
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(vectors.get(i).array()));
-            rows.add(row);
-        }
-
+        List<JsonObject> rowsData = generateRowsData(schema, rowCount, rowCount);
         R<MutationResult> insertR2 = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withRows(rows)
+                .withRows(rowsData)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR2.getStatus().intValue());
 
         insertResultWrapper = new MutationResultWrapper(insertR2.getData());
         System.out.println(insertResultWrapper.getInsertCount() + " rows inserted");
         List<Long> ids2 = insertResultWrapper.getLongIDs(); // get returned IDs(generated by server-side)
-        List<Long> ids = new ArrayList<>();
-        ids1.forEach((id) -> { ids.add(id);});
-        ids2.forEach((id) -> { ids.add(id);});
-        Assertions.assertEquals(rowCount, ids.size());
+        Assertions.assertEquals(rowCount, ids2.size());
 
         // get collection statistics
         R<GetCollectionStatisticsResponse> statR = client.getCollectionStatistics(GetCollectionStatisticsParam
@@ -645,30 +902,30 @@ class MilvusClientDockerTest {
 
         GetCollStatResponseWrapper stat = new GetCollStatResponseWrapper(statR.getData());
         System.out.println("Collection row count: " + stat.getRowCount());
-        Assertions.assertEquals(rowCount, stat.getRowCount());
+        Assertions.assertEquals(2*rowCount, stat.getRowCount());
 
         // check index
         while(true) {
             DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
                     .withCollectionName(randomCollectionName)
-                    .withFieldName(field2Name)
+                    .withFieldName(DataType.BinaryVector.name())
                     .build();
             R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
             Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
             DescIndexResponseWrapper indexDescWrapper = new DescIndexResponseWrapper(descIndexR.getData());
-            DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(field2Name);
+            DescIndexResponseWrapper.IndexDesc indexDesc = indexDescWrapper.getIndexDescByFieldName(DataType.BinaryVector.name());
             Assertions.assertNotNull(indexDesc);
             if (indexDesc.getTotalRows() != indexDesc.getIndexedRows()) {
                 System.out.println("Waiting index to be finished...");
                 TimeUnit.SECONDS.sleep(1);
                 continue;
             }
-            Assertions.assertEquals(field2Name, indexDesc.getFieldName());
+            Assertions.assertEquals(DataType.BinaryVector.name(), indexDesc.getFieldName());
             Assertions.assertEquals(IndexType.BIN_IVF_FLAT, indexDesc.getIndexType());
             Assertions.assertEquals(MetricType.JACCARD, indexDesc.getMetricType());
-            Assertions.assertEquals(rowCount, indexDesc.getTotalRows());
-            Assertions.assertEquals(rowCount, indexDesc.getIndexedRows());
+            Assertions.assertEquals(2*rowCount, indexDesc.getTotalRows());
+            Assertions.assertEquals(2*rowCount, indexDesc.getIndexedRows());
             Assertions.assertEquals(0L, indexDesc.getPendingIndexRows());
             Assertions.assertTrue(indexDesc.getIndexFailedReason().isEmpty());
             System.out.println("Index description: " + indexDesc);
@@ -683,15 +940,15 @@ class MilvusClientDockerTest {
 
         // query
         Long fetchID = ids1.get(0);
-        ByteBuffer fetchVector = vectors.get(0);
+        ByteBuffer fetchVector = (ByteBuffer)columnsData.get(0).getValues().get(0);
         R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == %d", field1Name, fetchID))
-                .addOutField(field2Name)
+                .withExpr(String.format("id == %d", fetchID))
+                .addOutField(DataType.BinaryVector.name())
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
         QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
-        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(DataType.BinaryVector.name());
         Assertions.assertEquals(1L, fetchField.getRowCount());
         List<?> fetchObj = fetchField.getFieldData();
         Assertions.assertEquals(1, fetchObj.size());
@@ -701,16 +958,15 @@ class MilvusClientDockerTest {
 
         // search with BIN_FLAT index
         int searchTarget = 99;
-        List<ByteBuffer> oneVector = new ArrayList<>();
-        oneVector.add(vectors.get(searchTarget));
+        ByteBuffer targetVector = (ByteBuffer)columnsData.get(0).getValues().get(searchTarget);
 
         SearchParam searchOneParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.JACCARD)
                 .withTopK(5)
-                .withVectors(oneVector)
-                .withVectorFieldName(field2Name)
-                .addOutField(field2Name)
+                .withBinaryVectors(Collections.singletonList(targetVector))
+                .withVectorFieldName(DataType.BinaryVector.name())
+                .addOutField(DataType.BinaryVector.name())
                 .build();
 
         R<SearchResults> searchOne = client.search(searchOneParam);
@@ -718,14 +974,14 @@ class MilvusClientDockerTest {
 
         SearchResultsWrapper oneResult = new SearchResultsWrapper(searchOne.getData().getResults());
         List<SearchResultsWrapper.IDScore> oneScores = oneResult.getIDScore(0);
-        System.out.println("The search result of id " + ids.get(searchTarget) + " with SUPERSTRUCTURE metric:");
+        System.out.println("The search result of id " + ids1.get(searchTarget) + " with SUPERSTRUCTURE metric:");
         System.out.println(oneScores);
 
         // verify the output vector, the top1 item is equal to the target vector
-        List<?> items = oneResult.getFieldData(field2Name, 0);
+        List<?> items = oneResult.getFieldData(DataType.BinaryVector.name(), 0);
         Assertions.assertEquals(items.size(), 5);
         ByteBuffer firstItem = (ByteBuffer) items.get(0);
-        Assertions.assertArrayEquals(vectors.get(searchTarget).array(), firstItem.array());
+        Assertions.assertArrayEquals(targetVector.array(), firstItem.array());
 
         // release collection
         ReleaseCollectionParam releaseCollectionParam = ReleaseCollectionParam.newBuilder()
@@ -741,7 +997,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.BinaryVector.name())
                 .withIndexName("abv")
                 .withIndexType(IndexType.BIN_IVF_FLAT)
                 .withMetricType(MetricType.HAMMING)
@@ -764,8 +1020,8 @@ class MilvusClientDockerTest {
         Random ran = new Random();
         int randomIndex = ran.nextInt(rowCount - nq);
         for (int i = randomIndex; i < randomIndex + nq; ++i) {
-            targetVectorIDs.add(ids.get(i));
-            targetVectors.add(vectors.get(i));
+            targetVectorIDs.add(ids1.get(i));
+            targetVectors.add((ByteBuffer) columnsData.get(0).getValues().get(i));
         }
 
         int topK = 5;
@@ -773,8 +1029,8 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.HAMMING)
                 .withTopK(topK)
-                .withVectors(targetVectors)
-                .withVectorFieldName(field2Name)
+                .withBinaryVectors(targetVectors)
+                .withVectorFieldName(DataType.BinaryVector.name())
                 .withParams("{\"nprobe\":8}")
                 .build();
 
@@ -788,7 +1044,7 @@ class MilvusClientDockerTest {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
             System.out.println(scores);
-            Assertions.assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
+            Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
         }
 
         // drop collection
@@ -805,52 +1061,32 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "field1";
-        String field2Name = "field2";
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.SparseFloatVector)
-                .withName(field2Name)
-                .build();
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Collections.singletonList(DataType.SparseFloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .addFieldType(field1)
-                .addFieldType(field2)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
 
         int rowCount = 10000;
-        List<Long> ids = new ArrayList<>();
-        for (int i = 0; i < rowCount; i++) {
-            ids.add((long)i);
-        }
-        List<SortedMap<Long, Float>> vectors = generateSparseVectors(rowCount);
-        List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(field1Name, ids));
-        fields.add(new InsertParam.Field(field2Name, vectors));
+        List<InsertParam.Field> columnsData = generateColumnsData(schema, rowCount, 0);
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFields(fields)
+                .withFields(columnsData)
                 .build();
-
         R<MutationResult> insertR = client.insert(insertParam);
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.SparseFloatVector.name())
                 .withIndexType(IndexType.SPARSE_INVERTED_INDEX)
                 .withMetricType(MetricType.IP)
                 .withExtraParam("{\"drop_ratio_build\":0.2}")
@@ -866,16 +1102,17 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // query
-        Long fetchID = ids.get(0);
-        SortedMap<Long, Float> fetchVector = vectors.get(0);
+        Long fetchID = (Long)columnsData.get(0).getValues().get(0);
+        SortedMap<Long, Float> fetchVector = (SortedMap<Long, Float>)columnsData.get(1).getValues().get(0);
         R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == %d", field1Name, fetchID))
-                .addOutField(field2Name)
+                .withExpr(String.format("id == %d", fetchID))
+                .addOutField(DataType.SparseFloatVector.name())
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
         QueryResultsWrapper fetchWrapper = new QueryResultsWrapper(fetchR.getData());
-        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(field2Name);
+        FieldDataWrapper fetchField = fetchWrapper.getFieldWrapper(DataType.SparseFloatVector.name());
         Assertions.assertEquals(1L, fetchField.getRowCount());
         List<?> fetchObj = fetchField.getFieldData();
         Assertions.assertEquals(1, fetchObj.size());
@@ -894,8 +1131,8 @@ class MilvusClientDockerTest {
         Random ran = new Random();
         int randomIndex = ran.nextInt(rowCount);
         for (int i = randomIndex; i < randomIndex + nq; ++i) {
-            targetVectorIDs.add(ids.get(i));
-            targetVectors.add(vectors.get(i));
+            targetVectorIDs.add((Long)columnsData.get(0).getValues().get(i));
+            targetVectors.add((SortedMap<Long, Float>)columnsData.get(1).getValues().get(i));
         }
 
         System.out.println("Search target IDs:" + targetVectorIDs);
@@ -907,8 +1144,8 @@ class MilvusClientDockerTest {
                 .withMetricType(MetricType.IP)
                 .withTopK(topK)
                 .withSparseFloatVectors(targetVectors)
-                .withVectorFieldName(field2Name)
-                .addOutField(field2Name)
+                .withVectorFieldName(DataType.SparseFloatVector.name())
+                .addOutField(DataType.SparseFloatVector.name())
                 .withParams("{\"drop_ratio_search\":0.2}")
                 .build();
 
@@ -927,7 +1164,7 @@ class MilvusClientDockerTest {
             }
             Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
 
-            Object v = scores.get(0).get(field2Name);
+            Object v = scores.get(0).get(DataType.SparseFloatVector.name());
             SortedMap<Long, Float> sparse = (SortedMap<Long, Float>)v;
             Assertions.assertEquals(sparse, targetVectors.get(i));
             Assertions.assertEquals(targetVectors.get(i).size(), sparse.size());
@@ -951,34 +1188,13 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "id";
-        String field2Name = "float16_vector";
-        String field3Name = "bfloat16_vector";
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.Float16Vector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build();
-
-        FieldType field3 = FieldType.newBuilder()
-                .withDataType(DataType.BFloat16Vector)
-                .withName(field3Name)
-                .withDimension(dimension)
-                .build();
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Arrays.asList(DataType.Float16Vector, DataType.BFloat16Vector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .addFieldType(field1)
-                .addFieldType(field2)
-                .addFieldType(field3)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -987,7 +1203,7 @@ class MilvusClientDockerTest {
         // create index
         R<RpcStatus> createIndexR = client.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.Float16Vector.name())
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.COSINE)
                 .build());
@@ -995,7 +1211,7 @@ class MilvusClientDockerTest {
 
         createIndexR = client.createIndex(CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field3Name)
+                .withFieldName(DataType.BFloat16Vector.name())
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.COSINE)
                 .withExtraParam("{\"nlist\": 128}")
@@ -1026,9 +1242,9 @@ class MilvusClientDockerTest {
         }
 
         List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(field1Name, ids));
-        fields.add(new InsertParam.Field(field2Name, fp16Vectors));
-        fields.add(new InsertParam.Field(field3Name, bf16Vectors));
+        fields.add(new InsertParam.Field("id", ids));
+        fields.add(new InsertParam.Field(DataType.Float16Vector.name(), fp16Vectors));
+        fields.add(new InsertParam.Field(DataType.BFloat16Vector.name(), bf16Vectors));
 
         R<MutationResult> insertColumnResp = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -1041,13 +1257,13 @@ class MilvusClientDockerTest {
         List<JsonObject> rows = new ArrayList<>();
         for (int i = 0; i < 5000; i++) {
             JsonObject row = new JsonObject();
-            row.addProperty(field1Name, i + 5000);
+            row.addProperty("id", i + 5000);
 
             List<Float> vector = vectors.get(i + 5000);
             ByteBuffer fp16Vector = Float16Utils.f32VectorToFp16Buffer(vector);
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(fp16Vector.array()));
+            row.add(DataType.Float16Vector.name(), GSON_INSTANCE.toJsonTree(fp16Vector.array()));
             ByteBuffer bf16Vector = Float16Utils.f32VectorToBf16Buffer(vector);
-            row.add(field3Name, GSON_INSTANCE.toJsonTree(bf16Vector.array()));
+            row.add(DataType.BFloat16Vector.name(), GSON_INSTANCE.toJsonTree(bf16Vector.array()));
             rows.add(row);
         }
 
@@ -1060,12 +1276,12 @@ class MilvusClientDockerTest {
 
         // query
         List<Long> targetIDs = Arrays.asList(100L, 8888L);
-        String expr = String.format("%s in %s", field1Name, targetIDs);
+        String expr = String.format("id in %s", targetIDs);
         R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
-                .addOutField(field2Name)
-                .addOutField(field3Name)
+                .addOutField(DataType.Float16Vector.name())
+                .addOutField(DataType.BFloat16Vector.name())
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
@@ -1076,19 +1292,19 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(targetIDs.size(), records.size());
         for (int i = 0; i < records.size(); i++) {
             QueryResultsWrapper.RowRecord record = records.get(i);
-            Assertions.assertEquals(targetIDs.get(i), record.get(field1Name));
-            Assertions.assertInstanceOf(ByteBuffer.class, record.get(field2Name));
-            Assertions.assertInstanceOf(ByteBuffer.class, record.get(field3Name));
+            Assertions.assertEquals(targetIDs.get(i), record.get("id"));
+            Assertions.assertInstanceOf(ByteBuffer.class, record.get(DataType.Float16Vector.name()));
+            Assertions.assertInstanceOf(ByteBuffer.class, record.get(DataType.BFloat16Vector.name()));
 
             List<Float> originVector = vectors.get(targetIDs.get(i).intValue());
-            ByteBuffer buf1 = (ByteBuffer) record.get(field2Name);
+            ByteBuffer buf1 = (ByteBuffer) record.get(DataType.Float16Vector.name());
             List<Float> fp16Vec = Float16Utils.fp16BufferToVector(buf1);
             Assertions.assertEquals(fp16Vec.size(), originVector.size());
             for (int k = 0; k < fp16Vec.size(); k++) {
                 Assertions.assertTrue(Math.abs(fp16Vec.get(k) - originVector.get(k)) <= FLOAT16_PRECISION);
             }
 
-            ByteBuffer buf2 = (ByteBuffer) record.get(field3Name);
+            ByteBuffer buf2 = (ByteBuffer) record.get(DataType.BFloat16Vector.name());
             List<Float> bf16Vec = Float16Utils.bf16BufferToVector(buf2);
             Assertions.assertEquals(bf16Vec.size(), originVector.size());
             for (int k = 0; k < bf16Vec.size(); k++) {
@@ -1107,8 +1323,8 @@ class MilvusClientDockerTest {
                 .withMetricType(MetricType.COSINE)
                 .withTopK(topK)
                 .withFloat16Vectors(Collections.singletonList(fp16Vector))
-                .withVectorFieldName(field2Name)
-                .addOutField(field2Name)
+                .withVectorFieldName(DataType.Float16Vector.name())
+                .addOutField(DataType.Float16Vector.name())
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
 
@@ -1120,7 +1336,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(topK, scores.size());
         Assertions.assertEquals(targetID, scores.get(0).getLongID());
 
-        Object v = scores.get(0).get(field2Name);
+        Object v = scores.get(0).get(DataType.Float16Vector.name());
         Assertions.assertInstanceOf(ByteBuffer.class, v);
         List<Float> fp16Vec = Float16Utils.fp16BufferToVector((ByteBuffer)v);
         Assertions.assertEquals(fp16Vec.size(), originVector.size());
@@ -1136,8 +1352,8 @@ class MilvusClientDockerTest {
                 .withTopK(topK)
                 .withParams("{\"nprobe\": 16}")
                 .withBFloat16Vectors(Collections.singletonList(bf16Vector))
-                .withVectorFieldName(field3Name)
-                .addOutField(field3Name)
+                .withVectorFieldName(DataType.BFloat16Vector.name())
+                .addOutField(DataType.BFloat16Vector.name())
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
 
@@ -1149,7 +1365,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(topK, scores.size());
         Assertions.assertEquals(targetID, scores.get(0).getLongID());
 
-        v = scores.get(0).get(field3Name);
+        v = scores.get(0).get(DataType.BFloat16Vector.name());
         Assertions.assertInstanceOf(ByteBuffer.class, v);
         List<Float> bf16Vec = Float16Utils.bf16BufferToVector((ByteBuffer)v);
         Assertions.assertEquals(bf16Vec.size(), originVector.size());
@@ -1171,38 +1387,13 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String idField = "id";
-        String floatVectorField = "float_vector";
-        String binaryVectorField = "binary_vector";
-        String sparseVectorField = "sparse_vector";
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(true)
-                .withDataType(DataType.Int64)
-                .withName(idField)
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(floatVectorField)
-                .withDimension(dimension)
-                .build();
-
-        FieldType field3 = FieldType.newBuilder()
-                .withDataType(DataType.BinaryVector)
-                .withName(binaryVectorField)
-                .withDimension(dimension)
-                .build();
-
-        FieldType field4 = FieldType.newBuilder()
-                .withDataType(DataType.SparseFloatVector)
-                .withName(sparseVectorField)
-                .build();
+        CollectionSchemaParam schema = buildSchema(false, true, false,
+                Arrays.asList(DataType.FloatVector, DataType.BinaryVector, DataType.SparseFloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldTypes(Lists.newArrayList(field1, field2, field3, field4))
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1210,14 +1401,7 @@ class MilvusClientDockerTest {
 
         // insert data to multiple vector fields
         int rowCount = 10000;
-        List<List<Float>> floatVectors = generateFloatVectors(rowCount);
-        List<ByteBuffer> binaryVectors = generateBinaryVectors(rowCount);
-        List<SortedMap<Long, Float>> sparseVectors = generateSparseVectors(rowCount);
-
-        List<InsertParam.Field> fields = new ArrayList<>();
-        fields.add(new InsertParam.Field(floatVectorField, floatVectors));
-        fields.add(new InsertParam.Field(binaryVectorField, binaryVectors));
-        fields.add(new InsertParam.Field(sparseVectorField, sparseVectors));
+        List<InsertParam.Field> fields = generateColumnsData(schema, rowCount, 0);
 
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -1230,7 +1414,7 @@ class MilvusClientDockerTest {
         // create indexes on multiple vector fields
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(floatVectorField)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.COSINE)
                 .withExtraParam("{\"nlist\":64}")
@@ -1241,7 +1425,7 @@ class MilvusClientDockerTest {
 
         indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(binaryVectorField)
+                .withFieldName(DataType.BinaryVector.name())
                 .withIndexType(IndexType.BIN_FLAT)
                 .withMetricType(MetricType.HAMMING)
                 .withExtraParam("{}")
@@ -1252,7 +1436,7 @@ class MilvusClientDockerTest {
 
         indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(sparseVectorField)
+                .withFieldName(DataType.SparseFloatVector.name())
                 .withIndexType(IndexType.SPARSE_INVERTED_INDEX)
                 .withMetricType(MetricType.IP)
                 .withExtraParam("{\"drop_ratio_build\":0.2}")
@@ -1269,7 +1453,7 @@ class MilvusClientDockerTest {
 
         // search on multiple vector fields
         AnnSearchParam param1 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(floatVectorField)
+                .withVectorFieldName(DataType.FloatVector.name())
                 .withFloatVectors(generateFloatVectors(1))
                 .withMetricType(MetricType.COSINE)
                 .withParams("{\"nprobe\": 32}")
@@ -1277,7 +1461,7 @@ class MilvusClientDockerTest {
                 .build();
 
         AnnSearchParam param2 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(binaryVectorField)
+                .withVectorFieldName(DataType.BinaryVector.name())
                 .withBinaryVectors(generateBinaryVectors(1))
                 .withMetricType(MetricType.HAMMING)
                 .withParams("{}")
@@ -1285,7 +1469,7 @@ class MilvusClientDockerTest {
                 .build();
 
         AnnSearchParam param3 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(sparseVectorField)
+                .withVectorFieldName(DataType.SparseFloatVector.name())
                 .withSparseFloatVectors(generateSparseVectors(1))
                 .withMetricType(MetricType.IP)
                 .withParams("{\"drop_ratio_search\":0.2}")
@@ -1294,7 +1478,7 @@ class MilvusClientDockerTest {
 
         HybridSearchParam searchParam = HybridSearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .addOutField(sparseVectorField)
+                .addOutField(DataType.SparseFloatVector.name())
                 .addSearchRequest(param1)
                 .addSearchRequest(param2)
                 .addSearchRequest(param3)
@@ -1314,17 +1498,17 @@ class MilvusClientDockerTest {
         List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
         for (SearchResultsWrapper.IDScore score : scores) {
             System.out.println(score);
-            Object id = score.get(idField);
+            Object id = score.get("id");
             Assertions.assertInstanceOf(Long.class, id);
-            Object fv = score.get(floatVectorField);
+            Object fv = score.get(DataType.FloatVector.name());
             Assertions.assertInstanceOf(List.class, fv);
             List<Float> fvec = (List<Float>)fv;
-            Assertions.assertEquals(dimension, fvec.size());
-            Object bv = score.get(binaryVectorField);
+            Assertions.assertEquals(DIMENSION, fvec.size());
+            Object bv = score.get(DataType.BinaryVector.name());
             Assertions.assertInstanceOf(ByteBuffer.class, bv);
             ByteBuffer bvec = (ByteBuffer)bv;
-            Assertions.assertEquals(dimension, bvec.limit()*8);
-            Object sv = score.get(sparseVectorField);
+            Assertions.assertEquals(DIMENSION, bvec.limit()*8);
+            Object sv = score.get(DataType.SparseFloatVector.name());
             Assertions.assertInstanceOf(SortedMap.class, sv);
         }
 
@@ -1342,29 +1526,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "long_field";
-        String field2Name = "vec_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(true)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, true, false,
+                Collections.singletonList(DataType.FloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1374,9 +1543,9 @@ class MilvusClientDockerTest {
         List<ListenableFuture<R<MutationResult>>> futureResponses = new ArrayList<>();
         int rowCount = 1000;
         for (long i = 0L; i < 10; ++i) {
-            List<List<Float>> vectors = normalizeFloatVectors(generateFloatVectors(rowCount));
+            List<List<Float>> vectors = generateFloatVectors(rowCount);
             List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-            fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
+            fieldsInsert.add(new InsertParam.Field(DataType.FloatVector.name(), vectors));
 
             InsertParam insertParam = InsertParam.newBuilder()
                     .withCollectionName(randomCollectionName)
@@ -1416,7 +1585,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.IP)
                 .withSyncMode(Boolean.TRUE)
@@ -1434,21 +1603,21 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // search async
-        List<List<Float>> targetVectors = normalizeFloatVectors(generateFloatVectors(2));
+        List<List<Float>> targetVectors = generateFloatVectors(2);
         int topK = 5;
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.IP)
                 .withTopK(topK)
                 .withVectors(targetVectors)
-                .withVectorFieldName(field2Name)
+                .withVectorFieldName(DataType.FloatVector.name())
                 .build();
 
         ListenableFuture<R<SearchResults>> searchFuture = client.searchAsync(searchParam);
 
         // query async
-        String expr = field1Name + " in " + queryIDs.toString();
-        List<String> outputFields = Arrays.asList(field1Name, field2Name);
+        String expr = "id in " + queryIDs;
+        List<String> outputFields = Arrays.asList("id", DataType.FloatVector.name());
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -1502,29 +1671,14 @@ class MilvusClientDockerTest {
     void testCredential() {
         String randomCollectionName = generator.generate(10);
         // collection schema
-        String field1Name = "long_field";
-        String field2Name = "vec_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, true, false,
+                Collections.singletonList(DataType.FloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1533,7 +1687,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.IVF_FLAT)
                 .withIndexName("xxx")
                 .withMetricType(MetricType.L2)
@@ -1565,45 +1719,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "str_id";
-        String field2Name = "vec_field";
-        String field3Name = "str_field";
-        String field4Name = "int_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.VarChar)
-                .withName(field1Name)
-                .withMaxLength(32)
-                .withDescription("string identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.VarChar)
-                .withName(field3Name)
-                .withMaxLength(32)
-                .withDescription("comment")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Int64)
-                .withName(field4Name)
-                .withDescription("sequence")
-                .build());
+        CollectionSchemaParam schema = buildSchema(true, false, false,
+                Arrays.asList(DataType.FloatVector, DataType.VarChar, DataType.Int64));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1618,25 +1741,10 @@ class MilvusClientDockerTest {
 
         // insert data
         int rowCount = 10000;
-        List<String> ids = new ArrayList<>();
-        List<String> comments = new ArrayList<>();
-        List<Long> sequences = new ArrayList<>();
-        for (long i = 0L; i < rowCount; ++i) {
-            ids.add(generator.generate(8));
-            comments.add(generator.generate(8));
-            sequences.add(i);
-        }
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
-
-        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
-        fieldsInsert.add(new InsertParam.Field(field3Name, comments));
-        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
-        fieldsInsert.add(new InsertParam.Field(field4Name, sequences));
-
+        List<InsertParam.Field> columnsData = generateColumnsData(schema, rowCount, 0);
         InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFields(fieldsInsert)
+                .withFields(columnsData)
                 .build();
 
         R<MutationResult> insertR = client.withTimeout(10, TimeUnit.SECONDS).insert(insertParam);
@@ -1659,7 +1767,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field3Name)
+                .withFieldName(DataType.VarChar.name())
                 .withIndexName("stridx")
                 .withIndexType(IndexType.TRIE)
                 .withSyncMode(Boolean.TRUE)
@@ -1673,7 +1781,7 @@ class MilvusClientDockerTest {
         // get index description
         DescribeIndexParam descIndexParam = DescribeIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withIndexName(indexParam.getIndexName())
+                .withFieldName(DataType.VarChar.name())
                 .build();
         R<DescribeIndexResponse> descIndexR = client.describeIndex(descIndexParam);
         Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
@@ -1681,7 +1789,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam2 = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.IP)
                 .withSyncMode(Boolean.TRUE)
@@ -1705,15 +1813,16 @@ class MilvusClientDockerTest {
         Random ran = new Random();
         int randomIndex = ran.nextInt(rowCount - nq);
         for (int i = randomIndex; i < randomIndex + nq; ++i) {
-            queryIds.add(ids.get(i));
-            queryItems.add(sequences.get(i));
+            queryIds.add((String)columnsData.get(0).getValues().get(i));
+            queryItems.add((Long)columnsData.get(3).getValues().get(i));
         }
-        String expr = field4Name + " in " + queryItems.toString();
-        List<String> outputFields = Arrays.asList(field1Name, field3Name);
+        String expr = DataType.Int64.name() + " in " + queryItems;
+        List<String> outputFields = Arrays.asList("id", DataType.VarChar.name());
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
                 .withOutFields(outputFields)
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
         R<QueryResults> queryR = client.query(queryParam);
@@ -1727,8 +1836,8 @@ class MilvusClientDockerTest {
             System.out.println(wrapper.getFieldData());
             Assertions.assertEquals(nq, wrapper.getFieldData().size());
 
-            if (fieldName.compareTo(field1Name) == 0) {
-                List<?> out = queryResultsWrapper.getFieldWrapper(field1Name).getFieldData();
+            if (fieldName.compareTo("id") == 0) {
+                List<?> out = queryResultsWrapper.getFieldWrapper("id").getFieldData();
                 Assertions.assertEquals(nq, out.size());
                 for (Object o : out) {
                     String id = (String) o;
@@ -1741,15 +1850,15 @@ class MilvusClientDockerTest {
         int topK = 5;
         List<List<Float>> targetVectors = new ArrayList<>();
         for (Long seq : queryItems) {
-            targetVectors.add(vectors.get(seq.intValue()));
+            targetVectors.add((List<Float>)columnsData.get(1).getValues().get(seq.intValue()));
         }
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.IP)
                 .withTopK(topK)
-                .withVectors(targetVectors)
-                .withVectorFieldName(field2Name)
-                .addOutField(field4Name)
+                .withFloatVectors(targetVectors)
+                .withVectorFieldName(DataType.FloatVector.name())
+                .addOutField(DataType.Int64.name())
                 .build();
 
         R<SearchResults> searchR = client.search(searchParam);
@@ -1761,6 +1870,7 @@ class MilvusClientDockerTest {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector(ID = " + queryIds.get(i) + "):");
             System.out.println(scores);
+            Assertions.assertEquals(scores.get(0).getStrID(), queryIds.get(i));
         }
 
         client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
@@ -1797,27 +1907,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "idg_field";
-        String field2Name = "vec_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Collections.singletonList(DataType.FloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1837,8 +1934,8 @@ class MilvusClientDockerTest {
 
         for (IndexType type : indexTypes.keySet()) {
             for (MetricType metric : metricTypes) {
-                testIndex(randomCollectionName, field2Name, type, metric, indexTypes.get(type), Boolean.TRUE);
-                testIndex(randomCollectionName, field2Name, type, metric, indexTypes.get(type), Boolean.FALSE);
+                testIndex(randomCollectionName, DataType.FloatVector.name(), type, metric, indexTypes.get(type), Boolean.TRUE);
+                testIndex(randomCollectionName, DataType.FloatVector.name(), type, metric, indexTypes.get(type), Boolean.FALSE);
             }
         }
 
@@ -1850,27 +1947,14 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "id_field";
-        String field2Name = "vector_field";
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(true)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.BinaryVector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build();
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Collections.singletonList(DataType.BinaryVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withDescription("test")
-                .addFieldType(field1)
-                .addFieldType(field2)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1882,8 +1966,8 @@ class MilvusClientDockerTest {
         flatMetricTypes.add(MetricType.JACCARD);
 
         for (MetricType metric : flatMetricTypes) {
-            testIndex(randomCollectionName, field2Name, IndexType.BIN_FLAT, metric, "{}", Boolean.TRUE);
-            testIndex(randomCollectionName, field2Name, IndexType.BIN_FLAT, metric, "{}", Boolean.FALSE);
+            testIndex(randomCollectionName, DataType.BinaryVector.name(), IndexType.BIN_FLAT, metric, "{}", Boolean.TRUE);
+            testIndex(randomCollectionName, DataType.BinaryVector.name(), IndexType.BIN_FLAT, metric, "{}", Boolean.FALSE);
         }
 
         List<MetricType> ivfMetricTypes = new ArrayList<>();
@@ -1891,8 +1975,8 @@ class MilvusClientDockerTest {
         ivfMetricTypes.add(MetricType.JACCARD);
 
         for (MetricType metric : ivfMetricTypes) {
-            testIndex(randomCollectionName, field2Name, IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.TRUE);
-            testIndex(randomCollectionName, field2Name, IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.FALSE);
+            testIndex(randomCollectionName, DataType.BinaryVector.name(), IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.TRUE);
+            testIndex(randomCollectionName, DataType.BinaryVector.name(), IndexType.BIN_IVF_FLAT, metric, "{\"nlist\":128}", Boolean.FALSE);
         }
 
         client.dropCollection(DropCollectionParam.newBuilder().withCollectionName(randomCollectionName).build());
@@ -1903,36 +1987,13 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "id_field";
-        String field2Name = "vec_field";
-        String field3Name = "json_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.JSON)
-                .withName(field3Name)
-                .withDescription("info")
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, true,
+                Arrays.asList(DataType.FloatVector, DataType.JSON));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldTypes(fieldsSchema)
-                .withEnableDynamicField(true)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -1948,7 +2009,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexName("abv")
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.COSINE)
@@ -1966,28 +2027,10 @@ class MilvusClientDockerTest {
 
         int rowCount = 10;
         // insert data by row-based
-        List<JsonObject> rows = new ArrayList<>();
-        for (long i = 0L; i < rowCount; ++i) {
-            JsonObject row = new JsonObject();
-            row.addProperty(field1Name, i);
-            List<Float> vector = generateFloatVectors(1).get(0);
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
-
-            // JSON field
-            JsonObject info = new JsonObject();
-            info.addProperty("row_based_info", i);
-            row.add(field3Name, info);
-
-            // extra meta is automatically stored in dynamic field
-            row.addProperty("row_based_extra", i % 3 == 0);
-            row.addProperty(generator.generate(5), 100);
-
-            rows.add(row);
-        }
-
+        List<JsonObject> rowsData = generateRowsData(schema, rowCount, 0);
         InsertParam insertRowParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withRows(rows)
+                .withRows(rowsData)
                 .build();
 
         R<MutationResult> insertRowResp = client.insert(insertRowParam);
@@ -1995,31 +2038,10 @@ class MilvusClientDockerTest {
         System.out.println(rowCount + " rows inserted");
 
         // insert data by column-based
-        List<Long> ids = new ArrayList<>();
-        List<JsonObject> infos = new ArrayList<>();
-        List<JsonObject> dynamics = new ArrayList<>();
-        for (long i = 0L; i < rowCount; ++i) {
-            ids.add(rowCount + i);
-            JsonObject obj = new JsonObject();
-            obj.addProperty("column_based_info", i);
-            obj.addProperty(generator.generate(5), i);
-            infos.add(obj);
-
-            JsonObject dynamic = new JsonObject();
-            dynamic.addProperty(String.format("column_based_extra_%d", i), i);
-            dynamics.add(dynamic);
-        }
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
-
-        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
-        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
-        fieldsInsert.add(new InsertParam.Field(field3Name, infos));
-        fieldsInsert.add(new InsertParam.Field(Constant.DYNAMIC_FIELD_NAME, dynamics));
-
+        List<InsertParam.Field> columnsData = generateColumnsData(schema, rowCount, rowCount);
         InsertParam insertColumnsParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFields(fieldsInsert)
+                .withFields(columnsData)
                 .build();
 
         R<MutationResult> insertColumnResp = client.insert(insertColumnsParam);
@@ -2038,8 +2060,9 @@ class MilvusClientDockerTest {
         System.out.println("Collection row count: " + stat.getRowCount());
 
         // retrieve rows
-        String expr = "row_based_extra == true";
-        List<String> outputFields = Arrays.asList(field3Name, "row_based_extra");
+        List<Long> target = Arrays.asList(0L, 5L, 9L, 16L, 19L);
+        String expr = "dynamic in " + target;
+        List<String> outputFields = Arrays.asList(DataType.JSON.name(), "dynamic");
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withExpr(expr)
@@ -2054,22 +2077,24 @@ class MilvusClientDockerTest {
         System.out.println("Query results with expr: " + expr);
         for (QueryResultsWrapper.RowRecord record:records) {
             System.out.println(record);
-            Object extraMeta = record.get("row_based_extra");
-            Assertions.assertInstanceOf(Boolean.class, extraMeta);
-            System.out.println("'row_based_extra' is from dynamic field, value: " + extraMeta);
+            Object extraMeta = record.get("dynamic");
+            Assertions.assertInstanceOf(Long.class, extraMeta);
+            Assertions.assertTrue(target.contains(extraMeta));
+            System.out.println("'dynamic' is from dynamic field, value: " + extraMeta);
         }
 
         // search the No.11 and No.15
+        target = Arrays.asList(1L, 5L);
         List<List<Float>> targetVectors = new ArrayList<>();
-        targetVectors.add(vectors.get(1));
-        targetVectors.add(vectors.get(5));
+        targetVectors.add((List<Float>)columnsData.get(1).getValues().get(target.get(0).intValue()));
+        targetVectors.add((List<Float>)columnsData.get(1).getValues().get(target.get(1).intValue()));
         int topK = 5;
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.COSINE)
                 .withTopK(topK)
-                .withVectors(targetVectors)
-                .withVectorFieldName(field2Name)
+                .withFloatVectors(targetVectors)
+                .withVectorFieldName(DataType.FloatVector.name())
                 .withParams("{}")
                 .withOutFields(outputFields)
                 .build();
@@ -2082,22 +2107,21 @@ class MilvusClientDockerTest {
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector:");
-            for (SearchResultsWrapper.IDScore score:scores) {
-                System.out.println(score);
-                Object extraMeta = score.get("row_based_extra");
-                if (extraMeta != null) {
-                    System.out.println("'row_based_extra' is from dynamic field, value: " + extraMeta);
-                }
-            }
+            SearchResultsWrapper.IDScore score = scores.get(0);
+            System.out.println(score);
+            Object extraMeta = score.get("dynamic");
+            Assertions.assertInstanceOf(Long.class, extraMeta);
+            Long k = (Long)extraMeta - rowCount;
+            Assertions.assertTrue(target.contains(k));
+            System.out.println("'dynamic' is from dynamic field, value: " + extraMeta);
         }
         Assertions.assertEquals(results.getIDScore(0).get(0).getLongID(), 11L);
         Assertions.assertEquals(results.getIDScore(1).get(0).getLongID(), 15L);
 
         // retrieve dynamic values inserted by column-based
-        expr = "column_based_extra_1 == 1";
         queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr("column_based_extra_1 == 1")
+                .withExpr("dynamic == 18")
                 .withOutFields(Collections.singletonList("*"))
                 .build();
 
@@ -2109,16 +2133,16 @@ class MilvusClientDockerTest {
         System.out.println("Query results with expr: " + expr);
         for (QueryResultsWrapper.RowRecord record:records) {
             System.out.println(record);
-            long id = (long)record.get(field1Name);
-            Assertions.assertEquals((long)rowCount+1L, id);
-            Object vec = record.get(field2Name);
+            long id = (long)record.get("id");
+            Assertions.assertEquals(18L, id);
+            Object vec = record.get(DataType.FloatVector.name());
             Assertions.assertInstanceOf(List.class, vec);
             List<Float> vector = (List<Float>)vec;
-            Assertions.assertEquals(dimension, vector.size());
-            Object j = record.get(field3Name);
+            Assertions.assertEquals(DIMENSION, vector.size());
+            Object j = record.get(DataType.JSON.name());
             Assertions.assertInstanceOf(JsonObject.class, j);
             JsonObject jon = (JsonObject)j;
-            Assertions.assertTrue(jon.has("column_based_info"));
+            Assertions.assertTrue(jon.has("json"));
         }
 
         // drop collection
@@ -2133,51 +2157,13 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "id_field";
-        String field2Name = "vec_field";
-        String field3Name = "str_array_field";
-        String field4Name = "int_array_field";
-        String field5Name = "float_array_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Array)
-                .withElementType(DataType.VarChar)
-                .withName(field3Name)
-                .withMaxLength(256)
-                .withMaxCapacity(300)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Array)
-                .withElementType(DataType.Int32)
-                .withName(field4Name)
-                .withMaxCapacity(400)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.Array)
-                .withElementType(DataType.Float)
-                .withName(field5Name)
-                .withMaxCapacity(500)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Arrays.asList(DataType.FloatVector, DataType.Array));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -2186,7 +2172,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.L2)
                 .withExtraParam("{}")
@@ -2200,6 +2186,10 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
+
+        String varcharArrayName = DataType.Array + "_varchar";
+        String intArrayName = DataType.Array + "_int32";
+        String floatArrayName = DataType.Array + "_float";
 
         // insert data by column-based
         int rowCount = 100;
@@ -2224,11 +2214,11 @@ class MilvusClientDockerTest {
         List<List<Float>> vectors = generateFloatVectors(rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
-        fieldsInsert.add(new InsertParam.Field(field1Name, ids));
-        fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
-        fieldsInsert.add(new InsertParam.Field(field3Name, strArrArray));
-        fieldsInsert.add(new InsertParam.Field(field4Name, intArrArray));
-        fieldsInsert.add(new InsertParam.Field(field5Name, floatArrArray));
+        fieldsInsert.add(new InsertParam.Field("id", ids));
+        fieldsInsert.add(new InsertParam.Field(DataType.FloatVector.name(), vectors));
+        fieldsInsert.add(new InsertParam.Field(varcharArrayName, strArrArray));
+        fieldsInsert.add(new InsertParam.Field(intArrayName, intArrArray));
+        fieldsInsert.add(new InsertParam.Field(floatArrayName, floatArrArray));
 
         InsertParam insertColumnsParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -2243,9 +2233,9 @@ class MilvusClientDockerTest {
         List<JsonObject> rows = new ArrayList<>();
         for (int i = 0; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
-            row.addProperty(field1Name, 10000L + (long)i);
+            row.addProperty("id", 10000L + (long)i);
             List<Float> vector = generateFloatVectors(1).get(0);
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
+            row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(vector));
 
             List<String> strArray = new ArrayList<>();
             List<Integer> intArray = new ArrayList<>();
@@ -2255,9 +2245,9 @@ class MilvusClientDockerTest {
                 intArray.add(i*10000 + k);
                 floatArray.add((float)k/1000 + i);
             }
-            row.add(field3Name, GSON_INSTANCE.toJsonTree(strArray));
-            row.add(field4Name, GSON_INSTANCE.toJsonTree(intArray));
-            row.add(field5Name, GSON_INSTANCE.toJsonTree(floatArray));
+            row.add(varcharArrayName, GSON_INSTANCE.toJsonTree(strArray));
+            row.add(intArrayName, GSON_INSTANCE.toJsonTree(intArray));
+            row.add(floatArrayName, GSON_INSTANCE.toJsonTree(floatArray));
 
             rows.add(row);
         }
@@ -2277,11 +2267,11 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
                 .withTopK(5)
-                .withVectors(searchVectors)
-                .withVectorFieldName(field2Name)
-                .addOutField(field3Name)
-                .addOutField(field4Name)
-                .addOutField(field5Name)
+                .withFloatVectors(searchVectors)
+                .withVectorFieldName(DataType.FloatVector.name())
+                .addOutField(varcharArrayName)
+                .addOutField(intArrayName)
+                .addOutField(floatArrayName)
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
@@ -2295,11 +2285,11 @@ class MilvusClientDockerTest {
         for (SearchResultsWrapper.IDScore score : scores) {
             System.out.println(score);
             long id = score.getLongID();
-            List<?> strArray = (List<?>)score.get(field3Name);
+            List<?> strArray = (List<?>)score.get(varcharArrayName);
             Assertions.assertEquals(id%10000, (long)strArray.size());
-            List<?> intArray = (List<?>)score.get(field4Name);
+            List<?> intArray = (List<?>)score.get(intArrayName);
             Assertions.assertEquals(id%10000, (long)intArray.size());
-            List<?> floatArray = (List<?>)score.get(field5Name);
+            List<?> floatArray = (List<?>)score.get(floatArrayName);
             Assertions.assertEquals(id%10000, (long)floatArray.size());
         }
 
@@ -2308,12 +2298,12 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
                 .withTopK(10)
-                .withExpr(String.format("array_contains_any(%s, [450038, 680015])", field4Name))
-                .withVectors(searchVectors)
-                .withVectorFieldName(field2Name)
-                .addOutField(field3Name)
-                .addOutField(field4Name)
-                .addOutField(field5Name)
+                .withExpr(String.format("array_contains_any(%s, [450038, 680015])", intArrayName))
+                .withFloatVectors(searchVectors)
+                .withVectorFieldName(DataType.FloatVector.name())
+                .addOutField(varcharArrayName)
+                .addOutField(intArrayName)
+                .addOutField(floatArrayName)
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
 
@@ -2340,37 +2330,13 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        String field1Name = "id_field";
-        String field2Name = "vec_field";
-        String field3Name = "varchar_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName(field1Name)
-                .withDescription("identity")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDescription("face")
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.VarChar)
-                .withName(field3Name)
-                .withDescription("name")
-                .withMaxLength(100)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, true,
+                Arrays.asList(DataType.FloatVector, DataType.VarChar));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldTypes(fieldsSchema)
-                .withEnableDynamicField(true)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -2381,10 +2347,10 @@ class MilvusClientDockerTest {
         List<JsonObject> rows = new ArrayList<>();
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
-            row.addProperty(field1Name, i);
+            row.addProperty("id", i);
             List<Float> vector = generateFloatVectors(1).get(0);
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
-            row.addProperty(field3Name, String.format("name_%d", i));
+            row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(vector));
+            row.addProperty(DataType.VarChar.name(), String.format("name_%d", i));
             row.addProperty("dynamic_value", String.format("dynamic_%d", i));
             rows.add(row);
         }
@@ -2414,7 +2380,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexName("abv")
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.L2)
@@ -2433,8 +2399,8 @@ class MilvusClientDockerTest {
         // retrieve one row from the sealed segment
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == 5", field1Name))
-                .addOutField(field3Name)
+                .withExpr("id == 5")
+                .addOutField(DataType.VarChar.name())
                 .build();
 
         R<QueryResults> queryR = client.query(queryParam);
@@ -2445,7 +2411,7 @@ class MilvusClientDockerTest {
         System.out.println("Query results in sealed segment:");
         for (QueryResultsWrapper.RowRecord record:records) {
             System.out.println(record);
-            Object name = record.get(field3Name);
+            Object name = record.get(DataType.VarChar.name());
             Assertions.assertNotNull(name);
             Assertions.assertEquals("name_5", name);
         }
@@ -2455,10 +2421,10 @@ class MilvusClientDockerTest {
         rows.clear();
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
-            row.addProperty(field1Name, rowCount + i);
+            row.addProperty("id", rowCount + i);
             List<Float> vector = generateFloatVectors(1).get(0);
-            row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
-            row.addProperty(field3Name, String.format("name_%d", rowCount + i));
+            row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(vector));
+            row.addProperty(DataType.VarChar.name(), String.format("name_%d", rowCount + i));
             rows.add(row);
         }
 
@@ -2474,8 +2440,8 @@ class MilvusClientDockerTest {
         // retrieve one row from the growing segment
         queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == 18", field1Name))
-                .addOutField(field3Name)
+                .withExpr("id == 18")
+                .addOutField(DataType.VarChar.name())
                 .addOutField("dynamic_value")
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
@@ -2488,7 +2454,7 @@ class MilvusClientDockerTest {
         System.out.println("Query results in growing segment:");
         for (QueryResultsWrapper.RowRecord record:records) {
             System.out.println(record);
-            Object name = record.get(field3Name);
+            Object name = record.get(DataType.VarChar.name());
             Assertions.assertNotNull(name);
             Assertions.assertEquals("name_18", name);
             Assertions.assertThrows(ParamException.class, () -> record.get("dynamic_value")); // we didn't set dynamic_value for No.18 row
@@ -2497,17 +2463,17 @@ class MilvusClientDockerTest {
         // upsert to change the no.5 and no.18 items
         rows.clear();
         JsonObject row = new JsonObject();
-        row.addProperty(field1Name, 5L);
+        row.addProperty("id", 5L);
         List<Float> vector = generateFloatVectors(1).get(0);
-        row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
-        row.addProperty(field3Name, "updated_5");
+        row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(vector));
+        row.addProperty(DataType.VarChar.name(), "updated_5");
         row.addProperty("dynamic_value", String.format("dynamic_%d", 5));
         rows.add(row);
         row = new JsonObject();
-        row.addProperty(field1Name, 18L);
+        row.addProperty("id", 18L);
         vector = generateFloatVectors(1).get(0);
-        row.add(field2Name, GSON_INSTANCE.toJsonTree(vector));
-        row.addProperty(field3Name, "updated_18");
+        row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(vector));
+        row.addProperty(DataType.VarChar.name(), "updated_18");
         row.addProperty("dynamic_value", 18);
         rows.add(row);
 
@@ -2522,8 +2488,8 @@ class MilvusClientDockerTest {
         // verify the two items
         queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withExpr(String.format("%s == 5 || %s == 18", field1Name, field1Name))
-                .addOutField(field3Name)
+                .withExpr("id == 5 || id == 18")
+                .addOutField(DataType.VarChar.name())
                 .addOutField("dynamic_value")
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build();
@@ -2534,9 +2500,9 @@ class MilvusClientDockerTest {
         queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
         records = queryResultsWrapper.getRowRecords();
         Assertions.assertEquals(2, records.size());
-        Assertions.assertEquals("updated_5", records.get(0).get(field3Name));
+        Assertions.assertEquals("updated_5", records.get(0).get(DataType.VarChar.name()));
         Assertions.assertEquals("dynamic_5", records.get(0).get("dynamic_value"));
-        Assertions.assertEquals("updated_18", records.get(1).get(field3Name));
+        Assertions.assertEquals("updated_18", records.get(1).get(DataType.VarChar.name()));
         Assertions.assertEquals(18L, records.get(1).get("dynamic_value"));
 
         // drop collection
@@ -2549,30 +2515,20 @@ class MilvusClientDockerTest {
     @Test
     void testAlias() {
         // collection schema
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withDataType(DataType.Int64)
-                .withName("id")
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName("vector")
-                .withDimension(dimension)
-                .build());
+        CollectionSchemaParam schema = buildSchema(false, false, false,
+                Collections.singletonList(DataType.FloatVector));
 
         // create collection A
         R<RpcStatus> response = client.createCollection(CreateCollectionParam.newBuilder()
                 .withCollectionName("coll_A")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
 
         // create collection B
         response = client.createCollection(CreateCollectionParam.newBuilder()
                 .withCollectionName("coll_B")
-                .withFieldTypes(fieldsSchema)
+                .withSchema(schema)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), response.getStatus().intValue());
 
@@ -2651,7 +2607,7 @@ class MilvusClientDockerTest {
         FieldType vectorField = FieldType.newBuilder()
                 .withDataType(DataType.FloatVector)
                 .withName(field2Name)
-                .withDimension(dimension)
+                .withDimension(DIMENSION)
                 .build();
 
         testCollectionHighLevelGet(int64PrimaryField, vectorField);
@@ -2680,7 +2636,7 @@ class MilvusClientDockerTest {
 //        FieldType vectorField = FieldType.newBuilder()
 //                .withDataType(DataType.FloatVector)
 //                .withName(field2Name)
-//                .withDimension(dimension)
+//                .withDimension(DIMENSION)
 //                .build();
 //
 //        testCollectionHighLevelDelete(int64PrimaryField, vectorField);
@@ -2816,56 +2772,11 @@ class MilvusClientDockerTest {
         String randomCollectionName = generator.generate(10);
 
         // collection schema
-        FieldType field1 = FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.Int64)
-                .withName("id")
-                .build();
-
-        FieldType field2 = FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName("vector")
-                .withDimension(dimension)
-                .build();
-
-        FieldType field3 = FieldType.newBuilder()
-                .withDataType(DataType.Bool)
-                .withName("bool")
-                .build();
-
-        FieldType field4 = FieldType.newBuilder()
-                .withDataType(DataType.Int16)
-                .withName("int16")
-                .build();
-
-        FieldType field5 = FieldType.newBuilder()
-                .withDataType(DataType.Float)
-                .withName("float")
-                .build();
-
-        FieldType field6 = FieldType.newBuilder()
-                .withDataType(DataType.VarChar)
-                .withName("varchar")
-                .withMaxLength(100)
-                .build();
-
-        FieldType field7 = FieldType.newBuilder()
-                .withDataType(DataType.JSON)
-                .withName("json")
-                .build();
-
-        FieldType field8 = FieldType.newBuilder()
-                .withDataType(DataType.Array)
-                .withElementType(DataType.Int32)
-                .withName("array")
-                .withMaxCapacity(100)
-                .build();
-
-        CollectionSchemaParam schema = CollectionSchemaParam.newBuilder()
-                .withFieldTypes(Lists.newArrayList(field1, field2, field3, field4, field5, field6, field7, field8))
-                .withEnableDynamicField(false)
-                .build();
+        boolean enabledDynamic = false;
+        CollectionSchemaParam schema = buildSchema(false, false, enabledDynamic,
+                Arrays.asList(DataType.Bool, DataType.Int8, DataType.Int16, DataType.Int32, DataType.Int64,
+                        DataType.Float, DataType.Double, DataType.VarChar, DataType.JSON, DataType.Array,
+                        DataType.FloatVector, DataType.BinaryVector, DataType.BFloat16Vector, DataType.SparseFloatVector));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
@@ -2881,26 +2792,38 @@ class MilvusClientDockerTest {
                 .withCollectionSchema(schema)
                 .withLocalPath("/tmp/bulk_writer")
                 .withFileType(BulkFileType.PARQUET)
-                .withChunkSize(4 * 1024 * 1024)
+                .withChunkSize(100 * 1024)
                 .build();
 
-        int rowCount = 10000;
+        int rowCount = 100;
         List<List<String>> batchFiles = new ArrayList<>();
         try (LocalBulkWriter localBulkWriter = new LocalBulkWriter(localWriterParam)) {
             for (int i = 0; i < rowCount; i++) {
                 JsonObject row = new JsonObject();
                 row.addProperty("id", i);
-                row.add("vector", GSON_INSTANCE.toJsonTree(GeneratorUtils.genFloatVector(dimension)));
-                row.addProperty("bool", i % 3 == 0);
-                row.addProperty("int16", i%65535);
-                row.addProperty("float", i/3);
-                row.addProperty("varchar", String.format("varchar_%d", i));
+                row.addProperty(DataType.Bool.name(), i % 3 == 0);
+                row.addProperty(DataType.Int8.name(), i%128);
+                row.addProperty(DataType.Int16.name(), i%32768);
+                row.addProperty(DataType.Int32.name(), i);
+                row.addProperty(DataType.Int64.name(), i);
+                row.addProperty(DataType.Float.name(), i/3);
+                row.addProperty(DataType.Double.name(), i/7);
+                row.addProperty(DataType.VarChar.name(), String.format("varchar_%d", i));
                 JsonObject obj = new JsonObject();
                 obj.addProperty("dummy", i);
-                row.add("json", obj);
-                row.addProperty("dynamic_1", i);
-                row.addProperty("dynamic_2", String.format("dynamic_%d", i));
-                row.add("array", GSON_INSTANCE.toJsonTree(Lists.newArrayList(5, 6, 3, 2, 1)));
+                row.add(DataType.JSON.name(), obj);
+                row.add(DataType.Array.name() + "_varchar", GSON_INSTANCE.toJsonTree(Lists.newArrayList("aaa", "bbb", "ccc")));
+                row.add(DataType.Array.name() + "_int32", GSON_INSTANCE.toJsonTree(Lists.newArrayList(5, 6, 3, 2, 1)));
+                row.add(DataType.Array.name() + "_float", GSON_INSTANCE.toJsonTree(Lists.newArrayList(0.5, 1.8)));
+                row.add(DataType.FloatVector.name(), GSON_INSTANCE.toJsonTree(generateFloatVector()));
+                row.add(DataType.BinaryVector.name(), GSON_INSTANCE.toJsonTree(generateBinaryVector().array()));
+                row.add(DataType.BFloat16Vector.name(), GSON_INSTANCE.toJsonTree(generateBFloat16Vector().array()));
+                row.add(DataType.SparseFloatVector.name(), GSON_INSTANCE.toJsonTree(generateSparseVector()));
+
+                if (enabledDynamic) {
+                    row.addProperty("dynamic_1", i);
+                    row.addProperty("dynamic_2", String.format("dynamic_%d", i));
+                }
 
                 localBulkWriter.appendRow(row);
             }
@@ -2937,35 +2860,13 @@ class MilvusClientDockerTest {
     public void testIterator() {
         String randomCollectionName = generator.generate(10);
 
-        String field1Name = "str_id";
-        String field2Name = "vec_field";
-        String field3Name = "json_field";
-        List<FieldType> fieldsSchema = new ArrayList<>();
-        fieldsSchema.add(FieldType.newBuilder()
-                .withPrimaryKey(true)
-                .withAutoID(false)
-                .withDataType(DataType.VarChar)
-                .withName(field1Name)
-                .withMaxLength(32)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.FloatVector)
-                .withName(field2Name)
-                .withDimension(dimension)
-                .build());
-
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.JSON)
-                .withName(field3Name)
-                .build());
-
+        CollectionSchemaParam schema = buildSchema(true, false, true,
+                Arrays.asList(DataType.FloatVector, DataType.JSON));
 
         // create collection
         CreateCollectionParam createParam = CreateCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldTypes(fieldsSchema)
-                .withEnableDynamicField(true)
+                .withSchema(schema)
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -2977,13 +2878,13 @@ class MilvusClientDockerTest {
         Gson gson = new Gson();
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
-            row.addProperty(field1Name, Long.toString(i));
-            row.add(field2Name, gson.toJsonTree(generateFloatVectors(1).get(0)));
+            row.addProperty("id", Long.toString(i));
+            row.add(DataType.FloatVector.name(), gson.toJsonTree(generateFloatVectors(1).get(0)));
             JsonObject json = new JsonObject();
             if (i%2 == 0) {
                 json.addProperty("even", true);
             }
-            row.add(field3Name, json);
+            row.add(DataType.JSON.name(), json);
             row.addProperty("dynamic", i);
             rows.add(row);
         }
@@ -2999,7 +2900,7 @@ class MilvusClientDockerTest {
         // create index
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .withFieldName(field2Name)
+                .withFieldName(DataType.FloatVector.name())
                 .withIndexType(IndexType.FLAT)
                 .withMetricType(MetricType.L2)
                 .build();
@@ -3036,12 +2937,12 @@ class MilvusClientDockerTest {
 
             for (QueryResultsWrapper.RowRecord record : res) {
                 Assertions.assertInstanceOf(Long.class, record.get("dynamic"));
-                Assertions.assertInstanceOf(String.class, record.get(field1Name));
-                Object vec = record.get(field2Name);
+                Assertions.assertInstanceOf(String.class, record.get("id"));
+                Object vec = record.get(DataType.FloatVector.name());
                 Assertions.assertInstanceOf(List.class, vec);
                 List<Float> vector = (List<Float>)vec;
-                Assertions.assertEquals(dimension, vector.size());
-                Assertions.assertInstanceOf(JsonElement.class, record.get(field3Name));
+                Assertions.assertEquals(DIMENSION, vector.size());
+                Assertions.assertInstanceOf(JsonElement.class, record.get(DataType.JSON.name()));
 //                System.out.println(record);
                 counter++;
             }
@@ -3054,7 +2955,7 @@ class MilvusClientDockerTest {
                 .withCollectionName(randomCollectionName)
                 .withOutFields(Lists.newArrayList("*"))
                 .withBatchSize(10L)
-                .withVectorFieldName(field2Name)
+                .withVectorFieldName(DataType.FloatVector.name())
                 .withFloatVectors(vectors)
                 .withTopK(50)
                 .withMetricType(MetricType.L2);
@@ -3074,12 +2975,12 @@ class MilvusClientDockerTest {
 
             for (QueryResultsWrapper.RowRecord record : res) {
                 Assertions.assertInstanceOf(Long.class, record.get("dynamic"));
-                Assertions.assertInstanceOf(String.class, record.get(field1Name));
-                Object vec = record.get(field2Name);
+                Assertions.assertInstanceOf(String.class, record.get("id"));
+                Object vec = record.get(DataType.FloatVector.name());
                 Assertions.assertInstanceOf(List.class, vec);
                 List<Float> vector = (List<Float>)vec;
-                Assertions.assertEquals(dimension, vector.size());
-                Assertions.assertInstanceOf(JsonElement.class, record.get(field3Name));
+                Assertions.assertEquals(DIMENSION, vector.size());
+                Assertions.assertInstanceOf(JsonElement.class, record.get(DataType.JSON.name()));
 //                System.out.println(record);
                 counter++;
             }
@@ -3138,7 +3039,7 @@ class MilvusClientDockerTest {
         fieldsSchema.add(FieldType.newBuilder()
                 .withDataType(DataType.FloatVector)
                 .withName("vector")
-                .withDimension(dimension)
+                .withDimension(DIMENSION)
                 .build());
 
         // create collection

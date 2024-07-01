@@ -45,6 +45,8 @@ public class ParquetUtils {
                             .named(fieldType.getName());
                     break;
                 case BinaryVector:
+                case Float16Vector:
+                case BFloat16Vector:
                     messageTypeBuilder.requiredList()
                             .requiredElement(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, false))
                             .named(fieldType.getName());
@@ -59,6 +61,7 @@ public class ParquetUtils {
                     break;
                 case VarChar:
                 case JSON:
+                case SparseFloatVector: // sparse vector is parsed as JSON format string in the server side
                     messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
                             .named(fieldType.getName());
                     break;

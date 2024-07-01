@@ -160,6 +160,13 @@ public class QueryResultsWrapper extends RowRecordWrapper {
         }
 
         /**
+         * Test if a key exists
+         */
+        public boolean contains(String keyName) {
+            return fieldValues.containsKey(keyName);
+        }
+
+        /**
          * Constructs a <code>String</code> by {@link QueryResultsWrapper.RowRecord} instance.
          *
          * @return <code>String</code>
