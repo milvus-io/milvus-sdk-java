@@ -45,6 +45,9 @@ public class ParquetUtils {
                             .named(fieldType.getName());
                     break;
                 case BinaryVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                case SparseFloatVector:
                     messageTypeBuilder.requiredList()
                             .requiredElement(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, false))
                             .named(fieldType.getName());
