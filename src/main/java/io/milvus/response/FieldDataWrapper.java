@@ -246,28 +246,7 @@ public class FieldDataWrapper {
                 for (int i = 0; i < sparseArray.getContentsCount(); ++i) {
                     ByteString bs = sparseArray.getContents(i);
                     ByteBuffer bf = ByteBuffer.wrap(bs.toByteArray());
-                    bf.order(ByteOrder.LITTLE_ENDIAN);
-                    SortedMap<Long, Float> sparse = new TreeMap<>();
-                    long num = bf.limit()/8; // each uint+float pair is 8 bytes
-                    for (long j = 0; j < num; j++) {
-                        // here we convert an uint 4-bytes to a long value
-                        // milvus server requires sparse vector to be transfered in little endian
-                        ByteBuffer pBuf = ByteBuffer.allocate(Long.BYTES);
-                        pBuf.order(ByteOrder.LITTLE_ENDIAN);
-                        int offset = 8*(int)j;
-                        byte[] aa = bf.array();
-                        for (int k = offset; k < offset + 4; k++) {
-                            pBuf.put(aa[k]); // fill the first 4 bytes with the unit bytes
-                        }
-                        pBuf.putInt(0); // fill the last 4 bytes to zero
-                        pBuf.rewind(); // reset position to head
-                        long k = pBuf.getLong(); // this is the long value converted from the uint
-
-                        // here we get the float value as normal
-                        bf.position(offset+4); // position offsets 4 bytes since they were converted to long
-                        float v = bf.getFloat(); // this is the float value
-                        sparse.put(k, v);
-                    }
+                    SortedMap<Long, Float> sparse = ParamUtils.decodeSparseFloatVector(bf);
                     packData.add(sparse);
                 }
                 return packData;

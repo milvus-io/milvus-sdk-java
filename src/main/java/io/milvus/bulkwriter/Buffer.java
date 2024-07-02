@@ -25,6 +25,7 @@ import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.bulkwriter.common.utils.ParquetUtils;
 import io.milvus.grpc.DataType;
+import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import org.apache.hadoop.conf.Configuration;
@@ -44,6 +45,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
@@ -217,7 +219,12 @@ public class Buffer {
                 addFloatArray(group, paramName, (List<Float>) value);
                 break;
             case BinaryVector:
+            case Float16Vector:
+            case BFloat16Vector:
                 addBinaryVector(group, paramName, (ByteBuffer) value);
+                break;
+            case SparseFloatVector:
+                addSparseVector(group, paramName, (SortedMap<Long, Float>) value);
                 break;
             case Array:
                 DataType elementType = fieldType.getElementType();
@@ -279,15 +286,6 @@ public class Buffer {
         }
     }
 
-    private static void addBinaryVector(Group group, String fieldName, ByteBuffer byteBuffer) {
-        Group arrayGroup = group.addGroup(fieldName);
-        byte[] bytes = byteBuffer.array();
-        for (byte value : bytes) {
-            Group addGroup = arrayGroup.addGroup(0);
-            addGroup.add(0, value);
-        }
-    }
-
     private static void addDoubleArray(Group group, String fieldName, List<Double> values) {
         Group arrayGroup = group.addGroup(fieldName);
         for (double value : values) {
@@ -302,5 +300,19 @@ public class Buffer {
             Group addGroup = arrayGroup.addGroup(0);
             addGroup.add(0, value);
         }
+    }
+
+    private static void addBinaryVector(Group group, String fieldName, ByteBuffer byteBuffer) {
+        Group arrayGroup = group.addGroup(fieldName);
+        byte[] bytes = byteBuffer.array();
+        for (byte value : bytes) {
+            Group addGroup = arrayGroup.addGroup(0);
+            addGroup.add(0, value);
+        }
+    }
+
+    private static void addSparseVector(Group group, String fieldName, SortedMap<Long, Float> sparse) {
+        ByteBuffer buf = ParamUtils.encodeSparseFloatVector(sparse);
+        addBinaryVector(group, fieldName, buf);
     }
 }
