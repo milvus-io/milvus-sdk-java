@@ -51,6 +51,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.net.InetAddress;
@@ -75,6 +77,25 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
         }
 
+        List<ClientInterceptor> clientInterceptors = new ArrayList<>();
+        clientInterceptors.add(MetadataUtils.newAttachHeadersInterceptor(metadata));
+        //client interceptor used to fetch client_request_id from threadlocal variable and set it for every grpc request
+        clientInterceptors.add(new ClientInterceptor() {
+            @Override
+            public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
+                return new ForwardingClientCall
+                    .SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+                    @Override
+                    public void start(ClientCall.Listener<RespT> responseListener, Metadata headers) {
+                        if(connectParam.getClientRequestId() != null && !StringUtils.isEmpty(connectParam.getClientRequestId().get())) {
+                            headers.put(Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER), connectParam.getClientRequestId().get());
+                        }
+                        super.start(responseListener, headers);
+                    }
+                };
+            }
+        });
+
         try {
             if (StringUtils.isNotEmpty(connectParam.getServerPemPath())) {
                 // one-way tls
@@ -90,7 +111,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .intercept(clientInterceptors);
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -111,7 +132,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .intercept(clientInterceptors);
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -128,7 +149,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveTimeout(connectParam.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
-                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                        .intercept(clientInterceptors);
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
