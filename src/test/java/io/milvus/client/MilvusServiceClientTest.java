@@ -48,6 +48,9 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -305,6 +308,33 @@ class MilvusServiceClientTest {
             MilvusClient client = new MilvusServiceClient(connectParam).withRetry(retryParam);
         });
         assertTrue(e.getMessage().contains(reason));
+
+        server.stop();
+    }
+
+    @Test
+    void testConnectWithClientRequestId() {
+        ThreadLocal<String> clientRequestId = new ThreadLocal<>();
+        clientRequestId.set("req1");
+        ConnectParam connectParam = ConnectParam.newBuilder()
+            .withHost("localhost")
+            .withPort(testPort)
+            .withConnectTimeout(10000, TimeUnit.MILLISECONDS)
+            .withClientRequestId(clientRequestId)
+            .build();
+        RetryParam retryParam = RetryParam.newBuilder()
+            .withMaxRetryTimes(2)
+            .build();
+
+        MockMilvusServer server = startServer();
+        MilvusServiceClient client = new MilvusServiceClient(connectParam);
+        client.withRetry(retryParam);
+        DescribeCollectionParam param = DescribeCollectionParam.newBuilder()
+            .withCollectionName("collection1")
+            .build();
+        R<DescribeCollectionResponse> response = client.describeCollection(param);
+
+        assertTrue(response.getStatus() == 0);
 
         server.stop();
     }
