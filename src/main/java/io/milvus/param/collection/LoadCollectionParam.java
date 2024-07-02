@@ -83,8 +83,8 @@ public class LoadCollectionParam {
         private Long syncLoadWaitingTimeout = 60L;
 
         // replicaNumber:
-        //   The replica number to load, default by 1
-        private Integer replicaNumber = 1;
+        //   The replica number to load
+        private Integer replicaNumber = 0;
 
         // refresh:
         //   This flag must be set to FALSE when first time call the loadCollection().
