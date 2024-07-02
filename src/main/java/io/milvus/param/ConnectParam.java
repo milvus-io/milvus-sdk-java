@@ -58,6 +58,7 @@ public class ConnectParam {
     private final String serverPemPath;
     private final String serverName;
     private final String userName;
+    private final ThreadLocal<String> clientRequestId;
 
     protected ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
@@ -79,6 +80,7 @@ public class ConnectParam {
         this.serverPemPath = builder.serverPemPath;
         this.serverName = builder.serverName;
         this.userName = builder.userName;
+        this.clientRequestId = builder.clientRequestId;
     }
 
     public static Builder newBuilder() {
@@ -115,6 +117,9 @@ public class ConnectParam {
         // The MilvusServiceClient.connect() is to send the client info to the server so that the server knows which client is interacting
         // If the username is unknown, send it as an empty string.
         private String userName = "";
+
+        //used to set client_request_id in the grpc header uniquely for every request
+        private ThreadLocal<String> clientRequestId;
 
         protected Builder() {
         }
@@ -347,6 +352,11 @@ public class ConnectParam {
          */
         public Builder withServerName(@NonNull String serverName) {
             this.serverName = serverName;
+            return this;
+        }
+
+        public Builder withClientRequestId(@NonNull ThreadLocal<String> clientRequestId) {
+            this.clientRequestId = clientRequestId;
             return this;
         }
 
