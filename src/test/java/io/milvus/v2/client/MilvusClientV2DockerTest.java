@@ -236,14 +236,14 @@ class MilvusClientV2DockerTest {
                 }
                 return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
             }
-            case Int8: {
-                List<Integer> values = new ArrayList<>();
+            case Int8:
+            case Int16: {
+                List<Short> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextInt(256));
+                    values.add((short)RANDOM.nextInt(256));
                 }
                 return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
             }
-            case Int16:
             case Int32: {
                 List<Integer> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
