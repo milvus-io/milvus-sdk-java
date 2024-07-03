@@ -7,6 +7,7 @@ import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
 import io.milvus.param.MetricType;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
@@ -48,19 +49,31 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
         logger.info("**************************************************BeforeSuit**********************");
         milvusClientV2.dropAlias(DropAliasReq.builder().alias(CommonData.alias).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
-        initCollectionForTest();
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBFloat16VectorCollection).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloat16VectorCollection).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBinaryVectorCollection).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultSparseFloatVectorCollection).build());
+        initFloatVectorCollectionForTest();
+        initBF16VectorForTest();
+        initFloat16VectorForTest();
+        initSparseVectorForTest();
+        initBinaryVectorForTest();
     }
     @AfterSuite(alwaysRun = true)
     public void cleanTestData() {
         logger.info("**************************************************AfterSuit**********************");
-        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
+//        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
+//        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBFloat16VectorCollection).build());
+//        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloat16VectorCollection).build());
+//        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBinaryVectorCollection).build());
+//        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultSparseFloatVectorCollection).build());
     }
 
-    public  void initCollectionForTest(){
-        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultFloatVectorCollection);
+    public  void initFloatVectorCollectionForTest(){
+        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultFloatVectorCollection, DataType.FloatVector);
         milvusClientV2.createAlias(CreateAliasReq.builder().collectionName(CommonData.defaultFloatVectorCollection).alias(CommonData.alias).build());
         // insert data
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).data(jsonObjects).build());
         CommonFunction.createVectorIndex(CommonData.defaultFloatVectorCollection,CommonData.fieldFloatVector, IndexParam.IndexType.AUTOINDEX, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
@@ -69,12 +82,30 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameA);
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameB);
        CommonFunction.createPartition(CommonData.defaultFloatVectorCollection,CommonData.partitionNameC);
-        List<JsonObject> jsonObjectsA = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
-        List<JsonObject> jsonObjectsB = CommonFunction.generateDefaultData(CommonData.numberEntities*2, CommonData.dim);
-        List<JsonObject> jsonObjectsC = CommonFunction.generateDefaultData(CommonData.numberEntities*3, CommonData.dim);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjectsB = CommonFunction.generateDefaultData(CommonData.numberEntities*2, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjectsC = CommonFunction.generateDefaultData(CommonData.numberEntities*3, CommonData.dim,DataType.FloatVector);
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameB).data(jsonObjectsB).build());
        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultFloatVectorCollection).partitionName(CommonData.partitionNameC).data(jsonObjectsC).build());
+    }
+
+    public void initBF16VectorForTest(){
+        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultBFloat16VectorCollection, DataType.BFloat16Vector);
+        CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultBFloat16VectorCollection,DataType.BFloat16Vector,true,CommonData.numberEntities);
+    }
+    public void initFloat16VectorForTest(){
+        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultFloat16VectorCollection, DataType.Float16Vector);
+        CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultFloat16VectorCollection,DataType.Float16Vector,true,CommonData.numberEntities);
+    }
+    public void initBinaryVectorForTest(){
+        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultBinaryVectorCollection, DataType.BinaryVector);
+        CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultBinaryVectorCollection,DataType.BinaryVector,true,CommonData.numberEntities);
+    }
+
+    public void initSparseVectorForTest(){
+        CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultSparseFloatVectorCollection, DataType.SparseFloatVector);
+        CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultSparseFloatVectorCollection,DataType.SparseFloatVector,true,CommonData.numberEntities);
     }
 
 }

@@ -89,12 +89,13 @@ public class DatabaseTest extends BaseTest {
                             .withDatabaseName(CommonData.databaseName2).build());
         }
         milvusClient.dropDatabase(DropDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName2).build());
+        milvusClient.dropDatabase(DropDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName3).build());
     }
 
     @Severity(SeverityLevel.BLOCKER)
     @Test(description = "create database",groups = {"Smoke"})
     public void createDatabase(){
-        R<RpcStatus> database = milvusClient.createDatabase(CreateDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName2).build());
+        R<RpcStatus> database = milvusClient.createDatabase(CreateDatabaseParam.newBuilder().withDatabaseName(CommonData.databaseName3).build());
         Assert.assertEquals(database.getStatus().toString(), "0");
         Assert.assertEquals(database.getData().getMsg(), "Success");
     }

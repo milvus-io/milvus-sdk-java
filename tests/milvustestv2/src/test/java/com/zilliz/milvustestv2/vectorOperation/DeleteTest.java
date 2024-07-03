@@ -4,6 +4,7 @@ import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
@@ -27,8 +28,8 @@ public class DeleteTest extends BaseTest {
     String newCollectionName2;
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
-        newCollectionName1 = CommonFunction.createNewCollection(CommonData.dim, null);
-        newCollectionName2 = CommonFunction.createNewCollection(CommonData.dim, null);
+        newCollectionName1 = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
+        newCollectionName2 = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(CommonData.fieldFloatVector)
                 .indexType(IndexParam.IndexType.HNSW)
