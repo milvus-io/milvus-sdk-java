@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustest.entity.FileBody;
 import com.zilliz.milvustest.entity.MilvusEntity;
+import com.zilliz.milvustest.util.JacksonUtil;
 import com.zilliz.milvustest.util.MathUtil;
 import io.milvus.grpc.DataType;
 import io.milvus.param.*;
@@ -611,7 +612,7 @@ public class CommonFunction {
     List<InsertParam.Field> fields = new ArrayList<>();
     fields.add(new InsertParam.Field("word_count", word_count_array));
     fields.add(new InsertParam.Field(CommonData.defaultVectorField, book_intro_array));
-    // logger.info("generateTestData"+ JacksonUtil.serialize(fields));
+     logger.info("generateTestData"+ JacksonUtil.serialize(fields));
     return fields;
   }
 

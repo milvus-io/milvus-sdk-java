@@ -2,6 +2,7 @@ package com.zilliz.milvustestv2.collection;
 
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonFunction;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import org.testng.Assert;
@@ -17,7 +18,7 @@ public class DropCollectionTest extends BaseTest {
 
     @DataProvider(name = "initCollection")
     public Object[][] providerCollection(){
-        String newCollection = CommonFunction.createNewCollection(128, null);
+        String newCollection = CommonFunction.createNewCollection(128, null, DataType.FloatVector);
         return new Object[][]{{newCollection}};
     }
 

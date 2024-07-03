@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
@@ -26,8 +27,8 @@ public class CreateIndexTest extends BaseTest {
     String newCollectionName;
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
-        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
     }
 

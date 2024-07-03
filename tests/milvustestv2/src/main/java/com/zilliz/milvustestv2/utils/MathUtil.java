@@ -1,8 +1,8 @@
-package com.zilliz.milvustest.util;
+package com.zilliz.milvustestv2.utils;
+
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class MathUtil {
@@ -233,45 +233,34 @@ public class MathUtil {
      }
 
   public static short floatToBF16(float value) {
-    int floatValueBits = Float.floatToIntBits(value);
-    int sign = (floatValueBits >> 31) & 0x1;
-    int exponent = ((floatValueBits >> 23) & 0xFF) - 127 + 15;
-    int mantissa = (floatValueBits & 0x7FFFFF) >> 13;
-
-    short bf16Value = (short) ((sign << 15) | (exponent << 10) | mantissa);
-    return bf16Value;
-  }
-
-
-  // 将 32 位浮点数转换为 BF16 格式
-  private static short floatToBF16_2(float value) {
     int bits = Float.floatToIntBits(value);
     int sign = bits >>> 31;
     int exp = (bits >>> 23) & 0xFF;
     int mantissa = bits & 0x7FFFFF;
 
-    // 将 32 位浮点数的值转换为 BF16 格式
-    short bf16 = (short) ((sign << 15) | ((exp - 127 + 15) << 7) | (mantissa >>> 16));
-
-    return bf16;
-  }
-
-  public static void main(String[] args) {
-    Random random = new Random();
-    float randomFloat;
-    for (int i = 0; i < 10000; i++) {
-      do {
-        randomFloat = random.nextFloat();
-      } while (Float.isInfinite(randomFloat));
-
-      // 将 32 位浮点数转换为 BF16 格式
-      short bf16 = floatToBF16(randomFloat);
-
-      System.out.println("随机生成的 BF16 数为: " + bf16);
+    if (exp == 0xFF) {
+      // 处理无穷大和 NaN
+      if (mantissa == 0) {
+        return (short) ((sign << 15) | 0x7C00);  // 正负无穷
+      } else {
+        return (short) ((sign << 15) | 0x7C00 | (mantissa >>> 13));  // NaN
+      }
     }
-    // 生成随机数并排除无穷大和 NaN
 
+    exp -= 127;
+    exp += 16;
+    if (exp >= 0x1F) {
+      // 处理溢出情况
+      return (short) ((sign << 15) | 0x7C00);
+    } else if (exp <= 0) {
+      // 处理下溢情况
+      return 0;
+    }
 
-
+    return (short) ((sign << 15) | (exp << 10) | (mantissa >>> 13));
   }
+
+
+
+
 }

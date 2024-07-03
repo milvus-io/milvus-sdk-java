@@ -1,3 +1,4 @@
+/*
 package com.zilliz.milvustest.common;
 
 import com.zilliz.milvustest.MilvustestApplication;
@@ -30,7 +31,7 @@ import java.util.List;
 @WebAppConfiguration
 public class BaseCloudTest extends AbstractTestNGSpringContextTests {
 //  public static final Logger logger= LoggerFactory.getLogger(BaseCloudTest.class);
-  public static final MilvusServiceClient milvusCloudClient =
+  public   MilvusServiceClient milvusCloudClient =
           new MilvusServiceClient(
                   ConnectParam.newBuilder()
                           .withHost(
@@ -135,3 +136,4 @@ public class BaseCloudTest extends AbstractTestNGSpringContextTests {
         });
   }
 }
+*/
