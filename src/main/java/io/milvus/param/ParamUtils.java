@@ -648,9 +648,10 @@ public class ParamUtils {
                 byteStrings.add(bs);
             } else if (vector instanceof SortedMap) {
                 plType = PlaceholderType.SparseFloatVector;
-                SortedMap<Long, Float> map = (SortedMap<Long, Float>) vector;
-                ByteString bs = genSparseFloatBytes(map);
-                byteStrings.add(bs);
+                SortedMap<Long, Float> sparse = (SortedMap<Long, Float>) vector;
+                ByteBuffer buf = encodeSparseFloatVector(sparse);
+                ByteString byteString = ByteString.copyFrom(buf.array());
+                byteStrings.add(byteString);
             } else {
                 String msg = "Search target vector type is illegal." +
                         " Only allow List<Float> for FloatVector," +
@@ -1023,7 +1024,7 @@ public class ParamUtils {
         throw new ParamException("Illegal vector dataType:" + dataType);
     }
 
-    private static ByteString genSparseFloatBytes(SortedMap<Long, Float> sparse) {
+    public static ByteBuffer encodeSparseFloatVector(SortedMap<Long, Float> sparse) {
         // milvus server requires sparse vector to be transfered in little endian
         ByteBuffer buf = ByteBuffer.allocate((Integer.BYTES + Float.BYTES) * sparse.size());
         buf.order(ByteOrder.LITTLE_ENDIAN);
@@ -1047,7 +1048,33 @@ public class ParamUtils {
             buf.putFloat(entry.getValue());
         }
 
-        return ByteString.copyFrom(buf.array());
+        return buf;
+    }
+
+    public static SortedMap<Long, Float> decodeSparseFloatVector(ByteBuffer buf) {
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        SortedMap<Long, Float> sparse = new TreeMap<>();
+        long num = buf.limit()/8; // each uint+float pair is 8 bytes
+        for (long j = 0; j < num; j++) {
+            // here we convert an uint 4-bytes to a long value
+            // milvus server requires sparse vector to be transfered in little endian
+            ByteBuffer pBuf = ByteBuffer.allocate(Long.BYTES);
+            pBuf.order(ByteOrder.LITTLE_ENDIAN);
+            int offset = 8*(int)j;
+            byte[] aa = buf.array();
+            for (int k = offset; k < offset + 4; k++) {
+                pBuf.put(aa[k]); // fill the first 4 bytes with the unit bytes
+            }
+            pBuf.putInt(0); // fill the last 4 bytes to zero
+            pBuf.rewind(); // reset position to head
+            long k = pBuf.getLong(); // this is the long value converted from the uint
+
+            // here we get the float value as normal
+            buf.position(offset+4); // position offsets 4 bytes since they were converted to long
+            float v = buf.getFloat(); // this is the float value
+            sparse.put(k, v);
+        }
+        return sparse;
     }
 
     private static SparseFloatArray genSparseFloatArray(List<?> objects) {
@@ -1060,7 +1087,8 @@ public class ParamUtils {
             }
             SortedMap<Long, Float> sparse = (SortedMap<Long, Float>) object;
             dim = Math.max(dim, sparse.size());
-            ByteString byteString = genSparseFloatBytes(sparse);
+            ByteBuffer buf = encodeSparseFloatVector(sparse);
+            ByteString byteString = ByteString.copyFrom(buf.array());
             builder.addContents(byteString);
         }
 

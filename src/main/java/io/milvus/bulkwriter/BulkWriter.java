@@ -143,7 +143,10 @@ public abstract class BulkWriter {
             DataType dataType = fieldType.getDataType();
             switch (dataType) {
                 case BinaryVector:
-                case FloatVector: {
+                case FloatVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                case SparseFloatVector: {
                     Pair<Object, Integer> objectAndSize = verifyVector(obj, fieldType);
                     rowValues.put(fieldName, objectAndSize.getLeft());
                     rowSize += objectAndSize.getRight();
@@ -216,13 +219,22 @@ public abstract class BulkWriter {
     }
 
     private Pair<Object, Integer> verifyVector(JsonElement object, FieldType fieldType) {
-        if (fieldType.getDataType() == DataType.FloatVector) {
-            Object vector = ParamUtils.checkFieldValue(fieldType, object);
-            return Pair.of(vector, ((List<?>)vector).size() * 4);
-        } else {
-            Object vector = ParamUtils.checkFieldValue(fieldType, object);
-            return Pair.of(vector, ((ByteBuffer)vector).position());
+        Object vector = ParamUtils.checkFieldValue(fieldType, object);
+        DataType dataType = fieldType.getDataType();
+        switch (dataType) {
+            case FloatVector:
+                return Pair.of(vector, ((List<?>) vector).size() * 4);
+            case BinaryVector:
+                return Pair.of(vector, ((ByteBuffer)vector).limit());
+            case Float16Vector:
+            case BFloat16Vector:
+                return Pair.of(vector, ((ByteBuffer)vector).limit() * 2);
+            case SparseFloatVector:
+                return Pair.of(vector, ((SortedMap<Long, Float>)vector).size() * 12);
+            default:
+                ExceptionUtils.throwUnExpectedException("Unknown vector type");
         }
+        return null;
     }
 
     private Pair<Object, Integer> verifyVarchar(JsonElement object, FieldType fieldType) {
