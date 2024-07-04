@@ -4,6 +4,7 @@ import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.RenameCollectionReq;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
@@ -18,7 +19,7 @@ public class RenameCollectionTest extends BaseTest {
     String newCollectionName;
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
-        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
+        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
     }
 
     @AfterClass(alwaysRun = true)

@@ -7,6 +7,7 @@ import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
@@ -36,12 +37,12 @@ public class ReleasePartitionsTest extends BaseTest {
 
     @BeforeClass(alwaysRun = true)
     public void initTestData() {
-        newCollection = CommonFunction.createNewCollection(128, null);
+        newCollection = CommonFunction.createNewCollection(128, null, DataType.FloatVector);
         milvusClientV2.createPartition(CreatePartitionReq.builder()
                 .collectionName(newCollection)
                 .partitionName(CommonData.partitionName)
                 .build());
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollection).partitionName(CommonData.partitionName).data(jsonObjects).build());
         CommonFunction.createVectorIndex(newCollection,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder()

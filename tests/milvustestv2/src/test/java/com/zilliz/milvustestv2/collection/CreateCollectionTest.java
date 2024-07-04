@@ -3,6 +3,7 @@ package com.zilliz.milvustestv2.collection;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
+import io.milvus.common.resourcegroup.ResourceGroupConfig;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.*;
@@ -10,8 +11,10 @@ import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.ws.rs.ext.Provider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +36,16 @@ public class CreateCollectionTest extends BaseTest {
 
     }
 
+    @DataProvider(name = "VectorTypeList")
+    public Object[][] providerVectorType(){
+        return new Object[][]{
+                {DataType.FloatVector},
+                {DataType.BinaryVector},
+                {DataType.Float16Vector},
+                {DataType.BFloat16Vector},
+                {DataType.SparseFloatVector},
+        };
+    }
     @Test(description = "Create simple collection success", groups = {"Smoke"})
     public void createSimpleCollectionSuccess(){
         milvusClientV2.createCollection(CreateCollectionReq.builder()
@@ -43,7 +56,6 @@ public class CreateCollectionTest extends BaseTest {
         ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
         Assert.assertTrue(listCollectionsResp.getCollectionNames().contains("simpleCollection"));
     }
-
     @Test(description = "Create duplicate collection", groups = {"Smoke"})
     public void createDuplicateSimpleCollection(){
         milvusClientV2.createCollection(CreateCollectionReq.builder()
@@ -158,10 +170,18 @@ public class CreateCollectionTest extends BaseTest {
         ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
         Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(collectionNameWithIndex));
         //insert
-        CommonFunction.generateDefaultData(100,CommonData.dim);
+        CommonFunction.generateDefaultData(100,CommonData.dim,DataType.FloatVector);
         // search
         SearchResp searchResp = CommonFunction.defaultSearch(collectionNameWithIndex);
         Assert.assertEquals(searchResp.getSearchResults().size(),10);
+    }
+
+    @Test(description="create collection with different vector ", groups={"Smoke"}, dataProvider="VectorTypeList")
+    public void createCollectionWithDifferentVector(DataType vectorType){
+        String newCollection = CommonFunction.createNewCollection(CommonData.dim, null, vectorType);
+        ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
+        Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(newCollection));
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollection).build());
     }
 
 }

@@ -4,6 +4,7 @@ import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.utility.request.AlterAliasReq;
 import io.milvus.v2.service.utility.request.CreateAliasReq;
@@ -27,8 +28,8 @@ public class AlterAliasTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         aliasName= GenerateUtil.getRandomString(10);
-        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null);
-        newCollectionName2 = CommonFunction.createNewCollection(CommonData.dim, null);
+        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
+        newCollectionName2 = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         milvusClientV2.createAlias(CreateAliasReq.builder()
                 .collectionName(newCollectionName)
                 .alias(aliasName)

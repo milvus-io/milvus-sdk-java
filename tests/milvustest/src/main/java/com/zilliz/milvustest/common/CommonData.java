@@ -36,6 +36,7 @@ public class CommonData {
   public static String defaultRoleName2 = "roleTest2";
   public static String databaseName1="db1";
   public static String databaseName2="db2";
+  public static String databaseName3="db3";
 
   public static int dim=128;
 }

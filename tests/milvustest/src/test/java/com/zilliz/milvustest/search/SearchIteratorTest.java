@@ -83,9 +83,9 @@ public class SearchIteratorTest extends BaseTest {
     @DataProvider(name = "testData") // nq,topK,batchSize,expected1,expect2
     public Object[][] provideDataWithExpect(){
         return new Object[][]{
-                {1,1,10L,1,0},
-                {1,50,50L,50,0},
                 {1,50,10L,10,10},
+                {1,1,10L,1,0},
+                {1,20,20L,20,0},
                 {1,50,10000L,50,0}
         };
     }
@@ -114,7 +114,7 @@ public class SearchIteratorTest extends BaseTest {
         long start = System.currentTimeMillis();
         R<SearchIterator> searchIteratorR = milvusClient.searchIterator(SearchIteratorParam.newBuilder()
                 .withCollectionName(collectionWithBinaryVector)
-                .withMetricType(MetricType.JACCARD)
+                .withMetricType(MetricType.HAMMING)
                 .withOutFields(Lists.newArrayList("*"))
                 .withTopK(topK)
                 .withVectorFieldName(CommonData.defaultBinaryVectorField)
