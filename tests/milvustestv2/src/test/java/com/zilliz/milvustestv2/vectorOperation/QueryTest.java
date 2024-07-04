@@ -3,7 +3,9 @@ package com.zilliz.milvustestv2.vectorOperation;
 import com.google.common.collect.Lists;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
+import com.zilliz.milvustestv2.utils.DataProviderUtils;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -54,6 +56,38 @@ public class QueryTest extends BaseTest {
                 {Lists.newArrayList(CommonData.partitionNameA,CommonData.partitionNameB,CommonData.partitionNameC),"0 <= " + CommonData.fieldInt64 + " <= " + CommonData.numberEntities * 3, CommonData.numberEntities * 3},
         };
     }
+
+    @DataProvider(name="DiffCollectionWithFilter")
+    public Object[][] providerDiffCollectionWithFilter(){
+        Object[][] vectorType=new Object[][]{
+                {CommonData.defaultBFloat16VectorCollection},
+                {CommonData.defaultBinaryVectorCollection},
+                {CommonData.defaultFloat16VectorCollection},
+                {CommonData.defaultSparseFloatVectorCollection}
+
+        };
+        Object[][] filter=new Object[][]{
+                {CommonData.fieldInt64 + " < 10 ", 10},
+                {CommonData.fieldInt64 + " != 10 ", CommonData.numberEntities - 1},
+                {CommonData.fieldInt64 + " <= 10 ", 11},
+                {"5<" + CommonData.fieldInt64 + " <= 10 ", 5},
+                {CommonData.fieldInt64 + " >= 10 ", CommonData.numberEntities - 10},
+                {CommonData.fieldInt64 + " > 100 ", CommonData.numberEntities - 101},
+                {CommonData.fieldInt64 + " < 10 and " + CommonData.fieldBool + " == true", 5},
+                {CommonData.fieldInt64 + " in [1,2,3] ", 3},
+                {CommonData.fieldInt64 + " not in [1,2,3] ", CommonData.numberEntities - 3},
+                {CommonData.fieldInt64 + " < 10 and " + CommonData.fieldInt32 + " >5 ", 4},
+                {CommonData.fieldVarchar + " > \"0\" ", CommonData.numberEntities},
+                {CommonData.fieldVarchar + " like \"str%\" ", 0},
+                {CommonData.fieldVarchar + " like \"Str%\" ", CommonData.numberEntities},
+                {CommonData.fieldVarchar + " like \"Str1\" ", 1},
+                {CommonData.fieldInt8 + " > 129 ", 0},
+
+        };
+        Object[][] objects = DataProviderUtils.generateDataSets(vectorType, filter);
+        return objects;
+    }
+
 
     @Test(description = "query", groups = {"Smoke"}, dataProvider = "filterAndExcept")
     public void query(String filter, long expect) {
@@ -118,4 +152,16 @@ public class QueryTest extends BaseTest {
                 .build());
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
+
+    @Test(description = "query with different collection", groups = {"Smoke"}, dataProvider = "DiffCollectionWithFilter")
+    public void queryDiffCollection(String collectionName,String filter, long expect) {
+        QueryResp query = milvusClientV2.query(QueryReq.builder()
+                .collectionName(collectionName)
+                .filter(filter)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Lists.newArrayList("*"))
+                .build());
+        Assert.assertEquals(query.getQueryResults().size(), expect);
+    }
+
 }

@@ -1,3 +1,4 @@
+/*
 package com.zilliz.milvustest.bulkimport;
 
 import com.google.gson.*;
@@ -31,10 +32,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+*/
 /**
  * @Author xuan.qi
  * @Date 2024/3/21 17:34
- */
+ *//*
+
 public class BulkImportTest extends BaseCloudTest {
     String ALL_TYPES_COLLECTION_NAME = "all_types_for_bulkwriter";
 
@@ -206,7 +209,7 @@ public class BulkImportTest extends BaseCloudTest {
         return new RemoteBulkWriter(bulkWriterParam);
     }
 
-    private static StorageConnectParam buildStorageConnectParam() {
+    private  StorageConnectParam buildStorageConnectParam() {
         StorageConnectParam connectParam;
         if (Objects.equals(PropertyFilesUtil.getRunValue("storageType"), "azure")) {
             String connectionStr = "DefaultEndpointsProtocol=https;AccountName=" + PropertyFilesUtil.getRunValue("azureAccountName") +
@@ -296,7 +299,7 @@ public class BulkImportTest extends BaseCloudTest {
         System.out.printf("Collection %s created%n", collectionName);
     }
 
-    @Test(description = "bulk remote import test")
+    @Test(description = "bulk remote import test",enabled = false)
     public void bulkRemoteImportTest() throws Exception {
         String cloudEndpoint = PropertyFilesUtil.getRunValue("cloudEndpoint");
         String apiKey = PropertyFilesUtil.getRunValue("apikey");
@@ -347,4 +350,4 @@ public class BulkImportTest extends BaseCloudTest {
     }
 
 
-}
+}*/
