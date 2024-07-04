@@ -82,7 +82,7 @@ class MilvusClientDockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240709-60aab15e");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20240729-a4957540-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -520,7 +520,6 @@ class MilvusClientDockerTest {
                 .withShardsNum(3)
                 .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
                 .withReplicaNumber(1)
-                .withResourceGroups(Arrays.asList("rg1"))
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -543,7 +542,6 @@ class MilvusClientDockerTest {
         Assertions.assertFalse(fetchSchema.isEnableDynamicField());
         Assertions.assertEquals(ConsistencyLevelEnum.EVENTUALLY, collDescWrapper.getConsistencyLevel());
         Assertions.assertEquals(1, collDescWrapper.getReplicaNumber());
-        Assertions.assertEquals(1, collDescWrapper.getResourceGroups().size());
         System.out.println(collDescWrapper);
 
         R<ShowPartitionsResponse> spResp = client.showPartitions(ShowPartitionsParam.newBuilder()

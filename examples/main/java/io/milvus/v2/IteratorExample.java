@@ -64,6 +64,12 @@ public class IteratorExample {
                 .metricType(IndexParam.MetricType.L2)
                 .build());
 
+        // drop collection if exists
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .build());
+
+        // create collection
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .collectionSchema(collectionSchema)
@@ -97,7 +103,7 @@ public class IteratorExample {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        System.out.printf("Inserted row count: %d\n", queryResults.size());
+        System.out.printf("Inserted row count: %d\n", queryResults.get(0).getEntity().get("count(*)"));
 
         // search iterator
         SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
@@ -127,7 +133,7 @@ public class IteratorExample {
                 counter++;
             }
         }
-        System.out.println(String.format("%d search results returned\n", counter));
+        System.out.printf("%d search results returned\n%n", counter);
 
         // query iterator
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
@@ -154,8 +160,6 @@ public class IteratorExample {
                 counter++;
             }
         }
-        System.out.println(String.format("%d query results returned", counter));
-
-        client.dropCollection(DropCollectionReq.builder().collectionName(COLLECTION_NAME).build());
+        System.out.printf("%d query results returned%n", counter);
     }
 }

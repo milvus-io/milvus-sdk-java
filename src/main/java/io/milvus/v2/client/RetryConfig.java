@@ -17,23 +17,25 @@
  * under the License.
  */
 
-package io.milvus.v2.exception;
+package io.milvus.v2.client;
 
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
-@Getter
-public enum ErrorCode {
-    SUCCESS(0),
-    COLLECTION_NOT_FOUND(1),
-    SERVER_ERROR(2),
-    INVALID_PARAMS(3),
-    CLIENT_ERROR(4),
-    RPC_ERROR(5),
-    TIMEOUT(6);
-
-    private final int code;
-
-    ErrorCode(int i) {
-        this.code = i;
-    }
+@Data
+@SuperBuilder
+public class RetryConfig {
+    @Builder.Default
+    private int maxRetryTimes = 75;
+    @Builder.Default
+    private long initialBackOffMs = 10;
+    @Builder.Default
+    private long maxBackOffMs = 3000;
+    @Builder.Default
+    private int backOffMultiplier = 3;
+    @Builder.Default
+    private boolean retryOnRateLimit = true;
+    @Builder.Default
+    private long maxRetryTimeoutMs = 0;
 }

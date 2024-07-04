@@ -323,7 +323,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                             || code == Status.UNAUTHENTICATED.getCode()
                             || code == Status.INVALID_ARGUMENT.getCode()
                             || code == Status.ALREADY_EXISTS.getCode()
-                            || code == Status.RESOURCE_EXHAUSTED.getCode()) {
+                            || code == Status.RESOURCE_EXHAUSTED.getCode()
+                            || code == Status.UNIMPLEMENTED.getCode()) {
                         return resp;
                     }
 
@@ -342,7 +343,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
                     // for server-side returned error, only retry for rate limit
                     // in new error codes of v2.3, rate limit error value is 8
-                    if (retryParam.isRetryOnRateLimie() &&
+                    if (retryParam.isRetryOnRateLimit() &&
                             (serverException.getCompatibleCode() == ErrorCode.RateLimit ||
                                     serverException.getStatus() == 8)) {
                     } else {
