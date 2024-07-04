@@ -49,7 +49,8 @@ public class RpcUtils {
             }
             logger.error("{} failed, error code: {}, reason: {}", requestInfo, ErrorCode.SERVER_ERROR.getCode(),
                     status.getReason());
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, status.getReason());
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, status.getReason(),
+                    code, status.getErrorCode().getNumber());
         }
 
         logger.debug("{} successfully!", requestInfo);

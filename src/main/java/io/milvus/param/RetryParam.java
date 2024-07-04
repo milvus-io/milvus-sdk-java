@@ -37,14 +37,14 @@ public class RetryParam {
     private long initialBackOffMs;
     private long maxBackOffMs;
     private int backOffMultiplier;
-    private boolean retryOnRateLimie;
+    private boolean retryOnRateLimit;
 
     protected RetryParam(@NonNull Builder builder) {
         this.maxRetryTimes = builder.maxRetryTimes;
         this.initialBackOffMs = builder.initialBackOffMs;
         this.maxBackOffMs = builder.maxBackOffMs;
         this.backOffMultiplier = builder.backOffMultiplier;
-        this.retryOnRateLimie = builder.retryOnRateLimie;
+        this.retryOnRateLimit = builder.retryOnRateLimit;
     }
 
     public static Builder newBuilder() {
@@ -60,7 +60,7 @@ public class RetryParam {
         private long initialBackOffMs = 10;
         private long maxBackOffMs = 3000;
         private int backOffMultiplier = 3;
-        private boolean retryOnRateLimie = true;
+        private boolean retryOnRateLimit = true;
 
         protected Builder() {
         }
@@ -112,11 +112,11 @@ public class RetryParam {
         /**
          * Sets whether to retry when the returned error is rate limit.Default value is true.
          *
-         * @param retryOnRateLimie whether to retry when the returned error is rate limit
+         * @param retryOnRateLimit whether to retry when the returned error is rate limit
          * @return <code>Builder</code>
          */
-        public Builder withRetryOnRateLimie(boolean retryOnRateLimie) {
-            this.retryOnRateLimie = retryOnRateLimie;
+        public Builder withRetryOnRateLimit(boolean retryOnRateLimit) {
+            this.retryOnRateLimit = retryOnRateLimit;
             return this;
         }
 

@@ -28,7 +28,7 @@ import io.milvus.v2.service.partition.request.*;
 import java.util.List;
 
 public class PartitionService extends BaseService {
-    public void createPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePartitionReq request) {
+    public Void createPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePartitionReq request) {
         String title = String.format("Create partition %s in collection %s", request.getPartitionName(), request.getCollectionName());
 
         CreatePartitionRequest createPartitionRequest = io.milvus.grpc.CreatePartitionRequest.newBuilder()
@@ -38,9 +38,10 @@ public class PartitionService extends BaseService {
         Status status = blockingStub.createPartition(createPartitionRequest);
         rpcUtils.handleResponse(title, status);
 
+        return null;
     }
 
-    public void dropPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropPartitionReq request) {
+    public Void dropPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropPartitionReq request) {
         String title = String.format("Drop partition %s in collection %s", request.getPartitionName(), request.getCollectionName());
 
         io.milvus.grpc.DropPartitionRequest dropPartitionRequest = io.milvus.grpc.DropPartitionRequest.newBuilder()
@@ -50,6 +51,7 @@ public class PartitionService extends BaseService {
         Status status = blockingStub.dropPartition(dropPartitionRequest);
         rpcUtils.handleResponse(title, status);
 
+        return null;
     }
 
     public Boolean hasPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasPartitionReq request) {
@@ -77,7 +79,7 @@ public class PartitionService extends BaseService {
         return showPartitionsResponse.getPartitionNamesList();
     }
 
-    public void loadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadPartitionsReq request) {
+    public Void loadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadPartitionsReq request) {
         String title = String.format("Load partitions %s in collection %s", request.getPartitionNames(), request.getCollectionName());
 
         io.milvus.grpc.LoadPartitionsRequest loadPartitionsRequest = io.milvus.grpc.LoadPartitionsRequest.newBuilder()
@@ -85,9 +87,11 @@ public class PartitionService extends BaseService {
                 .addAllPartitionNames(request.getPartitionNames()).build();
         Status status = blockingStub.loadPartitions(loadPartitionsRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void releasePartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleasePartitionsReq request) {
+    public Void releasePartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleasePartitionsReq request) {
         String title = String.format("Release partitions %s in collection %s", request.getPartitionNames(), request.getCollectionName());
 
         io.milvus.grpc.ReleasePartitionsRequest releasePartitionsRequest = io.milvus.grpc.ReleasePartitionsRequest.newBuilder()
@@ -95,5 +99,7 @@ public class PartitionService extends BaseService {
                 .addAllPartitionNames(request.getPartitionNames()).build();
         Status status = blockingStub.releasePartitions(releasePartitionsRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 }
