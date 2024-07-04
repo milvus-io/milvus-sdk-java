@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 public class IndexService extends BaseService {
 
-    public void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
+    public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         for(IndexParam indexParam : request.getIndexParams()) {
             String title = String.format("CreateIndexRequest collectionName:%s, fieldName:%s",
                     request.getCollectionName(), indexParam.getFieldName());
@@ -72,9 +72,11 @@ public class IndexService extends BaseService {
             Status status = blockingStub.createIndex(createIndexRequest);
             rpcUtils.handleResponse(title, status);
         }
+
+        return null;
     }
 
-    public void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexReq request) {
+    public Void dropIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexReq request) {
         String title = String.format("DropIndexRequest collectionName:%s, fieldName:%s, indexName:%s",
                 request.getCollectionName(), request.getFieldName(), request.getIndexName());
         DropIndexRequest dropIndexRequest = DropIndexRequest.newBuilder()
@@ -85,9 +87,11 @@ public class IndexService extends BaseService {
 
         Status status = blockingStub.dropIndex(dropIndexRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
     
-    public void alterIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexReq request) {
+    public Void alterIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexReq request) {
         String title = String.format("AlterIndexRequest collectionName:%s, indexName:%s",
                 request.getCollectionName(), request.getIndexName());
         AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder();
@@ -106,6 +110,8 @@ public class IndexService extends BaseService {
 
         Status response = blockingStub.alterIndex(alterIndexRequest);
         rpcUtils.handleResponse(title, response);
+
+        return null;
     }
 
     public DescribeIndexResp describeIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeIndexReq request) {
