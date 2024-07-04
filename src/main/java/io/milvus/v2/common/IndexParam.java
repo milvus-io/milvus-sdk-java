@@ -86,6 +86,7 @@ public class IndexParam {
         // Only for scalar type field
         STL_SORT(200), // only for numeric type field
         INVERTED(201), // works for all scalar fields except JSON type field
+        BITMAP(202), // works for all scalar fields except JSON, FLOAT and DOUBLE type fields
 
         // Only for sparse vectors
         SPARSE_INVERTED_INDEX(300),

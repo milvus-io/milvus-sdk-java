@@ -1,6 +1,7 @@
 package com.zilliz.milvustestv2.params;
 
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.common.IndexParam;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,4 +15,5 @@ public class FieldParam {
     int maxCapacity;
     DataType elementType;
 
+    IndexParam.IndexType indextype;
 }
