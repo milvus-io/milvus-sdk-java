@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import okhttp3.OkHttpClient;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Parameters for <code>RemoteBulkWriter</code> interface.
@@ -20,6 +21,7 @@ public class S3ConnectParam extends StorageConnectParam {
     private final String sessionToken;
     private final String region;
     private final OkHttpClient httpClient;
+    private final String cloudName;
 
     private S3ConnectParam(@NonNull Builder builder) {
         this.bucketName = builder.bucketName;
@@ -29,6 +31,7 @@ public class S3ConnectParam extends StorageConnectParam {
         this.sessionToken = builder.sessionToken;
         this.region = builder.region;
         this.httpClient = builder.httpClient;
+        this.cloudName = builder.cloudName;
     }
 
     public static Builder newBuilder() {
@@ -46,8 +49,20 @@ public class S3ConnectParam extends StorageConnectParam {
         private String sessionToken;
         private String region;
         private OkHttpClient httpClient;
+        private String cloudName;
 
         private Builder() {
+        }
+
+        /**
+         * Sets the cloudName.
+         *
+         * @param cloudName cloud name
+         * @return <code>Builder</code>
+         */
+        public Builder withCloudName(@NotNull String cloudName) {
+            this.cloudName = cloudName;
+            return this;
         }
 
         /**
