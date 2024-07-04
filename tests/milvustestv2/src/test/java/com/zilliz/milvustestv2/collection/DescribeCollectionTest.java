@@ -18,6 +18,6 @@ public class DescribeCollectionTest extends BaseTest {
         DescribeCollectionResp describeCollectionResp = milvusClientV2.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
                 .build());
-        Assert.assertEquals(describeCollectionResp.getVectorFieldName().get(0),CommonData.fieldFloatVector);
+        Assert.assertEquals(describeCollectionResp.getVectorFieldNames().get(0),CommonData.fieldFloatVector);
     }
 }

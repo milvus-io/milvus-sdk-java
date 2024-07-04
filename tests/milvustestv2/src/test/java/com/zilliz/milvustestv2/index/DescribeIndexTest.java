@@ -53,7 +53,7 @@ public class DescribeIndexTest extends BaseTest {
                 .collectionName(newCollectionName)
                 .fieldName("xxxxxx")
                 .build());
-        Assert.assertEquals(describeIndexResp.getIndexName(),CommonData.fieldFloatVector);
+        Assert.assertEquals(describeIndexResp.getIndexDescriptions().get(0).getIndexName(),CommonData.fieldFloatVector);
         logger.info(describeIndexResp);
     }
 
@@ -63,7 +63,7 @@ public class DescribeIndexTest extends BaseTest {
                 .collectionName(newCollectionName)
                 .indexName("fieldFloatVector")
                 .build());
-        Assert.assertEquals(describeIndexResp.getIndexName(),CommonData.fieldFloatVector);
+        Assert.assertEquals(describeIndexResp.getIndexDescriptions().get(0).getIndexName(),CommonData.fieldFloatVector);
         logger.info(describeIndexResp);
     }
 }
