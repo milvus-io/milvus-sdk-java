@@ -19,8 +19,7 @@
 
 package io.milvus.bulkwriter.storage.client;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import io.milvus.bulkwriter.common.clientenum.CloudStorage;
 import io.milvus.bulkwriter.storage.StorageClient;
 import io.minio.BucketExistsArgs;
 import io.minio.MinioClient;
@@ -40,17 +39,17 @@ import static com.amazonaws.services.s3.internal.Constants.MB;
 public class MinioStorageClient extends MinioClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(MinioStorageClient.class);
 
-    protected MinioStorageClient(MinioClient client, Multimap<String, String> extraHeader) {
+    protected MinioStorageClient(MinioClient client) {
         super(client);
     }
 
-    public static MinioStorageClient getStorageClient(String endpoint,
+    public static MinioStorageClient getStorageClient(String cloudName,
+                                                      String endpoint,
                                                       String accessKey,
                                                       String secretKey,
                                                       String sessionToken,
                                                       String region,
                                                       OkHttpClient httpClient) {
-        Multimap<String, String> extraHeader = HashMultimap.create();
         MinioClient.Builder minioClientBuilder = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentialsProvider(new StaticProvider(accessKey, secretKey, sessionToken));
@@ -63,7 +62,12 @@ public class MinioStorageClient extends MinioClient implements StorageClient {
             minioClientBuilder.httpClient(httpClient);
         }
 
-        return new MinioStorageClient(minioClientBuilder.build(), extraHeader);
+        MinioClient minioClient = minioClientBuilder.build();
+        if (CloudStorage.TC.getCloudName().equals(cloudName)) {
+            minioClient.enableVirtualStyleEndpoint();
+        }
+
+        return new MinioStorageClient(minioClient);
     }
 
     public Long getObjectEntity(String bucketName, String objectKey) throws Exception {
