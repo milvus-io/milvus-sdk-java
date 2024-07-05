@@ -1,4 +1,10 @@
 # Changelog
+## milvus-sdk-java 2.4.2 (TBD)
+
+### Feature
+
+## Bug
+
 ## milvus-sdk-java 2.4.1 (2024-05-11)
 
 ### Bug
