@@ -16,6 +16,7 @@ import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
+import io.milvus.v2.service.index.request.DropIndexReq;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
 import io.milvus.v2.service.vector.request.AnnSearchReq;
 import io.milvus.v2.service.vector.request.InsertReq;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author yongpeng.li
@@ -647,6 +649,7 @@ public class CommonFunction {
 
     /**
      * 创建通用的collection方法，支持多个filed，多个向量
+     *
      * @param collectionName collection 可不传
      * @param pkDataType     主键类型
      * @param enableDynamic  是否开启动态列
@@ -683,6 +686,7 @@ public class CommonFunction {
 
     /**
      * 遍历fieldParamList生成对应的schema
+     *
      * @param fieldParamList field字段集合
      * @return List<CreateCollectionReq.FieldSchema> 给创建collection提供
      */
@@ -838,7 +842,8 @@ public class CommonFunction {
 
     /**
      * 创建通用索引
-     * @param collection   collection name
+     *
+     * @param collection     collection name
      * @param fieldParamList field集合
      */
     public static void createCommonIndex(String collection, List<FieldParam> fieldParamList) {
@@ -863,13 +868,55 @@ public class CommonFunction {
                 .build());
     }
 
+    /**
+     * Create Scalar Indexes
+     *
+     * @param collection     collection name
+     * @param fieldParamList scalar fields
+     */
+    public static void createScalarCommonIndex(String collection, List<FieldParam> FieldParamList) {
+        List<IndexParam> indexParamList = new ArrayList<>();
+        for (FieldParam FieldParam : FieldParamList) {
+            IndexParam.IndexType indexType = FieldParam.getIndextype();
+            String fieldName = FieldParam.getFieldName();
+
+            IndexParam indexParam = IndexParam.builder()
+                    .fieldName(fieldName)
+                    .indexType(indexType)
+                    .indexName(fieldName)
+                    .build();
+            indexParamList.add(indexParam);
+        }
+
+        BaseTest.milvusClientV2.createIndex(CreateIndexReq.builder()
+                .collectionName(collection)
+                .indexParams(indexParamList)
+                .build());
+    }
+
+    /**
+     * Drop Scalar Indexes
+     *
+     * @param collection     collection name
+     * @param fieldParamList scalar fields
+     */
+    public static void dropScalarCommonIndex(String collection, List<FieldParam> FieldParamList) {
+        List<String> fieldNames = FieldParamList.stream().map(FieldParam::getFieldName).collect(Collectors.toList());
+        fieldNames.forEach(x -> BaseTest.milvusClientV2.dropIndex(DropIndexReq.builder()
+                .collectionName(collection)
+                .fieldName(x)
+                .indexName(x)
+                .build()));
+    }
+
 
     /**
      * 为多向量查询提供AnnSearch
+     *
      * @param fieldParam 字段参数
-     * @param nq 传入的向量数
-     * @param topK 查询数量
-     * @param expr 表达式
+     * @param nq         传入的向量数
+     * @param topK       查询数量
+     * @param expr       表达式
      * @return AnnSearchReq
      */
     public static AnnSearchReq provideAnnSearch(FieldParam fieldParam, int nq, int topK, String expr) {
@@ -885,6 +932,7 @@ public class CommonFunction {
 
     /**
      * 根据索引类型提供查询参数
+     *
      * @param indexType index type
      * @return String 查询参数
      */
@@ -910,17 +958,17 @@ public class CommonFunction {
                 extraParam = "{\"nlist\": 128}";
                 break;
             case SCANN:
-                extraParam="{\"nlist\":1024,\"with_raw_data\":"+true+"}";
+                extraParam = "{\"nlist\":1024,\"with_raw_data\":" + true + "}";
                 break;
             case GPU_IVF_FLAT:
-                extraParam="{\"nlist\": 64}";
+                extraParam = "{\"nlist\": 64}";
                 break;
             case GPU_IVF_PQ:
-                extraParam="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
+                extraParam = "{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
                 break;
             case SPARSE_INVERTED_INDEX:
             case SPARSE_WAND:
-                extraParam="{\"drop_ratio_search\":0.2}";
+                extraParam = "{\"drop_ratio_search\":0.2}";
                 break;
             default:
                 extraParam = "{\"nlist\":128}";
