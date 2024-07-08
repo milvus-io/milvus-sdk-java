@@ -120,7 +120,9 @@ public class RemoteBulkWriter extends LocalBulkWriter {
 
         if (connectParam instanceof S3ConnectParam) {
             S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            storageClient = MinioStorageClient.getStorageClient(s3ConnectParam.getEndpoint(),
+            storageClient = MinioStorageClient.getStorageClient(
+                    s3ConnectParam.getCloudName(),
+                    s3ConnectParam.getEndpoint(),
                     s3ConnectParam.getAccessKey(),
                     s3ConnectParam.getSecretKey(),
                     s3ConnectParam.getSessionToken(),
