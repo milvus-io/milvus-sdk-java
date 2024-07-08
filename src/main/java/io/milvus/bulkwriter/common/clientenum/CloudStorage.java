@@ -1,22 +1,27 @@
 package io.milvus.bulkwriter.common.clientenum;
 
 import io.milvus.exception.ParamException;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 
 public enum CloudStorage {
-    MINIO("%s", "minioAddress"),
-    AWS("s3.amazonaws.com", null),
-    GCP("storage.googleapis.com", null),
-    AZURE("%s.blob.core.windows.net", "accountName"),
-    ALI("oss-%s.aliyuncs.com", "region"),
-    TC("cos.%s.myqcloud.com", "region")
+    MINIO("minio","%s", "minioAddress"),
+    AWS("aws","s3.amazonaws.com", null),
+    GCP("gcp" ,"storage.googleapis.com", null),
+    AZURE("azure" ,"%s.blob.core.windows.net", "accountName"),
+    ALI("ali","oss-%s.aliyuncs.com", "region"),
+    TC("tc","cos.%s.myqcloud.com", "region")
     ;
+
+    @Getter
+    private String cloudName;
 
     private String endpoint;
 
     private String replace;
 
-    CloudStorage(String endpoint, String replace) {
+    CloudStorage(String cloudName, String endpoint, String replace) {
+        this.cloudName = cloudName;
         this.endpoint = endpoint;
         this.replace = replace;
     }

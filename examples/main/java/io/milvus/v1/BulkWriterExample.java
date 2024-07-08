@@ -91,8 +91,8 @@ public class BulkWriterExample {
         public static final String STORAGE_ACCESS_KEY = "minioadmin"; // default ak of MinIO/Milvus standalone
         public static final String STORAGE_SECRET_KEY = "minioadmin"; // default sk of MinIO/Milvus standalone
         /**
-         * if using local storage such as Minio
-         * Please set this parameter to empty.
+         * if using remote storage, please configure the parameter
+         * if using local storage such as Local Minio, please set this parameter to empty.
          */
         public static final String STORAGE_REGION = "";
 
@@ -430,6 +430,7 @@ public class BulkWriterExample {
         } else {
             connectParam = S3ConnectParam.newBuilder()
                     .withEndpoint(StorageConsts.STORAGE_ENDPOINT)
+                    .withCloudName(StorageConsts.cloudStorage.getCloudName())
                     .withBucketName(StorageConsts.STORAGE_BUCKET)
                     .withAccessKey(StorageConsts.STORAGE_ACCESS_KEY)
                     .withSecretKey(StorageConsts.STORAGE_SECRET_KEY)
