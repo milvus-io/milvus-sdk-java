@@ -1,4 +1,34 @@
 # Changelog
+## milvus-sdk-java 2.4.2 (2024-07-11)
+
+### Feature
+- Support AlterDatabase/DescribeDatabase for V1
+- Cache collection schema in client side for insert/upsert interfaces
+- Support AlterCollection/AlterIndex for MilvusClientV2
+- Support propagate traceid from client
+- BulkWriter supports SparseVector/Float16Vector/BFloat16Vector
+- Support SparseVector/Float16Vector/BFloat16Vector for MilvusClientV2
+- Support GroupBy search for MilvusClientV2
+- Support SearchIterator/QueryIterator for MilvusClientV2
+- Optimize DescribeIndex interface of MilvusClientV2
+- Optimize DescribeCollection interface of MilvusClientV2
+- Support enableVirtualStyleEndpoint for BulkWriter
+
+### Bug
+- Fix a bug of max_capacity range
+
+### Break changes
+- Replace FastJSON by Gson according to issue [#878](https://github.com/milvus-io/milvus-sdk-java/issues/878). InsertParam.withRows()/UpsertParam.withRows()/InsertReq.data() are redefined.
+- Rename "distance" to "score" for search result. SearchResp.distance() of V2 is renamed to be score().
+
+## milvus-sdk-java 2.4.1 (2024-05-11)
+
+### Bug
+
+- Unable to connect Zilliz cloud new severless instances
+- SearchIterator cannot work for Varchar type primary key
+- Fix some minor bugs of SearchIterator
+
 ## milvus-sdk-java 2.4.0 (2024-04-22)
 
 ### Feature
