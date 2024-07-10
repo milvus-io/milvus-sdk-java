@@ -164,6 +164,9 @@ public class CreateSimpleCollectionParam {
 
         /**
          * Sets the SyncLoad when loadCollection
+         *
+         * @param syncLoad set to true to wait load process
+         * @return <code>Builder</code>
          */
         public Builder withSyncLoad(boolean syncLoad) {
             this.syncLoad = syncLoad;

@@ -54,6 +54,8 @@ public interface MilvusClient {
      *
      * @param timeout     set time waiting for a rpc call.
      * @param timeoutUnit time unit
+     *
+     * @return <code>MilvusClient</code>
      */
     MilvusClient withTimeout(long timeout, TimeUnit timeoutUnit);
 
@@ -61,6 +63,8 @@ public interface MilvusClient {
      * Sets the parameters for retry.
      *
      * @param retryParam {@link RetryParam}
+     *
+     * @return <code>MilvusClient</code>
      */
     MilvusClient withRetry(RetryParam retryParam);
 
@@ -68,6 +72,8 @@ public interface MilvusClient {
      * Number of retry attempts.
      *
      * @param retryTimes     number of retry attempts.
+     *
+     * @return <code>MilvusClient</code>
      */
     @Deprecated
     MilvusClient withRetry(int retryTimes);
@@ -77,6 +83,8 @@ public interface MilvusClient {
      *
      * @param interval     time interval between retry attempts.
      * @param timeUnit     time unit
+     *
+     * @return <code>MilvusClient</code>
      */
     @Deprecated
     MilvusClient withRetryInterval(long interval, TimeUnit timeUnit);
@@ -102,6 +110,7 @@ public interface MilvusClient {
     /**
      * Disconnects from a Milvus server with configurable timeout.
      *
+     * @throws InterruptedException if the client failed to close connection
      * @param maxWaitSeconds timeout unit: second
      */
     void close(long maxWaitSeconds) throws InterruptedException;

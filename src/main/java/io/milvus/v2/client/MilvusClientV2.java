@@ -147,7 +147,7 @@ public class MilvusClientV2 {
     /**
      * list milvus collections
      *
-     * @return List<String> collection names
+     * @return List of String collection names
      */
     public ListCollectionsResp listCollections() {
         return collectionService.listCollections(this.blockingStub);
@@ -251,6 +251,9 @@ public class MilvusClientV2 {
 
     /**
      * Lists all indexes in a collection in Milvus.
+     *
+     * @param request list indexes request
+     * @return List of String indexes names
      */
     public List<String> listIndexes(ListIndexesReq request) {
         return indexService.listIndexes(this.blockingStub, request);
@@ -367,7 +370,7 @@ public class MilvusClientV2 {
      * Lists all partitions in a collection in Milvus.
      *
      * @param request list partitions request
-     * @return List<String> partition names
+     * @return List of String partition names
      */
     public List<String> listPartitions(ListPartitionsReq request) {
         return partitionService.listPartitions(this.blockingStub, request);
@@ -394,7 +397,7 @@ public class MilvusClientV2 {
     /**
      * list users
      *
-     * @return List<String> usernames
+     * @return List of String usernames
      */
     public List<String> listUsers() {
         return userService.listUsers(this.blockingStub);
@@ -436,7 +439,7 @@ public class MilvusClientV2 {
     /**
      * list roles
      *
-     * @return List<String> role names
+     * @return List of String role names
      */
     public List<String> listRoles() {
         return roleService.listRoles(this.blockingStub);
@@ -503,18 +506,24 @@ public class MilvusClientV2 {
 
     /**
      * create aliases
+     *
+     * @param request create alias request
      */
     public void createAlias(CreateAliasReq request) {
         utilityService.createAlias(this.blockingStub, request);
     }
     /**
      * drop aliases
+     *
+     * @param request drop alias request
      */
     public void dropAlias(DropAliasReq request) {
         utilityService.dropAlias(this.blockingStub, request);
     }
     /**
      * alter aliases
+     *
+     * @param request alter alias request
      */
     public void alterAlias(AlterAliasReq request) {
         utilityService.alterAlias(this.blockingStub, request);
@@ -522,7 +531,8 @@ public class MilvusClientV2 {
     /**
      * list aliases
      *
-     * @return List<String> alias names
+     * @param request list aliases request
+     * @return List of String aliases names
      */
     public ListAliasResp listAliases(ListAliasesReq request) {
         return utilityService.listAliases(this.blockingStub, request);
@@ -530,6 +540,7 @@ public class MilvusClientV2 {
     /**
      * describe aliases
      *
+     * @param request describe alias request
      * @return DescribeAliasResp
      */
     public DescribeAliasResp describeAlias(DescribeAliasReq request) {
@@ -540,6 +551,7 @@ public class MilvusClientV2 {
      * close client
      *
      * @param maxWaitSeconds max wait seconds
+     * @throws InterruptedException if the client failed to close connection
      */
     public void close(long maxWaitSeconds) throws InterruptedException {
         if(channel!= null){

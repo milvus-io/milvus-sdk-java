@@ -33,7 +33,7 @@ import java.util.List;
 @ToString
 public class DeleteResponse {
     /**
-     * In the new version(>=2.3.2), this method only returns an empty list and does not return specific values
+     * In the new version(greater or equal than v2.3.2), this method only returns an empty list and does not return specific values
      * Mark is as deprecated, keep it to compatible with the legacy code
      */
     @Deprecated
