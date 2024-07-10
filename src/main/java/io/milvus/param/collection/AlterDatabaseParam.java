@@ -83,7 +83,7 @@ public class AlterDatabaseParam {
         /**
          * Sets the resource groups in database level, then if load collection doesn't have resource groups, it will use this resource groups.
          * @param resourceGroups resource group names
-         * @return
+         * @return <code>Builder</code>
          */
         public Builder WithResourceGroups(@NonNull List<String> resourceGroups) {
             return this.withProperty(Constant.DATABASE_RESOURCE_GROUPS, String.join(",", resourceGroups));

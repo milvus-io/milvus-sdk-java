@@ -21,13 +21,16 @@ package io.milvus.param.collection;
 
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Parameters for <code>createCollection</code> interface.
@@ -44,6 +47,7 @@ public class CreateCollectionParam {
 
     private final List<FieldType> fieldTypes;
     private final boolean enableDynamicField;
+    private final Map<String, String> properties = new HashMap<>();
 
     private CreateCollectionParam(@NonNull Builder builder) {
         this.collectionName = builder.collectionName;
@@ -54,6 +58,7 @@ public class CreateCollectionParam {
         this.consistencyLevel = builder.consistencyLevel;
         this.databaseName = builder.databaseName;
         this.enableDynamicField = builder.enableDynamicField;
+        this.properties.putAll(builder.properties);
     }
 
     public static Builder newBuilder() {
@@ -74,6 +79,9 @@ public class CreateCollectionParam {
         private CollectionSchemaParam schema;
 
         private boolean enableDynamicField;
+
+        private final Map<String, String> properties = new HashMap<>();
+
         private Builder() {
         }
 
@@ -199,6 +207,37 @@ public class CreateCollectionParam {
          */
         public Builder withSchema(@NonNull CollectionSchemaParam schema) {
             this.schema = schema;
+            return this;
+        }
+
+        /**
+         * Sets the replica number in collection level, then if load collection doesn't have replica number, it will use this replica number.
+         * @param replicaNumber replica number
+         * @return <code>Builder</code>
+         */
+        public Builder withReplicaNumber(int replicaNumber) {
+            return this.withProperty(Constant.COLLECTION_REPLICA_NUMBER, Integer.toString(replicaNumber));
+        }
+
+        /**
+         * Sets the resource groups in collection level, then if load collection doesn't have resource groups, it will use this resource groups.
+         * @param resourceGroups resource group names
+         * @return <code>Builder</code>
+         */
+        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+            return this.withProperty(Constant.COLLECTION_RESOURCE_GROUPS, String.join(",", resourceGroups));
+
+        }
+
+        /**
+         * Basic method to set a key-value property.
+         *
+         * @param key the key
+         * @param value the value
+         * @return <code>Builder</code>
+         */
+        public Builder withProperty(@NonNull String key, @NonNull String value) {
+            this.properties.put(key, value);
             return this;
         }
 

@@ -22,10 +22,12 @@ package io.milvus.response;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
+import org.testcontainers.shaded.org.bouncycastle.util.Strings;
 
 import java.util.*;
 
@@ -35,8 +37,11 @@ import java.util.*;
 public class DescCollResponseWrapper {
     private final DescribeCollectionResponse response;
 
+    Map<String, String> pairs = new HashMap<>();
+
     public DescCollResponseWrapper(@NonNull DescribeCollectionResponse response) {
         this.response = response;
+        response.getPropertiesList().forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
     }
 
     /**
@@ -249,10 +254,6 @@ public class DescCollResponseWrapper {
      * @return List of String, aliases of the collection
      */
     public Map<String, String> getProperties() {
-        Map<String, String> pairs = new HashMap<>();
-        List<KeyValuePair> props = response.getPropertiesList();
-        props.forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
-
         return pairs;
     }
 
@@ -266,6 +267,34 @@ public class DescCollResponseWrapper {
                 .withFieldTypes(getFields())
                 .withEnableDynamicField(isDynamicFieldEnabled())
                 .build();
+    }
+
+
+
+    /**
+     * return collection resource groups
+     *
+     * @return resource group names
+     */
+    public List<String> getResourceGroups() {
+        String value = pairs.get(Constant.COLLECTION_RESOURCE_GROUPS);
+        if (value == null) {
+            return new ArrayList<>();
+        }
+        return Arrays.asList(Strings.split(value, ','));
+    }
+
+    /**
+     * return collection replica number
+     *
+     * @return replica number
+     */
+    public int getReplicaNumber() {
+        String value = pairs.get(Constant.COLLECTION_REPLICA_NUMBER);
+        if (value == null) {
+            return 0;
+        }
+        return Integer.parseInt(pairs.get(Constant.COLLECTION_REPLICA_NUMBER));
     }
 
     /**
