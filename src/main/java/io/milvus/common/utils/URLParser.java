@@ -9,7 +9,6 @@ import java.util.Objects;
 
 /**
  * @author: wei.hu@zilliz.com
- * @date: 2023/5/1
  */
 @Getter
 @ToString

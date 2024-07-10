@@ -73,6 +73,9 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
     /**
      * Note: this method's function is duplicated with getIDScore(), it is for high-level search.
+     *
+     * @param indexOfTarget index of a query vector
+     * @return List of <code>QueryResultsWrapper.RowRecord</code> a row records list of the query result
      */
     public List<QueryResultsWrapper.RowRecord> getRowRecords(int indexOfTarget) {
         List<QueryResultsWrapper.RowRecord> records = new ArrayList<>();
@@ -294,6 +297,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
          * If the key name is in dynamic field, return the value from the dynamic field.
          * Throws {@link ParamException} if the key name doesn't exist.
          *
+         * @param keyName a field name or a dynamic field name
          * @return {@link FieldDataWrapper}
          */
         public Object get(String keyName) throws ParamException {
