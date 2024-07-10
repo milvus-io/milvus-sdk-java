@@ -82,7 +82,7 @@ public class AzureConnectParam extends StorageConnectParam {
         }
 
         /**
-         * @param accountUrl A string in format like https://<storage-account>.blob.core.windows.net
+         * @param accountUrl A string in format like "https://[storage-account].blob.core.windows.net"
          *                     Read this link for more info:
          *                     <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview">...</a>
          * @return <code>Builder</code>

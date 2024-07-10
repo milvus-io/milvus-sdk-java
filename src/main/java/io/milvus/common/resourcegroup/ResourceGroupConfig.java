@@ -43,11 +43,23 @@ public class ResourceGroupConfig {
         private Builder() {
         }
 
+        /**
+         * Set the requests node num.
+         *
+         * @param requests requests node num in resource group, if node num is less than requests.nodeNum, it will be transfer from other resource group.
+         * @return <code>Builder</code>
+         */
         public Builder withRequests(@NonNull ResourceGroupLimit requests) {
             this.requests = requests;
             return this;
         }
 
+        /**
+         * Set the limited node num.
+         *
+         * @param limits limited node num in resource group, if node num is more than limits.nodeNum, it will be transfer to other resource group.
+         * @return <code>Builder</code>
+         */
         public Builder withLimits(@NonNull ResourceGroupLimit limits) {
             this.limits = limits;
             return this;
@@ -56,8 +68,8 @@ public class ResourceGroupConfig {
         /**
          * Set the transfer from list.
          * 
-         * @param from
-         * @return
+         * @param from missing node should be transfer from given resource group at high priority in repeated list.
+         * @return <code>Builder</code>
          */
         public Builder withFrom(@NonNull List<ResourceGroupTransfer> from) {
             this.from = from;
@@ -67,8 +79,8 @@ public class ResourceGroupConfig {
         /**
          * Set the transfer to list.
          * 
-         * @param to
-         * @return
+         * @param to redundant node should be transfer to given resource group at high priority in repeated list.
+         * @return <code>Builder</code>
          */
         public Builder withTo(@NonNull List<ResourceGroupTransfer> to) {
             this.to = to;

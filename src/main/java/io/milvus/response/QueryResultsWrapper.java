@@ -61,7 +61,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
     /**
      * Gets row records list from query result.
      *
-     * @return <code>List<RowRecord></code> a row records list of the query result
+     * @return List of <code>QueryResultsWrapper.RowRecord</code> a row records list of the query result
      */
     @Override
     public List<QueryResultsWrapper.RowRecord> getRowRecords() {
@@ -79,6 +79,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
      * Gets a row record from result.
      *  Throws {@link ParamException} if the index is illegal.
      *
+     * @param
      * @return <code>RowRecord</code> a row record of the result
      */
     protected QueryResultsWrapper.RowRecord buildRowRecord(long index) {
@@ -135,6 +136,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
          * If the key name is in dynamic field, return the value from the dynamic field.
          * Throws {@link ParamException} if the key name doesn't exist.
          *
+         * @param keyName a field name or dynamic field name
          * @return {@link Object}
          */
         public Object get(String keyName) throws ParamException {
@@ -161,6 +163,9 @@ public class QueryResultsWrapper extends RowRecordWrapper {
 
         /**
          * Test if a key exists
+         *
+         * @param keyName a field name or dynamic field name
+         * @return boolean
          */
         public boolean contains(String keyName) {
             return fieldValues.containsKey(keyName);

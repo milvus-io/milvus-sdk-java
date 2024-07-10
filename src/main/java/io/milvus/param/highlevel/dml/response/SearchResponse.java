@@ -34,8 +34,10 @@ public class SearchResponse {
     public List<List<QueryResultsWrapper.RowRecord>> rowRecords;
 
     /**
-     * In old versions(<=2.3.2), this method only returns results of the first target vector
+     * In old versions(less or equal than v2.3.2), this method only returns results of the first target vector
      * Mark is as deprecated, keep it to compatible with the legacy code
+     *
+     * @return List of <code>QueryResultsWrapper.RowRecord</code>
      */
     @Deprecated
     public List<QueryResultsWrapper.RowRecord> getRowRecords() {
