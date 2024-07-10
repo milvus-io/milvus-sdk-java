@@ -445,10 +445,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("CreateDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
 
         try {
+            List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
             // Construct CreateDatabaseRequest
             CreateDatabaseRequest createDatabaseRequest = CreateDatabaseRequest.newBuilder()
                     .setDbName(requestParam.getDatabaseName())
+                    .addAllProperties(propertiesList)
                     .build();
+
+            System.out.println(requestParam.getProperties());
 
             Status response = blockingStub().createDatabase(createDatabaseRequest);
             handleResponse(title, response);
@@ -588,12 +592,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 collectionSchemaBuilder.addFields(ParamUtils.ConvertField(fieldType));
             }
 
+            List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
             // Construct CreateCollectionRequest
             CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                     .setCollectionName(requestParam.getCollectionName())
                     .setShardsNum(requestParam.getShardsNum())
                     .setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode())
-                    .setSchema(collectionSchemaBuilder.build().toByteString());
+                    .setSchema(collectionSchemaBuilder.build().toByteString())
+                    .addAllProperties(propertiesList);
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }

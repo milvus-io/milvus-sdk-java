@@ -20,10 +20,15 @@
 package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parameters for <code>createDatabase</code> interface.
@@ -32,9 +37,11 @@ import lombok.ToString;
 @ToString
 public class CreateDatabaseParam {
     private final String databaseName;
+    private final Map<String, String> properties = new HashMap<>();
 
     private CreateDatabaseParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
+        this.properties.putAll(builder.properties);
     }
 
     public static Builder newBuilder() {
@@ -47,6 +54,8 @@ public class CreateDatabaseParam {
     public static final class Builder {
         private String databaseName;
 
+        private final Map<String, String> properties = new HashMap<>();
+
         private Builder() {
         }
 
@@ -58,6 +67,37 @@ public class CreateDatabaseParam {
          */
         public Builder withDatabaseName(@NonNull String databaseName) {
             this.databaseName = databaseName;
+            return this;
+        }
+
+         /**
+         * Sets the replica number in database level, then if load collection doesn't have replica number, it will use this replica number.
+         * @param replicaNumber replica number
+         * @return <code>Builder</code>
+         */
+        public Builder withReplicaNumber(int replicaNumber) {
+            return this.withProperty(Constant.DATABASE_REPLICA_NUMBER, Integer.toString(replicaNumber));
+        }
+
+        /**
+         * Sets the resource groups in database level, then if load collection doesn't have resource groups, it will use this resource groups.
+         * @param resourceGroups resource group names
+         * @return <code>Builder</code>
+         */
+        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+            return this.withProperty(Constant.DATABASE_RESOURCE_GROUPS, String.join(",", resourceGroups));
+
+        }
+
+        /**
+         * Basic method to set a key-value property.
+         *
+         * @param key the key
+         * @param value the value
+         * @return <code>Builder</code>
+         */
+        public Builder withProperty(@NonNull String key, @NonNull String value) {
+            this.properties.put(key, value);
             return this;
         }
 

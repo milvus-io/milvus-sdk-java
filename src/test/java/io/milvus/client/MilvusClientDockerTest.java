@@ -82,7 +82,7 @@ class MilvusClientDockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.4");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20240709-60aab15e");
 
     @BeforeAll
     public static void setUp() {
@@ -519,6 +519,8 @@ class MilvusClientDockerTest {
                 .withSchema(schema)
                 .withShardsNum(3)
                 .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
+                .withReplicaNumber(1)
+                .withResourceGroups(Arrays.asList("rg1"))
                 .build();
 
         R<RpcStatus> createR = client.createCollection(createParam);
@@ -540,6 +542,8 @@ class MilvusClientDockerTest {
         CollectionSchemaParam fetchSchema = collDescWrapper.getSchema();
         Assertions.assertFalse(fetchSchema.isEnableDynamicField());
         Assertions.assertEquals(ConsistencyLevelEnum.EVENTUALLY, collDescWrapper.getConsistencyLevel());
+        Assertions.assertEquals(1, collDescWrapper.getReplicaNumber());
+        Assertions.assertEquals(1, collDescWrapper.getResourceGroups().size());
         System.out.println(collDescWrapper);
 
         R<ShowPartitionsResponse> spResp = client.showPartitions(ShowPartitionsParam.newBuilder()
@@ -2991,7 +2995,7 @@ class MilvusClientDockerTest {
     @Test
     void testDatabase() {
         String dbName = "test_database";
-        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder().withDatabaseName(dbName).build();
+        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder().withDatabaseName(dbName).withReplicaNumber(1).withResourceGroups(Arrays.asList("rg1")).build();
         R<RpcStatus> createResponse = client.createDatabase(createDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createResponse.getStatus().intValue());
 
@@ -3001,8 +3005,8 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), describeResponse.getStatus().intValue());
         DescDBResponseWrapper describeDBWrapper = new DescDBResponseWrapper(describeResponse.getData());
         Assertions.assertEquals(dbName, describeDBWrapper.getDatabaseName());
-        Assertions.assertEquals(0, describeDBWrapper.getReplicaNumber());
-        Assertions.assertEquals(0, describeDBWrapper.getResourceGroups().size());
+        Assertions.assertEquals(1, describeDBWrapper.getReplicaNumber());
+        Assertions.assertEquals(1, describeDBWrapper.getResourceGroups().size());
 
         // alter database props
         AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder().withDatabaseName(dbName).withReplicaNumber(3).WithResourceGroups(Arrays.asList("rg1", "rg2", "rg3")).build();
