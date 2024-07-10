@@ -10,7 +10,7 @@ public class ResourceGroupTransfer {
     /**
      * Constructor with resource group name.
      * 
-     * @param resourceGroupName
+     * @param resourceGroupName resource group name
      */
     public ResourceGroupTransfer(@NonNull String resourceGroupName) {
         this.resourceGroupName = resourceGroupName;
@@ -19,7 +19,7 @@ public class ResourceGroupTransfer {
     /**
      * Constructor from grpc
      * 
-     * @param grpcTransfer
+     * @param grpcTransfer grpc transfer object
      */
     public ResourceGroupTransfer(@NonNull io.milvus.grpc.ResourceGroupTransfer grpcTransfer) {
         this.resourceGroupName = grpcTransfer.getResourceGroup();
