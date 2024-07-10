@@ -38,6 +38,8 @@ public class BFloat16Vec implements BaseVector {
     /**
      * Construct a bfloat16 vector by a float32 array.
      * Note that all the float32 values will be cast to bfloat16 values and store into ByteBuffer.
+     *
+     * @param data a float32 vector
      */
     public BFloat16Vec(List<Float> data) {
         this.data = Float16Utils.f32VectorToBf16Buffer(data);

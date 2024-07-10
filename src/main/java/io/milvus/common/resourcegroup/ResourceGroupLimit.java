@@ -12,7 +12,7 @@ public class ResourceGroupLimit {
     /**
      * Constructor with node number.
      * 
-     * @param nodeNum
+     * @param nodeNum query node number in this group
      */
     public ResourceGroupLimit(@NonNull Integer nodeNum) {
         this.nodeNum = nodeNum;
@@ -21,7 +21,7 @@ public class ResourceGroupLimit {
     /**
      * Constructor from grpc
      * 
-     * @param grpcLimit
+     * @param grpcLimit grpc object to set limit of node number
      */
     public ResourceGroupLimit(@NonNull io.milvus.grpc.ResourceGroupLimit grpcLimit) {
         this.nodeNum = grpcLimit.getNodeNum();
@@ -30,7 +30,7 @@ public class ResourceGroupLimit {
     /**
      * Transfer to grpc
      * 
-     * @return io.milvus.grpc.ResourceGroupLimit
+     * @return <code>io.milvus.grpc.ResourceGroupLimit</code>
      */
     public @NonNull io.milvus.grpc.ResourceGroupLimit toGRPC() {
         return io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(nodeNum).build();
