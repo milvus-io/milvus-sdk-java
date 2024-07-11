@@ -276,7 +276,7 @@ public class HybridSearchExample {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int k = 0; k < NQ; k++) {
             System.out.printf("============= Search result of No.%d vector =============\n", k);
-            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(k);
             for (SearchResultsWrapper.IDScore score : scores) {
                 System.out.println(score);
             }
