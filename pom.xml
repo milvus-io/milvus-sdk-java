@@ -170,6 +170,13 @@
                 <artifactId>snappy-java</artifactId>
                 <version>${snappy.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -253,7 +260,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>milvus</artifactId>
-            <version>${testcontainers.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -269,7 +275,6 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
