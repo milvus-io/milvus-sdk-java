@@ -82,7 +82,7 @@
         <okhttp.version>4.12.0</okhttp.version>
         <plexus.version>3.0.24</plexus.version>
         <maven.source.plugin.version>3.1.0</maven.source.plugin.version>
-        <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.7.0</maven.javadoc.plugin.version>
         <os.maven.plugin.version>1.6.2</os.maven.plugin.version>
         <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
         <protobuf.maven.plugin.version>0.6.1</protobuf.maven.plugin.version>
@@ -407,7 +407,7 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
-                            <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                            <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
                         </configuration>
                         <executions>
                             <execution>
