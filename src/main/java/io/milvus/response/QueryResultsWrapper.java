@@ -79,7 +79,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
      * Gets a row record from result.
      *  Throws {@link ParamException} if the index is illegal.
      *
-     * @param
+     * @param index index of a row
      * @return <code>RowRecord</code> a row record of the result
      */
     protected QueryResultsWrapper.RowRecord buildRowRecord(long index) {

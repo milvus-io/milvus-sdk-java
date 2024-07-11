@@ -143,6 +143,7 @@ public class SimpleExample {
                 .withFloatVectors(Arrays.asList(vector))
                 .withVectorFieldName(VECTOR_FIELD)
                 .withParams("{}")
+                .addOutField(VECTOR_FIELD)
                 .addOutField(TITLE_FIELD)
                 .build());
         if (searchRet.getStatus() != R.Status.Success.getCode()) {
@@ -155,7 +156,11 @@ public class SimpleExample {
         List<SearchResultsWrapper.IDScore> scores = resultsWrapper.getIDScore(0);
         System.out.println("The result of No.0 target vector:");
         for (SearchResultsWrapper.IDScore score:scores) {
-            System.out.println(score);
+            List<Float> vectorReturned = (List<Float>)score.get(VECTOR_FIELD);
+            System.out.println(vectorReturned);
+
+            String title = (String)score.get(TITLE_FIELD);
+            System.out.println(title);
         }
 
         // drop the collection if you don't need the collection anymore
