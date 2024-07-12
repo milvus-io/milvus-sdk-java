@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.testcontainers.shaded.org.bouncycastle.util.Strings;
+import org.bouncycastle.util.Strings;
 
 /**
  * Util class to wrap response of <code>describeCollection</code> interface.
