@@ -94,7 +94,7 @@
         <gson.version>2.10.1</gson.version>
         <kotlin.version>1.9.10</kotlin.version>
         <mockito.version>4.11.0</mockito.version>
-        <testcontainers.version>1.19.6</testcontainers.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
 
         <hadoop.version>3.3.6</hadoop.version>
         <hbase.version>1.2.0</hbase.version>
@@ -169,6 +169,13 @@
                 <groupId>org.xerial.snappy</groupId>
                 <artifactId>snappy-java</artifactId>
                 <version>${snappy.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -253,7 +260,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>milvus</artifactId>
-            <version>${testcontainers.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -268,7 +275,7 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${testcontainers.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
