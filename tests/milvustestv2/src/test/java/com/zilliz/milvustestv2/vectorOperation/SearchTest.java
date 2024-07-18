@@ -75,6 +75,9 @@ public class SearchTest extends BaseTest {
                 {CommonData.fieldVarchar + " like \"Str%\" ", topK},
                 {CommonData.fieldVarchar + " like \"Str1\" ", 1},
                 {CommonData.fieldInt8 + " > 129 ", 0},
+                {"array_contains(" + CommonData.fieldArray + ", 1)", 2},
+                {"array_contains_all(" + CommonData.fieldArray + ", [1, 2])", 2},
+                {"array_length(" + CommonData.fieldArray + ") == 3", 10},
 
         };
     }
@@ -162,13 +165,13 @@ public class SearchTest extends BaseTest {
 
         // Build Scalar Index
         List<FieldParam> FieldParamList = new ArrayList<FieldParam>() {{
-//            add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
             add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
             add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
             add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
             add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.BITMAP).build());
-//            add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
-//            add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
         }};
         CommonFunction.createScalarCommonIndex(newCollectionName, FieldParamList);
         log.info("Create Scalar index done{}, scalar index:{}", newCollectionName, FieldParamList);
@@ -328,7 +331,7 @@ public class SearchTest extends BaseTest {
     @Test(description = "search scalar index collection", groups = {"Smoke"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "filterAndExcept")
     public void searchScalarIndexCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
-        SearchResp search = milvusClientV2.search(SearchReq.builder()
+        SearchReq searchParams = SearchReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
@@ -336,7 +339,9 @@ public class SearchTest extends BaseTest {
                 .annsField(CommonData.fieldFloatVector)
                 .data(data)
                 .topK(topK)
-                .build());
+                .build();
+        System.out.println(searchParams);
+        SearchResp search = milvusClientV2.search(searchParams);
         System.out.println(search);
         Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
