@@ -54,13 +54,13 @@ public class CreateIndexTest extends BaseTest {
                 }}
                 },
                 {new ArrayList<FieldParam>() {{
-//                    add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
+                    add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.BITMAP).build());
-//                    add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
-//                    add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
+                    add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
+                    add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
                 }}
                 },
         };
@@ -138,7 +138,6 @@ public class CreateIndexTest extends BaseTest {
                 .build());
     }
 
-    //    wait for bug fixed: https://github.com/milvus-io/milvus/issues/34314
     @Test(description = "Create scalar index", groups = {"Smoke"}, dependsOnMethods = {"createVectorIndex"}, dataProvider = "multiScalar")
     public void createAllBitmapIndex(List<FieldParam> FieldParamList) {
         milvusClientV2.releaseCollection(ReleaseCollectionReq.builder().collectionName(newCollectionName).build());
