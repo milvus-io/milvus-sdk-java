@@ -27,7 +27,7 @@ import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import lombok.NonNull;
-import org.testcontainers.shaded.org.bouncycastle.util.Strings;
+import org.bouncycastle.util.Strings;
 
 import java.util.*;
 
