@@ -38,11 +38,11 @@ import java.util.Collections;
 public class CollectionService extends BaseService {
     public IndexService indexService = new IndexService();
 
-    public void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
+    public Void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         if (request.getCollectionSchema() != null) {
             //create collections with schema
             createCollectionWithSchema(blockingStub, request);
-            return;
+            return null;
         }
 
         if (request.getDimension() == null) {
@@ -102,9 +102,10 @@ public class CollectionService extends BaseService {
         } catch (Exception e) {
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed" + e.getMessage());
         }
+        return null;
     }
 
-    public void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
+    public Void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
@@ -141,6 +142,8 @@ public class CollectionService extends BaseService {
             //load collection
             loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
         }
+
+        return null;
     }
 
     public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
@@ -154,7 +157,7 @@ public class CollectionService extends BaseService {
         return listCollectionsResp;
     }
 
-    public void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
+    public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
 
         String title = String.format("DropCollectionRequest collectionName:%s", request.getCollectionName());
         DropCollectionRequest dropCollectionRequest = DropCollectionRequest.newBuilder()
@@ -166,6 +169,8 @@ public class CollectionService extends BaseService {
         if (request.getAsync()) {
             WaitForDropCollection(blockingStub, request);
         }
+
+        return null;
     }
 
     public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
@@ -206,7 +211,7 @@ public class CollectionService extends BaseService {
         return describeCollectionResp;
     }
 
-    public void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
+    public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
         String title = String.format("RenameCollectionRequest collectionName:%s", request.getCollectionName());
         RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
                 .setOldName(request.getCollectionName())
@@ -214,9 +219,11 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.renameCollection(renameCollectionRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
+    public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -227,9 +234,11 @@ public class CollectionService extends BaseService {
         if (request.getAsync()) {
             WaitForLoadCollection(blockingStub, request);
         }
+
+        return null;
     }
 
-    public void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
+    public Void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         String title = String.format("ReleaseCollectionRequest collectionName:%s", request.getCollectionName());
         ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -239,6 +248,8 @@ public class CollectionService extends BaseService {
         if (request.getAsync()) {
             waitForCollectionRelease(blockingStub, request);
         }
+
+        return null;
     }
 
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
