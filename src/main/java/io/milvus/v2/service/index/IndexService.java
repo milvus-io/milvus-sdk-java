@@ -122,6 +122,11 @@ public class IndexService extends BaseService {
                     .build();
         }
         DescribeIndexResponse response = blockingStub.describeIndex(describeIndexRequest);
+        // if the collection has no index, return empty list, instead of throwing an exception
+        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.IndexNotExist ||
+                response.getStatus().getCode() == 700) {
+            return new ArrayList<>();
+        }
         rpcUtils.handleResponse(title, response.getStatus());
         List<String> indexNames = new ArrayList<>();
         response.getIndexDescriptionsList().forEach(index -> {
