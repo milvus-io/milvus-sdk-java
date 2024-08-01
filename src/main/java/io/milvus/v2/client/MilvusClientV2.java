@@ -20,9 +20,14 @@
 package io.milvus.v2.client;
 
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.*;
@@ -48,6 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 public class MilvusClientV2 {
@@ -64,6 +70,7 @@ public class MilvusClientV2 {
     private final RoleService roleService = new RoleService();
     private final UtilityService utilityService = new UtilityService();
     private ConnectConfig connectConfig;
+    private RetryConfig retryConfig = RetryConfig.builder().build();
 
     /**
      * Creates a Milvus client instance.
@@ -104,6 +111,116 @@ public class MilvusClientV2 {
         }
     }
 
+    public void retryConfig(RetryConfig retryConfig) {
+        this.retryConfig = retryConfig;
+    }
+
+    private <T> T retry(Callable<T> callable) {
+        int maxRetryTimes = retryConfig.getMaxRetryTimes();
+        // no retry, direct call the method
+        if (maxRetryTimes <= 1) {
+            try {
+                return callable.call();
+            } catch (StatusRuntimeException e) {
+                throw new MilvusClientException(ErrorCode.RPC_ERROR, e.getMessage()); // rpc error
+            } catch (MilvusClientException e) {
+                throw e; // server error or client error
+            } catch (Exception e) {
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e.getMessage()); // others error treated as client error
+            }
+        }
+
+        // method to check timeout
+        long begin = System.currentTimeMillis();
+        long maxRetryTimeoutMs = retryConfig.getMaxRetryTimeoutMs();
+        Callable<Boolean> timeoutChecker = ()->{
+            long current = System.currentTimeMillis();
+            long cost = (current - begin);
+            if (maxRetryTimeoutMs > 0 && cost >= maxRetryTimeoutMs) {
+                return Boolean.TRUE;
+            }
+            return Boolean.FALSE;
+        };
+
+        // retry within timeout
+        long retryIntervalMs = retryConfig.getInitialBackOffMs();
+        for (int k = 1; k <= maxRetryTimes; k++) {
+            try {
+                return callable.call();
+            } catch (StatusRuntimeException e) {
+                Status.Code code = e.getStatus().getCode();
+                if (code == Status.DEADLINE_EXCEEDED.getCode()
+                        || code == Status.PERMISSION_DENIED.getCode()
+                        || code == Status.UNAUTHENTICATED.getCode()
+                        || code == Status.INVALID_ARGUMENT.getCode()
+                        || code == Status.ALREADY_EXISTS.getCode()
+                        || code == Status.RESOURCE_EXHAUSTED.getCode()
+                        || code == Status.UNIMPLEMENTED.getCode()) {
+                    String msg = String.format("Encounter rpc error that cannot be retried, reason: %s", e.getMessage());
+                    logger.error(msg);
+                    throw new MilvusClientException(ErrorCode.RPC_ERROR, msg); // throw rpc error
+                }
+
+                try {
+                    if (timeoutChecker.call() == Boolean.TRUE) {
+                        String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
+                                maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
+                        logger.warn(msg);
+                        throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
+                    }
+                } catch (Exception ignored) {
+                }
+            } catch (MilvusClientException e) {
+                try {
+                    if (timeoutChecker.call() == Boolean.TRUE) {
+                        String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
+                                maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
+                        logger.warn(msg);
+                        throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
+                    }
+                } catch (Exception ignored) {
+                }
+
+                // for server-side returned error, only retry for rate limit
+                // in new error codes of v2.3, rate limit error value is 8
+                if (retryConfig.isRetryOnRateLimit() &&
+                        (e.getLegacyServerCode() == io.milvus.grpc.ErrorCode.RateLimit.getNumber() ||
+                                e.getServerErrCode() == 8)) {
+                    // cannot be retried
+                } else {
+                    throw e; // exit retry, throw the error
+                }
+            } catch (Exception e) {
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e.getMessage()); // others error treated as client error
+            }
+
+            try {
+                if (k >= maxRetryTimes) {
+                    // finish retry loop, return the response of the last retry
+                    String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
+                    logger.warn(msg);
+                    throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exceed max time, exit retry
+                } else {
+                    // sleep for interval
+                    // print log, follow the pymilvus logic
+                    if (k > 3) {
+                        logger.warn(String.format("Retry(%d) with interval %dms", k, retryIntervalMs));
+                    }
+                    TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
+                }
+
+                // reset the next interval value
+                retryIntervalMs = retryIntervalMs*retryConfig.getBackOffMultiplier();
+                if (retryIntervalMs > retryConfig.getMaxBackOffMs()) {
+                    retryIntervalMs = retryConfig.getMaxBackOffMs();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        return null;
+    }
+
     /**
      * use Database
      * @param dbName databaseName
@@ -126,7 +243,7 @@ public class MilvusClientV2 {
      * @param request create collection request
      */
     public void createCollection(CreateCollectionReq request) {
-        collectionService.createCollection(this.blockingStub, request);
+        retry(()-> collectionService.createCollection(this.blockingStub, request));
     }
 
     /**
@@ -143,7 +260,7 @@ public class MilvusClientV2 {
      * @return List of String collection names
      */
     public ListCollectionsResp listCollections() {
-        return collectionService.listCollections(this.blockingStub);
+        return retry(()-> collectionService.listCollections(this.blockingStub));
     }
 
     /**
@@ -152,7 +269,7 @@ public class MilvusClientV2 {
      * @param request drop collection request
      */
     public void dropCollection(DropCollectionReq request) {
-        collectionService.dropCollection(this.blockingStub, request);
+        retry(()-> collectionService.dropCollection(this.blockingStub, request));
     }
     /**
      * Alter a collection in Milvus.
@@ -160,7 +277,7 @@ public class MilvusClientV2 {
      * @param request alter collection request
      */
     public void alterCollection(AlterCollectionReq request) {
-        collectionService.alterCollection(this.blockingStub, request);
+        retry(()-> collectionService.alterCollection(this.blockingStub, request));
     }
     /**
      * Checks whether a collection exists in Milvus.
@@ -169,7 +286,7 @@ public class MilvusClientV2 {
      * @return Boolean
      */
     public Boolean hasCollection(HasCollectionReq request) {
-        return collectionService.hasCollection(this.blockingStub, request);
+        return retry(()-> collectionService.hasCollection(this.blockingStub, request));
     }
     /**
      * Gets the collection info in Milvus.
@@ -178,7 +295,7 @@ public class MilvusClientV2 {
      * @return DescribeCollectionResp
      */
     public DescribeCollectionResp describeCollection(DescribeCollectionReq request) {
-        return collectionService.describeCollection(this.blockingStub, request);
+        return retry(()-> collectionService.describeCollection(this.blockingStub, request));
     }
     /**
      * get collection stats for a collection in Milvus.
@@ -187,7 +304,7 @@ public class MilvusClientV2 {
      * @return GetCollectionStatsResp
      */
     public GetCollectionStatsResp getCollectionStats(GetCollectionStatsReq request) {
-        return collectionService.getCollectionStats(this.blockingStub, request);
+        return retry(()-> collectionService.getCollectionStats(this.blockingStub, request));
     }
     /**
      * rename collection in a collection in Milvus.
@@ -195,7 +312,7 @@ public class MilvusClientV2 {
      * @param request rename collection request
      */
     public void renameCollection(RenameCollectionReq request) {
-        collectionService.renameCollection(this.blockingStub, request);
+        retry(()-> collectionService.renameCollection(this.blockingStub, request));
     }
     /**
      * Loads a collection into memory in Milvus.
@@ -203,7 +320,7 @@ public class MilvusClientV2 {
      * @param request load collection request
      */
     public void loadCollection(LoadCollectionReq request) {
-        collectionService.loadCollection(this.blockingStub, request);
+        retry(()-> collectionService.loadCollection(this.blockingStub, request));
     }
     /**
      * Releases a collection from memory in Milvus.
@@ -211,7 +328,7 @@ public class MilvusClientV2 {
      * @param request release collection request
      */
     public void releaseCollection(ReleaseCollectionReq request) {
-        collectionService.releaseCollection(this.blockingStub, request);
+        retry(()-> collectionService.releaseCollection(this.blockingStub, request));
     }
     /**
      * Checks whether a collection is loaded in Milvus.
@@ -220,7 +337,7 @@ public class MilvusClientV2 {
      * @return Boolean
      */
     public Boolean getLoadState(GetLoadStateReq request) {
-        return collectionService.getLoadState(this.blockingStub, request);
+        return retry(()->collectionService.getLoadState(this.blockingStub, request));
     }
 
     //Index Operations
@@ -230,7 +347,7 @@ public class MilvusClientV2 {
      * @param request create index request
      */
     public void createIndex(CreateIndexReq request) {
-        indexService.createIndex(this.blockingStub, request);
+        retry(()->indexService.createIndex(this.blockingStub, request));
     }
     /**
      * Drops an index for a specified field in a collection in Milvus.
@@ -238,7 +355,7 @@ public class MilvusClientV2 {
      * @param request drop index request
      */
     public void dropIndex(DropIndexReq request) {
-        indexService.dropIndex(this.blockingStub, request);
+        retry(()->indexService.dropIndex(this.blockingStub, request));
     }
     /**
      * Alter an index in Milvus.
@@ -246,7 +363,7 @@ public class MilvusClientV2 {
      * @param request alter index request
      */
     public void alterIndex(AlterIndexReq request) {
-        indexService.alterIndex(this.blockingStub, request);
+        retry(()->indexService.alterIndex(this.blockingStub, request));
     }
     /**
      * Checks whether an index exists for a specified field in a collection in Milvus.
@@ -255,7 +372,7 @@ public class MilvusClientV2 {
      * @return DescribeIndexResp
      */
     public DescribeIndexResp describeIndex(DescribeIndexReq request) {
-        return indexService.describeIndex(this.blockingStub, request);
+        return retry(()->indexService.describeIndex(this.blockingStub, request));
     }
 
     /**
@@ -265,7 +382,7 @@ public class MilvusClientV2 {
      * @return List of String names of the indexes
      */
     public List<String> listIndexes(ListIndexesReq request) {
-        return indexService.listIndexes(this.blockingStub, request);
+        return retry(()->indexService.listIndexes(this.blockingStub, request));
     }
     // Vector Operations
 
@@ -276,7 +393,7 @@ public class MilvusClientV2 {
      * @return InsertResp
      */
     public InsertResp insert(InsertReq request) {
-        return vectorService.insert(this.blockingStub, request);
+        return retry(()->vectorService.insert(this.blockingStub, request));
     }
     /**
      * Upsert vectors into a collection in Milvus.
@@ -285,7 +402,7 @@ public class MilvusClientV2 {
      * @return UpsertResp
      */
     public UpsertResp upsert(UpsertReq request) {
-        return vectorService.upsert(this.blockingStub, request);
+        return retry(()->vectorService.upsert(this.blockingStub, request));
     }
     /**
      * Deletes vectors in a collection in Milvus.
@@ -294,7 +411,7 @@ public class MilvusClientV2 {
      * @return DeleteResp
      */
     public DeleteResp delete(DeleteReq request) {
-        return vectorService.delete(this.blockingStub, request);
+        return retry(()->vectorService.delete(this.blockingStub, request));
     }
     /**
      * Gets vectors in a collection in Milvus.
@@ -303,7 +420,7 @@ public class MilvusClientV2 {
      * @return GetResp
      */
     public GetResp get(GetReq request) {
-        return vectorService.get(this.blockingStub, request);
+        return retry(()->vectorService.get(this.blockingStub, request));
     }
 
     /**
@@ -313,7 +430,7 @@ public class MilvusClientV2 {
      * @return QueryResp
      */
     public QueryResp query(QueryReq request) {
-        return vectorService.query(this.blockingStub, request);
+        return retry(()->vectorService.query(this.blockingStub, request));
     }
     /**
      * Searches vectors in a collection in Milvus.
@@ -322,7 +439,7 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp search(SearchReq request) {
-        return vectorService.search(this.blockingStub, request);
+        return retry(()->vectorService.search(this.blockingStub, request));
     }
     /**
      * Conducts multi vector similarity search with a ranker for rearrangement.
@@ -331,7 +448,7 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp hybridSearch(HybridSearchReq request) {
-        return vectorService.hybridSearch(this.blockingStub, request);
+        return retry(()->vectorService.hybridSearch(this.blockingStub, request));
     }
 
     /**
@@ -342,7 +459,7 @@ public class MilvusClientV2 {
      * @return {status:result code,data: QueryIterator}
      */
     public QueryIterator queryIterator(QueryIteratorReq request) {
-        return vectorService.queryIterator(this.blockingStub, request);
+        return retry(()->vectorService.queryIterator(this.blockingStub, request));
     }
 
     /**
@@ -352,7 +469,7 @@ public class MilvusClientV2 {
      * @return {status:result code, data: SearchIterator}
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
-        return vectorService.searchIterator(this.blockingStub, request);
+        return retry(()->vectorService.searchIterator(this.blockingStub, request));
     }
 
     // Partition Operations
@@ -362,7 +479,7 @@ public class MilvusClientV2 {
      * @param request create partition request
      */
     public void createPartition(CreatePartitionReq request) {
-        partitionService.createPartition(this.blockingStub, request);
+        retry(()->partitionService.createPartition(this.blockingStub, request));
     }
 
     /**
@@ -371,7 +488,7 @@ public class MilvusClientV2 {
      * @param request drop partition request
      */
     public void dropPartition(DropPartitionReq request) {
-        partitionService.dropPartition(this.blockingStub, request);
+        retry(()->partitionService.dropPartition(this.blockingStub, request));
     }
 
     /**
@@ -381,7 +498,7 @@ public class MilvusClientV2 {
      * @return Boolean
      */
     public Boolean hasPartition(HasPartitionReq request) {
-        return partitionService.hasPartition(this.blockingStub, request);
+        return retry(()->partitionService.hasPartition(this.blockingStub, request));
     }
 
     /**
@@ -391,7 +508,7 @@ public class MilvusClientV2 {
      * @return List of String partition names
      */
     public List<String> listPartitions(ListPartitionsReq request) {
-        return partitionService.listPartitions(this.blockingStub, request);
+        return retry(()->partitionService.listPartitions(this.blockingStub, request));
     }
 
     /**
@@ -400,7 +517,7 @@ public class MilvusClientV2 {
      * @param request load partitions request
      */
     public void loadPartitions(LoadPartitionsReq request) {
-        partitionService.loadPartitions(this.blockingStub, request);
+        retry(()->partitionService.loadPartitions(this.blockingStub, request));
     }
     /**
      * Releases partitions in a collection in Milvus.
@@ -408,7 +525,7 @@ public class MilvusClientV2 {
      * @param request release partitions request
      */
     public void releasePartitions(ReleasePartitionsReq request) {
-        partitionService.releasePartitions(this.blockingStub, request);
+        retry(()->partitionService.releasePartitions(this.blockingStub, request));
     }
     // rbac operations
     // user operations
@@ -418,7 +535,7 @@ public class MilvusClientV2 {
      * @return List of String usernames
      */
     public List<String> listUsers() {
-        return userService.listUsers(this.blockingStub);
+        return retry(()->userService.listUsers(this.blockingStub));
     }
     /**
      * describe user
@@ -427,7 +544,7 @@ public class MilvusClientV2 {
      * @return DescribeUserResp
      */
     public DescribeUserResp describeUser(DescribeUserReq request) {
-        return userService.describeUser(this.blockingStub, request);
+        return retry(()->userService.describeUser(this.blockingStub, request));
     }
     /**
      * create user
@@ -435,7 +552,7 @@ public class MilvusClientV2 {
      * @param request create user request
      */
     public void createUser(CreateUserReq request) {
-        userService.createUser(this.blockingStub, request);
+        retry(()->userService.createUser(this.blockingStub, request));
     }
     /**
      * change password
@@ -443,7 +560,7 @@ public class MilvusClientV2 {
      * @param request change password request
      */
     public void updatePassword(UpdatePasswordReq request) {
-        userService.updatePassword(this.blockingStub, request);
+        retry(()->userService.updatePassword(this.blockingStub, request));
     }
     /**
      * drop user
@@ -451,7 +568,7 @@ public class MilvusClientV2 {
      * @param request drop user request
      */
     public void dropUser(DropUserReq request) {
-        userService.dropUser(this.blockingStub, request);
+        retry(()->userService.dropUser(this.blockingStub, request));
     }
     // role operations
     /**
@@ -460,7 +577,7 @@ public class MilvusClientV2 {
      * @return List of String role names
      */
     public List<String> listRoles() {
-        return roleService.listRoles(this.blockingStub);
+        return retry(()->roleService.listRoles(this.blockingStub));
     }
     /**
      * describe role
@@ -469,7 +586,7 @@ public class MilvusClientV2 {
      * @return DescribeRoleResp
      */
     public DescribeRoleResp describeRole(DescribeRoleReq request) {
-        return roleService.describeRole(this.blockingStub, request);
+        return retry(()->roleService.describeRole(this.blockingStub, request));
     }
     /**
      * create role
@@ -477,7 +594,7 @@ public class MilvusClientV2 {
      * @param request create role request
      */
     public void createRole(CreateRoleReq request) {
-        roleService.createRole(this.blockingStub, request);
+        retry(()->roleService.createRole(this.blockingStub, request));
     }
     /**
      * drop role
@@ -485,7 +602,7 @@ public class MilvusClientV2 {
      * @param request drop role request
      */
     public void dropRole(DropRoleReq request) {
-        roleService.dropRole(this.blockingStub, request);
+        retry(()->roleService.dropRole(this.blockingStub, request));
     }
     /**
      * grant privilege
@@ -493,7 +610,7 @@ public class MilvusClientV2 {
      * @param request grant privilege request
      */
     public void grantPrivilege(GrantPrivilegeReq request) {
-        roleService.grantPrivilege(this.blockingStub, request);
+        retry(()->roleService.grantPrivilege(this.blockingStub, request));
     }
     /**
      * revoke privilege
@@ -501,7 +618,7 @@ public class MilvusClientV2 {
      * @param request revoke privilege request
      */
     public void revokePrivilege(RevokePrivilegeReq request) {
-        roleService.revokePrivilege(this.blockingStub, request);
+        retry(()->roleService.revokePrivilege(this.blockingStub, request));
     }
     /**
      * grant role
@@ -509,7 +626,7 @@ public class MilvusClientV2 {
      * @param request grant role request
      */
     public void grantRole(GrantRoleReq request) {
-        roleService.grantRole(this.blockingStub, request);
+        retry(()->roleService.grantRole(this.blockingStub, request));
     }
     /**
      * revoke role
@@ -517,7 +634,7 @@ public class MilvusClientV2 {
      * @param request revoke role request
      */
     public void revokeRole(RevokeRoleReq request) {
-        roleService.revokeRole(this.blockingStub, request);
+        retry(()->roleService.revokeRole(this.blockingStub, request));
     }
 
     // Utility Operations
@@ -528,7 +645,7 @@ public class MilvusClientV2 {
      * @param request create alias request
      */
     public void createAlias(CreateAliasReq request) {
-        utilityService.createAlias(this.blockingStub, request);
+        retry(()->utilityService.createAlias(this.blockingStub, request));
     }
     /**
      * drop aliases
@@ -536,7 +653,7 @@ public class MilvusClientV2 {
      * @param request drop alias request
      */
     public void dropAlias(DropAliasReq request) {
-        utilityService.dropAlias(this.blockingStub, request);
+        retry(()->utilityService.dropAlias(this.blockingStub, request));
     }
     /**
      * alter aliases
@@ -544,7 +661,7 @@ public class MilvusClientV2 {
      * @param request alter alias request
      */
     public void alterAlias(AlterAliasReq request) {
-        utilityService.alterAlias(this.blockingStub, request);
+        retry(()->utilityService.alterAlias(this.blockingStub, request));
     }
     /**
      * list aliases
@@ -553,7 +670,7 @@ public class MilvusClientV2 {
      * @return List of String alias names
      */
     public ListAliasResp listAliases(ListAliasesReq request) {
-        return utilityService.listAliases(this.blockingStub, request);
+        return retry(()->utilityService.listAliases(this.blockingStub, request));
     }
     /**
      * describe aliases
@@ -562,7 +679,7 @@ public class MilvusClientV2 {
      * @return DescribeAliasResp
      */
     public DescribeAliasResp describeAlias(DescribeAliasReq request) {
-        return utilityService.describeAlias(this.blockingStub, request);
+        return retry(()->utilityService.describeAlias(this.blockingStub, request));
     }
 
     /**

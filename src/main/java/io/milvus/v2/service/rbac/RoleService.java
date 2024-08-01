@@ -38,7 +38,7 @@ public class RoleService extends BaseService {
         return response.getResultsList().stream().map(roleResult -> roleResult.getRole().getName()).collect(Collectors.toList());
     }
 
-    public void createRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateRoleReq request) {
+    public Void createRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateRoleReq request) {
         String title = "createRole";
         CreateRoleRequest createRoleRequest = CreateRoleRequest.newBuilder()
                 .setEntity(RoleEntity.newBuilder()
@@ -47,6 +47,8 @@ public class RoleService extends BaseService {
                 .build();
         Status status = blockingStub.createRole(createRoleRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
     public DescribeRoleResp describeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeRoleReq request) {
@@ -72,16 +74,18 @@ public class RoleService extends BaseService {
         return describeRoleResp;
     }
 
-    public void dropRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropRoleReq request) {
+    public Void dropRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropRoleReq request) {
         String title = "dropRole";
         DropRoleRequest dropRoleRequest = DropRoleRequest.newBuilder()
                 .setRoleName(request.getRoleName())
                 .build();
         Status status = blockingStub.dropRole(dropRoleRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void grantPrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReq request) {
+    public Void grantPrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReq request) {
         String title = "grantPrivilege";
         GrantEntity entity = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
@@ -98,9 +102,11 @@ public class RoleService extends BaseService {
                 .build();
         Status status = blockingStub.operatePrivilege(operatePrivilegeRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void revokePrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReq request) {
+    public Void revokePrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReq request) {
         String title = "revokePrivilege";
         GrantEntity entity = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
@@ -117,9 +123,11 @@ public class RoleService extends BaseService {
                 .build();
         Status status = blockingStub.operatePrivilege(operatePrivilegeRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void grantRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantRoleReq request) {
+    public Void grantRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantRoleReq request) {
         String title = "grantRole";
         OperateUserRoleRequest operateUserRoleRequest = OperateUserRoleRequest.newBuilder()
                 .setUsername(request.getUserName())
@@ -128,9 +136,11 @@ public class RoleService extends BaseService {
                 .build();
         Status status = blockingStub.operateUserRole(operateUserRoleRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void revokeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokeRoleReq request) {
+    public Void revokeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokeRoleReq request) {
         String title = "grantRole";
         OperateUserRoleRequest operateUserRoleRequest = OperateUserRoleRequest.newBuilder()
                 .setUsername(request.getUserName())
@@ -139,5 +149,7 @@ public class RoleService extends BaseService {
                 .build();
         Status status = blockingStub.operateUserRole(operateUserRoleRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 }

@@ -39,7 +39,7 @@ public class UtilityService extends BaseService {
         return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
     }
 
-    public void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
+    public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
         String title = String.format("Create alias %s for collection %s", request.getAlias(), request.getCollectionName());
         io.milvus.grpc.CreateAliasRequest createAliasRequest = io.milvus.grpc.CreateAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -47,18 +47,22 @@ public class UtilityService extends BaseService {
                 .build();
         io.milvus.grpc.Status status = blockingStub.createAlias(createAliasRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
+    public Void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
         String title = String.format("Drop alias %s", request.getAlias());
         io.milvus.grpc.DropAliasRequest dropAliasRequest = io.milvus.grpc.DropAliasRequest.newBuilder()
                 .setAlias(request.getAlias())
                 .build();
         io.milvus.grpc.Status status = blockingStub.dropAlias(dropAliasRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
-    public void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
+    public Void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
         String title = String.format("Alter alias %s for collection %s", request.getAlias(), request.getCollectionName());
         io.milvus.grpc.AlterAliasRequest alterAliasRequest = io.milvus.grpc.AlterAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -66,6 +70,8 @@ public class UtilityService extends BaseService {
                 .build();
         io.milvus.grpc.Status status = blockingStub.alterAlias(alterAliasRequest);
         rpcUtils.handleResponse(title, status);
+
+        return null;
     }
 
     public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
