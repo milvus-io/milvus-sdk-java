@@ -26,10 +26,18 @@ public class MilvusClientException extends RuntimeException {
 
     private final ErrorCode errorCode;
 
+    private int serverErrCode = 0;
+    private int legacyServerCode = 0;
+
     public MilvusClientException(ErrorCode errorCode, String message) {
         super(message);
         this.errorCode = errorCode;
     }
 
-
+    public MilvusClientException(ErrorCode errorCode, String message, int serverErrCode, int legacyServerCode) {
+        super(message);
+        this.errorCode = errorCode;
+        this.serverErrCode = serverErrCode;
+        this.legacyServerCode = legacyServerCode;
+    }
 }

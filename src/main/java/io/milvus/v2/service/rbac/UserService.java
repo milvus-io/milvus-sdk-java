@@ -57,7 +57,7 @@ public class UserService extends BaseService {
         return describeUserResp;
     }
 
-    public void createUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateUserReq request) {
+    public Void createUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateUserReq request) {
         String title = String.format("create user %s", request.getUserName());
         CreateCredentialRequest createCredentialRequest = CreateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
@@ -65,10 +65,12 @@ public class UserService extends BaseService {
                 .build();
         Status response = blockingStub.createCredential(createCredentialRequest);
         rpcUtils.handleResponse(title, response);
+
+        return null;
     }
 
 
-    public void updatePassword(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdatePasswordReq request) {
+    public Void updatePassword(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdatePasswordReq request) {
         String title = String.format("update password for user %s", request.getUserName());
         UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
@@ -77,14 +79,18 @@ public class UserService extends BaseService {
                 .build();
         Status response = blockingStub.updateCredential(updateCredentialRequest);
         rpcUtils.handleResponse(title, response);
+
+        return null;
     }
 
-    public void dropUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropUserReq request) {
+    public Void dropUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropUserReq request) {
         String title = String.format("drop user %s", request.getUserName());
         DeleteCredentialRequest deleteCredentialRequest = DeleteCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
                 .build();
         Status response = blockingStub.deleteCredential(deleteCredentialRequest);
         rpcUtils.handleResponse(title, response);
+
+        return null;
     }
 }
