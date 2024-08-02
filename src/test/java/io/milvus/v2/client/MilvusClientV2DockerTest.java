@@ -36,6 +36,12 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.collection.response.ListCollectionsResp;
+import io.milvus.v2.service.database.request.CreateDatabaseReq;
+import io.milvus.v2.service.database.request.DescribeDatabaseReq;
+import io.milvus.v2.service.database.request.DropDatabaseReq;
+import io.milvus.v2.service.database.response.DescribeDatabaseResp;
+import io.milvus.v2.service.database.response.ListDatabasesResp;
 import io.milvus.v2.service.index.request.AlterIndexReq;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
@@ -1501,5 +1507,84 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(295, counter);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testDatabase() {
+        // get current database
+        ListDatabasesResp listDatabasesResp = client.listDatabases();
+        List<String> dbNames = listDatabasesResp.getDatabaseNames();
+        Assertions.assertEquals(1, dbNames.size());
+        String currentDbName = dbNames.get(0);
+
+        // create a new database
+        String tempDatabaseName = "db_temp";
+        Map<String, String> properties = new HashMap<>();
+        properties.put(Constant.DATABASE_REPLICA_NUMBER, "5");
+        CreateDatabaseReq createDatabaseReq = CreateDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .properties(properties)
+                .build();
+        client.createDatabase(createDatabaseReq);
+
+        listDatabasesResp = client.listDatabases();
+        dbNames = listDatabasesResp.getDatabaseNames();
+        Assertions.assertTrue(dbNames.contains(tempDatabaseName));
+
+        DescribeDatabaseResp descDBResp = client.describeDatabase(DescribeDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
+        Map<String,String> propertiesResp = descDBResp.getProperties();
+        Assertions.assertTrue(propertiesResp.containsKey(Constant.DATABASE_REPLICA_NUMBER));
+        Assertions.assertEquals("5", propertiesResp.get(Constant.DATABASE_REPLICA_NUMBER));
+
+        // switch to the new database
+        Assertions.assertDoesNotThrow(()->client.useDatabase(tempDatabaseName));
+
+        // create a collection in the new database
+        String randomCollectionName = generator.generate(10);
+        String vectorFieldName = "float_vector";
+        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorFieldName)
+                .dataType(DataType.FloatVector)
+                .dimension(dimension)
+                .build());
+
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(vectorFieldName)
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build();
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(Collections.singletonList(indexParam))
+                .build();
+        client.createCollection(requestCreate);
+
+        ListCollectionsResp listCollectionsResp = client.listCollections();
+        List<String> collectionNames = listCollectionsResp.getCollectionNames();
+        Assertions.assertEquals(1, collectionNames.size());
+        Assertions.assertTrue(collectionNames.contains(randomCollectionName));
+
+        // drop the collection so that we can drop the database later
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // switch to the old database
+        Assertions.assertDoesNotThrow(()->client.useDatabase(currentDbName));
+
+        // drop the new database
+        client.dropDatabase(DropDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
+
+        // check the new database is deleted
+        listDatabasesResp = client.listDatabases();
+        dbNames = listDatabasesResp.getDatabaseNames();
+        Assertions.assertFalse(dbNames.contains(tempDatabaseName));
     }
 }
