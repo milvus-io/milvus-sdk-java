@@ -28,6 +28,9 @@ import io.milvus.orm.iterator.SearchIterator;
 
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.database.DatabaseService;
+import io.milvus.v2.service.database.request.*;
+import io.milvus.v2.service.database.response.*;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.*;
@@ -64,6 +67,7 @@ public class MilvusClientV2 {
     @Setter
     private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final ClientUtils clientUtils = new ClientUtils();
+    private final DatabaseService databaseService = new DatabaseService();
     private final CollectionService collectionService = new CollectionService();
     private final IndexService indexService = new IndexService();
     private final VectorService vectorService = new VectorService();
@@ -227,16 +231,41 @@ public class MilvusClientV2 {
      * use Database
      * @param dbName databaseName
      */
-    public void useDatabase(@NonNull String dbName) {
+    public void useDatabase(@NonNull String dbName) throws InterruptedException {
         // check if database exists
         clientUtils.checkDatabaseExist(this.blockingStub, dbName);
         try {
             this.connectConfig.setDbName(dbName);
             this.close(3);
             this.connect(this.connectConfig);
-        }catch (InterruptedException e){
+        } catch (InterruptedException e){
             logger.error("close connect error");
+            throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Creates a database in Milvus.
+     * @param request create database request
+     */
+    public void createDatabase(CreateDatabaseReq request) {
+        retry(()-> databaseService.createDatabase(this.blockingStub, request));
+    }
+
+    /**
+     * Drops a database. Note that this method drops all data in the database.
+     * @param request drop database request
+     */
+    public void dropDatabase(DropDatabaseReq request) {
+        retry(()-> databaseService.dropDatabase(this.blockingStub, request));
+    }
+
+    /**
+     * List all databases.
+     * @return List of String database names
+     */
+    public ListDatabasesResp listDatabases() {
+        return retry(()-> databaseService.listDatabases(this.blockingStub));
     }
 
     //Collection Operations
