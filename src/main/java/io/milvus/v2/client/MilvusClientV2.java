@@ -730,6 +730,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Get server version
+     *
+     * @return String
+     */
+    public String getVersion() {
+        return retry(()->clientUtils.getVersion(this.blockingStub));
+    }
+
+    /**
      * close client
      *
      * @param maxWaitSeconds max wait seconds
