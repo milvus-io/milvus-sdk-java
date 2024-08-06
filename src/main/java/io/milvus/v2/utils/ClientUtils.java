@@ -26,9 +26,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
-import io.milvus.grpc.ListDatabasesRequest;
-import io.milvus.grpc.ListDatabasesResponse;
-import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.*;
 import io.milvus.v2.client.ConnectConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -128,5 +126,10 @@ public class ClientUtils {
         if (!response.getDbNamesList().contains(dbName)) {
             throw new IllegalArgumentException("Database " + dbName + " not exist");
         }
+    }
+    public String getVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
+        rpcUtils.handleResponse("Get server version", response.getStatus());
+        return response.getVersion();
     }
 }
