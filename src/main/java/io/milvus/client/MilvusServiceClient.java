@@ -202,9 +202,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
-    protected boolean clientIsReady() {
-        ConnectivityState state = channel.getState(false);
-        return state != ConnectivityState.SHUTDOWN;
+    public boolean clientIsReady() {
+        return channel != null && !channel.isShutdown() && !channel.isTerminated();
     }
 
     @Override
