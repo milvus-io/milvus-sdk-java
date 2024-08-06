@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "deploy milvus"
           ls
-          sudo docker-compose up -d
+          sudo docker compose up -d
 
       - name: Build jar
         timeout-minutes: 30

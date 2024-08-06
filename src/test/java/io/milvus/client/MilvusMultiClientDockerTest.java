@@ -62,7 +62,7 @@ class MilvusMultiClientDockerTest {
 
         // start the test container
         Runtime runtime = Runtime.getRuntime();
-        String bashCommand = "docker-compose up -d";
+        String bashCommand = "docker compose up -d";
 
         try {
             logger.debug(bashCommand);
@@ -118,7 +118,7 @@ class MilvusMultiClientDockerTest {
 
         // stop all test dockers
         Runtime runtime = Runtime.getRuntime();
-        String bashCommand = "docker-compose down";
+        String bashCommand = "docker compose down";
 
         try {
             logger.debug("Milvus service stopping...");
@@ -135,7 +135,7 @@ class MilvusMultiClientDockerTest {
 
         // clean up log dir
         runtime = Runtime.getRuntime();
-        bashCommand = "docker-compose rm";
+        bashCommand = "docker compose rm";
 
         try {
             logger.debug(bashCommand);
