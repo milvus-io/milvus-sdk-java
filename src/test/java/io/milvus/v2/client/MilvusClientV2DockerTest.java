@@ -23,15 +23,15 @@ import com.google.common.collect.Lists;
 import com.google.gson.*;
 
 import com.google.gson.reflect.TypeToken;
-import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.Constant;
+import io.milvus.pool.MilvusClientV2Pool;
+import io.milvus.pool.PoolConfig;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
-import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
@@ -67,7 +67,6 @@ import org.testcontainers.milvus.MilvusContainer;
 
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientV2DockerTest {
@@ -1586,5 +1585,50 @@ class MilvusClientV2DockerTest {
         listDatabasesResp = client.listDatabases();
         dbNames = listDatabasesResp.getDatabaseNames();
         Assertions.assertFalse(dbNames.contains(tempDatabaseName));
+    }
+
+    @Test
+    void testClientPool() {
+        try {
+            ConnectConfig connectConfig = ConnectConfig.builder()
+                    .uri(milvus.getEndpoint())
+                    .build();
+            PoolConfig poolConfig = PoolConfig.builder()
+                    .build();
+            MilvusClientV2Pool pool = new MilvusClientV2Pool(poolConfig, connectConfig);
+
+            List<Thread> threadList = new ArrayList<>();
+            int threadCount = 10;
+            int requestPerThread = 10;
+            String key = "192.168.1.1";
+            for (int k = 0; k < threadCount; k++) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < requestPerThread; i++) {
+                            MilvusClientV2 client = pool.getClient(key);
+                            String version = client.getVersion();
+//                            System.out.printf("%d, %s%n", i, version);
+                            System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+                            pool.returnClient(key, client);
+                        }
+                        System.out.println(String.format("Thread %s finished", Thread.currentThread().getName()));
+                    }
+                });
+                t.start();
+                threadList.add(t);
+            }
+
+            for (Thread t : threadList) {
+                t.join();
+            }
+
+            System.out.println(String.format("idle %d, active %d", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key)));
+            System.out.println(String.format("total idle %d, total active %d", pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber()));
+            pool.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            Assertions.fail(e.getMessage());
+        }
     }
 }

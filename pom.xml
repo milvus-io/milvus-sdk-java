@@ -95,6 +95,7 @@
         <kotlin.version>1.9.10</kotlin.version>
         <mockito.version>4.11.0</mockito.version>
         <testcontainers.version>1.19.8</testcontainers.version>
+        <apache.commons.pool2.version>2.12.0</apache.commons.pool2.version>
 
         <hadoop.version>3.3.6</hadoop.version>
         <hbase.version>1.2.0</hbase.version>
@@ -109,6 +110,7 @@
         <minio-java-sdk.veresion>8.5.7</minio-java-sdk.veresion>
         <azure-java-blob-sdk.version>12.25.3</azure-java-blob-sdk.version>
         <azure-java-identity-sdk.version>1.10.1</azure-java-identity-sdk.version>
+
     </properties>
 
     <dependencyManagement>
@@ -388,6 +390,11 @@
                     <groupId>net.java.dev.jna</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>${apache.commons.pool2.version}</version>
         </dependency>
     </dependencies>
 
