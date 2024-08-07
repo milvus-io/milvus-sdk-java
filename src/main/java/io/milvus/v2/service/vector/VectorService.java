@@ -33,6 +33,7 @@ import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
+import io.milvus.v2.utils.DataUtils;
 import io.milvus.v2.utils.RpcUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -103,7 +104,8 @@ public class VectorService extends BaseService {
 
         // TODO: set the database name
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
-        MutationResult response = blockingStub.insert(dataUtils.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
+        DataUtils.InsertBuilderWrapper requestBuilder = new DataUtils.InsertBuilderWrapper();
+        MutationResult response = blockingStub.insert(requestBuilder.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return InsertResp.builder()
@@ -116,7 +118,8 @@ public class VectorService extends BaseService {
 
         // TODO: set the database name
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
-        MutationResult response = blockingStub.upsert(dataUtils.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
+        DataUtils.InsertBuilderWrapper requestBuilder = new DataUtils.InsertBuilderWrapper();
+        MutationResult response = blockingStub.upsert(requestBuilder.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return UpsertResp.builder()
