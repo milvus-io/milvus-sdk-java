@@ -85,12 +85,16 @@ class MilvusClientV2DockerTest {
         }
     }
 
-    private List<Float> generateFolatVector() {
+    private List<Float> generateFolatVector(int dim) {
         List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < dimension; ++i) {
+        for (int i = 0; i < dim; ++i) {
             vector.add(RANDOM.nextFloat());
         }
         return vector;
+    }
+
+    private List<Float> generateFolatVector() {
+        return generateFolatVector(dimension);
     }
 
     private List<List<Float>> generateFloatVectors(int count) {
@@ -1178,6 +1182,135 @@ class MilvusClientV2DockerTest {
             System.out.println(String.format("idle %d, active %d", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key)));
             System.out.println(String.format("total idle %d, total active %d", pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber()));
             pool.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testMultiThreadsInsert() {
+        String randomCollectionName = generator.generate(10);
+        int dim = 64;
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.VarChar)
+                .isPrimaryKey(Boolean.TRUE)
+                .maxLength(65535)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(dim)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("dataTime")
+                .dataType(DataType.Int64)
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("vector")
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.L2)
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+        System.out.println("Collection created");
+
+        try {
+            Gson gson = new Gson();
+            Random rand = new Random();
+            List<Thread> threadList = new ArrayList<>();
+            for (int k = 0; k < 10; k++) {
+                Thread t = new Thread(() -> {
+                    for (int i = 0; i < 20; i++) {
+                        List<JsonObject> rows = new ArrayList<>();
+                        int cnt = rand.nextInt(100) + 100;
+                        for (int j = 0; j < cnt; j++) {
+                            JsonObject obj = new JsonObject();
+                            obj.addProperty("id", String.format("%d", i*cnt + j));
+                            List<Float> vector = generateFolatVector(dim);
+                            obj.add("vector", gson.toJsonTree(vector));
+                            obj.addProperty("dataTime", System.currentTimeMillis());
+                            rows.add(obj);
+                        }
+
+                        client.insert(InsertReq.builder()
+                                .collectionName(randomCollectionName)
+                                .data(rows)
+                                .build());
+                    }
+                });
+                t.start();
+                threadList.add(t);
+            }
+
+            for (Thread t : threadList) {
+                t.join();
+            }
+            System.out.println("Multi-thread insert done");
+
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .filter("")
+                    .collectionName(randomCollectionName)
+                    .outputFields(Collections.singletonList("count(*)"))
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .build());
+            System.out.println(queryResp.getQueryResults().get(0).getEntity().get("count(*)"));
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            Assertions.fail(e.getMessage());
+        }
+
+        try {
+            Gson gson = new Gson();
+            Random rand = new Random();
+            List<Thread> threadList = new ArrayList<>();
+            for (int k = 0; k < 10; k++) {
+                Thread t = new Thread(() -> {
+                    for (int i = 0; i < 20; i++) {
+                        List<JsonObject> rows = new ArrayList<>();
+                        int cnt = rand.nextInt(100) + 100;
+                        for (int j = 0; j < cnt; j++) {
+                            JsonObject obj = new JsonObject();
+                            obj.addProperty("id", String.format("%d", i*cnt + j));
+                            List<Float> vector = generateFolatVector(dim);
+                            obj.add("vector", gson.toJsonTree(vector));
+                            obj.addProperty("dataTime", System.currentTimeMillis());
+                            rows.add(obj);
+                        }
+
+                        UpsertReq upsertReq = UpsertReq.builder()
+                                .collectionName(randomCollectionName)
+                                .data(rows)
+                                .build();
+                        client.upsert(upsertReq);
+                    }
+                });
+                t.start();
+                threadList.add(t);
+            }
+
+            for (Thread t : threadList) {
+                t.join();
+            }
+            System.out.println("Multi-thread upsert done");
+
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .filter("")
+                    .collectionName(randomCollectionName)
+                    .outputFields(Collections.singletonList("count(*)"))
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .build());
+            System.out.println(queryResp.getQueryResults().get(0).getEntity().get("count(*)"));
         } catch (Exception e) {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
