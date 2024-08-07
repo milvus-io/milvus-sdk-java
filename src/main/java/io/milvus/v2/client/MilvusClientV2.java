@@ -709,4 +709,8 @@ public class MilvusClientV2 {
             channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
         }
     }
+
+    public boolean clientIsReady() {
+        return channel != null && !channel.isShutdown() && !channel.isTerminated();
+    }
 }

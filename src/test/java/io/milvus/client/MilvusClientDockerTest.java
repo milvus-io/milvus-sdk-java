@@ -50,6 +50,8 @@ import io.milvus.param.index.DropIndexParam;
 import io.milvus.param.index.GetIndexStateParam;
 import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
+import io.milvus.pool.MilvusClientV1Pool;
+import io.milvus.pool.PoolConfig;
 import io.milvus.response.*;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.text.RandomStringGenerator;
@@ -2552,5 +2554,49 @@ class MilvusClientDockerTest {
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+    }
+
+    @Test
+    void testClientPool() {
+        try {
+            ConnectParam connectParam = ConnectParam.newBuilder()
+                    .withUri(milvus.getEndpoint())
+                    .build();
+            PoolConfig poolConfig = PoolConfig.builder()
+                    .build();
+            MilvusClientV1Pool pool = new MilvusClientV1Pool(poolConfig, connectParam);
+
+            List<Thread> threadList = new ArrayList<>();
+            int threadCount = 10;
+            int requestPerThread = 10;
+            String key = "192.168.1.1";
+            for (int k = 0; k < threadCount; k++) {
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (int i = 0; i < requestPerThread; i++) {
+                            MilvusClient client = pool.getClient(key);
+                            R<GetVersionResponse> resp = client.getVersion();
+//                            System.out.printf("%d, %s%n", i, resp.getData().getVersion());
+                            System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+                            pool.returnClient(key, client);
+                        }
+                        System.out.println(String.format("Thread %s finished", Thread.currentThread().getName()));
+                    }
+                });
+                t.start();
+                threadList.add(t);
+            }
+
+            for (Thread t : threadList) {
+                t.join();
+            }
+
+            System.out.println(String.format("idle %d, active %d", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key)));
+            pool.close();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            Assertions.fail(e.getMessage());
+        }
     }
 }
