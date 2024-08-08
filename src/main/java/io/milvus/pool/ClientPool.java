@@ -35,6 +35,15 @@ public class ClientPool<C, T> {
         this.clientPool = new GenericKeyedObjectPool<String, T>(clientFactory, poolConfig);
     }
 
+    /**
+     * Get a client object which is idle from the pool.
+     * Once the client is hold by the caller, it will be marked as active state and cannot be fetched by other caller.
+     * If the number of clients hits the MaxTotalPerKey value, this method will be blocked for MaxBlockWaitDuration.
+     * If no idle client available after MaxBlockWaitDuration, this method will return a null object to caller.
+     *
+     * @param key the key of a group where the client belong
+     * @return MilvusClient or MilvusClientV2
+     */
     public T getClient(String key) {
         try {
             return clientPool.borrowObject(key);
@@ -44,7 +53,14 @@ public class ClientPool<C, T> {
         }
     }
 
-
+    /**
+     * Return a client object. Once a client is returned, it becomes idle state and wait the next caller.
+     * The caller should ensure the client is returned. Otherwise, the client will keep in active state and cannot be used by the next caller.
+     * Throw exceptions if the key doesn't exist or the client is not belong to this key group.
+     *
+     * @param key the key of a group where the client belong
+     * @param grpcClient the client object to return
+     */
     public void returnClient(String key, T grpcClient) {
         try {
             clientPool.returnObject(key, grpcClient);
@@ -54,6 +70,10 @@ public class ClientPool<C, T> {
         }
     }
 
+    /**
+     * Release/disconnect all clients of all key groups, close the pool.
+     *
+     */
     public void close() {
         if (clientPool != null && !clientPool.isClosed()) {
             clientPool.close();
@@ -61,30 +81,57 @@ public class ClientPool<C, T> {
         }
     }
 
+    /**
+     * Release/disconnect idle clients of all key groups.
+     *
+     */
     public void clear() {
         if (clientPool != null && !clientPool.isClosed()) {
             clientPool.clear();
         }
     }
 
+    /**
+     * Release/disconnect idle clients of a key group.
+     *
+     * @param key the key of a group
+     */
     public void clear(String key) {
         if (clientPool != null && !clientPool.isClosed()) {
             clientPool.clear(key);
         }
     }
 
+    /**
+     * Return the number of idle clients of a key group
+     *
+     * @param key the key of a group
+     */
     public int getIdleClientNumber(String key) {
         return clientPool.getNumIdle(key);
     }
 
+    /**
+     * Return the number of active clients of a key group
+     *
+     * @param key the key of a group
+     */
     public int getActiveClientNumber(String key) {
         return clientPool.getNumActive(key);
     }
 
+    /**
+     * Return the number of idle clients of all key group
+     *
+     */
     public int getTotalIdleClientNumber() {
         return clientPool.getNumIdle();
     }
 
+    /**
+     * Return the number of active clients of all key group
+     *
+     */
     public int getTotalActiveClientNumber() {
         return clientPool.getNumActive();
     }
