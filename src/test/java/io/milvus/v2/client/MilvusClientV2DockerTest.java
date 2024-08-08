@@ -1161,7 +1161,7 @@ class MilvusClientV2DockerTest {
                 Thread t = new Thread(() -> {
                     for (int i = 0; i < requestPerThread; i++) {
                         MilvusClientV2 client = pool.getClient(key);
-                        String version = client.getVersion();
+                        String version = client.getServerVersion();
 //                            System.out.printf("%d, %s%n", i, version);
                         System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
                         pool.returnClient(key, client);
