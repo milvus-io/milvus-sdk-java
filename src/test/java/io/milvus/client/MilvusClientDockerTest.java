@@ -2571,18 +2571,15 @@ class MilvusClientDockerTest {
             int requestPerThread = 10;
             String key = "192.168.1.1";
             for (int k = 0; k < threadCount; k++) {
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < requestPerThread; i++) {
-                            MilvusClient client = pool.getClient(key);
-                            R<GetVersionResponse> resp = client.getVersion();
+                Thread t = new Thread(() -> {
+                    for (int i = 0; i < requestPerThread; i++) {
+                        MilvusClient client = pool.getClient(key);
+                        R<GetVersionResponse> resp = client.getVersion();
 //                            System.out.printf("%d, %s%n", i, resp.getData().getVersion());
-                            System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
-                            pool.returnClient(key, client);
-                        }
-                        System.out.println(String.format("Thread %s finished", Thread.currentThread().getName()));
+                        System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+                        pool.returnClient(key, client);
                     }
+                    System.out.println(String.format("Thread %s finished", Thread.currentThread().getName()));
                 });
                 t.start();
                 threadList.add(t);

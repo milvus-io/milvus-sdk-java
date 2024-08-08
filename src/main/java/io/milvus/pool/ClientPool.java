@@ -61,6 +61,18 @@ public class ClientPool<C, T> {
         }
     }
 
+    public void clear() {
+        if (clientPool != null && !clientPool.isClosed()) {
+            clientPool.clear();
+        }
+    }
+
+    public void clear(String key) {
+        if (clientPool != null && !clientPool.isClosed()) {
+            clientPool.clear(key);
+        }
+    }
+
     public int getIdleClientNumber(String key) {
         return clientPool.getNumIdle(key);
     }
