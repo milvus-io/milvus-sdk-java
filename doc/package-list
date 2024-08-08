@@ -29,6 +29,7 @@ io.milvus.param.index
 io.milvus.param.partition
 io.milvus.param.resourcegroup
 io.milvus.param.role
+io.milvus.pool
 io.milvus.response
 io.milvus.response.basic
 io.milvus.utils
@@ -39,6 +40,9 @@ io.milvus.v2.service
 io.milvus.v2.service.collection
 io.milvus.v2.service.collection.request
 io.milvus.v2.service.collection.response
+io.milvus.v2.service.database
+io.milvus.v2.service.database.request
+io.milvus.v2.service.database.response
 io.milvus.v2.service.index
 io.milvus.v2.service.index.request
 io.milvus.v2.service.index.response
