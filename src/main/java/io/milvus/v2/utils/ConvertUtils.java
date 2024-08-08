@@ -21,10 +21,12 @@ package io.milvus.v2.utils;
 
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
+import io.milvus.param.ParamUtils;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
@@ -111,5 +113,27 @@ public class ConvertUtils {
         }
 
         return DescribeIndexResp.builder().indexDescriptions(descs).build();
+    }
+
+    public DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
+        Map<String, String> properties = new HashMap<>();
+        response.getPropertiesList().forEach(prop->properties.put(prop.getKey(), prop.getValue()));
+
+        DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
+                .collectionName(response.getCollectionName())
+                .databaseName(response.getDbName())
+                .description(response.getSchema().getDescription())
+                .numOfPartitions(response.getNumPartitions())
+                .collectionSchema(SchemaUtils.convertFromGrpcCollectionSchema(response.getSchema()))
+                .autoID(response.getSchema().getFieldsList().stream().anyMatch(FieldSchema::getAutoID))
+                .enableDynamicField(response.getSchema().getEnableDynamicField())
+                .fieldNames(response.getSchema().getFieldsList().stream().map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
+                .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
+                .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
+                .createTime(response.getCreatedTimestamp())
+                .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
+                .properties(properties)
+                .build();
+        return describeCollectionResp;
     }
 }

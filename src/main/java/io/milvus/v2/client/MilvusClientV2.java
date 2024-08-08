@@ -734,12 +734,12 @@ public class MilvusClientV2 {
      *
      * @return String
      */
-    public String getVersion() {
-        return retry(()->clientUtils.getVersion(this.blockingStub));
+    public String getServerVersion() {
+        return retry(()->clientUtils.getServerVersion(this.blockingStub));
     }
 
     /**
-     * close client
+     * Disconnects from a Milvus server with configurable timeout
      *
      * @param maxWaitSeconds max wait seconds
      * @throws InterruptedException throws InterruptedException if the client failed to close connection
@@ -748,6 +748,18 @@ public class MilvusClientV2 {
         if(channel!= null){
             channel.shutdownNow();
             channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
+        }
+    }
+
+    /**
+     * Disconnects from a Milvus server with timeout of 1 second
+     *
+     */
+    public void close() {
+        try {
+            close(TimeUnit.MINUTES.toSeconds(1));
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted during shutdown Milvus client!");
         }
     }
 

@@ -127,7 +127,7 @@ public class ClientUtils {
             throw new IllegalArgumentException("Database " + dbName + " not exist");
         }
     }
-    public String getVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+    public String getServerVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
         rpcUtils.handleResponse("Get server version", response.getStatus());
         return response.getVersion();
