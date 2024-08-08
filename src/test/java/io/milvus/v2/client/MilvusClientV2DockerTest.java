@@ -37,6 +37,7 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
+import io.milvus.v2.service.database.request.AlterDatabaseReq;
 import io.milvus.v2.service.database.request.CreateDatabaseReq;
 import io.milvus.v2.service.database.request.DescribeDatabaseReq;
 import io.milvus.v2.service.database.request.DropDatabaseReq;
@@ -1199,10 +1200,21 @@ class MilvusClientV2DockerTest {
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.TTL_SECONDS, "10");
         properties.put(Constant.MMAP_ENABLED, "true");
+        properties.put("prop", "val");
         client.alterCollection(AlterCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .properties(properties)
                 .build());
+        DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Map<String, String> collProps = descCollResp.getProperties();
+        Assertions.assertTrue(collProps.containsKey(Constant.TTL_SECONDS));
+        Assertions.assertTrue(collProps.containsKey(Constant.MMAP_ENABLED));
+        Assertions.assertTrue(collProps.containsKey("prop"));
+        Assertions.assertEquals("10", collProps.get(Constant.TTL_SECONDS));
+        Assertions.assertEquals("true", collProps.get(Constant.MMAP_ENABLED));
+        Assertions.assertEquals("val", collProps.get("prop"));
 
         DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1214,12 +1226,21 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX, desc.getIndexType());
 
         properties.clear();
-        properties.put(Constant.MMAP_ENABLED, "true");
+        properties.put(Constant.MMAP_ENABLED, "false");
         client.alterIndex(AlterIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .indexName(desc.getIndexName())
                 .properties(properties)
                 .build());
+
+        descResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+        desc = descResp.getIndexDescByFieldName("vector");
+        Map<String, String> indexProps = desc.getExtraParams();
+        Assertions.assertTrue(indexProps.containsKey(Constant.MMAP_ENABLED));
+        Assertions.assertEquals("false", indexProps.get(Constant.MMAP_ENABLED));
 
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1541,6 +1562,22 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(propertiesResp.containsKey(Constant.DATABASE_REPLICA_NUMBER));
         Assertions.assertEquals("5", propertiesResp.get(Constant.DATABASE_REPLICA_NUMBER));
 
+        // alter the database
+        properties.put(Constant.DATABASE_REPLICA_NUMBER, "10");
+        properties.put("prop", "val");
+        client.alterDatabase(AlterDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .properties(properties)
+                .build());
+        descDBResp = client.describeDatabase(DescribeDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
+        propertiesResp = descDBResp.getProperties();
+        Assertions.assertTrue(propertiesResp.containsKey(Constant.DATABASE_REPLICA_NUMBER));
+        Assertions.assertEquals("10", propertiesResp.get(Constant.DATABASE_REPLICA_NUMBER));
+        Assertions.assertTrue(propertiesResp.containsKey("prop"));
+        Assertions.assertEquals("val", propertiesResp.get("prop"));
+
         // switch to the new database
         Assertions.assertDoesNotThrow(()->client.useDatabase(tempDatabaseName));
 
@@ -1609,7 +1646,7 @@ class MilvusClientV2DockerTest {
                 Thread t = new Thread(() -> {
                     for (int i = 0; i < requestPerThread; i++) {
                         MilvusClientV2 client = pool.getClient(key);
-                        String version = client.getVersion();
+                        String version = client.getServerVersion();
 //                            System.out.printf("%d, %s%n", i, version);
                         System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
                         pool.returnClient(key, client);
