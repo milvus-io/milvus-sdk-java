@@ -189,26 +189,7 @@ public class CollectionService extends BaseService {
                 .build();
         DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
         rpcUtils.handleResponse(title, response.getStatus());
-        return convertDescCollectionResp(response);
-    }
-
-    public static DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
-        DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
-                .collectionName(response.getCollectionName())
-                .databaseName(response.getDbName())
-                .description(response.getSchema().getDescription())
-                .numOfPartitions(response.getNumPartitions())
-                .collectionSchema(SchemaUtils.convertFromGrpcCollectionSchema(response.getSchema()))
-                .autoID(response.getSchema().getFieldsList().stream().anyMatch(FieldSchema::getAutoID))
-                .enableDynamicField(response.getSchema().getEnableDynamicField())
-                .fieldNames(response.getSchema().getFieldsList().stream().map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
-                .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
-                .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
-                .createTime(response.getCreatedTimestamp())
-                .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
-                .build();
-
-        return describeCollectionResp;
+        return convertUtils.convertDescCollectionResp(response);
     }
 
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {

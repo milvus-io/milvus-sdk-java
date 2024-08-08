@@ -21,10 +21,13 @@ package io.milvus.v2.service.collection.response;
 
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @SuperBuilder
@@ -43,4 +46,6 @@ public class DescribeCollectionResp {
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
     private ConsistencyLevel consistencyLevel;
+    @Builder.Default
+    private final Map<String, String> properties = new HashMap<>();
 }
