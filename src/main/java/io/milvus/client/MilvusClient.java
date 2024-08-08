@@ -93,7 +93,7 @@ public interface MilvusClient {
     void setLogLevel(LogLevel level);
 
     /**
-     * Disconnects from a Milvus server with timeout of 1 minute
+     * Disconnects from a Milvus server with timeout of 1 second
      */
     default void close() {
         try {

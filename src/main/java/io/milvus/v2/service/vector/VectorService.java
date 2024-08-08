@@ -184,7 +184,7 @@ public class VectorService extends BaseService {
     public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                            QueryIteratorReq request) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
-        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new QueryIterator(request, blockingStub, pkField);
     }
@@ -192,7 +192,7 @@ public class VectorService extends BaseService {
     public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                             SearchIteratorReq request) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
-        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new SearchIterator(request, blockingStub, pkField);
     }
@@ -205,7 +205,7 @@ public class VectorService extends BaseService {
         }
 
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
-        DescribeCollectionResp respR = CollectionService.convertDescCollectionResp(descResp);
+        DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         if (request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }
