@@ -1,4 +1,18 @@
 # Changelog
+## milvus-sdk-java 2.4.3 (2024-08-09)
+
+### Feature
+- Implement database related interfaces including createDatabase/dropDatabase/alterDatabase for MilvusClientV2
+- Implement getServerVersion interface for MilvusClientV2
+- Provide client/connection pool for V1 and V2
+
+### Improvement
+- Implement retry machinery for MilvusClientV2
+
+### Bug
+- Fix thread-safe bug of insert/upsert interfaces for MilvusClientV2
+- Fix a bug of describeCollection that collection properties not returned for MilvusClientV2
+
 ## milvus-sdk-java 2.4.2 (2024-07-11)
 
 ### Feature
