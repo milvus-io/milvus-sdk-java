@@ -71,8 +71,10 @@ public class SchemaUtils {
     private static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
         CreateCollectionReq.FieldSchema schema = CreateCollectionReq.FieldSchema.builder()
                 .name(fieldSchema.getName())
+                .description(fieldSchema.getDescription())
                 .dataType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getDataType().name()))
                 .isPrimaryKey(fieldSchema.getIsPrimaryKey())
+                .isPartitionKey(fieldSchema.getIsPartitionKey())
                 .autoID(fieldSchema.getAutoID())
                 .elementType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getElementType().name()))
                 .build();
