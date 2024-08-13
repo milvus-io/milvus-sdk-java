@@ -6,6 +6,7 @@ package com.zilliz.milvustestv2.common;
  */
 public class CommonData {
     public static long numberEntities=2000;
+    public static long batchSize=1000;
     public static int dim=128;
     public static String defaultFloatVectorCollection="FloatVectorCollection";
     public static String defaultBinaryVectorCollection="BinaryVectorCollection";
@@ -47,6 +48,10 @@ public class CommonData {
     public static String password="password1";
 
     public static String roleName="role02";
+
+    public static String databaseName="database01";
+    public static String databaseName2="database02";
+
 
 
 

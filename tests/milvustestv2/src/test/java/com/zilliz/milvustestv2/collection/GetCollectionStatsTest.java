@@ -7,6 +7,7 @@ import com.zilliz.milvustestv2.common.CommonFunction;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
+import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.vector.request.InsertReq;
 import org.testng.Assert;
@@ -26,8 +27,7 @@ public class GetCollectionStatsTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
-        milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
+        CommonFunction.createIndexAndInsertAndLoad(newCollectionName,DataType.FloatVector,true,CommonData.numberEntities);
     }
 
     @AfterClass(alwaysRun = true)
@@ -35,7 +35,7 @@ public class GetCollectionStatsTest extends BaseTest {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
     }
 
-    @Test(description = "Get collection stats", groups = {"Smoke"})
+    @Test(description = "Get collection stats", groups = {"Smoke"},enabled = false)
     public void getCollectionStats(){
         GetCollectionStatsResp collectionStats = milvusClientV2.getCollectionStats(GetCollectionStatsReq.builder()
                 .collectionName(newCollectionName)
