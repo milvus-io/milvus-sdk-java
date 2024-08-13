@@ -31,7 +31,7 @@ public class LoadCollectionTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         CommonFunction.createVectorIndex(newCollectionName,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
     }

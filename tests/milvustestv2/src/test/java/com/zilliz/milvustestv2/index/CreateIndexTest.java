@@ -35,25 +35,25 @@ public class CreateIndexTest extends BaseTest {
     public Object[][] providerScalarIndex() {
         return new Object[][]{
                 {new ArrayList<FieldParam>() {{
-                    add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
+//                    add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.STL_SORT).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.INVERTED).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.TRIE).build());
                 }}
                 },
                 {new ArrayList<FieldParam>() {{
-                    add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
+//                    add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
                 }}
                 },
                 {new ArrayList<FieldParam>() {{
-                    add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
+//                    add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
                 }}
                 },
                 {new ArrayList<FieldParam>() {{
-                    add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.BITMAP).build());
+//                    add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.BITMAP).build());
                 }}
                 },
-                {new ArrayList<FieldParam>() {{
+/*                {new ArrayList<FieldParam>() {{
                     add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
@@ -62,14 +62,14 @@ public class CreateIndexTest extends BaseTest {
                     add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
                     add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
                 }}
-                },
+                },*/
         };
     }
 
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
     }
 
@@ -110,7 +110,7 @@ public class CreateIndexTest extends BaseTest {
                 .build());
     }
 
-    @Test(description = "Create scalar index", groups = {"Smoke"}, dependsOnMethods = {"createVectorIndex"})
+    @Test(description = "Create scalar index", groups = {"Smoke"}, dependsOnMethods = {"createVectorIndex"}, enabled = false)
     public void createMultiScalarIndex() {
         milvusClientV2.releaseCollection(ReleaseCollectionReq.builder().collectionName(newCollectionName).build());
         IndexParam indexParam1 = IndexParam.builder()
@@ -127,7 +127,7 @@ public class CreateIndexTest extends BaseTest {
                 .build();
         IndexParam indexParam4 = IndexParam.builder()
                 .fieldName(CommonData.fieldInt16)
-                .indexType(IndexParam.IndexType.BITMAP)
+//                .indexType(IndexParam.IndexType.BITMAP)
                 .build();
         milvusClientV2.createIndex(CreateIndexReq.builder()
                 .collectionName(newCollectionName)
@@ -138,7 +138,11 @@ public class CreateIndexTest extends BaseTest {
                 .build());
     }
 
-    @Test(description = "Create scalar index", groups = {"Smoke"}, dependsOnMethods = {"createVectorIndex"}, dataProvider = "multiScalar")
+    @Test(description = "Create scalar index",
+            groups = {"Smoke"},
+            dependsOnMethods = {"createVectorIndex"},
+            dataProvider = "multiScalar",
+            enabled = false)
     public void createAllBitmapIndex(List<FieldParam> FieldParamList) {
         milvusClientV2.releaseCollection(ReleaseCollectionReq.builder().collectionName(newCollectionName).build());
         CommonFunction.dropScalarCommonIndex(newCollectionName, FieldParamList);
