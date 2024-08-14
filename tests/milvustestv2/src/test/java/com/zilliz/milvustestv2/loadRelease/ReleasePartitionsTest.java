@@ -42,7 +42,7 @@ public class ReleasePartitionsTest extends BaseTest {
                 .collectionName(newCollection)
                 .partitionName(CommonData.partitionName)
                 .build());
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollection).partitionName(CommonData.partitionName).data(jsonObjects).build());
         CommonFunction.createVectorIndex(newCollection,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
         milvusClientV2.loadCollection(LoadCollectionReq.builder()

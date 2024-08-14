@@ -26,7 +26,7 @@ public class DropIndexTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(CommonData.fieldFloatVector)
