@@ -170,7 +170,7 @@ public class CreateCollectionTest extends BaseTest {
         ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
         Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(collectionNameWithIndex));
         //insert
-        CommonFunction.generateDefaultData(100,CommonData.dim,DataType.FloatVector);
+        CommonFunction.generateDefaultData(0,100,CommonData.dim,DataType.FloatVector);
         // search
         SearchResp searchResp = CommonFunction.defaultSearch(collectionNameWithIndex);
         Assert.assertEquals(searchResp.getSearchResults().size(),10);

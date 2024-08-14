@@ -28,7 +28,7 @@ public class ListIndexesTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection(){
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(CommonData.fieldFloatVector)
@@ -53,5 +53,13 @@ public class ListIndexesTest extends BaseTest {
         // 默认索引名称和field名称一样
         Assert.assertEquals(strings.get(0),CommonData.fieldFloatVector);
 
+    }
+
+    @Test(description = "List index empty if no index exists",groups = {"Smoke"})
+    public void listIndexEmpty(){
+        String newCollection = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
+        List<String> strings = milvusClientV2.listIndexes(ListIndexesReq.builder()
+                .collectionName(newCollection).build());
+        Assert.assertEquals(strings.size(),0);
     }
 }

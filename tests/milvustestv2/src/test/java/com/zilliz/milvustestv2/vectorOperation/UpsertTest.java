@@ -38,7 +38,7 @@ public class UpsertTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
     }
 
@@ -50,17 +50,20 @@ public class UpsertTest extends BaseTest {
     @DataProvider(name = "DifferentCollection")
     public Object[][] providerVectorType() {
         return new Object[][]{
-                {CommonData.defaultFloatVectorCollection, DataType.FloatVector},
-                {CommonData.defaultBinaryVectorCollection, DataType.BinaryVector},
-                {CommonData.defaultFloat16VectorCollection, DataType.Float16Vector},
-                {CommonData.defaultBFloat16VectorCollection, DataType.BFloat16Vector},
-                {CommonData.defaultSparseFloatVectorCollection, DataType.SparseFloatVector},
+                { DataType.FloatVector},
+                { DataType.BinaryVector},
+                { DataType.Float16Vector},
+                { DataType.BFloat16Vector},
+                { DataType.SparseFloatVector},
         };
     }
 
     @Test(description = "upsert collection", groups = {"Smoke"}, dataProvider = "DifferentCollection")
-    public void upsert(String collectionName, DataType vectorType) {
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(1, CommonData.dim, vectorType);
+    public void upsert( DataType vectorType) {
+        String collectionName = CommonFunction.createNewCollection(CommonData.dim, null, vectorType);
+        CommonFunction.createIndexAndInsertAndLoad(collectionName,vectorType,true,CommonData.numberEntities);
+
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,1, CommonData.dim, vectorType);
         for (int i = 1; i < 10; i++) {
             JsonObject jsonObject0 = jsonObjects.get(0).deepCopy();
             jsonObject0.addProperty(CommonData.fieldInt64, i);
@@ -95,6 +98,7 @@ public class UpsertTest extends BaseTest {
                 .outputFields(Lists.newArrayList(CommonData.fieldInt64, CommonData.fieldInt32))
                 .consistencyLevel(ConsistencyLevel.STRONG).build());
         Assert.assertEquals(query.getQueryResults().size(),10);
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
     }
 
     @Test(description = "upsert collection", groups = {"Smoke"})

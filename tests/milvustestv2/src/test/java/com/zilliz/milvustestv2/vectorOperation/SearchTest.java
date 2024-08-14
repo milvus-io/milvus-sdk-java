@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
+import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.DataProviderUtils;
 import com.zilliz.milvustestv2.utils.GenerateUtil;
 import com.zilliz.milvustestv2.utils.MathUtil;
@@ -20,8 +21,11 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
+import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
@@ -30,12 +34,15 @@ import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
+import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,9 +50,11 @@ import java.util.Map;
  * @Author yongpeng.li
  * @Date 2024/2/19 17:03
  */
+@Slf4j
 public class SearchTest extends BaseTest {
     int topK = 10;
     private MilvusServiceClient milvusServiceClient;
+    String newCollectionName;
 
     @DataProvider(name = "filterAndExcept")
     public Object[][] providerData() {
@@ -66,6 +75,9 @@ public class SearchTest extends BaseTest {
                 {CommonData.fieldVarchar + " like \"Str%\" ", topK},
                 {CommonData.fieldVarchar + " like \"Str1\" ", 1},
                 {CommonData.fieldInt8 + " > 129 ", 0},
+                {"array_contains(" + CommonData.fieldArray + ", 1)", 2},
+                {"array_contains_all(" + CommonData.fieldArray + ", [1, 2])", 2},
+                {"array_length(" + CommonData.fieldArray + ") == 3", 10},
 
         };
     }
@@ -75,22 +87,22 @@ public class SearchTest extends BaseTest {
         return new Object[][]{
                 {CommonData.defaultFloatVectorCollection, DataType.FloatVector},
 //                {CommonData.defaultBinaryVectorCollection,DataType.BinaryVector},
-                {CommonData.defaultFloat16VectorCollection,DataType.Float16Vector},
-                {CommonData.defaultBFloat16VectorCollection,DataType.BFloat16Vector},
-                {CommonData.defaultSparseFloatVectorCollection,DataType.SparseFloatVector},
+                {CommonData.defaultFloat16VectorCollection, DataType.Float16Vector},
+                {CommonData.defaultBFloat16VectorCollection, DataType.BFloat16Vector},
+                {CommonData.defaultSparseFloatVectorCollection, DataType.SparseFloatVector},
         };
     }
 
-    @DataProvider(name="VectorTypeWithFilter")
-    public Object[][] providerVectorTypeWithFilter(){
-        Object[][] vectorType=new Object[][]{
+    @DataProvider(name = "VectorTypeWithFilter")
+    public Object[][] providerVectorTypeWithFilter() {
+        Object[][] vectorType = new Object[][]{
                 {DataType.FloatVector},
                 {DataType.BinaryVector},
                 {DataType.Float16Vector},
                 {DataType.BFloat16Vector},
                 {DataType.SparseFloatVector}
         };
-        Object[][] filter=new Object[][]{
+        Object[][] filter = new Object[][]{
                 {CommonData.fieldVarchar + " like \"%0\" ", topK},
                 {CommonData.fieldInt64 + " < 10 ", topK},
                 {CommonData.fieldInt64 + " != 10 ", topK},
@@ -123,6 +135,47 @@ public class SearchTest extends BaseTest {
                 {Lists.newArrayList(CommonData.partitionNameC), CommonData.numberEntities * 2 + " < " + CommonData.fieldInt64 + " < " + CommonData.numberEntities * 3, topK},
                 {Lists.newArrayList(CommonData.partitionNameC), CommonData.numberEntities * 3 + " < " + CommonData.fieldInt64 + " < " + CommonData.numberEntities * 4, 0}
         };
+    }
+
+    @BeforeClass(alwaysRun = true)
+    public void providerCollection() {
+        newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
+        milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanTestData() {
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
+    }
+
+    @Test(description = "Create vector and scalar index", groups = {"Smoke"})
+    public void createVectorAndScalarIndex() {
+        // Build Vector index
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(CommonData.fieldFloatVector)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .extraParams(CommonFunction.provideExtraParam(IndexParam.IndexType.AUTOINDEX))
+                .metricType(IndexParam.MetricType.L2)
+                .build();
+        milvusClientV2.createIndex(CreateIndexReq.builder()
+                .collectionName(newCollectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .build());
+
+        // Build Scalar Index
+        List<FieldParam> FieldParamList = new ArrayList<FieldParam>() {{
+//            add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
+//            add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
+        }};
+        CommonFunction.createScalarCommonIndex(newCollectionName, FieldParamList);
+        log.info("Create Scalar index done{}, scalar index:{}", newCollectionName, FieldParamList);
+        milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(newCollectionName).build());
     }
 
     @Test(description = "search float vector collection", groups = {"Smoke"}, dataProvider = "filterAndExcept")
@@ -259,19 +312,38 @@ public class SearchTest extends BaseTest {
     }
 
     @Test(description = "search group by field name", groups = {"Smoke"}, dataProvider = "VectorTypeList")
-    public void searchByGroupByField(String collectionName,DataType vectorType){
+    public void searchByGroupByField(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
                 .collectionName(collectionName)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
-                        .groupByFieldName(CommonData.fieldInt8)
+                .groupByFieldName(CommonData.fieldInt8)
                 .data(data)
                 .topK(1000)
                 .build());
         Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
-        if(vectorType!=DataType.SparseFloatVector) {
+        if (vectorType != DataType.SparseFloatVector) {
             Assert.assertEquals(search.getSearchResults().get(0).size(), 127);
         }
+    }
+
+    @Test(description = "search scalar index collection", groups = {"Smoke"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "filterAndExcept")
+    public void searchScalarIndexCollection(String filter, int expect) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
+        SearchReq searchParams = SearchReq.builder()
+                .collectionName(CommonData.defaultFloatVectorCollection)
+                .filter(filter)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .annsField(CommonData.fieldFloatVector)
+                .data(data)
+                .topK(topK)
+                .build();
+        System.out.println(searchParams);
+        SearchResp search = milvusClientV2.search(searchParams);
+        System.out.println(search);
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 }

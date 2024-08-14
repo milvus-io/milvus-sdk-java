@@ -59,7 +59,7 @@ public class InsertTest extends BaseTest {
 
     @Test(description = "insert test", groups = {"Smoke"})
     public void insert() {
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder()
                 .data(jsonObjects)
                 .collectionName(newCollectionName)
@@ -80,7 +80,7 @@ public class InsertTest extends BaseTest {
     @Test(description = "insert different vector collection test", groups = {"Smoke"}, dataProvider = "VectorTypeList")
     public void insertIntoDiffVectorCollection(DataType dataType) {
         String newCollection = CommonFunction.createNewCollection(CommonData.dim, null, dataType);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(CommonData.numberEntities, CommonData.dim, dataType);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim, dataType);
         InsertResp insert = milvusClientV2.insert(InsertReq.builder()
                 .collectionName(newCollection)
                 .data(jsonObjects).build());

@@ -8,6 +8,7 @@ import com.zilliz.milvustestv2.utils.GenerateUtil;
 
 import com.zilliz.milvustestv2.utils.JsonObjectUtil;
 import com.zilliz.milvustestv2.utils.MathUtil;
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -16,6 +17,7 @@ import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
+import io.milvus.v2.service.index.request.DropIndexReq;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
 import io.milvus.v2.service.vector.request.AnnSearchReq;
 import io.milvus.v2.service.vector.request.InsertReq;
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author yongpeng.li
@@ -160,11 +163,11 @@ public class CommonFunction {
      * @param dim 维度
      * @return List<JsonObject>
      */
-    public static List<JsonObject> generateDefaultData(long num, int dim, DataType vectorType) {
+    public static List<JsonObject> generateDefaultData(long startId,long num, int dim, DataType vectorType) {
         List<JsonObject> jsonList = new ArrayList<>();
         Random ran = new Random();
         Gson gson = new Gson();
-        for (long i = 0; i < num; i++) {
+        for (long i = startId; i < (num+startId); i++) {
             JsonObject row = new JsonObject();
             row.addProperty(CommonData.fieldInt64, i);
             row.addProperty(CommonData.fieldInt32, (int) i % 32767);
@@ -342,6 +345,20 @@ public class CommonFunction {
     }
 
     /**
+     *  创建一条float32的向量
+     * @param dimension 维度
+     * @return List<Float>
+     */
+    public static List<Float> generateFloatVector(int dimension) {
+        Random ran = new Random();
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < dimension; ++i) {
+            vector.add(ran.nextFloat());
+        }
+        return vector;
+    }
+
+    /**
      * 创建一条Sparse向量数据
      *
      * @param dim 维度，sparse不需要指定维度，所以方法里随机
@@ -378,18 +395,8 @@ public class CommonFunction {
      * @return ByteBuffer
      */
     public static ByteBuffer generateFloat16Vector(int dim) {
-        Random ran = new Random();
-        int byteCount = dim * 2;
-        ByteBuffer vector = ByteBuffer.allocate(byteCount);
-        for (int i = 0; i < dim; ++i) {
-            short halfFloatValue = MathUtil.floatToFloat16(ran.nextInt(100) + 0.1f);
-            ByteBuffer buffer = ByteBuffer.allocate(2);
-            buffer.putShort(halfFloatValue);
-            buffer.flip();
-            vector.put(buffer.get(0));
-            vector.put(buffer.get(1));
-        }
-        return vector;
+        List<Float> originalVector = generateFloatVector(dim);
+        return Float16Utils.f32VectorToFp16Buffer(originalVector);
     }
 
     /**
@@ -414,22 +421,8 @@ public class CommonFunction {
      * @return ByteBuffer
      */
     public static ByteBuffer generateBF16Vector(int dim) {
-        Random ran = new Random();
-        float randomFloat;
-        int byteCount = dim * 2;
-        ByteBuffer vector = ByteBuffer.allocate(byteCount);
-        for (int i = 0; i < dim; ++i) {
-            do {
-                randomFloat = ran.nextFloat();
-            } while (Float.isInfinite(randomFloat));
-            short halfFloatValue = MathUtil.floatToBF16(randomFloat);
-            ByteBuffer buffer = ByteBuffer.allocate(2);
-            buffer.putShort(halfFloatValue);
-            buffer.flip();
-            vector.put(buffer.get(0));
-            vector.put(buffer.get(1));
-        }
-        return vector;
+        List<Float> originalVector = generateFloatVector(dim);
+        return Float16Utils.f32VectorToBf16Buffer(originalVector);
     }
 
     /**
@@ -571,10 +564,17 @@ public class CommonFunction {
         if (ifLoad) {
             BaseTest.milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
         }
-        List<JsonObject> jsonObjects = generateDefaultData(numberEntities, CommonData.dim, vectorType);
-        InsertResp insert = BaseTest.milvusClientV2.insert(InsertReq.builder().collectionName(collectionName).data(jsonObjects).build());
-        System.out.println(insert);
+        insertIntoCollectionByBatch(collectionName,numberEntities,CommonData.dim,vectorType);
 
+    }
+
+    public static void insertIntoCollectionByBatch(String collectionName,long num,int dim,DataType vectorType){
+        long insertRounds = (num / CommonData.batchSize) ==0?1:(num / CommonData.batchSize);
+        for (int i = 0; i < insertRounds; i++) {
+            System.out.println("insert batch:"+(i+1));
+            List<JsonObject> jsonObjects = generateDefaultData(i*CommonData.batchSize, CommonData.batchSize, dim, vectorType);
+            InsertResp insert = BaseTest.milvusClientV2.insert(InsertReq.builder().collectionName(collectionName).data(jsonObjects).build());
+        }
     }
 
     /**
@@ -647,6 +647,7 @@ public class CommonFunction {
 
     /**
      * 创建通用的collection方法，支持多个filed，多个向量
+     *
      * @param collectionName collection 可不传
      * @param pkDataType     主键类型
      * @param enableDynamic  是否开启动态列
@@ -683,6 +684,7 @@ public class CommonFunction {
 
     /**
      * 遍历fieldParamList生成对应的schema
+     *
      * @param fieldParamList field字段集合
      * @return List<CreateCollectionReq.FieldSchema> 给创建collection提供
      */
@@ -838,7 +840,8 @@ public class CommonFunction {
 
     /**
      * 创建通用索引
-     * @param collection   collection name
+     *
+     * @param collection     collection name
      * @param fieldParamList field集合
      */
     public static void createCommonIndex(String collection, List<FieldParam> fieldParamList) {
@@ -863,13 +866,54 @@ public class CommonFunction {
                 .build());
     }
 
+    /**
+     * Create Scalar Indexes
+     *
+     * @param collection     collection name
+     * @param fieldParamList scalar fields
+     */
+    public static void createScalarCommonIndex(String collection, List<FieldParam> fieldParamList) {
+        List<IndexParam> indexParamList = new ArrayList<>();
+        for (FieldParam fieldParam : fieldParamList) {
+            IndexParam.IndexType indexType = fieldParam.getIndextype();
+            String fieldName = fieldParam.getFieldName();
+
+            IndexParam indexParam = IndexParam.builder()
+                    .fieldName(fieldName)
+                    .indexType(indexType)
+                    .indexName(fieldName)
+                    .build();
+            indexParamList.add(indexParam);
+        }
+
+        BaseTest.milvusClientV2.createIndex(CreateIndexReq.builder()
+                .collectionName(collection)
+                .indexParams(indexParamList)
+                .build());
+    }
+
+    /** Drop Scalar Indexes
+     *
+     * @param collection collection name
+     * @param fieldParamList FieldParamList
+     */
+    public static void dropScalarCommonIndex(String collection, List<FieldParam> fieldParamList) {
+        List<String> fieldNames = fieldParamList.stream().map(FieldParam::getFieldName).collect(Collectors.toList());
+        fieldNames.forEach(x -> BaseTest.milvusClientV2.dropIndex(DropIndexReq.builder()
+                .collectionName(collection)
+                .fieldName(x)
+                .indexName(x)
+                .build()));
+    }
+
 
     /**
      * 为多向量查询提供AnnSearch
+     *
      * @param fieldParam 字段参数
-     * @param nq 传入的向量数
-     * @param topK 查询数量
-     * @param expr 表达式
+     * @param nq         传入的向量数
+     * @param topK       查询数量
+     * @param expr       表达式
      * @return AnnSearchReq
      */
     public static AnnSearchReq provideAnnSearch(FieldParam fieldParam, int nq, int topK, String expr) {
@@ -885,6 +929,7 @@ public class CommonFunction {
 
     /**
      * 根据索引类型提供查询参数
+     *
      * @param indexType index type
      * @return String 查询参数
      */
@@ -910,17 +955,17 @@ public class CommonFunction {
                 extraParam = "{\"nlist\": 128}";
                 break;
             case SCANN:
-                extraParam="{\"nlist\":1024,\"with_raw_data\":"+true+"}";
+                extraParam = "{\"nlist\":1024,\"with_raw_data\":" + true + "}";
                 break;
             case GPU_IVF_FLAT:
-                extraParam="{\"nlist\": 64}";
+                extraParam = "{\"nlist\": 64}";
                 break;
             case GPU_IVF_PQ:
-                extraParam="{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
+                extraParam = "{\"nlist\": 64, \"m\": 16, \"nbits\": 8}";
                 break;
             case SPARSE_INVERTED_INDEX:
             case SPARSE_WAND:
-                extraParam="{\"drop_ratio_search\":0.2}";
+                extraParam = "{\"drop_ratio_search\":0.2}";
                 break;
             default:
                 extraParam = "{\"nlist\":128}";
