@@ -20,19 +20,19 @@ public class SimpleExample {
         MilvusClientV2 client = new MilvusClientV2(config);
 
         String collectionName = "java_sdk_example_simple_v2";
-        // drop collection if exists
+        // Drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(collectionName)
                 .build());
 
-        // quickly create a collection with "id" field and "vector" field
+        // Quickly create a collection with "id" field and "vector" field
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName(collectionName)
                 .dimension(4)
                 .build());
         System.out.printf("Collection '%s' created\n", collectionName);
 
-        // insert some data
+        // Insert some data
         List<JsonObject> rows = new ArrayList<>();
         Gson gson = new Gson();
         for (int i = 0; i < 100; i++) {
@@ -48,7 +48,7 @@ public class SimpleExample {
                 .build());
         System.out.printf("%d rows inserted\n", insertR.getInsertCnt());
 
-        // get row count
+        // Get row count, set ConsistencyLevel.STRONG to sync the data to query node so that data is visible
         QueryResp countR = client.query(QueryReq.builder()
                 .collectionName(collectionName)
                 .filter("")
@@ -57,7 +57,7 @@ public class SimpleExample {
                 .build());
         System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
-        // retrieve
+        // Retrieve
         List<Object> ids = Arrays.asList(1L, 50L);
         GetResp getR = client.get(GetReq.builder()
                 .collectionName(collectionName)
@@ -69,7 +69,7 @@ public class SimpleExample {
             System.out.println(result.getEntity());
         }
 
-        // search
+        // Search
         SearchResp searchR = client.search(SearchReq.builder()
                 .collectionName(collectionName)
                 .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
@@ -84,5 +84,7 @@ public class SimpleExample {
                 System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
             }
         }
+
+        client.close();
     }
 }
