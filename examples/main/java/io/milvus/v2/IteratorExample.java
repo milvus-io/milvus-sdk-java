@@ -38,7 +38,7 @@ public class IteratorExample {
                 .build();
         MilvusClientV2 client = new MilvusClientV2(config);
 
-        // create collection
+        // Create collection
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
         collectionSchema.addField(AddFieldReq.builder()
@@ -64,12 +64,12 @@ public class IteratorExample {
                 .metricType(IndexParam.MetricType.L2)
                 .build());
 
-        // drop collection if exists
+        // Drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
 
-        // create collection
+        // Create collection
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .collectionSchema(collectionSchema)
@@ -77,7 +77,7 @@ public class IteratorExample {
                 .build();
         client.createCollection(requestCreate);
 
-        // insert rows
+        // Insert rows
         long count = 10000;
         List<JsonObject> rowsData = new ArrayList<>();
         Random ran = new Random();
@@ -95,7 +95,7 @@ public class IteratorExample {
                 .data(rowsData)
                 .build());
 
-        // check row count
+        // Check row count
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .filter("")
@@ -105,7 +105,7 @@ public class IteratorExample {
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         System.out.printf("Inserted row count: %d\n", queryResults.get(0).getEntity().get("count(*)"));
 
-        // search iterator
+        // Search iterator
         SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .outputFields(Lists.newArrayList(AGE_FIELD))
@@ -135,7 +135,7 @@ public class IteratorExample {
         }
         System.out.printf("%d search results returned\n%n", counter);
 
-        // query iterator
+        // Query iterator
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .expr(String.format("%s < 300", ID_FIELD))
@@ -161,5 +161,7 @@ public class IteratorExample {
             }
         }
         System.out.printf("%d query results returned%n", counter);
+
+        client.close();
     }
 }

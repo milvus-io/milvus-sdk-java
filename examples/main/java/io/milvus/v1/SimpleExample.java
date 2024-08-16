@@ -21,12 +21,15 @@ package io.milvus.v1;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
 import io.milvus.param.dml.*;
 import io.milvus.param.index.*;
 import io.milvus.response.*;
+import io.milvus.v2.service.vector.response.QueryResp;
+
 import java.util.*;
 
 
@@ -124,14 +127,16 @@ public class SimpleExample {
             throw new RuntimeException("Failed to insert! Error: " + insertRet.getMessage());
         }
 
-        // Call flush to make sure the inserted records are consumed by Milvus server, so that the records
-        // be searchable immediately. Just a special action in this example.
-        // In practice, you don't need to call flush() frequently.
-        milvusClient.flush(FlushParam.newBuilder()
-                .addCollectionName(COLLECTION_NAME)
+        // get row count
+        R<QueryResults> queryRet = milvusClient.query(QueryParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withExpr("")
+                .addOutField("count(*)")
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
-
-        System.out.println("10 entities inserted");
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(queryRet.getData());
+        long rowCount = (long)wrapper.getFieldWrapper("count(*)").getFieldData().get(0);
+        System.out.printf("%d rows persisted\n", rowCount);
 
         // Construct a vector to search top5 similar records, return the book title for us.
         // This vector is equal to the No.3 record, we suppose the No.3 record is the most similar.

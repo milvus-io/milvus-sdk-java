@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Random;
 
 public class ClientPoolExample {
-    public static String CollectionName = "java_sdk_example_pool_v1";
+    public static String CollectionName = "java_sdk_example_pool_v2";
     public static String VectorFieldName = "vector";
     public static int DIM = 128;
 
@@ -159,8 +159,11 @@ public class ClientPoolExample {
                 threadCount*repeatRequests, threadCount*repeatRequests, (end-start)*0.001);
         System.out.printf("Total %d idle clients and %d active clients%n",
                 pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber());
+
         pool.clear(); // clear idle clients
         System.out.printf("After clear, total %d idle clients and %d active clients%n",
                 pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber());
+
+        pool.close();
     }
 }
