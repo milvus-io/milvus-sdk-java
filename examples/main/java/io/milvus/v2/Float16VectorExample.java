@@ -33,24 +33,24 @@ public class Float16VectorExample {
     private static final String BF16_VECTOR_FIELD = "bf16_vector";
     private static final Integer VECTOR_DIM = 128;
 
-    private static final MilvusClientV2 milvusClient;
+    private static final MilvusClientV2 client;
     static {
-        milvusClient = new MilvusClientV2(ConnectConfig.builder()
+        client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
                 .build());
     }
 
     private static void createCollection() {
 
-        // drop the collection if you don't need the collection anymore
-        Boolean has = milvusClient.hasCollection(HasCollectionReq.builder()
+        // Drop the collection if you don't need the collection anymore
+        Boolean has = client.hasCollection(HasCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
         if (has) {
             dropCollection();
         }
 
-        // build a collection with two vector fields
+        // Build a collection with two vector fields
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
         collectionSchema.addField(AddFieldReq.builder()
@@ -90,7 +90,7 @@ public class Float16VectorExample {
                 .indexParams(indexes)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
-        milvusClient.createCollection(requestCreate);
+        client.createCollection(requestCreate);
     }
 
     private static void prepareData(int count) {
@@ -106,7 +106,7 @@ public class Float16VectorExample {
             rows.add(row);
         }
 
-        InsertResp insertResp = milvusClient.insert(InsertReq.builder()
+        InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .data(rows)
                 .build());
@@ -115,7 +115,7 @@ public class Float16VectorExample {
 
     private static void searchVectors(List<Long> taargetIDs, List<BaseVector> targetVectors, String vectorFieldName) {
         int topK = 5;
-        SearchResp searchResp = milvusClient.search(SearchReq.builder()
+        SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .data(targetVectors)
                 .annsField(vectorFieldName)
@@ -151,9 +151,9 @@ public class Float16VectorExample {
     }
 
     private static void search() {
-        // retrieve some rows for search
+        // Retrieve some rows for search
         List<Long> targetIDs = Arrays.asList(999L, 2024L);
-        QueryResp queryResp = milvusClient.query(QueryReq.builder()
+        QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .filter(ID_FIELD + " in " + targetIDs)
                 .outputFields(Arrays.asList(FP16_VECTOR_FIELD, BF16_VECTOR_FIELD))
@@ -175,15 +175,15 @@ public class Float16VectorExample {
             targetBF16Vectors.add(new BFloat16Vec(bf16VectorBuf));
         }
 
-        // search float16 vector
+        // Search float16 vector
         searchVectors(targetIDs, targetFP16Vectors, FP16_VECTOR_FIELD);
 
-        // search bfloat16 vector
+        // Search bfloat16 vector
         searchVectors(targetIDs, targetBF16Vectors, BF16_VECTOR_FIELD);
     }
 
     private static void dropCollection() {
-        milvusClient.dropCollection(DropCollectionReq.builder()
+        client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
         System.out.println("Collection dropped");
@@ -195,5 +195,7 @@ public class Float16VectorExample {
         prepareData(10000);
         search();
         dropCollection();
+
+        client.close();
     }
 }

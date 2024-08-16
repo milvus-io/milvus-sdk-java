@@ -19,7 +19,7 @@
 package io.milvus.v1;
 
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.CheckHealthResponse;
+import io.milvus.grpc.GetVersionResponse;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.R;
 
@@ -52,7 +52,7 @@ import java.net.URL;
 public class TLSExample {
 
     private static void oneWayAuth() {
-        ClassLoader classLoader = BulkWriterExample.class.getClassLoader();
+        ClassLoader classLoader = TLSExample.class.getClassLoader();
         URL resourceUrl = classLoader.getResource("tls");
         String path = new File(resourceUrl.getFile()).getAbsolutePath();
         ConnectParam connectParam = ConnectParam.newBuilder()
@@ -61,18 +61,18 @@ public class TLSExample {
                 .withServerName("localhost")
                 .withServerPemPath(path + "/server.pem")
                 .build();
-        MilvusServiceClient milvusClient = new MilvusServiceClient(connectParam);
+        MilvusServiceClient client = new MilvusServiceClient(connectParam);
 
-        R<CheckHealthResponse> health = milvusClient.checkHealth();
-        if (health.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(health.getMessage());
+        R<GetVersionResponse> version = client.getVersion();
+        if (version.getStatus() != R.Status.Success.getCode()) {
+            throw new RuntimeException(version.getMessage());
         } else {
-            System.out.println(health);
+            System.out.println("Server version: " + version.getData().getVersion());
         }
     }
 
     private static void twoWayAuth() {
-        ClassLoader classLoader = BulkWriterExample.class.getClassLoader();
+        ClassLoader classLoader = TLSExample.class.getClassLoader();
         URL resourceUrl = classLoader.getResource("tls");
         String path = new File(resourceUrl.getFile()).getAbsolutePath();
         ConnectParam connectParam = ConnectParam.newBuilder()
@@ -83,13 +83,13 @@ public class TLSExample {
                 .withClientKeyPath(path + "/client.key")
                 .withClientPemPath(path + "/client.pem")
                 .build();
-        MilvusServiceClient milvusClient = new MilvusServiceClient(connectParam);
+        MilvusServiceClient client = new MilvusServiceClient(connectParam);
 
-        R<CheckHealthResponse> health = milvusClient.checkHealth();
-        if (health.getStatus() != R.Status.Success.getCode()) {
-            throw new RuntimeException(health.getMessage());
+        R<GetVersionResponse> version = client.getVersion();
+        if (version.getStatus() != R.Status.Success.getCode()) {
+            throw new RuntimeException(version.getMessage());
         } else {
-            System.out.println(health);
+            System.out.println("Server version: " + version.getData().getVersion());
         }
     }
 
