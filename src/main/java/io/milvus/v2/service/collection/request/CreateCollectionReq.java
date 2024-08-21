@@ -63,7 +63,8 @@ public class CreateCollectionReq {
     // create collections with schema
     private CollectionSchema collectionSchema;
 
-    private List<IndexParam> indexParams;
+    @Builder.Default
+    private List<IndexParam> indexParams = new ArrayList<>();
 
     //private String partitionKeyField;
     private Integer numPartitions;
@@ -71,13 +72,26 @@ public class CreateCollectionReq {
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
 
+    public static abstract class CreateCollectionReqBuilder<C extends CreateCollectionReq, B extends CreateCollectionReq.CreateCollectionReqBuilder<C, B>> {
+        public B indexParam(IndexParam indexParam) {
+            try {
+                this.indexParams$value.add(indexParam);
+            }catch (UnsupportedOperationException _e){
+                this.indexParams$value = new ArrayList<>(this.indexParams$value);
+                this.indexParams$value.add(indexParam);
+            }
+            this.indexParams$set = true;
+            return self();
+        }
+    }
+
     @Data
     @SuperBuilder
     public static class CollectionSchema {
         @Builder.Default
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
 
-        public void addField(AddFieldReq addFieldReq) {
+        public CollectionSchema addField(AddFieldReq addFieldReq) {
             CreateCollectionReq.FieldSchema fieldSchema = FieldSchema.builder()
                     .name(addFieldReq.getFieldName())
                     .dataType(addFieldReq.getDataType())
@@ -102,6 +116,7 @@ public class CreateCollectionReq {
                 fieldSchema.setDimension(addFieldReq.getDimension());
             }
             fieldSchemaList.add(fieldSchema);
+            return this;
         }
 
         public CreateCollectionReq.FieldSchema getField(String fieldName) {

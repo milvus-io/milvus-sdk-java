@@ -1200,10 +1200,10 @@ class MilvusClientV2DockerTest {
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.TTL_SECONDS, "10");
         properties.put(Constant.MMAP_ENABLED, "true");
-        properties.put("prop", "val");
         client.alterCollection(AlterCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .properties(properties)
+                .property("prop", "val")
                 .build());
         DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
