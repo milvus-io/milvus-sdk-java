@@ -19,6 +19,10 @@ Fetch Milvus proto files by the following command(If the previous clone is not w
 $ git submodule update --init
 ```
 
+If you are using Idea, go to Project Root in Idea, right click on `milvus-sdk-java` and select `Maven` -> `Reload Project`
+
+Note: For now, current project do not support JDK 21+. The minimal Lombok version compatible with JDK 21 is 1.18.30.
+
 ## Building Milvus java SDK
 
 Call the following command to generate protobuf related code
