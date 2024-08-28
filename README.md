@@ -87,3 +87,19 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
         implementation("org.slf4j:slf4j-api:1.7.30")
         ```
  
+## Developer Guide
+
+### init project 101
+This guide is for developers who want to contribute to this project.
+1. fork & clone this project
+2. init submodule
+    ```bash
+    git submodule update --init
+    ```
+3. Reload Maven Project (#479)
+    - if you use Idea, go to Project Root in Idea, right click on `milvus-sdk-java` and select `Maven`  -> `Reload Project`
+    
+Note: 
+    For now, current project do not support JDK 21+.
+    The minimal Lombok version compatible with JDK 21 is 1.18.30.
+    
