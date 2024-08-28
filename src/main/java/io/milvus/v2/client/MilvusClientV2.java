@@ -22,6 +22,9 @@ package io.milvus.v2.client;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import io.milvus.grpc.ClientInfo;
+import io.milvus.grpc.ConnectRequest;
+import io.milvus.grpc.ConnectResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
@@ -104,16 +107,48 @@ public class MilvusClientV2 {
         }
         channel = clientUtils.getChannel(connectConfig);
 
+        blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
+        connect(connectConfig, blockingStub);
         if (connectConfig.getRpcDeadlineMs() > 0) {
-            blockingStub =  MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady()
+            blockingStub = blockingStub.withWaitForReady()
                     .withDeadlineAfter(connectConfig.getRpcDeadlineMs(), TimeUnit.MILLISECONDS);
-        }else {
-            blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
         }
 
         if (connectConfig.getDbName() != null) {
             // check if database exists
             clientUtils.checkDatabaseExist(this.blockingStub, connectConfig.getDbName());
+        }
+    }
+
+    /**
+     * This method is internal used, it calls a RPC Connect() to the remote server,
+     * and sends the client info to the server so that the server knows which client is interacting,
+     * especially for accesses log.
+     *
+     * The info includes:
+     * 1. username(if Authentication is enabled)
+     * 2. the client computer's name
+     * 3. sdk language type and version
+     * 4. the client's local time
+     */
+    private void connect(ConnectConfig connectConfig, MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        String userName = connectConfig.getUsername();
+        if (userName == null) {
+            userName = ""; // ClientInfo.setUser() requires non-null value
+        }
+
+        ClientInfo info = ClientInfo.newBuilder()
+                .setSdkType("Java")
+                .setSdkVersion(clientUtils.getSDKVersion())
+                .setUser(userName)
+                .setHost(clientUtils.getHostName())
+                .setLocalTime(clientUtils.getLocalTimeStr())
+                .build();
+        ConnectRequest req = ConnectRequest.newBuilder().setClientInfo(info).build();
+        ConnectResponse resp = blockingStub.withDeadlineAfter(1, TimeUnit.SECONDS)
+                .connect(req);
+        if (resp.getStatus().getCode() != 0 || !resp.getStatus().getErrorCode().equals(io.milvus.grpc.ErrorCode.Success)) {
+            throw new RuntimeException("Failed to initialize connection. Error: " + resp.getStatus().getReason());
         }
     }
 
