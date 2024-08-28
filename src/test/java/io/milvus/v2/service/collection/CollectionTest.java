@@ -29,8 +29,12 @@ import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
+import java.util.Arrays;
 import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
 
 class CollectionTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(CollectionTest.class);
@@ -54,20 +58,38 @@ class CollectionTest extends BaseTest {
 
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
-        collectionSchema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build());
-        collectionSchema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
+        collectionSchema
+                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build())
+                .addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build())
+                .addField(AddFieldReq.builder().fieldName("description").dataType(DataType.VarChar).maxLength(64).build());
 
         IndexParam indexParam = IndexParam.builder()
                 .fieldName("vector")
                 .metricType(IndexParam.MetricType.L2)
                 .build();
+        IndexParam indexParam2 = IndexParam.builder()
+                .fieldName("description")
+                .indexType(IndexParam.IndexType.INVERTED)
+                .build();
+
 
         CreateCollectionReq request = CreateCollectionReq.builder()
                 .collectionName("test")
                 .collectionSchema(collectionSchema)
-                .indexParams(Collections.singletonList(indexParam))
+                .indexParams(Arrays.asList(indexParam, indexParam2))
+                .indexParam(IndexParam.builder() // fluent api, add index param
+                        .fieldName("id")
+                        .indexType(IndexParam.IndexType.INVERTED)
+                        .build()
+                )
                 .build();
         client_v2.createCollection(request);
+
+        AlterCollectionReq req = AlterCollectionReq.builder()
+                .collectionName("test")
+                .property("prop", "val")
+                .build();
+        assertEquals("val", req.getProperties().get("prop"));
     }
 
     @Test
@@ -138,4 +160,5 @@ class CollectionTest extends BaseTest {
                 .build();
         GetCollectionStatsResp resp = client_v2.getCollectionStats(req);
     }
+
 }
