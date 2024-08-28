@@ -1633,6 +1633,7 @@ class MilvusClientV2DockerTest {
         try {
             ConnectConfig connectConfig = ConnectConfig.builder()
                     .uri(milvus.getEndpoint())
+                    .rpcDeadlineMs(100L)
                     .build();
             PoolConfig poolConfig = PoolConfig.builder()
                     .build();
