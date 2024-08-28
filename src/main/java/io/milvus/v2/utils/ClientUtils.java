@@ -26,6 +26,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
+import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.v2.client.ConnectConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -34,7 +35,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
@@ -131,5 +135,29 @@ public class ClientUtils {
         GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
         rpcUtils.handleResponse("Get server version", response.getStatus());
         return response.getVersion();
+    }
+
+    public String getHostName() {
+        try {
+            InetAddress address = InetAddress.getLocalHost();
+            return address.getHostName();
+        } catch (UnknownHostException e) {
+            logger.warn("Failed to get host name, error:{}\n", e.getMessage());
+            return "Unknown";
+        }
+    }
+
+    public String getLocalTimeStr() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.toString();
+    }
+
+    public String getSDKVersion() {
+        Package pkg = MilvusServiceClient.class.getPackage();
+        String ver = pkg.getImplementationVersion();
+        if (ver == null) {
+            return "";
+        }
+        return ver;
     }
 }
