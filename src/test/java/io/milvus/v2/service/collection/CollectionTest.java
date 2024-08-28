@@ -54,9 +54,10 @@ class CollectionTest extends BaseTest {
 
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
-        collectionSchema.addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build());
-        collectionSchema.addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
-
+        collectionSchema
+                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build())
+                .addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build())
+                .addField(AddFieldReq.builder().fieldName("description").dataType(DataType.VarChar).maxLength(64).build());
         IndexParam indexParam = IndexParam.builder()
                 .fieldName("vector")
                 .metricType(IndexParam.MetricType.L2)
