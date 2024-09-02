@@ -26,7 +26,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import io.milvus.bulkwriter.*;
+import io.milvus.bulkwriter.BulkWriter;
+import io.milvus.bulkwriter.CloudImportV2;
+import io.milvus.bulkwriter.LocalBulkWriter;
+import io.milvus.bulkwriter.LocalBulkWriterParam;
+import io.milvus.bulkwriter.RemoteBulkWriter;
+import io.milvus.bulkwriter.RemoteBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.CloudStorage;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
@@ -35,17 +40,37 @@ import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.bulkwriter.connect.AzureConnectParam;
 import io.milvus.bulkwriter.connect.S3ConnectParam;
 import io.milvus.bulkwriter.connect.StorageConnectParam;
-import io.milvus.bulkwriter.response.BulkImportResponse;
-import io.milvus.bulkwriter.response.GetImportProgressResponse;
-import io.milvus.bulkwriter.response.ListImportJobsResponse;
+import io.milvus.bulkwriter.request.v2.BulkImportV2Request;
+import io.milvus.bulkwriter.request.v2.GetImportProgressV2Request;
+import io.milvus.bulkwriter.request.v2.ListImportJobsV2Request;
+import io.milvus.bulkwriter.response.v2.BulkImportV2Response;
+import io.milvus.bulkwriter.response.v2.GetImportProgressV2Response;
+import io.milvus.bulkwriter.response.v2.ListImportJobsV2Response;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.grpc.*;
-import io.milvus.param.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.GetCollectionStatisticsResponse;
+import io.milvus.grpc.GetImportStateResponse;
+import io.milvus.grpc.ImportResponse;
+import io.milvus.grpc.ImportState;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.QueryResults;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.IndexType;
+import io.milvus.param.MetricType;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
 import io.milvus.param.bulkinsert.BulkInsertParam;
 import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
-import io.milvus.param.collection.*;
+import io.milvus.param.collection.CollectionSchemaParam;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FieldType;
+import io.milvus.param.collection.FlushParam;
+import io.milvus.param.collection.GetCollectionStatisticsParam;
+import io.milvus.param.collection.HasCollectionParam;
+import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.GetCollStatResponseWrapper;
@@ -122,13 +147,16 @@ public class BulkWriterExample {
     public static class CloudImportConsts {
 
         /**
-         * If you are an overseas user, you can use the following endpoint format: https://controller.api.{cloud-region}.zillizcloud.com/v1/vector/collections/import.
-         * If not, you can use the following endpoint format: https://controller.api.${CLOUD_REGION_ID}.cloud.zilliz.com.cn/v1/vector/collections/import.
+         * The value of the URL is fixed.
+         * For overseas regions, it is: https://api.cloud.zilliz.com
+         * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
-        public static final String CLOUD_ENDPOINT = "https://controller.api.${CLOUD-REGION}.{ENDPOINT-SUFFIX}";
-        public static final String API_KEY = "_api_key_of_the_user";
-        public static final String CLUSTER_ID = "_your_cloud_instance_id_";
-        public static final String COLLECTION_NAME = "_collection_name_on_the_cloud_";
+        public static final String CLOUD_ENDPOINT = "https://api.cloud.zilliz.com";
+        public static final String API_KEY = "_api_key_for_cluster_org_";
+        public static final String CLUSTER_ID = "_your_cloud_cluster_id_";
+        public static final String COLLECTION_NAME = "_collection_name_on_the_cluster_id_";
+        // If partition_name is not specified, use ""
+        public static final String PARTITION_NAME = "_partition_name_on_the_collection_";
 
         /**
          * Please provide the complete URL for the file or folder you want to import, similar to https://bucket-name.s3.region-code.amazonaws.com/object-name.
@@ -146,6 +174,7 @@ public class BulkWriterExample {
     private MilvusClient milvusClient;
 
     public static void main(String[] args) throws Exception {
+
         BulkWriterExample exampleBulkWriter = new BulkWriterExample();
         exampleBulkWriter.createConnection();
 
@@ -202,7 +231,7 @@ public class BulkWriterExample {
 //            CollectionSchemaParam collectionSchema = buildAllTypesSchema();
 //            List<List<String>> batchFiles = exampleBulkWriter.allTypesRemoteWriter(collectionSchema, fileType);
 //            exampleBulkWriter.createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
-//            exampleBulkWriter.callCloudImport(batchFiles, ALL_TYPES_COLLECTION_NAME);
+//            exampleBulkWriter.callCloudImport(batchFiles, ALL_TYPES_COLLECTION_NAME, StringUtils.EMPTY);
 //            exampleBulkWriter.retrieveImportData();
 //        }
     }
@@ -533,7 +562,7 @@ public class BulkWriterExample {
         System.out.println("Collection row number: " + getCollectionStatistics());
     }
 
-    private void callCloudImport(List<List<String>> batchFiles, String collectionName) throws InterruptedException, MalformedURLException {
+    private void callCloudImport(List<List<String>> batchFiles, String collectionName, String partitionName) throws InterruptedException, MalformedURLException {
         System.out.println("\n===================== call cloudImport ====================");
 
         String objectUrl = StorageConsts.cloudStorage == CloudStorage.AZURE
@@ -542,7 +571,11 @@ public class BulkWriterExample {
         String accessKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
         String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
 
-        BulkImportResponse bulkImportResponse = CloudImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, objectUrl, accessKey, secretKey, CloudImportConsts.CLUSTER_ID, collectionName);
+        BulkImportV2Request bulkImportRequest = BulkImportV2Request.builder()
+                .objectUrl(objectUrl).accessKey(accessKey).secretKey(secretKey)
+                .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(collectionName).partitionName(partitionName)
+                .build();
+        BulkImportV2Response bulkImportResponse = CloudImportV2.createImportJobs(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, bulkImportRequest);
         String jobId = bulkImportResponse.getJobId();
         System.out.println("Create a cloudImport job, job id: " + jobId);
 
@@ -550,15 +583,16 @@ public class BulkWriterExample {
             System.out.println("Wait 5 second to check bulkInsert job state...");
             TimeUnit.SECONDS.sleep(5);
 
-            GetImportProgressResponse getImportProgressResponse = CloudImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, jobId, CloudImportConsts.CLUSTER_ID);
-            if (getImportProgressResponse.getReadyPercentage().intValue() == 1) {
+            GetImportProgressV2Request request = GetImportProgressV2Request.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).build();
+            GetImportProgressV2Response getImportProgressResponse = CloudImportV2.getImportJobProgress(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, request);
+            if ("Completed".equals(getImportProgressResponse.getState())) {
                 System.out.printf("The job %s completed%n", jobId);
                 break;
-            } else if (StringUtils.isNotEmpty(getImportProgressResponse.getErrorMessage())) {
-                System.out.printf("The job %s failed, reason: %s%n", jobId, getImportProgressResponse.getErrorMessage());
+            } else if (StringUtils.isNotEmpty(getImportProgressResponse.getReason())) {
+                System.out.printf("The job %s failed or canceled, reason: %s%n", jobId, getImportProgressResponse.getReason());
                 break;
             } else {
-                System.out.printf("The job %s is running, progress:%s%n", jobId, getImportProgressResponse.getReadyPercentage());
+                System.out.printf("The job %s is running, progress:%s%n", jobId, getImportProgressResponse.getProgress());
             }
         }
 
@@ -737,18 +771,22 @@ public class BulkWriterExample {
 
     private static void exampleCloudImport() throws MalformedURLException {
         System.out.println("\n===================== import files to cloud vectordb ====================");
-        BulkImportResponse bulkImportResponse = CloudImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY,
-                CloudImportConsts.OBJECT_URL, CloudImportConsts.OBJECT_ACCESS_KEY, CloudImportConsts.OBJECT_SECRET_KEY,
-                CloudImportConsts.CLUSTER_ID, CloudImportConsts.COLLECTION_NAME);
+        BulkImportV2Request request = BulkImportV2Request.builder()
+                .objectUrl(CloudImportConsts.OBJECT_URL).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
+                .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
+                .build();
+        BulkImportV2Response bulkImportResponse = CloudImportV2.createImportJobs(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, request);
         System.out.println(GSON_INSTANCE.toJson(bulkImportResponse));
 
         System.out.println("\n===================== get import job progress ====================");
         String jobId = bulkImportResponse.getJobId();
-        GetImportProgressResponse getImportProgressResponse = CloudImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, jobId, CloudImportConsts.CLUSTER_ID);
+        GetImportProgressV2Request getImportProgressRequest = GetImportProgressV2Request.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).build();
+        GetImportProgressV2Response getImportProgressResponse = CloudImportV2.getImportJobProgress(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, getImportProgressRequest);
         System.out.println(GSON_INSTANCE.toJson(getImportProgressResponse));
 
         System.out.println("\n===================== list import jobs ====================");
-        ListImportJobsResponse listImportJobsResponse = CloudImport.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, CloudImportConsts.CLUSTER_ID, 10, 1);
+        ListImportJobsV2Request listImportJobsRequest = ListImportJobsV2Request.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).build();
+        ListImportJobsV2Response listImportJobsResponse = CloudImportV2.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, CloudImportConsts.API_KEY, listImportJobsRequest);
         System.out.println(GSON_INSTANCE.toJson(listImportJobsResponse));
     }
 
