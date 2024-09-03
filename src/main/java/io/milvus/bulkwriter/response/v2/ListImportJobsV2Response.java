@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.response;
+package io.milvus.bulkwriter.response.v2;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,34 +31,24 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetImportProgressResponse implements Serializable {
-    private static final long serialVersionUID = -7162743560382861611L;
+public class ListImportJobsV2Response implements Serializable {
 
-    private String fileName;
+    private static final long serialVersionUID = -8400893490624599225L;
+    private Integer count;
 
-    private Integer fileSize;
+    private Integer currentPage;
 
-    private Double readyPercentage;
+    private Integer pageSize;
 
-    private String completeTime;
-
-    private String errorMessage;
-
-    private String collectionName;
-
-    private String jobId;
-
-    private List<Detail> details;
+    private List<Record> records;
 
     @Data
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Detail {
-        private String fileName;
-        private Integer fileSize;
-        private Double readyPercentage;
-        private String completeTime;
-        private String errorMessage;
+    private static class Record {
+        private String collectionName;
+        private String jobId;
+        private String state;
     }
 }
