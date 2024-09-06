@@ -30,20 +30,13 @@ import io.milvus.bulkwriter.response.v2.GetImportProgressV2Response;
 import io.milvus.bulkwriter.response.v2.ListImportJobsV2Response;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
 
 public class CloudImportV2 extends BaseCloudImport {
     private static final Gson GSON_INSTANCE = new Gson();
 
     public static BulkImportV2Response createImportJobs(String url, String apiKey, BulkImportV2Request request) throws MalformedURLException {
-        String requestURL;
-        String protocol = new URL(url).getProtocol();
-        if (protocol.startsWith("http")) {
-            requestURL = url + "/v2/vectordb/jobs/import/create";
-        } else {
-            requestURL = String.format("https://%s/v2/vectordb/jobs/import/create", url);
-        }
+        String requestURL = url + "/v2/vectordb/jobs/import/create";
 
         Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, apiKey, params, 60 * 1000);
@@ -53,13 +46,7 @@ public class CloudImportV2 extends BaseCloudImport {
     }
 
     public static GetImportProgressV2Response getImportJobProgress(String url, String apiKey, GetImportProgressV2Request request) throws MalformedURLException {
-        String requestURL;
-        String protocol = new URL(url).getProtocol();
-        if (protocol.startsWith("http")) {
-            requestURL = url + "/v2/vectordb/jobs/import/getProgress";
-        } else {
-            requestURL = String.format("https://%s/v2/vectordb/jobs/import/getProgress", url);
-        }
+        String requestURL = url + "/v2/vectordb/jobs/import/getProgress";
 
         Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, apiKey, params, 60 * 1000);
@@ -69,13 +56,7 @@ public class CloudImportV2 extends BaseCloudImport {
     }
 
     public static ListImportJobsV2Response listImportJobs(String url, String apiKey, ListImportJobsV2Request request) throws MalformedURLException {
-        String requestURL;
-        String protocol = new URL(url).getProtocol();
-        if (protocol.startsWith("http")) {
-            requestURL = url + "/v2/vectordb/jobs/import/list";
-        } else {
-            requestURL = String.format("https://%s/v2/vectordb/jobs/import/list", url);
-        }
+        String requestURL = url + "/v2/vectordb/jobs/import/list";
 
         Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
 

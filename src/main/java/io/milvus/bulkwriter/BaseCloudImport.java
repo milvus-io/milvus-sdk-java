@@ -85,4 +85,20 @@ public class BaseCloudImport {
             ExceptionUtils.throwUnExpectedException(String.format("Failed to request url: %s, code: %s, message: %s", url, innerCode, innerMessage));
         }
     }
+
+    protected static String convertToV2ControlBaseURL(String url) {
+        /**
+         * Compatible with the original v1 API format: https://controller.api.{region-name}.cloud.zilliz.com
+         * Unified overseas domain for control center calls to reduce user perception
+         */
+        if (url.endsWith(".com")) {
+            return "https://api.cloud.zilliz.com";
+        }
+
+        /**
+         * Compatible with the original v1 API format: https://controller.api.{region-name}.cloud.zilliz.com.cn
+         * Unified domestic domain for control center calls to reduce user perception
+         */
+        return "https://api.cloud.zilliz.com.cn";
+    }
 }
