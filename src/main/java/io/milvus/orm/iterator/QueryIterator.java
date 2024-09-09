@@ -166,7 +166,7 @@ public class QueryIterator {
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return currentExpr + " and " + filteredPKStr;
+        return " ( "+currentExpr+" ) " + " and " + filteredPKStr;
     }
 
     private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
