@@ -40,15 +40,10 @@ public class ListImportJobsResponse implements Serializable {
 
     private Integer pageSize;
 
+    private List<Record> tasks;
+
+    @Deprecated
+    // Invalid field, please use tasks.
     private List<Record> records;
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    private static class Record {
-        private String collectionName;
-        private String jobId;
-        private String state;
-    }
 }
