@@ -19,13 +19,18 @@
 
 package io.milvus.bulkwriter.response.v2;
 
+import com.google.common.collect.ImmutableMap;
+import io.milvus.bulkwriter.response.ListImportJobsResponse;
+import io.milvus.bulkwriter.response.Record;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -34,6 +39,7 @@ import java.util.List;
 public class ListImportJobsV2Response implements Serializable {
 
     private static final long serialVersionUID = -8400893490624599225L;
+
     private Integer count;
 
     private Integer currentPage;
@@ -42,13 +48,30 @@ public class ListImportJobsV2Response implements Serializable {
 
     private List<Record> records;
 
-    @Data
-    @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
-    private static class Record {
-        private String collectionName;
-        private String jobId;
-        private String state;
+    public ListImportJobsResponse toListImportJobsResponse() {
+        Map<String, String> newOldStateMap = ImmutableMap.of(
+                "Pending","ImportPending",
+                "Importing","ImportRunning",
+                "Completed","ImportCompleted",
+                "Failed","ImportFailed",
+                "Cancel","ImportCancel"
+        );
+
+        List<Record> tasks = new ArrayList<>();
+        for (Record record : records) {
+            Record task = Record.builder()
+                    .jobId(record.getJobId())
+                    .collectionName(record.getCollectionName())
+                    .state(newOldStateMap.get(record.getState()))
+                    .build();
+            tasks.add(task);
+        }
+
+        ListImportJobsResponse listImportJobsResponse = new ListImportJobsResponse();
+        listImportJobsResponse.setCount(count);
+        listImportJobsResponse.setCurrentPage(currentPage);
+        listImportJobsResponse.setPageSize(pageSize);
+        listImportJobsResponse.setTasks(tasks);
+        return listImportJobsResponse;
     }
 }
