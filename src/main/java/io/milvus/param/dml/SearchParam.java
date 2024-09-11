@@ -37,7 +37,6 @@ import java.util.List;
  * Parameters for <code>search</code> interface.
  */
 @Getter
-@ToString
 public class SearchParam {
     private final String databaseName;
     private final String collectionName;
@@ -340,4 +339,28 @@ public class SearchParam {
         }
     }
 
+    /**
+     *
+     * Warning: don't use lombok@ToString to annotate this class
+     * because large number of vectors will waste time in toString() method.
+     *
+     */
+    @Override
+    public String toString() {
+        return "SearchParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", partitionNamesCount='" + partitionNames.size() + '\'' +
+                ", metricType=" + metricType +
+                ", vectorFieldName='" + vectorFieldName + '\'' +
+                ", expr='" + expr + '\'' +
+                ", topK=" + topK +
+                ", nq=" + NQ +
+                ", expr='" + expr + '\'' +
+                ", params='" + params + '\'' +
+                ", outputFields=" + outFields +
+                ", consistencyLevel='" + consistencyLevel + '\'' +
+                ", ignoreGrowing='" + ignoreGrowing + '\'' +
+                '}';
+    }
 }

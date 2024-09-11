@@ -39,7 +39,6 @@ import java.util.Map;
  * Parameters for <code>search</code> interface.
  */
 @Getter
-@ToString
 public class SearchSimpleParam {
     private final String collectionName;
     private final List<?> vectors;
@@ -188,5 +187,25 @@ public class SearchSimpleParam {
             params.put(Constant.OFFSET, offset);
             return new SearchSimpleParam(this);
         }
+    }
+
+    /**
+     *
+     * Warning: don't use lombok@ToString to annotate this class
+     * because large number of vectors will waste time in toString() method.
+     *
+     */
+    @Override
+    public String toString() {
+        return "SearchSimpleParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", params='" + params + '\'' +
+                ", filter='" + filter + '\'' +
+                ", NQ=" + vectors.size() +
+                ", limit=" + limit +
+                ", offset=" + offset +
+                ", outputFields=" + outputFields +
+                ", consistencyLevel='" + consistencyLevel + '\'' +
+                '}';
     }
 }
