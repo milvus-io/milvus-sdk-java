@@ -39,11 +39,11 @@ jobs:
           echo "run testcases"
           mvn clean test -Dsurefire.suiteXmlFiles=testng.xml
 
-      - name: Upload logs
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: logs-java-sdk-ci-test
-          path: |
-            tests/milvustestv2/target/surefire-reports
-            tests/milvustestv2/target/allure-results 
+#      - name: Upload logs
+#        if: ${{ always() }}
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: logs-java-sdk-ci-test
+#          path: |
+#            tests/milvustestv2/target/surefire-reports
+#            tests/milvustestv2/target/allure-results
