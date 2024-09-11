@@ -31,7 +31,6 @@ import java.util.List;
 /**
  * Parameters for <code>upsert</code> interface.
  */
-@ToString
 public class UpsertParam extends InsertParam {
     private UpsertParam(@NonNull Builder builder) {
         super(builder);
@@ -137,4 +136,19 @@ public class UpsertParam extends InsertParam {
         }
     }
 
+    /**
+     *
+     * Warning: don't use lombok@ToString to annotate this class
+     * because large number of vectors will waste time in toString() method.
+     *
+     */
+    @Override
+    public String toString() {
+        return "UpsertParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", rowCount=" + rowCount +
+                '}';
+    }
 }

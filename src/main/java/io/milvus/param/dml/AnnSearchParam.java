@@ -36,7 +36,6 @@ import java.util.SortedMap;
  * Parameters for <code>hybridSearch</code> interface.
  */
 @Getter
-@ToString
 public class AnnSearchParam {
 
     private final String metricType;
@@ -231,4 +230,22 @@ public class AnnSearchParam {
         }
     }
 
+    /**
+     *
+     * Warning: don't use lombok@ToString to annotate this class
+     * because large number of vectors will waste time in toString() method.
+     *
+     */
+    @Override
+    public String toString() {
+        return "AnnSearchParam{" +
+                "metricType=" + metricType +
+                ", vectorFieldName='" + vectorFieldName + '\'' +
+                ", expr='" + expr + '\'' +
+                ", topK=" + topK +
+                ", nq=" + NQ +
+                ", expr='" + expr + '\'' +
+                ", params='" + params + '\'' +
+                '}';
+    }
 }
