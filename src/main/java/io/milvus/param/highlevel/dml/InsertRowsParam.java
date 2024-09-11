@@ -34,7 +34,6 @@ import java.util.List;
  * Parameters for <code>insert</code> interface.
  */
 @Getter
-@ToString
 public class InsertRowsParam {
 
     private final InsertParam insertParam;
@@ -119,5 +118,21 @@ public class InsertRowsParam {
                     .build();
             return new InsertRowsParam(insertParam);
         }
+    }
+
+    /**
+     *
+     * Warning: don't use lombok@ToString to annotate this class
+     * because large number of vectors will waste time in toString() method.
+     *
+     */
+    @Override
+    public String toString() {
+        return "InsertRowsParam{" +
+                "collectionName='" + insertParam.getCollectionName() + '\'' +
+                ", databaseName='" + insertParam.getDatabaseName() + '\'' +
+                ", partitionName='" + insertParam.getPartitionName() + '\'' +
+                ", rowCount=" + insertParam.getRowCount() +
+                '}';
     }
 }
