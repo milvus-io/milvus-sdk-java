@@ -24,12 +24,17 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.ApplicationProtocolConfig;
+import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth;
+import io.grpc.netty.shaded.io.netty.handler.ssl.IdentityCipherSuiteFilter;
+import io.grpc.netty.shaded.io.netty.handler.ssl.JdkSslContext;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.v2.client.ConnectConfig;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +62,25 @@ public class ClientUtils {
         }
 
         try {
-            if (StringUtils.isNotEmpty(connectConfig.getServerPemPath())) {
+            if (connectConfig.getSslContext() != null) {
+                // sslContext from connect config
+                NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectConfig.getHost(), connectConfig.getPort())
+                        .overrideAuthority(connectConfig.getServerName())
+                        .sslContext(convertJavaSslContextToNetty(connectConfig))
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .keepAliveTime(connectConfig.getKeepAliveTimeMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveTimeout(connectConfig.getKeepAliveTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
+                        .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                if(connectConfig.isSecure()) {
+                    builder.useTransportSecurity();
+                }
+                if (StringUtils.isNotEmpty(connectConfig.getServerName())) {
+                    builder.overrideAuthority(connectConfig.getServerName());
+                }
+                channel = builder.build();
+            } else if (StringUtils.isNotEmpty(connectConfig.getServerPemPath())) {
                 // one-way tls
                 SslContext sslContext = GrpcSslContexts.forClient()
                         .trustManager(new File(connectConfig.getServerPemPath()))
@@ -120,6 +143,13 @@ public class ClientUtils {
         }
         assert channel != null;
         return channel;
+    }
+
+    private static JdkSslContext convertJavaSslContextToNetty(ConnectConfig connectConfig) {
+        ApplicationProtocolConfig applicationProtocolConfig = new ApplicationProtocolConfig(ApplicationProtocolConfig.Protocol.NONE,
+                ApplicationProtocolConfig.SelectorFailureBehavior.FATAL_ALERT, ApplicationProtocolConfig.SelectedListenerFailureBehavior.FATAL_ALERT);
+        return new JdkSslContext(connectConfig.getSslContext(), true, null,
+                IdentityCipherSuiteFilter.INSTANCE, applicationProtocolConfig, ClientAuth.NONE, null, false);
     }
 
     public void checkDatabaseExist(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName) {

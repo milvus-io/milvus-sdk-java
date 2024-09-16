@@ -24,6 +24,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
+import javax.net.ssl.SSLContext;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +57,8 @@ public class ConnectConfig {
     private Boolean secure = false;
     @Builder.Default
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
+
+    private SSLContext sslContext;
 
     public String getHost() {
         URI uri = URI.create(this.uri);
