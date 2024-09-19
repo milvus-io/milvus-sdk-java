@@ -1,4 +1,16 @@
 # Changelog
+## milvus-sdk-java 2.4.4 (2024-09-19)
+
+### Improvement
+- Upgrade the bulkWriter cloud API call from v1 to v2
+- Improve usability of AlterCollectionReq & CreateCollectionReq
+- Check connection when MilvusClientV2 is initialized
+- Support customized SSLContext for MilvusClientV2
+- Reduce time-consuming log of search/insert/upsert for MilvusClientV1 
+
+### Bug
+- Fix a bug or QueryIterator with special expression
+
 ## milvus-sdk-java 2.4.3 (2024-08-09)
 
 ### Feature
