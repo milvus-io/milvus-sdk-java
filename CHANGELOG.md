@@ -1,4 +1,14 @@
 # Changelog
+## milvus-sdk-java 2.3.10 (2024-09-19)
+
+### Improvement
+- Improve usability of CreateCollectionReq
+- Check connection when MilvusClientV2 is initialized
+- Reduce time-consuming log of search/insert/upsert for MilvusClientV1
+
+### Bug
+- Fix a bug or QueryIterator with special expression
+
 ## milvus-sdk-java 2.3.9 (2024-08-09)
 
 ### Feature
