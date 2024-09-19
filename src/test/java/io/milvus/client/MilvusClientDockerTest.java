@@ -84,7 +84,7 @@ class MilvusClientDockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.7");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.11");
 
     @BeforeAll
     public static void setUp() {
