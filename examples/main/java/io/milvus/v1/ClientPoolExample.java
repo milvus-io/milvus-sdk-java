@@ -128,7 +128,7 @@ public class ClientPoolExample {
                             .withCollectionName(CollectionName)
                             .withMetricType(MetricType.L2)
                             .withTopK(10)
-                            .withFloatVectors(Collections.singletonList(CommonUtils.generateFloatVector(DIM)))
+                            .withVectors(Collections.singletonList(CommonUtils.generateFloatVector(DIM)))
                             .withVectorFieldName(VectorFieldName)
                             .withParams("{}")
                             .withConsistencyLevel(ConsistencyLevelEnum.EVENTUALLY)
