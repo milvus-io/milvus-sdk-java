@@ -3,7 +3,6 @@ package io.milvus.common.utils;
 import io.milvus.exception.ParamException;
 import io.milvus.param.collection.FieldType;
 import io.milvus.response.DescCollResponseWrapper;
-import org.apache.logging.log4j.util.Strings;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +33,7 @@ public class VectorUtils {
     }
 
     public static String convertPksExpr(List<?> primaryIds, String primaryFieldName) {
-        return primaryFieldName + " in [" + Strings.join(primaryIds, ',') + "]";
+        String strIDs = primaryIds.stream().map(Object::toString).collect(Collectors.joining(","));
+        return primaryFieldName + " in [" + strIDs + "]";
     }
 }

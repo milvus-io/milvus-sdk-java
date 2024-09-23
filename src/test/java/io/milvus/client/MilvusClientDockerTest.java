@@ -55,8 +55,6 @@ import io.milvus.pool.PoolConfig;
 import io.milvus.response.*;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.text.RandomStringGenerator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -73,7 +71,6 @@ import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientDockerTest {
-    private static final Logger logger = LogManager.getLogger("MilvusClientTest");
     protected static MilvusClient client;
     protected static RandomStringGenerator generator;
     protected static final int dimension = 128;

@@ -32,8 +32,6 @@ import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.response.*;
 import org.apache.commons.text.RandomStringGenerator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.codehaus.plexus.util.FileUtils;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -49,7 +47,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 class MilvusMultiClientDockerTest {
-    private static final Logger logger = LogManager.getLogger("MilvusMultiClientDockerTest");
     private static MilvusClient client;
     private static RandomStringGenerator generator;
     private static final int dimension = 128;
@@ -65,16 +62,16 @@ class MilvusMultiClientDockerTest {
         String bashCommand = "docker compose up -d";
 
         try {
-            logger.debug(bashCommand);
+            System.out.println(bashCommand);
             Process pro = runtime.exec(bashCommand);
             int status = pro.waitFor();
             if (status != 0) {
-                logger.error("Failed to start docker compose, status " + status);
+                System.out.println("Failed to start docker compose, status " + status);
             }
 
-            logger.debug("Milvus service started");
+            System.out.println("Milvus service started");
         } catch (Throwable t) {
-            logger.error("Failed to execute docker compose up", t);
+            System.out.println("Failed to execute docker compose up: " + t.getMessage());
         }
 
         ConnectParam connectParam = connectParamBuilder().withAuthorization("root", "Milvus").build();
@@ -88,24 +85,24 @@ class MilvusMultiClientDockerTest {
             try {
                 TimeUnit.SECONDS.sleep(checkInterval);
             } catch (InterruptedException t) {
-                logger.error("Interrupted", t);
+                System.out.println("Interrupted: " + t.getMessage());
                 break;
             }
 
             try{
                 R<CheckHealthResponse> resp = tempClient.checkHealth();
                 if (resp.getData().getIsHealthy()) {
-                    logger.info(String.format("Milvus service is ready after %d seconds", waitTime));
+                    System.out.println(String.format("Milvus service is ready after %d seconds", waitTime));
                     break;
                 }
-                logger.info("Milvus service is not ready, waiting...");
+                System.out.println("Milvus service is not ready, waiting...");
             } catch (Throwable t) {
-                logger.error("Milvus service is in initialize, not able to connect", t);
+                System.out.println("Milvus service is in initialize, not able to connect: " + t.getMessage());
             }
 
             waitTime += checkInterval;
             if (waitTime > 120) {
-                logger.error(String.format("Milvus service failed to start within %d seconds", waitTime));
+                System.out.println(String.format("Milvus service failed to start within %d seconds", waitTime));
                 break;
             }
         }
@@ -121,16 +118,16 @@ class MilvusMultiClientDockerTest {
         String bashCommand = "docker compose down";
 
         try {
-            logger.debug("Milvus service stopping...");
+            System.out.println("Milvus service stopping...");
             TimeUnit.SECONDS.sleep(5);
-            logger.debug(bashCommand);
+            System.out.println(bashCommand);
             Process pro = runtime.exec(bashCommand);
             int status = pro.waitFor();
             if (status != 0) {
-                logger.error("Failed to stop test docker containers" + pro.getOutputStream().toString());
+                System.out.println("Failed to stop test docker containers" + pro.getOutputStream().toString());
             }
         } catch (Throwable t) {
-            logger.error("Failed to execute docker compose down", t);
+            System.out.println("Failed to execute docker compose down: " + t.getMessage());
         }
 
         // clean up log dir
@@ -138,17 +135,17 @@ class MilvusMultiClientDockerTest {
         bashCommand = "docker compose rm";
 
         try {
-            logger.debug(bashCommand);
+            System.out.println(bashCommand);
             Process pro = runtime.exec(bashCommand);
             int status = pro.waitFor();
             if (status != 0) {
-                logger.error("Failed to clean up test docker containers" + pro.getOutputStream().toString());
+                System.out.println("Failed to clean up test docker containers" + pro.getOutputStream().toString());
             }
 
-            logger.error("Clean up volume directory of Docker");
+            System.out.println("Clean up volume directory of Docker");
             FileUtils.deleteDirectory("volumes");
         } catch (Throwable t) {
-            logger.error("Failed to remove docker compose volume", t);
+            System.out.println("Failed to remove docker compose volume:" + t.getMessage());
         }
     }
 
