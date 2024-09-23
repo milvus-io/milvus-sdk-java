@@ -97,7 +97,8 @@ public class QueryIterator {
         }
 
         List<QueryResultsWrapper.RowRecord> res = getQueryResultsWrapper(expr, 0L, offset);
-        updateCursor(res.subList(0, (int) offset));
+        int resultIndex = Math.min(res.size(), (int) offset);
+        updateCursor(res.subList(0, resultIndex));
         offset = 0;
     }
 
@@ -184,6 +185,8 @@ public class QueryIterator {
                 .withOffset(offset)
                 .withLimit(limit)
                 .withIgnoreGrowing(queryIteratorParam.isIgnoreGrowing())
+                .withReduceStopForBest(queryIteratorParam.isReduceStopForBest())
+                .withIterator(Boolean.TRUE)
                 .build();
 
         QueryRequest queryRequest = ParamUtils.convertQueryParam(queryParam);
