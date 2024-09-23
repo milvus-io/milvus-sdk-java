@@ -53,6 +53,7 @@ public class QueryIteratorParam {
     private final long offset;
     private final long limit;
     private final boolean ignoreGrowing;
+    private final boolean reduceStopForBest;
 
     private final long batchSize;
 
@@ -69,6 +70,7 @@ public class QueryIteratorParam {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.reduceStopForBest = builder.reduceStopForBest;
 
         this.batchSize = builder.batchSize;
     }
@@ -94,6 +96,7 @@ public class QueryIteratorParam {
         private Long limit = (long) UNLIMITED;
         private Boolean ignoreGrowing = Boolean.FALSE;
         private Long batchSize = 1000L;
+        private Boolean reduceStopForBest = Boolean.TRUE;
 
         private Builder() {
         }
@@ -236,6 +239,17 @@ public class QueryIteratorParam {
          */
         public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
+         * Adjust the query using iterators to handle offsets more efficiently during the Reduce step. Default is True.
+         *
+         * @param reduceStopForBest <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withReduceStopForBest(@NonNull Boolean reduceStopForBest) {
+            this.reduceStopForBest = reduceStopForBest;
             return this;
         }
 
