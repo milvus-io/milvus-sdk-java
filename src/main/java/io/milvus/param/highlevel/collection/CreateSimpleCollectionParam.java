@@ -36,7 +36,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 
 import java.util.HashMap;
 import java.util.List;
@@ -69,7 +68,7 @@ public class CreateSimpleCollectionParam {
         private String collectionName;
         private int dimension;
         private MetricType metricType = MetricType.L2;
-        private String description = Strings.EMPTY;
+        private String description = "";
         private String primaryField;
         private String vectorField;
         private boolean autoId = Boolean.FALSE;
