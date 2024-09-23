@@ -248,7 +248,9 @@ public class SearchIterator {
                 .withRoundDecimal(searchIteratorParam.getRoundDecimal())
                 .withParams(JacksonUtils.toJsonString(params))
                 .withMetricType(MetricType.valueOf(searchIteratorParam.getMetricType()))
-                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing());
+                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing())
+                .withIterator(Boolean.TRUE)
+                ;
 
         if (!StringUtils.isNullOrEmpty(searchIteratorParam.getGroupByFieldName())) {
             searchParamBuilder.withGroupByFieldName(searchIteratorParam.getGroupByFieldName());

@@ -26,10 +26,8 @@ import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
-
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -59,6 +57,7 @@ public class SearchParam {
     private final boolean ignoreGrowing;
     private final String groupByFieldName;
     private final PlaceholderType plType;
+    private final boolean iterator;
 
     private SearchParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -80,6 +79,7 @@ public class SearchParam {
         this.ignoreGrowing = builder.ignoreGrowing;
         this.groupByFieldName = builder.groupByFieldName;
         this.plType = builder.plType;
+        this.iterator = builder.iterator;
     }
 
     public static Builder newBuilder() {
@@ -108,6 +108,7 @@ public class SearchParam {
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
         private String groupByFieldName;
+        private Boolean iterator = Boolean.FALSE;
 
         // plType is used to distinct vector type
         // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
@@ -373,6 +374,17 @@ public class SearchParam {
          */
         public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
+            return this;
+        }
+
+        /**
+         * Optimizing specifically for iterators can yield correct data results. Default is False.
+         *
+         * @param iterator <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withIterator(@NonNull Boolean iterator) {
+            this.iterator = iterator;
             return this;
         }
 

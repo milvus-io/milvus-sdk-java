@@ -49,6 +49,8 @@ public class QueryParam {
     private final long offset;
     private final long limit;
     private final boolean ignoreGrowing;
+    private final boolean reduceStopForBest;
+    private final boolean iterator;
 
     private QueryParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -63,6 +65,8 @@ public class QueryParam {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.reduceStopForBest = builder.reduceStopForBest;
+        this.iterator = builder.iterator;
     }
 
     public static Builder newBuilder() {
@@ -85,6 +89,8 @@ public class QueryParam {
         private Long offset = 0L;
         private Long limit = 0L;
         private Boolean ignoreGrowing = Boolean.FALSE;
+        private Boolean reduceStopForBest = Boolean.FALSE;
+        private Boolean iterator = Boolean.FALSE;
 
         private Builder() {
         }
@@ -215,6 +221,28 @@ public class QueryParam {
          */
         public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
+         * Adjust the query using iterators to handle offsets more efficiently during the Reduce step. Default is False.
+         *
+         * @param reduceStopForBest <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withReduceStopForBest(@NonNull Boolean reduceStopForBest) {
+            this.reduceStopForBest = reduceStopForBest;
+            return this;
+        }
+
+        /**
+         * Optimizing specifically for iterators can yield correct data results. Default is False.
+         *
+         * @param iterator <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
+         * @return <code>Builder</code>
+         */
+        public Builder withIterator(@NonNull Boolean iterator) {
+            this.iterator = iterator;
             return this;
         }
 
