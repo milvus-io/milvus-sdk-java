@@ -716,6 +716,11 @@ public class ParamUtils {
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.IGNORE_GROWING)
                                 .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
+                                .build())
+                .addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.ITERATOR_FIELD)
+                                .setValue(String.valueOf(requestParam.isIterator()))
                                 .build());
 
         if (!Objects.equals(requestParam.getMetricType(), MetricType.None.name())) {
@@ -913,6 +918,18 @@ public class ParamUtils {
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.IGNORE_GROWING)
                 .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
+                .build());
+
+        // reduce stop for best
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                        .setKey(Constant.REDUCE_STOP_FOR_BEST)
+                        .setValue(String.valueOf(requestParam.isReduceStopForBest()))
+                .build());
+
+        // iterator
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                        .setKey(Constant.ITERATOR_FIELD)
+                        .setValue(String.valueOf(requestParam.isIterator()))
                 .build());
 
         return builder.build();
