@@ -31,16 +31,12 @@ import io.milvus.grpc.ListResourceGroupsResponse;
 import io.milvus.grpc.LoadState;
 import io.milvus.grpc.ShowCollectionsResponse;
 
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
 
 public class ResourceGroupManagement {
     public static String RECYCLE_RG = "__recycle_resource_group";
     public static String DEFAULT_RG = "__default_resource_group";
     static Integer RECYCLE_RG_REQUEST_NODE_NUM = 0;
     static Integer RECYCLE_RG_LIMIT_NODE_NUM = 100000;
-
-    protected static final Logger logger = LoggerFactory.getLogger(ResourceGroupManagement.class);
 
     private MilvusClient client;
 
@@ -99,7 +95,7 @@ public class ResourceGroupManagement {
             }
 
             if (resourceGroupNames.size() == 0) {
-                logger.info("no loaded collection in database {}", dbName);
+                System.out.println("no loaded collection in database " + dbName);
                 continue;
             } else if (resourceGroupNames.size() == 1) {
                 // all loaded collection in one resource group.
@@ -235,8 +231,8 @@ public class ResourceGroupManagement {
         GetLoadStateResponse loadedState = unwrap(loaded);
 
         if (loadedState.getState() != LoadState.LoadStateLoaded) {
-            logger.info("Collection {} @ Database {} is not loaded, state is {}, skip it", collection, dbName,
-                    loaded.getData().getState());
+            System.out.printf("Collection %s @ Database %s is not loaded, state is %s, skip it%n",
+                    collection, dbName, loaded.getData().getState().name());
             return null;
         }
 
@@ -255,7 +251,7 @@ public class ResourceGroupManagement {
                     replicas.getReplicasCount()));
         }
         if (replicas.getReplicasCount() == 0) {
-            logger.warn("Collection {} @ Database {} has no replica, skip it", collection, dbName);
+            System.out.printf("Collection %s @ Database %s has no replica, skip it%n", collection, dbName);
             return null;
         }
 
@@ -274,7 +270,7 @@ public class ResourceGroupManagement {
                 MilvusException e = (MilvusException) response.getException();
                 throw e;
             }
-            logger.warn("at unwrap", response.getException());
+            System.out.println("at unwrap " + response.getMessage());
             throw response.getException();
         }
         return response.getData();
