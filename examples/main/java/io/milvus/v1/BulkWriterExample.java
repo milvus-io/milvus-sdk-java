@@ -52,7 +52,6 @@ import io.milvus.response.QueryResultsWrapper;
 import org.apache.avro.generic.GenericData;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.util.Asserts;
-import org.apache.logging.log4j.util.Strings;
 
 import java.io.File;
 import java.io.IOException;
@@ -510,7 +509,7 @@ public class BulkWriterExample {
                     List<KeyValuePair> infosList = bulkInsertState.getInfosList();
                     Optional<String> failedReasonOptional = infosList.stream().filter(e -> e.getKey().equals("failed_reason"))
                             .map(KeyValuePair::getValue).findFirst();
-                    String failedReson = failedReasonOptional.orElse(Strings.EMPTY);
+                    String failedReson = failedReasonOptional.orElse("");
 
                     System.out.printf("The task %s failed, reason: %s%n", taskId, failedReson);
                 } else if (bulkInsertState.getState() == ImportState.ImportCompleted) {
