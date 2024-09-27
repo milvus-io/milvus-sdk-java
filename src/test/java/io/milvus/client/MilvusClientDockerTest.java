@@ -84,7 +84,7 @@ class MilvusClientDockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.11");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20240927-1f271e39-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -2461,7 +2461,8 @@ class MilvusClientDockerTest {
             Object name = record.get(DataType.VarChar.name());
             Assertions.assertNotNull(name);
             Assertions.assertEquals("name_18", name);
-            Assertions.assertThrows(ParamException.class, () -> record.get("dynamic_value")); // we didn't set dynamic_value for No.18 row
+            Assertions.assertFalse(record.contains("dynamic_value"));
+            Assertions.assertNull(record.get("dynamic_value")); // we didn't set dynamic_value for No.18 row
         }
 
         // upsert to change the no.5 and no.18 items
@@ -3134,6 +3135,172 @@ class MilvusClientDockerTest {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testNullableAndDefaultValue() {
+        String randomCollectionName = generator.generate(10);
+
+        CollectionSchemaParam.Builder builder = CollectionSchemaParam.newBuilder();
+        builder.addFieldType(FieldType.newBuilder()
+                .withPrimaryKey(true)
+                .withAutoID(false)
+                .withDataType(DataType.Int64)
+                .withName("id")
+                .build());
+        builder.addFieldType(FieldType.newBuilder()
+                .withDataType(DataType.FloatVector)
+                .withName("vector")
+                .withDimension(DIMENSION)
+                .build());
+        builder.addFieldType(FieldType.newBuilder()
+                .withDataType(DataType.Int32)
+                .withName("flag")
+                .withMaxLength(100)
+                .withDefaultValue(10)
+                .build());
+        builder.addFieldType(FieldType.newBuilder()
+                .withDataType(DataType.VarChar)
+                .withName("desc")
+                .withMaxLength(100)
+                .withNullable(true)
+                .build());
+        R<RpcStatus> createR = client.createCollection(CreateCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withSchema(builder.build())
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        // create index on scalar field
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFieldName("vector")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .build());
+
+        // insert by row-based
+        List<JsonObject> data = new ArrayList<>();
+        Gson gson = new Gson();
+        for (int i = 0; i < 10; i++) {
+            JsonObject row = new JsonObject();
+            List<Float> vector = generateFloatVector();
+            row.addProperty("id", i);
+            row.add("vector", gson.toJsonTree(vector));
+            if (i%2 == 0) {
+                row.addProperty("flag", i);
+                row.add("desc", JsonNull.INSTANCE);
+            } else {
+                row.addProperty("desc", "AAA");
+            }
+            data.add(row);
+        }
+
+        R<MutationResult> insertR = client.insert(InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(data)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // insert by column-based
+        List<List<Float>> vectors = generateFloatVectors(10);
+        List<Long> ids = new ArrayList<>();
+        List<Integer> flags = new ArrayList<>();
+        List<String> descs = new ArrayList<>();
+        for (int i = 10; i < 20; i++) {
+            ids.add((long)i);
+            if (i%2 == 0) {
+                flags.add(i);
+                descs.add(null);
+            } else {
+                flags.add(null);
+                descs.add("AAA");
+            }
+
+        }
+        List<InsertParam.Field> fieldsInsert = new ArrayList<>();
+        fieldsInsert.add(new InsertParam.Field("id", ids));
+        fieldsInsert.add(new InsertParam.Field("vector", vectors));
+        fieldsInsert.add(new InsertParam.Field("flag", flags));
+        fieldsInsert.add(new InsertParam.Field("desc", descs));
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withFields(fieldsInsert)
+                .build();
+
+        insertR = client.insert(insertParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // query
+        QueryParam queryParam = QueryParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withExpr("id >= 0")
+                .addOutField("flag")
+                .addOutField("desc")
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .build();
+
+        R<QueryResults> queryR = client.query(queryParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), queryR.getStatus().intValue());
+
+        // verify query result
+        QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(queryR.getData());
+        List<QueryResultsWrapper.RowRecord> records = queryResultsWrapper.getRowRecords();
+        System.out.println("Query results:");
+        for (QueryResultsWrapper.RowRecord record:records) {
+            long id = (long)record.get("id");
+            if (id%2 == 0) {
+                Assertions.assertEquals((int)id, record.get("flag"));
+                Assertions.assertNull(record.get("desc"));
+            } else {
+                Assertions.assertEquals(10, record.get("flag"));
+                Assertions.assertEquals("AAA", record.get("desc"));
+            }
+            System.out.println(record);
+        }
+
+        // search the row-based items
+        List<List<Float>> searchVectors = generateFloatVectors(1);
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withMetricType(MetricType.L2)
+                .withTopK(10)
+                .withFloatVectors(searchVectors)
+                .withVectorFieldName("vector")
+                .withParams("{}")
+                .addOutField("flag")
+                .addOutField("desc")
+                .withConsistencyLevel(ConsistencyLevelEnum.BOUNDED)
+                .build();
+
+        R<SearchResults> searchR = client.search(searchParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+
+        // verify the search result
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+        System.out.println("Search results:");
+        Assertions.assertEquals(10, scores.size());
+        for (SearchResultsWrapper.IDScore score : scores) {
+            long id = score.getLongID();
+            Map<String, Object> fieldValues = score.getFieldValues();
+            if (id%2 == 0) {
+                Assertions.assertEquals((int)id, fieldValues.get("flag"));
+                Assertions.assertNull(fieldValues.get("desc"));
+            } else {
+                Assertions.assertEquals(10, fieldValues.get("flag"));
+                Assertions.assertEquals("AAA", fieldValues.get("desc"));
+            }
+            System.out.println(score);
         }
     }
 }

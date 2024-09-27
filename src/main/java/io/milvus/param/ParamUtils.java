@@ -30,6 +30,8 @@ import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.*;
 import io.milvus.param.dml.ranker.BaseRanker;
 import io.milvus.response.DescCollResponseWrapper;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -107,6 +109,37 @@ public class ParamUtils {
         }
     }
 
+    private static boolean checkNullableFieldData(FieldType fieldSchema, Object value, boolean verifyElementType) {
+        if (verifyElementType) {
+            return false; // array element check, go to 1.2 and 2.3
+        }
+
+        // nullable and default value check
+        // 1. if the field is nullable, user can input null for column-based insert
+        //    1) if user input JsonNull, this value is replaced by default value
+        //    2) if user input JsonObject, infer this value by type
+        // 2. if the field is not nullable, user can input null for column-based insert
+        //    1) if user input JsonNull, and default value is null, throw error
+        //    2) if user input JsonNull, and default value is not null, this value is replaced by default value
+        //    3) if user input JsonObject, infer this value by type
+        if (fieldSchema.isNullable()) {
+            if (value == null) {
+                return true; // 1.1
+            }
+        } else {
+            if (value == null) {
+                if (fieldSchema.getDefaultValue() == null) {
+                    String msg = "Field '%s' is not nullable but the input value is null";
+                    throw new ParamException(String.format(msg, fieldSchema.getName())); // 2.1
+                } else {
+                    return true; // 2.2
+                }
+            }
+        }
+
+        return false; // go to 1.2 and 2.3
+    }
+
     public static void checkFieldData(FieldType fieldSchema, List<?> values, boolean verifyElementType) {
         HashMap<DataType, String> errMsgs = getTypeErrorMsgForColumnInsert();
         DataType dataType = verifyElementType ? fieldSchema.getElementType() : fieldSchema.getDataType();
@@ -181,6 +214,9 @@ public class ParamUtils {
                 break;
             case Int64:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof Long)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -190,6 +226,9 @@ public class ParamUtils {
             case Int16:
             case Int8:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof Short) && !(value instanceof Integer)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -197,6 +236,9 @@ public class ParamUtils {
                 break;
             case Bool:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof Boolean)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -204,6 +246,9 @@ public class ParamUtils {
                 break;
             case Float:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof Float)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -211,6 +256,9 @@ public class ParamUtils {
                 break;
             case Double:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof Double)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -219,6 +267,9 @@ public class ParamUtils {
             case VarChar:
             case String:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof String)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -229,6 +280,9 @@ public class ParamUtils {
                 break;
             case JSON:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof JsonElement)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -236,6 +290,9 @@ public class ParamUtils {
                 break;
             case Array:
                 for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
                     if (!(value instanceof List)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -253,8 +310,32 @@ public class ParamUtils {
     }
 
     public static Object checkFieldValue(FieldType fieldSchema, JsonElement value) {
-        HashMap<DataType, String> errMsgs = getTypeErrorMsgForRowInsert();
         DataType dataType = fieldSchema.getDataType();
+        // nullable and default value check
+        // 1. if the field is nullable, user can input JsonNull/JsonObject(for row-based insert)
+        //    1) if user input JsonNull, this value is replaced by default value
+        //    2) if user input JsonObject, infer this value by type
+        // 2. if the field is not nullable, user can input JsonNull/JsonObject(for row-based insert)
+        //    1) if user input JsonNull, and default value is null, throw error
+        //    2) if user input JsonNull, and default value is not null, this value is replaced by default value
+        //    3) if user input JsonObject, infer this value by type
+        if (fieldSchema.isNullable()) {
+            if (value instanceof JsonNull) {
+                return fieldSchema.getDefaultValue(); // 1.1
+            }
+        } else {
+            if (value instanceof JsonNull) {
+                if (fieldSchema.getDefaultValue() == null) {
+                    String msg = "Field '%s' is not nullable but the input value is null";
+                    throw new ParamException(String.format(msg, fieldSchema.getName())); // 2.1
+                } else {
+                    return fieldSchema.getDefaultValue(); // 2.2
+                }
+            }
+        }
+
+        // 1.2 and 1.3, infer value by type
+        HashMap<DataType, String> errMsgs = getTypeErrorMsgForRowInsert();
 
         switch (dataType) {
             case FloatVector: {
@@ -569,21 +650,27 @@ public class ParamUtils {
 
                     // check normalField
                     JsonElement rowFieldData = row.get(fieldName);
-                    if (rowFieldData != null && !rowFieldData.isJsonNull()) {
-                        if (fieldType.isAutoID()) {
-                            String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
-                            throw new ParamException(msg);
-                        }
-                        Object fieldValue = checkFieldValue(fieldType, rowFieldData);
-                        insertDataInfo.getData().add(fieldValue);
-                        nameInsertInfo.put(fieldName, insertDataInfo);
-                    } else {
+                    if (rowFieldData == null) {
                         // check if autoId
-                        if (!fieldType.isAutoID()) {
+                        if (fieldType.isAutoID()) {
+                            continue;
+                        }
+                        // if the field doesn't have default value, require user provide the value
+                        if (!fieldType.isNullable() && fieldType.getDefaultValue() == null) {
                             String msg = String.format("The field: %s is not provided.", fieldType.getName());
                             throw new ParamException(msg);
                         }
+
+                        rowFieldData = JsonNull.INSTANCE;
                     }
+
+                    if (fieldType.isAutoID()) {
+                        String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
+                        throw new ParamException(msg);
+                    }
+                    Object fieldValue = checkFieldValue(fieldType, rowFieldData);
+                    insertDataInfo.getData().add(fieldValue);
+                    nameInsertInfo.put(fieldName, insertDataInfo);
                 }
 
                 // deal with dynamicField
@@ -976,10 +1063,22 @@ public class ParamUtils {
         DataType dataType = fieldType.getDataType();
         String fieldName = fieldType.getName();
         FieldData.Builder builder = FieldData.newBuilder();
+
         if (isVectorDataType(dataType)) {
             VectorField vectorField = genVectorField(dataType, objects);
             return builder.setFieldName(fieldName).setType(dataType).setVectors(vectorField).build();
         } else {
+            if (fieldType.isNullable() || fieldType.getDefaultValue() != null) {
+                List<Object> tempObjects = new ArrayList<>();
+                for (Object obj : objects) {
+                    builder.addValidData(obj != null);
+                    if (obj != null) {
+                        tempObjects.add(obj);
+                    }
+                }
+                objects = tempObjects;
+            }
+
             ScalarField scalarField = genScalarField(fieldType, objects);
             if (isDynamic) {
                 return builder.setType(dataType).setScalars(scalarField).setIsDynamic(true).build();
@@ -1191,7 +1290,13 @@ public class ParamUtils {
                 .withAutoID(field.getAutoID())
                 .withDataType(field.getDataType())
                 .withElementType(field.getElementType())
-                .withIsDynamic(field.getIsDynamic());
+                .withIsDynamic(field.getIsDynamic())
+                .withNullable(field.getNullable());
+
+        Object defaultValue = valueFieldToObject(field.getDefaultValue(), field.getDataType());
+        if (field.getNullable() || defaultValue != null) {
+            builder.withDefaultValue(defaultValue);
+        }
 
         if (field.getIsDynamic()) {
             builder.withIsDynamic(true);
@@ -1218,7 +1323,20 @@ public class ParamUtils {
                 .setAutoID(field.isAutoID())
                 .setDataType(field.getDataType())
                 .setElementType(field.getElementType())
-                .setIsDynamic(field.isDynamic());
+                .setIsDynamic(field.isDynamic())
+                .setNullable(field.isNullable());
+        DataType dType = field.getDataType();
+        if (!ParamUtils.isVectorDataType(dType) && !field.isPrimaryKey()) {
+            ValueField value = ParamUtils.objectToValueField(field.getDefaultValue(), dType);
+            if (value != null) {
+                builder.setDefaultValue(value);
+            } else if (field.getDefaultValue() != null) {
+                String msg = String.format("Illegal default value for %s type field. Please use Short for Int8/Int16 fields, " +
+                        "Short/Integer for Int32 fields, Short/Integer/Long for Int64 fields, Boolean for Bool fields, " +
+                        "String for Varchar fields, JsonObject for JSON fields.", dType.name());
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+            }
+        }
 
         // assemble typeParams for CollectionSchema
         List<KeyValuePair> typeParamsList = AssembleKvPair(field.getTypeParams());
@@ -1227,6 +1345,99 @@ public class ParamUtils {
         }
 
         return builder.build();
+    }
+
+    public static ValueField objectToValueField(Object obj, DataType dataType) {
+        if (obj == null) {
+            return null;
+        }
+
+        ValueField.Builder builder = ValueField.newBuilder();
+        switch (dataType) {
+            case Int8:
+            case Int16:
+                if (obj instanceof Short) {
+                    return builder.setIntData(((Short)obj).intValue()).build();
+                }
+                break;
+            case Int32:
+                if (obj instanceof Short) {
+                    return builder.setIntData(((Short)obj).intValue()).build();
+                } else if (obj instanceof Integer) {
+                    return builder.setIntData((Integer) obj).build();
+                }
+                break;
+            case Int64:
+                if (obj instanceof Short) {
+                    return builder.setLongData(((Short)obj).longValue()).build();
+                } else if (obj instanceof Integer) {
+                    return builder.setLongData(((Integer)obj).longValue()).build();
+                } else if (obj instanceof Long) {
+                    return builder.setLongData((Long) obj).build();
+                }
+                break;
+            case Float:
+                if (obj instanceof Float) {
+                    return builder.setFloatData((Float) obj).build();
+                }
+                break;
+            case Double:
+                if (obj instanceof Float) {
+                    return builder.setDoubleData(((Float)obj).doubleValue()).build();
+                } else if (obj instanceof Double) {
+                    return builder.setDoubleData((Double) obj).build();
+                }
+                break;
+            case Bool:
+                if (obj instanceof Boolean) {
+                    return builder.setBoolData((Boolean) obj).build();
+                }
+                break;
+            case VarChar:
+            case String:
+                if (obj instanceof String) {
+                    return builder.setStringData((String) obj).build();
+                }
+                break;
+            case JSON:
+                if (obj instanceof JsonObject) {
+                    return builder.setStringData(obj.toString()).build();
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    public static Object valueFieldToObject(ValueField value, DataType dataType) {
+        if (value == null || value.getDataCase() == ValueField.DataCase.DATA_NOT_SET) {
+            return null;
+        }
+
+        switch (dataType) {
+            case Int8:
+            case Int16:
+                return (short) value.getIntData();
+            case Int32:
+                return value.getIntData();
+            case Int64:
+                return value.getLongData();
+            case Float:
+                return value.getFloatData();
+            case Double:
+                return value.getDoubleData();
+            case Bool:
+                return value.getBoolData();
+            case VarChar:
+            case String:
+                return value.getStringData();
+            case JSON:
+                return new Gson().fromJson(value.getStringData(), JsonObject.class);
+            default:
+                break;
+        }
+        return null;
     }
 
     public static List<KeyValuePair> AssembleKvPair(Map<String, String> sourceMap) {

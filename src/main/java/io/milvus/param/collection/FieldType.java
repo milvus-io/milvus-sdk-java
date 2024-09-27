@@ -47,6 +47,8 @@ public class FieldType {
     private final boolean partitionKey;
     private final boolean isDynamic;
     private final DataType elementType;
+    private final boolean nullable;
+    private final Object defaultValue;
 
     private FieldType(@NonNull Builder builder){
         this.name = builder.name;
@@ -58,6 +60,8 @@ public class FieldType {
         this.partitionKey = builder.partitionKey;
         this.isDynamic = builder.isDynamic;
         this.elementType = builder.elementType;
+        this.nullable = builder.nullable;
+        this.defaultValue = builder.defaultValue;
     }
 
     public int getDimension() {
@@ -101,6 +105,9 @@ public class FieldType {
         private boolean partitionKey = false;
         private boolean isDynamic = false;
         private DataType elementType = DataType.None; // only for Array type field
+        private boolean nullable = false; // only for scalar fields(not include Array fields)
+        private Object defaultValue = null; // only for scalar fields
+        private boolean enableDefaultValue = false; // a flag to pass the default value to server or not
 
         private Builder() {
         }
@@ -256,6 +263,51 @@ public class FieldType {
         }
 
         /**
+         * Sets this field is nullable or not.
+         * Primary key field, vector fields, Array fields cannot be nullable.
+         *
+         *  1. if the field is nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
+         *     1) if user input JsonNull, this value is replaced by default value
+         *     2) if user input JsonObject, infer this value by type
+         *  2. if the field is not nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
+         *     1) if user input JsonNull, and default value is null, throw error
+         *     2) if user input JsonNull, and default value is not null, this value is replaced by default value
+         *     3) if user input JsonObject, infer this value by type
+         *
+         * @param nullable true is nullable, false is not
+         * @return <code>Builder</code>
+         */
+        public Builder withNullable(boolean nullable) {
+            this.nullable = nullable;
+            return this;
+        }
+
+        /**
+         * Sets default value of this field.
+         * If nullable is false, the default value cannot be null. If nullable is true, the default value can be null.
+         * Only scalar fields(not include Array field) support default value.
+         * The default value type must obey the following rule:
+         * - Boolean for Bool fields
+         * - Short for Int8/Int16 fields
+         * - Short/Integer for Int32 fields
+         * - Short/Integer/Long for Int64 fields
+         * - Float for Float fields
+         * - Double for Double fields
+         * - String for Varchar fields
+         * - JsonObject for JSON fields
+         *
+         * For JSON field, you can use JsonNull.INSTANCE as default value. For other scalar fields, you can use null as default value.
+         *
+         * @param obj the default value
+         * @return <code>Builder</code>
+         */
+        public Builder withDefaultValue(Object obj) {
+            this.defaultValue = obj;
+            this.enableDefaultValue = true;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link FieldType} instance.
          *
          * @return {@link FieldType}
@@ -329,6 +381,12 @@ public class FieldType {
                 if (elementType == DataType.VarChar && !this.typeParams.containsKey(Constant.VARCHAR_MAX_LENGTH)) {
                     throw new ParamException("Varchar array field max length must be specified");
                 }
+            }
+
+            // check the input here to pop error messages earlier
+            if (enableDefaultValue && defaultValue == null && !nullable) {
+                String msg = String.format("Default value cannot be null for field '%s' that is defined as nullable == false.", name);
+                throw new ParamException(msg);
             }
 
             return new FieldType(this);

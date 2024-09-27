@@ -155,7 +155,6 @@ public class QueryResultsWrapper extends RowRecordWrapper {
                         return innerObj;
                     }
                 }
-                throw new ParamException("The key name is not found");
             }
 
             return obj;
@@ -180,7 +179,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
         public String toString() {
             List<String> pairs = new ArrayList<>();
             fieldValues.forEach((keyName, fieldValue) -> {
-                pairs.add(keyName + ":" + fieldValue.toString());
+                pairs.add(keyName + ":" + fieldValue);
             });
             return pairs.toString();
         }

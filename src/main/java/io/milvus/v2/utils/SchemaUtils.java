@@ -19,10 +19,10 @@
 
 package io.milvus.v2.utils;
 
-import io.milvus.grpc.CollectionSchema;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.FieldSchema;
-import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.*;
+import io.milvus.param.ParamUtils;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
 import java.util.ArrayList;
@@ -30,14 +30,28 @@ import java.util.List;
 
 public class SchemaUtils {
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
-        FieldSchema schema = FieldSchema.newBuilder()
+        DataType dType = DataType.valueOf(fieldSchema.getDataType().name());
+        FieldSchema.Builder builder = FieldSchema.newBuilder()
                 .setName(fieldSchema.getName())
                 .setDescription(fieldSchema.getDescription())
-                .setDataType(DataType.valueOf(fieldSchema.getDataType().name()))
+                .setDataType(dType)
                 .setIsPrimaryKey(fieldSchema.getIsPrimaryKey())
                 .setIsPartitionKey(fieldSchema.getIsPartitionKey())
                 .setAutoID(fieldSchema.getAutoID())
-                .build();
+                .setNullable(fieldSchema.getIsNullable());
+        if (!ParamUtils.isVectorDataType(dType) && !fieldSchema.getIsPrimaryKey()) {
+            ValueField value = ParamUtils.objectToValueField(fieldSchema.getDefaultValue(), dType);
+            if (value != null) {
+                builder.setDefaultValue(value);
+            } else if (fieldSchema.getDefaultValue() != null) {
+                String msg = String.format("Illegal default value for %s type field. Please use Short for Int8/Int16 fields, " +
+                        "Short/Integer for Int32 fields, Short/Integer/Long for Int64 fields, Boolean for Bool fields, " +
+                        "String for Varchar fields, JsonObject for JSON fields.", dType.name());
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+            }
+        }
+
+        FieldSchema schema = builder.build();
         if(fieldSchema.getDimension() != null){
             schema = schema.toBuilder().addTypeParams(KeyValuePair.newBuilder().setKey("dim").setValue(String.valueOf(fieldSchema.getDimension())).build()).build();
         }
@@ -77,6 +91,8 @@ public class SchemaUtils {
                 .isPartitionKey(fieldSchema.getIsPartitionKey())
                 .autoID(fieldSchema.getAutoID())
                 .elementType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getElementType().name()))
+                .isNullable(fieldSchema.getNullable())
+                .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
                 .build();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
             if(keyValuePair.getKey().equals("dim")){
