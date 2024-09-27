@@ -33,7 +33,6 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
@@ -256,7 +255,7 @@ public class FieldDataWrapper {
                 ArrayArray arrArray = fieldData.getScalars().getArrayData();
                 for (int i = 0; i < arrArray.getDataCount(); i++) {
                     ScalarField scalar = arrArray.getData(i);
-                    array.add(getScalarData(arrArray.getElementType(), scalar));
+                    array.add(getScalarData(arrArray.getElementType(), scalar, null));
                 }
                 return array;
             case Int64:
@@ -269,30 +268,43 @@ public class FieldDataWrapper {
             case VarChar:
             case String:
             case JSON:
-                return getScalarData(dt, fieldData.getScalars());
+                return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
     }
 
-    private List<?> getScalarData(DataType dt, ScalarField scalar) {
+    private List<?> setNoneData(List<?> data, List<Boolean> validData) {
+        if (validData != null && validData.size() == data.size()) {
+            List<?> newData = new ArrayList<>(data); // copy the list since the data is come from grpc is not mutable
+            for (int i = 0; i < validData.size(); i++) {
+                if (validData.get(i) == Boolean.FALSE) {
+                    newData.set(i, null);
+                }
+            }
+            return newData;
+        }
+        return data;
+    }
+
+    private List<?> getScalarData(DataType dt, ScalarField scalar, List<Boolean> validData) {
         switch (dt) {
             case Int64:
-                return scalar.getLongData().getDataList();
+                return setNoneData(scalar.getLongData().getDataList(), validData);
             case Int32:
             case Int16:
             case Int8:
-                return scalar.getIntData().getDataList();
+                return setNoneData(scalar.getIntData().getDataList(), validData);
             case Bool:
-                return scalar.getBoolData().getDataList();
+                return setNoneData(scalar.getBoolData().getDataList(), validData);
             case Float:
-                return scalar.getFloatData().getDataList();
+                return setNoneData(scalar.getFloatData().getDataList(), validData);
             case Double:
-                return scalar.getDoubleData().getDataList();
+                return setNoneData(scalar.getDoubleData().getDataList(), validData);
             case VarChar:
             case String:
                 ProtocolStringList protoStrList = scalar.getStringData().getDataList();
-                return protoStrList.subList(0, protoStrList.size());
+                return setNoneData(protoStrList.subList(0, protoStrList.size()), validData);
             case JSON:
                 List<ByteString> dataList = scalar.getJsonData().getDataList();
                 return dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList());

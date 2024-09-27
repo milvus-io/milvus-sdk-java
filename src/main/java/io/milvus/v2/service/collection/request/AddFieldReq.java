@@ -42,4 +42,16 @@ public class AddFieldReq {
     private Integer dimension;
     private io.milvus.v2.common.DataType elementType;
     private Integer maxCapacity;
+    @Builder.Default
+    private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
+    @Builder.Default
+    private Object defaultValue = null; // only for scalar fields
+    @Builder.ObtainVia(field = "hiddenField")
+    private boolean enableDefaultValue = false; // a flag to pass the default value to server or not
+
+    AddFieldReq setDefaultValue(Object obj) {
+        enableDefaultValue = true; // automatically set this flag
+        this.defaultValue = obj;
+        return this;
+    }
 }

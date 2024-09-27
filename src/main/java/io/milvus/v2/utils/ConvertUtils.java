@@ -39,9 +39,8 @@ import java.util.stream.Collectors;
 
 public class ConvertUtils {
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
-        QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(response);
         List<QueryResp.QueryResult> entities = new ArrayList<>();
-
+        // count(*) ?
         if(response.getFieldsDataList().stream().anyMatch(fieldData -> fieldData.getFieldName().equals("count(*)"))){
             Map<String, Object> countField = new HashMap<>();
             long numOfEntities = response.getFieldsDataList().stream().filter(fieldData -> fieldData.getFieldName().equals("count(*)")).map(FieldData::getScalars).collect(Collectors.toList()).get(0).getLongData().getData(0);
@@ -54,6 +53,9 @@ public class ConvertUtils {
 
             return entities;
         }
+
+        // normal query
+        QueryResultsWrapper queryResultsWrapper = new QueryResultsWrapper(response);
         queryResultsWrapper.getRowRecords().forEach(rowRecord -> {
             QueryResp.QueryResult queryResult = QueryResp.QueryResult.builder()
                     .entity(rowRecord.getFieldValues())

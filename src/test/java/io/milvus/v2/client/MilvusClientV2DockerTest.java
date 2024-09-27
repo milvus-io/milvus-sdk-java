@@ -80,7 +80,7 @@ class MilvusClientV2DockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.11");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20240927-1f271e39-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -1797,6 +1797,125 @@ class MilvusClientV2DockerTest {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testNullableAndDefaultValue() {
+        String randomCollectionName = generator.generate(10);
+        int dim = 4;
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .autoID(Boolean.FALSE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(dim)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("flag")
+                .dataType(DataType.Int32)
+                .defaultValue((int)10)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("desc")
+                .dataType(DataType.VarChar)
+                .isNullable(Boolean.TRUE)
+                .maxLength(100)
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("vector")
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.L2)
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+        System.out.println("Collection created");
+
+        // insert by row-based
+        List<JsonObject> data = new ArrayList<>();
+        Gson gson = new Gson();
+        for (int i = 0; i < 10; i++) {
+            JsonObject row = new JsonObject();
+            List<Float> vector = generateFolatVector(dim);
+            row.addProperty("id", i);
+            row.add("vector", gson.toJsonTree(vector));
+            if (i%2 == 0) {
+                row.addProperty("flag", i);
+                row.add("desc", JsonNull.INSTANCE);
+            } else {
+//                row.add("flag", JsonNull.INSTANCE);
+                row.addProperty("desc", "AAA");
+            }
+            data.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(10, insertResp.getInsertCnt());
+
+        // query
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter("id >= 0")
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(10, queryResults.size());
+        System.out.println("Query results:");
+        for (QueryResp.QueryResult result : queryResults) {
+            Map<String, Object> entity = result.getEntity();
+            long id = (long)entity.get("id");
+            if (id%2 == 0) {
+                Assertions.assertEquals((int)id, entity.get("flag"));
+                Assertions.assertNull(entity.get("desc"));
+            } else {
+                Assertions.assertEquals(10, entity.get("flag"));
+                Assertions.assertEquals("AAA", entity.get("desc"));
+            }
+            System.out.println(result);
+        }
+
+        // search
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("vector")
+                .data(Collections.singletonList(new FloatVec(generateFolatVector(dim))))
+                .topK(10)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        List<SearchResp.SearchResult> firstResults = searchResults.get(0);
+        Assertions.assertEquals(10, firstResults.size());
+        System.out.println("Search results:");
+        for (SearchResp.SearchResult result : firstResults) {
+            long id = (long)result.getId();
+            Map<String, Object> entity = result.getEntity();
+            if (id%2 == 0) {
+                Assertions.assertEquals((int)id, entity.get("flag"));
+                Assertions.assertNull(entity.get("desc"));
+            } else {
+                Assertions.assertEquals(10, entity.get("flag"));
+                Assertions.assertEquals("AAA", entity.get("desc"));
+            }
+            System.out.println(result);
         }
     }
 }

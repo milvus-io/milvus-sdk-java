@@ -20,6 +20,7 @@
 package io.milvus.v2.utils;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -159,21 +160,27 @@ public class DataUtils {
 
                     // check normalField
                     JsonElement rowFieldData = row.get(fieldName);
-                    if (rowFieldData != null) {
-                        if (fieldType.isAutoID()) {
-                            String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
-                            throw new ParamException(msg);
-                        }
-                        Object fieldValue = ParamUtils.checkFieldValue(fieldType, rowFieldData);
-                        insertDataInfo.getData().add(fieldValue);
-                        nameInsertInfo.put(fieldName, insertDataInfo);
-                    } else {
+                    if (rowFieldData == null) {
                         // check if autoId
-                        if (!fieldType.isAutoID()) {
+                        if (fieldType.isAutoID()) {
+                            continue;
+                        }
+                        // if the field doesn't have default value, require user provide the value
+                        if (!fieldType.isNullable() && fieldType.getDefaultValue() == null) {
                             String msg = String.format("The field: %s is not provided.", fieldType.getName());
                             throw new ParamException(msg);
                         }
+
+                        rowFieldData = JsonNull.INSTANCE;
                     }
+
+                    if (fieldType.isAutoID()) {
+                        String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
+                        throw new ParamException(msg);
+                    }
+                    Object fieldValue = ParamUtils.checkFieldValue(fieldType, rowFieldData);
+                    insertDataInfo.getData().add(fieldValue);
+                    nameInsertInfo.put(fieldName, insertDataInfo);
                 }
 
                 // deal with dynamicField

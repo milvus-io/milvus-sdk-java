@@ -92,6 +92,13 @@ public class CreateCollectionReq {
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
+            // check the input here to pop error messages earlier
+            if (addFieldReq.isEnableDefaultValue() && addFieldReq.getDefaultValue() == null
+                    && addFieldReq.getIsNullable() == Boolean.FALSE) {
+                String msg = String.format("Default value cannot be null for field '%s' that is defined as nullable == false.", addFieldReq.getFieldName());
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+            }
+
             CreateCollectionReq.FieldSchema fieldSchema = FieldSchema.builder()
                     .name(addFieldReq.getFieldName())
                     .dataType(addFieldReq.getDataType())
@@ -99,6 +106,8 @@ public class CreateCollectionReq {
                     .isPrimaryKey(addFieldReq.getIsPrimaryKey())
                     .isPartitionKey(addFieldReq.getIsPartitionKey())
                     .autoID(addFieldReq.getAutoID())
+                    .isNullable(addFieldReq.getIsNullable())
+                    .defaultValue(addFieldReq.getDefaultValue())
                     .build();
             if (addFieldReq.getDataType().equals(DataType.Array)) {
                 if (addFieldReq.getElementType() == null) {
@@ -147,5 +156,9 @@ public class CreateCollectionReq {
         private Boolean autoID = Boolean.FALSE;
         private DataType elementType;
         private Integer maxCapacity;
+        @Builder.Default
+        private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
+        @Builder.Default
+        private Object defaultValue = null; // only for scalar fields
     }
 }

@@ -335,7 +335,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         public String toString() {
             List<String> pairs = new ArrayList<>();
             fieldValues.forEach((keyName, fieldValue) -> {
-                pairs.add(keyName + ":" + fieldValue.toString());
+                pairs.add(keyName + ":" + fieldValue);
             });
 
             if (strID.isEmpty()) {
