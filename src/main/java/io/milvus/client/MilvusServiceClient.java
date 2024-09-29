@@ -329,14 +329,14 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
                     if (timeoutChecker.call() == Boolean.TRUE) {
                         String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
-                                this.timeoutMs, maxRetryTimes, k, e.getMessage());
+                                this.timeoutMs, maxRetryTimes, k, e);
                         throw new MilvusException(msg, code.value());
                     }
                 } else if (e instanceof ServerException) {
                     ServerException serverException = (ServerException)e;
                     if (timeoutChecker.call() == Boolean.TRUE) {
                         String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
-                                this.timeoutMs, maxRetryTimes, k, e.getMessage());
+                                this.timeoutMs, maxRetryTimes, k, e);
                         throw new MilvusException(msg, serverException.getStatus());
                     }
 
@@ -362,7 +362,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                     // print log, follow the pymilvus logic
                     if (k > 3) {
                         logWarning(String.format("Retry(%d) with interval %dms. Reason: %s",
-                                k, retryIntervalMs, e.getMessage()));
+                                k, retryIntervalMs, e));
                     }
                     TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
                 }

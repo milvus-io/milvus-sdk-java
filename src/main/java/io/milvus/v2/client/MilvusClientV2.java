@@ -163,11 +163,11 @@ public class MilvusClientV2 {
             try {
                 return callable.call();
             } catch (StatusRuntimeException e) {
-                throw new MilvusClientException(ErrorCode.RPC_ERROR, e.getMessage()); // rpc error
+                throw new MilvusClientException(ErrorCode.RPC_ERROR, e); // rpc error
             } catch (MilvusClientException e) {
                 throw e; // server error or client error
             } catch (Exception e) {
-                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e.getMessage()); // others error treated as client error
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e); // others error treated as client error
             }
         }
 
@@ -197,7 +197,7 @@ public class MilvusClientV2 {
                         || code == Status.ALREADY_EXISTS.getCode()
                         || code == Status.RESOURCE_EXHAUSTED.getCode()
                         || code == Status.UNIMPLEMENTED.getCode()) {
-                    String msg = String.format("Encounter rpc error that cannot be retried, reason: %s", e.getMessage());
+                    String msg = String.format("Encounter rpc error that cannot be retried, reason: %s", e);
                     logger.error(msg);
                     throw new MilvusClientException(ErrorCode.RPC_ERROR, msg); // throw rpc error
                 }
@@ -232,7 +232,7 @@ public class MilvusClientV2 {
                     throw e; // exit retry, throw the error
                 }
             } catch (Exception e) {
-                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e.getMessage()); // others error treated as client error
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e); // others error treated as client error
             }
 
             try {
