@@ -37,6 +37,7 @@ public class SchemaUtils {
                 .setDataType(dType)
                 .setIsPrimaryKey(fieldSchema.getIsPrimaryKey())
                 .setIsPartitionKey(fieldSchema.getIsPartitionKey())
+                .setIsClusteringKey(fieldSchema.getIsClusteringKey())
                 .setAutoID(fieldSchema.getAutoID())
                 .setNullable(fieldSchema.getIsNullable());
         if (!ParamUtils.isVectorDataType(dType) && !fieldSchema.getIsPrimaryKey()) {
@@ -89,6 +90,7 @@ public class SchemaUtils {
                 .dataType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getDataType().name()))
                 .isPrimaryKey(fieldSchema.getIsPrimaryKey())
                 .isPartitionKey(fieldSchema.getIsPartitionKey())
+                .isClusteringKey(fieldSchema.getIsClusteringKey())
                 .autoID(fieldSchema.getAutoID())
                 .elementType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getElementType().name()))
                 .isNullable(fieldSchema.getNullable())
