@@ -38,6 +38,8 @@ public class AddFieldReq {
     @Builder.Default
     private Boolean isPartitionKey = Boolean.FALSE;
     @Builder.Default
+    private Boolean isClusteringKey = Boolean.FALSE;
+    @Builder.Default
     private Boolean autoID = Boolean.FALSE;
     private Integer dimension;
     private io.milvus.v2.common.DataType elementType;

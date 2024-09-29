@@ -45,6 +45,7 @@ public class FieldType {
     private final Map<String,String> typeParams;
     private final boolean autoID;
     private final boolean partitionKey;
+    private final boolean clusteringKey;
     private final boolean isDynamic;
     private final DataType elementType;
 
@@ -56,6 +57,7 @@ public class FieldType {
         this.typeParams = builder.typeParams;
         this.autoID = builder.autoID;
         this.partitionKey = builder.partitionKey;
+        this.clusteringKey = builder.clusteringKey;
         this.isDynamic = builder.isDynamic;
         this.elementType = builder.elementType;
     }
@@ -99,6 +101,7 @@ public class FieldType {
         private final Map<String,String> typeParams = new HashMap<>();
         private boolean autoID = false;
         private boolean partitionKey = false;
+        private boolean clusteringKey = false;
         private boolean isDynamic = false;
         private DataType elementType = DataType.None; // only for Array type field
 
@@ -252,6 +255,24 @@ public class FieldType {
          */
         public Builder withPartitionKey(boolean partitionKey) {
             this.partitionKey = partitionKey;
+            return this;
+        }
+
+        /**
+         * Set the field to be a clustering key.
+         * A clustering key can notify milvus to trigger a clustering compaction to redistribute entities among segments
+         * in a collection based on the values in the clustering key field. And one global index called PartitionStats
+         * is generated to store the mapping relationship between segments and clustering key values. Once receiving
+         * a search/query request that carries a clustering key value, it quickly finds out a search scope from
+         * the PartitionStats which significantly improving search performance.
+         * Only scalar fields can be clustering key.
+         * Only one culstering key is allowed in one collection.
+         *
+         * @param clusteringKey true is clustering key, false is not
+         * @return <code>Builder</code>
+         */
+        public Builder withClusteringKey(boolean clusteringKey) {
+            this.clusteringKey = clusteringKey;
             return this;
         }
 
