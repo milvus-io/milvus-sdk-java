@@ -98,6 +98,7 @@ public class CreateCollectionReq {
                     .description(addFieldReq.getDescription())
                     .isPrimaryKey(addFieldReq.getIsPrimaryKey())
                     .isPartitionKey(addFieldReq.getIsPartitionKey())
+                    .isClusteringKey(addFieldReq.getIsClusteringKey())
                     .autoID(addFieldReq.getAutoID())
                     .build();
             if (addFieldReq.getDataType().equals(DataType.Array)) {
@@ -143,6 +144,8 @@ public class CreateCollectionReq {
         private Boolean isPrimaryKey = Boolean.FALSE;
         @Builder.Default
         private Boolean isPartitionKey = Boolean.FALSE;
+        @Builder.Default
+        private Boolean isClusteringKey = Boolean.FALSE;
         @Builder.Default
         private Boolean autoID = Boolean.FALSE;
         private DataType elementType;
