@@ -665,7 +665,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setCollectionName(requestParam.getCollectionName())
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllResourceGroups(requestParam.getResourceGroups())
-                    .setRefresh(requestParam.isRefresh());
+                    .setRefresh(requestParam.isRefresh())
+                    .addAllLoadFields(requestParam.getLoadFields())
+                    .setSkipLoadDynamicField(requestParam.isSkipLoadDynamicField());
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
             }
@@ -1066,7 +1068,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .setReplicaNumber(requestParam.getReplicaNumber())
                     .addAllPartitionNames(requestParam.getPartitionNames())
                     .addAllResourceGroups(requestParam.getResourceGroups())
-                    .setRefresh(requestParam.isRefresh());
+                    .setRefresh(requestParam.isRefresh())
+                    .addAllLoadFields(requestParam.getLoadFields())
+                    .setSkipLoadDynamicField(requestParam.isSkipLoadDynamicField());
 
             if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
                 builder.setDbName(requestParam.getDatabaseName());
