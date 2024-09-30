@@ -764,6 +764,18 @@ public class MilvusClientV2 {
         return retry(()->utilityService.describeAlias(this.blockingStub, request));
     }
 
+    public BulkInsertResp bulkInsert(BulkInsertReq request) {
+        return retry(()->utilityService.bulkInsert(this.blockingStub, request));
+    }
+
+    public GetBulkInsertStateResp getBulkInsertState(GetBulkInsertStateReq request) {
+        return retry(()->utilityService.getBulkInsertState(this.blockingStub, request));
+    }
+
+    public ListBulkInsertTasksResp listBulkInsertTasks(ListBulkInsertTasksReq request) {
+        return retry(()->utilityService.listBulkInsertTasks(this.blockingStub, request));
+    }
+
     /**
      * Get server version
      *

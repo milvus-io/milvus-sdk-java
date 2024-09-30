@@ -20,13 +20,19 @@
 package io.milvus.v2.service.utility;
 
 import io.milvus.grpc.FlushResponse;
+import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
+import io.milvus.v2.common.BulkInsertState;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.utility.request.*;
-import io.milvus.v2.service.utility.response.DescribeAliasResp;
-import io.milvus.v2.service.utility.response.ListAliasResp;
+import io.milvus.v2.service.utility.response.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class UtilityService extends BaseService {
     public R<RpcStatus> flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
@@ -103,4 +109,66 @@ public class UtilityService extends BaseService {
                 .alias(response.getAliasesList())
                 .build();
     }
+
+    public BulkInsertResp bulkInsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BulkInsertReq request) {
+        String title = "Bulk insert";
+        io.milvus.grpc.ImportRequest importRequest = io.milvus.grpc.ImportRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setPartitionName(request.getPartitionName())
+                .addAllFiles(request.getFiles())
+                .build();
+        io.milvus.grpc.ImportResponse response = blockingStub.import_(importRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return BulkInsertResp.builder()
+                .tasks(response.getTasksList())
+                .build();
+    }
+
+    public GetBulkInsertStateResp getBulkInsertState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                     GetBulkInsertStateReq request) {
+        String title = "Get bulkinsert state";
+        io.milvus.grpc.GetImportStateRequest getRequest = io.milvus.grpc.GetImportStateRequest.newBuilder()
+                .setTask(request.getTaskID())
+                .build();
+        io.milvus.grpc.GetImportStateResponse response = blockingStub.getImportState(getRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+        return convertImportStateResponse(response);
+    }
+
+    private GetBulkInsertStateResp convertImportStateResponse(io.milvus.grpc.GetImportStateResponse response) {
+        Map<String, String> infos = new HashMap<>();
+        response.getInfosList().forEach((kv)->{infos.put(kv.getKey(), kv.getValue());});
+
+        return GetBulkInsertStateResp.builder()
+                .taskID(response.getId())
+                .collectionID(response.getCollectionId())
+                .segmentIDs(response.getSegmentIdsList())
+                .state(BulkInsertState.valueOf(response.getState().name()))
+                .rowCount(response.getRowCount())
+                .infos(infos)
+                .build();
+    }
+
+    public ListBulkInsertTasksResp listBulkInsertTasks(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                       ListBulkInsertTasksReq request) {
+        String title = "List bulkinsert tasks";
+        io.milvus.grpc.ListImportTasksRequest listRequest = io.milvus.grpc.ListImportTasksRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setLimit(request.getLimit())
+                .build();
+        io.milvus.grpc.ListImportTasksResponse response = blockingStub.listImportTasks(listRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<GetBulkInsertStateResp> tasks = new ArrayList<>();
+        response.getTasksList().forEach((task)-> tasks.add(convertImportStateResponse(task)));
+
+        return ListBulkInsertTasksResp.builder()
+                .tasks(tasks)
+                .build();
+    }
 }
+
