@@ -1222,9 +1222,14 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
-        // load collection
+        // load collection(partial load)
+        List<String> loadFields = new ArrayList<>();
+        loadFields.add("id");
+        loadFields.add(DataType.Float16Vector.name());
+        loadFields.add(DataType.BFloat16Vector.name());
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
                 .withCollectionName(randomCollectionName)
+                .withLoadFields(loadFields)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 

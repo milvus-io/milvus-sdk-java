@@ -699,6 +699,17 @@ class MilvusClientV2DockerTest {
                 .build();
         client.createCollection(requestCreate);
 
+        // partial load
+        List<String> loadFields = new ArrayList<>();
+        loadFields.add("id");
+        loadFields.add(float16Field);
+        loadFields.add(bfloat16Field);
+        client.releaseCollection(ReleaseCollectionReq.builder().collectionName(randomCollectionName).build());
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .loadFields(loadFields)
+                .build());
+
         // insert 10000 rows
         long count = 10000;
         List<JsonObject> data = generateRandomData(collectionSchema, count);

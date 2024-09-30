@@ -45,6 +45,8 @@ public class LoadCollectionParam {
     private final int replicaNumber;
     private final boolean refresh;
     private final List<String> resourceGroups;
+    private final List<String> loadFields;
+    private final boolean skipLoadDynamicField;
 
     public LoadCollectionParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -55,6 +57,8 @@ public class LoadCollectionParam {
         this.replicaNumber = builder.replicaNumber;
         this.refresh = builder.refresh;
         this.resourceGroups = builder.resourceGroups;
+        this.loadFields = builder.loadFields;
+        this.skipLoadDynamicField = builder.skipLoadDynamicField;
     }
 
     public static Builder newBuilder() {
@@ -96,6 +100,15 @@ public class LoadCollectionParam {
         //   Specify the target resource groups to load the replicas.
         //   If not specified, the replicas will be loaded into the default resource group.
         private List<String> resourceGroups = new ArrayList<>();
+
+        // loadFields:
+        //   Specify load fields list needed during this load.
+        //   If not specified, all the fields will be loaded.
+        private List<String> loadFields = new ArrayList<>();
+
+        // skipLoadDynamicField:
+        //   Specify whether this load shall skip dynamic schema field.
+        private Boolean skipLoadDynamicField = Boolean.FALSE;
 
         private Builder() {
         }
@@ -197,6 +210,34 @@ public class LoadCollectionParam {
          */
         public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
             this.resourceGroups.addAll(resourceGroups);
+            return this;
+        }
+
+        /**
+         * Specify load fields list needed during this load.
+         * If not specified, all the fields will be loaded.
+         *
+         * @param loadFields a <code>List</code> of {@link String}
+         * @return <code>Builder</code>
+         */
+        public Builder withLoadFields(@NonNull List<String> loadFields) {
+            loadFields.forEach((field)->{
+                if (!this.loadFields.contains(field)) {
+                    this.loadFields.add(field);
+                }
+            });
+            return this;
+        }
+
+        /**
+         * Specify load fields list needed during this load. If not specified, all the fields will be loaded.
+         * Default is False.
+         *
+         * @param skip <code>Boolean.TRUE</code> skip dynamic field, <code>Boolean.FALSE</code> is not
+         * @return <code>Builder</code>
+         */
+        public Builder withSkipLoadDynamicField(@NonNull Boolean skip) {
+            this.skipLoadDynamicField = skip;
             return this;
         }
 

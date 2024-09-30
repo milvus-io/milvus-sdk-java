@@ -23,6 +23,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @SuperBuilder
 public class LoadCollectionReq {
@@ -33,4 +36,10 @@ public class LoadCollectionReq {
     private Boolean async = Boolean.TRUE;
     @Builder.Default
     private Long timeout = 60000L;
+    @Builder.Default
+    private Boolean refresh = Boolean.FALSE;
+    @Builder.Default
+    private List<String> loadFields = new ArrayList<>();
+    @Builder.Default
+    private Boolean skipLoadDynamicField = Boolean.FALSE;
 }
