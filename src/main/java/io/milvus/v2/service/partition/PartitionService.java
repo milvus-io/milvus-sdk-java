@@ -84,7 +84,11 @@ public class PartitionService extends BaseService {
 
         io.milvus.grpc.LoadPartitionsRequest loadPartitionsRequest = io.milvus.grpc.LoadPartitionsRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .addAllPartitionNames(request.getPartitionNames()).build();
+                .addAllPartitionNames(request.getPartitionNames())
+                .setRefresh(request.getRefresh())
+                .addAllLoadFields(request.getLoadFields())
+                .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
+                .build();
         Status status = blockingStub.loadPartitions(loadPartitionsRequest);
         rpcUtils.handleResponse(title, status);
 

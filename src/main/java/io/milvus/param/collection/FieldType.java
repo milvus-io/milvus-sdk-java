@@ -265,8 +265,8 @@ public class FieldType {
          * is generated to store the mapping relationship between segments and clustering key values. Once receiving
          * a search/query request that carries a clustering key value, it quickly finds out a search scope from
          * the PartitionStats which significantly improving search performance.
-         * Only scalar fields can be clustering key.
-         * Only one culstering key is allowed in one collection.
+         * Only scalar fields(except Array/JSON) can be clustering key.
+         * Only one clustering key is allowed in one collection.
          *
          * @param clusteringKey true is clustering key, false is not
          * @return <code>Builder</code>

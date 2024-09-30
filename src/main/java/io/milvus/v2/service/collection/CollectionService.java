@@ -233,6 +233,9 @@ public class CollectionService extends BaseService {
         LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setReplicaNumber(request.getNumReplicas())
+                .setRefresh(request.getRefresh())
+                .addAllLoadFields(request.getLoadFields())
+                .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);

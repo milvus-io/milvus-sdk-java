@@ -19,14 +19,23 @@
 
 package io.milvus.v2.service.partition.request;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @SuperBuilder
 public class LoadPartitionsReq {
     private String collectionName;
-    private List<String> partitionNames;
+    @Builder.Default
+    private List<String> partitionNames = new ArrayList<>();
+    @Builder.Default
+    private Boolean refresh = Boolean.FALSE;
+    @Builder.Default
+    private List<String> loadFields = new ArrayList<>();
+    @Builder.Default
+    private Boolean skipLoadDynamicField = Boolean.FALSE;
 }
