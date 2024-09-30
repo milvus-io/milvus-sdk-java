@@ -103,7 +103,7 @@ public class CollectionService extends BaseService {
             //TimeUnit.MILLISECONDS.sleep(1000);
             loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
         } catch (Exception e) {
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed" + e.getMessage());
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed: " + e);
         }
         return null;
     }
