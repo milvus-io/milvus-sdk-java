@@ -19,6 +19,8 @@
 
 package io.milvus.v2.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
@@ -91,8 +93,8 @@ public class ConvertUtils {
                 } else if (param.getKey().equals(Constant.METRIC_TYPE)) {
                     // may throw IllegalArgumentException
                     metricType = IndexParam.MetricType.valueOf(param.getValue());
-                } else {
-                    extraParams.put(param.getKey(), param.getValue());
+                } else if (param.getKey().equals(Constant.PARAMS)) {
+                    extraParams = new Gson().fromJson(param.getValue(), new TypeToken<Map<String, String>>() {}.getType());
                 }
             }
 
