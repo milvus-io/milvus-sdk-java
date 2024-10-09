@@ -824,9 +824,34 @@ class MilvusClientV2DockerTest {
     @Test
     void testIndex() {
         String randomCollectionName = generator.generate(10);
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(dimension)
+                .build());
+
+        List<IndexParam> indexes = new ArrayList<>();
+        Map<String,Object> extra = new HashMap<>();
+        extra.put("M",8);
+        extra.put("efConstruction",64);
+        indexes.add(IndexParam.builder()
+                .fieldName("vector")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .extraParams(extra)
+                .build());
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
-                .dimension(dimension)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexes)
                 .build());
         client.releaseCollection(ReleaseCollectionReq.builder()
                 .collectionName(randomCollectionName)
@@ -839,7 +864,12 @@ class MilvusClientV2DockerTest {
         DescribeIndexResp.IndexDesc desc = descResp.getIndexDescByFieldName("vector");
         Assertions.assertEquals("vector", desc.getFieldName());
         Assertions.assertFalse(desc.getIndexName().isEmpty());
-        Assertions.assertEquals(IndexParam.IndexType.AUTOINDEX, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
+        Map<String, String> extraParams = desc.getExtraParams();
+        Assertions.assertTrue(extraParams.containsKey("M"));
+        Assertions.assertEquals("8", extraParams.get("M"));
+        Assertions.assertTrue(extraParams.containsKey("efConstruction"));
+        Assertions.assertEquals("64", extraParams.get("efConstruction"));
 
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -848,9 +878,9 @@ class MilvusClientV2DockerTest {
         IndexParam param = IndexParam.builder()
                 .fieldName("vector")
                 .indexName("XXX")
-                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.COSINE)
-                .extraParams(new HashMap<String,Object>(){{put("nlist", 64);}})
+                .extraParams(extra)
                 .build();
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -864,11 +894,13 @@ class MilvusClientV2DockerTest {
         desc = descResp.getIndexDescByFieldName("vector");
         Assertions.assertEquals("vector", desc.getFieldName());
         Assertions.assertEquals("XXX", desc.getIndexName());
-        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
         Assertions.assertEquals(IndexParam.MetricType.COSINE, desc.getMetricType());
-        Map<String, String> extraParams = desc.getExtraParams();
-        Assertions.assertTrue(extraParams.containsKey("nlist"));
-        Assertions.assertEquals("64", extraParams.get("nlist"));
+        extraParams = desc.getExtraParams();
+        Assertions.assertTrue(extraParams.containsKey("M"));
+        Assertions.assertEquals("8", extraParams.get("M"));
+        Assertions.assertTrue(extraParams.containsKey("efConstruction"));
+        Assertions.assertEquals("64", extraParams.get("efConstruction"));
     }
 
     @Test

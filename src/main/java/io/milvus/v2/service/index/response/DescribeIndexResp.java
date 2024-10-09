@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.index.response;
 
-import io.milvus.grpc.IndexDescription;
-import io.milvus.response.DescIndexResponseWrapper;
 import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
 import lombok.Builder;
