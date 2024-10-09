@@ -19,7 +19,9 @@
 
 package io.milvus.v2.service.index;
 
+import com.google.gson.JsonObject;
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
@@ -32,6 +34,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class IndexService extends BaseService {
@@ -40,36 +43,35 @@ public class IndexService extends BaseService {
         for(IndexParam indexParam : request.getIndexParams()) {
             String title = String.format("CreateIndexRequest collectionName:%s, fieldName:%s",
                     request.getCollectionName(), indexParam.getFieldName());
-            CreateIndexRequest createIndexRequest = CreateIndexRequest.newBuilder()
-                    .setCollectionName(request.getCollectionName())
+            CreateIndexRequest.Builder builder = CreateIndexRequest.newBuilder();
+            builder.setCollectionName(request.getCollectionName())
                     .setIndexName(indexParam.getIndexName())
                     .setFieldName(indexParam.getFieldName())
                     .addExtraParams(KeyValuePair.newBuilder()
-                            .setKey("index_type")
+                            .setKey(Constant.INDEX_TYPE)
                             .setValue(indexParam.getIndexType().getName())
-                            .build())
-                    .build();
+                            .build());
             if(indexParam.getMetricType()!= null){
                 // only vector field has a metric type
-                createIndexRequest = createIndexRequest.toBuilder()
-                        .addExtraParams(KeyValuePair.newBuilder()
-                                .setKey("metric_type")
-                                .setValue(indexParam.getMetricType().name())
-                                .build())
-                        .build();
+                builder.addExtraParams(KeyValuePair.newBuilder()
+                        .setKey(Constant.METRIC_TYPE)
+                        .setValue(indexParam.getMetricType().name())
+                        .build());
             }
-            if (indexParam.getExtraParams() != null) {
-                for (String key : indexParam.getExtraParams().keySet()) {
-                    createIndexRequest = createIndexRequest.toBuilder()
-                            .addExtraParams(KeyValuePair.newBuilder()
-                                    .setKey(key)
-                                    .setValue(String.valueOf(indexParam.getExtraParams().get(key)))
-                                    .build())
-                            .build();
+            Map<String, Object> extraParams = indexParam.getExtraParams();
+            if (extraParams != null && !extraParams.isEmpty()) {
+                JsonObject params = new JsonObject();
+                for (String key : extraParams.keySet()) {
+                    params.addProperty(key, extraParams.get(key).toString());
                 }
+                // the extra params is a JSON format string like "{\"M\": 8, \"efConstruction\": 64}"
+                builder.addExtraParams(KeyValuePair.newBuilder()
+                        .setKey(Constant.PARAMS)
+                        .setValue(params.toString())
+                        .build());
             }
 
-            Status status = blockingStub.createIndex(createIndexRequest);
+            Status status = blockingStub.createIndex(builder.build());
             rpcUtils.handleResponse(title, status);
         }
 
