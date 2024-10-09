@@ -19,6 +19,8 @@
 
 package io.milvus.v2.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
@@ -84,6 +86,7 @@ public class ConvertUtils {
             List<KeyValuePair> params = description.getParamsList();
             IndexParam.IndexType indexType = IndexParam.IndexType.None;
             IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
+            Map<String, String> properties = new HashMap<>();
             for(KeyValuePair param : params) {
                 if (param.getKey().equals(Constant.INDEX_TYPE)) {
                     // may throw IllegalArgumentException
@@ -91,8 +94,10 @@ public class ConvertUtils {
                 } else if (param.getKey().equals(Constant.METRIC_TYPE)) {
                     // may throw IllegalArgumentException
                     metricType = IndexParam.MetricType.valueOf(param.getValue());
-                } else {
-                    extraParams.put(param.getKey(), param.getValue());
+                } else if (param.getKey().equals(Constant.MMAP_ENABLED)) {
+                    properties.put(param.getKey(), param.getValue());
+                } else if (param.getKey().equals(Constant.PARAMS)) {
+                    extraParams = new Gson().fromJson(param.getValue(), new TypeToken<Map<String, String>>() {}.getType());
                 }
             }
 
@@ -108,6 +113,7 @@ public class ConvertUtils {
                     .indexState(IndexBuildState.valueOf(description.getState().name()))
                     .indexFailedReason(description.getIndexStateFailReason())
                     .extraParams(extraParams)
+                    .properties(properties)
                     .build();
             descs.add(desc);
         }
