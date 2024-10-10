@@ -19,7 +19,6 @@
 
 package io.milvus.bulkwriter;
 
-import com.google.gson.Gson;
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.ExceptionUtils;
 import kong.unirest.Unirest;
@@ -28,8 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class BaseCloudImport {
-    private static final Gson GSON_INSTANCE = new Gson();
-
     protected static String postRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             kong.unirest.HttpResponse<String> response = Unirest.post(url)
@@ -37,7 +34,7 @@ public class BaseCloudImport {
                     .headers(httpHeaders(apiKey))
                     .body(params).asString();
             if (response.getStatus() != 200) {
-                ExceptionUtils.throwUnExpectedException(String.format("Failed to post url: %s, status code: %s", url, response.getStatus()));
+                ExceptionUtils.throwUnExpectedException(String.format("Failed to post url: %s, status code: %s, msg: %s", url, response.getStatus(), response.getBody()));
             } else {
                 return response.getBody();
             }
@@ -54,7 +51,7 @@ public class BaseCloudImport {
                     .headers(httpHeaders(apiKey))
                     .queryString(params).asString();
             if (response.getStatus() != 200) {
-                ExceptionUtils.throwUnExpectedException(String.format("Failed to get url: %s, status code: %s", url, response.getStatus()));
+                ExceptionUtils.throwUnExpectedException(String.format("Failed to get url: %s, status code: %s, msg: %s", url, response.getStatus(), response.getBody()));
             } else {
                 return response.getBody();
             }
@@ -84,21 +81,5 @@ public class BaseCloudImport {
             String innerMessage = res.getMessage();
             ExceptionUtils.throwUnExpectedException(String.format("Failed to request url: %s, code: %s, message: %s", url, innerCode, innerMessage));
         }
-    }
-
-    protected static String convertToV2ControlBaseURL(String url) {
-        /**
-         * Compatible with the original v1 API format: https://controller.api.{region-name}.cloud.zilliz.com
-         * Unified overseas domain for control center calls to reduce user perception
-         */
-        if (url.endsWith(".com")) {
-            return "https://api.cloud.zilliz.com";
-        }
-
-        /**
-         * Compatible with the original v1 API format: https://controller.api.{region-name}.cloud.zilliz.com.cn
-         * Unified domestic domain for control center calls to reduce user perception
-         */
-        return "https://api.cloud.zilliz.com.cn";
     }
 }
