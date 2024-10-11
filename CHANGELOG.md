@@ -1,4 +1,13 @@
 # Changelog
+## milvus-sdk-java 2.4.5 (2024-10-11)
+
+### Feature
+- Support partial load
+- Support clustering key
+
+### Bug
+- Fix a bug for MilvusClientV2 that index parameters were not passed to server correctly
+
 ## milvus-sdk-java 2.4.4 (2024-09-19)
 
 ### Improvement
