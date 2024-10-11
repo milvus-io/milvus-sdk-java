@@ -1,4 +1,9 @@
 # Changelog
+## milvus-sdk-java 2.3.11 (2024-10-11)
+
+### Bug
+- Fix a bug for MilvusClientV2 that index parameters were not passed to server correctly
+
 ## milvus-sdk-java 2.3.10 (2024-09-19)
 
 ### Improvement
