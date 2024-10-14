@@ -32,21 +32,26 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetImportProgressResponse implements Serializable {
-    private static final long serialVersionUID = -7162743560382861611L;
+
+    private static final long serialVersionUID = -2302203037749197132L;
+
+    private String jobId;
+
+    private String collectionName;
 
     private String fileName;
 
     private Integer fileSize;
 
-    private Double readyPercentage;
+    private String state;
+
+    private Integer progress;
 
     private String completeTime;
 
-    private String errorMessage;
+    private String reason;
 
-    private String collectionName;
-
-    private String jobId;
+    private Integer totalRows;
 
     private List<Detail> details;
 
@@ -54,11 +59,12 @@ public class GetImportProgressResponse implements Serializable {
     @Builder
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Detail {
+    private static class Detail {
         private String fileName;
         private Integer fileSize;
-        private Double readyPercentage;
+        private String state;
+        private Integer progress;
         private String completeTime;
-        private String errorMessage;
+        private String reason;
     }
 }
