@@ -32,7 +32,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ListImportJobsResponse implements Serializable {
-    private static final long serialVersionUID = -7162743560382861611L;
+
+    private static final long serialVersionUID = -8400893490624599225L;
 
     private Integer count;
 
@@ -40,10 +41,5 @@ public class ListImportJobsResponse implements Serializable {
 
     private Integer pageSize;
 
-    private List<Record> tasks;
-
-    @Deprecated
-    // Invalid field, please use tasks.
     private List<Record> records;
-
 }

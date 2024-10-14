@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.v2;
+package io.milvus.bulkwriter.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,7 +30,7 @@ import java.io.Serializable;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetImportProgressV2Request implements Serializable {
+public class GetImportProgressRequest implements Serializable {
     private static final long serialVersionUID = -787626534606813089L;
     private String clusterId;
     private String jobId;
