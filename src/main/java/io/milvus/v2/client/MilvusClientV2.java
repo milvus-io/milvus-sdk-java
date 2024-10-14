@@ -145,7 +145,7 @@ public class MilvusClientV2 {
                 .setLocalTime(clientUtils.getLocalTimeStr())
                 .build();
         ConnectRequest req = ConnectRequest.newBuilder().setClientInfo(info).build();
-        ConnectResponse resp = blockingStub.withDeadlineAfter(1, TimeUnit.SECONDS)
+        ConnectResponse resp = blockingStub.withDeadlineAfter(connectConfig.getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
                 .connect(req);
         if (resp.getStatus().getCode() != 0 || !resp.getStatus().getErrorCode().equals(io.milvus.grpc.ErrorCode.Success)) {
             throw new RuntimeException("Failed to initialize connection. Error: " + resp.getStatus().getReason());
