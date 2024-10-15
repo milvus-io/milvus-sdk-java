@@ -19,13 +19,12 @@
 
 package io.milvus.v2.utils;
 
-import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
-import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.ranker.BaseRanker;
@@ -37,7 +36,6 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 public class VectorUtils {
-    private static final Gson GSON_INSTANCE = new Gson();
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
         QueryRequest.Builder builder = QueryRequest.newBuilder()
@@ -155,7 +153,7 @@ public class VectorUtils {
 
         if (null != request.getSearchParams()) {
             try {
-                String searchParams = GSON_INSTANCE.toJson(request.getSearchParams());
+                String searchParams = JsonUtils.toJson(request.getSearchParams());
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.PARAMS)

@@ -22,7 +22,7 @@ package io.milvus.client;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.*;
 import io.grpc.StatusRuntimeException;
-import io.milvus.common.utils.JacksonUtils;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
 import io.milvus.grpc.*;
@@ -3288,7 +3288,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withOutFields(requestParam.getOutputFields())
                     .withExpr(requestParam.getFilter())
                     .withTopK(requestParam.getLimit())
-                    .withParams(JacksonUtils.toJsonString(requestParam.getParams()))
+                    .withParams(JsonUtils.toJson(requestParam.getParams()))
                     .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
 
