@@ -184,4 +184,340 @@ public class CreateCollectionTest extends BaseTest {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollection).build());
     }
 
+    @Test(description = "Create collection with Null Data, will auto load", groups = {"Smoke"})
+    public void createCollectionWithNullData(){
+        CreateCollectionReq.FieldSchema fieldInt64=CreateCollectionReq.FieldSchema.builder()
+                .autoID(false)
+                .dataType(io.milvus.v2.common.DataType.Int64)
+                .isPrimaryKey(true)
+                .name(CommonData.fieldInt64)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt32=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int32)
+                .name(CommonData.fieldInt32)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt16=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int16)
+                .name(CommonData.fieldInt16)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt8=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int8)
+                .name(CommonData.fieldInt8)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldDouble=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Double)
+                .name(CommonData.fieldDouble)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldArray=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Array)
+                .name(CommonData.fieldArray)
+                .elementType(DataType.Int64)
+                .maxCapacity(1000)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldBool=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Bool)
+                .name(CommonData.fieldBool)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldVarchar=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.VarChar)
+                .name(CommonData.fieldVarchar)
+                .isPrimaryKey(false)
+                .maxLength(1000)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloat=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Float)
+                .name(CommonData.fieldFloat)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldJson=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.JSON)
+                .name(CommonData.fieldJson)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloatVector=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.FloatVector)
+                .name(CommonData.fieldFloatVector)
+                .isPrimaryKey(false)
+                .dimension(CommonData.dim)
+                .build();
+
+        List<CreateCollectionReq.FieldSchema> fieldSchemaList=new ArrayList<>();
+        fieldSchemaList.add(fieldInt64);
+        fieldSchemaList.add(fieldInt32);
+        fieldSchemaList.add(fieldInt16);
+        fieldSchemaList.add(fieldInt8);
+        fieldSchemaList.add(fieldFloat);
+        fieldSchemaList.add(fieldDouble);
+        fieldSchemaList.add(fieldArray);
+        fieldSchemaList.add(fieldBool);
+        fieldSchemaList.add(fieldJson);
+        fieldSchemaList.add(fieldVarchar);
+        fieldSchemaList.add(fieldFloatVector);
+        CreateCollectionReq.CollectionSchema collectionSchema= CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(fieldSchemaList)
+                .build();
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(CommonData.fieldFloatVector)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .extraParams(CommonFunction.provideExtraParam(IndexParam.IndexType.AUTOINDEX))
+                .metricType(IndexParam.MetricType.L2)
+                .build();
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
+                .collectionSchema(collectionSchema)
+                .collectionName(collectionNameWithIndex)
+                .enableDynamicField(false)
+                .indexParams(Collections.singletonList(indexParam))
+                .numShards(1)
+                .build();
+        BaseTest.milvusClientV2.createCollection(createCollectionReq);
+
+        ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
+        Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(collectionNameWithIndex));
+        //insert
+        CommonFunction.generateDefaultData(0,100,CommonData.dim,DataType.FloatVector);
+        // search
+        SearchResp searchResp = CommonFunction.defaultSearch(collectionNameWithIndex);
+        Assert.assertEquals(searchResp.getSearchResults().size(),10);
+    }
+
+    @Test(description = "Create collection with Default Data, will auto load", groups = {"Smoke"})
+    public void createCollectionWithDefaultData(){
+        CreateCollectionReq.FieldSchema fieldInt64=CreateCollectionReq.FieldSchema.builder()
+                .autoID(false)
+                .dataType(io.milvus.v2.common.DataType.Int64)
+                .isPrimaryKey(true)
+                .name(CommonData.fieldInt64)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt32=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int32)
+                .name(CommonData.fieldInt32)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueInt)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt16=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int16)
+                .name(CommonData.fieldInt16)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueShort)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt8=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int8)
+                .name(CommonData.fieldInt8)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueShort)
+                .build();
+        CreateCollectionReq.FieldSchema fieldDouble=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Double)
+                .name(CommonData.fieldDouble)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueDouble)
+                .build();
+        CreateCollectionReq.FieldSchema fieldArray=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Array)
+                .name(CommonData.fieldArray)
+                .elementType(DataType.Int64)
+                .maxCapacity(1000)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldBool=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Bool)
+                .name(CommonData.fieldBool)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueBool)
+                .build();
+        CreateCollectionReq.FieldSchema fieldVarchar=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.VarChar)
+                .name(CommonData.fieldVarchar)
+                .isPrimaryKey(false)
+                .maxLength(1000)
+                .defaultValue(CommonData.defaultValueString)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloat=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Float)
+                .name(CommonData.fieldFloat)
+                .isPrimaryKey(false)
+                .defaultValue(CommonData.defaultValueFloat)
+                .build();
+        CreateCollectionReq.FieldSchema fieldJson=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.JSON)
+                .name(CommonData.fieldJson)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloatVector=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.FloatVector)
+                .name(CommonData.fieldFloatVector)
+                .isPrimaryKey(false)
+                .dimension(CommonData.dim)
+                .build();
+
+        List<CreateCollectionReq.FieldSchema> fieldSchemaList=new ArrayList<>();
+        fieldSchemaList.add(fieldInt64);
+        fieldSchemaList.add(fieldInt32);
+        fieldSchemaList.add(fieldInt16);
+        fieldSchemaList.add(fieldInt8);
+        fieldSchemaList.add(fieldFloat);
+        fieldSchemaList.add(fieldDouble);
+        fieldSchemaList.add(fieldArray);
+        fieldSchemaList.add(fieldBool);
+        fieldSchemaList.add(fieldJson);
+        fieldSchemaList.add(fieldVarchar);
+        fieldSchemaList.add(fieldFloatVector);
+        CreateCollectionReq.CollectionSchema collectionSchema= CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(fieldSchemaList)
+                .build();
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(CommonData.fieldFloatVector)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .extraParams(CommonFunction.provideExtraParam(IndexParam.IndexType.AUTOINDEX))
+                .metricType(IndexParam.MetricType.L2)
+                .build();
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
+                .collectionSchema(collectionSchema)
+                .collectionName(collectionNameWithIndex)
+                .enableDynamicField(false)
+                .indexParams(Collections.singletonList(indexParam))
+                .numShards(1)
+                .build();
+        BaseTest.milvusClientV2.createCollection(createCollectionReq);
+
+        ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
+        Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(collectionNameWithIndex));
+        //insert
+        CommonFunction.generateDefaultData(0,100,CommonData.dim,DataType.FloatVector);
+        // search
+        SearchResp searchResp = CommonFunction.defaultSearch(collectionNameWithIndex);
+        Assert.assertEquals(searchResp.getSearchResults().size(),10);
+    }
+
+    @Test(description = "Create collection with nullable and Default Data, will auto load", groups = {"Smoke"})
+    public void createCollectionWithNullAndDefaultData(){
+        CreateCollectionReq.FieldSchema fieldInt64=CreateCollectionReq.FieldSchema.builder()
+                .autoID(false)
+                .dataType(io.milvus.v2.common.DataType.Int64)
+                .isPrimaryKey(true)
+                .name(CommonData.fieldInt64)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt32=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int32)
+                .name(CommonData.fieldInt32)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueInt)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt16=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int16)
+                .name(CommonData.fieldInt16)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueShort)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt8=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int8)
+                .name(CommonData.fieldInt8)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueShort)
+                .build();
+        CreateCollectionReq.FieldSchema fieldDouble=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Double)
+                .name(CommonData.fieldDouble)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueDouble)
+                .build();
+        CreateCollectionReq.FieldSchema fieldArray=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Array)
+                .name(CommonData.fieldArray)
+                .elementType(DataType.Int64)
+                .maxCapacity(1000)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldBool=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Bool)
+                .name(CommonData.fieldBool)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueBool)
+                .build();
+        CreateCollectionReq.FieldSchema fieldVarchar=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.VarChar)
+                .name(CommonData.fieldVarchar)
+                .isPrimaryKey(false)
+                .maxLength(1000)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueString)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloat=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Float)
+                .name(CommonData.fieldFloat)
+                .isPrimaryKey(false)
+                .isNullable(true)
+                .defaultValue(CommonData.defaultValueFloat)
+                .build();
+        CreateCollectionReq.FieldSchema fieldJson=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.JSON)
+                .name(CommonData.fieldJson)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloatVector=CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.FloatVector)
+                .name(CommonData.fieldFloatVector)
+                .isPrimaryKey(false)
+                .dimension(CommonData.dim)
+                .build();
+
+        List<CreateCollectionReq.FieldSchema> fieldSchemaList=new ArrayList<>();
+        fieldSchemaList.add(fieldInt64);
+        fieldSchemaList.add(fieldInt32);
+        fieldSchemaList.add(fieldInt16);
+        fieldSchemaList.add(fieldInt8);
+        fieldSchemaList.add(fieldFloat);
+        fieldSchemaList.add(fieldDouble);
+        fieldSchemaList.add(fieldArray);
+        fieldSchemaList.add(fieldBool);
+        fieldSchemaList.add(fieldJson);
+        fieldSchemaList.add(fieldVarchar);
+        fieldSchemaList.add(fieldFloatVector);
+        CreateCollectionReq.CollectionSchema collectionSchema= CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(fieldSchemaList)
+                .build();
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(CommonData.fieldFloatVector)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .extraParams(CommonFunction.provideExtraParam(IndexParam.IndexType.AUTOINDEX))
+                .metricType(IndexParam.MetricType.L2)
+                .build();
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
+                .collectionSchema(collectionSchema)
+                .collectionName(collectionNameWithIndex)
+                .enableDynamicField(false)
+                .indexParams(Collections.singletonList(indexParam))
+                .numShards(1)
+                .build();
+        BaseTest.milvusClientV2.createCollection(createCollectionReq);
+
+        ListCollectionsResp listCollectionsResp = milvusClientV2.listCollections();
+        Assert.assertTrue(listCollectionsResp.getCollectionNames().contains(collectionNameWithIndex));
+        //insert
+        CommonFunction.generateDefaultData(0,100,CommonData.dim,DataType.FloatVector);
+        // search
+        SearchResp searchResp = CommonFunction.defaultSearch(collectionNameWithIndex);
+        Assert.assertEquals(searchResp.getSearchResults().size(),10);
+    }
+
 }
