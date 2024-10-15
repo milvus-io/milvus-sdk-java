@@ -52,6 +52,13 @@ public class CommonData {
     public static String databaseName="database01";
     public static String databaseName2="database02";
 
+    public static short defaultValueShort = 1;
+    public static int defaultValueInt = 1;
+    public static float defaultValueFloat = 1.0F;
+    public static double defaultValueDouble = 1.0;
+    public static boolean defaultValueBool = true;
+    public static String defaultValueString = "1.0";
+
 
 
 
