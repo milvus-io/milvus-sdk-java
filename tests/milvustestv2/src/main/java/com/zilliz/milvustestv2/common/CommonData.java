@@ -13,6 +13,7 @@ public class CommonData {
     public static String defaultFloat16VectorCollection="Float16VectorCollection";
     public static String defaultBFloat16VectorCollection="BFloat16VectorCollection";
     public static String defaultSparseFloatVectorCollection="SparseFloatVectorCollection";
+    public static String defaultHasNullCollection="HasNullableCollection";
     public static String partitionNameA="partitionNameA";
     public static String partitionNameB="partitionNameB";
     public static String partitionNameC="partitionNameC";

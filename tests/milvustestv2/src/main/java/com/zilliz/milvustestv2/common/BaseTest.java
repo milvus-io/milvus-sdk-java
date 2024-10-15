@@ -3,6 +3,7 @@ package com.zilliz.milvustestv2.common;
 import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.Milvustestv2Application;
 import com.zilliz.milvustestv2.config.ConnectInfoConfig;
+import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
 import io.milvus.param.MetricType;
 import io.milvus.v2.client.ConnectConfig;
@@ -25,6 +26,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Parameters;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -49,11 +51,13 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
         logger.info("**************************************************BeforeSuit**********************");
         milvusClientV2.dropAlias(DropAliasReq.builder().alias(CommonData.alias).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloatVectorCollection).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultHasNullCollection).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBFloat16VectorCollection).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultFloat16VectorCollection).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultBinaryVectorCollection).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(CommonData.defaultSparseFloatVectorCollection).build());
         initFloatVectorCollectionForTest();
+        initHasNoneCollectionForTest();
         initBF16VectorForTest();
         initFloat16VectorForTest();
         initSparseVectorForTest();
@@ -108,4 +112,35 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
         CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultSparseFloatVectorCollection,DataType.SparseFloatVector,true,CommonData.numberEntities);
     }
 
+    public void initHasNoneCollectionForTest(){
+        CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, CommonData.defaultHasNullCollection, DataType.FloatVector);
+        // insert data
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        InsertResp insert = milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultHasNullCollection).data(jsonObjects).build());
+        CommonFunction.createVectorIndex(CommonData.defaultHasNullCollection,CommonData.fieldFloatVector, IndexParam.IndexType.AUTOINDEX, IndexParam.MetricType.L2);
+        // Build Scalar Index
+        List<FieldParam> FieldParamList = new ArrayList<FieldParam>() {{
+            add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.STL_SORT).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
+        }};
+        CommonFunction.createScalarCommonIndex(CommonData.defaultHasNullCollection, FieldParamList);
+        log.info("Create Scalar index done{}, scalar index:{}", CommonData.defaultHasNullCollection, FieldParamList);
+        milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(CommonData.defaultHasNullCollection).build());
+        log.info("insert default float vector collection:" + insert);
+        // create partition
+        CommonFunction.createPartition(CommonData.defaultHasNullCollection,CommonData.partitionNameA);
+        CommonFunction.createPartition(CommonData.defaultHasNullCollection,CommonData.partitionNameB);
+        CommonFunction.createPartition(CommonData.defaultHasNullCollection,CommonData.partitionNameC);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjectsB = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities*2, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjectsC = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities*3, CommonData.dim,DataType.FloatVector);
+        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultHasNullCollection).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
+        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultHasNullCollection).partitionName(CommonData.partitionNameB).data(jsonObjectsB).build());
+        milvusClientV2.insert(InsertReq.builder().collectionName(CommonData.defaultHasNullCollection).partitionName(CommonData.partitionNameC).data(jsonObjectsC).build());
+    }
 }

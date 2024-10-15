@@ -137,6 +137,18 @@ public class SearchTest extends BaseTest {
         };
     }
 
+    @DataProvider(name = "searchNullableField")
+    private Object[][] provideNullableFieldSearchParams() {
+        return new Object[][]{
+                {CommonData.fieldInt32 + " == 1 ", topK},
+                {CommonData.fieldDouble + " > 1 ", topK},
+                {CommonData.fieldVarchar + " == \"1.0\" ", topK},
+                {CommonData.fieldFloat + " == 1.0 ", topK},
+                {"fieldJson[\"" + CommonData.fieldVarchar + "\"] in [\"Str1\", \"Str3\"]", 2},
+                {"ARRAY_CONTAINS(" + CommonData.fieldArray + ", 1)", 1},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
@@ -333,6 +345,25 @@ public class SearchTest extends BaseTest {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchReq searchParams = SearchReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
+                .filter(filter)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .annsField(CommonData.fieldFloatVector)
+                .data(data)
+                .topK(topK)
+                .build();
+        System.out.println(searchParams);
+        SearchResp search = milvusClientV2.search(searchParams);
+        System.out.println(search);
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
+    }
+
+    @Test(description = "search collection with nullable field", groups = {"Smoke"}, dataProvider = "searchNullableField")
+    public void searchNullableCollection(String filter, int expect) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
+        SearchReq searchParams = SearchReq.builder()
+                .collectionName(CommonData.defaultHasNullCollection)
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)

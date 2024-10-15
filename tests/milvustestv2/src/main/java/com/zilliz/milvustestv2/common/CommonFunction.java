@@ -618,6 +618,56 @@ public class CommonFunction {
     }
 
     /**
+     * 为collection提供导入含有NULL的数据，目前只支持行式插入
+     *
+     * @param num 数据量
+     * @param dim 维度
+     * @return List<JsonObject>
+     */
+    public static List<JsonObject> generateSimpleNullData(long startId,long num, int dim, DataType vectorType) {
+        List<JsonObject> jsonList = new ArrayList<>();
+        Random ran = new Random();
+        Gson gson = new Gson();
+        for (long i = startId; i < (num+startId); i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty(CommonData.fieldInt64, i);
+            row.addProperty(CommonData.fieldInt32, (String) null);
+            row.addProperty(CommonData.fieldInt16, (int) i % 32767);
+            row.addProperty(CommonData.fieldInt8, (short) i % 127);
+            row.addProperty(CommonData.fieldBool, i % 2 == 0);
+            if (i % 2 == 1) {
+                row.addProperty(CommonData.fieldDouble, (double) i);
+                row.addProperty(CommonData.fieldVarchar, "Str" + i);
+                row.addProperty(CommonData.fieldFloat, (float) i);
+                row.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
+            }
+            // 判断vectorType
+            if (vectorType == DataType.FloatVector) {
+                List<Float> vector = new ArrayList<>();
+                for (int k = 0; k < dim; ++k) {
+                    vector.add(ran.nextFloat());
+                }
+                row.add(CommonData.fieldFloatVector, gson.toJsonTree(vector));
+            }
+
+            JsonObject json = new JsonObject();
+            json.addProperty(CommonData.fieldInt64, (int) i % 32767);
+            json.addProperty(CommonData.fieldInt32, (int) i % 32767);
+            json.addProperty(CommonData.fieldDouble, (double) i);
+            json.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
+            json.addProperty(CommonData.fieldBool, i % 2 == 0);
+            if ( i % 2 == 1) {
+                json.addProperty(CommonData.fieldVarchar, "Str" + i);
+            }
+            json.addProperty(CommonData.fieldFloat, (float) i);
+            row.add(CommonData.fieldJson, json);
+            jsonList.add(row);
+        }
+        return jsonList;
+    }
+
+
+    /**
      * 快速创建一个collection，只有主键和向量字段
      *
      * @param dim            维度

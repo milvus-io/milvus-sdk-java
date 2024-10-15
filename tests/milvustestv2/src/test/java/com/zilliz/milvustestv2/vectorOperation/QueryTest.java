@@ -88,6 +88,17 @@ public class QueryTest extends BaseTest {
         return objects;
     }
 
+    @DataProvider(name = "queryNullableField")
+    private Object[][] provideNullableFieldQueryParams() {
+        return new Object[][]{
+                {CommonData.fieldInt32 + " == 1 ", CommonData.numberEntities*3},
+                {CommonData.fieldDouble + " > 1 ", CommonData.numberEntities*3/2 - 1},
+                {CommonData.fieldVarchar + " == \"1.0\" ", CommonData.numberEntities*3/2},
+                {CommonData.fieldFloat + " == 1.0 ", CommonData.numberEntities*3/2 + 1},
+                {"fieldJson[\"" + CommonData.fieldVarchar + "\"] in [\"Str1\", \"Str3\"]", 2},
+                {"ARRAY_CONTAINS(" + CommonData.fieldArray + ", 1)", 1},
+        };
+    }
 
     @Test(description = "query", groups = {"Smoke"}, dataProvider = "filterAndExcept")
     public void query(String filter, long expect) {
@@ -164,4 +175,14 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
 
+    @Test(description = "query with nullable field", groups = {"Smoke"}, dataProvider = "queryNullableField")
+    public void queryByNullFilter(String filter, long expect) {
+        QueryResp query = milvusClientV2.query(QueryReq.builder()
+                .collectionName(CommonData.defaultHasNullCollection)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Lists.newArrayList("*"))
+                .filter(filter)
+                .build());
+        Assert.assertEquals(query.getQueryResults().size(), expect);
+    }
 }
