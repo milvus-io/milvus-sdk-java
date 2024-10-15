@@ -20,6 +20,7 @@
 package io.milvus.v2.service.vector;
 
 import com.google.gson.*;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.FloatVec;
@@ -40,13 +41,12 @@ class VectorTest extends BaseTest {
     void testInsert() {
 
         List<JsonObject> data = new ArrayList<>();
-        Gson gson = new Gson();
         for (int i = 0; i < 100; i++) {
             JsonObject vector = new JsonObject();
             List<Float> vectorList = new ArrayList<>();
             vectorList.add(1.0f);
             vectorList.add(2.0f);
-            vector.add("vector", gson.toJsonTree(vectorList));
+            vector.add("vector", JsonUtils.toJsonTree(vectorList));
             vector.addProperty("id", (long) i);
             data.add(vector);
         }
@@ -66,7 +66,7 @@ class VectorTest extends BaseTest {
         List<Float> vectorList = new ArrayList<>();
         vectorList.add(2.0f);
         vectorList.add(3.0f);
-        jsonObject.add("vector", new Gson().toJsonTree(vectorList));
+        jsonObject.add("vector", JsonUtils.toJsonTree(vectorList));
         jsonObject.addProperty("id", 0L);
         UpsertReq request = UpsertReq.builder()
                 .collectionName("test")

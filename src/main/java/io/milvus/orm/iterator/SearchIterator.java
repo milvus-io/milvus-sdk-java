@@ -2,10 +2,10 @@ package io.milvus.orm.iterator;
 
 import com.amazonaws.util.CollectionUtils;
 import com.amazonaws.util.StringUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Lists;
+import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.common.utils.JacksonUtils;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.MetricType;
@@ -146,8 +146,7 @@ public class SearchIterator {
         if (null != searchIteratorParam.getParams() && !searchIteratorParam.getParams().isEmpty()) {
             params = new HashMap<>();
         }
-        params = JacksonUtils.fromJson(searchIteratorParam.getParams(), new TypeReference<Map<String, Object>>() {
-        });
+        params = JsonUtils.fromJson(searchIteratorParam.getParams(), new TypeToken<Map<String, Object>>() {}.getType());
     }
 
     private void checkForSpecialIndexParam() {
@@ -246,7 +245,7 @@ public class SearchIterator {
                 .withExpr(nextExpr)
                 .withOutFields(searchIteratorParam.getOutFields())
                 .withRoundDecimal(searchIteratorParam.getRoundDecimal())
-                .withParams(JacksonUtils.toJsonString(params))
+                .withParams(JsonUtils.toJson(params))
                 .withMetricType(MetricType.valueOf(searchIteratorParam.getMetricType()))
                 .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing())
                 .withIterator(Boolean.TRUE)
@@ -403,8 +402,12 @@ public class SearchIterator {
 
     private Map<String, Object> nextParams(int coefficient) {
         coefficient = Math.max(1, coefficient);
-        Map<String, Object> nextParams = JacksonUtils.fromJson(JacksonUtils.toJsonString(params), new TypeReference<Map<String, Object>>() {
-        });
+
+        // Note: params is a Map<String, Object> to store the original parameters, we must not change the params.
+        // here we make a new object nextParams, to ensure is it a deep copy, we convert it to JSON string and
+        // convert back to a Map<String, Object>.
+        Map<String, Object> nextParams = JsonUtils.fromJson(JsonUtils.toJson(params),
+                new TypeToken<Map<String, Object>>() {}.getType());
 
         if (metricsPositiveRelated(metricType)) {
             float nextRadius = tailBand + width * coefficient;

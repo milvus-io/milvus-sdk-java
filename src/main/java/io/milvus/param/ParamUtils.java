@@ -23,7 +23,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.common.utils.JacksonUtils;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.collection.FieldType;
@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
  * Utility functions for param classes
  */
 public class ParamUtils {
-    private static final Gson GSON_INSTANCE = new Gson();
 
     private static HashMap<DataType, String> getTypeErrorMsgForColumnInsert() {
         final HashMap<DataType, String> typeErrMsg = new HashMap<>();
@@ -344,7 +343,7 @@ public class ParamUtils {
                 }
                 int dim = fieldSchema.getDimension();
                 try {
-                    List<Float> vector = GSON_INSTANCE.fromJson(value, new TypeToken<List<Float>>() {}.getType());
+                    List<Float> vector = JsonUtils.fromJson(value, new TypeToken<List<Float>>() {}.getType());
                     if (vector.size() != dim) {
                         String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
                         throw new ParamException(String.format(msg, fieldSchema.getName(), vector.size(), dim));
@@ -363,7 +362,7 @@ public class ParamUtils {
                 }
                 int dim = fieldSchema.getDimension();
                 try {
-                    byte[] v = GSON_INSTANCE.fromJson(value, new TypeToken<byte[]>() {}.getType());
+                    byte[] v = JsonUtils.fromJson(value, new TypeToken<byte[]>() {}.getType());
                     int real_dim = calculateBinVectorDim(dataType, v.length);
                     if (real_dim != dim) {
                         String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
@@ -381,7 +380,7 @@ public class ParamUtils {
                 }
                 try {
                     // return SortedMap<Long, Float> for genFieldData()
-                    return GSON_INSTANCE.fromJson(value, new TypeToken<SortedMap<Long, Float>>() {}.getType());
+                    return JsonUtils.fromJson(value, new TypeToken<SortedMap<Long, Float>>() {}.getType());
                 } catch (JsonSyntaxException e) {
                     throw new ParamException(String.format("Unable to convert JsonObject to SortedMap<Long, Float> for field '%s'. Reason: %s",
                             fieldSchema.getName(), e.getCause().getMessage()));
@@ -449,19 +448,19 @@ public class ParamUtils {
         try {
             switch (elementType) {
                 case Int64:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Long>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Long>>() {}.getType());
                 case Int32:
                 case Int16:
                 case Int8:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Integer>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Integer>>() {}.getType());
                 case Bool:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Boolean>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Boolean>>() {}.getType());
                 case Float:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Float>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Float>>() {}.getType());
                 case Double:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
                 case VarChar:
-                    return GSON_INSTANCE.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
                 default:
                     throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
             }
@@ -828,18 +827,19 @@ public class ParamUtils {
 
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
             try {
-            Map<String, Object> paramMap = JacksonUtils.fromJson(requestParam.getParams(),Map.class);
-            String offset = paramMap.getOrDefault(Constant.OFFSET, 0).toString();
-            builder.addSearchParams(
-                    KeyValuePair.newBuilder()
-                            .setKey(Constant.OFFSET)
-                            .setValue(offset)
-                            .build());
-            builder.addSearchParams(
-                    KeyValuePair.newBuilder()
-                            .setKey(Constant.PARAMS)
-                            .setValue(requestParam.getParams())
-                            .build());
+                Map<String, Object> paramMap = JsonUtils.fromJson(requestParam.getParams(),
+                        new TypeToken<Map<String, Object>>() {}.getType());
+                String offset = paramMap.getOrDefault(Constant.OFFSET, 0).toString();
+                builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.OFFSET)
+                                .setValue(offset)
+                                .build());
+                builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.PARAMS)
+                                .setValue(requestParam.getParams())
+                                .build());
             } catch (IllegalArgumentException e) {
                 throw new ParamException(e.getMessage() + e.getCause().getMessage());
             }
@@ -1435,7 +1435,7 @@ public class ParamUtils {
             case String:
                 return value.getStringData();
             case JSON:
-                return new Gson().fromJson(value.getStringData(), JsonObject.class);
+                return JsonUtils.fromJson(value.getStringData(), JsonObject.class);
             default:
                 break;
         }

@@ -51,8 +51,6 @@ public abstract class BulkWriter {
     protected Buffer buffer;
     protected ReentrantLock bufferLock;
 
-    private static final Gson GSON_INSTANCE = new Gson();
-
     protected BulkWriter(CollectionSchemaParam collectionSchema, int chunkSize, BulkFileType fileType) {
         this.collectionSchema = collectionSchema;
         this.chunkSize = chunkSize;
