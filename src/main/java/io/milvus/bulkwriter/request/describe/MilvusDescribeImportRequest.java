@@ -17,25 +17,18 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request;
+package io.milvus.bulkwriter.request.describe;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.io.Serializable;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BulkImportRequest implements Serializable {
-    private static final long serialVersionUID = 8192049841043084620L;
-    private String objectUrl;
-    private String accessKey;
-    private String secretKey;
-    private String clusterId;
-    private String collectionName;
-    private String partitionName;
+public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
+    private static final long serialVersionUID = 6123645882882199210L;
+    private String jobId;
 }

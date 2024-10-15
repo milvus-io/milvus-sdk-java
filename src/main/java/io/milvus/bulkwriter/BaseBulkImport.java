@@ -22,11 +22,12 @@ package io.milvus.bulkwriter;
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.ExceptionUtils;
 import kong.unirest.Unirest;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseCloudImport {
+public class BaseBulkImport {
     protected static String postRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             kong.unirest.HttpResponse<String> response = Unirest.post(url)
@@ -70,7 +71,9 @@ public class BaseCloudImport {
         header.put("Content-Type", "application/json");
         header.put("Accept-Encodin", "gzip,deflate,sdch");
         header.put("Accept-Languag", "en-US,en;q=0.5");
-        header.put("Authorization", "Bearer " + apiKey);
+        if (StringUtils.isNotEmpty(apiKey)) {
+            header.put("Authorization", "Bearer " + apiKey);
+        }
 
         return header;
     }
