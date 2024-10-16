@@ -23,7 +23,6 @@ import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.common.utils.JacksonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
@@ -95,7 +94,7 @@ public class HighLevelExample {
 
         R<RpcStatus> response = milvusClient.createCollection(createSimpleCollectionParam);
         CommonUtils.handleResponseStatus(response);
-        System.out.println(JacksonUtils.toJsonString(response.getData()));
+        System.out.println(response);
         return response;
     }
 
