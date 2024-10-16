@@ -3,6 +3,7 @@ package com.zilliz.milvustestv2.common;
 import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.Milvustestv2Application;
 import com.zilliz.milvustestv2.config.ConnectInfoConfig;
+import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
 import io.milvus.param.MetricType;
 import io.milvus.v2.client.ConnectConfig;
@@ -25,6 +26,7 @@ import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.Parameters;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -107,5 +109,4 @@ public class BaseTest extends AbstractTestNGSpringContextTests {
         CommonFunction.createNewCollection(CommonData.dim,CommonData.defaultSparseFloatVectorCollection, DataType.SparseFloatVector);
         CommonFunction.createIndexAndInsertAndLoad(CommonData.defaultSparseFloatVectorCollection,DataType.SparseFloatVector,true,CommonData.numberEntities);
     }
-
 }

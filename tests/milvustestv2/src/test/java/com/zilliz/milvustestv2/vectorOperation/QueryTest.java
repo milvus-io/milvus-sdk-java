@@ -1,19 +1,30 @@
 package com.zilliz.milvustestv2.vectorOperation;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
+import com.zilliz.milvustestv2.common.CommonFunction;
+import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.DataProviderUtils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
+import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
+import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +33,9 @@ import java.util.List;
  * @Date 2024/2/19 17:03
  */
 public class QueryTest extends BaseTest {
+
+    String nullableDefaultCollectionName;
+    
     @DataProvider(name = "filterAndExcept")
     public Object[][] providerData() {
         return new Object[][]{
@@ -88,6 +102,47 @@ public class QueryTest extends BaseTest {
         return objects;
     }
 
+    @BeforeClass(alwaysRun = true)
+    public void providerCollection() {
+        nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
+        // insert data
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        InsertResp insert = milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).data(jsonObjects).build());
+        CommonFunction.createVectorIndex(nullableDefaultCollectionName,CommonData.fieldFloatVector, IndexParam.IndexType.AUTOINDEX, IndexParam.MetricType.L2);
+        // Build Scalar Index
+        List<FieldParam> FieldParamList = new ArrayList<FieldParam>() {{
+            add(FieldParam.builder().fieldName(CommonData.fieldVarchar).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt8).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt16).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt32).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldInt64).indextype(IndexParam.IndexType.STL_SORT).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldBool).indextype(IndexParam.IndexType.BITMAP).build());
+            add(FieldParam.builder().fieldName(CommonData.fieldArray).indextype(IndexParam.IndexType.BITMAP).build());
+        }};
+        CommonFunction.createScalarCommonIndex(nullableDefaultCollectionName, FieldParamList);
+        milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(nullableDefaultCollectionName).build());
+        // create partition
+        CommonFunction.createPartition(nullableDefaultCollectionName,CommonData.partitionNameA);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities*3, CommonData.dim,DataType.FloatVector);
+        milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanTestData() {
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(nullableDefaultCollectionName).build());
+    }
+
+    @DataProvider(name = "queryNullableField")
+    private Object[][] provideNullableFieldQueryParams() {
+        return new Object[][]{
+                {CommonData.fieldInt32 + " == 1 ", CommonData.numberEntities*3},
+                {CommonData.fieldDouble + " > 1 ", CommonData.numberEntities*3/2 - 1},
+                {CommonData.fieldVarchar + " == \"1.0\" ", CommonData.numberEntities*3/2},
+                {CommonData.fieldFloat + " == 1.0 ", CommonData.numberEntities*3/2 + 1},
+                {"fieldJson[\"" + CommonData.fieldVarchar + "\"] in [\"Str1\", \"Str3\"]", 2},
+                {"ARRAY_CONTAINS(" + CommonData.fieldArray + ", 1)", 1},
+        };
+    }
 
     @Test(description = "query", groups = {"Smoke"}, dataProvider = "filterAndExcept")
     public void query(String filter, long expect) {
@@ -164,4 +219,14 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
 
+    @Test(description = "query with nullable field", groups = {"Smoke"}, dataProvider = "queryNullableField")
+    public void queryByNullFilter(String filter, long expect) {
+        QueryResp query = milvusClientV2.query(QueryReq.builder()
+                .collectionName(nullableDefaultCollectionName)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Lists.newArrayList("*"))
+                .filter(filter)
+                .build());
+        Assert.assertEquals(query.getQueryResults().size(), expect);
+    }
 }

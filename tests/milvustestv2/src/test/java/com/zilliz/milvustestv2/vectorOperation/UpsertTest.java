@@ -34,17 +34,20 @@ import java.util.Map;
  */
 public class UpsertTest extends BaseTest {
     String newCollectionName;
+    String nullableDefaultCollectionName;
 
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
+        nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanTestData() {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(nullableDefaultCollectionName).build());
     }
 
     @DataProvider(name = "DifferentCollection")
@@ -114,4 +117,33 @@ public class UpsertTest extends BaseTest {
         System.out.println(upsert);
     }
 
+    @Test(description = "upsert nullable collection", groups = {"Smoke"}, dataProvider = "DifferentCollection")
+    public void nullableCollectionUpsert( DataType vectorType) {
+        String collectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, vectorType);
+        CommonFunction.createIndexAndInsertAndLoad(collectionName,vectorType,true,CommonData.numberEntities);
+
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleNullData(0,1, CommonData.dim, vectorType);
+        for (int i = 1; i < 10; i++) {
+            JsonObject jsonObject0 = jsonObjects.get(0).deepCopy();
+            jsonObject0.addProperty(CommonData.fieldInt64, i);
+            jsonObjects.add(jsonObject0);
+        }
+        UpsertResp upsert = milvusClientV2.upsert(UpsertReq.builder()
+                .collectionName(collectionName)
+                .data(jsonObjects)
+                .partitionName("_default")
+                .build());
+        System.out.println(upsert);
+        Assert.assertEquals(upsert.getUpsertCnt(), 10);
+
+        // query
+        QueryResp query = milvusClientV2.query(QueryReq.builder()
+                .collectionName(collectionName)
+                .filter(CommonData.fieldInt32 + " == 1")
+                .partitionNames(Lists.newArrayList(CommonData.defaultPartitionName))
+                .outputFields(Lists.newArrayList(CommonData.fieldInt64, CommonData.fieldInt32))
+                .consistencyLevel(ConsistencyLevel.STRONG).build());
+        Assert.assertEquals(query.getQueryResults().size(),10);
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+    }
 }
