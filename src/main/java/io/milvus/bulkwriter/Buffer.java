@@ -19,11 +19,11 @@
 
 package io.milvus.bulkwriter;
 
-import com.google.gson.*;
 import com.google.common.collect.Lists;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.bulkwriter.common.utils.ParquetUtils;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.DataType;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
@@ -57,7 +57,6 @@ public class Buffer {
     private Map<String, List<Object>> buffer;
     private Map<String, FieldType> fields;
 
-    private static final Gson GSON_INSTANCE = new Gson();
 
     public Buffer(CollectionSchemaParam collectionSchema, BulkFileType fileType) {
         this.collectionSchema = collectionSchema;
@@ -312,7 +311,7 @@ public class Buffer {
 
     private static void addSparseVector(Group group, String fieldName, SortedMap<Long, Float> sparse) {
         // sparse vector is parsed as JSON format string in the server side
-        String jsonString = GSON_INSTANCE.toJson(sparse);
+        String jsonString = JsonUtils.toJson(sparse);
         group.append(fieldName, jsonString);
     }
 }

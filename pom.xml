@@ -89,7 +89,6 @@
         <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
         <junit.platform.version>1.1.0</junit.platform.version>
         <junit.jupiter.engine.version>5.10.1</junit.jupiter.engine.version>
-        <jackson.version>2.16.1</jackson.version>
         <gson.version>2.10.1</gson.version>
         <kotlin.version>1.9.10</kotlin.version>
         <mockito.version>4.11.0</mockito.version>
@@ -125,21 +124,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.api.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
@@ -340,11 +324,6 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-csv</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <!-- storage sdk-->

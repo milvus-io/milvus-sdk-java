@@ -19,24 +19,23 @@
 
 package io.milvus.bulkwriter;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.bulkwriter.request.describe.BaseDescribeImportRequest;
 import io.milvus.bulkwriter.request.import_.BaseImportRequest;
 import io.milvus.bulkwriter.request.list.BaseListImportJobsRequest;
 import io.milvus.bulkwriter.response.RestfulResponse;
+import io.milvus.common.utils.JsonUtils;
 
 import java.util.Map;
 
 public class BulkImport extends BaseBulkImport {
-    private static final Gson GSON_INSTANCE = new Gson();
 
     public static String bulkImport(String url, BaseImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/create";
 
-        Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
         handleResponse(requestURL, response);
         return body;
     }
@@ -44,9 +43,9 @@ public class BulkImport extends BaseBulkImport {
     public static String getImportProgress(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/describe";
 
-        Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
         handleResponse(requestURL, response);
         return body;
     }
@@ -54,9 +53,9 @@ public class BulkImport extends BaseBulkImport {
     public static String listImportJobs(String url, BaseListImportJobsRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/list";
 
-        Map<String, Object> params = GSON_INSTANCE.fromJson(GSON_INSTANCE.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = GSON_INSTANCE.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
         handleResponse(requestURL, response);
         return body;
     }

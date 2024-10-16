@@ -24,6 +24,7 @@ import com.google.gson.*;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.Float16Utils;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.Constant;
@@ -74,8 +75,6 @@ class MilvusClientV2DockerTest {
     private static MilvusClientV2 client;
     private static RandomStringGenerator generator;
     private static final int dimension = 256;
-
-    private static final Gson GSON_INSTANCE = new Gson();
 
     private static final Random RANDOM = new Random();
 
@@ -244,7 +243,7 @@ class MilvusClientV2DockerTest {
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(i%10 == 0);
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case Int8:
             case Int16: {
@@ -252,42 +251,42 @@ class MilvusClientV2DockerTest {
                 for (int i = 0; i < eleCnt; i++) {
                     values.add((short)RANDOM.nextInt(256));
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case Int32: {
                 List<Integer> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(RANDOM.nextInt());
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case Int64: {
                 List<Long> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(RANDOM.nextLong());
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case Float: {
                 List<Float> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(RANDOM.nextFloat());
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case Double: {
                 List<Double> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(RANDOM.nextDouble());
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             case VarChar: {
                 List<String> values = new ArrayList<>();
                 for (int i = 0; i < eleCnt; i++) {
                     values.add(String.format("varchar_arr_%d", i));
                 }
-                return GSON_INSTANCE.toJsonTree(values).getAsJsonArray();
+                return JsonUtils.toJsonTree(values).getAsJsonArray();
             }
             default:
                 Assertions.fail();
@@ -330,7 +329,7 @@ class MilvusClientV2DockerTest {
                     case JSON: {
                         JsonObject jsonObj = new JsonObject();
                         jsonObj.addProperty(String.format("JSON_%d", i), i);
-                        jsonObj.add("flags", GSON_INSTANCE.toJsonTree(new long[]{i, i+1, i + 2}));
+                        jsonObj.add("flags", JsonUtils.toJsonTree(new long[]{i, i+1, i + 2}));
                         row.add(field.getName(), jsonObj);
                         break;
                     }
@@ -341,27 +340,27 @@ class MilvusClientV2DockerTest {
                     }
                     case FloatVector: {
                         List<Float> vector = generateFolatVector();
-                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector));
+                        row.add(field.getName(), JsonUtils.toJsonTree(vector));
                         break;
                     }
                     case BinaryVector: {
                         ByteBuffer vector = generateBinaryVector();
-                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
+                        row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case Float16Vector: {
                         ByteBuffer vector = generateFloat16Vector();
-                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
+                        row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case BFloat16Vector: {
                         ByteBuffer vector = generateBFloat16Vector();
-                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector.array()));
+                        row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case SparseFloatVector: {
                         SortedMap<Long, Float> vector = generateSparseVector();
-                        row.add(field.getName(), GSON_INSTANCE.toJsonTree(vector));
+                        row.add(field.getName(), JsonUtils.toJsonTree(vector));
                         break;
                     }
                     default:
@@ -395,13 +394,13 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(row.get("json_field").toString(), jsn.toString());
 
         List<Integer> arrInt = (List<Integer>) entity.get("arr_int_field");
-        List<Integer> arrIntOri = GSON_INSTANCE.fromJson(row.get("arr_int_field"), new TypeToken<List<Integer>>() {}.getType());
+        List<Integer> arrIntOri = JsonUtils.fromJson(row.get("arr_int_field"), new TypeToken<List<Integer>>() {}.getType());
         Assertions.assertEquals(arrIntOri, arrInt);
         List<Float> arrFloat = (List<Float>) entity.get("arr_float_field");
-        List<Float> arrFloatOri = GSON_INSTANCE.fromJson(row.get("arr_float_field"), new TypeToken<List<Float>>() {}.getType());
+        List<Float> arrFloatOri = JsonUtils.fromJson(row.get("arr_float_field"), new TypeToken<List<Float>>() {}.getType());
         Assertions.assertEquals(arrFloatOri, arrFloat);
         List<String> arrStr = (List<String>) entity.get("arr_varchar_field");
-        List<String> arrStrOri = GSON_INSTANCE.fromJson(row.get("arr_varchar_field"), new TypeToken<List<String>>() {}.getType());
+        List<String> arrStrOri = JsonUtils.fromJson(row.get("arr_varchar_field"), new TypeToken<List<String>>() {}.getType());
         Assertions.assertEquals(arrStrOri, arrStr);
     }
 
@@ -531,7 +530,7 @@ class MilvusClientV2DockerTest {
         for (int i = 0; i < nq; i++) {
             JsonObject row = data.get(RANDOM.nextInt((int)count));
             targetIDs.add(row.get("id").getAsLong());
-            List<Float> vector = GSON_INSTANCE.fromJson(row.get(vectorFieldName), new TypeToken<List<Float>>() {}.getType());
+            List<Float> vector = JsonUtils.fromJson(row.get(vectorFieldName), new TypeToken<List<Float>>() {}.getType());
             targetVectors.add(new FloatVec(vector));
         }
 
@@ -638,7 +637,7 @@ class MilvusClientV2DockerTest {
         for (int i = 0; i < nq; i++) {
             JsonObject row = data.get(RANDOM.nextInt((int)count));
             targetIDs.add(row.get("id").getAsLong());
-            byte[] vector = GSON_INSTANCE.fromJson(row.get(vectorFieldName), new TypeToken<byte[]>() {}.getType());
+            byte[] vector = JsonUtils.fromJson(row.get(vectorFieldName), new TypeToken<byte[]>() {}.getType());
             targetVectors.add(new BinaryVec(vector));
         }
         SearchResp searchResp = client.search(SearchReq.builder()
@@ -727,8 +726,8 @@ class MilvusClientV2DockerTest {
             originVector.add((float)1/(i+1));
         }
         System.out.println("Original float32 vector: " + originVector);
-        row.add(float16Field, GSON_INSTANCE.toJsonTree(Float16Utils.f32VectorToFp16Buffer(originVector).array()));
-        row.add(bfloat16Field, GSON_INSTANCE.toJsonTree(Float16Utils.f32VectorToBf16Buffer(originVector).array()));
+        row.add(float16Field, JsonUtils.toJsonTree(Float16Utils.f32VectorToFp16Buffer(originVector).array()));
+        row.add(bfloat16Field, JsonUtils.toJsonTree(Float16Utils.f32VectorToBf16Buffer(originVector).array()));
 
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -845,7 +844,7 @@ class MilvusClientV2DockerTest {
         for (int i = 0; i < nq; i++) {
             JsonObject row = data.get(RANDOM.nextInt((int)count));
             targetIDs.add(row.get("id").getAsLong());
-            SortedMap<Long, Float> vector = GSON_INSTANCE.fromJson(row.get(vectorFieldName), new TypeToken<SortedMap<Long, Float>>() {}.getType());
+            SortedMap<Long, Float> vector = JsonUtils.fromJson(row.get(vectorFieldName), new TypeToken<SortedMap<Long, Float>>() {}.getType());
             targetVectors.add(new SparseFloatVec(vector));
         }
         SearchResp searchResp = client.search(SearchReq.builder()
@@ -1011,11 +1010,10 @@ class MilvusClientV2DockerTest {
 
         // insert
         List<JsonObject> data = new ArrayList<>();
-        Gson gson = new Gson();
         for (int i = 0; i < 10; i++) {
             JsonObject row = new JsonObject();
             row.addProperty("pk", String.format("pk_%d", i));
-            row.add("float_vector", gson.toJsonTree(new float[]{(float)i, (float)(i + 1), (float)(i + 2), (float)(i + 3)}));
+            row.add("float_vector", JsonUtils.toJsonTree(new float[]{(float)i, (float)(i + 1), (float)(i + 2), (float)(i + 3)}));
             data.add(row);
         }
 
@@ -1040,11 +1038,11 @@ class MilvusClientV2DockerTest {
         List<JsonObject> dataUpdate = new ArrayList<>();
         JsonObject row1 = new JsonObject();
         row1.addProperty("pk", "pk_5");
-        row1.add("float_vector", gson.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
+        row1.add("float_vector", JsonUtils.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
         dataUpdate.add(row1);
         JsonObject row2 = new JsonObject();
         row2.addProperty("pk", "pk_2");
-        row2.add("float_vector", gson.toJsonTree(new float[]{2.0f, 2.0f, 2.0f, 2.0f}));
+        row2.add("float_vector", JsonUtils.toJsonTree(new float[]{2.0f, 2.0f, 2.0f, 2.0f}));
         dataUpdate.add(row2);
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -1330,7 +1328,7 @@ class MilvusClientV2DockerTest {
 
         // insert
         JsonObject row = new JsonObject();
-        row.add("vector", GSON_INSTANCE.toJsonTree(generateFloatVectors(1).get(0)));
+        row.add("vector", JsonUtils.toJsonTree(generateFloatVectors(1).get(0)));
         InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
@@ -1360,7 +1358,7 @@ class MilvusClientV2DockerTest {
         for (int i = 0; i < 100; ++i) {
             vector.add(RANDOM.nextFloat());
         }
-        row.add("vector", GSON_INSTANCE.toJsonTree(vector));
+        row.add("vector", JsonUtils.toJsonTree(vector));
         insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
@@ -1752,7 +1750,6 @@ class MilvusClientV2DockerTest {
         System.out.println("Collection created");
 
         try {
-            Gson gson = new Gson();
             Random rand = new Random();
             List<Thread> threadList = new ArrayList<>();
             for (int k = 0; k < 10; k++) {
@@ -1764,7 +1761,7 @@ class MilvusClientV2DockerTest {
                             JsonObject obj = new JsonObject();
                             obj.addProperty("id", String.format("%d", i*cnt + j));
                             List<Float> vector = generateFolatVector(dim);
-                            obj.add("vector", gson.toJsonTree(vector));
+                            obj.add("vector", JsonUtils.toJsonTree(vector));
                             obj.addProperty("dataTime", System.currentTimeMillis());
                             rows.add(obj);
                         }
@@ -1797,7 +1794,6 @@ class MilvusClientV2DockerTest {
         }
 
         try {
-            Gson gson = new Gson();
             Random rand = new Random();
             List<Thread> threadList = new ArrayList<>();
             for (int k = 0; k < 10; k++) {
@@ -1809,7 +1805,7 @@ class MilvusClientV2DockerTest {
                             JsonObject obj = new JsonObject();
                             obj.addProperty("id", String.format("%d", i*cnt + j));
                             List<Float> vector = generateFolatVector(dim);
-                            obj.add("vector", gson.toJsonTree(vector));
+                            obj.add("vector", JsonUtils.toJsonTree(vector));
                             obj.addProperty("dataTime", System.currentTimeMillis());
                             rows.add(obj);
                         }
@@ -1889,12 +1885,11 @@ class MilvusClientV2DockerTest {
 
         // insert by row-based
         List<JsonObject> data = new ArrayList<>();
-        Gson gson = new Gson();
         for (int i = 0; i < 10; i++) {
             JsonObject row = new JsonObject();
             List<Float> vector = generateFolatVector(dim);
             row.addProperty("id", i);
-            row.add("vector", gson.toJsonTree(vector));
+            row.add("vector", JsonUtils.toJsonTree(vector));
             if (i%2 == 0) {
                 row.addProperty("flag", i);
                 row.add("desc", JsonNull.INSTANCE);

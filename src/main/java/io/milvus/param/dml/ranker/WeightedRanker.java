@@ -19,8 +19,8 @@
 
 package io.milvus.param.dml.ranker;
 
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.JsonObject;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 
 import lombok.Getter;
@@ -45,7 +45,7 @@ public class WeightedRanker extends BaseRanker {
     @Override
     public Map<String, String> getProperties() {
         JsonObject params = new JsonObject();
-        params.add("weights", new Gson().toJsonTree(this.weights).getAsJsonArray());
+        params.add("weights", JsonUtils.toJsonTree(this.weights).getAsJsonArray());
 
         Map<String, String> props = new HashMap<>();
         props.put("strategy", "weighted");

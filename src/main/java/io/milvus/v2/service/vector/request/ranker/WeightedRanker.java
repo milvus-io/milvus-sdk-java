@@ -19,8 +19,8 @@
 
 package io.milvus.v2.service.vector.request.ranker;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import io.milvus.common.utils.JsonUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +40,7 @@ public class WeightedRanker extends BaseRanker {
     @Override
     public Map<String, String> getProperties() {
         JsonObject params = new JsonObject();
-        params.add("weights", new Gson().toJsonTree(this.weights).getAsJsonArray());
+        params.add("weights", JsonUtils.toJsonTree(this.weights).getAsJsonArray());
 
         Map<String, String> props = new HashMap<>();
         props.put("strategy", "weighted");
