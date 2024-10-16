@@ -55,6 +55,7 @@ public class SearchTest extends BaseTest {
     int topK = 10;
     private MilvusServiceClient milvusServiceClient;
     String newCollectionName;
+    String nullableDefaultCollectionName;
 
     @DataProvider(name = "filterAndExcept")
     public Object[][] providerData() {
@@ -149,20 +150,37 @@ public class SearchTest extends BaseTest {
         };
     }
 
+    @DataProvider(name = "collectionNameList")
+    public Object[][] providerCollectionName() {
+        return new Object[][]{
+                {newCollectionName},
+                {nullableDefaultCollectionName},
+        };
+    }
+
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
+        nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
+        // insert data
+        List<JsonObject> jsonNullableObjects = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).data(jsonNullableObjects).build());
+        // create partition
+        CommonFunction.createPartition(nullableDefaultCollectionName,CommonData.partitionNameA);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
     }
 
     @AfterClass(alwaysRun = true)
     public void cleanTestData() {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(nullableDefaultCollectionName).build());
     }
 
-    @Test(description = "Create vector and scalar index", groups = {"Smoke"})
-    public void createVectorAndScalarIndex() {
+    @Test(description = "Create vector and scalar index", groups = {"Smoke"}, dataProvider = "collectionNameList")
+    public void createVectorAndScalarIndex(String newCollectionName) {
         // Build Vector index
         IndexParam indexParam = IndexParam.builder()
                 .fieldName(CommonData.fieldFloatVector)
@@ -359,11 +377,11 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search collection with nullable field", groups = {"Smoke"}, dataProvider = "searchNullableField")
+    @Test(description = "search collection with nullable field", groups = {"Smoke"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "searchNullableField")
     public void searchNullableCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchReq searchParams = SearchReq.builder()
-                .collectionName(CommonData.defaultHasNullCollection)
+                .collectionName(nullableDefaultCollectionName)
                 .filter(filter)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.STRONG)

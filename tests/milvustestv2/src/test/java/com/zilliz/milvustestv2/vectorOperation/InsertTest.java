@@ -33,17 +33,19 @@ import java.util.List;
 public class InsertTest extends BaseTest {
     private String newCollectionName;
     private String simpleCollectionName;
+    private String nullableDefaultCollectionName;
 
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         simpleCollectionName = CommonFunction.createSimpleCollection(CommonData.dim, null);
+        nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
     }
-
     @AfterClass(alwaysRun = true)
     public void cleanTestData() {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(simpleCollectionName).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(nullableDefaultCollectionName).build());
     }
 
     @DataProvider(name = "VectorTypeList")
@@ -88,4 +90,14 @@ public class InsertTest extends BaseTest {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollection).build());
     }
 
+    @Test(description = "insert nullable field collection test", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void insertNullableCollection(DataType dataType) {
+        String newCollection = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, dataType);
+        List<JsonObject> jsonObjects = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim, dataType);
+        InsertResp insert = milvusClientV2.insert(InsertReq.builder()
+                .collectionName(newCollection)
+                .data(jsonObjects).build());
+        Assert.assertEquals(insert.getInsertCnt(), CommonData.numberEntities);
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollection).build());
+    }
 }

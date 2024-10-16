@@ -649,6 +649,18 @@ public class CommonFunction {
                 }
                 row.add(CommonData.fieldFloatVector, gson.toJsonTree(vector));
             }
+            if (vectorType == DataType.BinaryVector) {
+                row.add(CommonData.fieldBinaryVector, gson.toJsonTree(generateBinaryVector(dim).array()));
+            }
+            if (vectorType == DataType.Float16Vector) {
+                row.add(CommonData.fieldFloat16Vector, gson.toJsonTree(generateFloat16Vector(dim).array()));
+            }
+            if (vectorType == DataType.BFloat16Vector) {
+                row.add(CommonData.fieldBF16Vector, gson.toJsonTree(generateBF16Vector(dim).array()));
+            }
+            if (vectorType == DataType.SparseFloatVector) {
+                row.add(CommonData.fieldSparseVector, gson.toJsonTree(generateSparseVector(dim)));
+            }
 
             JsonObject json = new JsonObject();
             json.addProperty(CommonData.fieldInt64, (int) i % 32767);
