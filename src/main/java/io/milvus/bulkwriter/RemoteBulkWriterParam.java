@@ -19,11 +19,13 @@
 
 package io.milvus.bulkwriter;
 
+import io.milvus.bulkwriter.common.utils.V2AdapterUtils;
 import io.milvus.bulkwriter.connect.StorageConnectParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -74,6 +76,17 @@ public class RemoteBulkWriterParam {
          */
         public Builder withCollectionSchema(@NonNull CollectionSchemaParam collectionSchema) {
             this.collectionSchema = collectionSchema;
+            return this;
+        }
+
+        /**
+         * Sets the collection schema by V2.
+         *
+         * @param collectionSchema collection schema
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionSchema(@NonNull CreateCollectionReq.CollectionSchema collectionSchema) {
+            this.collectionSchema = V2AdapterUtils.convertV2Schema(collectionSchema);
             return this;
         }
 
