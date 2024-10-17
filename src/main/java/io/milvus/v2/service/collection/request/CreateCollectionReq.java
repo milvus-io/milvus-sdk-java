@@ -55,6 +55,8 @@ public class CreateCollectionReq {
     private Boolean autoID = Boolean.FALSE;
 
     // used by quickly create collections and create collections with schema
+    // Note: This property is only for fast creating collection. If user use CollectionSchema to create a collection,
+    //       the CollectionSchema.enableDynamicField must equal to CreateCollectionReq.enableDynamicField.
     @Builder.Default
     private Boolean enableDynamicField = Boolean.TRUE;
     @Builder.Default
@@ -83,6 +85,27 @@ public class CreateCollectionReq {
             this.indexParams$set = true;
             return self();
         }
+
+        public B enableDynamicField(Boolean enableDynamicField) {
+            if (this.collectionSchema != null && (this.collectionSchema.isEnableDynamicField() != enableDynamicField)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "The enableDynamicField flag has been set by CollectionSchema, not allow to set different value by enableDynamicField().");
+            }
+            this.enableDynamicField$value = enableDynamicField;
+            this.enableDynamicField$set = true;
+            return self();
+        }
+
+        public B collectionSchema(CollectionSchema collectionSchema) {
+            if (this.enableDynamicField$set && (collectionSchema.isEnableDynamicField() != this.enableDynamicField$value)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "The enableDynamicField flag has been set by enableDynamicField(), not allow to set different value by collectionSchema.");
+            }
+            this.collectionSchema = collectionSchema;
+            this.enableDynamicField$value = collectionSchema.isEnableDynamicField();
+            this.enableDynamicField$set = true;
+            return self();
+        }
     }
 
     @Data
@@ -90,6 +113,8 @@ public class CreateCollectionReq {
     public static class CollectionSchema {
         @Builder.Default
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
+        @Builder.Default
+        private boolean enableDynamicField = false;
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
             // check the input here to pop error messages earlier

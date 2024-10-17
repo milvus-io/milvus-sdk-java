@@ -22,19 +22,20 @@ package io.milvus.v2.service.collection;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.A;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CollectionTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(CollectionTest.class);
@@ -51,6 +52,44 @@ class CollectionTest extends BaseTest {
                 .dimension(2)
                 .build();
         client_v2.createCollection(req);
+    }
+
+    @Test
+    void testEnableDynamicSchema() {
+        CreateCollectionReq req = CreateCollectionReq.builder()
+                .collectionName("test2")
+                .dimension(2)
+                .enableDynamicField(false)
+                .build();
+        Assertions.assertFalse(req.getEnableDynamicField());
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(true)
+                .build();
+        collectionSchema
+                .addField(AddFieldReq.builder().fieldName("id").dataType(DataType.Int64).build())
+                .addField(AddFieldReq.builder().fieldName("vector").dataType(DataType.FloatVector).dimension(2).build());
+
+        req = CreateCollectionReq.builder()
+                .collectionName("test")
+                .collectionSchema(collectionSchema)
+                .build();
+        Assertions.assertTrue(req.getEnableDynamicField());
+        Assertions.assertTrue(req.getCollectionSchema().isEnableDynamicField());
+
+        assertThrows(MilvusClientException.class, () ->CreateCollectionReq.builder()
+                .collectionName("test")
+                .enableDynamicField(false)
+                .collectionSchema(collectionSchema)
+                .build()
+        );
+
+        assertThrows(MilvusClientException.class, () ->CreateCollectionReq.builder()
+                .collectionName("test")
+                .collectionSchema(collectionSchema)
+                .enableDynamicField(false)
+                .build()
+        );
     }
 
     @Test
