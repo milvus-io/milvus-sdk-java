@@ -485,7 +485,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(2, descResp.getNumOfPartitions());
         Assertions.assertEquals(1, descResp.getVectorFieldNames().size());
         Assertions.assertEquals("id", descResp.getPrimaryFieldName());
-        Assertions.assertTrue(descResp.getEnableDynamicField());
+        Assertions.assertFalse(descResp.getEnableDynamicField()); // from v2.4.6, we add this flag in CollectionSchema, default value is False(follow the pymilvus behavior)
         Assertions.assertFalse(descResp.getAutoID());
 
         List<String> fieldNames = descResp.getFieldNames();

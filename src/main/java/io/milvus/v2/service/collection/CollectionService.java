@@ -34,9 +34,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CollectionService extends BaseService {
     public IndexService indexService = new IndexService();
@@ -115,7 +113,7 @@ public class CollectionService extends BaseService {
         CollectionSchema grpcSchema = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
                 .setDescription(request.getDescription())
-                .setEnableDynamicField(request.getEnableDynamicField())
+                .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField())
                 .build();
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
             grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
