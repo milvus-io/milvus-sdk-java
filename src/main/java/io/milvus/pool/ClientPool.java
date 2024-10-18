@@ -2,10 +2,13 @@ package io.milvus.pool;
 
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
 public class ClientPool<C, T> {
+    protected static final Logger logger = LoggerFactory.getLogger(ClientPool.class);
     protected GenericKeyedObjectPool<String, T> clientPool;
     protected PoolConfig config;
     protected PoolClientFactory<C, T> clientFactory;
@@ -48,7 +51,7 @@ public class ClientPool<C, T> {
         try {
             return clientPool.borrowObject(key);
         } catch (Exception e) {
-            System.out.println("Failed to get client, exception: " + e.getMessage());
+            logger.error("Failed to get client, exception: ", e);
             return null;
         }
     }
@@ -65,7 +68,7 @@ public class ClientPool<C, T> {
         try {
             clientPool.returnObject(key, grpcClient);
         } catch (Exception e) {
-            System.out.println("Failed to return client, exception: " + e.getMessage());
+            logger.error("Failed to return client, exception: " + e);
             throw e;
         }
     }
