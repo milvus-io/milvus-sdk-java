@@ -1,4 +1,14 @@
 # Changelog
+
+## milvus-sdk-java 2.4.6 (2024-10-18)
+
+### Improvement
+- Refine BulkWriter/BulkImport interfaces
+- Remove Jackson dependency
+
+### Bug
+- Fix "one second timeout issue" of pre-connection
+
 ## milvus-sdk-java 2.4.5 (2024-10-11)
 
 ### Feature
