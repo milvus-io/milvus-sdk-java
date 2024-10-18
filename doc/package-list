@@ -2,9 +2,10 @@ io.milvus.bulkwriter
 io.milvus.bulkwriter.common.clientenum
 io.milvus.bulkwriter.common.utils
 io.milvus.bulkwriter.connect
-io.milvus.bulkwriter.request.v2
+io.milvus.bulkwriter.request.describe
+io.milvus.bulkwriter.request.import_
+io.milvus.bulkwriter.request.list
 io.milvus.bulkwriter.response
-io.milvus.bulkwriter.response.v2
 io.milvus.bulkwriter.storage
 io.milvus.bulkwriter.storage.client
 io.milvus.client
