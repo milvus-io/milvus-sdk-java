@@ -518,6 +518,7 @@ public class BulkWriterExample {
         System.out.println("\n===================== import files to milvus ====================");
         MilvusImportRequest milvusImportRequest = MilvusImportRequest.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .partitionName("")
                 .files(batchFiles)
                 .build();
         String bulkImportResult = BulkImport.bulkImport(url, milvusImportRequest);
