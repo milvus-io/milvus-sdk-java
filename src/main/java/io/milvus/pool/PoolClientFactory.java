@@ -3,11 +3,14 @@ package io.milvus.pool;
 import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String, T> {
+    protected static final Logger logger = LoggerFactory.getLogger(PoolClientFactory.class);
     private final C config;
     private Constructor<?> constructor;
     private Method closeMethod;
@@ -22,7 +25,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
             closeMethod = clientCls.getMethod("close", long.class);
             verifyMethod = clientCls.getMethod("clientIsReady");
         } catch (Exception e) {
-            System.out.println("Failed to create client pool factory, exception: " + e.getMessage());
+            logger.error("Failed to create client pool factory, exception: ", e);
             throw e;
         }
     }
@@ -54,7 +57,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
             T client = p.getObject();
             return (boolean) verifyMethod.invoke(client);
         } catch (Exception e) {
-            System.out.println("Failed to validate client, exception: " + e.getMessage());
+            logger.error("Failed to validate client, exception: " + e);
             return true;
         }
     }
