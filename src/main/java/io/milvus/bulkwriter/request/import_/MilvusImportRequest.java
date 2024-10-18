@@ -33,5 +33,6 @@ import java.util.List;
 public class MilvusImportRequest extends BaseImportRequest {
     private static final long serialVersionUID = -1958858397962018740L;
     private String collectionName;
+    private String partitionName;
     private List<List<String>> files;
 }
