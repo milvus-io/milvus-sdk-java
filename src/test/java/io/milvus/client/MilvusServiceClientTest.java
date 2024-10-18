@@ -34,7 +34,6 @@ import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
 import io.milvus.param.credential.*;
 import io.milvus.param.dml.*;
-import io.milvus.param.dml.ranker.BaseRanker;
 import io.milvus.param.dml.ranker.RRFRanker;
 import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
@@ -48,9 +47,6 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
