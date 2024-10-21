@@ -120,15 +120,18 @@ public class CollectionService extends BaseService {
         }
 
         //create collection
-        CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
+        CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchema.toByteString())
-                .setShardsNum(request.getNumShards())
-                .build();
-        if (request.getNumPartitions() != null) {
-            createCollectionRequest = createCollectionRequest.toBuilder().setNumPartitions(request.getNumPartitions()).build();
+                .setShardsNum(request.getNumShards());
+        List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
+        if (CollectionUtils.isNotEmpty(propertiesList)) {
+            propertiesList.forEach(builder::addProperties);
         }
-        Status createCollectionResponse = blockingStub.createCollection(createCollectionRequest);
+        if (request.getNumPartitions() != null) {
+            builder.setNumPartitions(request.getNumPartitions());
+        }
+        Status createCollectionResponse = blockingStub.createCollection(builder.build());
         rpcUtils.handleResponse(title, createCollectionResponse);
 
         //create index
