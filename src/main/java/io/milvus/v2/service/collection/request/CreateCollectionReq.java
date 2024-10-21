@@ -30,7 +30,9 @@ import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @SuperBuilder
@@ -74,6 +76,9 @@ public class CreateCollectionReq {
     @Builder.Default
     private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
 
+    @Builder.Default
+    private final Map<String, String> properties = new HashMap<>();
+
     public static abstract class CreateCollectionReqBuilder<C extends CreateCollectionReq, B extends CreateCollectionReq.CreateCollectionReqBuilder<C, B>> {
         public B indexParam(IndexParam indexParam) {
             try {
@@ -104,6 +109,15 @@ public class CreateCollectionReq {
             this.collectionSchema = collectionSchema;
             this.enableDynamicField$value = collectionSchema.isEnableDynamicField();
             this.enableDynamicField$set = true;
+            return self();
+        }
+
+        public B property(String key, String value) {
+            if(null == this.properties$value ){
+                this.properties$value = new HashMap<>();
+            }
+            this.properties$value.put(key, value);
+            this.properties$set = true;
             return self();
         }
     }

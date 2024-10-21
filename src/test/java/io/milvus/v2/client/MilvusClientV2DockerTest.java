@@ -1225,7 +1225,18 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .collectionSchema(collectionSchema)
                 .indexParams(indexes)
+                .property(Constant.TTL_SECONDS, "5")
+                .property(Constant.MMAP_ENABLED, "false")
                 .build());
+
+        DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Map<String, String> collProps = descCollResp.getProperties();
+        Assertions.assertTrue(collProps.containsKey(Constant.TTL_SECONDS));
+        Assertions.assertTrue(collProps.containsKey(Constant.MMAP_ENABLED));
+        Assertions.assertEquals("5", collProps.get(Constant.TTL_SECONDS));
+        Assertions.assertEquals("false", collProps.get(Constant.MMAP_ENABLED));
 
         client.releaseCollection(ReleaseCollectionReq.builder()
                 .collectionName(randomCollectionName)
@@ -1239,10 +1250,10 @@ class MilvusClientV2DockerTest {
                 .properties(properties)
                 .property("prop", "val")
                 .build());
-        DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
+        descCollResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
-        Map<String, String> collProps = descCollResp.getProperties();
+        collProps = descCollResp.getProperties();
         Assertions.assertTrue(collProps.containsKey(Constant.TTL_SECONDS));
         Assertions.assertTrue(collProps.containsKey(Constant.MMAP_ENABLED));
         Assertions.assertTrue(collProps.containsKey("prop"));
