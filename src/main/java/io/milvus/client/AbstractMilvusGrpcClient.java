@@ -22,6 +22,7 @@ package io.milvus.client;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.*;
 import io.grpc.StatusRuntimeException;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.*;
@@ -1554,6 +1555,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             MutationResult response = blockingStub().delete(builder.build());
             handleResponse(title, response.getStatus());
+            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1581,6 +1583,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             MutationResult response = blockingStub().insert(builderWraper.buildInsertRequest());
             cleanCacheIfFailed(response.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
             handleResponse(title, response.getStatus());
+            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1616,6 +1619,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         cleanCacheIfFailed(result.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
+                            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
@@ -1658,6 +1662,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             MutationResult response = blockingStub().upsert(builderWraper.buildUpsertRequest());
             cleanCacheIfFailed(response.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
             handleResponse(title, response.getStatus());
+            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1692,6 +1697,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                         cleanCacheIfFailed(result.getStatus(), requestParam.getDatabaseName(), requestParam.getCollectionName());
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
+                            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }

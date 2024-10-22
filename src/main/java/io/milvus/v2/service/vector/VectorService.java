@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.vector;
 
+import io.milvus.common.utils.GTsDict;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.*;
@@ -108,6 +109,7 @@ public class VectorService extends BaseService {
         MutationResult response = blockingStub.insert(requestBuilder.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
+        GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
         return InsertResp.builder()
                 .InsertCnt(response.getInsertCnt())
                 .build();
@@ -122,6 +124,7 @@ public class VectorService extends BaseService {
         MutationResult response = blockingStub.upsert(requestBuilder.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
+        GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
         return UpsertResp.builder()
                 .upsertCnt(response.getInsertCnt())
                 .build();
@@ -216,6 +219,7 @@ public class VectorService extends BaseService {
                 .build();
         MutationResult response = blockingStub.delete(deleteRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+        GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
                 .build();

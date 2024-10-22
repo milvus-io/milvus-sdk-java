@@ -20,7 +20,7 @@ public class QueryIteratorReq {
     @Builder.Default
     private String expr = "";
     @Builder.Default
-    private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
+    private ConsistencyLevel consistencyLevel = null;
     @Builder.Default
     private long offset = 0;
     @Builder.Default

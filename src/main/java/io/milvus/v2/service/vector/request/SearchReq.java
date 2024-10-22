@@ -50,11 +50,11 @@ public class SearchReq {
     private int roundDecimal = -1;
     @Builder.Default
     private Map<String, Object> searchParams = new HashMap<>();
-    private long guaranteeTimestamp;
+    private long guaranteeTimestamp; // deprecated
     @Builder.Default
-    private Long gracefulTime = 5000L;
+    private Long gracefulTime = 5000L; // deprecated
     @Builder.Default
-    private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
+    private ConsistencyLevel consistencyLevel = null;
     private boolean ignoreGrowing;
     private String groupByFieldName;
 }
