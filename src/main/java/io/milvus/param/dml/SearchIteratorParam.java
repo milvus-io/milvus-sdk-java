@@ -55,9 +55,9 @@ public class SearchIteratorParam {
     private final Long NQ;
     private final int roundDecimal;
     private final String params;
-    private final long travelTimestamp;
-    private final long guaranteeTimestamp;
-    private final Long gracefulTime;
+    private final long travelTimestamp; // deprecated
+    private final long guaranteeTimestamp; // deprecated
+    private final Long gracefulTime; // deprecated
     private final ConsistencyLevelEnum consistencyLevel;
     private final boolean ignoreGrowing;
     private final String groupByFieldName;

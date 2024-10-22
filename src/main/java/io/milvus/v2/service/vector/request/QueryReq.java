@@ -39,7 +39,7 @@ public class QueryReq {
     private List<Object> ids;
     private String filter;
     @Builder.Default
-    private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
+    private ConsistencyLevel consistencyLevel = null;
     private long offset;
     private long limit;
 }

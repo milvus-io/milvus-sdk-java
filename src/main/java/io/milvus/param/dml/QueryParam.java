@@ -82,9 +82,9 @@ public class QueryParam {
         private final List<String> partitionNames = Lists.newArrayList();
         private final List<String> outFields = new ArrayList<>();
         private String expr = "";
-        private Long travelTimestamp = 0L;
-        private Long gracefulTime = 5000L;
-        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
+        private Long travelTimestamp = 0L; // deprecated
+        private Long gracefulTime = 5000L; // deprecated
+        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS; // deprecated
         private ConsistencyLevelEnum consistencyLevel = null;
         private Long offset = 0L;
         private Long limit = 0L;

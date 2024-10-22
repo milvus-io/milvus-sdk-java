@@ -33,7 +33,7 @@ public class SearchIteratorReq {
     @Builder.Default
     private String params = "{}";
     @Builder.Default
-    private ConsistencyLevel consistencyLevel = ConsistencyLevel.BOUNDED;
+    private ConsistencyLevel consistencyLevel = null;
     @Builder.Default
     private boolean ignoreGrowing = false;
     @Builder.Default
