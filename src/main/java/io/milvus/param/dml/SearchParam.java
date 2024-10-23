@@ -102,9 +102,9 @@ public class SearchParam {
         private Long NQ;
         private Integer roundDecimal = -1;
         private String params = "{}";
-        private Long travelTimestamp = 0L;
-        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS;
-        private Long gracefulTime = 5000L;
+        private Long travelTimestamp = 0L; // deprecated
+        private Long guaranteeTimestamp = Constant.GUARANTEE_EVENTUALLY_TS; // deprecated
+        private Long gracefulTime = 5000L; // deprecated
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
         private String groupByFieldName;

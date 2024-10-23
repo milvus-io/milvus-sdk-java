@@ -22,6 +22,7 @@ package io.milvus.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -40,6 +41,7 @@ import io.milvus.param.partition.*;
 import io.milvus.response.*;
 import io.milvus.server.MockMilvusServer;
 import io.milvus.server.MockMilvusServerImpl;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
@@ -3115,5 +3117,25 @@ class MilvusServiceClientTest {
         assertEquals(progress, String.valueOf(wrapper.getProgress()));
 
         assertFalse(wrapper.toString().isEmpty());
+    }
+
+    @Test
+    void testGTsDict() {
+        GTsDict dict = GTsDict.getInstance();
+        dict.updateCollectionTs("aaa", 0L);
+        dict.updateCollectionTs("bbb", 999L);
+        dict.updateCollectionTs("ccc", -10L);
+        Assertions.assertEquals(0L, dict.getCollectionTs("aaa"));
+        Assertions.assertEquals(999L, dict.getCollectionTs("bbb"));
+        Assertions.assertEquals(-10L, dict.getCollectionTs("ccc"));
+
+        dict.updateCollectionTs("aaa", 20L);
+        Assertions.assertEquals(20L, dict.getCollectionTs("aaa"));
+        dict.updateCollectionTs("bbb", 200L);
+        Assertions.assertEquals(999L, dict.getCollectionTs("bbb"));
+        dict.updateCollectionTs("ccc", -50L);
+        Assertions.assertEquals(-10L, dict.getCollectionTs("ccc"));
+        dict.updateCollectionTs("ccc", 50L);
+        Assertions.assertEquals(50L, dict.getCollectionTs("ccc"));
     }
 }

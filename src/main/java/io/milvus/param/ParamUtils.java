@@ -23,6 +23,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -768,9 +769,8 @@ public class ParamUtils {
             builder.setDsl(requestParam.getExpr());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
-                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
-        builder.setTravelTimestamp(requestParam.getTravelTimestamp());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        builder.setTravelTimestamp(requestParam.getTravelTimestamp()); // deprecated
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
@@ -865,6 +865,9 @@ public class ParamUtils {
             requestParam.getOutFields().forEach(builder::addOutputFields);
         }
 
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        builder.setGuaranteeTimestamp(guaranteeTimestamp);
+
         if (requestParam.getConsistencyLevel() == null) {
             builder.setUseDefaultConsistency(true);
         } else {
@@ -875,8 +878,7 @@ public class ParamUtils {
     }
 
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(),
-                requestParam.getGuaranteeTimestamp(), requestParam.getGracefulTime());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
@@ -935,23 +937,22 @@ public class ParamUtils {
         return builder.build();
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel,
-                                              long guaranteeTimestamp, Long gracefulTime){
+    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String collectionName){
         if(consistencyLevel == null){
-            return 1L;
+            Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+            return  (ts == null) ? 1L : ts;
         }
         switch (consistencyLevel){
             case STRONG:
-                guaranteeTimestamp = 0L;
-                break;
+                return 0L;
+            case SESSION:
+                Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+                return (ts == null) ? 1L : ts;
             case BOUNDED:
-                guaranteeTimestamp = (new Date()).getTime() - gracefulTime;
-                break;
-            case EVENTUALLY:
-                guaranteeTimestamp = 1L;
-                break;
+                return 2L; // let server side to determine the bounded time
+            default:
+                return 1L; // EVENTUALLY and others
         }
-        return guaranteeTimestamp;
     }
 
     public static boolean isVectorDataType(DataType dataType) {
