@@ -20,6 +20,7 @@
 package io.milvus.v2.utils;
 
 import com.google.protobuf.ByteString;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.exception.ParamException;
@@ -79,23 +80,22 @@ public class VectorUtils {
 
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel,
-                                              long guaranteeTimestamp, Long gracefulTime){
+    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String collectionName){
         if(consistencyLevel == null){
-            return 1L;
+            Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+            return  (ts == null) ? 1L : ts;
         }
         switch (consistencyLevel){
             case STRONG:
-                guaranteeTimestamp = 0L;
-                break;
+                return 0L;
+            case SESSION:
+                Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+                return  (ts == null) ? 1L : ts;
             case BOUNDED:
-                guaranteeTimestamp = (new Date()).getTime() - gracefulTime;
-                break;
-            case EVENTUALLY:
-                guaranteeTimestamp = 1L;
-                break;
+                return 2L; // let server side to determine the bounded time
+            default:
+                return 1L; // EVENTUALLY and others
         }
-        return guaranteeTimestamp;
     }
 
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
@@ -182,9 +182,7 @@ public class VectorUtils {
             builder.setDsl(request.getFilter());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(),
-                request.getGuaranteeTimestamp(), request.getGracefulTime());
-        //builder.setTravelTimestamp(request.getTravelTimestamp());
+        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), request.getCollectionName());
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true

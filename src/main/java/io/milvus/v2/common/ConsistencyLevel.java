@@ -23,6 +23,7 @@ import lombok.Getter;
 @Getter
 public enum ConsistencyLevel{
     STRONG("Strong", 0),
+    SESSION("Session", 1),
     BOUNDED("Bounded", 2),
     EVENTUALLY("Eventually",3),
     ;

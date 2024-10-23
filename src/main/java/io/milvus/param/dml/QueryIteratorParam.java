@@ -46,9 +46,9 @@ public class QueryIteratorParam {
     private final List<String> partitionNames;
     private final List<String> outFields;
     private final String expr;
-    private final long travelTimestamp;
-    private final long guaranteeTimestamp;
-    private final long gracefulTime;
+    private final long travelTimestamp; // deprecated
+    private final long guaranteeTimestamp; // deprecated
+    private final long gracefulTime; // deprecated
     private final ConsistencyLevelEnum consistencyLevel;
     private final long offset;
     private final long limit;

@@ -40,5 +40,6 @@ public class HybridSearchReq
     private List<String> outFields;
     @Builder.Default
     private int roundDecimal = -1;
-    private ConsistencyLevel consistencyLevel;
+    @Builder.Default
+    private ConsistencyLevel consistencyLevel = null;
 }
