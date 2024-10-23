@@ -1,4 +1,22 @@
 # Changelog
+## milvus-sdk-java 2.4.6 (2024-10-18)
+
+### Improvement
+- Refine BulkWriter/BulkImport interfaces
+- Remove Jackson dependency
+
+### Bug
+- Fix "one second timeout issue" of pre-connection
+
+## milvus-sdk-java 2.4.5 (2024-10-11)
+
+### Feature
+- Support partial load
+- Support clustering key
+
+### Bug
+- Fix a bug for MilvusClientV2 that index parameters were not passed to server correctly
+
 ## milvus-sdk-java 2.4.4 (2024-09-19)
 
 ### Improvement
@@ -70,6 +88,58 @@
 
 - Upgrade dependencies to fix some CVEs
 - Provide new methods withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors for SearchParam to explicitly input different type vectors
+
+## milvus-sdk-java 2.3.11 (2024-10-11)
+
+### Bug
+- Fix a bug for MilvusClientV2 that index parameters were not passed to server correctly
+
+## milvus-sdk-java 2.3.10 (2024-09-19)
+
+### Improvement
+- Improve usability of CreateCollectionReq
+- Check connection when MilvusClientV2 is initialized
+- Reduce time-consuming log of search/insert/upsert for MilvusClientV1
+
+### Bug
+- Fix a bug or QueryIterator with special expression
+
+## milvus-sdk-java 2.3.9 (2024-08-09)
+
+### Feature
+- Implement database related interfaces including createDatabase/dropDatabase/listDatabases for MilvusClientV2
+- Implement getServerVersion interface for MilvusClientV2
+- Provide client/connection pool for V1 and V2
+
+### Improvement
+- Implement retry machinery for MilvusClientV2
+
+### Bug
+- Fix thread-safe bug of insert/upsert interfaces for MilvusClientV2
+
+## milvus-sdk-java 2.3.8 (2024-07-11)
+
+### Feature
+- Support SearchIterator/QueryIterator for MilvusClientV2
+- Optimize DescribeIndex interface of MilvusClientV2
+- Optimize DescribeCollection interface of MilvusClientV2
+- Support enableVirtualStyleEndpoint for BulkWriter
+
+### Bug
+- Fix a bug of max_capacity range
+
+### Break changes
+- Replace FastJSON by Gson according to issue [#878](https://github.com/milvus-io/milvus-sdk-java/issues/878). InsertParam.withRows()/UpsertParam.withRows()/InsertReq.data() are redefined.
+- Rename "distance" to "score" for search result. SearchResp.distance() of V2 is renamed to be score().
+
+
+## milvus-sdk-java 2.3.7 (2024-05-11)
+
+### Bug
+
+- Unable to connect Zilliz cloud new severless instances
+- SearchIterator cannot work for Varchar type primary key
+- Fix some minor bugs of SearchIterator
 
 ## milvus-sdk-java 2.3.6 (2024-04-22)
 
