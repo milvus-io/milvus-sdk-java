@@ -40,6 +40,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
@@ -110,9 +112,20 @@ public class VectorService extends BaseService {
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
-        return InsertResp.builder()
-                .InsertCnt(response.getInsertCnt())
-                .build();
+
+        if (response.getIDs().hasIntId()) {
+            List<Object> ids = new ArrayList<>(response.getIDs().getIntId().getDataList());
+            return InsertResp.builder()
+                    .InsertCnt(response.getInsertCnt())
+                    .primaryKeys(ids)
+                    .build();
+        } else {
+            List<Object> ids = new ArrayList<>(response.getIDs().getStrId().getDataList());
+            return InsertResp.builder()
+                    .InsertCnt(response.getInsertCnt())
+                    .primaryKeys(ids)
+                    .build();
+        }
     }
 
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
