@@ -773,6 +773,45 @@ public class MilvusClientV2 {
     }
 
     /**
+     * trigger a flush action in server side
+     *
+     * @param request flush request
+     */
+    public void flush(FlushReq request) {
+        FlushResp response = retry(()->utilityService.flush(this.getRpcStub(), request));
+
+        // The BlockingStub.flush() api returns immediately after the datanode set all growing segments to be "sealed".
+        // The flush state becomes "Completed" after the datanode uploading them to S3 asynchronously.
+        // Here we wait the flush action to be "Completed".
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub =
+                MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
+        if (request.getWaitFlushedTimeoutMs() > 0L) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getWaitFlushedTimeoutMs(), TimeUnit.MILLISECONDS);
+        }
+        utilityService.waitFlush(tempBlockingStub, response.getCollectionSegmentIDs(), response.getCollectionFlushTs());
+    }
+
+    /**
+     * trigger an asynchronous compaction in server side
+     *
+     * @param request compact request
+     * @return CompactResp
+     */
+    public CompactResp compact(CompactReq request) {
+        return retry(()->utilityService.compact(this.getRpcStub(), request));
+    }
+
+    /**
+     * get a compact task state by its ID
+     *
+     * @param request get compact state request
+     * @return GetCompactStateResp
+     */
+    public GetCompactionStateResp getCompactionState(GetCompactionStateReq request) {
+        return retry(()->utilityService.getCompactionState(this.getRpcStub(), request));
+    }
+
+    /**
      * Get server version
      *
      * @return String

@@ -17,13 +17,25 @@
  * under the License.
  */
 
-package io.milvus.v2.common;
+package io.milvus.v2.service.utility.response;
 
-public enum IndexBuildState {
-    IndexStateNone,
-    Unissued,
-    InProgress,
-    Finished,
-    Failed,
-    Retry,
+import io.milvus.v2.common.CompactionState;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+public class GetCompactionStateResp {
+    @Builder.Default
+    private CompactionState state = CompactionState.UndefiedState;
+
+    @Builder.Default
+    private Long executingPlanNo = 0L;
+
+    @Builder.Default
+    private Long timeoutPlanNo = 0L;
+
+    @Builder.Default
+    private Long completedPlanNo = 0L;
 }
