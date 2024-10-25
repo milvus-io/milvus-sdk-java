@@ -35,7 +35,6 @@ import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.DataUtils;
-import io.milvus.v2.utils.RpcUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ public class VectorService extends BaseService {
             }
             DescribeCollectionRequest describeCollectionRequest = builder.build();
             DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
-            new RpcUtils().handleResponse(msg, response.getStatus());
+            rpcUtils.handleResponse(msg, response.getStatus());
             info = response;
             cacheCollectionInfo.put(key, info);
         }

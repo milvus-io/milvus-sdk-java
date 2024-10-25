@@ -19,11 +19,19 @@
 
 package io.milvus.v2.service.utility.request;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @SuperBuilder
 public class FlushReq {
-    private String collectionName;
+    @Builder.Default
+    private List<String> collectionNames = new ArrayList<>();
+
+    @Builder.Default
+    private Long waitFlushedTimeoutMs = 0L; // 0 - waiting util flush task is done
 }

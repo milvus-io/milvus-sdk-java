@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package io.milvus.v2.common;
+package io.milvus.v2.service.utility.request;
 
-public enum IndexBuildState {
-    IndexStateNone,
-    Unissued,
-    InProgress,
-    Finished,
-    Failed,
-    Retry,
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+public class GetCompactionStateReq {
+    private Long compactionID;
 }
