@@ -1,4 +1,17 @@
 # Changelog
+## milvus-sdk-java 2.4.7 (2024-10-25)
+
+### Improvement
+- Support setting properties for V2 CreateCollectionReq
+- Support Session consistency level for V1 and V2
+- Return entities ids for V2 InsertResp
+
+### Bug
+- Fix a RpcDeadline bug for V2
+
+### Feature
+- Support flush() interface for V2
+- Support compact()/getCompactionState() interfaces for V2
 
 ## milvus-sdk-java 2.4.6 (2024-10-18)
 
