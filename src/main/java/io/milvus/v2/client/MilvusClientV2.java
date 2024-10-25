@@ -773,6 +773,36 @@ public class MilvusClientV2 {
     }
 
     /**
+     * trigger a flush action in server side
+     *
+     * @param request flush request
+     * @return CompactResp
+     */
+    public FlushResp flush(FlushReq request) {
+        return retry(()->utilityService.flush(this.getRpcStub(), request));
+    }
+
+    /**
+     * trigger an asynchronous compaction in server side
+     *
+     * @param request compact request
+     * @return CompactResp
+     */
+    public CompactResp compact(CompactReq request) {
+        return retry(()->utilityService.compact(this.getRpcStub(), request));
+    }
+
+    /**
+     * get a compact task state by its ID
+     *
+     * @param request get compact state request
+     * @return GetCompactStateResp
+     */
+    public GetCompactionStateResp getCompactionState(GetCompactionStateReq request) {
+        return retry(()->utilityService.getCompactionState(this.getRpcStub(), request));
+    }
+
+    /**
      * Get server version
      *
      * @return String

@@ -17,13 +17,19 @@
  * under the License.
  */
 
-package io.milvus.v2.common;
+package io.milvus.v2.service.utility.response;
 
-public enum IndexBuildState {
-    IndexStateNone,
-    Unissued,
-    InProgress,
-    Finished,
-    Failed,
-    Retry,
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+import java.util.*;
+
+@Data
+@SuperBuilder
+public class FlushResp {
+    @Builder.Default
+    private final Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
+    @Builder.Default
+    private final Map<String, List<Long>> flushedCollectionSegmentIDs = new HashMap<>();
 }
