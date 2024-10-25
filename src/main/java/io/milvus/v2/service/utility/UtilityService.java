@@ -19,24 +19,97 @@
 
 package io.milvus.v2.service.utility;
 
-import io.milvus.grpc.FlushResponse;
-import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
+import io.milvus.grpc.*;
+import io.milvus.v2.common.CompactionState;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.utility.request.*;
-import io.milvus.v2.service.utility.response.DescribeAliasResp;
-import io.milvus.v2.service.utility.response.ListAliasResp;
+import io.milvus.v2.service.utility.response.*;
+
+import java.util.*;
 
 public class UtilityService extends BaseService {
-    public R<RpcStatus> flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
-        String title = String.format("Flush collection %s", request.getCollectionName());
-        io.milvus.grpc.FlushRequest flushRequest = io.milvus.grpc.FlushRequest.newBuilder()
-                .addCollectionNames(request.getCollectionName())
+    public FlushResp flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
+        List<String> collectionNames = request.getCollectionNames();
+        String title = String.format("Flush collections %s", collectionNames);
+        if (collectionNames.isEmpty()) {
+            return null; // maybe do flushAll in future
+        }
+
+        FlushRequest flushRequest = io.milvus.grpc.FlushRequest.newBuilder()
+                .addAllCollectionNames(collectionNames)
                 .build();
-        FlushResponse status = blockingStub.flush(flushRequest);
-        rpcUtils.handleResponse(title, status.getStatus());
-        return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
+        FlushResponse response = blockingStub.flush(flushRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        Map<String, io.milvus.grpc.LongArray> rpcCollSegIDs = response.getCollSegIDsMap();
+        Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
+        rpcCollSegIDs.forEach((key, value)->{
+            collectionSegmentIDs.put(key, value.getDataList());
+        });
+        Map<String, Long> collectionFlushTs = response.getCollFlushTsMap();
+        return FlushResp.builder()
+                .collectionSegmentIDs(collectionSegmentIDs)
+                .collectionFlushTs(collectionFlushTs)
+                .build();
+    }
+
+    // this method is internal use, not expose to user
+    public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                          Map<String, List<Long>> collectionSegmentIDs,
+                          Map<String, Long> collectionFlushTs) {
+        collectionSegmentIDs.forEach((collectionName, segmentIDs)->{
+            if (collectionFlushTs.containsKey(collectionName)) {
+                Long flushTs = collectionFlushTs.get(collectionName);
+                boolean flushed = false;
+                while (!flushed) {
+                    GetFlushStateResponse flushResponse = blockingStub.getFlushState(GetFlushStateRequest.newBuilder()
+                            .addAllSegmentIDs(segmentIDs)
+                            .setFlushTs(flushTs)
+                            .build());
+
+                    flushed = flushResponse.getFlushed();
+                }
+            }
+        });
+
+        return null;
+    }
+
+    public CompactResp compact(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CompactReq request) {
+        String title = String.format("Compact collection %s", request.getCollectionName());
+
+        DescribeCollectionResponse descResponse = blockingStub.describeCollection(DescribeCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .build());
+        rpcUtils.handleResponse(title, descResponse.getStatus());
+
+        io.milvus.grpc.ManualCompactionRequest compactRequest = io.milvus.grpc.ManualCompactionRequest.newBuilder()
+                .setCollectionID(descResponse.getCollectionID())
+                .setMajorCompaction(request.getIsClustering())
+                .build();
+        io.milvus.grpc.ManualCompactionResponse response = blockingStub.manualCompaction(compactRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return CompactResp.builder()
+                .compactionID(response.getCompactionID())
+                .build();
+    }
+
+    public GetCompactionStateResp getCompactionState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                     GetCompactionStateReq request) {
+        String title = "Get compaction state";
+        io.milvus.grpc.GetCompactionStateRequest getRequest = io.milvus.grpc.GetCompactionStateRequest.newBuilder()
+                .setCompactionID(request.getCompactionID())
+                .build();
+        io.milvus.grpc.GetCompactionStateResponse response = blockingStub.getCompactionState(getRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return GetCompactionStateResp.builder()
+                .state(CompactionState.valueOf(response.getState().name()))
+                .executingPlanNo(response.getExecutingPlanNo())
+                .timeoutPlanNo(response.getTimeoutPlanNo())
+                .completedPlanNo(response.getCompletedPlanNo())
+                .build();
     }
 
     public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {

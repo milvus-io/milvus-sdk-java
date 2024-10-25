@@ -19,11 +19,17 @@
 
 package io.milvus.v2.common;
 
-public enum IndexBuildState {
-    IndexStateNone,
-    Unissued,
-    InProgress,
-    Finished,
-    Failed,
-    Retry,
+import lombok.Getter;
+
+@Getter
+public enum CompactionState {
+    UndefiedState(0),
+    Executing(1),
+    Completed(2);
+
+    private final int code;
+    CompactionState(int code) {
+        this.code = code;
+    }
+    ;
 }

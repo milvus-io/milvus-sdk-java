@@ -17,13 +17,17 @@
  * under the License.
  */
 
-package io.milvus.v2.common;
+package io.milvus.v2.service.utility.request;
 
-public enum IndexBuildState {
-    IndexStateNone,
-    Unissued,
-    InProgress,
-    Finished,
-    Failed,
-    Retry,
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@SuperBuilder
+public class CompactReq {
+    private String collectionName;
+
+    @Builder.Default
+    private Boolean isClustering = Boolean.FALSE;
 }

@@ -36,23 +36,14 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
-import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.collection.response.ListCollectionsResp;
-import io.milvus.v2.service.database.request.AlterDatabaseReq;
-import io.milvus.v2.service.database.request.CreateDatabaseReq;
-import io.milvus.v2.service.database.request.DescribeDatabaseReq;
-import io.milvus.v2.service.database.request.DropDatabaseReq;
-import io.milvus.v2.service.database.response.DescribeDatabaseResp;
-import io.milvus.v2.service.database.response.ListDatabasesResp;
-import io.milvus.v2.service.index.request.AlterIndexReq;
-import io.milvus.v2.service.index.request.CreateIndexReq;
-import io.milvus.v2.service.index.request.DescribeIndexReq;
-import io.milvus.v2.service.index.request.DropIndexReq;
-import io.milvus.v2.service.index.response.DescribeIndexResp;
+import io.milvus.v2.service.collection.response.*;
+import io.milvus.v2.service.database.request.*;
+import io.milvus.v2.service.database.response.*;
+import io.milvus.v2.service.index.request.*;
+import io.milvus.v2.service.index.response.*;
 import io.milvus.v2.service.partition.request.*;
-import io.milvus.v2.service.utility.request.AlterAliasReq;
-import io.milvus.v2.service.utility.request.CreateAliasReq;
-import io.milvus.v2.service.utility.request.DropAliasReq;
+import io.milvus.v2.service.utility.request.*;
+import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.*;
@@ -455,6 +446,18 @@ class MilvusClientV2DockerTest {
                 .data(data)
                 .build());
         Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // flush
+        client.flush(FlushReq.builder()
+                .collectionNames(Collections.singletonList(randomCollectionName))
+                .build());
+
+        // compact
+        CompactResp compactResp = client.compact(CompactReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        // there is a segment is flushed by the flush() interface, there could be a compaction task created
+        Assertions.assertTrue(compactResp.getCompactionID() == -1L || compactResp.getCompactionID() > 0L);
 
         // create partition, upsert one row to the partition
         String partitionName = "PPP";
