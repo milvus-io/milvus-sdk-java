@@ -38,7 +38,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 public class VectorUtils {
-
+    public ConvertUtils convertUtils = new ConvertUtils();
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
@@ -82,7 +82,9 @@ public class VectorUtils {
 //                .setKey(Constant.IGNORE_GROWING)
 //                .setValue(String.valueOf(request.isIgnoreGrowing()))
 //                .build());
-
+        Map<String, TemplateValue> templateValues = new HashMap<>();
+        convertUtils.processFilterTemplateValues(builder.getExprTemplateValuesMap(), request.getFilterTemplateValues());
+        builder.putAllExprTemplateValues(templateValues);
         return builder.build();
 
     }
@@ -203,6 +205,9 @@ public class VectorUtils {
             builder.setConsistencyLevelValue(request.getConsistencyLevel().getCode());
         }
 
+        Map<String, TemplateValue> templateValues = new HashMap<>();
+        convertUtils.processFilterTemplateValues(builder.getExprTemplateValuesMap(), request.getFilterTemplateValues());
+        builder.putAllExprTemplateValues(templateValues);
         return builder.build();
     }
 

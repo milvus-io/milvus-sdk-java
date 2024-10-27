@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -235,6 +236,10 @@ public class VectorService extends BaseService {
                 builder.putExprTemplateValues(key, vectorUtils.deduceTemplateValue(value));
             });
         }
+        Map<String, TemplateValue> templateValues = new HashMap<>();
+        convertUtils.processFilterTemplateValues(builder.getExprTemplateValuesMap(), request.getFilterTemplateValues());
+        builder.putAllExprTemplateValues(templateValues);
+
         MutationResult response = blockingStub.delete(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
         GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());

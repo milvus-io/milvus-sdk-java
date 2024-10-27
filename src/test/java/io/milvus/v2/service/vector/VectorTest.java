@@ -29,9 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 class VectorTest extends BaseTest {
 
@@ -103,6 +101,36 @@ class VectorTest extends BaseTest {
                 .build();
         SearchResp statusR = client_v2.search(request);
         logger.info(statusR.toString());
+    }
+
+    @Test
+    void testSearchWithTemplateExpression() {
+        List<Float> vectorList = new ArrayList<>();
+        vectorList.add(1.0f);
+        vectorList.add(2.0f);
+
+        Map<String, Map<String, Object>> expressionTemplateValues = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("max", 10);
+        expressionTemplateValues.put("id < {max}", params);
+
+        List<Object> list = Arrays.asList(1, 2, 3);
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("list", list);
+        expressionTemplateValues.put("id in {list}", params2);
+
+        expressionTemplateValues.forEach((key, value) -> {
+            SearchReq request = SearchReq.builder()
+                    .collectionName("test")
+                    .data(Collections.singletonList(new FloatVec(vectorList)))
+                    .topK(10)
+                    .offset(0L)
+                    .filter(key)
+                    .filterTemplateValues(value)
+                    .build();
+            SearchResp statusR = client_v2.search(request);
+            logger.info(statusR.toString());
+        });
     }
 
     @Test

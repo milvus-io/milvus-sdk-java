@@ -142,4 +142,51 @@ public class ConvertUtils {
                 .build();
         return describeCollectionResp;
     }
+
+    public TemplateValue convertExpressionValue(Object value) {
+        TemplateValue.Builder targetBuilder = TemplateValue.newBuilder();
+
+        if (value instanceof List<?>) {
+            TemplateArrayValue.Builder arrayBuilder = TemplateArrayValue.newBuilder();
+            boolean sameType = true;
+            DataType elementType = DataType.None;
+            int i = 0;
+
+            for (Object element : (List<?>) value) {
+                TemplateValue targetValue = convertExpressionValue(element);
+
+                if (elementType.equals(DataType.None)) {
+                    elementType = targetValue.getType();
+                } else if (!elementType.equals(targetValue.getType())) {
+                    sameType = false;
+                    elementType = DataType.JSON;
+                }
+                arrayBuilder.setArray(i, targetValue);
+            }
+
+            arrayBuilder.setSameType(sameType);
+            arrayBuilder.setElementType(elementType);
+            targetBuilder.setType(DataType.Array).setArrayVal(arrayBuilder.build());
+        } else if (value instanceof Integer) {
+            targetBuilder.setType(DataType.Int64).setInt64Val(((Integer) value).longValue());
+        } else if (value instanceof Float) {
+            targetBuilder.setType(DataType.Float).setFloatVal(((Float) value).doubleValue());
+        } else if (value instanceof Double) {
+            targetBuilder.setType(DataType.Float).setFloatVal((Double) value);
+        } else if (value instanceof String) {
+            targetBuilder.setType(DataType.String).setStringVal((String) value);
+        } else {
+            throw new IllegalArgumentException("Unsupported type: " + value.getClass().getName());
+        }
+
+        return targetBuilder.build();
+    }
+
+    public void processFilterTemplateValues(Map<String, TemplateValue> templateValues, Map<String, Object> filterTemplateValues) {
+        if (filterTemplateValues != null && !filterTemplateValues.isEmpty()) {
+            filterTemplateValues.forEach((key, value) -> {
+                templateValues.put(key, convertExpressionValue(value));
+            });
+        }
+    }
 }
