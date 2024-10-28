@@ -248,8 +248,8 @@ public class VectorUtils {
             builder.setSameType(sameType);
 
             return TemplateValue.newBuilder()
+                    .setType(DataType.Array)
                     .setArrayVal(builder.build())
-                    .setType(builder.getElementType())
                     .build();
         } else {
             throw new ParamException("Unsupported value type for expression template.");
