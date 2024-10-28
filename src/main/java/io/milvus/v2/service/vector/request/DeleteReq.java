@@ -23,7 +23,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @SuperBuilder
@@ -33,4 +35,15 @@ public class DeleteReq {
     private String partitionName = "";
     private String filter;
     private List<Object> ids;
+
+    // Expression template, to improve expression parsing performance in complicated list
+    // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
+    // The long list of city will increase the time cost to parse this expression.
+    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    //     filter = "pk > {age} and city in {city}"
+    //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
+    // Valid value of this map can be:
+    //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
+    @Builder.Default
+    private Map<String, Object> filterTemplateValues = new HashMap<>();
 }
