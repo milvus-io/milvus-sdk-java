@@ -154,7 +154,7 @@ public class ParamUtils {
 
                     // check dimension
                     ByteBuffer v = (ByteBuffer)value;
-                    int real_dim = calculateBinVectorDim(dataType, v.position());
+                    int real_dim = calculateBinVectorDim(dataType, v.limit());
                     if (real_dim != dim) {
                         String msg = "Incorrect dimension for field '%s': the no.%d vector's dimension: %d is not equal to field's dimension: %d";
                         throw new ParamException(String.format(msg, fieldSchema.getName(), i, real_dim, dim));
