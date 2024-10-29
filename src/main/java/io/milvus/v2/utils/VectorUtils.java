@@ -44,6 +44,12 @@ public class VectorUtils {
                 .addAllPartitionNames(request.getPartitionNames())
                 .addAllOutputFields(request.getOutputFields())
                 .setExpr(request.getFilter());
+        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+            Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
+            filterTemplateValues.forEach((key, value)->{
+                builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
+            });
+        }
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (request.getConsistencyLevel() == null) {
@@ -180,6 +186,10 @@ public class VectorUtils {
         builder.setDslType(DslType.BoolExprV1);
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             builder.setDsl(request.getFilter());
+            Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
+            filterTemplateValues.forEach((key, value)->{
+                builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
+            });
         }
 
         long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), request.getCollectionName());
@@ -193,6 +203,57 @@ public class VectorUtils {
         }
 
         return builder.build();
+    }
+
+    public static TemplateValue deduceAndCreateTemplateValue(Object value) {
+        if (value instanceof Boolean) {
+            return TemplateValue.newBuilder()
+                    .setBoolVal((Boolean)value)
+                    .setType(DataType.Bool)
+                    .build();
+        } else if (value instanceof Integer) {
+           return TemplateValue.newBuilder()
+                   .setInt64Val((Integer)value)
+                   .setType(DataType.Int64)
+                   .build();
+        } else if (value instanceof Double) {
+            return TemplateValue.newBuilder()
+                    .setFloatVal((Double)value)
+                    .setType(DataType.Double)
+                    .build();
+        } else if (value instanceof String) {
+            return TemplateValue.newBuilder()
+                    .setStringVal((String)value)
+                    .setType(DataType.VarChar)
+                    .build();
+        } else if (value instanceof List) {
+            // TemplateArrayValue and TemplateValue can nest each other
+            // The element_type of TemplateArrayValue is deduced by its elements:
+            //   1. if all the elements are the same type, element_type is the first element's type
+            //   2. if not the same type, element_type is DataType.JSON
+            List<Object> array = (List<Object>)value;
+            TemplateArrayValue.Builder builder = TemplateArrayValue.newBuilder();
+            DataType lastType = DataType.UNRECOGNIZED;
+            boolean sameType = true;
+            for (Object obj : array) {
+                TemplateValue tv = deduceAndCreateTemplateValue(obj);
+                builder.addArray(tv);
+                if (sameType && lastType != DataType.UNRECOGNIZED && lastType != tv.getType()) {
+                    sameType = false;
+                }
+                lastType = tv.getType();
+            }
+            DataType arrayType = sameType ? lastType : DataType.JSON;
+            builder.setElementType(arrayType);
+            builder.setSameType(sameType);
+
+            return TemplateValue.newBuilder()
+                    .setArrayVal(builder.build())
+                    .setType(builder.getElementType())
+                    .build();
+        } else {
+            throw new ParamException("Unsupported value type for expression template.");
+        }
     }
 
     public static SearchRequest convertAnnSearchParam(@NonNull AnnSearchReq annSearchReq,

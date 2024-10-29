@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
@@ -224,12 +225,17 @@ public class VectorService extends BaseService {
         if (request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }
-        DeleteRequest deleteRequest = DeleteRequest.newBuilder()
+        DeleteRequest.Builder builder = DeleteRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setPartitionName(request.getPartitionName())
-                .setExpr(request.getFilter())
-                .build();
-        MutationResult response = blockingStub.delete(deleteRequest);
+                .setExpr(request.getFilter());
+        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+            Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
+            filterTemplateValues.forEach((key, value)->{
+                builder.putExprTemplateValues(key, vectorUtils.deduceAndCreateTemplateValue(value));
+            });
+        }
+        MutationResult response = blockingStub.delete(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
         GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
         return DeleteResp.builder()
