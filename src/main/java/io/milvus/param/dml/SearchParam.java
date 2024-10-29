@@ -439,10 +439,10 @@ public class SearchParam {
             // BinaryVector/Float16Vector/BFloatVector
             // TODO: here only check the first element, potential risk
             ByteBuffer first = (ByteBuffer) vectors.get(0);
-            int len = first.position();
+            int len = first.limit();
             for (int i = 1; i < vectors.size(); ++i) {
                 ByteBuffer temp = (ByteBuffer) vectors.get(i);
-                if (len != temp.position()) {
+                if (len != temp.limit()) {
                     throw new ParamException("Target vector dimension must be equal");
                 }
             }

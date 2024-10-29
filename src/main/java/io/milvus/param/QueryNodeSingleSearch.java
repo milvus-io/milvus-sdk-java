@@ -172,10 +172,10 @@ public class QueryNodeSingleSearch {
             } else if (vectors.get(0) instanceof ByteBuffer) {
                 // binary vectors
                 ByteBuffer first = (ByteBuffer) vectors.get(0);
-                int dim = first.position();
+                int dim = first.limit();
                 for (int i = 1; i < vectors.size(); ++i) {
                     ByteBuffer temp = (ByteBuffer) vectors.get(i);
-                    if (dim != temp.position()) {
+                    if (dim != temp.limit()) {
                         throw new ParamException("Target vector dimension must be equal");
                     }
                 }
