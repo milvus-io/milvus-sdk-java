@@ -637,10 +637,12 @@ class MilvusClientV2DockerTest {
         int topk = 10;
         List<Long> targetIDs = new ArrayList<>();
         List<BaseVector> targetVectors = new ArrayList<>();
+        List<ByteBuffer> targetOriginVectors = new ArrayList<>();
         for (int i = 0; i < nq; i++) {
             JsonObject row = data.get(RANDOM.nextInt((int)count));
             targetIDs.add(row.get("id").getAsLong());
             byte[] vector = JsonUtils.fromJson(row.get(vectorFieldName), new TypeToken<byte[]>() {}.getType());
+            targetOriginVectors.add(ByteBuffer.wrap(vector));
             targetVectors.add(new BinaryVec(vector));
         }
         SearchResp searchResp = client.search(SearchReq.builder()
@@ -648,6 +650,7 @@ class MilvusClientV2DockerTest {
                 .annsField(vectorFieldName)
                 .data(targetVectors)
                 .topK(10)
+                .outputFields(Collections.singletonList(vectorFieldName))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
@@ -655,6 +658,9 @@ class MilvusClientV2DockerTest {
             List<SearchResp.SearchResult> results = searchResults.get(i);
             Assertions.assertEquals(topk, results.size());
             Assertions.assertEquals(targetIDs.get(i), results.get(0).getId());
+
+            ByteBuffer buf = (ByteBuffer) results.get(0).getEntity().get(vectorFieldName);
+            Assertions.assertArrayEquals(targetOriginVectors.get(i).array(), buf.array());
         }
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
