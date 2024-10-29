@@ -38,7 +38,7 @@ import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.data.BinaryVec;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.request.data.SparseFloatVec;
-import io.milvus.v2.service.vector.request.ranker.RRFRanker;
+import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
@@ -213,7 +213,7 @@ public class HybridSearchExample {
         HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .searchRequests(searchRequests)
-                .ranker(new RRFRanker(2))
+                .ranker(new WeightedRanker(Arrays.asList(0.2f, 0.5f, 0.6f)))
                 .topK(5)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
