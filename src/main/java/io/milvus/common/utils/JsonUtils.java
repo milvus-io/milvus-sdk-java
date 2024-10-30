@@ -67,6 +67,6 @@ public class JsonUtils {
     }
 
     public static <T> JsonElement toJsonTree(T obj) {
-        return GSON_INSTANCE.toJsonTree(obj, new TypeToken<T>() {}.getType());
+        return GSON_INSTANCE.toJsonTree(obj);
     }
 }
