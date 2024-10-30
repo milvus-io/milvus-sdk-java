@@ -824,6 +824,20 @@ public class ParamUtils {
                             .setKey(Constant.GROUP_BY_FIELD)
                             .setValue(requestParam.getGroupByFieldName())
                             .build());
+            if (requestParam.getGroupSize() != null) {
+                builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.GROUP_SIZE)
+                                .setValue(requestParam.getGroupSize().toString())
+                                .build());
+            }
+            if (requestParam.getGroupStrictSize() != null) {
+                builder.addSearchParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setValue(requestParam.getGroupStrictSize().toString())
+                                .build());
+            }
         }
 
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
@@ -935,6 +949,28 @@ public class ParamUtils {
         for (AnnSearchParam req : requestParam.getSearchRequests()) {
             SearchRequest searchRequest = ParamUtils.convertAnnSearchParam(req, requestParam.getConsistencyLevel());
             builder.addRequests(searchRequest);
+        }
+
+        if (!StringUtils.isEmpty(requestParam.getGroupByFieldName())) {
+            builder.addRankParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.GROUP_BY_FIELD)
+                            .setValue(requestParam.getGroupByFieldName())
+                            .build());
+            if (requestParam.getGroupSize() != null) {
+                builder.addRankParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.GROUP_SIZE)
+                                .setValue(requestParam.getGroupSize().toString())
+                                .build());
+            }
+            if (requestParam.getGroupStrictSize() != null) {
+                builder.addRankParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setValue(requestParam.getGroupStrictSize().toString())
+                                .build());
+            }
         }
 
         // set ranker

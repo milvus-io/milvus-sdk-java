@@ -20,6 +20,7 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import lombok.Builder;
 import lombok.Data;
@@ -38,6 +39,7 @@ public class SearchReq {
     private List<String> partitionNames = new ArrayList<>();
     @Builder.Default
     private String annsField = "";
+    private IndexParam.MetricType metricType;
     private int topK;
     private String filter;
     @Builder.Default
@@ -57,6 +59,8 @@ public class SearchReq {
     private ConsistencyLevel consistencyLevel = null;
     private boolean ignoreGrowing;
     private String groupByFieldName;
+    private Integer groupSize;
+    private Boolean groupStrictSize;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
