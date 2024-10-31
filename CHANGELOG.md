@@ -1,4 +1,14 @@
 # Changelog
+## milvus-sdk-java 2.4.8 (2024-10-31)
+
+### Improvement
+- Fix a conflict bug with Gson v2.11.0
+- Support group by for hybrid search
+
+### Bug
+- Fix a dimension check error for binary vector
+- Fix a null pointer bug for query iterator
+
 ## milvus-sdk-java 2.4.7 (2024-10-25)
 
 ### Improvement
