@@ -395,7 +395,7 @@
                         <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
                             <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
-                            <additionalOptions>-Xdoclint:none</additionalOptions>
+<!--                            <additionalOptions>-Xdoclint:none</additionalOptions>-->
                             <additionalJOption>-Xdoclint:none</additionalJOption>
                         </configuration>
                         <executions>
