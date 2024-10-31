@@ -22,8 +22,6 @@ package io.milvus.param.dml;
 import com.google.common.collect.Lists;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
-import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
 import io.milvus.param.dml.ranker.BaseRanker;
@@ -31,9 +29,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.SortedMap;
 
 /**
  * Parameters for <code>search</code> interface.
@@ -51,6 +47,10 @@ public class HybridSearchParam {
     private final int roundDecimal;
     private final ConsistencyLevelEnum consistencyLevel;
 
+    private final String groupByFieldName;
+    private final Integer groupSize;
+    private final Boolean groupStrictSize;
+
     private HybridSearchParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -61,6 +61,9 @@ public class HybridSearchParam {
         this.outFields = builder.outFields;
         this.roundDecimal = builder.roundDecimal;
         this.consistencyLevel = builder.consistencyLevel;
+        this.groupByFieldName = builder.groupByFieldName;
+        this.groupSize = builder.groupSize;
+        this.groupStrictSize = builder.groupStrictSize;
     }
 
     public static Builder newBuilder() {
@@ -80,6 +83,9 @@ public class HybridSearchParam {
         private final List<String> outFields = Lists.newArrayList();
         private Integer roundDecimal = -1;
         private ConsistencyLevelEnum consistencyLevel = null;
+        private String groupByFieldName = null;
+        private Integer groupSize = null;
+        private Boolean groupStrictSize = null;
 
         Builder() {
         }
@@ -210,6 +216,40 @@ public class HybridSearchParam {
         }
 
         /**
+         * Groups the results by a scalar field name.
+         *
+         * @param fieldName a scalar field name
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+            this.groupByFieldName = groupByFieldName;
+            return this;
+        }
+
+        /**
+         * Defines the max number of items for each group, the value must greater than zero.
+         *
+         * @param groupSize the max number of items
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupSize(@NonNull Integer groupSize) {
+            this.groupSize = groupSize;
+            return this;
+        }
+
+        /**
+         * Whether to force the number of each group to be groupSize.
+         * Set to false, milvus might return some groups with number of items less than groupSize.
+         *
+         * @param groupStrictSize whether to force the number of each group to be groupSize
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupStrictSize(@NonNull Boolean groupStrictSize) {
+            this.groupStrictSize = groupStrictSize;
+            return this;
+        }
+
+        /**
          * Verifies parameters and creates a new {@link HybridSearchParam} instance.
          *
          * @return {@link HybridSearchParam}
@@ -236,6 +276,10 @@ public class HybridSearchParam {
 
             if (topK <= 0) {
                 throw new ParamException("TopK value is illegal");
+            }
+
+            if (groupByFieldName != null && groupSize != null && groupSize <= 0) {
+                throw new ParamException("GroupSize value cannot be zero or negative");
             }
 
             return new HybridSearchParam(this);

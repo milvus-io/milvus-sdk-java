@@ -56,6 +56,8 @@ public class SearchParam {
     private final ConsistencyLevelEnum consistencyLevel;
     private final boolean ignoreGrowing;
     private final String groupByFieldName;
+    private final Integer groupSize;
+    private final Boolean groupStrictSize;
     private final PlaceholderType plType;
     private final boolean iterator;
 
@@ -78,6 +80,8 @@ public class SearchParam {
         this.consistencyLevel = builder.consistencyLevel;
         this.ignoreGrowing = builder.ignoreGrowing;
         this.groupByFieldName = builder.groupByFieldName;
+        this.groupSize = builder.groupSize;
+        this.groupStrictSize = builder.groupStrictSize;
         this.plType = builder.plType;
         this.iterator = builder.iterator;
     }
@@ -108,6 +112,8 @@ public class SearchParam {
         private ConsistencyLevelEnum consistencyLevel = null;
         private Boolean ignoreGrowing = Boolean.FALSE;
         private String groupByFieldName;
+        private Integer groupSize = null;
+        private Boolean groupStrictSize = null;
         private Boolean iterator = Boolean.FALSE;
 
         // plType is used to distinct vector type
@@ -378,6 +384,29 @@ public class SearchParam {
         }
 
         /**
+         * Defines the max number of items for each group, the value must greater than zero.
+         *
+         * @param groupSize the max number of items
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupSize(@NonNull Integer groupSize) {
+            this.groupSize = groupSize;
+            return this;
+        }
+
+        /**
+         * Whether to force the number of each group to be groupSize.
+         * Set to false, milvus might return some groups with number of items less than groupSize.
+         *
+         * @param groupStrictSize whether to force the number of each group to be groupSize
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupStrictSize(@NonNull Boolean groupStrictSize) {
+            this.groupStrictSize = groupStrictSize;
+            return this;
+        }
+
+        /**
          * Optimizing specifically for iterators can yield correct data results. Default is False.
          *
          * @param iterator <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
@@ -410,6 +439,10 @@ public class SearchParam {
             }
 
             SearchParam.verifyVectors(vectors);
+
+            if (groupByFieldName != null && groupSize != null && groupSize <= 0) {
+                throw new ParamException("GroupSize value cannot be zero or negative");
+            }
 
             return new SearchParam(this);
         }

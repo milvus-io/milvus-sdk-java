@@ -42,4 +42,8 @@ public class HybridSearchReq
     private int roundDecimal = -1;
     @Builder.Default
     private ConsistencyLevel consistencyLevel = null;
+
+    private String groupByFieldName;
+    private Integer groupSize;
+    private Boolean groupStrictSize;
 }

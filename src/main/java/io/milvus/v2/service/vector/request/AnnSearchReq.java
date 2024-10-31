@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.vector.request;
 
+import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import lombok.Builder;
 import lombok.Data;
@@ -35,4 +36,7 @@ public class AnnSearchReq {
     private String expr = "";
     private List<BaseVector> vectors;
     private String params;
+
+    @Builder.Default
+    private IndexParam.MetricType metricType = null;
 }
