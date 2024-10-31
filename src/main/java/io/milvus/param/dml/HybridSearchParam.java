@@ -212,7 +212,7 @@ public class HybridSearchParam {
         /**
          * Groups the results by a scalar field name.
          *
-         * @param fieldName a scalar field name
+         * @param groupByFieldName a scalar field name
          * @return <code>Builder</code>
          */
         public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
