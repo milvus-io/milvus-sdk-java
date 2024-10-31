@@ -21,18 +21,22 @@ import java.util.SortedMap;
 
 public class IteratorAdapterV2 {
     public static QueryIteratorParam convertV2Req(QueryIteratorReq queryIteratorReq) {
-        return QueryIteratorParam.newBuilder()
+        QueryIteratorParam.Builder builder = QueryIteratorParam.newBuilder()
                 .withDatabaseName(queryIteratorReq.getDatabaseName())
                 .withCollectionName(queryIteratorReq.getCollectionName())
                 .withPartitionNames(queryIteratorReq.getPartitionNames())
                 .withExpr(queryIteratorReq.getExpr())
                 .withOutFields(queryIteratorReq.getOutputFields())
-                .withConsistencyLevel(ConsistencyLevelEnum.valueOf(queryIteratorReq.getConsistencyLevel().name()))
                 .withOffset(queryIteratorReq.getOffset())
                 .withLimit(queryIteratorReq.getLimit())
                 .withIgnoreGrowing(queryIteratorReq.isIgnoreGrowing())
-                .withBatchSize(queryIteratorReq.getBatchSize())
-                .build();
+                .withBatchSize(queryIteratorReq.getBatchSize());
+
+        if (queryIteratorReq.getConsistencyLevel() != null) {
+            builder.withConsistencyLevel(ConsistencyLevelEnum.valueOf(queryIteratorReq.getConsistencyLevel().name()));
+        }
+
+        return builder.build();
     }
     public static SearchIteratorParam convertV2Req(SearchIteratorReq searchIteratorReq) {
         MetricType metricType = MetricType.None;
