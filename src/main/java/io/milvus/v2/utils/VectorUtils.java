@@ -156,6 +156,13 @@ public class VectorUtils {
                         .setValue(String.valueOf(request.getOffset()))
                         .build());
 
+        if (null != request.getMetricType()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.METRIC_TYPE)
+                            .setValue(request.getMetricType().name())
+                            .build());
+        }
 
         if (null != request.getSearchParams()) {
             try {
@@ -287,6 +294,13 @@ public class VectorUtils {
                                 .setKey(Constant.TOP_K)
                                 .setValue(String.valueOf(annSearchReq.getTopK()))
                                 .build());
+        if (annSearchReq.getMetricType() != null) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.METRIC_TYPE)
+                            .setValue(annSearchReq.getMetricType().name())
+                            .build());
+        }
 
         // params
         String params = "{}";
@@ -345,6 +359,14 @@ public class VectorUtils {
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(props);
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addRankParams);
+        }
+
+        if (request.getGroupByFieldName() != null && !request.getGroupByFieldName().isEmpty()) {
+            builder.addRankParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.GROUP_BY_FIELD)
+                            .setValue(request.getGroupByFieldName())
+                            .build());
         }
 
         // output fields

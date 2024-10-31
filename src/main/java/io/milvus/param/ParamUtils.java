@@ -850,6 +850,14 @@ public class ParamUtils {
             builder.addRequests(searchRequest);
         }
 
+        if (!StringUtils.isEmpty(requestParam.getGroupByFieldName())) {
+            builder.addRankParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.GROUP_BY_FIELD)
+                            .setValue(requestParam.getGroupByFieldName())
+                            .build());
+        }
+
         // set ranker
         BaseRanker ranker = requestParam.getRanker();
         Map<String, String> props = ranker.getProperties();

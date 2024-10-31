@@ -22,8 +22,6 @@ package io.milvus.param.dml;
 import com.google.common.collect.Lists;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
-import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
 import io.milvus.param.dml.ranker.BaseRanker;
@@ -31,9 +29,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.SortedMap;
 
 /**
  * Parameters for <code>search</code> interface.
@@ -51,6 +47,8 @@ public class HybridSearchParam {
     private final int roundDecimal;
     private final ConsistencyLevelEnum consistencyLevel;
 
+    private final String groupByFieldName;
+
     private HybridSearchParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -61,6 +59,7 @@ public class HybridSearchParam {
         this.outFields = builder.outFields;
         this.roundDecimal = builder.roundDecimal;
         this.consistencyLevel = builder.consistencyLevel;
+        this.groupByFieldName = builder.groupByFieldName;
     }
 
     public static Builder newBuilder() {
@@ -80,6 +79,7 @@ public class HybridSearchParam {
         private final List<String> outFields = Lists.newArrayList();
         private Integer roundDecimal = -1;
         private ConsistencyLevelEnum consistencyLevel = null;
+        private String groupByFieldName = null;
 
         Builder() {
         }
@@ -206,6 +206,17 @@ public class HybridSearchParam {
          */
         public Builder withRoundDecimal(@NonNull Integer decimal) {
             this.roundDecimal = decimal;
+            return this;
+        }
+
+        /**
+         * Groups the results by a scalar field name.
+         *
+         * @param fieldName a scalar field name
+         * @return <code>Builder</code>
+         */
+        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+            this.groupByFieldName = groupByFieldName;
             return this;
         }
 
