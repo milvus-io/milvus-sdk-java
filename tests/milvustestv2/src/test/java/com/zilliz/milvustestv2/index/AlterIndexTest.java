@@ -51,7 +51,7 @@ public class AlterIndexTest extends BaseTest {
                 .collectionName(collectionName)
                 .indexName(strings.get(0)).build());
         System.out.println(describeIndexResp);
-        Assert.assertTrue(describeIndexResp.getIndexDescriptions().get(0).getExtraParams().get(Constant.MMAP_ENABLED).equalsIgnoreCase("true"));
+        Assert.assertTrue(describeIndexResp.getIndexDescriptions().get(0).getProperties().get(Constant.MMAP_ENABLED).equalsIgnoreCase("true"));
 
     }
 
