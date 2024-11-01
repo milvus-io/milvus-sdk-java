@@ -121,7 +121,7 @@ public class Float16VectorExample {
             ByteBuffer buf1 = CommonUtils.generateFloat16Vector(VECTOR_DIM, false);
             row.add(FP16_VECTOR_FIELD, gson.toJsonTree(buf1.array()));
             ByteBuffer buf2 = CommonUtils.generateFloat16Vector(VECTOR_DIM, true);
-            row.add(BF16_VECTOR_FIELD, gson.toJsonTree(buf1.array()));
+            row.add(BF16_VECTOR_FIELD, gson.toJsonTree(buf2.array()));
             rows.add(row);
         }
 
