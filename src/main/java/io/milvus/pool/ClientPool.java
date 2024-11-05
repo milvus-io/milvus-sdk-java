@@ -1,5 +1,7 @@
 package io.milvus.pool;
 
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPool;
 import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
@@ -51,8 +53,9 @@ public class ClientPool<C, T> {
         try {
             return clientPool.borrowObject(key);
         } catch (Exception e) {
+            // the pool might return timeout exception if it could not get a client in PoolConfig.maxBlockWaitDuration
             logger.error("Failed to get client, exception: ", e);
-            return null;
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
     }
 
@@ -68,8 +71,9 @@ public class ClientPool<C, T> {
         try {
             clientPool.returnObject(key, grpcClient);
         } catch (Exception e) {
+            // the pool might return exception if the key doesn't exist or the grpcClient doesn't belong to this pool
             logger.error("Failed to return client, exception: " + e);
-            throw e;
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
     }
 
