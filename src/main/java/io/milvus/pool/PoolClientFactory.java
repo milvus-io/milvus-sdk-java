@@ -1,5 +1,7 @@
 package io.milvus.pool;
 
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import org.apache.commons.pool2.BaseKeyedPooledObjectFactory;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
@@ -36,7 +38,8 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
             T client = (T) constructor.newInstance(this.config);
             return client;
         } catch (Exception e) {
-            return null;
+            logger.error("Failed to create client, exception: ", e);
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
     }
 
@@ -58,7 +61,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
             return (boolean) verifyMethod.invoke(client);
         } catch (Exception e) {
             logger.error("Failed to validate client, exception: " + e);
-            return true;
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
     }
 
