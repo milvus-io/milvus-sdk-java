@@ -33,6 +33,7 @@ import io.milvus.v2.utils.SchemaUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -110,19 +111,27 @@ public class CollectionService extends BaseService {
         String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
-        CollectionSchema grpcSchema = CollectionSchema.newBuilder()
+        CollectionSchema.Builder grpcSchemaBuilder = CollectionSchema.newBuilder()
                 .setName(request.getCollectionName())
                 .setDescription(request.getDescription())
-                .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField())
-                .build();
+                .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField());
+        List<String> outputFields = new ArrayList<>();
+        for (CreateCollectionReq.Function function : request.getCollectionSchema().getFunctionList()) {
+            grpcSchemaBuilder.addFunctions(SchemaUtils.convertToGrpcFunction(function)).build();
+            outputFields.addAll(function.getOutputFieldNames());
+        }
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
-            grpcSchema = grpcSchema.toBuilder().addFields(SchemaUtils.convertToGrpcFieldSchema(fieldSchema)).build();
+            FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema);
+            if (outputFields.contains(fieldSchema.getName())) {
+                grpcFieldSchema = grpcFieldSchema.toBuilder().setIsFunctionOutput(true).build();
+            }
+            grpcSchemaBuilder.addFields(grpcFieldSchema);
         }
 
         //create collection
         CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setSchema(grpcSchema.toByteString())
+                .setSchema(grpcSchemaBuilder.build().toByteString())
                 .setShardsNum(request.getNumShards());
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {

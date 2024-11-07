@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection.request;
 
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -129,6 +130,8 @@ public class CreateCollectionReq {
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
         @Builder.Default
         private boolean enableDynamicField = false;
+        @Builder.Default
+        private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
             // check the input here to pop error messages earlier
@@ -148,6 +151,9 @@ public class CreateCollectionReq {
                     .autoID(addFieldReq.getAutoID())
                     .isNullable(addFieldReq.getIsNullable())
                     .defaultValue(addFieldReq.getDefaultValue())
+                    .enableAnalyzer(addFieldReq.getEnableAnalyzer())
+                    .enableMatch(addFieldReq.getEnableMatch())
+                    .analyzerParams(addFieldReq.getAnalyzerParams())
                     .build();
             if (addFieldReq.getDataType().equals(DataType.Array)) {
                 if (addFieldReq.getElementType() == null) {
@@ -165,6 +171,11 @@ public class CreateCollectionReq {
                 fieldSchema.setDimension(addFieldReq.getDimension());
             }
             fieldSchemaList.add(fieldSchema);
+            return this;
+        }
+
+        public CollectionSchema addFunction(Function function) {
+            functionList.add(function);
             return this;
         }
 
@@ -202,5 +213,21 @@ public class CreateCollectionReq {
         private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
         @Builder.Default
         private Object defaultValue = null; // only for scalar fields
+        private Boolean enableAnalyzer; // for BM25 tokenizer
+        Map<String, Object> analyzerParams; // for BM25 tokenizer
+        private Boolean enableMatch; // for BM25 keyword search
+    }
+
+    @Data
+    @SuperBuilder
+    public static class Function {
+        private String name;
+        @Builder.Default
+        private String description = "";
+        FunctionType functionType;
+        @Builder.Default
+        List<String> inputFieldNames = new ArrayList<>();
+        @Builder.Default
+        List<String> outputFieldNames = new ArrayList<>();
     }
 }

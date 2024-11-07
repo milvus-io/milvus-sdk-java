@@ -55,6 +55,9 @@ public class IndexParam {
         // Only for binary vectors
         HAMMING,
         JACCARD,
+
+        // Only for sparse vector with BM25
+        BM25,
         ;
     }
 

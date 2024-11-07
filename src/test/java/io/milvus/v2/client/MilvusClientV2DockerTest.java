@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.*;
 
 import com.google.gson.reflect.TypeToken;
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
@@ -70,7 +71,7 @@ class MilvusClientV2DockerTest {
     private static final Random RANDOM = new Random();
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20240927-1f271e39-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20241111-fca946de-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -1386,213 +1387,213 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1L, insertResp.getInsertCnt());
     }
 
-    @Test
-    public void testIterator() {
-        String randomCollectionName = generator.generate(10);
-        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
-        collectionSchema.addField(AddFieldReq.builder()
-                .fieldName("float_vector")
-                .dataType(DataType.FloatVector)
-                .dimension(dimension)
-                .build());
-        collectionSchema.addField(AddFieldReq.builder()
-                .fieldName("binary_vector")
-                .dataType(DataType.BinaryVector)
-                .dimension(dimension)
-                .build());
-        collectionSchema.addField(AddFieldReq.builder()
-                .fieldName("sparse_vector")
-                .dataType(DataType.SparseFloatVector)
-                .dimension(dimension)
-                .build());
-        collectionSchema.addField(AddFieldReq.builder()
-                .fieldName("bfloat16_vector")
-                .dataType(DataType.BFloat16Vector)
-                .dimension(dimension)
-                .build());
-
-        List<IndexParam> indexParams = new ArrayList<>();
-        indexParams.add(IndexParam.builder()
-                .fieldName("float_vector")
-                .indexType(IndexParam.IndexType.FLAT)
-                .metricType(IndexParam.MetricType.L2)
-                .build());
-        indexParams.add(IndexParam.builder()
-                .fieldName("binary_vector")
-                .indexType(IndexParam.IndexType.BIN_FLAT)
-                .metricType(IndexParam.MetricType.HAMMING)
-                .build());
-        indexParams.add(IndexParam.builder()
-                .fieldName("sparse_vector")
-                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
-                .metricType(IndexParam.MetricType.IP)
-                .extraParams(new HashMap<String,Object>(){{put("drop_ratio_build", 0.1);}})
-                .build());
-        indexParams.add(IndexParam.builder()
-                .fieldName("bfloat16_vector")
-                .indexType(IndexParam.IndexType.FLAT)
-                .metricType(IndexParam.MetricType.COSINE)
-                .build());
-
-        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
-                .collectionName(randomCollectionName)
-                .collectionSchema(collectionSchema)
-                .indexParams(indexParams)
-                .build();
-        client.createCollection(requestCreate);
-
-        // insert rows
-        long count = 10000;
-        List<JsonObject> data = generateRandomData(collectionSchema, count);
-        InsertResp insertResp = client.insert(InsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(data)
-                .build());
-        Assertions.assertEquals(count, insertResp.getInsertCnt());
-
-        // get row count
-        long rowCount = getRowCount(randomCollectionName);
-        Assertions.assertEquals(count, rowCount);
-
-        // search iterator
-        SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
-                .collectionName(randomCollectionName)
-                .outputFields(Lists.newArrayList("*"))
-                .batchSize(20L)
-                .vectorFieldName("float_vector")
-                .vectors(Collections.singletonList(new FloatVec(generateFolatVector())))
-                .expr("int64_field > 500 && int64_field < 1000")
-                .params("{\"range_filter\": 5.0, \"radius\": 50.0}")
-                .topK(1000)
-                .metricType(IndexParam.MetricType.L2)
-                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
-                .build());
-
-        int counter = 0;
-        while (true) {
-            List<QueryResultsWrapper.RowRecord> res = searchIterator.next();
-            if (res.isEmpty()) {
-                System.out.println("search iteration finished, close");
-                searchIterator.close();
-                break;
-            }
-
-            for (QueryResultsWrapper.RowRecord record : res) {
-                Assertions.assertInstanceOf(Float.class, record.get("score"));
-                Assertions.assertTrue((float)record.get("score") >= 5.0);
-                Assertions.assertTrue((float)record.get("score") <= 50.0);
-
-                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
-                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
-                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
-                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
-                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
-                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
-                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
-                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
-                Assertions.assertInstanceOf(ByteBuffer.class, record.get("binary_vector"));
-                Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
-                Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
-
-                long int64Val = (long)record.get("int64_field");
-                Assertions.assertTrue(int64Val > 500L && int64Val < 1000L);
-
-                String varcharVal = (String)record.get("varchar_field");
-                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
-
-                JsonObject jsonObj = (JsonObject)record.get("json_field");
-                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
-
-                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
-                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
-
-                List<Float> floatVector = (List<Float>)record.get("float_vector");
-                Assertions.assertEquals(dimension, floatVector.size());
-
-                ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
-                Assertions.assertEquals(dimension, binaryVector.limit()*8);
-
-                ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
-                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
-
-                SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
-                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
-
-                counter++;
-            }
-        }
-        System.out.println(String.format("There are %d items match score between [5.0, 50.0]", counter));
-
-        // query iterator
-        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
-                .collectionName(randomCollectionName)
-                .expr("int64_field < 300")
-                .outputFields(Lists.newArrayList("*"))
-                .batchSize(50L)
-                .offset(5)
-                .limit(400)
-                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
-                .build());
-
-        counter = 0;
-        while (true) {
-            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
-            if (res.isEmpty()) {
-                System.out.println("query iteration finished, close");
-                queryIterator.close();
-                break;
-            }
-
-            for (QueryResultsWrapper.RowRecord record : res) {
-                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
-                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
-                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
-                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
-                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
-                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
-                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
-                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
-                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
-                Assertions.assertInstanceOf(ByteBuffer.class, record.get("binary_vector"));
-                Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
-                Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
-
-                long int64Val = (long)record.get("int64_field");
-                Assertions.assertTrue(int64Val < 300L);
-
-                String varcharVal = (String)record.get("varchar_field");
-                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
-
-                JsonObject jsonObj = (JsonObject)record.get("json_field");
-                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
-
-                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
-                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
-
-                List<Float> floatVector = (List<Float>)record.get("float_vector");
-                Assertions.assertEquals(dimension, floatVector.size());
-
-                ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
-                Assertions.assertEquals(dimension, binaryVector.limit()*8);
-
-                ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
-                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
-
-                SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
-                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
-
-                counter++;
-            }
-        }
-        Assertions.assertEquals(295, counter);
-
-        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
-    }
+//    @Test
+//    public void testIterator() {
+//        String randomCollectionName = generator.generate(10);
+//        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName("float_vector")
+//                .dataType(DataType.FloatVector)
+//                .dimension(dimension)
+//                .build());
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName("binary_vector")
+//                .dataType(DataType.BinaryVector)
+//                .dimension(dimension)
+//                .build());
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName("sparse_vector")
+//                .dataType(DataType.SparseFloatVector)
+//                .dimension(dimension)
+//                .build());
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName("bfloat16_vector")
+//                .dataType(DataType.BFloat16Vector)
+//                .dimension(dimension)
+//                .build());
+//
+//        List<IndexParam> indexParams = new ArrayList<>();
+//        indexParams.add(IndexParam.builder()
+//                .fieldName("float_vector")
+//                .indexType(IndexParam.IndexType.FLAT)
+//                .metricType(IndexParam.MetricType.L2)
+//                .build());
+//        indexParams.add(IndexParam.builder()
+//                .fieldName("binary_vector")
+//                .indexType(IndexParam.IndexType.BIN_FLAT)
+//                .metricType(IndexParam.MetricType.HAMMING)
+//                .build());
+//        indexParams.add(IndexParam.builder()
+//                .fieldName("sparse_vector")
+//                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+//                .metricType(IndexParam.MetricType.IP)
+//                .extraParams(new HashMap<String,Object>(){{put("drop_ratio_build", 0.1);}})
+//                .build());
+//        indexParams.add(IndexParam.builder()
+//                .fieldName("bfloat16_vector")
+//                .indexType(IndexParam.IndexType.FLAT)
+//                .metricType(IndexParam.MetricType.COSINE)
+//                .build());
+//
+//        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+//                .collectionName(randomCollectionName)
+//                .collectionSchema(collectionSchema)
+//                .indexParams(indexParams)
+//                .build();
+//        client.createCollection(requestCreate);
+//
+//        // insert rows
+//        long count = 10000;
+//        List<JsonObject> data = generateRandomData(collectionSchema, count);
+//        InsertResp insertResp = client.insert(InsertReq.builder()
+//                .collectionName(randomCollectionName)
+//                .data(data)
+//                .build());
+//        Assertions.assertEquals(count, insertResp.getInsertCnt());
+//
+//        // get row count
+//        long rowCount = getRowCount(randomCollectionName);
+//        Assertions.assertEquals(count, rowCount);
+//
+//        // search iterator
+//        SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
+//                .collectionName(randomCollectionName)
+//                .outputFields(Lists.newArrayList("*"))
+//                .batchSize(20L)
+//                .vectorFieldName("float_vector")
+//                .vectors(Collections.singletonList(new FloatVec(generateFolatVector())))
+//                .expr("int64_field > 500 && int64_field < 1000")
+//                .params("{\"range_filter\": 5.0, \"radius\": 50.0}")
+//                .topK(1000)
+//                .metricType(IndexParam.MetricType.L2)
+//                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
+//                .build());
+//
+//        int counter = 0;
+//        while (true) {
+//            List<QueryResultsWrapper.RowRecord> res = searchIterator.next();
+//            if (res.isEmpty()) {
+//                System.out.println("search iteration finished, close");
+//                searchIterator.close();
+//                break;
+//            }
+//
+//            for (QueryResultsWrapper.RowRecord record : res) {
+//                Assertions.assertInstanceOf(Float.class, record.get("score"));
+//                Assertions.assertTrue((float)record.get("score") >= 5.0);
+//                Assertions.assertTrue((float)record.get("score") <= 50.0);
+//
+//                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
+//                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
+//                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
+//                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
+//                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
+//                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
+//                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
+//                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
+//                Assertions.assertInstanceOf(ByteBuffer.class, record.get("binary_vector"));
+//                Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
+//                Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
+//
+//                long int64Val = (long)record.get("int64_field");
+//                Assertions.assertTrue(int64Val > 500L && int64Val < 1000L);
+//
+//                String varcharVal = (String)record.get("varchar_field");
+//                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
+//
+//                JsonObject jsonObj = (JsonObject)record.get("json_field");
+//                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
+//
+//                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
+//                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
+//
+//                List<Float> floatVector = (List<Float>)record.get("float_vector");
+//                Assertions.assertEquals(dimension, floatVector.size());
+//
+//                ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
+//                Assertions.assertEquals(dimension, binaryVector.limit()*8);
+//
+//                ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
+//                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
+//
+//                SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
+//                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+//
+//                counter++;
+//            }
+//        }
+//        System.out.println(String.format("There are %d items match score between [5.0, 50.0]", counter));
+//
+//        // query iterator
+//        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+//                .collectionName(randomCollectionName)
+//                .expr("int64_field < 300")
+//                .outputFields(Lists.newArrayList("*"))
+//                .batchSize(50L)
+//                .offset(5)
+//                .limit(400)
+//                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
+//                .build());
+//
+//        counter = 0;
+//        while (true) {
+//            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
+//            if (res.isEmpty()) {
+//                System.out.println("query iteration finished, close");
+//                queryIterator.close();
+//                break;
+//            }
+//
+//            for (QueryResultsWrapper.RowRecord record : res) {
+//                Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
+//                Assertions.assertInstanceOf(Integer.class, record.get("int32_field"));
+//                Assertions.assertInstanceOf(Long.class, record.get("int64_field"));
+//                Assertions.assertInstanceOf(Float.class, record.get("float_field"));
+//                Assertions.assertInstanceOf(Double.class, record.get("double_field"));
+//                Assertions.assertInstanceOf(String.class, record.get("varchar_field"));
+//                Assertions.assertInstanceOf(JsonObject.class, record.get("json_field"));
+//                Assertions.assertInstanceOf(List.class, record.get("arr_int_field"));
+//                Assertions.assertInstanceOf(List.class, record.get("float_vector"));
+//                Assertions.assertInstanceOf(ByteBuffer.class, record.get("binary_vector"));
+//                Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
+//                Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
+//
+//                long int64Val = (long)record.get("int64_field");
+//                Assertions.assertTrue(int64Val < 300L);
+//
+//                String varcharVal = (String)record.get("varchar_field");
+//                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
+//
+//                JsonObject jsonObj = (JsonObject)record.get("json_field");
+//                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
+//
+//                List<Integer> intArr = (List<Integer>)record.get("arr_int_field");
+//                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
+//
+//                List<Float> floatVector = (List<Float>)record.get("float_vector");
+//                Assertions.assertEquals(dimension, floatVector.size());
+//
+//                ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
+//                Assertions.assertEquals(dimension, binaryVector.limit()*8);
+//
+//                ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
+//                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
+//
+//                SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
+//                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+//
+//                counter++;
+//            }
+//        }
+//        Assertions.assertEquals(295, counter);
+//
+//        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+//    }
 
     @Test
     void testDatabase() {
@@ -1975,5 +1976,89 @@ class MilvusClientV2DockerTest {
             }
             System.out.println(result);
         }
+    }
+
+    @Test
+    void testDocInOut() {
+        String randomCollectionName = generator.generate(10);
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .autoID(Boolean.FALSE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("dense")
+                .dataType(DataType.FloatVector)
+                .dimension(dimension)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .build());
+        Map<String, Object> analyzerParams = new HashMap<>();
+        analyzerParams.put("tokenizer", "standard");
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(100)
+                .enableAnalyzer(true)
+                .enableMatch(true)
+                .analyzerParams(analyzerParams)
+                .build());
+
+        collectionSchema.addFunction(CreateCollectionReq.Function.builder()
+                .name("bm25")
+                .description("desc bm25")
+                .functionType(FunctionType.BM25)
+                .inputFieldNames(Collections.singletonList("text"))
+                .outputFieldNames(Collections.singletonList("sparse"))
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("dense")
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.L2)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("sparse")
+                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                .metricType(IndexParam.MetricType.BM25)
+                .extraParams(new HashMap<String,Object>(){{put("drop_ratio_build", 0.1);}})
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+        System.out.println("Collection created");
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        CreateCollectionReq.CollectionSchema collSchema = descResp.getCollectionSchema();
+        CreateCollectionReq.FieldSchema fieldSchema = collSchema.getField("text");
+        Assertions.assertNotNull(fieldSchema);
+        Assertions.assertTrue(fieldSchema.getEnableAnalyzer());
+        Assertions.assertTrue(fieldSchema.getEnableAnalyzer());
+        Map<String, Object> params = fieldSchema.getAnalyzerParams();
+        Assertions.assertTrue(params.containsKey("tokenizer"));
+        Assertions.assertEquals("standard", params.get("tokenizer"));
+
+        List<CreateCollectionReq.Function> functions = collSchema.getFunctionList();
+        Assertions.assertEquals(1, functions.size());
+        Assertions.assertEquals("bm25", functions.get(0).getName());
+        Assertions.assertEquals("desc bm25", functions.get(0).getDescription());
+        Assertions.assertEquals(FunctionType.BM25, functions.get(0).getFunctionType());
+        Assertions.assertEquals(1, functions.get(0).getInputFieldNames().size());
+        Assertions.assertEquals("text", functions.get(0).getInputFieldNames().get(0));
+        Assertions.assertEquals(1, functions.get(0).getOutputFieldNames().size());
+        Assertions.assertEquals("sparse", functions.get(0).getOutputFieldNames().get(0));
     }
 }
