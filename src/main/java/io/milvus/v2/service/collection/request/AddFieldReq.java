@@ -24,6 +24,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Map;
+
 @Data
 @SuperBuilder
 public class AddFieldReq {
@@ -50,6 +52,9 @@ public class AddFieldReq {
     private Object defaultValue = null; // only for scalar fields
     @Builder.ObtainVia(field = "hiddenField")
     private boolean enableDefaultValue = false; // a flag to pass the default value to server or not
+    private Boolean enableAnalyzer; // for BM25 tokenizer
+    Map<String, Object> analyzerParams; // for BM25 tokenizer
+    private Boolean enableMatch; // for BM25 keyword search
 
     AddFieldReq setDefaultValue(Object obj) {
         enableDefaultValue = true; // automatically set this flag
