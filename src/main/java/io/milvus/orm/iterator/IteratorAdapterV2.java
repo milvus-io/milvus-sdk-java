@@ -30,7 +30,8 @@ public class IteratorAdapterV2 {
                 .withOffset(queryIteratorReq.getOffset())
                 .withLimit(queryIteratorReq.getLimit())
                 .withIgnoreGrowing(queryIteratorReq.isIgnoreGrowing())
-                .withBatchSize(queryIteratorReq.getBatchSize());
+                .withBatchSize(queryIteratorReq.getBatchSize())
+                .withReduceStopForBest(queryIteratorReq.isReduceStopForBest());
 
         if (queryIteratorReq.getConsistencyLevel() != null) {
             builder.withConsistencyLevel(ConsistencyLevelEnum.valueOf(queryIteratorReq.getConsistencyLevel().name()));

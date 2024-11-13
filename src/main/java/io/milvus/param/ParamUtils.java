@@ -803,11 +803,6 @@ public class ParamUtils {
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.IGNORE_GROWING)
                                 .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
-                                .build())
-                .addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.ITERATOR_FIELD)
-                                .setValue(String.valueOf(requestParam.isIterator()))
                                 .build());
 
         if (!Objects.equals(requestParam.getMetricType(), MetricType.None.name())) {
@@ -1003,12 +998,6 @@ public class ParamUtils {
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
         boolean useDefaultConsistency = (requestParam.getConsistencyLevel() == null);
         long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
-        // special logic for iterator
-        // don't pass guaranteeTimestamp for iterator, the query() interface might return empty list.
-        if (requestParam.isIterator()) {
-            useDefaultConsistency = true;
-            guaranteeTimestamp = 0L;
-        }
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
@@ -1050,18 +1039,6 @@ public class ParamUtils {
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.IGNORE_GROWING)
                 .setValue(String.valueOf(requestParam.isIgnoreGrowing()))
-                .build());
-
-        // reduce stop for best
-        builder.addQueryParams(KeyValuePair.newBuilder()
-                        .setKey(Constant.REDUCE_STOP_FOR_BEST)
-                        .setValue(String.valueOf(requestParam.isReduceStopForBest()))
-                .build());
-
-        // iterator
-        builder.addQueryParams(KeyValuePair.newBuilder()
-                        .setKey(Constant.ITERATOR_FIELD)
-                        .setValue(String.valueOf(requestParam.isIterator()))
                 .build());
 
         return builder.build();

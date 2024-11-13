@@ -29,4 +29,6 @@ public class QueryIteratorReq {
     private boolean ignoreGrowing = false;
     @Builder.Default
     private long batchSize = 1000L;
+    @Builder.Default
+    private boolean reduceStopForBest = false;
 }

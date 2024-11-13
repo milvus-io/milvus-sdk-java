@@ -8,6 +8,7 @@ import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
@@ -172,7 +173,7 @@ public class SearchIterator {
     }
 
     private void initSearchIterator() {
-        SearchResults response = executeNextSearch(params, expr, false, 0L);
+        SearchResults response = executeSearch(params, expr, false, 0L);
         if (response.getSessionTs() <= 0) {
             logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
             // fall back to latest session ts by local time
@@ -245,7 +246,7 @@ public class SearchIterator {
         }
     }
 
-    private SearchResults executeNextSearch(Map<String, Object> params, String nextExpr, boolean toExtendBatch, long ts) {
+    private SearchResults executeSearch(Map<String, Object> params, String nextExpr, boolean toExtendBatch, long ts) {
         SearchParam.Builder searchParamBuilder = SearchParam.newBuilder()
                 .withDatabaseName(searchIteratorParam.getDatabaseName())
                 .withCollectionName(searchIteratorParam.getCollectionName())
@@ -258,9 +259,7 @@ public class SearchIterator {
                 .withRoundDecimal(searchIteratorParam.getRoundDecimal())
                 .withParams(JsonUtils.toJson(params))
                 .withMetricType(MetricType.valueOf(searchIteratorParam.getMetricType()))
-                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing())
-                .withIterator(Boolean.TRUE)
-                ;
+                .withIgnoreGrowing(searchIteratorParam.isIgnoreGrowing());
 
         if (!StringUtils.isNullOrEmpty(searchIteratorParam.getGroupByFieldName())) {
             searchParamBuilder.withGroupByFieldName(searchIteratorParam.getGroupByFieldName());
@@ -268,15 +267,23 @@ public class SearchIterator {
         fillVectorsByPlType(searchParamBuilder);
 
         SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParamBuilder.build());
-        // pass the session ts to search interface
-        if (ts > 0) {
-            searchRequest = searchRequest.toBuilder().setGuaranteeTimestamp(ts).build();
-        }
-        SearchResults response = blockingStub.search(searchRequest);
+        SearchRequest.Builder builder = searchRequest.toBuilder();
+        // iterator
+        builder.addSearchParams(
+                KeyValuePair.newBuilder()
+                        .setKey(Constant.ITERATOR_FIELD)
+                        .setValue(String.valueOf(Boolean.TRUE))
+                        .build());
 
+        // pass the session ts to search interface
+        builder.setGuaranteeTimestamp(ts).build();
+
+        // set default consistency level
+        builder.setUseDefaultConsistency(true);
+
+        SearchResults response = blockingStub.search(builder.build());
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
-
         return response;
     }
 
@@ -388,7 +395,7 @@ public class SearchIterator {
         while (true) {
             Map<String, Object> nextParams = nextParams(coefficient);
             String nextExpr = filteredDuplicatedResultExpr(expr);
-            SearchResults response = executeNextSearch(nextParams, nextExpr, true, this.sessionTs);
+            SearchResults response = executeSearch(nextParams, nextExpr, true, this.sessionTs);
             SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
             updateFilteredIds(searchResultsWrapper);
             List<QueryResultsWrapper.RowRecord> newPage = searchResultsWrapper.getRowRecords(0);
