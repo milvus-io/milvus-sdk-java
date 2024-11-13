@@ -29,6 +29,7 @@ import java.util.Map;
 @SuperBuilder
 public class SearchResp {
     private List<List<SearchResult>> searchResults;
+    private long sessionTs = 1L; // default eventually ts
 
     @Data
     @SuperBuilder

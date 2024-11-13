@@ -32,6 +32,8 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.QueryIteratorReq;
 import io.milvus.v2.utils.RpcUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -39,6 +41,7 @@ import static io.milvus.param.Constant.NO_CACHE_ID;
 import static io.milvus.param.Constant.UNLIMITED;
 
 public class QueryIterator {
+    protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private final IteratorCache iteratorCache;
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final FieldType primaryField;
@@ -52,6 +55,7 @@ public class QueryIterator {
     private int cacheIdInUse;
     private long returnedCount;
     private final RpcUtils rpcUtils;
+    private long sessionTs = 0;
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
                          MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -67,6 +71,7 @@ public class QueryIterator {
         this.offset = queryIteratorParam.getOffset();
         this.rpcUtils = new RpcUtils();
 
+        setupTsByRequest();
         seek();
     }
 
@@ -86,7 +91,22 @@ public class QueryIterator {
         this.offset = queryIteratorParam.getOffset();
         this.rpcUtils = new RpcUtils();
 
+        setupTsByRequest();
         seek();
+    }
+
+    // perform a query to get the first time stamp check point
+    // the time stamp will be input for the next query to skip something
+    private void setupTsByRequest() {
+        QueryResults response = getQueryResultsWrapper(expr, 0L, 1L, 0L);
+        if (response.getSessionTs() <= 0) {
+            logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
+            // fall back to latest session ts by local time
+            long ts = System.currentTimeMillis() + 1000L;
+            this.sessionTs = ts << 18;
+        } else {
+            this.sessionTs = response.getSessionTs();
+        }
     }
 
     private void seek() {
@@ -96,7 +116,9 @@ public class QueryIterator {
             return;
         }
 
-        List<QueryResultsWrapper.RowRecord> res = getQueryResultsWrapper(expr, 0L, offset);
+        QueryResults response = getQueryResultsWrapper(expr, 0L, offset, this.sessionTs);
+        QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
+        List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
         int resultIndex = Math.min(res.size(), (int) offset);
         updateCursor(res.subList(0, resultIndex));
         offset = 0;
@@ -112,7 +134,10 @@ public class QueryIterator {
         } else {
             iteratorCache.releaseCache(cacheIdInUse);
             String currentExpr = setupNextExpr();
-            List<QueryResultsWrapper.RowRecord> res = getQueryResultsWrapper(currentExpr, offset, batchSize);
+            logger.debug("Query iterator next expression: " + currentExpr);
+            QueryResults response = getQueryResultsWrapper(currentExpr, offset, batchSize, this.sessionTs);
+            QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
+            List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             maybeCache(res);
             ret = res.subList(0, Math.min(batchSize, res.size()));
         }
@@ -174,7 +199,7 @@ public class QueryIterator {
         return ret != null && ret.size() >= batchSize;
     }
 
-    private List<QueryResultsWrapper.RowRecord> getQueryResultsWrapper(String expr, long offset, long limit) {
+    private QueryResults getQueryResultsWrapper(String expr, long offset, long limit, long ts) {
         QueryParam queryParam = QueryParam.newBuilder()
                 .withDatabaseName(queryIteratorParam.getDatabaseName())
                 .withCollectionName(queryIteratorParam.getCollectionName())
@@ -190,12 +215,15 @@ public class QueryIterator {
                 .build();
 
         QueryRequest queryRequest = ParamUtils.convertQueryParam(queryParam);
+        // pass the session ts to query interface
+        if (ts > 0) {
+            queryRequest = queryRequest.toBuilder().setGuaranteeTimestamp(ts).build();
+        }
         QueryResults response = blockingStub.query(queryRequest);
 
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
-        QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
-        return queryWrapper.getRowRecords();
+        return response;
     }
 }
