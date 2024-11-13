@@ -57,7 +57,7 @@ public class SearchParam {
     private final boolean ignoreGrowing;
     private final String groupByFieldName;
     private final Integer groupSize;
-    private final Boolean groupStrictSize;
+    private final Boolean strictGroupSize;
     private final PlaceholderType plType;
     private final boolean iterator;
 
@@ -81,7 +81,7 @@ public class SearchParam {
         this.ignoreGrowing = builder.ignoreGrowing;
         this.groupByFieldName = builder.groupByFieldName;
         this.groupSize = builder.groupSize;
-        this.groupStrictSize = builder.groupStrictSize;
+        this.strictGroupSize = builder.strictGroupSize;
         this.plType = builder.plType;
         this.iterator = builder.iterator;
     }
@@ -113,7 +113,7 @@ public class SearchParam {
         private Boolean ignoreGrowing = Boolean.FALSE;
         private String groupByFieldName;
         private Integer groupSize = null;
-        private Boolean groupStrictSize = null;
+        private Boolean strictGroupSize = null;
         private Boolean iterator = Boolean.FALSE;
 
         // plType is used to distinct vector type
@@ -398,11 +398,11 @@ public class SearchParam {
          * Whether to force the number of each group to be groupSize.
          * Set to false, milvus might return some groups with number of items less than groupSize.
          *
-         * @param groupStrictSize whether to force the number of each group to be groupSize
+         * @param strictGroupSize whether to force the number of each group to be groupSize
          * @return <code>Builder</code>
          */
-        public Builder withGroupStrictSize(@NonNull Boolean groupStrictSize) {
-            this.groupStrictSize = groupStrictSize;
+        public Builder withStrictGroupSize(@NonNull Boolean strictGroupSize) {
+            this.strictGroupSize = strictGroupSize;
             return this;
         }
 

@@ -57,6 +57,7 @@ public class SearchIterator {
     private Float filteredDistance = null;
     private Map<String, Object> params;
     private final RpcUtils rpcUtils;
+    private long sessionTs = 0;
 
     public SearchIterator(SearchIteratorParam searchIteratorParam,
                           MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
@@ -171,7 +172,17 @@ public class SearchIterator {
     }
 
     private void initSearchIterator() {
-        SearchResultsWrapper searchResultsWrapper = executeNextSearch(params, expr, false);
+        SearchResults response = executeNextSearch(params, expr, false, 0L);
+        if (response.getSessionTs() <= 0) {
+            logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
+            // fall back to latest session ts by local time
+            long ts = System.currentTimeMillis() + 1000L;
+            this.sessionTs = ts << 18;
+        } else {
+            this.sessionTs = response.getSessionTs();
+        }
+
+        SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
         List<QueryResultsWrapper.RowRecord> result = searchResultsWrapper.getRowRecords(0);
         if (CollectionUtils.isNullOrEmpty(result)) {
             String msg = "Cannot init search iterator because init page contains no matched rows, " +
@@ -234,7 +245,7 @@ public class SearchIterator {
         }
     }
 
-    private SearchResultsWrapper executeNextSearch(Map<String, Object> params, String nextExpr, boolean toExtendBatch) {
+    private SearchResults executeNextSearch(Map<String, Object> params, String nextExpr, boolean toExtendBatch, long ts) {
         SearchParam.Builder searchParamBuilder = SearchParam.newBuilder()
                 .withDatabaseName(searchIteratorParam.getDatabaseName())
                 .withCollectionName(searchIteratorParam.getCollectionName())
@@ -257,12 +268,16 @@ public class SearchIterator {
         fillVectorsByPlType(searchParamBuilder);
 
         SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParamBuilder.build());
+        // pass the session ts to search interface
+        if (ts > 0) {
+            searchRequest = searchRequest.toBuilder().setGuaranteeTimestamp(ts).build();
+        }
         SearchResults response = blockingStub.search(searchRequest);
 
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
-        return new SearchResultsWrapper(response.getResults());
+        return response;
     }
 
     private void fillVectorsByPlType(SearchParam.Builder searchParamBuilder) {
@@ -373,8 +388,8 @@ public class SearchIterator {
         while (true) {
             Map<String, Object> nextParams = nextParams(coefficient);
             String nextExpr = filteredDuplicatedResultExpr(expr);
-            SearchResultsWrapper searchResultsWrapper = executeNextSearch(nextParams, nextExpr, true);
-
+            SearchResults response = executeNextSearch(nextParams, nextExpr, true, this.sessionTs);
+            SearchResultsWrapper searchResultsWrapper = new SearchResultsWrapper(response.getResults());
             updateFilteredIds(searchResultsWrapper);
             List<QueryResultsWrapper.RowRecord> newPage = searchResultsWrapper.getRowRecords(0);
 

@@ -192,11 +192,11 @@ public class VectorUtils {
                                 .build());
             }
 
-            if (request.getGroupStrictSize() != null) {
+            if (request.getStrictGroupSize() != null) {
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.GROUP_STRICT_SIZE)
-                                .setValue(request.getGroupStrictSize().toString())
+                                .setValue(request.getStrictGroupSize().toString())
                                 .build());
             }
         }
@@ -436,11 +436,11 @@ public class VectorUtils {
                                 .build());
             }
 
-            if (request.getGroupStrictSize() != null) {
+            if (request.getStrictGroupSize() != null) {
                 builder.addRankParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.GROUP_STRICT_SIZE)
-                                .setValue(request.getGroupStrictSize().toString())
+                                .setValue(request.getStrictGroupSize().toString())
                                 .build());
             }
         }

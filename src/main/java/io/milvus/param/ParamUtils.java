@@ -831,11 +831,11 @@ public class ParamUtils {
                                 .setValue(requestParam.getGroupSize().toString())
                                 .build());
             }
-            if (requestParam.getGroupStrictSize() != null) {
+            if (requestParam.getStrictGroupSize() != null) {
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.GROUP_STRICT_SIZE)
-                                .setValue(requestParam.getGroupStrictSize().toString())
+                                .setValue(requestParam.getStrictGroupSize().toString())
                                 .build());
             }
         }
@@ -964,11 +964,11 @@ public class ParamUtils {
                                 .setValue(requestParam.getGroupSize().toString())
                                 .build());
             }
-            if (requestParam.getGroupStrictSize() != null) {
+            if (requestParam.getStrictGroupSize() != null) {
                 builder.addRankParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.GROUP_STRICT_SIZE)
-                                .setValue(requestParam.getGroupStrictSize().toString())
+                                .setValue(requestParam.getStrictGroupSize().toString())
                                 .build());
             }
         }
@@ -1001,7 +1001,14 @@ public class ParamUtils {
     }
 
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
+        boolean useDefaultConsistency = (requestParam.getConsistencyLevel() == null);
         long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        // special logic for iterator
+        // don't pass guaranteeTimestamp for iterator, the query() interface might return empty list.
+        if (requestParam.isIterator()) {
+            useDefaultConsistency = true;
+            guaranteeTimestamp = 0L;
+        }
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(requestParam.getCollectionName())
                 .addAllPartitionNames(requestParam.getPartitionNames())
@@ -1015,7 +1022,7 @@ public class ParamUtils {
         }
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
-        if (requestParam.getConsistencyLevel() == null) {
+        if (useDefaultConsistency) {
             builder.setUseDefaultConsistency(true);
         } else {
             builder.setConsistencyLevelValue(requestParam.getConsistencyLevel().getCode());

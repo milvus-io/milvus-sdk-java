@@ -45,5 +45,5 @@ public class HybridSearchReq
 
     private String groupByFieldName;
     private Integer groupSize;
-    private Boolean groupStrictSize;
+    private Boolean strictGroupSize;
 }

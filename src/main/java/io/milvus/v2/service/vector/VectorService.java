@@ -161,6 +161,7 @@ public class VectorService extends BaseService {
 
         return QueryResp.builder()
                 .queryResults(convertUtils.getEntities(response))
+                .sessionTs(response.getSessionTs())
                 .build();
 
     }
@@ -178,6 +179,7 @@ public class VectorService extends BaseService {
 
         return SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
+                .sessionTs(response.getSessionTs())
                 .build();
     }
 

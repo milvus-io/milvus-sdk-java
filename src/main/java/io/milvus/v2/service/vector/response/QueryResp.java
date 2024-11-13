@@ -29,6 +29,7 @@ import java.util.Map;
 @SuperBuilder
 public class QueryResp {
     private List<QueryResult> queryResults;
+    private long sessionTs = 1L; // default eventually ts
 
     @Data
     @SuperBuilder

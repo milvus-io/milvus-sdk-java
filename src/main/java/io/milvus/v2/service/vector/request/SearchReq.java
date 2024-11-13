@@ -60,7 +60,7 @@ public class SearchReq {
     private boolean ignoreGrowing;
     private String groupByFieldName;
     private Integer groupSize;
-    private Boolean groupStrictSize;
+    private Boolean strictGroupSize;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
