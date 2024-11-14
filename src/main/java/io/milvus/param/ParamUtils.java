@@ -829,7 +829,7 @@ public class ParamUtils {
             if (requestParam.getStrictGroupSize() != null) {
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setKey(Constant.STRICT_GROUP_SIZE)
                                 .setValue(requestParam.getStrictGroupSize().toString())
                                 .build());
             }
@@ -962,7 +962,7 @@ public class ParamUtils {
             if (requestParam.getStrictGroupSize() != null) {
                 builder.addRankParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setKey(Constant.STRICT_GROUP_SIZE)
                                 .setValue(requestParam.getStrictGroupSize().toString())
                                 .build());
             }

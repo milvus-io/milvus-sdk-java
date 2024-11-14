@@ -23,7 +23,6 @@ import io.milvus.common.utils.GTsDict;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.*;
-import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
@@ -47,7 +46,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
     public CollectionService collectionService = new CollectionService();
-    public IndexService indexService = new IndexService();
     private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
 
     /**
@@ -108,7 +106,8 @@ public class VectorService extends BaseService {
         // TODO: set the database name
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
         DataUtils.InsertBuilderWrapper requestBuilder = new DataUtils.InsertBuilderWrapper();
-        MutationResult response = blockingStub.insert(requestBuilder.convertGrpcInsertRequest(request, new DescCollResponseWrapper(descResp)));
+        DescribeCollectionResp descColl = convertUtils.convertDescCollectionResp(descResp);
+        MutationResult response = blockingStub.insert(requestBuilder.convertGrpcInsertRequest(request, descColl));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
@@ -134,7 +133,8 @@ public class VectorService extends BaseService {
         // TODO: set the database name
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
         DataUtils.InsertBuilderWrapper requestBuilder = new DataUtils.InsertBuilderWrapper();
-        MutationResult response = blockingStub.upsert(requestBuilder.convertGrpcUpsertRequest(request, new DescCollResponseWrapper(descResp)));
+        DescribeCollectionResp descColl = convertUtils.convertDescCollectionResp(descResp);
+        MutationResult response = blockingStub.upsert(requestBuilder.convertGrpcUpsertRequest(request, descColl));
         cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
@@ -151,10 +151,11 @@ public class VectorService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-        DescribeCollectionResp descR = collectionService.describeCollection(blockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
 
         if (request.getIds() != null && request.getFilter() == null) {
-            request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
+            DescribeCollectionReq descReq = DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build();
+            DescribeCollectionResp descResp = collectionService.describeCollection(blockingStub, descReq);
+            request.setFilter(vectorUtils.getExprById(descResp.getPrimaryFieldName(), request.getIds()));
         }
         QueryResults response = blockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
         rpcUtils.handleResponse(title, response.getStatus());

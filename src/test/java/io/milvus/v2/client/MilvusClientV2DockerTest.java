@@ -2038,6 +2038,7 @@ class MilvusClientV2DockerTest {
         client.createCollection(requestCreate);
         System.out.println("Collection created");
 
+        // check the schema
         DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
@@ -2060,5 +2061,51 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("text", functions.get(0).getInputFieldNames().get(0));
         Assertions.assertEquals(1, functions.get(0).getOutputFieldNames().size());
         Assertions.assertEquals("sparse", functions.get(0).getOutputFieldNames().get(0));
+
+        // insert by row-based
+        List<String> texts = Arrays.asList(
+                "this is a AI world",
+                "milvus is a vector database for AI application",
+                "hello zilliz");
+        List<JsonObject> data = new ArrayList<>();
+        for (int i = 0; i < texts.size(); i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty("id", i);
+            row.add("dense", JsonUtils.toJsonTree(generateFolatVector(dimension)));
+            row.addProperty("text", texts.get(i));
+            data.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(3, insertResp.getInsertCnt());
+
+        // get row count
+        long rowCount = getRowCount(randomCollectionName);
+        Assertions.assertEquals(texts.size(), rowCount);
+
+        // search
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("sparse")
+                .data(Collections.singletonList(new EmbeddedText("Vector and AI")))
+                .topK(10)
+                .outputFields(Lists.newArrayList("*"))
+                .metricType(IndexParam.MetricType.BM25)
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        List<SearchResp.SearchResult> firstResults = searchResults.get(0);
+        Assertions.assertEquals(2, firstResults.size());
+        SearchResp.SearchResult firstRes = firstResults.get(0);
+        Map<String, Object> entity = firstRes.getEntity();
+        Assertions.assertEquals(1L, entity.get("id"));
+        Assertions.assertEquals(texts.get(1), entity.get("text"));
+        System.out.println("Search results:");
+        for (SearchResp.SearchResult result : firstResults) {
+            System.out.println(result);
+        }
     }
 }
