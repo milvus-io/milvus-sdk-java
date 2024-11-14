@@ -35,7 +35,7 @@ public class Constant {
     public static final String ITERATOR_FIELD = "iterator";
     public static final String GROUP_BY_FIELD = "group_by_field";
     public static final String GROUP_SIZE = "group_size";
-    public static final String GROUP_STRICT_SIZE = "group_strict_size";
+    public static final String STRICT_GROUP_SIZE = "strict_group_size";
 
     public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";

@@ -28,6 +28,8 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.ranker.BaseRanker;
 import io.milvus.v2.service.vector.request.data.*;
@@ -105,6 +107,31 @@ public class VectorUtils {
         }
     }
 
+    private static ByteString convertPlaceholder(List<Object> data, PlaceholderType placeType) {
+        if (placeType == PlaceholderType.VarChar) {
+            List<ByteString> byteStrings = new ArrayList<>();
+            for (Object obj : data) {
+                byteStrings.add(ByteString.copyFrom(((String)obj).getBytes()));
+            }
+            PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
+                    .setTag(Constant.VECTOR_TAG)
+                    .setType(placeType);
+            byteStrings.forEach(pldBuilder::addValues);
+
+            PlaceholderValue plv = pldBuilder.build();
+            PlaceholderGroup placeholderGroup = PlaceholderGroup.newBuilder()
+                    .addPlaceholders(plv)
+                    .build();
+            return placeholderGroup.toByteString();
+        } else {
+            try {
+                return ParamUtils.convertPlaceholder(data, placeType);
+            } catch (ParamException e) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage());
+            }
+        }
+    }
+
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
                 .setCollectionName(request.getCollectionName());
@@ -112,31 +139,37 @@ public class VectorUtils {
             request.getPartitionNames().forEach(builder::addPartitionNames);
         }
 
-
-        // prepare target vectors
+        // prepare target, the input could be vectors or string list for doc-in-doc-out
         List<BaseVector> vectors = request.getData();
         if (vectors.isEmpty()) {
-            throw new ParamException("Target vectors list of search request is empty.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Target data list of search request is empty.");
         }
+
+        // the elements must be all-vector or all-string
         PlaceholderType plType = vectors.get(0).getPlaceholderType();
         List<Object> data = new ArrayList<>();
         for (BaseVector vector : vectors) {
             if (vector.getPlaceholderType() != plType) {
-                throw new ParamException("Different types of target vectors in a search request is not allowed.");
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Different types of target vectors in a search request is not allowed.");
             }
             data.add(vector.getData());
         }
 
-        ByteString byteStr = ParamUtils.convertPlaceholder(data, plType);
+        ByteString byteStr = convertPlaceholder(data, plType);
         builder.setPlaceholderGroup(byteStr);
+        builder.setNq(vectors.size());
 
         // search parameters
+        if (StringUtils.isNotEmpty(request.getAnnsField())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.VECTOR_FIELD)
+                            .setValue(request.getAnnsField())
+                            .build());
+        }
+
         builder.addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.VECTOR_FIELD)
-                                .setValue(request.getAnnsField())
-                                .build())
-                .addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.TOP_K)
                                 .setValue(String.valueOf(request.getTopK()))
@@ -174,7 +207,7 @@ public class VectorUtils {
                                 .setValue(searchParams)
                                 .build());
             } catch (IllegalArgumentException e) {
-                throw new ParamException(e.getMessage() + e.getCause().getMessage());
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage() + e.getCause().getMessage());
             }
         }
 
@@ -195,7 +228,7 @@ public class VectorUtils {
             if (request.getStrictGroupSize() != null) {
                 builder.addSearchParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setKey(Constant.STRICT_GROUP_SIZE)
                                 .setValue(request.getStrictGroupSize().toString())
                                 .build());
             }
@@ -238,7 +271,8 @@ public class VectorUtils {
             BoolArray.Builder builder = BoolArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof Boolean)) {
-                    throw new ParamException("Filter expression template is a list, the first value is Boolean, but some elements are not Boolean");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is Boolean, but some elements are not Boolean");
                 }
                 builder.addData((Boolean)val);
             });
@@ -247,7 +281,8 @@ public class VectorUtils {
             LongArray.Builder builder = LongArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof Integer) && !(val instanceof Long)) {
-                    throw new ParamException("Filter expression template is a list, the first value is Integer/Long, but some elements are not Integer/Long");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is Integer/Long, but some elements are not Integer/Long");
                 }
                 builder.addData((val instanceof Integer) ? (Integer)val : (Long)val);
             });
@@ -256,7 +291,8 @@ public class VectorUtils {
             DoubleArray.Builder builder = DoubleArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof Double)) {
-                    throw new ParamException("Filter expression template is a list, the first value is Double, but some elements are not Double");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is Double, but some elements are not Double");
                 }
                 builder.addData((Double)val);
             });
@@ -265,7 +301,8 @@ public class VectorUtils {
             StringArray.Builder builder = StringArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof String)) {
-                    throw new ParamException("Filter expression template is a list, the first value is String, but some elements are not String");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is String, but some elements are not String");
                 }
                 builder.addData((String)val);
             });
@@ -274,7 +311,8 @@ public class VectorUtils {
             JSONArray.Builder builder = JSONArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof JsonElement)) {
-                    throw new ParamException("Filter expression template is a list, the first value is JsonElement, but some elements are not JsonElement");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is JsonElement, but some elements are not JsonElement");
                 }
                 String str = JsonUtils.toJson((JsonElement)val);
                 builder.addData(ByteString.copyFromUtf8(str));
@@ -284,7 +322,8 @@ public class VectorUtils {
             TemplateArrayValueArray.Builder builder = TemplateArrayValueArray.newBuilder();
             array.forEach(val->{
                 if (!(val instanceof List)) {
-                    throw new ParamException("Filter expression template is a list, the first value is List, but some elements are not List");
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Filter expression template is a list, the first value is List, but some elements are not List");
                 }
                 List<?> subArrary = (List<?>)val;
                 builder.addData(deduceTemplateArray(subArrary));
@@ -292,7 +331,8 @@ public class VectorUtils {
 
             return TemplateArrayValue.newBuilder().setArrayData(builder.build()).build();
         } else {
-            throw new ParamException("Unsupported value type for filter expression template.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Unsupported value type for filter expression template.");
         }
     }
 
@@ -320,7 +360,8 @@ public class VectorUtils {
                     .setArrayVal(tav)
                     .build();
         } else {
-            throw new ParamException("Unsupported value type for filter expression template.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Unsupported value type for filter expression template.");
         }
     }
 
@@ -330,13 +371,15 @@ public class VectorUtils {
         // prepare target vectors
         List<BaseVector> vectors = annSearchReq.getVectors();
         if (vectors.isEmpty()) {
-            throw new ParamException("Target vectors list of search request is empty.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Target vectors list of search request is empty.");
         }
         PlaceholderType plType = vectors.get(0).getPlaceholderType();
         List<Object> data = new ArrayList<>();
         for (BaseVector vector : vectors) {
             if (vector.getPlaceholderType() != plType) {
-                throw new ParamException("Different types of target vectors in a search request is not allowed.");
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Different types of target vectors in a search request is not allowed.");
             }
             data.add(vector.getData());
         }
@@ -400,7 +443,7 @@ public class VectorUtils {
         }
 
         if (request.getSearchRequests() == null || request.getSearchRequests().isEmpty()) {
-            throw new ParamException("Sub-request list is empty.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Sub-request list is empty.");
         }
 
         for (AnnSearchReq req : request.getSearchRequests()) {
@@ -411,7 +454,7 @@ public class VectorUtils {
         // set ranker
         BaseRanker ranker = request.getRanker();
         if (request.getRanker() == null) {
-            throw new ParamException("Ranker is null.");
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Ranker is null.");
         }
 
         Map<String, String> props = ranker.getProperties();
@@ -439,7 +482,7 @@ public class VectorUtils {
             if (request.getStrictGroupSize() != null) {
                 builder.addRankParams(
                         KeyValuePair.newBuilder()
-                                .setKey(Constant.GROUP_STRICT_SIZE)
+                                .setKey(Constant.STRICT_GROUP_SIZE)
                                 .setValue(request.getStrictGroupSize().toString())
                                 .build());
             }
