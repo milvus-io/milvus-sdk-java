@@ -59,7 +59,6 @@ public class SearchParam {
     private final Integer groupSize;
     private final Boolean strictGroupSize;
     private final PlaceholderType plType;
-    private final boolean iterator;
 
     private SearchParam(@NonNull Builder builder) {
         this.databaseName = builder.databaseName;
@@ -83,7 +82,6 @@ public class SearchParam {
         this.groupSize = builder.groupSize;
         this.strictGroupSize = builder.strictGroupSize;
         this.plType = builder.plType;
-        this.iterator = builder.iterator;
     }
 
     public static Builder newBuilder() {
@@ -114,7 +112,6 @@ public class SearchParam {
         private String groupByFieldName;
         private Integer groupSize = null;
         private Boolean strictGroupSize = null;
-        private Boolean iterator = Boolean.FALSE;
 
         // plType is used to distinct vector type
         // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
@@ -403,17 +400,6 @@ public class SearchParam {
          */
         public Builder withStrictGroupSize(@NonNull Boolean strictGroupSize) {
             this.strictGroupSize = strictGroupSize;
-            return this;
-        }
-
-        /**
-         * Optimizing specifically for iterators can yield correct data results. Default is False.
-         *
-         * @param iterator <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
-         * @return <code>Builder</code>
-         */
-        public Builder withIterator(@NonNull Boolean iterator) {
-            this.iterator = iterator;
             return this;
         }
 

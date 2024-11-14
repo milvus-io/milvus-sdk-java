@@ -19,10 +19,8 @@
 
 package io.milvus.orm.iterator;
 
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.grpc.QueryRequest;
-import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.QueryIteratorParam;
@@ -98,7 +96,7 @@ public class QueryIterator {
     // perform a query to get the first time stamp check point
     // the time stamp will be input for the next query to skip something
     private void setupTsByRequest() {
-        QueryResults response = getQueryResultsWrapper(expr, 0L, 1L, 0L);
+        QueryResults response = executeQuery(expr, 0L, 1L, 0L);
         if (response.getSessionTs() <= 0) {
             logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
             // fall back to latest session ts by local time
@@ -116,7 +114,7 @@ public class QueryIterator {
             return;
         }
 
-        QueryResults response = getQueryResultsWrapper(expr, 0L, offset, this.sessionTs);
+        QueryResults response = executeQuery(expr, 0L, offset, this.sessionTs);
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
         List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
         int resultIndex = Math.min(res.size(), (int) offset);
@@ -135,7 +133,7 @@ public class QueryIterator {
             iteratorCache.releaseCache(cacheIdInUse);
             String currentExpr = setupNextExpr();
             logger.debug("Query iterator next expression: " + currentExpr);
-            QueryResults response = getQueryResultsWrapper(currentExpr, offset, batchSize, this.sessionTs);
+            QueryResults response = executeQuery(currentExpr, offset, batchSize, this.sessionTs);
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
             List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             maybeCache(res);
@@ -199,7 +197,7 @@ public class QueryIterator {
         return ret != null && ret.size() >= batchSize;
     }
 
-    private QueryResults getQueryResultsWrapper(String expr, long offset, long limit, long ts) {
+    private QueryResults executeQuery(String expr, long offset, long limit, long ts) {
         QueryParam queryParam = QueryParam.newBuilder()
                 .withDatabaseName(queryIteratorParam.getDatabaseName())
                 .withCollectionName(queryIteratorParam.getCollectionName())
@@ -210,20 +208,31 @@ public class QueryIterator {
                 .withOffset(offset)
                 .withLimit(limit)
                 .withIgnoreGrowing(queryIteratorParam.isIgnoreGrowing())
-                .withReduceStopForBest(queryIteratorParam.isReduceStopForBest())
-                .withIterator(Boolean.TRUE)
                 .build();
 
         QueryRequest queryRequest = ParamUtils.convertQueryParam(queryParam);
-        // pass the session ts to query interface
-        if (ts > 0) {
-            queryRequest = queryRequest.toBuilder().setGuaranteeTimestamp(ts).build();
-        }
-        QueryResults response = blockingStub.query(queryRequest);
+        QueryRequest.Builder builder = queryRequest.toBuilder();
+        // reduce stop for best
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                .setKey(Constant.REDUCE_STOP_FOR_BEST)
+                .setValue(String.valueOf(queryIteratorParam.isReduceStopForBest()))
+                .build());
 
+        // iterator
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                .setKey(Constant.ITERATOR_FIELD)
+                .setValue(String.valueOf(Boolean.TRUE))
+                .build());
+
+        // pass the session ts to query interface
+        builder.setGuaranteeTimestamp(ts).build();
+
+        // set default consistency level
+        builder.setUseDefaultConsistency(true);
+
+        QueryResults response = blockingStub.query(builder.build());
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
-
         return response;
     }
 }
