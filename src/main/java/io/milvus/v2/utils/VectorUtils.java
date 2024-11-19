@@ -19,6 +19,7 @@
 
 package io.milvus.v2.utils;
 
+import com.google.gson.JsonElement;
 import com.google.protobuf.ByteString;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
@@ -212,54 +213,99 @@ public class VectorUtils {
         return builder.build();
     }
 
+    private static TemplateArrayValue deduceTemplateArray(List<?> array) {
+        if (array.isEmpty()) {
+            return TemplateArrayValue.newBuilder().build(); // an empty list?
+        }
+
+        Object firstObj = array.get(0);
+        if (firstObj instanceof Boolean) {
+            BoolArray.Builder builder = BoolArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof Boolean)) {
+                    throw new ParamException("Filter expression template is a list, the first value is Boolean, but some elements are not Boolean");
+                }
+                builder.addData((Boolean)val);
+            });
+            return TemplateArrayValue.newBuilder().setBoolData(builder.build()).build();
+        } else if (firstObj instanceof Integer || firstObj instanceof Long) {
+            LongArray.Builder builder = LongArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof Integer) && !(val instanceof Long)) {
+                    throw new ParamException("Filter expression template is a list, the first value is Integer/Long, but some elements are not Integer/Long");
+                }
+                builder.addData((val instanceof Integer) ? (Integer)val : (Long)val);
+            });
+            return TemplateArrayValue.newBuilder().setLongData(builder.build()).build();
+        } else if (firstObj instanceof Double) {
+            DoubleArray.Builder builder = DoubleArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof Double)) {
+                    throw new ParamException("Filter expression template is a list, the first value is Double, but some elements are not Double");
+                }
+                builder.addData((Double)val);
+            });
+            return TemplateArrayValue.newBuilder().setDoubleData(builder.build()).build();
+        } else if (firstObj instanceof String) {
+            StringArray.Builder builder = StringArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof String)) {
+                    throw new ParamException("Filter expression template is a list, the first value is String, but some elements are not String");
+                }
+                builder.addData((String)val);
+            });
+            return TemplateArrayValue.newBuilder().setStringData(builder.build()).build();
+        } else if (firstObj instanceof JsonElement) {
+            JSONArray.Builder builder = JSONArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof JsonElement)) {
+                    throw new ParamException("Filter expression template is a list, the first value is JsonElement, but some elements are not JsonElement");
+                }
+                String str = JsonUtils.toJson((JsonElement)val);
+                builder.addData(ByteString.copyFromUtf8(str));
+            });
+            return TemplateArrayValue.newBuilder().setJsonData(builder.build()).build();
+        } else if (firstObj instanceof List) {
+            TemplateArrayValueArray.Builder builder = TemplateArrayValueArray.newBuilder();
+            array.forEach(val->{
+                if (!(val instanceof List)) {
+                    throw new ParamException("Filter expression template is a list, the first value is List, but some elements are not List");
+                }
+                List<?> subArrary = (List<?>)val;
+                builder.addData(deduceTemplateArray(subArrary));
+            });
+
+            return TemplateArrayValue.newBuilder().setArrayData(builder.build()).build();
+        } else {
+            throw new ParamException("Unsupported value type for filter expression template.");
+        }
+    }
+
     public static TemplateValue deduceAndCreateTemplateValue(Object value) {
         if (value instanceof Boolean) {
             return TemplateValue.newBuilder()
                     .setBoolVal((Boolean)value)
-                    .setType(DataType.Bool)
                     .build();
-        } else if (value instanceof Integer) {
-           return TemplateValue.newBuilder()
-                   .setInt64Val((Integer)value)
-                   .setType(DataType.Int64)
-                   .build();
+        } else if (value instanceof Integer || value instanceof Long) {
+            return TemplateValue.newBuilder()
+                    .setInt64Val((value instanceof Integer) ? (Integer)value : (Long)value)
+                    .build();
         } else if (value instanceof Double) {
             return TemplateValue.newBuilder()
                     .setFloatVal((Double)value)
-                    .setType(DataType.Double)
                     .build();
         } else if (value instanceof String) {
             return TemplateValue.newBuilder()
                     .setStringVal((String)value)
-                    .setType(DataType.VarChar)
                     .build();
         } else if (value instanceof List) {
-            // TemplateArrayValue and TemplateValue can nest each other
-            // The element_type of TemplateArrayValue is deduced by its elements:
-            //   1. if all the elements are the same type, element_type is the first element's type
-            //   2. if not the same type, element_type is DataType.JSON
-            List<Object> array = (List<Object>)value;
-            TemplateArrayValue.Builder builder = TemplateArrayValue.newBuilder();
-            DataType lastType = DataType.UNRECOGNIZED;
-            boolean sameType = true;
-            for (Object obj : array) {
-                TemplateValue tv = deduceAndCreateTemplateValue(obj);
-                builder.addArray(tv);
-                if (sameType && lastType != DataType.UNRECOGNIZED && lastType != tv.getType()) {
-                    sameType = false;
-                }
-                lastType = tv.getType();
-            }
-            DataType arrayType = sameType ? lastType : DataType.JSON;
-            builder.setElementType(arrayType);
-            builder.setSameType(sameType);
-
+            List<?> array = (List<?>)value;
+            TemplateArrayValue tav = deduceTemplateArray(array);
             return TemplateValue.newBuilder()
-                    .setType(DataType.Array)
-                    .setArrayVal(builder.build())
+                    .setArrayVal(tav)
                     .build();
         } else {
-            throw new ParamException("Unsupported value type for expression template.");
+            throw new ParamException("Unsupported value type for filter expression template.");
         }
     }
 
