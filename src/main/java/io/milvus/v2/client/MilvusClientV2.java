@@ -42,8 +42,7 @@ import io.milvus.v2.service.index.request.*;
 import io.milvus.v2.service.index.response.*;
 import io.milvus.v2.service.partition.PartitionService;
 import io.milvus.v2.service.partition.request.*;
-import io.milvus.v2.service.rbac.RoleService;
-import io.milvus.v2.service.rbac.UserService;
+import io.milvus.v2.service.rbac.RBACService;
 import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.*;
 import io.milvus.v2.service.utility.UtilityService;
@@ -73,8 +72,7 @@ public class MilvusClientV2 {
     private final IndexService indexService = new IndexService();
     private final VectorService vectorService = new VectorService();
     private final PartitionService partitionService = new PartitionService();
-    private final UserService userService = new UserService();
-    private final RoleService roleService = new RoleService();
+    private final RBACService rbacService = new RBACService();
     private final UtilityService utilityService = new UtilityService();
     private ConnectConfig connectConfig;
     private RetryConfig retryConfig = RetryConfig.builder().build();
@@ -625,7 +623,7 @@ public class MilvusClientV2 {
      * @return List of String usernames
      */
     public List<String> listUsers() {
-        return retry(()->userService.listUsers(this.getRpcStub()));
+        return retry(()->rbacService.listUsers(this.getRpcStub()));
     }
     /**
      * describe user
@@ -634,7 +632,7 @@ public class MilvusClientV2 {
      * @return DescribeUserResp
      */
     public DescribeUserResp describeUser(DescribeUserReq request) {
-        return retry(()->userService.describeUser(this.getRpcStub(), request));
+        return retry(()->rbacService.describeUser(this.getRpcStub(), request));
     }
     /**
      * create user
@@ -642,7 +640,7 @@ public class MilvusClientV2 {
      * @param request create user request
      */
     public void createUser(CreateUserReq request) {
-        retry(()->userService.createUser(this.getRpcStub(), request));
+        retry(()->rbacService.createUser(this.getRpcStub(), request));
     }
     /**
      * change password
@@ -650,7 +648,7 @@ public class MilvusClientV2 {
      * @param request change password request
      */
     public void updatePassword(UpdatePasswordReq request) {
-        retry(()->userService.updatePassword(this.getRpcStub(), request));
+        retry(()->rbacService.updatePassword(this.getRpcStub(), request));
     }
     /**
      * drop user
@@ -658,7 +656,7 @@ public class MilvusClientV2 {
      * @param request drop user request
      */
     public void dropUser(DropUserReq request) {
-        retry(()->userService.dropUser(this.getRpcStub(), request));
+        retry(()->rbacService.dropUser(this.getRpcStub(), request));
     }
     // role operations
     /**
@@ -667,7 +665,7 @@ public class MilvusClientV2 {
      * @return List of String role names
      */
     public List<String> listRoles() {
-        return retry(()->roleService.listRoles(this.getRpcStub()));
+        return retry(()->rbacService.listRoles(this.getRpcStub()));
     }
     /**
      * describe role
@@ -676,7 +674,7 @@ public class MilvusClientV2 {
      * @return DescribeRoleResp
      */
     public DescribeRoleResp describeRole(DescribeRoleReq request) {
-        return retry(()->roleService.describeRole(this.getRpcStub(), request));
+        return retry(()->rbacService.describeRole(this.getRpcStub(), request));
     }
     /**
      * create role
@@ -684,7 +682,7 @@ public class MilvusClientV2 {
      * @param request create role request
      */
     public void createRole(CreateRoleReq request) {
-        retry(()->roleService.createRole(this.getRpcStub(), request));
+        retry(()->rbacService.createRole(this.getRpcStub(), request));
     }
     /**
      * drop role
@@ -692,7 +690,7 @@ public class MilvusClientV2 {
      * @param request drop role request
      */
     public void dropRole(DropRoleReq request) {
-        retry(()->roleService.dropRole(this.getRpcStub(), request));
+        retry(()->rbacService.dropRole(this.getRpcStub(), request));
     }
     /**
      * grant privilege
@@ -700,7 +698,7 @@ public class MilvusClientV2 {
      * @param request grant privilege request
      */
     public void grantPrivilege(GrantPrivilegeReq request) {
-        retry(()->roleService.grantPrivilege(this.getRpcStub(), request));
+        retry(()->rbacService.grantPrivilege(this.getRpcStub(), request));
     }
     /**
      * revoke privilege
@@ -708,7 +706,7 @@ public class MilvusClientV2 {
      * @param request revoke privilege request
      */
     public void revokePrivilege(RevokePrivilegeReq request) {
-        retry(()->roleService.revokePrivilege(this.getRpcStub(), request));
+        retry(()->rbacService.revokePrivilege(this.getRpcStub(), request));
     }
     /**
      * grant role
@@ -716,7 +714,7 @@ public class MilvusClientV2 {
      * @param request grant role request
      */
     public void grantRole(GrantRoleReq request) {
-        retry(()->roleService.grantRole(this.getRpcStub(), request));
+        retry(()->rbacService.grantRole(this.getRpcStub(), request));
     }
     /**
      * revoke role
@@ -724,7 +722,27 @@ public class MilvusClientV2 {
      * @param request revoke role request
      */
     public void revokeRole(RevokeRoleReq request) {
-        retry(()->roleService.revokeRole(this.getRpcStub(), request));
+        retry(()->rbacService.revokeRole(this.getRpcStub(), request));
+    }
+
+    public void createPrivilegeGroup(CreatePrivilegeGroupReq request) {
+        retry(()->rbacService.createPrivilegeGroup(this.getRpcStub(), request));
+    }
+
+    public void dropPrivilegeGroup(DropPrivilegeGroupReq request) {
+        retry(()->rbacService.dropPrivilegeGroup(this.getRpcStub(), request));
+    }
+
+    public ListPrivilegeGroupsResp listPrivilegeGroups(ListPrivilegeGroupsReq request) {
+        return retry(()->rbacService.listPrivilegeGroups(this.getRpcStub(), request));
+    }
+
+    public void addPrivilegesToGroup(AddPrivilegesToGroupReq request) {
+        retry(()->rbacService.addPrivilegesToGroup(this.getRpcStub(), request));
+    }
+
+    public void removePrivilegesFromGroup(RemovePrivilegesFromGroupReq request) {
+        retry(()->rbacService.removePrivilegesFromGroup(this.getRpcStub(), request));
     }
 
     // Utility Operations
