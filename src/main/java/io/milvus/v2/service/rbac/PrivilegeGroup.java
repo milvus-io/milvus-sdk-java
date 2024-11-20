@@ -31,5 +31,5 @@ import java.util.List;
 public class PrivilegeGroup {
     private String groupName;
     @Builder.Default
-    private List<Privilege> privileges = new ArrayList<>();
+    private List<String> privileges = new ArrayList<>();
 }
