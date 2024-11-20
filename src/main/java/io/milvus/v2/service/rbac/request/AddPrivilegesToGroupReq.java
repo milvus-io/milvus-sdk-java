@@ -19,7 +19,6 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import io.milvus.v2.service.rbac.Privilege;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -32,5 +31,5 @@ import java.util.List;
 public class AddPrivilegesToGroupReq {
     private String groupName;
     @Builder.Default
-    private List<Privilege> privileges = new ArrayList<>();
+    private List<String> privileges = new ArrayList<>();
 }

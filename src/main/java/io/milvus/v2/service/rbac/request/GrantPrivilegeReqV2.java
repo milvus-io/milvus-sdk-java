@@ -17,13 +17,16 @@
  * under the License.
  */
 
-package io.milvus.v2.service.rbac;
+package io.milvus.v2.service.rbac.request;
 
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-public class Privilege {
-    private String name;
+public class GrantPrivilegeReqV2 {
+    private String roleName;
+    private String privilege;
+    private String dbName;
+    private String collectionName;
 }

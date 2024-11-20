@@ -19,17 +19,14 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @SuperBuilder
-public class RemovePrivilegesFromGroupReq {
-    private String groupName;
-    @Builder.Default
-    private List<String> privileges = new ArrayList<>();
+public class RevokePrivilegeReqV2 {
+    private String roleName;
+    private String privilege;
+    private String dbName;
+    private String collectionName;
 }
