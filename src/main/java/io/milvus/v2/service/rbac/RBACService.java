@@ -250,9 +250,9 @@ public class RBACService extends BaseService {
 
         List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
         response.getPrivilegeGroupsList().forEach((privilegeGroupInfo)->{
-            List<Privilege> privileges = new ArrayList<>();
+            List<String> privileges = new ArrayList<>();
             privilegeGroupInfo.getPrivilegesList().forEach((privilege)->{
-                privileges.add(Privilege.builder().name(privilege.getName()).build());
+                privileges.add(privilege.getName());
             });
             privilegeGroups.add(PrivilegeGroup.builder().privileges(privileges).build());
         });
@@ -267,8 +267,8 @@ public class RBACService extends BaseService {
         OperatePrivilegeGroupRequest.Builder builder = OperatePrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .setType(OperatePrivilegeGroupType.AddPrivilegesToGroup);
-        for (Privilege privilege : request.getPrivileges()) {
-            builder.addPrivileges(PrivilegeEntity.newBuilder().setName(privilege.getName()).build());
+        for (String privilege : request.getPrivileges()) {
+            builder.addPrivileges(PrivilegeEntity.newBuilder().setName(privilege).build());
         }
 
         Status response = blockingStub.operatePrivilegeGroup(builder.build());
@@ -282,11 +282,41 @@ public class RBACService extends BaseService {
         OperatePrivilegeGroupRequest.Builder builder = OperatePrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .setType(OperatePrivilegeGroupType.RemovePrivilegesFromGroup);
-        for (Privilege privilege : request.getPrivileges()) {
-            builder.addPrivileges(PrivilegeEntity.newBuilder().setName(privilege.getName()).build());
+        for (String privilege : request.getPrivileges()) {
+            builder.addPrivileges(PrivilegeEntity.newBuilder().setName(privilege).build());
         }
 
         Status response = blockingStub.operatePrivilegeGroup(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
+    public Void grantPrivilegeV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReqV2 request) {
+        String title = "grantPrivilegeV2";
+        OperatePrivilegeV2Request.Builder builder = OperatePrivilegeV2Request.newBuilder()
+                .setRole(RoleEntity.newBuilder().setName(request.getRoleName()).build())
+                .setGrantor(GrantorEntity.newBuilder().setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
+                .setDbName(request.getDbName())
+                .setCollectionName(request.getCollectionName())
+                .setType(OperatePrivilegeType.Grant);
+
+        Status response = blockingStub.operatePrivilegeV2(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
+    public Void revokePrivilegeV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReqV2 request) {
+        String title = "revokePrivilegeV2";
+        OperatePrivilegeV2Request.Builder builder = OperatePrivilegeV2Request.newBuilder()
+                .setRole(RoleEntity.newBuilder().setName(request.getRoleName()).build())
+                .setGrantor(GrantorEntity.newBuilder().setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
+                .setDbName(request.getDbName())
+                .setCollectionName(request.getCollectionName())
+                .setType(OperatePrivilegeType.Revoke);
+
+        Status response = blockingStub.operatePrivilegeV2(builder.build());
         rpcUtils.handleResponse(title, response);
 
         return null;

@@ -745,6 +745,14 @@ public class MilvusClientV2 {
         retry(()->rbacService.removePrivilegesFromGroup(this.getRpcStub(), request));
     }
 
+    public void grantPrivilegeV2(GrantPrivilegeReqV2 request) {
+        retry(()->rbacService.grantPrivilegeV2(this.getRpcStub(), request));
+    }
+
+    public void revokePrivilegeV2(RevokePrivilegeReqV2 request) {
+        retry(()->rbacService.revokePrivilegeV2(this.getRpcStub(), request));
+    }
+
     // Utility Operations
 
     /**
