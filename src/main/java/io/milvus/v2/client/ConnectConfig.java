@@ -19,14 +19,17 @@
 
 package io.milvus.v2.client;
 
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.SSLContext;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @Data
 @SuperBuilder
@@ -61,13 +64,17 @@ public class ConnectConfig {
     private SSLContext sslContext;
 
     public String getHost() {
-        URI uri = URI.create(this.uri);
-        return uri.getHost();
+        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        return urlParser.getHostname();
     }
 
     public int getPort() {
-        URI uri = URI.create(this.uri);
-        return uri.getPort();
+        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        int port = urlParser.getPort();
+        if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
+            port = 443;
+        }
+        return port;
     }
 
     public String getAuthorization() {
@@ -77,6 +84,11 @@ public class ConnectConfig {
             return username + ":" + password;
         }
         return null;
+    }
+
+    public String getDbName() {
+        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        return StringUtils.isNotEmpty(urlParser.getDatabase()) ? urlParser.getDatabase() : this.dbName;
     }
 
     public Boolean isSecure() {
