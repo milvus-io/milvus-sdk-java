@@ -103,35 +103,37 @@ public class SimpleExample {
                 System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
             }
         }
+
         // search with template expression
-        // Map<String, Map<String, Object>> expressionTemplateValues = new HashMap<>();
-        // Map<String, Object> params = new HashMap<>();
-        // params.put("max", 10);
-        // expressionTemplateValues.put("id < {max}", params);
-        //
-        // List<Object> list = Arrays.asList(1, 2, 3);
-        // Map<String, Object> params2 = new HashMap<>();
-        // params2.put("list", list);
-        // expressionTemplateValues.put("id in {list}", params2);
-        //
-        // expressionTemplateValues.forEach((key, value) -> {
-        //     SearchReq request = SearchReq.builder()
-        //             .collectionName(collectionName)
-        //             .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
-        //             .topK(10)
-        //             .filter(key)
-        //             .filterTemplateValues(value)
-        //             .outputFields(Collections.singletonList("*"))
-        //             .build();
-        //  SearchResp statusR = client.search(request);
-        //  List<List<SearchResp.SearchResult>> searchResults2 = statusR.getSearchResults();
-        //  System.out.println("\nSearch results:");
-        //  for (List<SearchResp.SearchResult> results : searchResults2) {
-        //      for (SearchResp.SearchResult result : results) {
-        //          System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
-        //      }
-        //  }
-        // });
+        Map<String, Map<String, Object>> expressionTemplateValues = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
+        params.put("max", 10);
+        expressionTemplateValues.put("id < {max}", params);
+
+        List<Object> list = Arrays.asList(1, 2, 3);
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("list", list);
+        expressionTemplateValues.put("id in {list}", params2);
+
+        expressionTemplateValues.forEach((key, value) -> {
+            SearchReq request = SearchReq.builder()
+                .collectionName(collectionName)
+                .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
+                .topK(10)
+                .filter(key)
+                .filterTemplateValues(value)
+                .outputFields(Collections.singletonList("*"))
+                .build();
+            SearchResp statusR = client.search(request);
+            List<List<SearchResp.SearchResult>> searchResults2 = statusR.getSearchResults();
+            System.out.println("\nSearch with template results:");
+            for (List<SearchResp.SearchResult> results : searchResults2) {
+                for (SearchResp.SearchResult result : results) {
+                    System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
+                }
+            }
+        });
+
         client.close();
     }
 }

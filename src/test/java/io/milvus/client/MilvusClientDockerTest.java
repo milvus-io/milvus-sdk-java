@@ -22,6 +22,7 @@ package io.milvus.client;
 import com.google.gson.*;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
+import io.milvus.TestUtils;
 import io.milvus.bulkwriter.LocalBulkWriter;
 import io.milvus.bulkwriter.LocalBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
@@ -29,7 +30,6 @@ import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
@@ -73,17 +73,17 @@ import java.util.concurrent.TimeUnit;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientDockerTest {
-    protected static MilvusClient client;
-    protected static RandomStringGenerator generator;
-    protected static final int DIMENSION = 128;
-    protected static final int ARRAY_CAPACITY = 100;
-    protected static final float FLOAT16_PRECISION = 0.001f;
-    protected static final float BFLOAT16_PRECISION = 0.01f;
+    private static MilvusClient client;
+    private static RandomStringGenerator generator;
+    private static final int DIMENSION = 128;
+    private static final int ARRAY_CAPACITY = 100;
+    private static final float FLOAT16_PRECISION = 0.001f;
+    private static final float BFLOAT16_PRECISION = 0.01f;
 
-    private static final Random RANDOM = new Random();
+    private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20241111-fca946de-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20241121-b983ef9f-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -110,83 +110,6 @@ class MilvusClientDockerTest {
 
     private static ConnectParam.Builder connectParamBuilder(String milvusUri) {
         return ConnectParam.newBuilder().withUri(milvusUri);
-    }
-
-    private List<Float> generateFloatVector() {
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < DIMENSION; ++i) {
-            vector.add(RANDOM.nextFloat());
-        }
-        return vector;
-    }
-
-    private List<List<Float>> generateFloatVectors(int count) {
-        List<List<Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateFloatVector());
-        }
-
-        return vectors;
-    }
-
-    private ByteBuffer generateBinaryVector() {
-        int byteCount = DIMENSION / 8;
-        ByteBuffer vector = ByteBuffer.allocate(byteCount);
-        for (int i = 0; i < byteCount; ++i) {
-            vector.put((byte) RANDOM.nextInt(Byte.MAX_VALUE));
-        }
-        return vector;
-    }
-
-    private List<ByteBuffer> generateBinaryVectors(int count) {
-        List<ByteBuffer> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateBinaryVector());
-        }
-        return vectors;
-    }
-
-    private ByteBuffer generateFloat16Vector() {
-        List<Float> vector = generateFloatVector();
-        return Float16Utils.f32VectorToFp16Buffer(vector);
-    }
-
-    private List<ByteBuffer> generateFloat16Vectors(int count) {
-        List<ByteBuffer> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateFloat16Vector());
-        }
-        return vectors;
-    }
-
-    private ByteBuffer generateBFloat16Vector() {
-        List<Float> vector = generateFloatVector();
-        return Float16Utils.f32VectorToBf16Buffer(vector);
-    }
-
-    private List<ByteBuffer> generateBFloat16Vectors(int count) {
-        List<ByteBuffer> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateBFloat16Vector());
-        }
-        return vectors;
-    }
-
-    private SortedMap<Long, Float> generateSparseVector() {
-        SortedMap<Long, Float> sparse = new TreeMap<>();
-        int dim = RANDOM.nextInt(10) + 10;
-        for (int i = 0; i < dim; ++i) {
-            sparse.put((long) RANDOM.nextInt(1000000), RANDOM.nextFloat());
-        }
-        return sparse;
-    }
-
-    private List<SortedMap<Long, Float>> generateSparseVectors(int count) {
-        List<SortedMap<Long, Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateSparseVector());
-        }
-        return vectors;
     }
 
     private CollectionSchemaParam buildSchema(boolean strID, boolean autoID, boolean enabledDynamicSchema, List<DataType> fieldTypes) {
@@ -246,71 +169,6 @@ class MilvusClientDockerTest {
         }
 
         return builder.build();
-    }
-
-    private List<?> generateRandomArray(FieldType field) {
-        DataType dataType = field.getDataType();
-        if (dataType != DataType.Array) {
-            Assertions.fail();
-        }
-
-        DataType eleType = field.getElementType();
-        int eleCnt = RANDOM.nextInt(field.getMaxCapacity());
-        switch (eleType) {
-            case Bool: {
-                List<Boolean> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(i%10 == 0);
-                }
-                return values;
-            }
-            case Int8:
-            case Int16: {
-                List<Short> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add((short)RANDOM.nextInt(256));
-                }
-                return values;
-            }
-            case Int32: {
-                List<Integer> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextInt());
-                }
-                return values;
-            }
-            case Int64: {
-                List<Long> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextLong());
-                }
-                return values;
-            }
-            case Float: {
-                List<Float> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextFloat());
-                }
-                return values;
-            }
-            case Double: {
-                List<Double> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextDouble());
-                }
-                return values;
-            }
-            case VarChar: {
-                List<String> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(String.format("varchar_arr_%d", i));
-                }
-                return values;
-            }
-            default:
-                Assertions.fail();
-        }
-        return null;
     }
 
     private List<InsertParam.Field> generateColumnsData(CollectionSchemaParam schema, int count, int idStart) {
@@ -391,33 +249,33 @@ class MilvusClientDockerTest {
                 case Array: {
                     List<List<?>> data = new ArrayList<>();
                     for (int i = idStart; i < idStart + count; ++i) {
-                        data.add(generateRandomArray(fieldType));
+                        data.add(utils.generateRandomArray(fieldType.getElementType(), fieldType.getMaxCapacity()));
                     }
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
                 case FloatVector: {
-                    List<List<Float>> data = generateFloatVectors(count);
+                    List<List<Float>> data = utils.generateFloatVectors(count);
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
                 case BinaryVector: {
-                    List<ByteBuffer> data = generateBinaryVectors(count);
+                    List<ByteBuffer> data = utils.generateBinaryVectors(count);
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
                 case Float16Vector: {
-                    List<ByteBuffer> data = generateFloat16Vectors(count);
+                    List<ByteBuffer> data = utils.generateFloat16Vectors(count);
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
                 case BFloat16Vector: {
-                    List<ByteBuffer> data = generateBFloat16Vectors(count);
+                    List<ByteBuffer> data = utils.generateBFloat16Vectors(count);
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
                 case SparseFloatVector: {
-                    List<SortedMap<Long, Float>> data = generateSparseVectors(count);
+                    List<SortedMap<Long, Float>> data = utils.generateSparseVectors(count);
                     columns.add(new InsertParam.Field(fieldType.getName(), data));
                     break;
                 }
@@ -476,22 +334,22 @@ class MilvusClientDockerTest {
                         row.add(fieldType.getName(), info);
                         break;
                     case Array:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateRandomArray(fieldType)));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateRandomArray(fieldType.getElementType(), fieldType.getMaxCapacity())));
                         break;
                     case FloatVector:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateFloatVector()));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateFloatVector()));
                         break;
                     case BinaryVector:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateBinaryVector().array()));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateBinaryVector().array()));
                         break;
                     case Float16Vector:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateFloat16Vector().array()));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateFloat16Vector().array()));
                         break;
                     case BFloat16Vector:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateBFloat16Vector().array()));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateBFloat16Vector().array()));
                         break;
                     case SparseFloatVector:
-                        row.add(fieldType.getName(), JsonUtils.toJsonTree(generateSparseVector()));
+                        row.add(fieldType.getName(), JsonUtils.toJsonTree(utils.generateSparseVector()));
                         break;
                     default:
                         Assertions.fail();
@@ -1254,7 +1112,7 @@ class MilvusClientDockerTest {
 
         // generate vectors
         int rowCount = 10000;
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
+        List<List<Float>> vectors = utils.generateFloatVectors(rowCount);
 
         // insert by column-based
         List<ByteBuffer> fp16Vectors = new ArrayList<>();
@@ -1482,7 +1340,7 @@ class MilvusClientDockerTest {
         // search on multiple vector fields
         AnnSearchParam param1 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(DataType.FloatVector.name())
-                .withFloatVectors(generateFloatVectors(1))
+                .withFloatVectors(utils.generateFloatVectors(1))
                 .withMetricType(MetricType.COSINE)
                 .withParams("{\"nprobe\": 32}")
                 .withTopK(10)
@@ -1490,7 +1348,7 @@ class MilvusClientDockerTest {
 
         AnnSearchParam param2 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(DataType.BinaryVector.name())
-                .withBinaryVectors(generateBinaryVectors(1))
+                .withBinaryVectors(utils.generateBinaryVectors(1))
                 .withMetricType(MetricType.HAMMING)
                 .withParams("{}")
                 .withTopK(5)
@@ -1498,7 +1356,7 @@ class MilvusClientDockerTest {
 
         AnnSearchParam param3 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(DataType.SparseFloatVector.name())
-                .withSparseFloatVectors(generateSparseVectors(1))
+                .withSparseFloatVectors(utils.generateSparseVectors(1))
                 .withMetricType(MetricType.IP)
                 .withParams("{\"drop_ratio_search\":0.2}")
                 .withTopK(7)
@@ -1571,7 +1429,7 @@ class MilvusClientDockerTest {
         List<ListenableFuture<R<MutationResult>>> futureResponses = new ArrayList<>();
         int rowCount = 1000;
         for (long i = 0L; i < 10; ++i) {
-            List<List<Float>> vectors = generateFloatVectors(rowCount);
+            List<List<Float>> vectors = utils.generateFloatVectors(rowCount);
             List<InsertParam.Field> fieldsInsert = new ArrayList<>();
             fieldsInsert.add(new InsertParam.Field(DataType.FloatVector.name(), vectors));
 
@@ -1631,7 +1489,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // search async
-        List<List<Float>> targetVectors = generateFloatVectors(2);
+        List<List<Float>> targetVectors = utils.generateFloatVectors(2);
         int topK = 5;
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -2239,7 +2097,7 @@ class MilvusClientDockerTest {
             intArrArray.add(intArray);
             floatArrArray.add(floatArray);
         }
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
+        List<List<Float>> vectors = utils.generateFloatVectors(rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field("id", ids));
@@ -2262,7 +2120,7 @@ class MilvusClientDockerTest {
         for (int i = 0; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty("id", 10000L + (long)i);
-            List<Float> vector = generateFloatVectors(1).get(0);
+            List<Float> vector = utils.generateFloatVectors(1).get(0);
             row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(vector));
 
             List<String> strArray = new ArrayList<>();
@@ -2290,7 +2148,7 @@ class MilvusClientDockerTest {
         System.out.println(rowCount + " rows inserted");
 
         // search
-        List<List<Float>> searchVectors = generateFloatVectors(1);
+        List<List<Float>> searchVectors = utils.generateFloatVectors(1);
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
@@ -2376,7 +2234,7 @@ class MilvusClientDockerTest {
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty("id", i);
-            List<Float> vector = generateFloatVectors(1).get(0);
+            List<Float> vector = utils.generateFloatVectors(1).get(0);
             row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(vector));
             row.addProperty(DataType.VarChar.name(), String.format("name_%d", i));
             row.addProperty("dynamic_value", String.format("dynamic_%d", i));
@@ -2450,7 +2308,7 @@ class MilvusClientDockerTest {
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty("id", rowCount + i);
-            List<Float> vector = generateFloatVectors(1).get(0);
+            List<Float> vector = utils.generateFloatVectors(1).get(0);
             row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(vector));
             row.addProperty(DataType.VarChar.name(), String.format("name_%d", rowCount + i));
             rows.add(row);
@@ -2493,14 +2351,14 @@ class MilvusClientDockerTest {
         rows.clear();
         JsonObject row = new JsonObject();
         row.addProperty("id", 5L);
-        List<Float> vector = generateFloatVectors(1).get(0);
+        List<Float> vector = utils.generateFloatVectors(1).get(0);
         row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(vector));
         row.addProperty(DataType.VarChar.name(), "updated_5");
         row.addProperty("dynamic_value", String.format("dynamic_%d", 5));
         rows.add(row);
         row = new JsonObject();
         row.addProperty("id", 18L);
-        vector = generateFloatVectors(1).get(0);
+        vector = utils.generateFloatVectors(1).get(0);
         row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(vector));
         row.addProperty(DataType.VarChar.name(), "updated_18");
         row.addProperty("dynamic_value", 18);
@@ -2688,7 +2546,7 @@ class MilvusClientDockerTest {
             } else {
                 row.addProperty(primaryField.getName(), String.valueOf(i));
             }
-            List<Float> vector = generateFloatVectors(1).get(0);
+            List<Float> vector = utils.generateFloatVectors(1).get(0);
             row.add(vectorField.getName(), JsonUtils.toJsonTree(vector));
             rows.add(row);
             primaryIds.add(String.valueOf(i));
@@ -2753,7 +2611,7 @@ class MilvusClientDockerTest {
             } else {
                 row.addProperty(primaryField.getName(), String.valueOf(i));
             }
-            List<Float> vector = generateFloatVectors(1).get(0);
+            List<Float> vector = utils.generateFloatVectors(1).get(0);
             row.add(vectorField.getName(), JsonUtils.toJsonTree(vector));
             rows.add(row);
             primaryIds.add(String.valueOf(i));
@@ -2844,10 +2702,10 @@ class MilvusClientDockerTest {
                 row.add(DataType.Array.name() + "_varchar", JsonUtils.toJsonTree(Lists.newArrayList("aaa", "bbb", "ccc")));
                 row.add(DataType.Array.name() + "_int32", JsonUtils.toJsonTree(Lists.newArrayList(5, 6, 3, 2, 1)));
                 row.add(DataType.Array.name() + "_float", JsonUtils.toJsonTree(Lists.newArrayList(0.5, 1.8)));
-                row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(generateFloatVector()));
-                row.add(DataType.BinaryVector.name(), JsonUtils.toJsonTree(generateBinaryVector().array()));
-                row.add(DataType.BFloat16Vector.name(), JsonUtils.toJsonTree(generateBFloat16Vector().array()));
-                row.add(DataType.SparseFloatVector.name(), JsonUtils.toJsonTree(generateSparseVector()));
+                row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(utils.generateFloatVector()));
+                row.add(DataType.BinaryVector.name(), JsonUtils.toJsonTree(utils.generateBinaryVector().array()));
+                row.add(DataType.BFloat16Vector.name(), JsonUtils.toJsonTree(utils.generateBFloat16Vector().array()));
+                row.add(DataType.SparseFloatVector.name(), JsonUtils.toJsonTree(utils.generateSparseVector()));
 
                 if (enabledDynamic) {
                     row.addProperty("dynamic_1", i);
@@ -2907,7 +2765,7 @@ class MilvusClientDockerTest {
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty("id", Long.toString(i));
-            row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(generateFloatVectors(1).get(0)));
+            row.add(DataType.FloatVector.name(), JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
             JsonObject json = new JsonObject();
             if (i%2 == 0) {
                 json.addProperty("even", true);
@@ -2978,7 +2836,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(300, counter);
 
         // search iterator
-        List<List<Float>> vectors = generateFloatVectors(1);
+        List<List<Float>> vectors = utils.generateFloatVectors(1);
         SearchIteratorParam.Builder searchIteratorParamBuilder = SearchIteratorParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withOutFields(Lists.newArrayList("*"))
@@ -3079,7 +2937,7 @@ class MilvusClientDockerTest {
 
         // insert
         JsonObject row = new JsonObject();
-        row.add("vector", JsonUtils.toJsonTree(generateFloatVectors(1).get(0)));
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
         R<MutationResult> insertR = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
@@ -3214,7 +3072,7 @@ class MilvusClientDockerTest {
         List<JsonObject> data = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             JsonObject row = new JsonObject();
-            List<Float> vector = generateFloatVector();
+            List<Float> vector = utils.generateFloatVector();
             row.addProperty("id", i);
             row.add("vector", JsonUtils.toJsonTree(vector));
             if (i%2 == 0) {
@@ -3233,7 +3091,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // insert by column-based
-        List<List<Float>> vectors = generateFloatVectors(10);
+        List<List<Float>> vectors = utils.generateFloatVectors(10);
         List<Long> ids = new ArrayList<>();
         List<Integer> flags = new ArrayList<>();
         List<String> descs = new ArrayList<>();
@@ -3291,7 +3149,7 @@ class MilvusClientDockerTest {
         }
 
         // search the row-based items
-        List<List<Float>> searchVectors = generateFloatVectors(1);
+        List<List<Float>> searchVectors = utils.generateFloatVectors(1);
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withMetricType(MetricType.L2)
