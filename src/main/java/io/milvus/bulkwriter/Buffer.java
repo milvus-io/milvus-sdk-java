@@ -20,6 +20,8 @@
 package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.bulkwriter.common.utils.ParquetUtils;
@@ -39,12 +41,11 @@ import org.apache.parquet.schema.MessageType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
@@ -103,7 +104,7 @@ public class Buffer {
     }
 
     // verify row count of fields are equal
-    public List<String> persist(String localPath, Integer bufferSize, Integer bufferRowCount) {
+    public List<String> persist(String localPath, Map<String, Object> config) throws IOException {
         int rowCount = -1;
         for (String key : buffer.keySet()) {
             if (rowCount < 0) {
@@ -116,13 +117,17 @@ public class Buffer {
 
         // output files
         if (fileType == BulkFileType.PARQUET) {
+            Integer bufferSize = (Integer) config.get("bufferSize");
+            Integer bufferRowCount = (Integer) config.get("bufferRowCount");
             return persistParquet(localPath, bufferSize, bufferRowCount);
+        } else if (fileType == BulkFileType.JSON) {
+            return persistJSON(localPath);
         }
         ExceptionUtils.throwUnExpectedException("Unsupported file type: " + fileType);
         return null;
     }
 
-    private List<String> persistParquet(String localPath, Integer bufferSize, Integer bufferRowCount) {
+    private List<String> persistParquet(String localPath, Integer bufferSize, Integer bufferRowCount) throws IOException {
         String filePath = localPath + ".parquet";
 
         // calculate a proper row group size
@@ -178,11 +183,50 @@ public class Buffer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            throw e;
         }
 
         String msg = String.format("Successfully persist file %s, total size: %s, row count: %s, row group size: %s",
                 filePath, bufferSize, bufferRowCount, rowGroupSize);
         logger.info(msg);
+        return Lists.newArrayList(filePath);
+    }
+
+    private List<String> persistJSON(String localPath) throws IOException {
+        String filePath = localPath + ".json";
+
+        Gson gson = new GsonBuilder().serializeNulls().create();
+        List<Map<String, Object>> data = new ArrayList<>();
+        List<String> fieldNameList = Lists.newArrayList(buffer.keySet());
+        int size = buffer.get(fieldNameList.get(0)).size();
+        for (int i = 0; i < size; ++i) {
+            Map<String, Object> row = new HashMap<>();
+            for (String fieldName : fieldNameList) {
+                if (buffer.get(fieldName).get(i) instanceof ByteBuffer) {
+                    row.put(fieldName, ((ByteBuffer)buffer.get(fieldName).get(i)).array());
+                } else {
+                    row.put(fieldName, buffer.get(fieldName).get(i));
+                }
+            }
+            data.add(row);
+        }
+
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(filePath))) {
+            bufferedWriter.write("[\n");
+            for (int i = 0; i < data.size(); i++) {
+                String json = gson.toJson(data.get(i));
+                if (i != data.size()-1) {
+                    json += ",";
+                }
+                bufferedWriter.write(json);
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.write("]\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
+
         return Lists.newArrayList(filePath);
     }
 

@@ -21,6 +21,7 @@ package io.milvus.bulkwriter.common.clientenum;
 
 public enum BulkFileType {
     PARQUET(1),
+    JSON(2),
     ;
 
     private Integer code;

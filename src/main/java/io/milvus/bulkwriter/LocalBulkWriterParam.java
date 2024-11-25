@@ -29,6 +29,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
@@ -39,12 +42,14 @@ public class LocalBulkWriterParam {
     private final String localPath;
     private final int chunkSize;
     private final BulkFileType fileType;
+    private final Map<String, Object> config;
 
     private LocalBulkWriterParam(@NonNull Builder builder) {
         this.collectionSchema = builder.collectionSchema;
         this.localPath = builder.localPath;
         this.chunkSize = builder.chunkSize;
         this.fileType = builder.fileType;
+        this.config = builder.config;
     }
 
     public static Builder newBuilder() {
@@ -59,6 +64,7 @@ public class LocalBulkWriterParam {
         private String localPath;
         private int chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
+        private Map<String, Object> config = new HashMap<>();
 
         private Builder() {
         }
@@ -103,6 +109,11 @@ public class LocalBulkWriterParam {
 
         public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
+            return this;
+        }
+
+        public Builder withConfig(String key, Object val) {
+            this.config.put(key, val);
             return this;
         }
 

@@ -42,7 +42,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RemoteBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
@@ -54,7 +56,11 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     private List<List<String>> remoteFiles;
 
     public RemoteBulkWriter(RemoteBulkWriterParam bulkWriterParam) throws IOException {
-        super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType(), generatorLocalPath());
+        super(bulkWriterParam.getCollectionSchema(),
+                bulkWriterParam.getChunkSize(),
+                bulkWriterParam.getFileType(),
+                generatorLocalPath(),
+                bulkWriterParam.getConfig());
         Path path = Paths.get(bulkWriterParam.getRemotePath());
         Path remoteDirPath = path.resolve(getUUID());
         this.remotePath = remoteDirPath.toString();
