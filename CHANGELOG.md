@@ -1,4 +1,37 @@
 # Changelog
+
+## milvus-sdk-java 2.5.0 (2024-11-26)
+### Feature
+- BulkWriter supports JSON/CSV format
+- Add new RBAC interfaces grantPrivilegeV2/revokePrivilegeV2
+- Support doc-in-doc-out function(embedded BM25 in server-side)
+- Support varchar analyzer (tokenizer in server-side)
+- Support nullable and default value
+- Support expression template
+
+### Improvement
+- QueryIterator/SearchIterator supports mvcc
+- ClientPool throws exception if fail to create/get clients
+
+## milvus-sdk-java 2.4.9 (2024-11-26)
+
+### Feature
+- BulkWriter supports JSON format
+- Add new RBAC interfaces grantPrivilegeV2/revokePrivilegeV2
+
+### Improvement
+- ClientPool throws exception if fail to create/get clients
+
+## milvus-sdk-java 2.4.8 (2024-10-31)
+
+### Improvement
+- Fix a conflict bug with Gson v2.11.0
+- Support group by for hybrid search
+
+### Bug
+- Fix a dimension check error for binary vector
+- Fix a null pointer bug for query iterator
+
 ## milvus-sdk-java 2.4.7 (2024-10-25)
 
 ### Improvement
