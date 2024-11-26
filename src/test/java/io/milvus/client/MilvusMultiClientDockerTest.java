@@ -20,6 +20,7 @@
 package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import io.milvus.TestUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
@@ -49,8 +50,9 @@ import static org.junit.Assert.assertTrue;
 class MilvusMultiClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
-    private static final int dimension = 128;
+    private static final int DIMENSION = 128;
     private static final Boolean useDockerCompose = Boolean.TRUE;
+    private static final TestUtils utils = new TestUtils(DIMENSION);
 
     private static void waitMilvusServerReady(String host, int port) {
         ConnectParam connectParam = connectParamBuilder(host, port)
@@ -192,50 +194,6 @@ class MilvusMultiClientDockerTest {
         return MultiConnectParam.newBuilder().withHosts(Arrays.asList(serverAddress, serverSlaveAddress));
     }
 
-    private List<List<Float>> generateFloatVectors(int count) {
-        Random ran = new Random();
-        List<List<Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            List<Float> vector = new ArrayList<>();
-            for (int i = 0; i < dimension; ++i) {
-                vector.add(ran.nextFloat());
-            }
-            vectors.add(vector);
-        }
-
-        return vectors;
-    }
-
-    private List<List<Float>> normalizeFloatVectors(List<List<Float>> src) {
-        for (List<Float> vector : src) {
-            double total = 0.0;
-            for (Float val : vector) {
-                total = total + val * val;
-            }
-            float squre = (float) Math.sqrt(total);
-            for (int i = 0; i < vector.size(); ++i) {
-                vector.set(i, vector.get(i) / squre);
-            }
-        }
-
-        return src;
-    }
-
-    private List<ByteBuffer> generateBinaryVectors(int count) {
-        Random ran = new Random();
-        List<ByteBuffer> vectors = new ArrayList<>();
-        int byteCount = dimension / 8;
-        for (int n = 0; n < count; ++n) {
-            ByteBuffer vector = ByteBuffer.allocate(byteCount);
-            for (int i = 0; i < byteCount; ++i) {
-                vector.put((byte) ran.nextInt(Byte.MAX_VALUE));
-            }
-            vectors.add(vector);
-        }
-        return vectors;
-
-    }
-
     @Test
     void testFloatVectors() {
         client.setLogLevel(LogLevel.Error);
@@ -260,7 +218,7 @@ class MilvusMultiClientDockerTest {
                 .withDataType(DataType.FloatVector)
                 .withName(field2Name)
                 .withDescription("face")
-                .withDimension(dimension)
+                .withDimension(DIMENSION)
                 .build());
 
         fieldsSchema.add(FieldType.newBuilder()
@@ -310,7 +268,7 @@ class MilvusMultiClientDockerTest {
             weights.add(((double) (i + 1) / 100));
             ages.add((short) ((i + 1) % 99));
         }
-        List<List<Float>> vectors = generateFloatVectors(rowCount);
+        List<List<Float>> vectors = utils.generateFloatVectors(rowCount);
 
         List<InsertParam.Field> fieldsInsert = new ArrayList<>();
         fieldsInsert.add(new InsertParam.Field(field1Name, ids));
@@ -529,7 +487,7 @@ class MilvusMultiClientDockerTest {
                 .withDataType(DataType.BinaryVector)
                 .withName(field2Name)
                 .withDescription("world")
-                .withDimension(dimension)
+                .withDimension(DIMENSION)
                 .build();
 
         // create collection
@@ -549,7 +507,7 @@ class MilvusMultiClientDockerTest {
         for (long i = 0L; i < rowCount; ++i) {
             ids.add(i);
         }
-        List<ByteBuffer> vectors = generateBinaryVectors(rowCount);
+        List<ByteBuffer> vectors = utils.generateBinaryVectors(rowCount);
 
         List<InsertParam.Field> fields = new ArrayList<>();
         // no need to provide id here since this field is auto_id
@@ -659,7 +617,7 @@ class MilvusMultiClientDockerTest {
                 .withDataType(DataType.FloatVector)
                 .withName(field2Name)
                 .withDescription("face")
-                .withDimension(dimension)
+                .withDimension(DIMENSION)
                 .build());
 
         // create collection
@@ -676,7 +634,7 @@ class MilvusMultiClientDockerTest {
         List<ListenableFuture<R<MutationResult>>> futureResponses = new ArrayList<>();
         int rowCount = 1000;
         for (long i = 0L; i < 10; ++i) {
-            List<List<Float>> vectors = normalizeFloatVectors(generateFloatVectors(rowCount));
+            List<List<Float>> vectors = utils.generateFloatVectors(rowCount);
             List<InsertParam.Field> fieldsInsert = new ArrayList<>();
             fieldsInsert.add(new InsertParam.Field(field2Name, vectors));
 
@@ -736,7 +694,7 @@ class MilvusMultiClientDockerTest {
         assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
         // search async
-        List<List<Float>> targetVectors = normalizeFloatVectors(generateFloatVectors(2));
+        List<List<Float>> targetVectors = utils.generateFloatVectors(2);
         int topK = 5;
         SearchParam searchParam = SearchParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -770,7 +728,7 @@ class MilvusMultiClientDockerTest {
             for (int i = 0; i < targetVectors.size(); ++i) {
                 List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
                 assertEquals(topK, scores.size());
-                System.out.println(scores.toString());
+                System.out.println(scores);
             }
 
             // get query results

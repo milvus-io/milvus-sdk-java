@@ -31,6 +31,9 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
@@ -42,6 +45,7 @@ public class RemoteBulkWriterParam {
     private final String remotePath;
     private final int chunkSize;
     private final BulkFileType fileType;
+    private final Map<String, Object> config;
 
     private RemoteBulkWriterParam(@NonNull Builder builder) {
         this.collectionSchema = builder.collectionSchema;
@@ -49,6 +53,7 @@ public class RemoteBulkWriterParam {
         this.remotePath = builder.remotePath;
         this.chunkSize = builder.chunkSize;
         this.fileType = builder.fileType;
+        this.config = builder.config;
     }
 
     public static Builder newBuilder() {
@@ -64,6 +69,7 @@ public class RemoteBulkWriterParam {
         private String remotePath;
         private int chunkSize = 1024 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
+        private Map<String, Object> config = new HashMap<>();
 
         private Builder() {
         }
@@ -113,6 +119,11 @@ public class RemoteBulkWriterParam {
 
         public Builder withFileType(@NonNull BulkFileType fileType) {
             this.fileType = fileType;
+            return this;
+        }
+
+        public Builder withConfig(String key, Object val) {
+            this.config.put(key, val);
             return this;
         }
 
