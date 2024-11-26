@@ -1,4 +1,13 @@
 # Changelog
+## milvus-sdk-java 2.4.9 (2024-11-26)
+
+### Feature
+- BulkWriter supports JSON format
+- Add new RBAC interfaces grantPrivilegeV2/revokePrivilegeV2
+
+### Improvement
+- ClientPool throws exception if fail to create/get clients
+
 ## milvus-sdk-java 2.4.8 (2024-10-31)
 
 ### Improvement
