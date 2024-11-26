@@ -46,6 +46,7 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
     private Map<String, Thread> workingThread;
     private ReentrantLock workingThreadLock;
     private List<List<String>> localFiles;
+    private final Map<String, Object> config;
 
     public LocalBulkWriter(LocalBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType());
@@ -54,16 +55,22 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
         this.workingThreadLock = new ReentrantLock();
         this.workingThread = new HashMap<>();
         this.localFiles = Lists.newArrayList();
+        this.config = bulkWriterParam.getConfig();
         this.makeDir();
     }
 
-    protected LocalBulkWriter(CollectionSchemaParam collectionSchema, int chunkSize, BulkFileType fileType, String localPath) throws IOException {
+    protected LocalBulkWriter(CollectionSchemaParam collectionSchema,
+                              int chunkSize,
+                              BulkFileType fileType,
+                              String localPath,
+                              Map<String, Object> config) throws IOException {
         super(collectionSchema, chunkSize, fileType);
         this.localPath = localPath;
         this.uuid = UUID.randomUUID().toString();
         this.workingThreadLock = new ReentrantLock();
         this.workingThread = new HashMap<>();
         this.localFiles = Lists.newArrayList();
+        this.config = config;
         this.makeDir();
     }
 
@@ -84,7 +91,7 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
 
     public void commit(boolean async) throws InterruptedException {
         // _async=True, the flush thread is asynchronously
-        while (workingThread.size() > 0) {
+        while (!workingThread.isEmpty()) {
             String msg = String.format("Previous flush action is not finished, %s is waiting...", Thread.currentThread().getName());
             logger.info(msg);
             TimeUnit.SECONDS.sleep(5);
@@ -116,13 +123,20 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
         java.nio.file.Path path = Paths.get(localPath);
         java.nio.file.Path flushDirPath = path.resolve(String.valueOf(flushCount));
 
+        Map<String, Object> config = new HashMap<>(this.config);
+        config.put("bufferSize", bufferSize);
+        config.put("bufferRowCount", bufferRowCount);
         Buffer oldBuffer = super.newBuffer();
         if (oldBuffer.getRowCount() > 0) {
-            List<String> fileList = oldBuffer.persist(
-                    flushDirPath.toString(), bufferSize, bufferRowCount
-            );
-            localFiles.add(fileList);
-            callBack(fileList);
+            try {
+                List<String> fileList = oldBuffer.persist(flushDirPath.toString(), config);
+                localFiles.add(fileList);
+                callBack(fileList);
+            } catch (IOException e) {
+                // this function is running in a thread
+                // TODO: interrupt main thread if failed to persist file
+                logger.error(e.getMessage());
+            }
         }
         workingThread.remove(Thread.currentThread().getName());
         String msg = String.format("Flush thread done, name: %s", Thread.currentThread().getName());

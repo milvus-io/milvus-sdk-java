@@ -21,8 +21,9 @@ package io.milvus.v2.client;
 
 import com.google.common.collect.Lists;
 import com.google.gson.*;
-
 import com.google.gson.reflect.TypeToken;
+
+import io.milvus.TestUtils;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
@@ -65,12 +66,12 @@ import java.util.*;
 class MilvusClientV2DockerTest {
     private static MilvusClientV2 client;
     private static RandomStringGenerator generator;
-    private static final int dimension = 256;
-
+    private static final int DIMENSION = 256;
     private static final Random RANDOM = new Random();
+    private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.15");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.16");
 
     @BeforeAll
     public static void setUp() {
@@ -86,73 +87,6 @@ class MilvusClientV2DockerTest {
         if (client != null) {
             client.close(5L);
         }
-    }
-
-    private List<Float> generateFolatVector(int dim) {
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < dim; ++i) {
-            vector.add(RANDOM.nextFloat());
-        }
-        return vector;
-    }
-
-    private List<Float> generateFolatVector() {
-        return generateFolatVector(dimension);
-    }
-
-    private List<List<Float>> generateFloatVectors(int count) {
-        List<List<Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateFolatVector());
-        }
-
-        return vectors;
-    }
-
-    private ByteBuffer generateBinaryVector() {
-        int byteCount = dimension / 8;
-        ByteBuffer vector = ByteBuffer.allocate(byteCount);
-        for (int i = 0; i < byteCount; ++i) {
-            vector.put((byte) RANDOM.nextInt(Byte.MAX_VALUE));
-        }
-        return vector;
-    }
-
-    private List<ByteBuffer> generateBinaryVectors(int count) {
-        List<ByteBuffer> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateBinaryVector());
-        }
-        return vectors;
-
-    }
-
-    private ByteBuffer generateFloat16Vector() {
-        List<Float> vector = generateFolatVector();
-        return Float16Utils.f32VectorToFp16Buffer(vector);
-    }
-
-    private ByteBuffer generateBFloat16Vector() {
-        List<Float> vector = generateFolatVector();
-        return Float16Utils.f32VectorToBf16Buffer(vector);
-    }
-
-    private SortedMap<Long, Float> generateSparseVector() {
-        SortedMap<Long, Float> sparse = new TreeMap<>();
-        int dim = RANDOM.nextInt(10) + 10;
-        for (int i = 0; i < dim; ++i) {
-            sparse.put((long) RANDOM.nextInt(1000000), RANDOM.nextFloat());
-        }
-        return sparse;
-    }
-
-    private List<SortedMap<Long, Float>> generateSparseVectors(int count) {
-        List<SortedMap<Long, Float>> vectors = new ArrayList<>();
-        for (int n = 0; n < count; ++n) {
-            vectors.add(generateSparseVector());
-        }
-        return vectors;
-
     }
 
     private CreateCollectionReq.CollectionSchema baseSchema() {
@@ -220,71 +154,6 @@ class MilvusClientV2DockerTest {
         return collectionSchema;
     }
 
-    private JsonArray generateRandomArray(CreateCollectionReq.FieldSchema field) {
-        DataType dataType = field.getDataType();
-        if (dataType != DataType.Array) {
-            Assertions.fail();
-        }
-
-        DataType eleType = field.getElementType();
-        int eleCnt = RANDOM.nextInt(field.getMaxCapacity());
-        switch (eleType) {
-            case Bool: {
-                List<Boolean> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(i%10 == 0);
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case Int8:
-            case Int16: {
-                List<Short> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add((short)RANDOM.nextInt(256));
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case Int32: {
-                List<Integer> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextInt());
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case Int64: {
-                List<Long> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextLong());
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case Float: {
-                List<Float> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextFloat());
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case Double: {
-                List<Double> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(RANDOM.nextDouble());
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            case VarChar: {
-                List<String> values = new ArrayList<>();
-                for (int i = 0; i < eleCnt; i++) {
-                    values.add(String.format("varchar_arr_%d", i));
-                }
-                return JsonUtils.toJsonTree(values).getAsJsonArray();
-            }
-            default:
-                Assertions.fail();
-        }
-        return null;
-    }
-
     private List<JsonObject> generateRandomData(CreateCollectionReq.CollectionSchema schema, long count) {
         List<CreateCollectionReq.FieldSchema> fields = schema.getFieldSchemaList();
         List<JsonObject> rows = new ArrayList<>();
@@ -325,32 +194,33 @@ class MilvusClientV2DockerTest {
                         break;
                     }
                     case Array: {
-                        JsonArray array = generateRandomArray(field);
+                        List<?> values = utils.generateRandomArray(io.milvus.grpc.DataType.valueOf(field.getElementType().name()), field.getMaxCapacity());
+                        JsonArray array = JsonUtils.toJsonTree(values).getAsJsonArray();
                         row.add(field.getName(), array);
                         break;
                     }
                     case FloatVector: {
-                        List<Float> vector = generateFolatVector();
+                        List<Float> vector = utils.generateFloatVector();
                         row.add(field.getName(), JsonUtils.toJsonTree(vector));
                         break;
                     }
                     case BinaryVector: {
-                        ByteBuffer vector = generateBinaryVector();
+                        ByteBuffer vector = utils.generateBinaryVector();
                         row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case Float16Vector: {
-                        ByteBuffer vector = generateFloat16Vector();
+                        ByteBuffer vector = utils.generateFloat16Vector();
                         row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case BFloat16Vector: {
-                        ByteBuffer vector = generateBFloat16Vector();
+                        ByteBuffer vector = utils.generateBFloat16Vector();
                         row.add(field.getName(), JsonUtils.toJsonTree(vector.array()));
                         break;
                     }
                     case SparseFloatVector: {
-                        SortedMap<Long, Float> vector = generateSparseVector();
+                        SortedMap<Long, Float> vector = utils.generateSparseVector();
                         row.add(field.getName(), JsonUtils.toJsonTree(vector));
                         break;
                     }
@@ -417,7 +287,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(vectorFieldName)
                 .dataType(DataType.FloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         Map<String,Object> extraParams = new HashMap<>();
@@ -517,7 +387,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .partitionNames(Collections.singletonList(partitionName))
                 .annsField(vectorFieldName)
-                .data(Collections.singletonList(new FloatVec(generateFolatVector())))
+                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
                 .topK(10)
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
@@ -600,7 +470,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(vectorFieldName)
                 .dataType(DataType.BinaryVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         Map<String,Object> extraParams = new HashMap<>();
@@ -677,12 +547,12 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(float16Field)
                 .dataType(DataType.Float16Vector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(bfloat16Field)
                 .dataType(DataType.BFloat16Vector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
@@ -731,7 +601,7 @@ class MilvusClientV2DockerTest {
         long targetID = 99;
         JsonObject row = data.get((int)targetID);
         List<Float> originVector = new ArrayList<>();
-        for (int i = 0; i < dimension; ++i) {
+        for (int i = 0; i < DIMENSION; ++i) {
             originVector.add((float)1/(i+1));
         }
         System.out.println("Original float32 vector: " + originVector);
@@ -813,7 +683,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(vectorFieldName)
                 .dataType(DataType.SparseFloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         Map<String,Object> extraParams = new HashMap<>();
@@ -880,17 +750,17 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("float_vector")
                 .dataType(DataType.FloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("binary_vector")
                 .dataType(DataType.BinaryVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("sparse_vector")
                 .dataType(DataType.SparseFloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
@@ -945,9 +815,9 @@ class MilvusClientV2DockerTest {
         List<BaseVector> binaryVectors = new ArrayList<>();
         List<BaseVector> sparseVectors = new ArrayList<>();
         for (int i = 0; i < nq; i++) {
-            floatVectors.add(new FloatVec(generateFolatVector()));
-            binaryVectors.add(new BinaryVec(generateBinaryVector()));
-            sparseVectors.add(new SparseFloatVec(generateSparseVector()));
+            floatVectors.add(new FloatVec(utils.generateFloatVector()));
+            binaryVectors.add(new BinaryVec(utils.generateBinaryVector()));
+            sparseVectors.add(new SparseFloatVec(utils.generateSparseVector()));
         }
 
         List<AnnSearchReq> searchRequests = new ArrayList<>();
@@ -1217,7 +1087,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("vector")
                 .dataType(DataType.FloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
@@ -1343,12 +1213,12 @@ class MilvusClientV2DockerTest {
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .autoID(true)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         // insert
         JsonObject row = new JsonObject();
-        row.add("vector", JsonUtils.toJsonTree(generateFloatVectors(1).get(0)));
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
         InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
@@ -1393,22 +1263,22 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("float_vector")
                 .dataType(DataType.FloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("binary_vector")
                 .dataType(DataType.BinaryVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("sparse_vector")
                 .dataType(DataType.SparseFloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("bfloat16_vector")
                 .dataType(DataType.BFloat16Vector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
@@ -1460,7 +1330,7 @@ class MilvusClientV2DockerTest {
                 .outputFields(Lists.newArrayList("*"))
                 .batchSize(20L)
                 .vectorFieldName("float_vector")
-                .vectors(Collections.singletonList(new FloatVec(generateFolatVector())))
+                .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
                 .expr("int64_field > 500 && int64_field < 1000")
                 .params("{\"range_filter\": 5.0, \"radius\": 50.0}")
                 .topK(1000)
@@ -1510,13 +1380,13 @@ class MilvusClientV2DockerTest {
                 Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
 
                 List<Float> floatVector = (List<Float>)record.get("float_vector");
-                Assertions.assertEquals(dimension, floatVector.size());
+                Assertions.assertEquals(DIMENSION, floatVector.size());
 
                 ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
-                Assertions.assertEquals(dimension, binaryVector.limit()*8);
+                Assertions.assertEquals(DIMENSION, binaryVector.limit()*8);
 
                 ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
-                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
+                Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
 
                 SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
                 Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
@@ -1575,13 +1445,13 @@ class MilvusClientV2DockerTest {
                 Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
 
                 List<Float> floatVector = (List<Float>)record.get("float_vector");
-                Assertions.assertEquals(dimension, floatVector.size());
+                Assertions.assertEquals(DIMENSION, floatVector.size());
 
                 ByteBuffer binaryVector = (ByteBuffer)record.get("binary_vector");
-                Assertions.assertEquals(dimension, binaryVector.limit()*8);
+                Assertions.assertEquals(DIMENSION, binaryVector.limit()*8);
 
                 ByteBuffer bfloat16Vector = (ByteBuffer)record.get("bfloat16_vector");
-                Assertions.assertEquals(dimension*2, bfloat16Vector.limit());
+                Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
 
                 SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
                 Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
@@ -1649,7 +1519,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(vectorFieldName)
                 .dataType(DataType.FloatVector)
-                .dimension(dimension)
+                .dimension(DIMENSION)
                 .build());
 
         IndexParam indexParam = IndexParam.builder()
@@ -1780,7 +1650,7 @@ class MilvusClientV2DockerTest {
                         for (int j = 0; j < cnt; j++) {
                             JsonObject obj = new JsonObject();
                             obj.addProperty("id", String.format("%d", i*cnt + j));
-                            List<Float> vector = generateFolatVector(dim);
+                            List<Float> vector = utils.generateFloatVector(dim);
                             obj.add("vector", JsonUtils.toJsonTree(vector));
                             obj.addProperty("dataTime", System.currentTimeMillis());
                             rows.add(obj);
@@ -1824,7 +1694,7 @@ class MilvusClientV2DockerTest {
                         for (int j = 0; j < cnt; j++) {
                             JsonObject obj = new JsonObject();
                             obj.addProperty("id", String.format("%d", i*cnt + j));
-                            List<Float> vector = generateFolatVector(dim);
+                            List<Float> vector = utils.generateFloatVector(dim);
                             obj.add("vector", JsonUtils.toJsonTree(vector));
                             obj.addProperty("dataTime", System.currentTimeMillis());
                             rows.add(obj);
