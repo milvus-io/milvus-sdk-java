@@ -44,7 +44,6 @@ import io.milvus.v2.service.vector.response.SearchResp;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-
 public class Float16VectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_float16_vector_v2";
     private static final String ID_FIELD = "id";
@@ -89,8 +88,8 @@ public class Float16VectorExample {
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
-        Map<String,Object> extraParams = new HashMap<>();
-        extraParams.put("nlist",64);
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("nlist", 64);
         indexes.add(IndexParam.builder()
                 .fieldName(FP16_VECTOR_FIELD)
                 .indexType(IndexParam.IndexType.IVF_FLAT)
@@ -118,6 +117,8 @@ public class Float16VectorExample {
         for (long i = 0; i < count; i++) {
             JsonObject row = new JsonObject();
             row.addProperty(ID_FIELD, i);
+            // The method for converting float32 vector to float16 vector can be found in
+            // CommonUtils.
             ByteBuffer buf1 = CommonUtils.generateFloat16Vector(VECTOR_DIM, false);
             row.add(FP16_VECTOR_FIELD, gson.toJsonTree(buf1.array()));
             ByteBuffer buf2 = CommonUtils.generateFloat16Vector(VECTOR_DIM, true);
@@ -164,9 +165,16 @@ public class Float16VectorExample {
             if (!vectorBuf.equals(targetVectors.get(i).getData())) {
                 throw new RuntimeException("The top1 output vector is incorrect");
             }
+            // The method for converting float16 vector to float32 vector can be found in
+            // CommonUtils.
+            List<Float> decodedFpVector = CommonUtils.decodeFloat16Vector(vectorBuf,
+                    BF16_VECTOR_FIELD.equals(vectorFieldName));
+            if (decodedFpVector.size() != VECTOR_DIM) {
+                throw new RuntimeException("The decoded vector dimension is incorrect");
+            }
             System.out.println(results.get(0));
         }
-        System.out.println("Search result of float16 vector is correct");
+        System.out.println("Search result of " + vectorFieldName + " is correct");
     }
 
     private static void search() {
@@ -207,7 +215,6 @@ public class Float16VectorExample {
                 .build());
         System.out.println("Collection dropped");
     }
-
 
     public static void main(String[] args) {
         createCollection();
