@@ -176,7 +176,8 @@ public class DataUtils {
                         rowFieldData = JsonNull.INSTANCE;
                     }
 
-                    if (field.getAutoID() == Boolean.TRUE) {
+                    // from v2.4.10, milvus allows upsert for auto-id pk, no need to check for upsert action
+                    if (field.getAutoID() == Boolean.TRUE && insertBuilder != null) {
                         String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
                         throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                     }
