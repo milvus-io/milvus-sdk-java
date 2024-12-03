@@ -60,13 +60,6 @@ public class DataUtils {
                                                       DescribeCollectionResp descColl) {
             String collectionName = requestParam.getCollectionName();
 
-            // currently, not allow to upsert for collection whose primary key is auto-generated
-            CreateCollectionReq.FieldSchema primaryField = descColl.getCollectionSchema().getField(descColl.getPrimaryFieldName());
-            if (primaryField.getAutoID() == Boolean.TRUE) {
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, String.format("Upsert don't support autoID==True, collection: %s",
-                        requestParam.getCollectionName()));
-            }
-
             // generate upsert request builder
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
             upsertBuilder = UpsertRequest.newBuilder()
