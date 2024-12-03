@@ -153,7 +153,8 @@ public class DataUtils {
                     // check normalField
                     JsonElement rowFieldData = row.get(fieldName);
                     if (rowFieldData != null) {
-                        if (fieldType.isAutoID()) {
+                        // from v2.4.10, milvus allows upsert for auto-id pk, no need to check for upsert action
+                        if (fieldType.isAutoID()&& insertBuilder != null) {
                             String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
                             throw new ParamException(msg);
                         }
