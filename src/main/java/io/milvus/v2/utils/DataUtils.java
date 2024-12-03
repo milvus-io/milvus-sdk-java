@@ -58,13 +58,6 @@ public class DataUtils {
                                                       DescCollResponseWrapper wrapper) {
             String collectionName = requestParam.getCollectionName();
 
-            // currently, not allow to upsert for collection whose primary key is auto-generated
-            FieldType pk = wrapper.getPrimaryField();
-            if (pk.isAutoID()) {
-                throw new ParamException(String.format("Upsert don't support autoID==True, collection: %s",
-                        requestParam.getCollectionName()));
-            }
-
             // generate upsert request builder
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
             upsertBuilder = UpsertRequest.newBuilder()
