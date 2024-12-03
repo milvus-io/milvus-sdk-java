@@ -112,6 +112,7 @@ public class SchemaUtils {
 
     public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(schema.getEnableDynamicField())
                 .build();
         List<CreateCollectionReq.FieldSchema> fieldSchemas = new ArrayList<>();
         for (FieldSchema fieldSchema : schema.getFieldsList()) {
