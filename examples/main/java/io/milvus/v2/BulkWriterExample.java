@@ -540,8 +540,6 @@ public class BulkWriterExample {
                 System.out.printf("The job %s is running, state:%s progress:%s%n", jobId, state, progress);
             }
         }
-
-        System.out.println("Collection row number: " + getCollectionStatistics());
     }
 
     private void callCloudImport(List<List<String>> batchFiles, String collectionName, String partitionName) throws InterruptedException {
@@ -589,8 +587,6 @@ public class BulkWriterExample {
                 System.out.printf("The job %s is running, state:%s progress:%s%n", jobId, importProgressState, progress);
             }
         }
-
-        System.out.println("Collection row number: " + getCollectionStatistics());
     }
 
     /**
@@ -616,7 +612,7 @@ public class BulkWriterExample {
         } else {
             milvusClient.createCollection(requestCreate);
         }
-
+//        milvusClient.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
         System.out.printf("Collection %s created%n", collectionName);
     }
 
@@ -695,6 +691,7 @@ public class BulkWriterExample {
                 .build());
 
         milvusClient.createIndex(CreateIndexReq.builder()
+                .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .indexParams(indexes)
                 .build());
     }
@@ -705,6 +702,7 @@ public class BulkWriterExample {
         milvusClient.loadCollection(LoadCollectionReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .build());
+        System.out.println("Collection row number: " + getCollectionRowCount());
     }
 
     private List<QueryResp.QueryResult> query(String expr, List<String> outputFields) {
@@ -719,8 +717,8 @@ public class BulkWriterExample {
         return response.getQueryResults();
     }
 
-    private Long getCollectionStatistics() {
-        System.out.println("========== getCollectionStatistics() ==========");
+    private Long getCollectionRowCount() {
+        System.out.println("========== getCollectionRowCount() ==========");
         checkMilvusClientIfExist();
 
         // Get row count, set ConsistencyLevel.STRONG to sync the data to query node so that data is visible

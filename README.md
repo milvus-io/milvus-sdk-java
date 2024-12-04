@@ -21,7 +21,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 |    >= 2.2.9    |  2.2.7 ~ 2.2.15  |
 |     2.3.x      |      2.3.11      |
 |     2.4.x      |      2.4.8       |
-|     2.5.x      |      2.5.0       |
+|     2.5.x      |      2.5.1       |
 
 ### Install Java SDK
 
@@ -33,20 +33,20 @@ You can use **Apache Maven** or **Gradle** add Milvus SDK to your project.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>2.5.0</version>
+            <version>2.5.1</version>
         </dependency>
        ```
 
    - Gradle/Groovy
 
         ```groovy
-        implementation 'io.milvus:milvus-sdk-java:2.5.0'
+        implementation 'io.milvus:milvus-sdk-java:2.5.1'
         ```
 
    - Gradle/Kotlin
 
         ```kotlin
-        implementation("io.milvus:milvus-sdk-java:2.5.0")
+        implementation("io.milvus:milvus-sdk-java:2.5.1")
         ```
         
 ### Examples
