@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.5.1 (2024-12-04)
+### Improvement
+- Support upsert items with auto-id primary key
+
+### Bug
+- Critical: Fix a bug that dynamic values are skipped with enableDynamicField is true
+
 ## milvus-sdk-java 2.5.0 (2024-11-26)
 ### Feature
 - BulkWriter supports JSON/CSV format
