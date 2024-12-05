@@ -44,6 +44,9 @@ import io.milvus.v2.service.database.response.*;
 import io.milvus.v2.service.index.request.*;
 import io.milvus.v2.service.index.response.*;
 import io.milvus.v2.service.partition.request.*;
+import io.milvus.v2.service.rbac.PrivilegeGroup;
+import io.milvus.v2.service.rbac.request.*;
+import io.milvus.v2.service.rbac.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
@@ -2035,5 +2038,26 @@ class MilvusClientV2DockerTest {
         SearchResp.SearchResult r = searchResults.get(0).get(0);
         Assertions.assertTrue(r.getEntity().containsKey("dynamic_10"));
         Assertions.assertEquals("this is dynamic value", r.getEntity().get("dynamic_10"));
+    }
+
+    @Test
+    void testRBAC() {
+        client.createPrivilegeGroup(CreatePrivilegeGroupReq.builder()
+                .groupName("dummy")
+                .build());
+        client.addPrivilegesToGroup(AddPrivilegesToGroupReq.builder()
+                .groupName("dummy")
+                .privileges(Collections.singletonList("CreateCollection"))
+                .build());
+
+        ListPrivilegeGroupsResp resp = client.listPrivilegeGroups(ListPrivilegeGroupsReq.builder().build());
+        List<PrivilegeGroup> groups = resp.getPrivilegeGroups();
+        Map<String, List<String>> groupsPlivileges = new HashMap<>();
+        for (PrivilegeGroup group : groups) {
+            groupsPlivileges.put(group.getGroupName(), group.getPrivileges());
+        }
+        Assertions.assertTrue(groupsPlivileges.containsKey("dummy"));
+        Assertions.assertEquals(1, groupsPlivileges.get("dummy").size());
+        Assertions.assertEquals("CreateCollection", groupsPlivileges.get("dummy").get(0));
     }
 }

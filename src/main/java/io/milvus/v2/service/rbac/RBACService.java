@@ -254,7 +254,7 @@ public class RBACService extends BaseService {
             privilegeGroupInfo.getPrivilegesList().forEach((privilege)->{
                 privileges.add(privilege.getName());
             });
-            privilegeGroups.add(PrivilegeGroup.builder().privileges(privileges).build());
+            privilegeGroups.add(PrivilegeGroup.builder().groupName(privilegeGroupInfo.getGroupName()).privileges(privileges).build());
         });
 
         return ListPrivilegeGroupsResp.builder()
