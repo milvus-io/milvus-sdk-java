@@ -43,6 +43,9 @@ import io.milvus.v2.service.database.response.*;
 import io.milvus.v2.service.index.request.*;
 import io.milvus.v2.service.index.response.*;
 import io.milvus.v2.service.partition.request.*;
+import io.milvus.v2.service.rbac.PrivilegeGroup;
+import io.milvus.v2.service.rbac.request.*;
+import io.milvus.v2.service.rbac.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
@@ -1727,5 +1730,84 @@ class MilvusClientV2DockerTest {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
         }
+    }
+
+    @Test
+    void testDynamicField() {
+        String collectionName = generator.generate(10);
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .dimension(DIMENSION)
+                .build());
+
+        List<JsonObject> rows = new ArrayList<>();
+        Gson gson = new Gson();
+        for (int i = 0; i < 100; i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty("id", i);
+            row.add("vector", gson.toJsonTree(utils.generateFloatVector()));
+            row.addProperty(String.format("dynamic_%d", i), "this is dynamic value"); // this value is stored in dynamic field
+            rows.add(row);
+        }
+        InsertResp insertR = client.insert(InsertReq.builder()
+                .collectionName(collectionName)
+                .data(rows)
+                .build());
+
+        // query
+        QueryResp countR = client.query(QueryReq.builder()
+                .collectionName(collectionName)
+                .filter("")
+                .outputFields(Collections.singletonList("count(*)"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        Assertions.assertEquals(100L, (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+
+        GetResp getR = client.get(GetReq.builder()
+                .collectionName(collectionName)
+                .ids(Collections.singletonList(50L))
+                .outputFields(Collections.singletonList("*"))
+                .build());
+        Assertions.assertEquals(1, getR.getGetResults().size());
+        QueryResp.QueryResult queryR = getR.getGetResults().get(0);
+        Assertions.assertTrue(queryR.getEntity().containsKey("dynamic_50"));
+        Assertions.assertEquals("this is dynamic value", queryR.getEntity().get("dynamic_50"));
+
+        // search
+        SearchResp searchR = client.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
+                .filter("id == 10")
+                .topK(10)
+                .outputFields(Collections.singletonList("dynamic_10"))
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        Assertions.assertEquals(1, searchResults.get(0).size());
+        SearchResp.SearchResult r = searchResults.get(0).get(0);
+        Assertions.assertTrue(r.getEntity().containsKey("dynamic_10"));
+        Assertions.assertEquals("this is dynamic value", r.getEntity().get("dynamic_10"));
+    }
+
+    @Test
+    void testRBAC() {
+        client.createPrivilegeGroup(CreatePrivilegeGroupReq.builder()
+                .groupName("dummy")
+                .build());
+        client.addPrivilegesToGroup(AddPrivilegesToGroupReq.builder()
+                .groupName("dummy")
+                .privileges(Collections.singletonList("CreateCollection"))
+                .build());
+
+        ListPrivilegeGroupsResp resp = client.listPrivilegeGroups(ListPrivilegeGroupsReq.builder().build());
+        List<PrivilegeGroup> groups = resp.getPrivilegeGroups();
+        Map<String, List<String>> groupsPlivileges = new HashMap<>();
+        for (PrivilegeGroup group : groups) {
+            groupsPlivileges.put(group.getGroupName(), group.getPrivileges());
+        }
+        Assertions.assertTrue(groupsPlivileges.containsKey("dummy"));
+        Assertions.assertEquals(1, groupsPlivileges.get("dummy").size());
+        Assertions.assertEquals("CreateCollection", groupsPlivileges.get("dummy").get(0));
     }
 }
