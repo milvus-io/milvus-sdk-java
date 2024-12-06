@@ -30,6 +30,7 @@ hs_err_pid*
 target/
 volumes/
 *.iml
+.flattened-pom.xml
 
 # Example files
 examples/bulk_writer

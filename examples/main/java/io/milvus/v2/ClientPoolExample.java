@@ -40,7 +40,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class ClientPoolExample {
     public static String CollectionName = "java_sdk_example_pool_v2";
@@ -79,11 +78,19 @@ public class ClientPoolExample {
     public static Thread runInsertThread(MilvusClientV2Pool pool, String clientName, int repeatRequests) {
         Thread t = new Thread(() -> {
             Gson gson = new Gson();
-            Random rand = new Random();
             for (int i = 0; i < repeatRequests; i++) {
-                MilvusClientV2 client = pool.getClient(clientName);
+                MilvusClientV2 client = null;
+                while(client == null) {
+                    try {
+                        // getClient() might exceeds the borrowMaxWaitMillis and throw exception
+                        // retry to call until it return a client
+                        client = pool.getClient(clientName);
+                    } catch (Exception e) {
+                        System.out.printf("Failed to get client, will retry, error: %s%n", e.getMessage());
+                    }
+                }
                 try {
-                    int rowCount = rand.nextInt(10) + 10;
+                    int rowCount = 1;
                     List<JsonObject> rows = new ArrayList<>();
                     for (int j = 0; j < rowCount; j++) {
                         JsonObject row = new JsonObject();
@@ -110,7 +117,16 @@ public class ClientPoolExample {
     public static Thread runSearchThread(MilvusClientV2Pool pool, String clientName, int repeatRequests) {
         Thread t = new Thread(() -> {
             for (int i = 0; i < repeatRequests; i++) {
-                MilvusClientV2 client = pool.getClient(clientName);
+                MilvusClientV2 client = null;
+                while(client == null) {
+                    try {
+                        // getClient() might exceeds the borrowMaxWaitMillis and throw exception
+                        // retry to call until it return a client
+                        client = pool.getClient(clientName);
+                    } catch (Exception e) {
+                        System.out.printf("Failed to get client, will retry, error: %s%n", e.getMessage());
+                    }
+                }
                 try {
                     SearchResp result = client.search(SearchReq.builder()
                             .collectionName(CollectionName)
@@ -154,7 +170,7 @@ public class ClientPoolExample {
         createCollection(pool);
 
         List<Thread> threadList = new ArrayList<>();
-        int threadCount = 10;
+        int threadCount = 100;
         int repeatRequests = 100;
         long start = System.currentTimeMillis();
         for (int k = 0; k < threadCount; k++) {
@@ -175,7 +191,7 @@ public class ClientPoolExample {
         }
         long end = System.currentTimeMillis();
         System.out.printf("%d insert requests and %d search requests finished in %.3f seconds%n",
-                threadCount*repeatRequests, threadCount*repeatRequests, (end-start)*0.001);
+                threadCount*repeatRequests*3, threadCount*repeatRequests*3, (end-start)*0.001);
         System.out.printf("Total %d idle clients and %d active clients%n",
                 pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber());
 

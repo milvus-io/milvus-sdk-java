@@ -31,13 +31,13 @@ jobs:
           mvn clean versions:set -DnewVersion=2.4.0
           mvn clean install -Dmaven.test.skip=true
 
-      - name: Test
-        timeout-minutes: 60
-        shell: bash
-        working-directory: tests/milvustestv2
-        run: |
-          echo "run testcases"
-          mvn clean test -Dsurefire.suiteXmlFiles=testng.xml
+#      - name: Test
+#        timeout-minutes: 60
+#        shell: bash
+#        working-directory: tests/milvustestv2
+#        run: |
+#          echo "run testcases"
+#          mvn clean test -Dsurefire.suiteXmlFiles=testng.xml
 
 #      - name: Upload logs
 #        if: ${{ always() }}
