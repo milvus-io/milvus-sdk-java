@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.5.2 (TBD)
+### Improvement
+- Split milvus Java SDK to two packages to reduce dependency complexity
+
 ## milvus-sdk-java 2.5.1 (2024-12-04)
 ### Improvement
 - Support upsert items with auto-id primary key

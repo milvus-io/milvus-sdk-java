@@ -13,7 +13,7 @@ This document will help to setup your development environment and running tests 
 $ git clone --recursive git@github.com:milvus-io/milvus-sdk-java.git
 ```
 
-Milvus proto files are managed by a submodule project under the directory: src/milvus-proto
+Milvus proto files are managed by a submodule project under the directory: sdk-core/src/main/milvus-proto
 Fetch Milvus proto files by the following command(If the previous clone is not with submodules)
 ```shell
 $ git submodule update --init
@@ -31,10 +31,10 @@ $  mvn install
 ```
 
 ## Update Milvus proto files
-Milvus proto files are managed by a submodule project under the directory: src/milvus-proto
+Milvus proto files are managed by a submodule project under the directory: sdk-core/src/main/milvus-proto
 Before developing new interfaces, you need to get the latest proto files by the following command:
 ```shell
-$  git submodule update --remote
+$ git submodule update --remote
 ```
 
 ## Building Milvus
