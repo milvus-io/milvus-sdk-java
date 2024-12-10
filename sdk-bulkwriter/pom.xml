@@ -15,6 +15,10 @@
     <name>${project.artifactId}</name>
     <description>BulkWriter tool for Java</description>
 
+    <properties>
+        <skip.maven.deploy>false</skip.maven.deploy>
+    </properties>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
