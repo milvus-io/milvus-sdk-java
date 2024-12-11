@@ -1,8 +1,11 @@
 # Changelog
 
-## milvus-sdk-java 2.5.2 (TBD)
+## milvus-sdk-java 2.5.2 (2024-12-11)
 ### Improvement
 - Split milvus Java SDK to two packages to reduce dependency complexity
+
+### Bug
+- Fix a bug of listPrivilegeGroups
 
 ## milvus-sdk-java 2.5.1 (2024-12-04)
 ### Improvement
