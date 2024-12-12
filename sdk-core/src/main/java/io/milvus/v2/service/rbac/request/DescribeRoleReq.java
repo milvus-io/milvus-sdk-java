@@ -26,4 +26,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class DescribeRoleReq {
     private String roleName;
+    private String dbName;
 }
