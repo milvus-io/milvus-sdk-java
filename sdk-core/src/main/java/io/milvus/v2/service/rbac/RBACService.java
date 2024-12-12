@@ -25,6 +25,7 @@ import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.DescribeRoleResp;
 import io.milvus.v2.service.rbac.response.DescribeUserResp;
 import io.milvus.v2.service.rbac.response.ListPrivilegeGroupsResp;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -57,22 +58,26 @@ public class RBACService extends BaseService {
 
     public DescribeRoleResp describeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeRoleReq request) {
         String title = "describeRole";
+        GrantEntity.Builder builder = GrantEntity.newBuilder()
+                .setRole(RoleEntity.newBuilder()
+                        .setName(request.getRoleName())
+                        .build());
+        if (StringUtils.isNotEmpty(request.getDbName())) {
+            builder.setDbName(request.getDbName());
+        }
+
         SelectGrantRequest selectGrantRequest = SelectGrantRequest.newBuilder()
-                .setEntity(GrantEntity.newBuilder()
-                        .setRole(RoleEntity.newBuilder()
-                                .setName(request.getRoleName())
-                                .build())
-                        .build())
+                .setEntity(builder.build())
                 .build();
         SelectGrantResponse response = blockingStub.selectGrant(selectGrantRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         DescribeRoleResp describeRoleResp = DescribeRoleResp.builder()
-                .grantInfos(response.getEntitiesList().stream().map(grantEntity -> DescribeRoleResp.GrantInfo.builder()
-                        .dbName(grantEntity.getDbName())
-                        .objectName(grantEntity.getObjectName())
-                        .objectType(grantEntity.getObject().getName())
-                        .privilege(grantEntity.getGrantor().getPrivilege().getName())
-                        .grantor(grantEntity.getGrantor().getUser().getName())
+                .grantInfos(response.getEntitiesList().stream().map(entity -> DescribeRoleResp.GrantInfo.builder()
+                        .dbName(entity.getDbName())
+                        .objectName(entity.getObjectName())
+                        .objectType(entity.getObject().getName())
+                        .privilege(entity.getGrantor().getPrivilege().getName())
+                        .grantor(entity.getGrantor().getUser().getName())
                         .build()).collect(Collectors.toList()))
                 .build();
         return describeRoleResp;
