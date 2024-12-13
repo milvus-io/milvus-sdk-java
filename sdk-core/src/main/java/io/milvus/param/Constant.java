@@ -36,6 +36,7 @@ public class Constant {
     public static final String GROUP_BY_FIELD = "group_by_field";
     public static final String GROUP_SIZE = "group_size";
     public static final String STRICT_GROUP_SIZE = "strict_group_size";
+    public static final String HINTS = "hints";
 
     public static final String INDEX_TYPE = "index_type";
     public static final String METRIC_TYPE = "metric_type";

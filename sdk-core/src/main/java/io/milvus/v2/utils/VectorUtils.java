@@ -211,6 +211,14 @@ public class VectorUtils {
             }
         }
 
+        if (request.getHints() != null && !request.getHints().isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.HINTS)
+                            .setValue(request.getHints())
+                            .build());
+        }
+
         if (request.getGroupByFieldName() != null && !request.getGroupByFieldName().isEmpty()) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
@@ -403,6 +411,13 @@ public class VectorUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(annSearchReq.getMetricType().name())
+                            .build());
+        }
+        if (annSearchReq.getHints() != null && !annSearchReq.getHints().isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.HINTS)
+                            .setValue(annSearchReq.getHints())
                             .build());
         }
 

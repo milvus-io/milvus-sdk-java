@@ -58,6 +58,7 @@ public class SearchParam {
     private final String groupByFieldName;
     private final Integer groupSize;
     private final Boolean strictGroupSize;
+    private final String hints;
     private final PlaceholderType plType;
 
     private SearchParam(@NonNull Builder builder) {
@@ -81,6 +82,7 @@ public class SearchParam {
         this.groupByFieldName = builder.groupByFieldName;
         this.groupSize = builder.groupSize;
         this.strictGroupSize = builder.strictGroupSize;
+        this.hints = builder.hints;
         this.plType = builder.plType;
     }
 
@@ -112,6 +114,7 @@ public class SearchParam {
         private String groupByFieldName;
         private Integer groupSize = null;
         private Boolean strictGroupSize = null;
+        private String hints;
 
         // plType is used to distinct vector type
         // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
@@ -366,6 +369,17 @@ public class SearchParam {
          */
         public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        /**
+         * Hints provide some optimizations for better search performance.
+         *
+         * @param hints field name
+         * @return <code>Builder</code>
+         */
+        public Builder withHints(@NonNull String hints) {
+            this.hints = hints;
             return this;
         }
 

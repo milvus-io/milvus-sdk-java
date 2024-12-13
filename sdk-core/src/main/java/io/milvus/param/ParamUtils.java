@@ -813,6 +813,14 @@ public class ParamUtils {
                             .build());
         }
 
+        if (!StringUtils.isEmpty(requestParam.getHints())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.HINTS)
+                            .setValue(requestParam.getHints())
+                            .build());
+        }
+
         if (!StringUtils.isEmpty(requestParam.getGroupByFieldName())) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
@@ -902,6 +910,13 @@ public class ParamUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(annSearchParam.getMetricType())
+                            .build());
+        }
+        if (annSearchParam.getHints() != null && !annSearchParam.getHints().isEmpty()) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.HINTS)
+                            .setValue(annSearchParam.getHints())
                             .build());
         }
 

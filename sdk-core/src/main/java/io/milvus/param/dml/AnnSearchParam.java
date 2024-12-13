@@ -45,6 +45,7 @@ public class AnnSearchParam {
     private final List<?> vectors;
     private final Long NQ;
     private final String params;
+    private final String hints;
     private final PlaceholderType plType;
 
     private AnnSearchParam(@NonNull Builder builder) {
@@ -55,6 +56,7 @@ public class AnnSearchParam {
         this.vectors = builder.vectors;
         this.NQ = builder.NQ;
         this.params = builder.params;
+        this.hints = builder.hints;
         this.plType = builder.plType;
     }
 
@@ -73,6 +75,7 @@ public class AnnSearchParam {
         private List<?> vectors;
         private Long NQ;
         private String params = "{}";
+        private String hints;
 
         // plType is used to distinct vector type
         // for Float16Vector/BFloat16Vector and BinaryVector, user inputs ByteBuffer
@@ -204,6 +207,17 @@ public class AnnSearchParam {
          */
         public Builder withParams(@NonNull String params) {
             this.params = params;
+            return this;
+        }
+
+        /**
+         * Hints provide some optimizations for better search performance.
+         *
+         * @param hints hints field name
+         * @return <code>Builder</code>
+         */
+        public Builder withHints(@NonNull String hints) {
+            this.hints = hints;
             return this;
         }
 

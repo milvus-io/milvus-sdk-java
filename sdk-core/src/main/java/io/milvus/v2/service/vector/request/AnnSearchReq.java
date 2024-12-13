@@ -36,6 +36,7 @@ public class AnnSearchReq {
     private String expr = "";
     private List<BaseVector> vectors;
     private String params;
+    private String hints;
 
     @Builder.Default
     private IndexParam.MetricType metricType = null;
