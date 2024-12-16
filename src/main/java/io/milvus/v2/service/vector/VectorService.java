@@ -178,6 +178,7 @@ public class VectorService extends BaseService {
 
         return SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
+                .recalls(response.getResults().getRecallsList())
                 .build();
     }
 
@@ -194,6 +195,7 @@ public class VectorService extends BaseService {
 
         return SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
+                .recalls(response.getResults().getRecallsList())
                 .build();
     }
 

@@ -29,6 +29,7 @@ import java.util.Map;
 @SuperBuilder
 public class SearchResp {
     private List<List<SearchResult>> searchResults;
+    private List<Float> recalls;
 
     @Data
     @SuperBuilder
