@@ -30,6 +30,7 @@ import java.util.Map;
 public class SearchResp {
     private List<List<SearchResult>> searchResults;
     private long sessionTs = 1L; // default eventually ts
+    private List<Float> recalls;
 
     @Data
     @SuperBuilder
