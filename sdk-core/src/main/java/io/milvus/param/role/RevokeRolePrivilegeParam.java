@@ -37,11 +37,14 @@ public class RevokeRolePrivilegeParam {
 
     private final String privilege;
 
+    private final String databaseName;
+
     private RevokeRolePrivilegeParam(@NonNull RevokeRolePrivilegeParam.Builder builder) {
         this.roleName = builder.roleName;
         this.object = builder.object;
         this.objectName = builder.objectName;
         this.privilege = builder.privilege;
+        this.databaseName = builder.databaseName;
     }
 
     public static RevokeRolePrivilegeParam.Builder newBuilder() {
@@ -56,9 +59,21 @@ public class RevokeRolePrivilegeParam {
         private String object;
         private String objectName;
         private String privilege;
+        private String databaseName;
 
 
         private Builder() {
+        }
+
+        /**
+         * Sets the databaseName. databaseName cannot be null.
+         *
+         * @param databaseName databaseName
+         * @return <code>Builder</code>
+         */
+        public RevokeRolePrivilegeParam.Builder withDatabaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
         /**

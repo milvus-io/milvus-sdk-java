@@ -2557,15 +2557,19 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("RevokeRolePrivilegeRequest roleName:%s", requestParam.getRoleName());
 
         try {
+            GrantEntity.Builder builder = GrantEntity.newBuilder()
+                    .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
+                    .setObjectName(requestParam.getObjectName())
+                    .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
+                    .setGrantor(GrantorEntity.newBuilder()
+                            .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build());
+            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
+                builder.setDbName(requestParam.getDatabaseName());
+            }
+
             OperatePrivilegeRequest request = OperatePrivilegeRequest.newBuilder()
                     .setType(OperatePrivilegeType.Revoke)
-                    .setEntity(GrantEntity.newBuilder()
-                            .setRole(RoleEntity.newBuilder().setName(requestParam.getRoleName()).build())
-                            .setObjectName(requestParam.getObjectName())
-                            .setObject(ObjectEntity.newBuilder().setName(requestParam.getObject()).build())
-                            .setGrantor(GrantorEntity.newBuilder()
-                                    .setPrivilege(PrivilegeEntity.newBuilder().setName(requestParam.getPrivilege()).build()).build())
-                            .build())
+                    .setEntity(builder.build())
                     .build();
 
             Status response = blockingStub().operatePrivilege(request);
