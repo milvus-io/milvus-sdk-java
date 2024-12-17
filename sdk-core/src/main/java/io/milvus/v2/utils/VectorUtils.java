@@ -161,6 +161,12 @@ public class VectorUtils {
         builder.setNq(vectors.size());
 
         // search parameters
+        // tries to fit the compatibility between v2.5.1 and older versions
+        Map<String, Object> searchParams = request.getSearchParams();
+        ParamUtils.compatibleSearchParams(searchParams, builder);
+
+        // the following parameters are not changed
+        // just note: if the searchParams already contains the same key, the following parameters will overwrite it
         if (StringUtils.isNotEmpty(request.getAnnsField())) {
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
@@ -196,19 +202,6 @@ public class VectorUtils {
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(request.getMetricType().name())
                             .build());
-        }
-
-        if (null != request.getSearchParams()) {
-            try {
-                String searchParams = JsonUtils.toJson(request.getSearchParams());
-                builder.addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.PARAMS)
-                                .setValue(searchParams)
-                                .build());
-            } catch (IllegalArgumentException e) {
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage() + e.getCause().getMessage());
-            }
         }
 
         if (request.getGroupByFieldName() != null && !request.getGroupByFieldName().isEmpty()) {

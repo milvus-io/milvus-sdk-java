@@ -766,6 +766,77 @@ public class ParamUtils {
         return placeholderGroup.toByteString();
     }
 
+    // in versions older than milvus v2.5.1, the search parameters are organized as:
+    //        search_params
+    //        {
+    //            "topk"
+    //            "round_decimal"
+    //            "ignore_growing"
+    //            "offset"
+    //            "metric_type"
+    //            "group_by_field"
+    //            "group_size"
+    //            "strict_group_size"
+    //
+    //            "params": {
+    //                        "nprobe"
+    //                        "ef"
+    //                        "reorder_k"
+    //                        "max_empty_result_buckets"
+    //                        "drop_ratio_search"
+    //                        "radius"
+    //                        "range_filter"
+    //                    }
+    //        }
+    // in milvus v2.5.1, the "params" is removed, all the parameters inside "params" are moved into the top level
+    //        search_params
+    //        {
+    //            "topk"
+    //            "round_decimal"
+    //            "ignore_growing"
+    //            "offset"
+    //            "metric_type"
+    //            "group_by_field"
+    //            "group_size"
+    //            "strict_group_size"
+    //
+    //            "nprobe"
+    //            "ef"
+    //            "reorder_k"
+    //            "max_empty_result_buckets"
+    //            "drop_ratio_search"
+    //            "radius"
+    //            "range_filter"
+    //        }
+    // the following logic tries to fit the compatibility between v2.5.1 and older versions
+    public static void compatibleSearchParams(Map<String, Object> searchParams, SearchRequest.Builder builder) {
+        Map<String, Object> forOldVersionParams = new HashMap<>();
+        List<String> oldParamKeys = Arrays.asList("nprobe", "ef", "reorder_k", "max_empty_result_buckets", "drop_ratio_search", "radius", "range_filter");
+        searchParams.forEach((key, value) -> {
+            // for old versions, these keys are in "params" level
+            if (oldParamKeys.contains(key)) {
+                forOldVersionParams.put(key, value);
+            }
+
+            // for new versions, all keys are in the top level
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(key)
+                            .setValue(String.valueOf(value))
+                            .build());
+        });
+        try {
+            String params = JsonUtils.toJson(forOldVersionParams);
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.PARAMS)
+                            .setValue(params)
+                            .build());
+        } catch (IllegalArgumentException e) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage() + e.getCause().getMessage());
+        }
+    }
+
     @SuppressWarnings("unchecked")
     public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
         SearchRequest.Builder builder = SearchRequest.newBuilder()
@@ -784,6 +855,19 @@ public class ParamUtils {
         builder.setNq(requestParam.getNQ());
 
         // search parameters
+        // tries to fit the compatibility between v2.5.1 and older versions
+        if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
+            try {
+                Map<String, Object> paramMap = JsonUtils.fromJson(requestParam.getParams(),
+                        new TypeToken<Map<String, Object>>() {}.getType());
+                compatibleSearchParams(paramMap, builder);
+            } catch (IllegalArgumentException e) {
+                throw new ParamException(e.getMessage() + e.getCause().getMessage());
+            }
+        }
+
+        // the following parameters are not changed
+        // just note: if the searchParams already contains the same key, the following parameters will overwrite it
         builder.addSearchParams(
                 KeyValuePair.newBuilder()
                         .setKey(Constant.VECTOR_FIELD)
@@ -832,26 +916,6 @@ public class ParamUtils {
                                 .setKey(Constant.STRICT_GROUP_SIZE)
                                 .setValue(requestParam.getStrictGroupSize().toString())
                                 .build());
-            }
-        }
-
-        if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
-            try {
-                Map<String, Object> paramMap = JsonUtils.fromJson(requestParam.getParams(),
-                        new TypeToken<Map<String, Object>>() {}.getType());
-                String offset = paramMap.getOrDefault(Constant.OFFSET, 0).toString();
-                builder.addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.OFFSET)
-                                .setValue(offset)
-                                .build());
-                builder.addSearchParams(
-                        KeyValuePair.newBuilder()
-                                .setKey(Constant.PARAMS)
-                                .setValue(requestParam.getParams())
-                                .build());
-            } catch (IllegalArgumentException e) {
-                throw new ParamException(e.getMessage() + e.getCause().getMessage());
             }
         }
 
