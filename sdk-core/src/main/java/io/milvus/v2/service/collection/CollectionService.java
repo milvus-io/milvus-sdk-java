@@ -186,9 +186,10 @@ public class CollectionService extends BaseService {
         return null;
     }
 
-    public Void alterCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionReq request) {
-        String title = String.format("AlterCollectionRequest collectionName:%s", request.getCollectionName());
-        AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder();
+    public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
+        String title = String.format("AlterCollectionPropertiesReq collectionName:%s", request.getCollectionName());
+        AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
@@ -197,11 +198,22 @@ public class CollectionService extends BaseService {
             builder.setDbName(request.getDatabaseName());
         }
 
-        AlterCollectionRequest alterCollectionRequest = builder
-                .setCollectionName(request.getCollectionName())
-                .build();
+        Status response = blockingStub.alterCollection(builder.build());
+        rpcUtils.handleResponse(title, response);
 
-        Status response = blockingStub.alterCollection(alterCollectionRequest);
+        return null;
+    }
+
+    public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
+        String title = String.format("DropCollectionPropertiesReq collectionName:%s", request.getCollectionName());
+        AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .addAllDeleteKeys(request.getPropertyKeys());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        Status response = blockingStub.alterCollection(builder.build());
         rpcUtils.handleResponse(title, response);
 
         return null;

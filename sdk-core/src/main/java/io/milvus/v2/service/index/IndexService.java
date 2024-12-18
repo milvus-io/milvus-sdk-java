@@ -93,10 +93,13 @@ public class IndexService extends BaseService {
         return null;
     }
     
-    public Void alterIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexReq request) {
-        String title = String.format("AlterIndexRequest collectionName:%s, indexName:%s",
+    public Void alterIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexPropertiesReq request) {
+        String title = String.format("AlterIndexPropertiesReq collectionName:%s, indexName:%s",
                 request.getCollectionName(), request.getIndexName());
-        AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder();
+        AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setIndexName(request.getIndexName());
+
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addExtraParams);
@@ -105,12 +108,25 @@ public class IndexService extends BaseService {
             builder.setDbName(request.getDatabaseName());
         }
 
-        AlterIndexRequest alterIndexRequest = builder
+        Status response = blockingStub.alterIndex(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
+    public Void dropIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropIndexPropertiesReq request) {
+        String title = String.format("DropIndexPropertiesReq collectionName:%s, indexName:%s",
+                request.getCollectionName(), request.getIndexName());
+        AlterIndexRequest.Builder builder = AlterIndexRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setIndexName(request.getIndexName())
-                .build();
+                .addAllDeleteKeys(request.getPropertyKeys());
 
-        Status response = blockingStub.alterIndex(alterIndexRequest);
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        Status response = blockingStub.alterIndex(builder.build());
         rpcUtils.handleResponse(title, response);
 
         return null;
