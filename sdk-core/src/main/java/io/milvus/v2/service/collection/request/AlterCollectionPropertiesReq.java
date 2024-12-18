@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.v2.service.database.request;
+package io.milvus.v2.service.collection.request;
 
 import lombok.Builder;
 import lombok.Data;
@@ -28,9 +28,21 @@ import java.util.Map;
 
 @Data
 @SuperBuilder
-@Deprecated
-public class AlterDatabaseReq {
+public class AlterCollectionPropertiesReq {
+    private String collectionName;
     private String databaseName;
     @Builder.Default
-    private Map<String, String> properties = new HashMap<>();
+    private final Map<String, String> properties = new HashMap<>();
+
+
+    public static abstract class AlterCollectionPropertiesReqBuilder<C extends AlterCollectionPropertiesReq, B extends AlterCollectionPropertiesReq.AlterCollectionPropertiesReqBuilder<C, B>> {
+        public B property(String key, String value) {
+            if(null == this.properties$value ){
+                this.properties$value = new HashMap<>();
+            }
+            this.properties$value.put(key, value);
+            this.properties$set = true;
+            return self();
+        }
+    }
 }
