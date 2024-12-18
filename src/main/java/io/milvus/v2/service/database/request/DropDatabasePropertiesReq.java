@@ -19,18 +19,18 @@
 
 package io.milvus.v2.service.database.request;
 
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @SuperBuilder
-@Deprecated
-public class AlterDatabaseReq {
+public class DropDatabasePropertiesReq {
     private String databaseName;
     @Builder.Default
-    private Map<String, String> properties = new HashMap<>();
+    private List<String> propertyKeys = new ArrayList<>();
 }

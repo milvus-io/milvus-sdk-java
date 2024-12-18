@@ -22,7 +22,6 @@ package io.milvus.v2.service.database;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.service.BaseService;
-import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.database.request.*;
 import io.milvus.v2.service.database.response.*;
 import org.apache.commons.collections4.CollectionUtils;
@@ -66,14 +65,25 @@ public class DatabaseService extends BaseService {
         return listDatabasesResp;
     }
 
-    public Void alterDatabase(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterDatabaseReq request) {
-        String title = String.format("AlterDatabaseRequest databaseName:%s", request.getDatabaseName());
+    public Void alterDatabaseProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterDatabasePropertiesReq request) {
+        String title = String.format("AlterDatabasePropertiesReq databaseName:%s", request.getDatabaseName());
         AlterDatabaseRequest.Builder builder = AlterDatabaseRequest.newBuilder()
                 .setDbName(request.getDatabaseName());
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
         }
+
+        Status response = blockingStub.alterDatabase(builder.build());
+        rpcUtils.handleResponse(title, response);
+        return null;
+    }
+
+    public Void dropDatabaseProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropDatabasePropertiesReq request) {
+        String title = String.format("DropDatabasePropertiesReq databaseName:%s", request.getDatabaseName());
+        AlterDatabaseRequest.Builder builder = AlterDatabaseRequest.newBuilder()
+                .setDbName(request.getDatabaseName())
+                .addAllDeleteKeys(request.getPropertyKeys());
 
         Status response = blockingStub.alterDatabase(builder.build());
         rpcUtils.handleResponse(title, response);
