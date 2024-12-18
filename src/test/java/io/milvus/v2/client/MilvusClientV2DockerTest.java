@@ -74,7 +74,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.4.16");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:2.4-20241218-306f200a-amd64");
 
     @BeforeAll
     public static void setUp() {
@@ -1124,10 +1124,11 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
 
+        // collection alter properties
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.TTL_SECONDS, "10");
         properties.put(Constant.MMAP_ENABLED, "true");
-        client.alterCollection(AlterCollectionReq.builder()
+        client.alterCollectionProperties(AlterCollectionPropertiesReq.builder()
                 .collectionName(randomCollectionName)
                 .properties(properties)
                 .property("prop", "val")
@@ -1143,6 +1144,17 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("true", collProps.get(Constant.MMAP_ENABLED));
         Assertions.assertEquals("val", collProps.get("prop"));
 
+        client.dropCollectionProperties(DropCollectionPropertiesReq.builder()
+                .collectionName(randomCollectionName)
+                .propertyKeys(Collections.singletonList("prop"))
+                .build());
+        descCollResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        collProps = descCollResp.getProperties();
+        Assertions.assertFalse(collProps.containsKey("prop"));
+
+        // index alter properties
         DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
@@ -1159,7 +1171,7 @@ class MilvusClientV2DockerTest {
 
         properties.clear();
         properties.put(Constant.MMAP_ENABLED, "false");
-        client.alterIndex(AlterIndexReq.builder()
+        client.alterIndexProperties(AlterIndexPropertiesReq.builder()
                 .collectionName(randomCollectionName)
                 .indexName(desc.getIndexName())
                 .properties(properties)
@@ -1174,6 +1186,20 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(indexProps.containsKey(Constant.MMAP_ENABLED));
         Assertions.assertEquals("false", indexProps.get(Constant.MMAP_ENABLED));
 
+        client.dropIndexProperties(DropIndexPropertiesReq.builder()
+                .collectionName(randomCollectionName)
+                .indexName(desc.getIndexName())
+                .propertyKeys(Collections.singletonList(Constant.MMAP_ENABLED))
+                .build());
+        descResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+        desc = descResp.getIndexDescByFieldName("vector");
+        indexProps = desc.getProperties();
+        Assertions.assertFalse(indexProps.containsKey(Constant.MMAP_ENABLED));
+
+        // drop index
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
@@ -1498,10 +1524,10 @@ class MilvusClientV2DockerTest {
 
         // alter the database
         properties.put(Constant.DATABASE_REPLICA_NUMBER, "10");
-        properties.put("prop", "val");
-        client.alterDatabase(AlterDatabaseReq.builder()
+        client.alterDatabaseProperties(AlterDatabasePropertiesReq.builder()
                 .databaseName(tempDatabaseName)
                 .properties(properties)
+                .property("prop", "val")
                 .build());
         descDBResp = client.describeDatabase(DescribeDatabaseReq.builder()
                 .databaseName(tempDatabaseName)
@@ -1511,6 +1537,17 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("10", propertiesResp.get(Constant.DATABASE_REPLICA_NUMBER));
         Assertions.assertTrue(propertiesResp.containsKey("prop"));
         Assertions.assertEquals("val", propertiesResp.get("prop"));
+
+        // drop property
+        client.dropDatabaseProperties(DropDatabasePropertiesReq.builder()
+                .databaseName(tempDatabaseName)
+                .propertyKeys(Collections.singletonList("prop"))
+                .build());
+        descDBResp = client.describeDatabase(DescribeDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
+        propertiesResp = descDBResp.getProperties();
+        Assertions.assertFalse(propertiesResp.containsKey("prop"));
 
         // switch to the new database
         Assertions.assertDoesNotThrow(()->client.useDatabase(tempDatabaseName));

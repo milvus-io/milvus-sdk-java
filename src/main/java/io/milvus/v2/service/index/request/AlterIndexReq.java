@@ -10,6 +10,7 @@ import java.util.Map;
 
 @Data
 @SuperBuilder
+@Deprecated
 public class AlterIndexReq {
     private String collectionName;
     private String databaseName;

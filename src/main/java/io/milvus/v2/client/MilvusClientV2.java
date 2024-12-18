@@ -290,7 +290,6 @@ public class MilvusClientV2 {
     public void createDatabase(CreateDatabaseReq request) {
         retry(()-> databaseService.createDatabase(this.getRpcStub(), request));
     }
-
     /**
      * Drops a database. Note that this method drops all data in the database.
      * @param request drop database request
@@ -298,7 +297,6 @@ public class MilvusClientV2 {
     public void dropDatabase(DropDatabaseReq request) {
         retry(()-> databaseService.dropDatabase(this.getRpcStub(), request));
     }
-
     /**
      * List all databases.
      * @return List of String database names
@@ -306,15 +304,32 @@ public class MilvusClientV2 {
     public ListDatabasesResp listDatabases() {
         return retry(()-> databaseService.listDatabases(this.getRpcStub()));
     }
-
     /**
      * Alter database with key value pair. (Available from Milvus v2.4.4)
+     * Deprecated, replaced by alterDatabaseProperties, to keep consistence with other SDKs
      * @param request alter database request
      */
+    @Deprecated
     public void alterDatabase(AlterDatabaseReq request) {
-        retry(()-> databaseService.alterDatabase(this.getRpcStub(), request));
+        alterDatabaseProperties(AlterDatabasePropertiesReq.builder()
+                .databaseName(request.getDatabaseName())
+                .properties(request.getProperties())
+                .build());
     }
-
+    /**
+     * Alter a database's properties.
+     * @param request alter database properties request
+     */
+    public void alterDatabaseProperties(AlterDatabasePropertiesReq request) {
+        retry(()-> databaseService.alterDatabaseProperties(this.getRpcStub(), request));
+    }
+    /**
+     * drop a database's properties (Available from Milvus v2.5.2)
+     * @param request alter database properties request
+     */
+    public void dropDatabaseProperties(DropDatabasePropertiesReq request) {
+        retry(()-> databaseService.dropDatabaseProperties(this.getRpcStub(), request));
+    }
     /**
      * Show detail of database base, such as replica number and resource groups. (Available from Milvus v2.4.4)
      * @param request describe database request
@@ -333,7 +348,6 @@ public class MilvusClientV2 {
     public void createCollection(CreateCollectionReq request) {
         retry(()-> collectionService.createCollection(this.getRpcStub(), request));
     }
-
     /**
      * Creates a collection schema.
      * @return CreateCollectionReq.CollectionSchema
@@ -341,7 +355,6 @@ public class MilvusClientV2 {
     public CreateCollectionReq.CollectionSchema createSchema() {
         return collectionService.createSchema();
     }
-
     /**
      * list milvus collections
      *
@@ -350,7 +363,6 @@ public class MilvusClientV2 {
     public ListCollectionsResp listCollections() {
         return retry(()-> collectionService.listCollections(this.getRpcStub()));
     }
-
     /**
      * Drops a collection in Milvus.
      *
@@ -361,11 +373,32 @@ public class MilvusClientV2 {
     }
     /**
      * Alter a collection in Milvus.
+     * Deprecated, replaced by alterCollectionProperties, to keep consistence with other SDKs
      *
      * @param request alter collection request
      */
+    @Deprecated
     public void alterCollection(AlterCollectionReq request) {
-        retry(()-> collectionService.alterCollection(this.getRpcStub(), request));
+        alterCollectionProperties(AlterCollectionPropertiesReq.builder()
+                .collectionName(request.getCollectionName())
+                .databaseName(request.getDatabaseName())
+                .properties(request.getProperties())
+                .build());
+    }
+    /**
+     * Alter a collection's properties.
+     *
+     * @param request alter collection properties request
+     */
+    public void alterCollectionProperties(AlterCollectionPropertiesReq request) {
+        retry(()-> collectionService.alterCollectionProperties(this.getRpcStub(), request));
+    }
+    /**
+     * drop a collection's properties.
+     * @param request drop collection properties request
+     */
+    public void dropCollectionProperties(DropCollectionPropertiesReq request) {
+        retry(()-> collectionService.dropCollectionProperties(this.getRpcStub(), request));
     }
     /**
      * Checks whether a collection exists in Milvus.
@@ -447,11 +480,33 @@ public class MilvusClientV2 {
     }
     /**
      * Alter an index in Milvus.
+     * Deprecated, replaced by alterIndexProperties, to keep consistence with other SDKs
      *
      * @param request alter index request
      */
+    @Deprecated
     public void alterIndex(AlterIndexReq request) {
-        retry(()->indexService.alterIndex(this.getRpcStub(), request));
+        alterIndexProperties(AlterIndexPropertiesReq.builder()
+                .collectionName(request.getCollectionName())
+                .databaseName(request.getDatabaseName())
+                .indexName(request.getIndexName())
+                .properties(request.getProperties())
+                .build());
+    }
+    /**
+     * Alter an index's properties.
+     *
+     * @param request alter index request
+     */
+    public void alterIndexProperties(AlterIndexPropertiesReq request) {
+        retry(()->indexService.alterIndexProperties(this.getRpcStub(), request));
+    }
+    /**
+     * drop an index's properties.
+     * @param request drop index properties request
+     */
+    public void dropIndexProperties(DropIndexPropertiesReq request) {
+        retry(()-> indexService.dropIndexProperties(this.getRpcStub(), request));
     }
     /**
      * Checks whether an index exists for a specified field in a collection in Milvus.
@@ -462,7 +517,6 @@ public class MilvusClientV2 {
     public DescribeIndexResp describeIndex(DescribeIndexReq request) {
         return retry(()->indexService.describeIndex(this.getRpcStub(), request));
     }
-
     /**
      * Lists all indexes in a collection in Milvus.
      *
@@ -472,8 +526,8 @@ public class MilvusClientV2 {
     public List<String> listIndexes(ListIndexesReq request) {
         return retry(()->indexService.listIndexes(this.getRpcStub(), request));
     }
-    // Vector Operations
 
+    // Vector Operations
     /**
      * Inserts vectors into a collection in Milvus.
      *
@@ -615,8 +669,8 @@ public class MilvusClientV2 {
     public void releasePartitions(ReleasePartitionsReq request) {
         retry(()->partitionService.releasePartitions(this.getRpcStub(), request));
     }
-    // rbac operations
-    // user operations
+
+    // RBAC operations
     /**
      * list users
      *

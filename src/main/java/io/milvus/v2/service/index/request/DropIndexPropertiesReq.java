@@ -17,20 +17,22 @@
  * under the License.
  */
 
-package io.milvus.v2.service.database.request;
+package io.milvus.v2.service.index.request;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @SuperBuilder
-@Deprecated
-public class AlterDatabaseReq {
+public class DropIndexPropertiesReq {
+    private String collectionName;
     private String databaseName;
+    private String indexName;
+
     @Builder.Default
-    private Map<String, String> properties = new HashMap<>();
+    private List<String> propertyKeys = new ArrayList<>();
 }

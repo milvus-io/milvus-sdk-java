@@ -9,6 +9,7 @@ import java.util.Map;
 
 @Data
 @SuperBuilder
+@Deprecated
 public class AlterCollectionReq {
     private String collectionName;
     private String databaseName;
