@@ -262,7 +262,22 @@ public class CollectionService extends BaseService {
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
         if (request.getAsync()) {
-            WaitForLoadCollection(blockingStub, request);
+            WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
+        }
+
+        return null;
+    }
+
+    public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
+        String title = String.format("RefreshLoadRequest collectionName:%s", request.getCollectionName());
+        LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setRefresh(true)
+                .build();
+        Status status = blockingStub.loadCollection(loadCollectionRequest);
+        rpcUtils.handleResponse(title, status);
+        if (request.getAsync()) {
+            WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
         return null;
@@ -339,16 +354,17 @@ public class CollectionService extends BaseService {
         }
     }
 
-    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
+    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                       String collectionName, long timeoutMs) {
         boolean isLoaded = false;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (!isLoaded) {
             // Call the getLoadState method
-            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
+            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(collectionName).build());
             if (!isLoaded) {
                 // Check if timeout is exceeded
-                if (System.currentTimeMillis() - startTime > request.getTimeout()) {
+                if (System.currentTimeMillis() - startTime > timeoutMs) {
                     throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection timeout");
                 }
                 // Wait for a certain period before checking again
