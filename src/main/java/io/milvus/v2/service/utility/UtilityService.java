@@ -21,6 +21,8 @@ package io.milvus.v2.service.utility;
 
 import io.milvus.grpc.*;
 import io.milvus.v2.common.CompactionState;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
@@ -32,7 +34,8 @@ public class UtilityService extends BaseService {
         List<String> collectionNames = request.getCollectionNames();
         String title = String.format("Flush collections %s", collectionNames);
         if (collectionNames.isEmpty()) {
-            return null; // maybe do flushAll in future
+            // consistent with python sdk behavior, throw an error if collection names list is null or empty
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Collection name list can not be null or empty");
         }
 
         FlushRequest flushRequest = io.milvus.grpc.FlushRequest.newBuilder()
