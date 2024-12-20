@@ -19,11 +19,10 @@
 
 package io.milvus.v2.service.partition;
 
-import io.milvus.grpc.CreatePartitionRequest;
-import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.grpc.Status;
+import io.milvus.grpc.*;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.partition.request.*;
+import io.milvus.v2.service.partition.response.*;
 
 import java.util.List;
 
@@ -77,6 +76,21 @@ public class PartitionService extends BaseService {
         rpcUtils.handleResponse(title, showPartitionsResponse.getStatus());
 
         return showPartitionsResponse.getPartitionNamesList();
+    }
+
+    public GetPartitionStatsResp getPartitionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetPartitionStatsReq request) {
+        String title = String.format("GetCollectionStatisticsRequest collectionName:%s", request.getCollectionName());
+        GetPartitionStatisticsRequest getPartitionStatisticsRequest = GetPartitionStatisticsRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setPartitionName(request.getPartitionName())
+                .build();
+        GetPartitionStatisticsResponse response = blockingStub.getPartitionStatistics(getPartitionStatisticsRequest);
+
+        rpcUtils.handleResponse(title, response.getStatus());
+        GetPartitionStatsResp getPartitionStatsResp = GetPartitionStatsResp.builder()
+                .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count")).map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                .build();
+        return getPartitionStatsResp;
     }
 
     public Void loadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadPartitionsReq request) {
