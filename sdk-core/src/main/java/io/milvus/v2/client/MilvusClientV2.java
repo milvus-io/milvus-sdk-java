@@ -307,7 +307,7 @@ public class MilvusClientV2 {
     }
     /**
      * Alter database with key value pair. (Available from Milvus v2.4.4)
-     * Deprecated, replaced by alterDatabaseProperties from v2.5.3, to keep consistence with other SDKs
+     * Deprecated, replaced by alterDatabaseProperties from SDK v2.5.3, to keep consistence with other SDKs
      * @param request alter database request
      */
     @Deprecated
@@ -318,14 +318,14 @@ public class MilvusClientV2 {
                 .build());
     }
     /**
-     * Alter a database's properties (Available from Milvus v2.5.3)
+     * Alter a database's properties.
      * @param request alter database properties request
      */
     public void alterDatabaseProperties(AlterDatabasePropertiesReq request) {
         retry(()-> databaseService.alterDatabaseProperties(this.getRpcStub(), request));
     }
     /**
-     * drop a database's properties (Available from Milvus v2.5.3)
+     * drop a database's properties.
      * @param request alter database properties request
      */
     public void dropDatabaseProperties(DropDatabasePropertiesReq request) {
@@ -375,7 +375,7 @@ public class MilvusClientV2 {
     }
     /**
      * Alter a collection in Milvus.
-     * Deprecated, replaced by alterCollectionProperties from v2.5.3, to keep consistence with other SDKs
+     * Deprecated, replaced by alterCollectionProperties from SDK v2.5.3, to keep consistence with other SDKs
      *
      * @param request alter collection request
      */
@@ -388,7 +388,7 @@ public class MilvusClientV2 {
                 .build());
     }
     /**
-     * Alter a collection's properties (Available from Milvus v2.5.3).
+     * Alter a collection's properties.
      *
      * @param request alter collection properties request
      */
@@ -396,7 +396,15 @@ public class MilvusClientV2 {
         retry(()-> collectionService.alterCollectionProperties(this.getRpcStub(), request));
     }
     /**
-     * drop a collection's properties (Available from Milvus v2.5.3)
+     * Alter a field's properties.
+     *
+     * @param request alter field properties request
+     */
+    public void alterCollectionField(AlterCollectionFieldReq request) {
+        retry(()-> collectionService.alterCollectionField(this.getRpcStub(), request));
+    }
+    /**
+     * drop a collection's properties.
      * @param request drop collection properties request
      */
     public void dropCollectionProperties(DropCollectionPropertiesReq request) {
@@ -492,7 +500,7 @@ public class MilvusClientV2 {
     }
     /**
      * Alter an index in Milvus.
-     * Deprecated, replaced by alterIndexProperties from v2.5.3, to keep consistence with other SDKs
+     * Deprecated, replaced by alterIndexProperties from SDK v2.5.3, to keep consistence with other SDKs
      *
      * @param request alter index request
      */
@@ -506,7 +514,7 @@ public class MilvusClientV2 {
                 .build());
     }
     /**
-     * Alter an index's properties (Available from Milvus v2.5.3)
+     * Alter an index's properties.
      *
      * @param request alter index request
      */
@@ -514,7 +522,7 @@ public class MilvusClientV2 {
         retry(()->indexService.alterIndexProperties(this.getRpcStub(), request));
     }
     /**
-     * drop an index's properties (Available from Milvus v2.5.3)
+     * drop an index's properties.
      * @param request drop index properties request
      */
     public void dropIndexProperties(DropIndexPropertiesReq request) {
