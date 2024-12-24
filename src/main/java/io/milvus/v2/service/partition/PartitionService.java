@@ -102,6 +102,7 @@ public class PartitionService extends BaseService {
                 .setRefresh(request.getRefresh())
                 .addAllLoadFields(request.getLoadFields())
                 .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
+                .addAllResourceGroups(request.getResourceGroups())
                 .build();
         Status status = blockingStub.loadPartitions(loadPartitionsRequest);
         rpcUtils.handleResponse(title, status);

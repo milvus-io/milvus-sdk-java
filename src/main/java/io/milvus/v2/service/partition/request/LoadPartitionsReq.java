@@ -38,4 +38,6 @@ public class LoadPartitionsReq {
     private List<String> loadFields = new ArrayList<>();
     @Builder.Default
     private Boolean skipLoadDynamicField = Boolean.FALSE;
+    @Builder.Default
+    private List<String> resourceGroups = new ArrayList<>();
 }
