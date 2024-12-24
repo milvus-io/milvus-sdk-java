@@ -1092,6 +1092,11 @@ class MilvusClientV2DockerTest {
                 .dataType(DataType.FloatVector)
                 .dimension(DIMENSION)
                 .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("name")
+                .dataType(DataType.VarChar)
+                .maxLength(100)
+                .build());
 
         List<IndexParam> indexes = new ArrayList<>();
         Map<String,Object> extra = new HashMap<>();
@@ -1124,6 +1129,13 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
 
+        // alter field properties
+        client.alterCollectionField(AlterCollectionFieldReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("name")
+                .property("max_length", "9")
+                .build());
+
         // collection alter properties
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.TTL_SECONDS, "10");
@@ -1143,6 +1155,9 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("10", collProps.get(Constant.TTL_SECONDS));
         Assertions.assertEquals("true", collProps.get(Constant.MMAP_ENABLED));
         Assertions.assertEquals("val", collProps.get("prop"));
+
+        CreateCollectionReq.FieldSchema fieldScheam = descCollResp.getCollectionSchema().getField("name");
+        Assertions.assertEquals(9, fieldScheam.getMaxLength());
 
         client.dropCollectionProperties(DropCollectionPropertiesReq.builder()
                 .collectionName(randomCollectionName)
