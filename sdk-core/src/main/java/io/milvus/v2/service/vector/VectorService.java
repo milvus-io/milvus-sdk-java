@@ -34,6 +34,7 @@ import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.DataUtils;
+import io.milvus.v2.utils.VectorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,7 +238,7 @@ public class VectorService extends BaseService {
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
             filterTemplateValues.forEach((key, value)->{
-                builder.putExprTemplateValues(key, vectorUtils.deduceAndCreateTemplateValue(value));
+                builder.putExprTemplateValues(key, VectorUtils.deduceAndCreateTemplateValue(value));
             });
         }
         MutationResult response = blockingStub.delete(builder.build());
