@@ -22,10 +22,7 @@ package io.milvus.v2.client;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import io.milvus.grpc.ClientInfo;
-import io.milvus.grpc.ConnectRequest;
-import io.milvus.grpc.ConnectResponse;
-import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 
@@ -46,6 +43,9 @@ import io.milvus.v2.service.partition.response.*;
 import io.milvus.v2.service.rbac.RBACService;
 import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.*;
+import io.milvus.v2.service.resourcegroup.ResourceGroupService;
+import io.milvus.v2.service.resourcegroup.request.*;
+import io.milvus.v2.service.resourcegroup.response.*;
 import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
@@ -74,6 +74,7 @@ public class MilvusClientV2 {
     private final VectorService vectorService = new VectorService();
     private final PartitionService partitionService = new PartitionService();
     private final RBACService rbacService = new RBACService();
+    private final ResourceGroupService rgroupService = new ResourceGroupService();
     private final UtilityService utilityService = new UtilityService();
     private ConnectConfig connectConfig;
     private RetryConfig retryConfig = RetryConfig.builder().build();
@@ -267,6 +268,9 @@ public class MilvusClientV2 {
         return null;
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Database Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * use Database
      * @param dbName databaseName
@@ -341,7 +345,9 @@ public class MilvusClientV2 {
         return retry(()-> databaseService.describeDatabase(this.getRpcStub(), request));
     }
 
-    //Collection Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Collection Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Creates a collection in Milvus.
      * @param request create collection request
@@ -481,7 +487,9 @@ public class MilvusClientV2 {
         return retry(()->collectionService.getLoadState(this.getRpcStub(), request));
     }
 
-    //Index Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Index Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Creates an index for a specified field in a collection in Milvus.
      *
@@ -547,7 +555,9 @@ public class MilvusClientV2 {
         return retry(()->indexService.listIndexes(this.getRpcStub(), request));
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////
     // Vector Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Inserts vectors into a collection in Milvus.
      *
@@ -634,7 +644,9 @@ public class MilvusClientV2 {
         return retry(()->vectorService.searchIterator(this.getRpcStub(), request));
     }
 
+    /////////////////////////////////////////////////////////////////////////////////////////////
     // Partition Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * Creates a partition in a collection in Milvus.
      *
@@ -700,7 +712,9 @@ public class MilvusClientV2 {
         retry(()->partitionService.releasePartitions(this.getRpcStub(), request));
     }
 
-    // RBAC operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // RBAC Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * list users
      *
@@ -837,8 +851,68 @@ public class MilvusClientV2 {
         retry(()->rbacService.revokePrivilegeV2(this.getRpcStub(), request));
     }
 
-    // Utility Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Resource group Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Create a resource group.
+     *
+     * @param request {@link CreateResourceGroupReq}
+     */
+    public void createResourceGroup(CreateResourceGroupReq request){
+        retry(()->rgroupService.createResourceGroup(this.getRpcStub(), request));
+    }
 
+    /**
+     * Update resource groups.
+     *
+     * @param request {@link UpdateResourceGroupsReq}
+     */
+    public void updateResourceGroups(UpdateResourceGroupsReq request) {
+        retry(()->rgroupService.updateResourceGroups(this.getRpcStub(), request));
+    }
+
+    /**
+     * Drop a resource group.
+     *
+     * @param request {@link DropResourceGroupReq}
+     */
+    public void dropResourceGroup(DropResourceGroupReq request) {
+        retry(()->rgroupService.dropResourceGroup(this.getRpcStub(), request));
+    }
+
+    /**
+     * List resource groups.
+     *
+     * @param request {@link ListResourceGroupsReq}
+     * @return ListResourceGroupsResp
+     */
+    ListResourceGroupsResp listResourceGroups(ListResourceGroupsReq request) {
+        return retry(()->rgroupService.listResourceGroups(this.getRpcStub(), request));
+    }
+
+    /**
+     * Describe a resource group.
+     *
+     * @param request {@link DescribeResourceGroupReq}
+     * @return DescribeResourceGroupResp
+     */
+    DescribeResourceGroupResp describeResourceGroup(DescribeResourceGroupReq request) {
+        return retry(()->rgroupService.describeResourceGroup(this.getRpcStub(), request));
+    }
+
+    /**
+     * Transfer a replica from source resource group to target resource_group.
+     *
+     * @param request {@link TransferReplicaReq}
+     */
+    public void transferReplica(TransferReplicaReq request) {
+        retry(()->rgroupService.transferReplica(this.getRpcStub(), request));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Utility Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * create aliases
      *
