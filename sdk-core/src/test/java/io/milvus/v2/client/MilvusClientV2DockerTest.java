@@ -25,6 +25,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.TestUtils;
 import io.milvus.common.clientenum.FunctionType;
+import io.milvus.common.resourcegroup.*;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
@@ -47,12 +48,15 @@ import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.rbac.PrivilegeGroup;
 import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.*;
+import io.milvus.v2.service.resourcegroup.request.*;
+import io.milvus.v2.service.resourcegroup.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.*;
 import io.milvus.v2.service.vector.response.*;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.RandomStringGenerator;
 
 import org.junit.jupiter.api.Assertions;
@@ -2111,5 +2115,81 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(groupsPlivileges.containsKey("dummy"));
         Assertions.assertEquals(1, groupsPlivileges.get("dummy").size());
         Assertions.assertEquals("CreateCollection", groupsPlivileges.get("dummy").get(0));
+    }
+
+    @Test
+    void testResourceGroup() {
+        String groupA = "group_A";
+        String groupDefault = "__default_resource_group";
+        client.createResourceGroup(CreateResourceGroupReq.builder()
+                .groupName(groupA)
+                .config(ResourceGroupConfig.newBuilder()
+                        .withRequests(new ResourceGroupLimit(3))
+                        .withLimits(new ResourceGroupLimit(4))
+                        .withFrom(Collections.singletonList(new ResourceGroupTransfer(groupDefault)))
+                        .withTo(Collections.singletonList(new ResourceGroupTransfer(groupDefault)))
+                        .build())
+                .build());
+
+        ListResourceGroupsResp listResp = client.listResourceGroups(ListResourceGroupsReq.builder().build());
+        List<String> groupNames = listResp.getGroupNames();
+        Assertions.assertEquals(2, groupNames.size());
+        Assertions.assertTrue(groupNames.contains(groupA));
+        Assertions.assertTrue(groupNames.contains(groupDefault));
+
+        // A
+        DescribeResourceGroupResp descResp = client.describeResourceGroup(DescribeResourceGroupReq.builder()
+                .groupName(groupA)
+                .build());
+        Assertions.assertEquals(groupA, descResp.getGroupName());
+        Assertions.assertEquals(3, descResp.getCapacity());
+        Assertions.assertEquals(1, descResp.getNumberOfAvailableNode());
+
+        ResourceGroupConfig config = descResp.getConfig();
+        Assertions.assertEquals(3, config.getRequests().getNodeNum());
+        Assertions.assertEquals(4, config.getLimits().getNodeNum());
+
+        Assertions.assertEquals(1, config.getFrom().size());
+        Assertions.assertEquals(groupDefault, config.getFrom().get(0).getResourceGroupName());
+        Assertions.assertEquals(1, config.getTo().size());
+        Assertions.assertEquals(groupDefault, config.getTo().get(0).getResourceGroupName());
+
+        List<NodeInfo> nodes = descResp.getNodes();
+        Assertions.assertEquals(1, nodes.size());
+        Assertions.assertTrue(nodes.get(0).getNodeId() > 0L);
+        Assertions.assertTrue(StringUtils.isNotEmpty(nodes.get(0).getAddress()));
+        Assertions.assertTrue(StringUtils.isNotEmpty(nodes.get(0).getHostname()));
+
+        // update
+        Map<String, ResourceGroupConfig> resourceGroups = new HashMap<>();
+        resourceGroups.put(groupA, ResourceGroupConfig.newBuilder()
+                .withRequests(new ResourceGroupLimit(0))
+                .withLimits(new ResourceGroupLimit(0))
+                .build());
+        client.updateResourceGroups(UpdateResourceGroupsReq.builder()
+                .resourceGroups(resourceGroups)
+                .build());
+
+        descResp = client.describeResourceGroup(DescribeResourceGroupReq.builder()
+                .groupName(groupA)
+                .build());
+
+        config = descResp.getConfig();
+        Assertions.assertEquals(0, config.getRequests().getNodeNum());
+        Assertions.assertEquals(0, config.getLimits().getNodeNum());
+        Assertions.assertTrue(config.getFrom().isEmpty());
+        Assertions.assertTrue(config.getTo().isEmpty());
+
+        // drop
+        client.dropResourceGroup(DropResourceGroupReq.builder()
+                .groupName(groupA)
+                .build());
+
+        // transfer
+        String collectionName = generator.generate(10);
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .dimension(DIMENSION)
+                .build());
     }
 }
