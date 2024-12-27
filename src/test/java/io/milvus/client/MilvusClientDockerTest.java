@@ -76,7 +76,7 @@ import java.util.concurrent.TimeUnit;
 class MilvusClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
-    private static final int DIMENSION = 128;
+    private static final int DIMENSION = 256;
     private static final int ARRAY_CAPACITY = 100;
     private static final float FLOAT16_PRECISION = 0.001f;
     private static final float BFLOAT16_PRECISION = 0.01f;
@@ -2718,7 +2718,7 @@ class MilvusClientDockerTest {
             localBulkWriter.commit(false);
             List<List<String>> files = localBulkWriter.getBatchFiles();
             System.out.printf("LocalBulkWriter done! output local files: %s%n", files);
-            Assertions.assertEquals(files.size(), 2);
+            Assertions.assertEquals(files.size(), 3);
             Assertions.assertEquals(files.get(0).size(), 1);
             batchFiles.addAll(files);
         } catch (Exception e) {

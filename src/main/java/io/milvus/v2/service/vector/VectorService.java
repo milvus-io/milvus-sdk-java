@@ -51,6 +51,22 @@ public class VectorService extends BaseService {
     public IndexService indexService = new IndexService();
     private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
 
+    private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                          String databaseName, String collectionName) {
+        String msg = String.format("Fail to describe collection '%s'", collectionName);
+        DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(databaseName)) {
+            builder.setDbName(databaseName);
+            msg = String.format("Fail to describe collection '%s' in database '%s'",
+                    collectionName, databaseName);
+        }
+        DescribeCollectionRequest describeCollectionRequest = builder.build();
+        DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
+        rpcUtils.handleResponse(msg, response.getStatus());
+        return response;
+    }
+
     /**
      * This method is for insert/upsert requests to reduce the rpc call of describeCollection()
      * Always try to get the collection info from cache.
@@ -62,22 +78,15 @@ public class VectorService extends BaseService {
         String key = combineCacheKey(databaseName, collectionName);
         DescribeCollectionResponse info = cacheCollectionInfo.get(key);
         if (info == null) {
-            String msg = String.format("Fail to describe collection '%s'", collectionName);
-            DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
-                    .setCollectionName(collectionName);
-            if (StringUtils.isNotEmpty(databaseName)) {
-                builder.setDbName(databaseName);
-                msg = String.format("Fail to describe collection '%s' in database '%s'",
-                        collectionName, databaseName);
-            }
-            DescribeCollectionRequest describeCollectionRequest = builder.build();
-            DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
-            rpcUtils.handleResponse(msg, response.getStatus());
-            info = response;
+            info = describeCollection(blockingStub, databaseName, collectionName);
             cacheCollectionInfo.put(key, info);
         }
 
         return info;
+    }
+
+    public void cleanCollectionCache() {
+        cacheCollectionInfo.clear();
     }
 
     private String combineCacheKey(String databaseName, String collectionName) {
@@ -202,7 +211,7 @@ public class VectorService extends BaseService {
 
     public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                            QueryIteratorReq request) {
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResponse descResp = describeCollection(blockingStub, request.getDatabaseName(), request.getCollectionName());
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new QueryIterator(request, blockingStub, pkField);
@@ -210,7 +219,7 @@ public class VectorService extends BaseService {
 
     public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                             SearchIteratorReq request) {
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName());
+        DescribeCollectionResponse descResp = describeCollection(blockingStub, request.getDatabaseName(), request.getCollectionName());
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new SearchIterator(request, blockingStub, pkField);
