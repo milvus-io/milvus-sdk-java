@@ -1,3 +1,22 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package io.milvus.common.resourcegroup;
 
 import java.util.stream.Collectors;
@@ -12,10 +31,12 @@ public class ResourceGroupConfig {
     private final ResourceGroupLimit limits;
     private final List<ResourceGroupTransfer> from;
     private final List<ResourceGroupTransfer> to;
+    private final ResourceGroupNodeFilter nodeFilter;
 
     private ResourceGroupConfig(Builder builder) {
         this.requests = builder.requests;
         this.limits = builder.limits;
+        this.nodeFilter = builder.nodeFilter;
 
         if (null == builder.from) {
             this.from = new ArrayList<>();
@@ -39,6 +60,7 @@ public class ResourceGroupConfig {
         private ResourceGroupLimit limits;
         private List<ResourceGroupTransfer> from;
         private List<ResourceGroupTransfer> to;
+        private ResourceGroupNodeFilter nodeFilter;
 
         private Builder() {
         }
@@ -87,6 +109,17 @@ public class ResourceGroupConfig {
             return this;
         }
 
+        /**
+         * Set the node filter.
+         * @param nodeFilter if node filter set, resource group will prefer to accept node which match node filter.
+         * @return <code>Builder</code>
+         */
+
+        public Builder withNodeFilter(@NonNull ResourceGroupNodeFilter nodeFilter) {
+            this.nodeFilter = nodeFilter;
+            return this;
+        }
+
         public ResourceGroupConfig build() {
             return new ResourceGroupConfig(this);
         }
@@ -101,12 +134,14 @@ public class ResourceGroupConfig {
         this.to = grpcConfig.getTransferToList().stream()
                 .map(transfer -> new ResourceGroupTransfer(transfer))
                 .collect(Collectors.toList());
+        this.nodeFilter = new ResourceGroupNodeFilter(grpcConfig.getNodeFilter());
     }
 
     public @NonNull io.milvus.grpc.ResourceGroupConfig toGRPC() {
         io.milvus.grpc.ResourceGroupConfig.Builder builder = io.milvus.grpc.ResourceGroupConfig.newBuilder()
                 .setRequests(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(requests.getNodeNum()))
-                .setLimits(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(limits.getNodeNum()));
+                .setLimits(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(limits.getNodeNum()))
+                .setNodeFilter(nodeFilter.toGRPC());
         for (ResourceGroupTransfer transfer : from) {
             builder.addTransferFrom(transfer.toGRPC());
         }
