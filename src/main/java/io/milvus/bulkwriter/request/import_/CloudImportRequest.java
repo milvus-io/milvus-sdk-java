@@ -34,6 +34,7 @@ public class CloudImportRequest extends BaseImportRequest {
     private String accessKey;
     private String secretKey;
     private String clusterId;
+    private String dbName;
     private String collectionName;
     private String partitionName;
 }
