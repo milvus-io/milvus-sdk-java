@@ -70,7 +70,7 @@ import java.util.concurrent.TimeUnit;
 class MilvusClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
-    private static final int DIMENSION = 128;
+    private static final int DIMENSION = 256;
     private static final int ARRAY_CAPACITY = 100;
     private static final float FLOAT16_PRECISION = 0.001f;
     private static final float BFLOAT16_PRECISION = 0.01f;

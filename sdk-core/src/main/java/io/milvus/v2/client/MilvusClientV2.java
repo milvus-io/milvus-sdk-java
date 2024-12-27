@@ -279,6 +279,7 @@ public class MilvusClientV2 {
         // check if database exists
         clientUtils.checkDatabaseExist(this.getRpcStub(), dbName);
         try {
+            this.vectorService.cleanCollectionCache();
             this.connectConfig.setDbName(dbName);
             this.close(3);
             this.connect(this.connectConfig);
