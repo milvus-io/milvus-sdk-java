@@ -10,5 +10,5 @@ public class TransferReplicaReq {
     private String targetGroupName;
     private String collectionName;
     private String databaseName;
-    private long numberOfReplicas;
+    private Long numberOfReplicas;
 }
