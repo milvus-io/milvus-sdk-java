@@ -140,14 +140,22 @@ public class ResourceGroupConfig {
     public @NonNull io.milvus.grpc.ResourceGroupConfig toGRPC() {
         io.milvus.grpc.ResourceGroupConfig.Builder builder = io.milvus.grpc.ResourceGroupConfig.newBuilder()
                 .setRequests(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(requests.getNodeNum()))
-                .setLimits(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(limits.getNodeNum()))
-                .setNodeFilter(nodeFilter.toGRPC());
-        for (ResourceGroupTransfer transfer : from) {
-            builder.addTransferFrom(transfer.toGRPC());
+                .setLimits(io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(limits.getNodeNum()));
+
+        if (from != null) {
+            for (ResourceGroupTransfer transfer : from) {
+                builder.addTransferFrom(transfer.toGRPC());
+            }
         }
-        for (ResourceGroupTransfer transfer : to) {
-            builder.addTransferTo(transfer.toGRPC());
+        if (to != null) {
+            for (ResourceGroupTransfer transfer : to) {
+                builder.addTransferTo(transfer.toGRPC());
+            }
         }
+        if (nodeFilter != null) {
+            builder.setNodeFilter(nodeFilter.toGRPC());
+        }
+
         return builder.build();
     }
 }

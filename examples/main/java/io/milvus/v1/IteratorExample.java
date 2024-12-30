@@ -172,17 +172,18 @@ public class IteratorExample {
             R<MutationResult> response = milvusClient.insert(insertParam);
             CommonUtils.handleResponseStatus(response);
 
-            R<FlushResponse> flush = milvusClient.flush(FlushParam.newBuilder().addCollectionName(COLLECTION_NAME).build());
-            CommonUtils.handleResponseStatus(flush);
-
-            GetCollectionStatisticsParam collectionStatisticsParam = GetCollectionStatisticsParam.newBuilder().withCollectionName(COLLECTION_NAME).build();
-            R<GetCollectionStatisticsResponse> collectionStatistics = milvusClient.getCollectionStatistics(collectionStatisticsParam);
-            CommonUtils.handleResponseStatus(collectionStatistics);
-            GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(collectionStatistics.getData());
-
-            System.out.printf("Finish insert batch%s, number of entities in Milvus: %s\n", batch, wrapper.getRowCount());
+            System.out.printf("Finish insert batch No.%d\n", batch);
         }
 
+        GetCollectionStatisticsParam collectionStatisticsParam = GetCollectionStatisticsParam.newBuilder()
+                .withCollectionName(COLLECTION_NAME)
+                .withFlush(true)
+                .build();
+        R<GetCollectionStatisticsResponse> collectionStatistics = milvusClient.getCollectionStatistics(collectionStatisticsParam);
+        CommonUtils.handleResponseStatus(collectionStatistics);
+        GetCollStatResponseWrapper wrapper = new GetCollStatResponseWrapper(collectionStatistics.getData());
+
+        System.out.printf("Number of entities in collection: %d\n", wrapper.getRowCount());
     }
 
     private void reCreateCollection() {
