@@ -32,7 +32,7 @@ import java.util.List;
 @NoArgsConstructor
 public class MilvusImportRequest extends BaseImportRequest {
     private static final long serialVersionUID = -1958858397962018740L;
-//    private String dbName; // wait until server-side fully supports it
+    private String dbName;
     private String collectionName;
     private String partitionName;
     private List<List<String>> files;
