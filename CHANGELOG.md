@@ -1,4 +1,16 @@
 # Changelog
+
+## milvus-sdk-java 2.4.10 (2024-12-31)
+### Feature
+- Support alterCollectionField interface for V2
+- Support refreshLoad/getPartitionStats interfaces for V2
+- Support dropIndexProperties/dropDatabaseProperties/dropCollectionProperties for V2
+- Support resource group interfaces for V2
+
+### Improvement
+- Return recall rate in search result for V2
+- QueryIterator/SearchIterator support retry
+
 ## milvus-sdk-java 2.4.9 (2024-11-26)
 
 ### Feature
