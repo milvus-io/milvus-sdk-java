@@ -257,7 +257,7 @@ public class SearchIterator {
         fillVectorsByPlType(searchParamBuilder);
 
         SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParamBuilder.build());
-        SearchResults response = blockingStub.search(searchRequest);
+        SearchResults response = rpcUtils.retry(()->blockingStub.search(searchRequest));
 
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
