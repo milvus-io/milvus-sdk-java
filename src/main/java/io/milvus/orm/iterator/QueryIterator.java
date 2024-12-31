@@ -190,8 +190,7 @@ public class QueryIterator {
                 .build();
 
         QueryRequest queryRequest = ParamUtils.convertQueryParam(queryParam);
-        QueryResults response = blockingStub.query(queryRequest);
-
+        QueryResults response = rpcUtils.retry(()->blockingStub.query(queryRequest));
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
