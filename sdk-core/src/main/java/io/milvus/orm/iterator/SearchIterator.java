@@ -282,7 +282,7 @@ public class SearchIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        SearchResults response = blockingStub.search(builder.build());
+        SearchResults response = rpcUtils.retry(()->blockingStub.search(builder.build()));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;

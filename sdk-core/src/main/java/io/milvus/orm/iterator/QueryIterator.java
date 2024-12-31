@@ -230,7 +230,7 @@ public class QueryIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        QueryResults response = blockingStub.query(builder.build());
+        QueryResults response = rpcUtils.retry(()->blockingStub.query(builder.build()));
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
