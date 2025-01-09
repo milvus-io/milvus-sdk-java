@@ -378,7 +378,7 @@ public class VectorUtils {
             data.add(vector.getData());
         }
 
-        ByteString byteStr = ParamUtils.convertPlaceholder(data, plType);
+        ByteString byteStr = convertPlaceholder(data, plType);
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(vectors.size());
 
