@@ -25,7 +25,7 @@
 
     <groupId>io.milvus</groupId>
     <artifactId>milvus-sdk-java-examples</artifactId>
-    <version>2.5.3</version>
+    <version>${revision}</version>
 
     <build>
         <plugins>
@@ -42,6 +42,7 @@
     </build>
 
     <properties>
+        <revision>2.5.4</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -64,12 +65,12 @@
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>2.5.3</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java-bulkwriter</artifactId>
-            <version>2.5.3</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.tensorflow</groupId>
