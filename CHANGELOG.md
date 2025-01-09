@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.5.4 (2025-1-09)
+### Improvement
+- HybridSearch supports full text search
+
 ## milvus-sdk-java 2.5.3 (2024-12-31)
 ### Feature
 - Support alterCollectionField interface for V2
