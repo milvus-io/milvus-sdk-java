@@ -778,7 +778,7 @@ public class MilvusClientV2 {
      * @param request {@link ListResourceGroupsReq}
      * @return ListResourceGroupsResp
      */
-    ListResourceGroupsResp listResourceGroups(ListResourceGroupsReq request) {
+    public ListResourceGroupsResp listResourceGroups(ListResourceGroupsReq request) {
         return rpcUtils.retry(()->rgroupService.listResourceGroups(this.getRpcStub(), request));
     }
 
@@ -788,7 +788,7 @@ public class MilvusClientV2 {
      * @param request {@link DescribeResourceGroupReq}
      * @return DescribeResourceGroupResp
      */
-    DescribeResourceGroupResp describeResourceGroup(DescribeResourceGroupReq request) {
+    public DescribeResourceGroupResp describeResourceGroup(DescribeResourceGroupReq request) {
         return rpcUtils.retry(()->rgroupService.describeResourceGroup(this.getRpcStub(), request));
     }
 
