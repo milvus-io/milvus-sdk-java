@@ -79,7 +79,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:master-20241218-5394f478-amd64");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.2");
 
     @BeforeAll
     public static void setUp() {
