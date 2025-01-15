@@ -77,14 +77,17 @@ public class CollectionService extends BaseService {
                 .setEnableDynamicField(request.getEnableDynamicField())
                 .build();
 
-        CreateCollectionRequest createCollectionRequest = CreateCollectionRequest.newBuilder()
+        CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(schema.toByteString())
                 .setShardsNum(request.getNumShards())
-                .setConsistencyLevelValue(request.getConsistencyLevel().getCode())
-                .build();
+                .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
 
-        Status status = blockingStub.createCollection(createCollectionRequest);
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        Status status = blockingStub.createCollection(builder.build());
         rpcUtils.handleResponse(title, status);
 
         //create index
@@ -132,7 +135,12 @@ public class CollectionService extends BaseService {
         CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchemaBuilder.build().toByteString())
-                .setShardsNum(request.getNumShards());
+                .setShardsNum(request.getNumShards())
+                .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
