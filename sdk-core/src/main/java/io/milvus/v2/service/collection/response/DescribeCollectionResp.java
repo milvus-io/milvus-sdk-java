@@ -46,6 +46,7 @@ public class DescribeCollectionResp {
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
     private ConsistencyLevel consistencyLevel;
+    private Integer shardsNum;
     @Builder.Default
     private final Map<String, String> properties = new HashMap<>();
 }
