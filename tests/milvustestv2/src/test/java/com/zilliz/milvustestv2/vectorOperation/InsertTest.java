@@ -38,7 +38,7 @@ public class InsertTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        simpleCollectionName = CommonFunction.createSimpleCollection(CommonData.dim, null);
+        simpleCollectionName = CommonFunction.createSimpleCollection(CommonData.dim, null,false);
         nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
     }
     @AfterClass(alwaysRun = true)

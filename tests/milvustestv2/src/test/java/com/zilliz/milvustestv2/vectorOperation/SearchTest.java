@@ -7,32 +7,16 @@ import com.zilliz.milvustestv2.common.CommonData;
 import com.zilliz.milvustestv2.common.CommonFunction;
 import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.DataProviderUtils;
-import com.zilliz.milvustestv2.utils.GenerateUtil;
-import com.zilliz.milvustestv2.utils.MathUtil;
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.grpc.FlushResponse;
-import io.milvus.grpc.SearchResults;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.R;
-import io.milvus.param.collection.FlushParam;
-import io.milvus.param.dml.SearchParam;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
-import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.GetCollectionStatsReq;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.*;
-import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
-import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
-import io.milvus.v2.service.vector.request.data.FloatVec;
-import io.milvus.v2.service.vector.response.InsertResp;
-import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.Assert;
@@ -41,10 +25,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Author yongpeng.li
@@ -161,15 +142,15 @@ public class SearchTest extends BaseTest {
     @BeforeClass(alwaysRun = true)
     public void providerCollection() {
         newCollectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0, CommonData.numberEntities * 10, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollectionName).data(jsonObjects).build());
         nullableDefaultCollectionName = CommonFunction.createNewNullableDefaultValueCollection(CommonData.dim, null, DataType.FloatVector);
         // insert data
-        List<JsonObject> jsonNullableObjects = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonNullableObjects = CommonFunction.generateSimpleNullData(0, CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).data(jsonNullableObjects).build());
         // create partition
-        CommonFunction.createPartition(nullableDefaultCollectionName,CommonData.partitionNameA);
-        List<JsonObject> jsonObjectsA = CommonFunction.generateSimpleNullData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        CommonFunction.createPartition(nullableDefaultCollectionName, CommonData.partitionNameA);
+        List<JsonObject> jsonObjectsA = CommonFunction.generateSimpleNullData(0, CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(nullableDefaultCollectionName).partitionName(CommonData.partitionNameA).data(jsonObjectsA).build());
     }
 
@@ -394,5 +375,127 @@ public class SearchTest extends BaseTest {
         System.out.println(search);
         Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
+    }
+
+    @Test(description = "search by group size", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void searchByGroupSize(String collectionName, DataType vectorType) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .groupByFieldName(CommonData.fieldInt8)
+                .groupSize(CommonData.groupSize)
+                .data(data)
+                .topK(1000)
+                .build());
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        if (vectorType != DataType.SparseFloatVector) {
+            Assert.assertTrue(search.getSearchResults().get(0).size() > 127);
+        }
+    }
+
+    @Test(description = "search by group size and topK", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void searchByGroupSizeAndTopK(String collectionName, DataType vectorType) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .groupByFieldName(CommonData.fieldInt8)
+                .groupSize(CommonData.groupSize)
+                .data(data)
+                .topK(10)
+                .build());
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        if (vectorType != DataType.SparseFloatVector) {
+            Assert.assertTrue(search.getSearchResults().get(0).size() >= 10);
+        }
+    }
+
+    @Test(description = "search by group size and topK and strict", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void searchByGroupSizeAndTopKAndStrict(String collectionName, DataType vectorType) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .groupByFieldName(CommonData.fieldInt8)
+                .groupSize(CommonData.groupSize)
+                .data(data)
+                .strictGroupSize(true)
+                .topK(10)
+                .build());
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        if (vectorType != DataType.SparseFloatVector) {
+            Assert.assertEquals(search.getSearchResults().get(0).size(), 10 * CommonData.groupSize);
+        }
+    }
+
+    @Test(description = "search enable recall calculation", groups = {"Cloud","L1"}, dataProvider = "VectorTypeList")
+    public void searchEnableRecallCalculation(String collectionName, DataType vectorType) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        Map<String, Object> params = new HashMap<>();
+        params.put("level", 1);
+        params.put("enable_recall_calculation", true);
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .data(data)
+                .topK(10)
+                .searchParams(params)
+                .build());
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        // 云上实例才有recall
+       /* if (vectorType != DataType.SparseFloatVector) {
+            Assert.assertTrue(search.getRecalls().get(0) > 0);
+        }*/
+    }
+
+    @Test(description = "search with expression template", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void searchWithExpressionTemplate(String collectionName, DataType vectorType) {
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        Map<String, Map<String, Object>> expressionTemplateValues = new HashMap<>();
+        List<Object> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        Map<String, Object> params = new HashMap<>();
+        params.put("list", list);
+        params.put("list2", Lists.newArrayList(11,12,13,14,15,16,17,18,19,20));
+        expressionTemplateValues.put(CommonData.fieldInt64 + " in {list}", params);
+        expressionTemplateValues.put(CommonData.fieldInt64 + " in {list2}", params);
+        expressionTemplateValues.forEach((key, value) -> {
+            SearchResp search = milvusClientV2.search(SearchReq.builder()
+                    .collectionName(collectionName)
+                    .outputFields(Lists.newArrayList("*"))
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .filter(key)
+                    .filterTemplateValues(value)
+                    .data(data)
+                    .topK(100)
+                    .build());
+            Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+            if (vectorType != DataType.SparseFloatVector) {
+                Assert.assertEquals(search.getSearchResults().get(0).size(), 10);
+            }
+        });
+    }
+
+    @Test(description = "search use hints", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    public void searchWithHints(String collectionName, DataType vectorType){
+        List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
+        Map<String,Object> params=new HashMap<>();
+        params.put("hints","iterative_filter");
+        SearchResp search = milvusClientV2.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .data(data)
+                .searchParams(params)
+                .topK(10)
+                .build());
+        Assert.assertEquals(search.getSearchResults().size(), CommonData.nq);
+        if (vectorType != DataType.SparseFloatVector) {
+            Assert.assertEquals(search.getSearchResults().get(0).size(), 10 );
+        }
     }
 }
