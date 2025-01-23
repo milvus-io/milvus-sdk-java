@@ -6,21 +6,18 @@ import com.zilliz.milvustestv2.common.CommonFunction;
 import io.milvus.param.Constant;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.index.request.AlterIndexReq;
+import io.milvus.v2.service.index.request.AlterIndexPropertiesReq;
 import io.milvus.v2.service.index.request.DescribeIndexReq;
 import io.milvus.v2.service.index.request.ListIndexesReq;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
-import io.milvus.v2.service.vector.request.DeleteReq;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class AlterIndexTest extends BaseTest {
+public class AlterIndexPropertiesTest extends BaseTest {
     private String collectionName;
 
     @BeforeClass(alwaysRun = true)
@@ -35,25 +32,17 @@ public class AlterIndexTest extends BaseTest {
                 .collectionName(collectionName).build());
     }
 
-    @Test(description = "alter index mmap", groups = {"Smoke"})
-    public void alterIndexMMapTest() {
+    @Test(description = "alter index properties", groups = {"Smoke"})
+    public void alterIndexProperties() {
         List<String> strings = milvusClientV2.listIndexes(ListIndexesReq.builder()
                 .collectionName(collectionName).build());
-        System.out.println(strings);
-        Map<String, String> stringMap = new HashMap<>();
-        stringMap.put(Constant.MMAP_ENABLED, "true");
-        milvusClientV2.alterIndex(AlterIndexReq.builder()
-                .indexName(strings.get(0))
+        milvusClientV2.alterIndexProperties(AlterIndexPropertiesReq.builder()
                 .collectionName(collectionName)
-                .properties(stringMap)
-                .build());
+                .indexName(strings.get(0))
+                .property(Constant.MMAP_ENABLED,"true").build());
         DescribeIndexResp describeIndexResp = milvusClientV2.describeIndex(DescribeIndexReq.builder()
                 .collectionName(collectionName)
                 .indexName(strings.get(0)).build());
-        System.out.println(describeIndexResp);
         Assert.assertTrue(describeIndexResp.getIndexDescriptions().get(0).getProperties().get(Constant.MMAP_ENABLED).equalsIgnoreCase("true"));
-
     }
-
-
 }
