@@ -2,9 +2,7 @@ package com.zilliz.milvustestv2.database;
 
 import com.zilliz.milvustestv2.common.BaseTest;
 import com.zilliz.milvustestv2.common.CommonData;
-import com.zilliz.milvustestv2.common.CommonFunction;
 import io.milvus.v2.common.DataType;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.database.request.CreateDatabaseReq;
 import io.milvus.v2.service.database.request.DropDatabaseReq;
 import io.milvus.v2.service.database.response.ListDatabasesResp;

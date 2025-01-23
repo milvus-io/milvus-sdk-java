@@ -10,6 +10,7 @@ import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.collection.request.GetLoadStateReq;
 import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
 import io.milvus.v2.service.partition.request.LoadPartitionsReq;
@@ -43,17 +44,18 @@ public class LoadPartitionsTest extends BaseTest {
                 .collectionName(newCollection)
                 .partitionName(CommonData.partitionName)
                 .build());
-        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0,CommonData.numberEntities, CommonData.dim,DataType.FloatVector);
+        List<JsonObject> jsonObjects = CommonFunction.generateDefaultData(0, CommonData.numberEntities, CommonData.dim, DataType.FloatVector);
         milvusClientV2.insert(InsertReq.builder().collectionName(newCollection).partitionName(CommonData.partitionName).data(jsonObjects).build());
-        CommonFunction.createVectorIndex(newCollection,CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
+        CommonFunction.createVectorIndex(newCollection, CommonData.fieldFloatVector, IndexParam.IndexType.HNSW, IndexParam.MetricType.L2);
     }
+
     @AfterClass(alwaysRun = true)
-    public void cleanTestData(){
+    public void cleanTestData() {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollection).build());
     }
 
-    @Test(description = "Load partition",groups = {"Smoke"})
-    public void loadPartition(){
+    @Test(description = "Load partition", groups = {"Smoke"})
+    public void loadPartition() {
         milvusClientV2.loadPartitions(LoadPartitionsReq.builder()
                 .collectionName(newCollection)
                 .partitionNames(Collections.singletonList(CommonData.partitionName))
@@ -61,7 +63,9 @@ public class LoadPartitionsTest extends BaseTest {
 
         List<List<Float>> vectors = GenerateUtil.generateFloatVector(10, 3, CommonData.dim);
         List<BaseVector> data = new ArrayList<>();
-        vectors.forEach((v)->{data.add(new FloatVec(v));});
+        vectors.forEach((v) -> {
+            data.add(new FloatVec(v));
+        });
         SearchResp searchResp = milvusClientV2.search(SearchReq.builder()
                 .collectionName(newCollection)
                 .outputFields(Lists.newArrayList("*"))
@@ -72,5 +76,12 @@ public class LoadPartitionsTest extends BaseTest {
                 .topK(CommonData.topK)
                 .build());
         Assert.assertEquals(searchResp.getSearchResults().size(), CommonData.topK);
+    }
+
+    @Test(description = "get load state by partition", groups = "Smoke", dependsOnMethods = {"loadPartition"})
+    public void getLoadStateByPartition() {
+        Boolean loadState = milvusClientV2.getLoadState(GetLoadStateReq.builder().collectionName(newCollection)
+                .partitionName(CommonData.partitionName).build());
+        Assert.assertTrue(loadState);
     }
 }
