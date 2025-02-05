@@ -34,7 +34,7 @@ volumes/
 
 # Example files
 examples/bulk_writer
-examples/main/resources/tls/*
-!examples/main/resources/tls/gen.sh
-!examples/main/resources/tls/openssl.cnf
+examples/src/main/resources/tls/*
+!examples/src/main/resources/tls/gen.sh
+!examples/src/main/resources/tls/openssl.cnf
 
