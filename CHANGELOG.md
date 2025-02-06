@@ -1,5 +1,6 @@
 # Changelog
 
+
 ## milvus-sdk-java 2.5.4 (2025-1-09)
 ### Improvement
 - HybridSearch supports full text search
