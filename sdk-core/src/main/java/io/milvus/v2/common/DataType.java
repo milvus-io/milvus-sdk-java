@@ -21,6 +21,8 @@ package io.milvus.v2.common;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+
 @Getter
 public enum DataType {
     None(0),
@@ -49,4 +51,11 @@ public enum DataType {
         this.code = code;
     }
     ;
+
+    public static DataType forNumber(int code) {
+        return Arrays.stream(DataType.values())
+                .filter(dataType -> dataType.code == code)
+                .findFirst()
+                .orElse(null);
+    }
 }

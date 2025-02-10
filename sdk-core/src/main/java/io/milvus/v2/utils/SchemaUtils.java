@@ -21,15 +21,27 @@ package io.milvus.v2.utils;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.*;
+import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.FunctionSchema;
+import io.milvus.grpc.FunctionType;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.ValueField;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
+import static io.milvus.param.ParamUtils.AssembleKvPair;
 
 public class SchemaUtils {
     public static void checkNullEmptyString(String target, String title) {
@@ -62,32 +74,42 @@ public class SchemaUtils {
             }
         }
 
+        // assemble typeParams for FieldSchema
+        Map<String, String> typeParams = fieldSchema.getTypeParams() == null ? new HashMap<>() : fieldSchema.getTypeParams();
         if(fieldSchema.getDimension() != null){
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("dim").setValue(String.valueOf(fieldSchema.getDimension())).build()).build();
+            typeParams.put("dim", String.valueOf(fieldSchema.getDimension()));
         }
 //        if (Objects.equals(fieldSchema.getName(), partitionKeyField)) {
 //            schema = schema.toBuilder().setIsPartitionKey(Boolean.TRUE).build();
 //        }
         if(fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null){
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();
+            typeParams.put("max_length", String.valueOf(fieldSchema.getMaxLength()));
         }
         if (fieldSchema.getDataType() == io.milvus.v2.common.DataType.Array) {
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("max_capacity").setValue(String.valueOf(fieldSchema.getMaxCapacity())).build()).build();
             builder.setElementType(DataType.valueOf(fieldSchema.getElementType().name())).build();
+            if (fieldSchema.getMaxCapacity() != null) {
+                typeParams.put("max_capacity", String.valueOf(fieldSchema.getMaxCapacity()));
+            }
+
             if (fieldSchema.getElementType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null) {
-                builder.addTypeParams(KeyValuePair.newBuilder().setKey("max_length").setValue(String.valueOf(fieldSchema.getMaxLength())).build()).build();
+                typeParams.put("max_length", String.valueOf(fieldSchema.getMaxLength()));
             }
         }
 
         if (fieldSchema.getEnableAnalyzer() != null) {
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("enable_analyzer").setValue(String.valueOf(fieldSchema.getEnableAnalyzer())).build()).build();
+            typeParams.put("enable_analyzer", String.valueOf(fieldSchema.getEnableAnalyzer()));
         }
         if (fieldSchema.getEnableMatch() != null) {
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("enable_match").setValue(String.valueOf(fieldSchema.getEnableMatch())).build()).build();
+            typeParams.put("enable_match", String.valueOf(fieldSchema.getEnableMatch()));
         }
         if (fieldSchema.getAnalyzerParams() != null) {
             String params = JsonUtils.toJson(fieldSchema.getAnalyzerParams());
-            builder.addTypeParams(KeyValuePair.newBuilder().setKey("analyzer_params").setValue(params).build()).build();
+            typeParams.put("analyzer_params", params);
+        }
+
+        List<KeyValuePair> typeParamsList = AssembleKvPair(typeParams);
+        if (CollectionUtils.isNotEmpty(typeParamsList)) {
+            typeParamsList.forEach(builder::addTypeParams);
         }
         return builder.build();
     }

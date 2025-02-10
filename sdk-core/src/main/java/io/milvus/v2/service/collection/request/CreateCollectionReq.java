@@ -38,6 +38,7 @@ import java.util.Map;
 @Data
 @SuperBuilder
 public class CreateCollectionReq {
+    private String databaseName;
     @NonNull
     private String collectionName;
     @Builder.Default
@@ -154,6 +155,7 @@ public class CreateCollectionReq {
                     .enableAnalyzer(addFieldReq.getEnableAnalyzer())
                     .enableMatch(addFieldReq.getEnableMatch())
                     .analyzerParams(addFieldReq.getAnalyzerParams())
+                    .typeParams(addFieldReq.getTypeParams())
                     .build();
             if (addFieldReq.getDataType().equals(DataType.Array)) {
                 if (addFieldReq.getElementType() == null) {
@@ -216,6 +218,9 @@ public class CreateCollectionReq {
         private Boolean enableAnalyzer; // for BM25 tokenizer
         Map<String, Object> analyzerParams; // for BM25 tokenizer
         private Boolean enableMatch; // for BM25 keyword search
+
+        // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
+        private Map<String, String> typeParams;
     }
 
     @Data
