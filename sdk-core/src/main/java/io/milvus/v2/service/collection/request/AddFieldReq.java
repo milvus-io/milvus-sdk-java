@@ -56,6 +56,9 @@ public class AddFieldReq {
     Map<String, Object> analyzerParams; // for BM25 tokenizer
     private Boolean enableMatch; // for BM25 keyword search
 
+    // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
+    private Map<String, String> typeParams;
+
     AddFieldReq setDefaultValue(Object obj) {
         enableDefaultValue = true; // automatically set this flag
         this.defaultValue = obj;

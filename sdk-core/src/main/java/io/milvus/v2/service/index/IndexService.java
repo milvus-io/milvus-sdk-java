@@ -51,6 +51,11 @@ public class IndexService extends BaseService {
                             .setKey(Constant.INDEX_TYPE)
                             .setValue(indexParam.getIndexType().getName())
                             .build());
+
+            if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+                builder.setDbName(request.getDatabaseName());
+            }
+
             if(indexParam.getMetricType()!= null){
                 // only vector field has a metric type
                 builder.addExtraParams(KeyValuePair.newBuilder()

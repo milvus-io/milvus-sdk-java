@@ -29,6 +29,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class CreateIndexReq {
+    private String databaseName;
     @NonNull
     private String collectionName;
     private List<IndexParam> indexParams;
