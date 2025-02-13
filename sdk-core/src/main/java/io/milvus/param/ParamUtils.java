@@ -61,6 +61,7 @@ public class ParamUtils {
         typeErrMsg.put(DataType.Float, "Type mismatch for field '%s': Float field value type must be Float.");
         typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be Double.");
         typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be String."); // actually String type is useless
+        typeErrMsg.put(DataType.JSON, "Type mismatch for field '%s': JSON field value type must be JSON, current type: %s.");
         typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be String, and the string length must shorter than max_length.");
         typeErrMsg.put(DataType.Array, "Type mismatch for field '%s': Array field value type must be List<Object>, each object type must be element_type, and the array length must be shorter than max_capacity.");
         typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be List<Float>.");
@@ -284,7 +285,7 @@ public class ParamUtils {
                         continue;
                     }
                     if (!(value instanceof JsonElement)) {
-                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName(), value.getClass().getName()));
                     }
                 }
                 break;
