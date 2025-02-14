@@ -33,6 +33,8 @@ public class LoadPartitionsReq {
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
     @Builder.Default
+    private Integer numReplicas = 1;
+    @Builder.Default
     private Boolean refresh = Boolean.FALSE;
     @Builder.Default
     private List<String> loadFields = new ArrayList<>();
