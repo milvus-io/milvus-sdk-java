@@ -99,6 +99,7 @@ public class PartitionService extends BaseService {
         io.milvus.grpc.LoadPartitionsRequest loadPartitionsRequest = io.milvus.grpc.LoadPartitionsRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .addAllPartitionNames(request.getPartitionNames())
+                .setReplicaNumber(request.getNumReplicas())
                 .setRefresh(request.getRefresh())
                 .addAllLoadFields(request.getLoadFields())
                 .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
