@@ -19,10 +19,12 @@
 
 package io.milvus.bulkwriter;
 
-import com.google.gson.JsonObject;
 import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
+import io.milvus.bulkwriter.writer.FormatFileWriter;
 import io.milvus.param.collection.CollectionSchemaParam;
+import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,110 +35,115 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(LocalBulkWriter.class);
-    protected String localPath;
-    private String uuid;
-    private int flushCount;
+
     private Map<String, Thread> workingThread;
     private ReentrantLock workingThreadLock;
     private List<List<String>> localFiles;
-    private final Map<String, Object> config;
 
     public LocalBulkWriter(LocalBulkWriterParam bulkWriterParam) throws IOException {
-        super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType());
-        this.localPath = bulkWriterParam.getLocalPath();
-        this.uuid = UUID.randomUUID().toString();
+        super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType(), bulkWriterParam.getLocalPath(), bulkWriterParam.getConfig());
         this.workingThreadLock = new ReentrantLock();
         this.workingThread = new HashMap<>();
         this.localFiles = Lists.newArrayList();
-        this.config = bulkWriterParam.getConfig();
-        this.makeDir();
     }
 
     protected LocalBulkWriter(CollectionSchemaParam collectionSchema,
-                              int chunkSize,
+                              long chunkSize,
                               BulkFileType fileType,
                               String localPath,
                               Map<String, Object> config) throws IOException {
-        super(collectionSchema, chunkSize, fileType);
-        this.localPath = localPath;
-        this.uuid = UUID.randomUUID().toString();
+        super(collectionSchema, chunkSize, fileType, localPath, config);
         this.workingThreadLock = new ReentrantLock();
         this.workingThread = new HashMap<>();
         this.localFiles = Lists.newArrayList();
-        this.config = config;
-        this.makeDir();
     }
 
     @Override
     public void appendRow(JsonObject rowData) throws IOException, InterruptedException {
         super.appendRow(rowData);
+    }
 
+    @Override
+    protected void callBackIfCommitReady(List<String> filePaths) throws InterruptedException {
 //        only one thread can enter this section to persist data,
 //        in the _flush() method, the buffer will be swapped to a new one.
 //        in async mode, the flush thread is asynchronously, other threads can
 //        continue to append if the new buffer size is less than target size
         workingThreadLock.lock();
-        if (super.getBufferSize() > super.getChunkSize()) {
-            commit(true);
-        }
+        callBack(true, filePaths);
         workingThreadLock.unlock();
     }
 
     public void commit(boolean async) throws InterruptedException {
+        List<String> filePath = commitIfFileReady(false);
+        callBack(async, filePath);
+    }
+
+    protected List<String> commitIfFileReady(boolean createNewFile) {
+        if (super.getTotalRowCount() <= 0) {
+            String msg = "current_file_total_row_count less than 0, no need to generator a file";
+            logger.info(msg);
+            return null;
+        }
+
+        String filePath = super.getFileWriter().getFilePath();
+        String msg = String.format("Prepare to commit file:%s, current_file_total_row_count: %s, current_file_total_size:%s, create_new_file:%s",
+                filePath ,super.getTotalRowCount(), super.getTotalSize(), createNewFile);
+        logger.info(msg);
+
+        List<String> fileList = Lists.newArrayList(filePath);
+        try {
+            FormatFileWriter oldFileWriter = createNewFile ? this.newFileWriter() : super.getFileWriter();
+            oldFileWriter.close();
+
+            localFiles.add(fileList);
+            // reset the total size and count
+            super.commit();
+        } catch (IOException e) {
+            // this function is running in a thread
+            // TODO: interrupt main thread if failed to persist file
+            logger.error(e.getMessage());
+        }
+        return fileList;
+    }
+
+    private void callBack(boolean async, List<String> fileList) throws InterruptedException {
+        if (CollectionUtils.isEmpty(fileList)) {
+            return;
+        }
+
         // _async=True, the flush thread is asynchronously
         while (!workingThread.isEmpty()) {
-            String msg = String.format("Previous flush action is not finished, %s is waiting...", Thread.currentThread().getName());
+            String msg = String.format("Previous callBack action is not finished, %s is waiting...", Thread.currentThread().getName());
             logger.info(msg);
             TimeUnit.SECONDS.sleep(5);
         }
 
-        String msg = String.format("Prepare to flush buffer, row_count: %s, size: %s", super.getBufferRowCount(), super.getBufferSize());
+        String msg = String.format("Prepare to callBack, async:%s, fileList:%s", async, fileList);
         logger.info(msg);
 
-        int bufferRowCount = getBufferRowCount();
-        int bufferSize = getBufferSize();
-        Runnable runnable = () -> flush(bufferSize, bufferRowCount);
+        Runnable runnable = () -> commitIfFileReady(fileList);
         Thread thread = new Thread(runnable);
-        logger.info("Flush thread begin, name: {}", thread.getName());
+        logger.info("CallBack thread begin, name: {}", thread.getName());
         workingThread.put(thread.getName(), thread);
         thread.start();
 
         if (!async) {
-            logger.info("Wait flush to finish");
+            logger.info("Wait callBack to finish");
             thread.join();
         }
 
-        // reset the buffer size
-        super.commit(false);
-        logger.info("Commit done with async={}", async);
+        logger.info("CallBack done with async={}", async);
     }
 
-    private void flush(Integer bufferSize, Integer bufferRowCount) {
-        flushCount += 1;
-        java.nio.file.Path path = Paths.get(localPath);
-        java.nio.file.Path flushDirPath = path.resolve(String.valueOf(flushCount));
-
-        Map<String, Object> config = new HashMap<>(this.config);
-        config.put("bufferSize", bufferSize);
-        config.put("bufferRowCount", bufferRowCount);
-        Buffer oldBuffer = super.newBuffer();
-        if (oldBuffer.getRowCount() > 0) {
-            try {
-                List<String> fileList = oldBuffer.persist(flushDirPath.toString(), config);
-                localFiles.add(fileList);
-                callBack(fileList);
-            } catch (IOException e) {
-                // this function is running in a thread
-                // TODO: interrupt main thread if failed to persist file
-                logger.error(e.getMessage());
-            }
+    private void commitIfFileReady(List<String> fileList) {
+        if (CollectionUtils.isNotEmpty(fileList)) {
+            callBack(fileList);
         }
         workingThread.remove(Thread.currentThread().getName());
         String msg = String.format("Flush thread done, name: %s", Thread.currentThread().getName());
@@ -155,40 +162,25 @@ public class LocalBulkWriter extends BulkWriter implements AutoCloseable {
         return localFiles;
     }
 
-    private void makeDir() throws IOException {
-        java.nio.file.Path path = Paths.get(localPath);
-        createDirIfNotExist(path);
-
-        java.nio.file.Path fullPath = path.resolve(uuid);
-        createDirIfNotExist(fullPath);
-        this.localPath = fullPath.toString();
-    }
-
-    private void createDirIfNotExist(java.nio.file.Path path) throws IOException {
-        try {
-            Files.createDirectories(path);
-            logger.info("Data path created: {}", path);
-        } catch (IOException e) {
-            logger.error("Data Path create failed: {}", path);
-            throw e;
-        }
-    }
-
     protected void exit() throws InterruptedException {
         // if still has data in memory, default commit
         workingThreadLock.lock();
-        if (getBufferSize() != null && getBufferSize() != 0) {
-            commit(true);
-        }
+
+        List<String> filePath = commitIfFileReady(false);
+        callBack(true, filePath);
         workingThreadLock.unlock();
 
         // wait flush thread
-        if (workingThread.size() > 0) {
+        if (!workingThread.isEmpty()) {
             for (String key : workingThread.keySet()) {
                 logger.info("Wait flush thread '{}' to finish", key);
-                workingThread.get(key).join();
+                Thread thread = workingThread.get(key);
+                if (thread != null) {
+                    thread.join();
+                }
             }
         }
+
         rmDir();
     }
 

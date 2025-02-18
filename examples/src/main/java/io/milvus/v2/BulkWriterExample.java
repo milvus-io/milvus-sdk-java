@@ -234,7 +234,6 @@ public class BulkWriterExample {
             }
 
             System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", localBulkWriter.getBufferRowCount());
 
             localBulkWriter.commit(false);
             List<List<String>> batchFiles = localBulkWriter.getBatchFiles();
@@ -263,7 +262,6 @@ public class BulkWriterExample {
             }
 
             System.out.printf("%s rows appends%n", remoteBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", remoteBulkWriter.getBufferRowCount());
 
             remoteBulkWriter.commit(false);
             List<List<String>> batchFiles = remoteBulkWriter.getBatchFiles();
@@ -302,7 +300,6 @@ public class BulkWriterExample {
             }
 
             System.out.println(localBulkWriter.getTotalRowCount() + " rows appends");
-            System.out.println(localBulkWriter.getBufferRowCount() + " rows in buffer not flushed");
             localBulkWriter.commit(false);
             System.out.printf("Append finished, %s rows%n", threadCount * rowsPerThread);
 
@@ -404,7 +401,6 @@ public class BulkWriterExample {
                 remoteBulkWriter.appendRow(rowObject);
             }
             System.out.printf("%s rows appends%n", remoteBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", remoteBulkWriter.getBufferRowCount());
             System.out.println("Generate data files...");
             remoteBulkWriter.commit(false);
 

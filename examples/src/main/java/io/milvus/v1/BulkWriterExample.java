@@ -232,7 +232,7 @@ public class BulkWriterExample {
                 .withCollectionSchema(collectionSchema)
                 .withLocalPath("/tmp/bulk_writer")
                 .withFileType(fileType)
-                .withChunkSize(128 * 1024 * 1024)
+                .withChunkSize(1024 * 1024 * 1024L)
                 .build();
 
         try (LocalBulkWriter localBulkWriter = new LocalBulkWriter(bulkWriterParam)) {
@@ -250,7 +250,6 @@ public class BulkWriterExample {
             }
 
             System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", localBulkWriter.getBufferRowCount());
 
             localBulkWriter.commit(false);
             List<List<String>> batchFiles = localBulkWriter.getBatchFiles();
@@ -279,7 +278,6 @@ public class BulkWriterExample {
             }
 
             System.out.printf("%s rows appends%n", remoteBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", remoteBulkWriter.getBufferRowCount());
 
             remoteBulkWriter.commit(false);
             List<List<String>> batchFiles = remoteBulkWriter.getBatchFiles();
@@ -318,7 +316,6 @@ public class BulkWriterExample {
             }
 
             System.out.println(localBulkWriter.getTotalRowCount() + " rows appends");
-            System.out.println(localBulkWriter.getBufferRowCount() + " rows in buffer not flushed");
             localBulkWriter.commit(false);
             System.out.printf("Append finished, %s rows%n", threadCount * rowsPerThread);
 
@@ -420,7 +417,6 @@ public class BulkWriterExample {
                 remoteBulkWriter.appendRow(rowObject);
             }
             System.out.printf("%s rows appends%n", remoteBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", remoteBulkWriter.getBufferRowCount());
             System.out.println("Generate data files...");
             remoteBulkWriter.commit(false);
 
@@ -438,7 +434,7 @@ public class BulkWriterExample {
                 .withCollectionSchema(collectionSchema)
                 .withRemotePath("bulk_data")
                 .withFileType(fileType)
-                .withChunkSize(512 * 1024 * 1024)
+                .withChunkSize(1024 * 1024 * 1024L)
                 .withConnectParam(connectParam)
                 .build();
         return new RemoteBulkWriter(bulkWriterParam);

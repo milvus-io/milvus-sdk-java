@@ -19,11 +19,18 @@
 
 package io.milvus.bulkwriter;
 
-import com.google.gson.*;
+import com.google.common.collect.Lists;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.TypeSize;
+import io.milvus.bulkwriter.writer.CSVFileWriter;
+import io.milvus.bulkwriter.writer.FormatFileWriter;
+import io.milvus.bulkwriter.writer.JSONFileWriter;
+import io.milvus.bulkwriter.writer.ParquetFileWriter;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
@@ -34,7 +41,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.SortedMap;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
@@ -42,19 +56,29 @@ import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 public abstract class BulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(BulkWriter.class);
     protected CollectionSchemaParam collectionSchema;
-    protected int chunkSize;
+    protected long chunkSize;
+
     protected BulkFileType fileType;
+    protected String localPath;
+    protected String uuid;
+    protected int flushCount;
+    protected FormatFileWriter fileWriter;
+    protected final Map<String, Object> config;
 
-    protected int bufferSize;
-    protected int bufferRowCount;
-    protected int totalRowCount;
-    protected Buffer buffer;
-    protected ReentrantLock bufferLock;
+    protected long totalSize;
+    protected long totalRowCount;
+    protected ReentrantLock appendLock;
+    protected ReentrantLock fileWriteLock;
 
-    protected BulkWriter(CollectionSchemaParam collectionSchema, int chunkSize, BulkFileType fileType) {
+    protected boolean firstWrite;
+
+    protected BulkWriter(CollectionSchemaParam collectionSchema, long chunkSize, BulkFileType fileType, String localPath, Map<String, Object> config) throws IOException {
         this.collectionSchema = collectionSchema;
         this.chunkSize = chunkSize;
         this.fileType = fileType;
+        this.localPath = localPath;
+        this.uuid = UUID.randomUUID().toString();
+        this.config = config;
 
         if (CollectionUtils.isEmpty(collectionSchema.getFieldTypes())) {
             ExceptionUtils.throwUnExpectedException("collection schema fields list is empty");
@@ -63,57 +87,115 @@ public abstract class BulkWriter {
         if (!hasPrimaryField(collectionSchema.getFieldTypes())) {
             ExceptionUtils.throwUnExpectedException("primary field is null");
         }
-        bufferLock = new ReentrantLock();
-        buffer = null;
-        this.newBuffer();
+        appendLock = new ReentrantLock();
+
+        this.makeDir();
+        fileWriteLock = new ReentrantLock();
+        fileWriter = null;
+        this.newFileWriter();
+
+        firstWrite = true;
     }
 
-    protected Integer getBufferSize() {
-        return bufferSize;
+    protected Long getTotalSize() {
+        return totalSize;
     }
 
-    public Integer getBufferRowCount() {
-        return bufferRowCount;
-    }
-
-    public Integer getTotalRowCount() {
+    public Long getTotalRowCount() {
         return totalRowCount;
     }
 
-    protected Integer getChunkSize() {
+    protected Long getChunkSize() {
         return chunkSize;
     }
 
-    protected Buffer newBuffer() {
-        Buffer oldBuffer = buffer;
+    protected FormatFileWriter getFileWriter() {
+        return fileWriter;
+    }
 
-        bufferLock.lock();
-        this.buffer = new Buffer(collectionSchema, fileType);
-        bufferLock.unlock();
+    protected FormatFileWriter newFileWriter() throws IOException {
+        FormatFileWriter oldFileWriter = fileWriter;
 
-        return oldBuffer;
+        fileWriteLock.lock();
+        createWriterByType();
+        fileWriteLock.unlock();
+        return oldFileWriter;
+    }
+
+    private void createWriterByType() throws IOException {
+        flushCount += 1;
+        java.nio.file.Path path = Paths.get(localPath);
+        java.nio.file.Path filePathPrefix = path.resolve(String.valueOf(flushCount));
+
+        switch (fileType) {
+            case PARQUET:
+                this.fileWriter =  new ParquetFileWriter(collectionSchema, filePathPrefix.toString());
+                break;
+            case JSON:
+                this.fileWriter = new JSONFileWriter(collectionSchema, filePathPrefix.toString());
+                break;
+            case CSV:
+                this.fileWriter = new CSVFileWriter(collectionSchema, filePathPrefix.toString(), config);
+                break;
+            default:
+                ExceptionUtils.throwUnExpectedException("Unsupported file type: " + fileType);
+        }
+    }
+
+    private void makeDir() throws IOException {
+        java.nio.file.Path path = Paths.get(localPath);
+        createDirIfNotExist(path);
+
+        java.nio.file.Path fullPath = path.resolve(uuid);
+        createDirIfNotExist(fullPath);
+        this.localPath = fullPath.toString();
+    }
+
+    private void createDirIfNotExist(java.nio.file.Path path) throws IOException {
+        try {
+            Files.createDirectories(path);
+            logger.info("Data path created: {}", path);
+        } catch (IOException e) {
+            logger.error("Data Path create failed: {}", path);
+            throw e;
+        }
     }
 
     public void appendRow(JsonObject row) throws IOException, InterruptedException {
         Map<String, Object> rowValues = verifyRow(row);
+        List<String> filePaths = Lists.newArrayList();
 
-        bufferLock.lock();
-        buffer.appendRow(rowValues);
-        bufferLock.unlock();
+        appendLock.lock();
+        fileWriter.appendRow(rowValues, firstWrite);
+        firstWrite = false;
+        if (getTotalSize() > getChunkSize()) {
+            filePaths = commitIfFileReady(true);
+        }
+        appendLock.unlock();
+
+        if (CollectionUtils.isNotEmpty(filePaths)) {
+            callBackIfCommitReady(filePaths);
+        }
     }
 
-    protected void commit(boolean async) throws InterruptedException {
-        bufferLock.lock();
-        bufferSize = 0;
-        bufferRowCount = 0;
-        bufferLock.unlock();
+
+    protected abstract List<String> commitIfFileReady(boolean createNewFile) throws IOException;
+
+    protected abstract void callBackIfCommitReady(List<String> filePaths) throws IOException, InterruptedException;
+
+
+    protected void commit() {
+        appendLock.lock();
+        totalSize = 0;
+        totalRowCount = 0;
+        appendLock.unlock();
     }
 
     protected String getDataPath() {
         return "";
     }
 
-    private Map<String, Object> verifyRow(JsonObject row) {
+    protected Map<String, Object> verifyRow(JsonObject row) {
         int rowSize = 0;
         Map<String, Object> rowValues = new HashMap<>();
         for (FieldType fieldType : collectionSchema.getFieldTypes()) {
@@ -207,11 +289,10 @@ public abstract class BulkWriter {
             rowSize += strValues.length();
         }
 
-        bufferLock.lock();
-        bufferSize += rowSize;
-        bufferRowCount += 1;
+        appendLock.lock();
+        totalSize += rowSize;
         totalRowCount += 1;
-        bufferLock.unlock();
+        appendLock.unlock();
 
         return rowValues;
     }
