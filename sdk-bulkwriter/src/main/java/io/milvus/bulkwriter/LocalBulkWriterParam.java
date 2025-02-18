@@ -40,7 +40,7 @@ import java.util.Map;
 public class LocalBulkWriterParam {
     private final CollectionSchemaParam collectionSchema;
     private final String localPath;
-    private final int chunkSize;
+    private final long chunkSize;
     private final BulkFileType fileType;
     private final Map<String, Object> config;
 
@@ -62,7 +62,7 @@ public class LocalBulkWriterParam {
     public static final class Builder {
         private CollectionSchemaParam collectionSchema;
         private String localPath;
-        private int chunkSize = 128 * 1024 * 1024;
+        private long chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
         private Map<String, Object> config = new HashMap<>();
 
@@ -102,7 +102,7 @@ public class LocalBulkWriterParam {
             return this;
         }
 
-        public Builder withChunkSize(int chunkSize) {
+        public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
         }
