@@ -238,7 +238,6 @@ public class BulkWriterTest {
             buildData(localBulkWriter, 10, schemaV2.isEnableDynamicField());
 
             System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", localBulkWriter.getBufferRowCount());
             localBulkWriter.commit(false);
             List<List<String>> filePaths = localBulkWriter.getBatchFiles();
             System.out.println(filePaths);
@@ -262,7 +261,6 @@ public class BulkWriterTest {
             buildData(localBulkWriter, 10, schemaV2.isEnableDynamicField());
 
             System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", localBulkWriter.getBufferRowCount());
             localBulkWriter.commit(false);
             List<List<String>> filePaths = localBulkWriter.getBatchFiles();
             System.out.println(filePaths);
@@ -287,7 +285,6 @@ public class BulkWriterTest {
             buildData(localBulkWriter, 10, schemaV2.isEnableDynamicField());
 
             System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-            System.out.printf("%s rows in buffer not flushed%n", localBulkWriter.getBufferRowCount());
             localBulkWriter.commit(false);
             List<List<String>> filePaths = localBulkWriter.getBatchFiles();
             System.out.println(filePaths);
