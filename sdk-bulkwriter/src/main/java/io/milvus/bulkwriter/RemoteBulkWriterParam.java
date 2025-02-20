@@ -43,7 +43,7 @@ public class RemoteBulkWriterParam {
     private final CollectionSchemaParam collectionSchema;
     private final StorageConnectParam connectParam;
     private final String remotePath;
-    private final int chunkSize;
+    private final long chunkSize;
     private final BulkFileType fileType;
     private final Map<String, Object> config;
 
@@ -67,7 +67,7 @@ public class RemoteBulkWriterParam {
         private CollectionSchemaParam collectionSchema;
         private StorageConnectParam connectParam;
         private String remotePath;
-        private int chunkSize = 1024 * 1024 * 1024;
+        private long chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
         private Map<String, Object> config = new HashMap<>();
 
@@ -112,7 +112,7 @@ public class RemoteBulkWriterParam {
             return this;
         }
 
-        public Builder withChunkSize(int chunkSize) {
+        public Builder withChunkSize(long chunkSize) {
             this.chunkSize = chunkSize;
             return this;
         }
