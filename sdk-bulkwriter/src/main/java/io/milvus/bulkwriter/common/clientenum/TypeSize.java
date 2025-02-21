@@ -20,7 +20,7 @@
 package io.milvus.bulkwriter.common.clientenum;
 
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.DataType;
+import io.milvus.v2.common.DataType;
 
 public enum TypeSize {
     BOOL(DataType.Bool, 1),

@@ -19,130 +19,143 @@
 
 package io.milvus.bulkwriter.common.utils;
 
-import io.milvus.param.collection.CollectionSchemaParam;
-import io.milvus.param.collection.FieldType;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Types;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
 import java.util.List;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
 public class ParquetUtils {
-    public static MessageType parseCollectionSchema(CollectionSchemaParam collectionSchema) {
-        List<FieldType> fieldTypes = collectionSchema.getFieldTypes();
+    private static void setMessageType(Types.MessageTypeBuilder builder,
+                                       PrimitiveType.PrimitiveTypeName primitiveName,
+                                       LogicalTypeAnnotation logicType,
+                                       CreateCollectionReq.FieldSchema field,
+                                       boolean isListType) {
+        // Note:
+        // Ideally, if the field is nullable, the builder should be builder.requiredList() or builder.required().
+        // But in milvus (versions <= v2.5.4), the milvus server logic cannot handle parquet files with
+        // requiredList()/required(), the server will crash in the file /internal/util/importutilv2/parquet/field_reader.go,
+        // in the parquet.FieldReader.Next() with a runtime error: "index out of range [0] with length 0".
+        // This issue is tracked by https://github.com/milvus-io/milvus/issues/40291
+        // The python sdk BulkWriter uses Pandas to generate parquet files, the Pandas sets all schema to be "optional"
+        // so that the crash is by-passed.
+        // To avoid the crash, in Java SDK, we use optionalList()/optional() even if the field is nullable.
+        if (isListType) {
+            // FloatVector/BinaryVector/Float16Vector/BFloat16Vector/Array enter this section
+            if (logicType == null) {
+                builder.optionalList().optionalElement(primitiveName).named(field.getName());
+            } else {
+                builder.optionalList().optionalElement(primitiveName).as(logicType).named(field.getName());
+            }
+        } else {
+            // SparseFloatVector/Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar/JSON enter this section
+            if (logicType == null) {
+                builder.optional(primitiveName).named(field.getName());
+            } else {
+                builder.optional(primitiveName).as(logicType).named(field.getName());
+            }
+        }
+    }
+
+    public static MessageType parseCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
+        List<CreateCollectionReq.FieldSchema> fields = collectionSchema.getFieldSchemaList();
+        List<String> outputFieldNames = V2AdapterUtils.getOutputFieldNames(collectionSchema);
         Types.MessageTypeBuilder messageTypeBuilder = Types.buildMessage();
-        for (FieldType fieldType : fieldTypes) {
-            if (fieldType.isAutoID()) {
+        for (CreateCollectionReq.FieldSchema field : fields) {
+            if (field.getIsPrimaryKey() && field.getAutoID()) {
                 continue;
             }
-            switch (fieldType.getDataType()) {
+            if (outputFieldNames.contains(field.getName())) {
+                continue;
+            }
+
+            switch (field.getDataType()) {
                 case FloatVector:
-                    messageTypeBuilder.requiredList()
-                            .requiredElement(PrimitiveType.PrimitiveTypeName.FLOAT)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, true);
                     break;
                 case BinaryVector:
                 case Float16Vector:
                 case BFloat16Vector:
-                    messageTypeBuilder.requiredList()
-                            .requiredElement(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, false))
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, false), field, true);
                     break;
                 case Array:
-                    fillArrayType(messageTypeBuilder, fieldType);
+                    fillArrayType(messageTypeBuilder, field);
                     break;
 
                 case Int64:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.INT64)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, false);
                     break;
                 case VarChar:
                 case JSON:
                 case SparseFloatVector: // sparse vector is parsed as JSON format string in the server side
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
+                            LogicalTypeAnnotation.stringType(), field, false);
                     break;
                 case Int8:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true))
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), field, false);
                     break;
                 case Int16:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true))
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), field, false);
                     break;
                 case Int32:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.INT32)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, field, false);
                     break;
                 case Float:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.FLOAT)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, false);
                     break;
                 case Double:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, false);
                     break;
                 case Bool:
-                    messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.BOOLEAN)
-                            .named(fieldType.getName());
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, false);
                     break;
 
             }
         }
 
         if (collectionSchema.isEnableDynamicField()) {
-            messageTypeBuilder.required(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
+            messageTypeBuilder.optional(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
                     .named(DYNAMIC_FIELD_NAME);
         }
         return messageTypeBuilder.named("schema");
     }
 
-    private static void fillArrayType(Types.MessageTypeBuilder messageTypeBuilder, FieldType fieldType) {
-        switch (fieldType.getElementType()) {
+    private static void fillArrayType(Types.MessageTypeBuilder messageTypeBuilder, CreateCollectionReq.FieldSchema field) {
+        switch (field.getElementType()) {
             case Int64:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.INT64)
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, true);
                 break;
             case VarChar:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.BINARY).as(LogicalTypeAnnotation.stringType())
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
+                        LogicalTypeAnnotation.stringType(), field, true);
                 break;
             case Int8:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true))
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                        LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), field, true);
                 break;
             case Int16:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.INT32).as(LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true))
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                        LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), field, true);
                 break;
             case Int32:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.INT32)
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, field, true);
                 break;
             case Float:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.FLOAT)
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, true);
                 break;
             case Double:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.DOUBLE)
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, true);
                 break;
             case Bool:
-                messageTypeBuilder.requiredList()
-                        .requiredElement(PrimitiveType.PrimitiveTypeName.BOOLEAN)
-                        .named(fieldType.getName());
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, true);
                 break;
-
         }
     }
 }

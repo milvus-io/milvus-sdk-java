@@ -3,7 +3,7 @@ package io.milvus.bulkwriter.writer;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.milvus.param.collection.CollectionSchemaParam;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +21,11 @@ public class CSVFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(CSVFileWriter.class);
 
     private BufferedWriter writer;
-    private CollectionSchemaParam collectionSchema;
+    private CreateCollectionReq.CollectionSchema collectionSchema;
     private String filePath;
     private Map<String, Object> config;
 
-    public CSVFileWriter(CollectionSchemaParam collectionSchema, String filePathPrefix, Map<String, Object> config) throws IOException {
+    public CSVFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix, Map<String, Object> config) throws IOException {
         this.collectionSchema = collectionSchema;
         this.config = config;
         initFilePath(filePathPrefix);
@@ -48,7 +48,7 @@ public class CSVFileWriter implements FormatFileWriter {
         List<String> fieldNameList = Lists.newArrayList(rowValues.keySet());
 
         try {
-            String separator = (String)config.getOrDefault("sep", "\t");
+            String separator = (String)config.getOrDefault("sep", ",");
             String nullKey = (String)config.getOrDefault("nullkey", "");
 
             if (firstWrite) {
@@ -76,7 +76,10 @@ public class CSVFileWriter implements FormatFileWriter {
                 }
                 strVal = strVal.replace("\\\"", "\"");
                 strVal = strVal.replace("\"", "\"\"");
-                strVal = "\"" + strVal + "\"";
+                if (!strVal.isEmpty()) {
+                    // some fields might be nullable, the strVal is empty, no need to add ""
+                    strVal = "\"" + strVal + "\"";
+                }
                 values.add(strVal);
             }
 
