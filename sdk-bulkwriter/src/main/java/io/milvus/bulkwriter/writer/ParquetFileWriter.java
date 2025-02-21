@@ -2,9 +2,7 @@ package io.milvus.bulkwriter.writer;
 
 import io.milvus.bulkwriter.common.utils.ParquetUtils;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.DataType;
-import io.milvus.param.collection.CollectionSchemaParam;
-import io.milvus.param.collection.FieldType;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.parquet.example.data.Group;
@@ -29,12 +27,12 @@ public class ParquetFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(ParquetFileWriter.class);
 
     private ParquetWriter<Group> writer;
-    private CollectionSchemaParam collectionSchema;
+    private CreateCollectionReq.CollectionSchema collectionSchema;
     private String filePath;
     private MessageType messageType;
-    private Map<String, FieldType> nameFieldType;
+    private Map<String, CreateCollectionReq.FieldSchema> nameFieldType;
 
-    public ParquetFileWriter(CollectionSchemaParam collectionSchema, String filePathPrefix) throws IOException {
+    public ParquetFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;
         initFilePath(filePathPrefix);
         initNameFieldType();
@@ -72,11 +70,12 @@ public class ParquetFileWriter implements FormatFileWriter {
     }
 
     private void initNameFieldType() {
-        Map<String, FieldType> nameFieldType = collectionSchema.getFieldTypes().stream().collect(Collectors.toMap(FieldType::getName, e -> e));
+        Map<String, CreateCollectionReq.FieldSchema> nameFieldType = collectionSchema.getFieldSchemaList().stream()
+                .collect(Collectors.toMap(CreateCollectionReq.FieldSchema::getName, e -> e));
         if (collectionSchema.isEnableDynamicField()) {
-            nameFieldType.put(DYNAMIC_FIELD_NAME, FieldType.newBuilder()
-                    .withName(DYNAMIC_FIELD_NAME)
-                    .withDataType(DataType.JSON)
+            nameFieldType.put(DYNAMIC_FIELD_NAME, CreateCollectionReq.FieldSchema.builder()
+                    .name(DYNAMIC_FIELD_NAME)
+                    .dataType(io.milvus.v2.common.DataType.JSON)
                     .build());
         }
         this.nameFieldType = nameFieldType;
@@ -89,7 +88,11 @@ public class ParquetFileWriter implements FormatFileWriter {
         try {
             Group group = new SimpleGroupFactory(messageType).newGroup();
             for (String fieldName : rowValues.keySet()) {
-                appendGroup(group, fieldName, rowValues.get(fieldName), nameFieldType.get(fieldName));
+                Object value = rowValues.get(fieldName);
+                if (value == null) {
+                    continue;
+                }
+                appendGroup(group, fieldName, value, nameFieldType.get(fieldName));
             }
             writer.write(group);
         } catch (IOException e) {
@@ -108,8 +111,8 @@ public class ParquetFileWriter implements FormatFileWriter {
         this.writer.close();
     }
 
-    private void appendGroup(Group group, String paramName, Object value, FieldType fieldType) {
-        DataType dataType = fieldType.getDataType();
+    private void appendGroup(Group group, String paramName, Object value, CreateCollectionReq.FieldSchema field) {
+        io.milvus.v2.common.DataType dataType = field.getDataType();
         switch (dataType) {
             case Int8:
             case Int16:
@@ -147,7 +150,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                 addSparseVector(group, paramName, (SortedMap<Long, Float>) value);
                 break;
             case Array:
-                DataType elementType = fieldType.getElementType();
+                io.milvus.v2.common.DataType elementType = field.getElementType();
                 switch (elementType) {
                     case Int8:
                     case Int16:
