@@ -100,10 +100,10 @@ public class CollectionService extends BaseService {
                         .collectionName(request.getCollectionName())
                         .build();
         indexService.createIndex(blockingStub, createIndexReq);
-        //load collection
+        //load collection, set async to true since no need to wait loading progress
         try {
             //TimeUnit.MILLISECONDS.sleep(1000);
-            loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+            loadCollection(blockingStub, LoadCollectionReq.builder().async(true).collectionName(request.getCollectionName()).build());
         } catch (Exception e) {
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed: " + e);
         }
@@ -160,8 +160,8 @@ public class CollectionService extends BaseService {
                         .build();
                 indexService.createIndex(blockingStub, createIndexReq);
             }
-            //load collection
-            loadCollection(blockingStub, LoadCollectionReq.builder().collectionName(request.getCollectionName()).build());
+            //load collection, set async to true since no need to wait loading progress
+            loadCollection(blockingStub, LoadCollectionReq.builder().async(true).collectionName(request.getCollectionName()).build());
         }
 
         return null;
@@ -289,7 +289,7 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (request.getAsync()) {
+        if (!request.getAsync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
