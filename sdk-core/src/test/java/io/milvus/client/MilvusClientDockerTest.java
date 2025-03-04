@@ -1060,6 +1060,25 @@ class MilvusClientDockerTest {
     }
 
     @Test
+    void testFloat16Utils() {
+        List<List<Float>> originVectors = utils.generateFloatVectors(10);
+
+        for (List<Float> originalVector : originVectors) {
+            ByteBuffer fp16Buffer = Float16Utils.f32VectorToFp16Buffer(originalVector);
+            List<Float> fp16Vec = Float16Utils.fp16BufferToVector(fp16Buffer);
+            for (int i = 0; i < originalVector.size(); i++) {
+                Assertions.assertEquals(fp16Vec.get(i), originalVector.get(i), 0.01);
+            }
+
+            ByteBuffer bf16Buffer = Float16Utils.f32VectorToBf16Buffer(originalVector);
+            List<Float> bf16Vec = Float16Utils.bf16BufferToVector(bf16Buffer);
+            for (int i = 0; i < originalVector.size(); i++) {
+                Assertions.assertEquals(bf16Vec.get(i), originalVector.get(i), 0.1);
+            }
+        }
+    }
+
+    @Test
     void testFloat16Vector() {
         String randomCollectionName = generator.generate(10);
 

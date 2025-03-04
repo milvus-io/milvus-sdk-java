@@ -168,11 +168,6 @@ public class RemoteBulkWriter extends LocalBulkWriter {
             }
 
             for (String filePath : fileList) {
-                String ext = getExtension(filePath);
-                if (!Lists.newArrayList(".parquet").contains(ext)) {
-                    continue;
-                }
-
                 String relativeFilePath = filePath.replace(super.getDataPath(), "");
                 String minioFilePath = getMinioFilePath(remotePath, relativeFilePath);
 
@@ -276,17 +271,5 @@ public class RemoteBulkWriter extends LocalBulkWriter {
         Path relative = Paths.get(relativeFilePath);
         Path joinedPath = remote.resolve(relative);
         return joinedPath.toString();
-    }
-
-    private static String getExtension(String filePath) {
-        Path path = Paths.get(filePath);
-        String fileName = path.getFileName().toString();
-        int dotIndex = fileName.lastIndexOf('.');
-
-        if (dotIndex == -1 || dotIndex == fileName.length() - 1) {
-            return "";
-        } else {
-            return fileName.substring(dotIndex);
-        }
     }
 }
