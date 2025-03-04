@@ -2,7 +2,7 @@ package io.milvus.bulkwriter.writer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import io.milvus.param.collection.CollectionSchemaParam;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +17,10 @@ public class JSONFileWriter implements FormatFileWriter {
     private static final Logger logger = LoggerFactory.getLogger(JSONFileWriter.class);
 
     private BufferedWriter writer;
-    private CollectionSchemaParam collectionSchema;
+    private CreateCollectionReq.CollectionSchema collectionSchema;
     private String filePath;
 
-    public JSONFileWriter(CollectionSchemaParam collectionSchema, String filePathPrefix) throws IOException {
+    public JSONFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;
         initFilePath(filePathPrefix);
         initWriter();
