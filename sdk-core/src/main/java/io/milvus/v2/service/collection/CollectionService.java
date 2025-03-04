@@ -289,7 +289,7 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (request.getAsync()) {
+        if (!request.getAsync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
@@ -398,6 +398,7 @@ public class CollectionService extends BaseService {
                 // Wait for a certain period before checking again
                 try {
                     Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+                    System.out.println("sleep 500ms for load");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     System.out.println("Thread was interrupted, Failed to complete operation");

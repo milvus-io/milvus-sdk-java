@@ -546,6 +546,7 @@ class MilvusClientV2DockerTest {
 
     @Test
     void testFloat16Vectors() {
+        System.out.println("testFloat16Vectors begin");
         String randomCollectionName = generator.generate(10);
 
         // build a collection with two vector fields
@@ -680,6 +681,8 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, rowCount);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+
+        System.out.println("testFloat16Vectors end");
     }
 
     @Test
@@ -1515,6 +1518,7 @@ class MilvusClientV2DockerTest {
 
     @Test
     void testDatabase() {
+        System.out.println("testDatabase begin");
         // get current database
         ListDatabasesResp listDatabasesResp = client.listDatabases();
         List<String> dbNames = listDatabasesResp.getDatabaseNames();
@@ -1587,14 +1591,14 @@ class MilvusClientV2DockerTest {
                 .indexType(IndexParam.IndexType.FLAT)
                 .metricType(IndexParam.MetricType.COSINE)
                 .build();
-
+        System.out.println("=========== testDatabase createCollection start");
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .collectionSchema(collectionSchema)
                 .indexParams(Collections.singletonList(indexParam))
                 .build();
         client.createCollection(requestCreate);
-
+        System.out.println("=========== testDatabase createCollection end");
         ListCollectionsResp listCollectionsResp = client.listCollections();
         List<String> collectionNames = listCollectionsResp.getCollectionNames();
         Assertions.assertEquals(1, collectionNames.size());
@@ -1617,6 +1621,8 @@ class MilvusClientV2DockerTest {
         listDatabasesResp = client.listDatabases();
         dbNames = listDatabasesResp.getDatabaseNames();
         Assertions.assertFalse(dbNames.contains(tempDatabaseName));
+
+        System.out.println("testDatabase end");
     }
 
     @Test
@@ -1664,6 +1670,7 @@ class MilvusClientV2DockerTest {
 
     @Test
     void testMultiThreadsInsert() {
+        System.out.println("testMultiThreadsInsert begin");
         String randomCollectionName = generator.generate(10);
         int dim = 64;
 
@@ -1787,6 +1794,7 @@ class MilvusClientV2DockerTest {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
         }
+        System.out.println("testMultiThreadsInsert end");
     }
 
     @Test
