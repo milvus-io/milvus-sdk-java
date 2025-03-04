@@ -33,7 +33,7 @@ public class LoadCollectionReq {
     @Builder.Default
     private Integer numReplicas = 1;
     @Builder.Default
-    private Boolean async = Boolean.TRUE;
+    private Boolean async = Boolean.FALSE;
     @Builder.Default
     private Long timeout = 60000L;
     @Builder.Default

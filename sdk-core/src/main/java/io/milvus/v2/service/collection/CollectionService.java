@@ -289,7 +289,7 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (request.getAsync()) {
+        if (!request.getAsync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
