@@ -1587,14 +1587,12 @@ class MilvusClientV2DockerTest {
                 .indexType(IndexParam.IndexType.FLAT)
                 .metricType(IndexParam.MetricType.COSINE)
                 .build();
-
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .collectionSchema(collectionSchema)
                 .indexParams(Collections.singletonList(indexParam))
                 .build();
         client.createCollection(requestCreate);
-
         ListCollectionsResp listCollectionsResp = client.listCollections();
         List<String> collectionNames = listCollectionsResp.getCollectionNames();
         Assertions.assertEquals(1, collectionNames.size());
