@@ -378,6 +378,15 @@ public class MilvusClientV2 {
         return rpcUtils.retry(()->collectionService.getLoadState(this.getRpcStub(), request));
     }
 
+    /**
+     * Get information of all replicas from a collection.
+     *
+     * @param request {@link DescribeReplicasReq}
+     */
+    public DescribeReplicasResp describeReplicas(DescribeReplicasReq request) {
+        return rpcUtils.retry(()->collectionService.describeReplicas(this.getRpcStub(), request));
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Index Operations
     /////////////////////////////////////////////////////////////////////////////////////////////

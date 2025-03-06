@@ -2190,4 +2190,58 @@ class MilvusClientV2DockerTest {
                 .dimension(DIMENSION)
                 .build());
     }
+
+    @Test
+    void testReplica() {
+        String randomCollectionName = generator.generate(10);
+
+        String vectorFieldName = "float_vector";
+        CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorFieldName)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(vectorFieldName)
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build();
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(Collections.singletonList(indexParam))
+                .build();
+        client.createCollection(requestCreate);
+
+        // insert rows
+        long count = 10000;
+        List<JsonObject> data = generateRandomData(collectionSchema, count);
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        DescribeCollectionResp descCollResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        DescribeReplicasResp descReplicaResp = client.describeReplicas(DescribeReplicasReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(1, descReplicaResp.getReplicas().size());
+        io.milvus.v2.service.collection.ReplicaInfo info = descReplicaResp.getReplicas().get(0);
+        Assertions.assertEquals(descCollResp.getCollectionID(), info.getCollectionID());
+        Assertions.assertEquals(1, info.getNodeIDs().size());
+        Assertions.assertNotEquals(0L, info.getReplicaID());
+        Assertions.assertFalse(info.getResourceGroupName().isEmpty());
+        Assertions.assertEquals(1, info.getShardReplicas().size());
+        io.milvus.v2.service.collection.ShardReplica replica = info.getShardReplicas().get(0);
+        Assertions.assertFalse(replica.getChannelName().isEmpty());
+        Assertions.assertFalse(replica.getLeaderAddress().isEmpty());
+        Assertions.assertNotEquals(0L, replica.getLeaderID());
+    }
 }

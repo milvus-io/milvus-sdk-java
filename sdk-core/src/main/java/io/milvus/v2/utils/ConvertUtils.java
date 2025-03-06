@@ -129,6 +129,7 @@ public class ConvertUtils {
 
         DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
                 .collectionName(response.getCollectionName())
+                .collectionID(response.getCollectionID())
                 .databaseName(response.getDbName())
                 .description(response.getSchema().getDescription())
                 .numOfPartitions(response.getNumPartitions())
