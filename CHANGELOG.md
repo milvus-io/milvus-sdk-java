@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.5.5 (2025-3-07)
+### Feature
+- Support HNSW_PQ/HNSW_SQ/HNSW_PRQ
+- Support describeReplicas() interface
+- BulkWriter supports nullable/default_value
+
+### Improvement
+- Add shardsNum for describeCollection
+- LoadPartitions support replicas
+- Optimize BulkWriter to reduce memory usage
+
 ## milvus-sdk-java 2.5.4 (2025-1-09)
 ### Improvement
 - HybridSearch supports full text search
