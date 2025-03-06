@@ -48,6 +48,10 @@ public class VectorUtils {
                 .addAllPartitionNames(request.getPartitionNames())
                 .addAllOutputFields(request.getOutputFields())
                 .setExpr(request.getFilter());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
             filterTemplateValues.forEach((key, value)->{
@@ -138,6 +142,10 @@ public class VectorUtils {
                 .setCollectionName(request.getCollectionName());
         if (!request.getPartitionNames().isEmpty()) {
             request.getPartitionNames().forEach(builder::addPartitionNames);
+        }
+
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
         }
 
         // prepare target, the input could be vectors or string list for doc-in-doc-out
