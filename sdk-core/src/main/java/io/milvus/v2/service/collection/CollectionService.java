@@ -358,6 +358,55 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
+    public DescribeReplicasResp describeReplicas(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                 DescribeReplicasReq request) {
+        if (StringUtils.isEmpty(request.getCollectionName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid collection name");
+        }
+
+        String title = String.format("DescribeReplicas collectionName:%s", request.getCollectionName());
+
+        GetReplicasRequest.Builder requestBuilder = GetReplicasRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setWithShardNodes(true);
+
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            requestBuilder.setDbName(request.getDatabaseName());
+        }
+
+        GetReplicasResponse response = blockingStub.getReplicas(requestBuilder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<ReplicaInfo> replicas = new ArrayList<>();
+        List<io.milvus.grpc.ReplicaInfo> rpcReplicas = response.getReplicasList();
+        for (io.milvus.grpc.ReplicaInfo info : rpcReplicas) {
+            List<ShardReplica> shardReplicas = new ArrayList<>();
+            List<io.milvus.grpc.ShardReplica> rpcShardReplicas = info.getShardReplicasList();
+            for (io.milvus.grpc.ShardReplica shardReplica : rpcShardReplicas) {
+                shardReplicas.add(ShardReplica.builder()
+                        .leaderID(shardReplica.getLeaderID())
+                        .leaderAddress(shardReplica.getLeaderAddr())
+                        .channelName(shardReplica.getDmChannelName())
+                        .nodeIDs(shardReplica.getNodeIdsList())
+                        .build());
+            }
+
+            replicas.add(ReplicaInfo.builder()
+                    .replicaID(info.getReplicaID())
+                    .collectionID(info.getCollectionID())
+                    .partitionIDs(info.getPartitionIdsList())
+                    .nodeIDs(info.getNodeIdsList())
+                    .resourceGroupName(info.getResourceGroupName())
+                    .numOutboundNode(info.getNumOutboundNodeMap())
+                    .shardReplicas(shardReplicas)
+                    .build());
+        }
+
+        return DescribeReplicasResp.builder()
+                .replicas(replicas)
+                .build();
+    }
+
     public void waitForCollectionRelease(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
         boolean isLoaded = true;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)

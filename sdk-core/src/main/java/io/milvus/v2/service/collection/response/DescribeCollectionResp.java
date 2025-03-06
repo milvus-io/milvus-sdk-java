@@ -33,6 +33,7 @@ import java.util.Map;
 @SuperBuilder
 public class DescribeCollectionResp {
     private String collectionName;
+    private Long collectionID;
     private String databaseName;
     private String description;
     private Long numOfPartitions;
