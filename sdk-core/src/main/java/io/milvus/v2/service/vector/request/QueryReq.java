@@ -29,6 +29,7 @@ import java.util.*;
 @Data
 @SuperBuilder
 public class QueryReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
