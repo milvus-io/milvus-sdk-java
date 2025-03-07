@@ -177,7 +177,7 @@ public class VectorService extends BaseService {
     }
 
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
-        String title = String.format("QueryRequest collectionName:%s", request.getCollectionName());
+        String title = String.format("QueryRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
         if (request.getFilter() == null && request.getIds() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be null at the same time");
         } else if (request.getFilter() != null && request.getIds() != null) {
@@ -201,7 +201,7 @@ public class VectorService extends BaseService {
     }
 
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
-        String title = String.format("SearchRequest collectionName:%s", request.getCollectionName());
+        String title = String.format("SearchRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
 
         //checkCollectionExist(blockingStub, request.getCollectionName());
 

@@ -33,4 +33,13 @@ public enum ConsistencyLevel{
         this.name = name;
         this.code = code;
     }
+
+    public static ConsistencyLevel fromName(String name) {
+        for (ConsistencyLevel level : ConsistencyLevel.values()) {
+            if (level.getName().equals(name)) {
+                return level;
+            }
+        }
+        return null;
+    }
 }
