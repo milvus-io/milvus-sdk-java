@@ -34,6 +34,7 @@ import java.util.Map;
 @Data
 @SuperBuilder
 public class SearchReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
