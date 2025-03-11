@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v1.CommonUtils;
 import io.milvus.v2.client.ConnectConfig;
@@ -34,29 +35,29 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.vector.request.InsertReq;
-import io.milvus.v2.service.vector.request.QueryIteratorReq;
-import io.milvus.v2.service.vector.request.QueryReq;
-import io.milvus.v2.service.vector.request.SearchIteratorReq;
+import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.QueryResp;
+import io.milvus.v2.service.vector.response.SearchResp;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
 public class IteratorExample {
+    private static final MilvusClientV2 client;
+    static {
+        client = new MilvusClientV2(ConnectConfig.builder()
+                .uri("http://localhost:19530")
+                .build());
+    }
     private static final String COLLECTION_NAME = "java_sdk_example_iterator_v2";
     private static final String ID_FIELD = "userID";
     private static final String AGE_FIELD = "userAge";
     private static final String VECTOR_FIELD = "userFace";
     private static final Integer VECTOR_DIM = 128;
 
-    public static void main(String[] args) {
-        ConnectConfig config = ConnectConfig.builder()
-                .uri("http://localhost:19530")
-                .build();
-        MilvusClientV2 client = new MilvusClientV2(config);
-
+    private static void buildCollection() {
         // Create collection
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
@@ -123,21 +124,58 @@ public class IteratorExample {
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         System.out.printf("Inserted row count: %d\n", queryResults.get(0).getEntity().get("count(*)"));
+    }
 
-        // Search iterator
+    // Query iterator
+    private static void queryIterator(String expr, int batchSize, int offset, int limit) {
+        System.out.println("\n========== queryIterator() ==========");
+        System.out.println(String.format("expr='%s', batchSize=%d, offset=%d, limit=%d", expr, batchSize, offset, limit));
+        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .expr(expr)
+                .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
+                .batchSize(batchSize)
+                .offset(offset)
+                .limit(limit)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+
+        System.out.println("QueryIterator results:");
+        int counter = 0;
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
+            if (res.isEmpty()) {
+                System.out.println("query iteration finished, close");
+                queryIterator.close();
+                break;
+            }
+
+            for (QueryResultsWrapper.RowRecord record : res) {
+                System.out.println(record);
+                counter++;
+            }
+        }
+        System.out.printf("%d query results returned%n", counter);
+    }
+
+    // Search iterator V1
+    private static void searchIteratorV1(String expr, String params, int batchSize, int topK) {
+        System.out.println("\n========== searchIteratorV1() ==========");
+        System.out.println(String.format("expr='%s', params='%s', batchSize=%d, topK=%d", expr, params, batchSize, topK));
         SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .outputFields(Lists.newArrayList(AGE_FIELD))
-                .batchSize(50L)
+                .batchSize(batchSize)
                 .vectorFieldName(VECTOR_FIELD)
                 .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
-                .expr(String.format("%s > 50 && %s < 100", AGE_FIELD, AGE_FIELD))
-                .params("{\"range_filter\": 15.0, \"radius\": 20.0}")
-                .topK(300)
+                .expr(expr)
+                .params(StringUtils.isEmpty(params) ? "{}" : params)
+                .topK(topK)
                 .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
 
+        System.out.println("SearchIteratorV1 results:");
         int counter = 0;
         while (true) {
             List<QueryResultsWrapper.RowRecord> res = searchIterator.next();
@@ -153,34 +191,55 @@ public class IteratorExample {
             }
         }
         System.out.printf("%d search results returned\n%n", counter);
+    }
 
-        // Query iterator
-        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+    // Search iterator V2
+    // In SDK v2.5.6, we provide a new search iterator implementation. SearchIteratorV2 is recommended.
+    // SearchIteratorV2 is faster than V1 by 20~30 percent, and the recall is a little better than V1.
+    private static void searchIteratorV2(String filter, Map<String, Object> params, int batchSize, int topK) {
+        System.out.println("\n========== searchIteratorV2() ==========");
+        System.out.println(String.format("expr='%s', params='%s', batchSize=%d, topK=%d",
+                filter, params==null ? "" : params.toString(), batchSize, topK));
+        SearchIteratorV2 searchIterator = client.searchIteratorV2(SearchIteratorReqV2.builder()
                 .collectionName(COLLECTION_NAME)
-                .expr(String.format("%s < 300", ID_FIELD))
-                .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
-                .batchSize(50L)
-                .offset(5)
-                .limit(400)
+                .outputFields(Lists.newArrayList(AGE_FIELD))
+                .batchSize(batchSize)
+                .vectorFieldName(VECTOR_FIELD)
+                .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
+                .filter(filter)
+                .searchParams(params==null ? new HashMap<>() : params)
+                .topK(topK)
+                .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
 
-        counter = 0;
+        System.out.println("SearchIteratorV2 results:");
+        int counter = 0;
         while (true) {
-            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
+            List<SearchResp.SearchResult> res = searchIterator.next();
             if (res.isEmpty()) {
-                System.out.println("query iteration finished, close");
-                queryIterator.close();
+                System.out.println("Search iteration finished, close");
+                searchIterator.close();
                 break;
             }
 
-            for (QueryResultsWrapper.RowRecord record : res) {
+            for (SearchResp.SearchResult record : res) {
                 System.out.println(record);
                 counter++;
             }
         }
-        System.out.printf("%d query results returned%n", counter);
+        System.out.printf("%d search results returned\n%n", counter);
+    }
 
-        client.close();
+    public static void main(String[] args) {
+        buildCollection();
+        queryIterator("userID < 300",50, 5,400);
+        searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
+        searchIteratorV1("", "", 10, 99);
+        searchIteratorV2("userAge > 10 &&userAge < 20", null, 50, 100);
+
+        Map<String,Object> extraParams = new HashMap<>();
+        extraParams.put("radius",15.0);
+        searchIteratorV2("", extraParams, 50, 100);
     }
 }

@@ -23,6 +23,7 @@ import io.grpc.ManagedChannel;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.orm.iterator.SearchIteratorV2;
 
 import io.milvus.v2.service.database.DatabaseService;
 import io.milvus.v2.service.database.request.*;
@@ -542,6 +543,16 @@ public class MilvusClientV2 {
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
         return rpcUtils.retry(()->vectorService.searchIterator(this.getRpcStub(), request));
+    }
+
+    /**
+     * Get searchIteratorV2 based on a vector field. Use expression to do filtering before search.
+     *
+     * @param request {@link SearchIteratorReqV2}
+     * @return {status:result code, data: SearchIteratorV2}
+     */
+    public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
+        return rpcUtils.retry(()->vectorService.searchIteratorV2(this.getRpcStub(), request));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
