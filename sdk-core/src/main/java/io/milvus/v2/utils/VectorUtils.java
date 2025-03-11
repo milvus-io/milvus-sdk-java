@@ -250,8 +250,17 @@ public class VectorUtils {
             });
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), request.getCollectionName());
-        builder.setGuaranteeTimestamp(guaranteeTimestamp);
+        // the SearchIteratorV2 passes a guaranteeTimestamp value, no need to call getGuaranteeTimestamp()
+        if (request.getSearchParams().containsKey("iterator")) {
+            long guaranteeTimestamp = 0;
+            if (request.getSearchParams().containsKey("guarantee_timestamp")) {
+                guaranteeTimestamp = (long)request.getSearchParams().get("guarantee_timestamp");
+            }
+            builder.setGuaranteeTimestamp(guaranteeTimestamp);
+        } else {
+            long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), request.getCollectionName());
+            builder.setGuaranteeTimestamp(guaranteeTimestamp);
+        }
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
         if (request.getConsistencyLevel() == null) {
