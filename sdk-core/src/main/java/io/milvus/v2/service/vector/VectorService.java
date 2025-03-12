@@ -251,6 +251,11 @@ public class VectorService extends BaseService {
         return new SearchIterator(request, blockingStub, pkField);
     }
 
+    public SearchIteratorV2 searchIteratorV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                             SearchIteratorReqV2 request) {
+        return new SearchIteratorV2(request, blockingStub);
+    }
+
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
         String title = String.format("DeleteRequest collectionName:%s", request.getCollectionName());
 

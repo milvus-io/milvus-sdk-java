@@ -30,6 +30,7 @@ import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.param.Constant;
 import io.milvus.pool.MilvusClientV2Pool;
 import io.milvus.pool.PoolConfig;
@@ -1444,6 +1445,7 @@ class MilvusClientV2DockerTest {
             }
         }
         System.out.println(String.format("There are %d items match score between [5.0, 50.0]", counter));
+        Assertions.assertTrue(counter > 0);
 
         // query iterator
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
@@ -1509,6 +1511,71 @@ class MilvusClientV2DockerTest {
             }
         }
         Assertions.assertEquals(295, counter);
+
+        // search iterator V2
+        SearchIteratorV2 searchIteratorV2 = client.searchIteratorV2(SearchIteratorReqV2.builder()
+                .collectionName(randomCollectionName)
+                .outputFields(Lists.newArrayList("*"))
+                .batchSize(1000L)
+                .vectorFieldName("float_vector")
+                .filter("id >= 50")
+                .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
+                .metricType(IndexParam.MetricType.L2)
+                .consistencyLevel(ConsistencyLevel.EVENTUALLY)
+                .build());
+        counter = 0;
+        while (true) {
+            List<SearchResp.SearchResult> res = searchIteratorV2.next();
+            if (res.isEmpty()) {
+                System.out.println("search iteration finished, close");
+                searchIteratorV2.close();
+                break;
+            }
+
+            for (SearchResp.SearchResult record : res) {
+                Map<String, Object> entity = record.getEntity();
+                Assertions.assertInstanceOf(Boolean.class, entity.get("bool_field"));
+                Assertions.assertInstanceOf(Integer.class, entity.get("int8_field"));
+                Assertions.assertInstanceOf(Integer.class, entity.get("int16_field"));
+                Assertions.assertInstanceOf(Integer.class, entity.get("int32_field"));
+                Assertions.assertInstanceOf(Long.class, entity.get("int64_field"));
+                Assertions.assertInstanceOf(Float.class, entity.get("float_field"));
+                Assertions.assertInstanceOf(Double.class, entity.get("double_field"));
+                Assertions.assertInstanceOf(String.class, entity.get("varchar_field"));
+                Assertions.assertInstanceOf(JsonObject.class, entity.get("json_field"));
+                Assertions.assertInstanceOf(List.class, entity.get("arr_int_field"));
+                Assertions.assertInstanceOf(List.class, entity.get("float_vector"));
+                Assertions.assertInstanceOf(ByteBuffer.class, entity.get("binary_vector"));
+                Assertions.assertInstanceOf(ByteBuffer.class, entity.get("bfloat16_vector"));
+                Assertions.assertInstanceOf(SortedMap.class, entity.get("sparse_vector"));
+
+                String varcharVal = (String)entity.get("varchar_field");
+                Assertions.assertTrue(varcharVal.startsWith("varchar_"));
+
+                long int64Val = (long)entity.get("int64_field");
+                Assertions.assertEquals(int64Val, (long)record.getId());
+                JsonObject jsonObj = (JsonObject)entity.get("json_field");
+                Assertions.assertTrue(jsonObj.has(String.format("JSON_%d", int64Val)));
+
+                List<Integer> intArr = (List<Integer>)entity.get("arr_int_field");
+                Assertions.assertTrue(intArr.size() <= 50); // max capacity 50 is defined in the baseSchema()
+
+                List<Float> floatVector = (List<Float>)entity.get("float_vector");
+                Assertions.assertEquals(DIMENSION, floatVector.size());
+
+                ByteBuffer binaryVector = (ByteBuffer)entity.get("binary_vector");
+                Assertions.assertEquals(DIMENSION, binaryVector.limit()*8);
+
+                ByteBuffer bfloat16Vector = (ByteBuffer)entity.get("bfloat16_vector");
+                Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
+
+                SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)entity.get("sparse_vector");
+                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+
+                counter++;
+            }
+        }
+        Assertions.assertEquals((int)count - 50, counter);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
