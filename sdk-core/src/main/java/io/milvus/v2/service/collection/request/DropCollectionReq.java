@@ -27,6 +27,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class DropCollectionReq {
     private String collectionName;
+    @Deprecated
     @Builder.Default
     private Boolean async = Boolean.TRUE;
     @Builder.Default

@@ -20,6 +20,7 @@
 package io.milvus.v2.service.index.request;
 
 import io.milvus.v2.common.IndexParam;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
@@ -33,4 +34,8 @@ public class CreateIndexReq {
     @NonNull
     private String collectionName;
     private List<IndexParam> indexParams;
+    @Builder.Default
+    private Boolean sync = Boolean.TRUE; // wait the index to complete
+    @Builder.Default
+    private Long timeout = 60000L; // timeout value for waiting the index to complete
 }
