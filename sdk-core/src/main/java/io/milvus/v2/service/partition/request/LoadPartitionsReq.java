@@ -35,6 +35,10 @@ public class LoadPartitionsReq {
     @Builder.Default
     private Integer numReplicas = 1;
     @Builder.Default
+    private Boolean sync = Boolean.TRUE; // wait the partitions to be fully loaded
+    @Builder.Default
+    private Long timeout = 60000L; // timeout value for waiting the partitions to be fully loaded
+    @Builder.Default
     private Boolean refresh = Boolean.FALSE;
     @Builder.Default
     private List<String> loadFields = new ArrayList<>();

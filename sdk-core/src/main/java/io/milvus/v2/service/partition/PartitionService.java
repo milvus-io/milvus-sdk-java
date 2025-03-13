@@ -20,6 +20,8 @@
 package io.milvus.v2.service.partition;
 
 import io.milvus.grpc.*;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.partition.response.*;
@@ -107,6 +109,9 @@ public class PartitionService extends BaseService {
                 .build();
         Status status = blockingStub.loadPartitions(loadPartitionsRequest);
         rpcUtils.handleResponse(title, status);
+        if (request.getSync()) {
+            WaitForLoadPartitions(blockingStub, request.getCollectionName(), request.getPartitionNames(), request.getTimeout());
+        }
 
         return null;
     }
@@ -121,5 +126,35 @@ public class PartitionService extends BaseService {
         rpcUtils.handleResponse(title, status);
 
         return null;
+    }
+
+    private void WaitForLoadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                       String collectionName, List<String> partitions, long timeoutMs) {
+        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+
+        while (true) {
+            GetLoadingProgressResponse response = blockingStub.getLoadingProgress(GetLoadingProgressRequest.newBuilder()
+                    .setCollectionName(collectionName)
+                    .addAllPartitionNames(partitions)
+                    .build());
+            String title = String.format("GetLoadingProgressRequest collectionName:%s", collectionName);
+            rpcUtils.handleResponse(title, response.getStatus());
+            if (response.getProgress() >= 100) {
+                return;
+            }
+
+            // Check if timeout is exceeded
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load partitions timeout");
+            }
+            // Wait for a certain period before checking again
+            try {
+                Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread was interrupted, failed to complete operation");
+                return; // or handle interruption appropriately
+            }
+        }
     }
 }

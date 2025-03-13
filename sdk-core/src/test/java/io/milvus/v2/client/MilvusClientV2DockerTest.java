@@ -299,21 +299,10 @@ class MilvusClientV2DockerTest {
                 .dimension(DIMENSION)
                 .build());
 
-        Map<String,Object> extraParams = new HashMap<>();
-        extraParams.put("M",16);
-        extraParams.put("efConstruction",64);
-        IndexParam indexParam = IndexParam.builder()
-                .fieldName(vectorFieldName)
-                .indexType(IndexParam.IndexType.HNSW)
-                .metricType(IndexParam.MetricType.COSINE)
-                .extraParams(extraParams)
-                .build();
-
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .description("dummy")
                 .collectionSchema(collectionSchema)
-                .indexParams(Collections.singletonList(indexParam))
                 .build();
         client.createCollection(requestCreate);
 
@@ -337,6 +326,25 @@ class MilvusClientV2DockerTest {
                 .build());
         // there is a segment is flushed by the flush() interface, there could be a compaction task created
         Assertions.assertTrue(compactResp.getCompactionID() == -1L || compactResp.getCompactionID() > 0L);
+
+        // create index
+        Map<String,Object> extraParams = new HashMap<>();
+        extraParams.put("M", 64);
+        extraParams.put("efConstruction", 200);
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(vectorFieldName)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .extraParams(extraParams)
+                .build();
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .build());
+
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
 
         // create partition, upsert one row to the partition
         String partitionName = "PPP";
