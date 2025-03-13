@@ -1439,7 +1439,7 @@ class MilvusClientV2DockerTest {
                 Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
 
                 SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
-                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() < 20); // defined in generateSparseVector()
 
                 counter++;
             }
@@ -1575,7 +1575,9 @@ class MilvusClientV2DockerTest {
                 counter++;
             }
         }
-        Assertions.assertEquals((int)count - 50, counter);
+        // search iterator could not ensure that all the entities can be retrieved
+        // expect count is 9950, but sometimes it returns 9949 or 9948
+        Assertions.assertTrue(counter > ((int)count - 55) && counter <= ((int)count - 50));
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
