@@ -98,12 +98,16 @@ public class CollectionService extends BaseService {
         CreateIndexReq createIndexReq = CreateIndexReq.builder()
                         .indexParams(Collections.singletonList(indexParam))
                         .collectionName(request.getCollectionName())
+                        .sync(false)
                         .build();
         indexService.createIndex(blockingStub, createIndexReq);
         //load collection, set async to true since no need to wait loading progress
         try {
             //TimeUnit.MILLISECONDS.sleep(1000);
-            loadCollection(blockingStub, LoadCollectionReq.builder().async(true).collectionName(request.getCollectionName()).build());
+            loadCollection(blockingStub, LoadCollectionReq.builder()
+                    .sync(false)
+                    .collectionName(request.getCollectionName())
+                    .build());
         } catch (Exception e) {
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed: " + e);
         }
@@ -157,11 +161,15 @@ public class CollectionService extends BaseService {
                 CreateIndexReq createIndexReq = CreateIndexReq.builder()
                         .indexParams(Collections.singletonList(indexParam))
                         .collectionName(request.getCollectionName())
+                        .sync(false)
                         .build();
                 indexService.createIndex(blockingStub, createIndexReq);
             }
             //load collection, set async to true since no need to wait loading progress
-            loadCollection(blockingStub, LoadCollectionReq.builder().async(true).collectionName(request.getCollectionName()).build());
+            loadCollection(blockingStub, LoadCollectionReq.builder()
+                    .sync(false)
+                    .collectionName(request.getCollectionName())
+                    .build());
         }
 
         return null;
@@ -186,10 +194,6 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.dropCollection(dropCollectionRequest);
         rpcUtils.handleResponse(title, status);
-
-        if (request.getAsync()) {
-            WaitForDropCollection(blockingStub, request);
-        }
 
         return null;
     }
@@ -289,7 +293,7 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (!request.getAsync()) {
+        if (request.getSync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
@@ -304,7 +308,7 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.loadCollection(loadCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (request.getAsync()) {
+        if (request.getSync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
         }
 
@@ -318,9 +322,6 @@ public class CollectionService extends BaseService {
                 .build();
         Status status = blockingStub.releaseCollection(releaseCollectionRequest);
         rpcUtils.handleResponse(title, status);
-        if (request.getAsync()) {
-            waitForCollectionRelease(blockingStub, request);
-        }
 
         return null;
     }
@@ -407,75 +408,28 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
-    public void waitForCollectionRelease(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
-        boolean isLoaded = true;
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
-
-        while (isLoaded) {
-            // Call the getLoadState method
-            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(request.getCollectionName()).build());
-            if (isLoaded) {
-                // Check if timeout is exceeded
-                if (System.currentTimeMillis() - startTime > request.getTimeout()) {
-                    throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection timeout");
-                }
-                // Wait for a certain period before checking again
-                try {
-                    Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.out.println("Thread was interrupted, Failed to complete operation");
-                    return; // or handle interruption appropriately
-                }
-            }
-        }
-    }
-
     private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                        String collectionName, long timeoutMs) {
-        boolean isLoaded = false;
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
-        while (!isLoaded) {
+        while (true) {
             // Call the getLoadState method
-            isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(collectionName).build());
-            if (!isLoaded) {
-                // Check if timeout is exceeded
-                if (System.currentTimeMillis() - startTime > timeoutMs) {
-                    throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection timeout");
-                }
-                // Wait for a certain period before checking again
-                try {
-                    Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.out.println("Thread was interrupted, Failed to complete operation");
-                    return; // or handle interruption appropriately
-                }
+            boolean isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(collectionName).build());
+            if (isLoaded) {
+                return;
             }
-        }
-    }
 
-    private void WaitForDropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
-        boolean hasCollection = true;
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
-
-        while (hasCollection) {
-            // Call the getLoadState method
-            hasCollection = hasCollection(blockingStub, HasCollectionReq.builder().collectionName(request.getCollectionName()).build());
-            if (hasCollection) {
-                // Check if timeout is exceeded
-                if (System.currentTimeMillis() - startTime > request.getTimeout()) {
-                    throw new MilvusClientException(ErrorCode.SERVER_ERROR, "drop collection timeout");
-                }
-                // Wait for a certain period before checking again
-                try {
-                    Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    System.out.println("Thread was interrupted, Failed to complete operation");
-                    return; // or handle interruption appropriately
-                }
+            // Check if timeout is exceeded
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection timeout");
+            }
+            // Wait for a certain period before checking again
+            try {
+                Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread was interrupted, Failed to complete operation");
+                return; // or handle interruption appropriately
             }
         }
     }

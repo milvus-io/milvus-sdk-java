@@ -30,5 +30,25 @@ public class RefreshLoadReq {
     @Builder.Default
     private Boolean async = Boolean.TRUE;
     @Builder.Default
-    private Long timeout = 60000L;
+    private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded. "async" is deprecated, use "sync" instead
+    @Builder.Default
+    private Long timeout = 60000L; // timeout value for waiting the collection to be fully loaded
+
+    public static abstract class RefreshLoadReqBuilder<C extends RefreshLoadReq, B extends RefreshLoadReq.RefreshLoadReqBuilder<C, B>> {
+        public B async(Boolean async) {
+            this.async$value = async;
+            this.async$set = true;
+            this.sync$value = !async;
+            this.sync$set = true;
+            return self();
+        }
+
+        public B sync(Boolean sync) {
+            this.sync$value = sync;
+            this.sync$set = true;
+            this.async$value = !sync;
+            this.async$set = true;
+            return self();
+        }
+    }
 }

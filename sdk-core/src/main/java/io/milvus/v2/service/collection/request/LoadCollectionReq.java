@@ -32,10 +32,13 @@ public class LoadCollectionReq {
     private String collectionName;
     @Builder.Default
     private Integer numReplicas = 1;
+    @Deprecated
     @Builder.Default
     private Boolean async = Boolean.FALSE;
     @Builder.Default
-    private Long timeout = 60000L;
+    private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded. "async" is deprecated, use "sync" instead
+    @Builder.Default
+    private Long timeout = 60000L; // timeout value for waiting the collection to be fully loaded
     @Builder.Default
     private Boolean refresh = Boolean.FALSE;
     @Builder.Default
@@ -44,4 +47,22 @@ public class LoadCollectionReq {
     private Boolean skipLoadDynamicField = Boolean.FALSE;
     @Builder.Default
     private List<String> resourceGroups = new ArrayList<>();
+
+    public static abstract class LoadCollectionReqBuilder<C extends LoadCollectionReq, B extends LoadCollectionReq.LoadCollectionReqBuilder<C, B>> {
+        public B async(Boolean async) {
+            this.async$value = async;
+            this.async$set = true;
+            this.sync$value = !async;
+            this.sync$set = true;
+            return self();
+        }
+
+        public B sync(Boolean sync) {
+            this.sync$value = sync;
+            this.sync$set = true;
+            this.async$value = !sync;
+            this.async$set = true;
+            return self();
+        }
+    }
 }

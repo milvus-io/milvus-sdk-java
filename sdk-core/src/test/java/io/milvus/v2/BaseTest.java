@@ -76,7 +76,7 @@ public class BaseTest {
                 .setCreatedUtcTimestamp(0)
                 .build();
 
-        IndexDescription index = IndexDescription.newBuilder()
+        IndexDescription index1 = IndexDescription.newBuilder()
                 .setIndexName("test")
                 .setFieldName("vector")
                 .addParams(KeyValuePair.newBuilder()
@@ -87,10 +87,21 @@ public class BaseTest {
                         .setKey("metric_type")
                         .setValue("L2")
                         .build())
+                .setState(IndexState.Finished)
+                .build();
+        IndexDescription index2 = IndexDescription.newBuilder()
+                .setIndexName("age")
+                .setFieldName("age")
+                .addParams(KeyValuePair.newBuilder()
+                        .setKey("index_type")
+                        .setValue("INVERTED")
+                        .build())
+                .setState(IndexState.Finished)
                 .build();
         DescribeIndexResponse describeIndexResponse = DescribeIndexResponse.newBuilder()
                 .setStatus(successStatus)
-                .addIndexDescriptions(index)
+                .addIndexDescriptions(index1)
+                .addIndexDescriptions(index2)
                 .build();
         when(blockingStub.listDatabases(any())).thenReturn(ListDatabasesResponse.newBuilder().setStatus(successStatus).addDbNames("default").build());
         // collection api
@@ -104,6 +115,7 @@ public class BaseTest {
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
         when(blockingStub.renameCollection(any())).thenReturn(successStatus);
         when(blockingStub.getCollectionStatistics(any())).thenReturn(GetCollectionStatisticsResponse.newBuilder().addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build()).setStatus(successStatus).build());
+        when(blockingStub.getLoadingProgress(any())).thenReturn(GetLoadingProgressResponse.newBuilder().setStatus(successStatus).setProgress(100).build());
 
         // index api
         when(blockingStub.createIndex(any())).thenReturn(successStatus);
@@ -151,6 +163,7 @@ public class BaseTest {
         when(blockingStub.alterAlias(any())).thenReturn(successStatus);
         when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
+        when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
     }
     @AfterEach
     public void tearDown() throws InterruptedException {

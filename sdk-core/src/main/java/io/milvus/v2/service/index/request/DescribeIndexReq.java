@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.index.request;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.SuperBuilder;
@@ -30,4 +31,6 @@ public class DescribeIndexReq {
     private String collectionName;
     private String fieldName;
     private String indexName;
+    @Builder.Default
+    private Long timestamp = 0L; // only check segments generated before this timestamp. all the segments will be checked if this value is zero.
 }

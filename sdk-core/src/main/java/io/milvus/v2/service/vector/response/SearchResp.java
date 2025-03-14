@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.vector.response;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 @SuperBuilder
 public class SearchResp {
     private List<List<SearchResult>> searchResults;
+    @Builder.Default
     private long sessionTs = 1L; // default eventually ts
     private List<Float> recalls;
 
