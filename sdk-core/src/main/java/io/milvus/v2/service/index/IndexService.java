@@ -23,6 +23,7 @@ import com.google.gson.JsonObject;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
+import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -78,6 +79,10 @@ public class IndexService extends BaseService {
 
             Status status = blockingStub.createIndex(builder.build());
             rpcUtils.handleResponse(title, status);
+            if (request.getSync()) {
+                WaitForIndexComplete(blockingStub, request.getCollectionName(), indexParam.getFieldName(),
+                        indexParam.getIndexName(), request.getTimeout());
+            }
         }
 
         return null;
@@ -179,5 +184,62 @@ public class IndexService extends BaseService {
             indexNames.add(index.getIndexName());
         });
         return indexNames;
+    }
+
+    private void WaitForIndexComplete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                      String collectionName, String fieldName, String indexName, long timeoutMs) {
+        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+
+        // alloc a timestamp from the server, the DescribeIndex() will use this timestamp to check the segments
+        // which are generated before this timestamp.
+        AllocTimestampResponse allocTsResp = blockingStub.allocTimestamp(AllocTimestampRequest.newBuilder().build());
+        rpcUtils.handleResponse("AllocTimestampRequest", allocTsResp.getStatus());
+        long serverTs = allocTsResp.getTimestamp();
+
+        while (true) {
+            DescribeIndexResp response = describeIndex(blockingStub, DescribeIndexReq.builder()
+                    .collectionName(collectionName)
+                    .fieldName(fieldName)
+                    .indexName(indexName)
+                    .timestamp(serverTs)
+                    .build());
+            List<DescribeIndexResp.IndexDesc> indices = response.getIndexDescriptions();
+            DescribeIndexResp.IndexDesc desc = null;
+            if (indices.size() == 1) {
+                desc = indices.get(0);
+            } else {
+                for (DescribeIndexResp.IndexDesc index : indices) {
+                    if (fieldName.equals(index.getFieldName())) {
+                        desc = index;
+                        break;
+                    }
+                }
+            }
+
+            if (desc == null) {
+                String msg = String.format("Failed to describe the index '%s' of field '%s' from serv side", fieldName, indexName);
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
+            }
+
+            if (desc.getIndexState() == IndexBuildState.Finished) {
+                return;
+            } else if (desc.getIndexState() == IndexBuildState.Failed) {
+                String msg = "Index is failed, reason: " + desc.getIndexFailedReason();
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
+            }
+
+            // Check if timeout is exceeded
+            if (System.currentTimeMillis() - startTime > timeoutMs) {
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Create index timeout");
+            }
+            // Wait for a certain period before checking again
+            try {
+                Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.out.println("Thread was interrupted, failed to complete operation");
+                return; // or handle interruption appropriately
+            }
+        }
     }
 }
