@@ -139,7 +139,7 @@ public class UpsertTest extends BaseTest {
         // query
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(collectionName)
-                .filter(CommonData.fieldInt32 + " == 1")
+                .filter(CommonData.fieldInt32 + " == 0")
                 .partitionNames(Lists.newArrayList(CommonData.defaultPartitionName))
                 .outputFields(Lists.newArrayList(CommonData.fieldInt64, CommonData.fieldInt32))
                 .consistencyLevel(ConsistencyLevel.STRONG).build());
