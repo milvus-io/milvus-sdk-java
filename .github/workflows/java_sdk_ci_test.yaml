@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "build jar"
           git submodule update --init
-          mvn clean versions:set -DnewVersion=2.4.0
+          mvn clean versions:set -DnewVersion=2.5.5
           mvn clean install -Dmaven.test.skip=true
 
 #      - name: Test

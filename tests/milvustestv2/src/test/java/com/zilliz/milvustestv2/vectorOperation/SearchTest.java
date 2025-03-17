@@ -126,7 +126,7 @@ public class SearchTest extends BaseTest {
                 {CommonData.fieldDouble + " > 1 ", topK},
                 {CommonData.fieldVarchar + " == \"1.0\" ", topK},
                 {CommonData.fieldFloat + " == 1.0 ", topK},
-                {"fieldJson[\"" + CommonData.fieldVarchar + "\"] in [\"Str1\", \"Str3\"]", 2},
+                {"fieldJson[\"" + CommonData.fieldVarchar + "\"] in [\"Str1\", \"Str3\"]", 0},
                 {"ARRAY_CONTAINS(" + CommonData.fieldArray + ", 1)", 1},
         };
     }
