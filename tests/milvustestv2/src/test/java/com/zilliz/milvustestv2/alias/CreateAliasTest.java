@@ -10,6 +10,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.utility.request.CreateAliasReq;
+import io.milvus.v2.service.utility.request.DropAliasReq;
 import io.milvus.v2.service.utility.request.ListAliasesReq;
 import io.milvus.v2.service.utility.response.ListAliasResp;
 import io.milvus.v2.service.vector.request.InsertReq;
@@ -49,6 +50,7 @@ public class CreateAliasTest extends BaseTest {
 
     @AfterClass(alwaysRun = true)
     public void cleanTestData(){
+        milvusClientV2.dropAlias(DropAliasReq.builder().alias(aliasName).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
     }
 

@@ -742,11 +742,11 @@ public class CommonFunction {
         for (long i = startId; i < (num + startId); i++) {
             JsonObject row = new JsonObject();
             row.addProperty(CommonData.fieldInt64, i);
-            row.addProperty(CommonData.fieldInt32, (String) null);
-            row.addProperty(CommonData.fieldInt16, (int) i % 32767);
-            row.addProperty(CommonData.fieldInt8, (short) i % 127);
-            row.addProperty(CommonData.fieldBool, i % 2 == 0);
-            if (i % 2 == 1) {
+            if (i % 2 == 0) {
+                row.addProperty(CommonData.fieldInt32, (int) i % 32767);
+                row.addProperty(CommonData.fieldInt16, (int) i % 32767);
+                row.addProperty(CommonData.fieldInt8, (short) i % 127);
+                row.addProperty(CommonData.fieldBool, i % 3 == 0);
                 row.addProperty(CommonData.fieldDouble, (double) i);
                 row.addProperty(CommonData.fieldVarchar, "Str" + i);
                 row.addProperty(CommonData.fieldFloat, (float) i);
@@ -774,15 +774,15 @@ public class CommonFunction {
             }
 
             JsonObject json = new JsonObject();
-            json.addProperty(CommonData.fieldInt64, (int) i % 32767);
-            json.addProperty(CommonData.fieldInt32, (int) i % 32767);
-            json.addProperty(CommonData.fieldDouble, (double) i);
-            json.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
-            json.addProperty(CommonData.fieldBool, i % 2 == 0);
-            if (i % 2 == 1) {
+            if (i % 2 == 0) {
+                json.addProperty(CommonData.fieldInt64, (int) i % 32767);
+                json.addProperty(CommonData.fieldInt32, (int) i % 32767);
+                json.addProperty(CommonData.fieldDouble, (double) i);
+                json.add(CommonData.fieldArray, gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
+                json.addProperty(CommonData.fieldBool, i % 3 == 0);
                 json.addProperty(CommonData.fieldVarchar, "Str" + i);
+                json.addProperty(CommonData.fieldFloat, (float) i);
             }
-            json.addProperty(CommonData.fieldFloat, (float) i);
             row.add(CommonData.fieldJson, json);
             jsonList.add(row);
         }
@@ -1542,7 +1542,7 @@ public class CommonFunction {
         CreateCollectionReq.CollectionSchema collectionSchema = describeCollectionResp.getCollectionSchema();
         RemoteBulkWriter remoteBulkWriter = buildRemoteBulkWriter(collectionSchema, bulkFileType);
         List<JsonObject> jsonObjects = CommonFunction.genCommonData(collection, count);
-        jsonObjects.forEach(x->{
+        jsonObjects.forEach(x -> {
             try {
                 remoteBulkWriter.appendRow(x);
             } catch (IOException | InterruptedException e) {

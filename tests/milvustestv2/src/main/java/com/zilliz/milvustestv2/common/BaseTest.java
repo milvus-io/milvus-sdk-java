@@ -5,6 +5,8 @@ import com.zilliz.milvustestv2.Milvustestv2Application;
 import com.zilliz.milvustestv2.config.ConnectInfoConfig;
 import com.zilliz.milvustestv2.params.FieldParam;
 import com.zilliz.milvustestv2.utils.PropertyFilesUtil;
+import io.milvus.client.MilvusServiceClient;
+import io.milvus.param.ConnectParam;
 import io.milvus.param.MetricType;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;

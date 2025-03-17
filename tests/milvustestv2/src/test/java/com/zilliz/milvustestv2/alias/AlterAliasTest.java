@@ -39,8 +39,9 @@ public class AlterAliasTest extends BaseTest {
     @AfterClass(alwaysRun = true)
     public void cleanTestData(){
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName).build());
-        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName2).build());
+        // remove alias before drop collection
         milvusClientV2.dropAlias(DropAliasReq.builder().alias(aliasName).build());
+        milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(newCollectionName2).build());
     }
 
     @Test(description = "Alter alias test",groups = {"Smoke"})
