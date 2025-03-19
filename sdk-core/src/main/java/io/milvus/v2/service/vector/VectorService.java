@@ -186,7 +186,7 @@ public class VectorService extends BaseService {
 
 
         if (request.getIds() != null && request.getFilter() == null) {
-            DescribeCollectionReq descReq = DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build();
+            DescribeCollectionReq descReq = DescribeCollectionReq.builder().databaseName(request.getDatabaseName()).collectionName(request.getCollectionName()).build();
             DescribeCollectionResp descResp = collectionService.describeCollection(blockingStub, descReq);
             request.setFilter(vectorUtils.getExprById(descResp.getPrimaryFieldName(), request.getIds()));
         }
