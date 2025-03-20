@@ -260,11 +260,14 @@ public class CollectionService extends BaseService {
     }
 
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
-        String title = String.format("DescribeCollectionRequest collectionName:%s", request.getCollectionName());
-        DescribeCollectionRequest describeCollectionRequest = DescribeCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
+        String title = String.format("DescribeCollectionRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
+        DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        DescribeCollectionResponse response = blockingStub.describeCollection(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
         return convertUtils.convertDescCollectionResp(response);
     }
