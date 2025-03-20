@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.5.6 (2025-3-20)
+### Improvement
+- Optimize MilvusClientV2 search/query to support databaseName
+- Add SearchIteratorV2 to get better performance and recall compare to old SearchIterator
+- Add sync parameter for loadCollection/loadPartitions/createIndex
+
 ## milvus-sdk-java 2.5.5 (2025-3-07)
 ### Feature
 - Support HNSW_PQ/HNSW_SQ/HNSW_PRQ
