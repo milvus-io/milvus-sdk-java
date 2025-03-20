@@ -27,11 +27,15 @@ public class CommonData {
     public static String fieldVarchar="fieldVarchar";
     public static String fieldFloat="fieldFloat";
     public static String fieldJson="fieldJson";
+
+    public static String fieldDynamic="fieldDynamic";
+    public static String fieldDynamicNotExist="fieldDynamicNotExist";
     public static String fieldFloatVector="fieldFloatVector";
     public static String fieldBinaryVector="fieldBinaryVector";
     public static String fieldFloat16Vector="fieldFloat16Vector";
     public static String fieldBF16Vector="fieldBF16Vector";
     public static String fieldSparseVector="fieldSparseVector";
+
 
     public static String partitionName="partitionName";
     // 快速创建时候的默认向量filed
