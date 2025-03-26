@@ -30,6 +30,7 @@ import java.util.Map;
 public class BaseBulkImport {
     protected static String postRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
+            setDefaultOptionsIfCallCloud(params, apiKey);
             kong.unirest.HttpResponse<String> response = Unirest.post(url)
                     .connectTimeout(timeout)
                     .headers(httpHeaders(apiKey))
@@ -83,6 +84,16 @@ public class BaseBulkImport {
         if (innerCode != 0) {
             String innerMessage = res.getMessage();
             ExceptionUtils.throwUnExpectedException(String.format("Failed to request url: %s, code: %s, message: %s", url, innerCode, innerMessage));
+        }
+    }
+
+    private static void setDefaultOptionsIfCallCloud(Map<String, Object> params, String apiKey) {
+        if (StringUtils.isNotEmpty(apiKey)) {
+            Map<String, Object> options = new HashMap<>();
+            options.put("sdk", "java");
+            options.put("scene", "bulkWriter");
+
+            params.put("options", options);
         }
     }
 }
