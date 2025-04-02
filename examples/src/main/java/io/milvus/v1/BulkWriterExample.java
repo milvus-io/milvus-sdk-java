@@ -169,6 +169,8 @@ public class BulkWriterExample {
         exampleBulkWriter.createConnection();
 
         List<BulkFileType> fileTypes = Lists.newArrayList(
+                BulkFileType.JSON,
+                BulkFileType.CSV,
                 BulkFileType.PARQUET
         );
 
@@ -387,7 +389,11 @@ public class BulkWriterExample {
                 rowObject.addProperty("float", i / 3);
                 rowObject.addProperty("double", i / 7);
                 rowObject.addProperty("varchar", "varchar_" + i);
-                rowObject.addProperty("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
+
+                // Note: for JSON field, use gson.fromJson() to construct a real JsonObject
+                // don't use rowObject.addProperty("json", jsonContent) since the value is treated as a string, not a JsonObject
+                String jsonContent = String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i);
+                rowObject.add("json", GSON_INSTANCE.fromJson(jsonContent, JsonElement.class));
 
                 // vector field
                 rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(CommonUtils.generateFloatVector(DIM)));

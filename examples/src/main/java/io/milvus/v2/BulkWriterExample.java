@@ -441,7 +441,11 @@ public class BulkWriterExample {
                 rowObject.addProperty("double", (Number) row.get("double"));
             }
             rowObject.addProperty("varchar", row.get("varchar") == null ? null : (String) row.get("varchar"));
-            rowObject.addProperty("json", row.get("json") == null ? null : (String) row.get("json"));
+
+            // Note: for JSON field, use gson.fromJson() to construct a real JsonObject
+            // don't use rowObject.addProperty("json", jsonContent) since the value is treated as a string, not a JsonObject
+            Object jsonContent = row.get("json");
+            rowObject.add("json", jsonContent == null ? null : GSON_INSTANCE.fromJson((String)jsonContent, JsonElement.class));
 
             // vector field
             rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(row.get("float_vector")));
@@ -720,8 +724,8 @@ public class BulkWriterExample {
         } else if (fetchedValue instanceof Double) {
             matched = Math.abs((Double)fetchedValue - (Double)expectedValue) < 1e-8;
         } else if (fetchedValue instanceof JsonElement) {
-            String ss = fetchedValue.toString();
-            matched = ss.equals(((String)expectedValue).replaceAll("\\s", "")); // compare ignore space
+            JsonElement expectedJson = GSON_INSTANCE.fromJson((String)expectedValue, JsonElement.class);
+            matched = fetchedValue.equals(expectedJson);
         } else if (fetchedValue instanceof ByteBuffer) {
             byte[] bb = ((ByteBuffer)fetchedValue).array();
             matched = Arrays.equals(bb, (byte[])expectedValue);
