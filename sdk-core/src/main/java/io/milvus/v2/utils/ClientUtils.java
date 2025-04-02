@@ -33,6 +33,9 @@ import io.grpc.stub.MetadataUtils;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
 import io.milvus.v2.client.ConnectConfig;
+import io.grpc.HttpConnectProxiedSocketAddress;
+import io.grpc.ProxiedSocketAddress;
+import io.grpc.ProxyDetector;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -46,6 +49,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 public class ClientUtils {
     Logger logger = LoggerFactory.getLogger(ClientUtils.class);
@@ -73,6 +78,24 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
+                    String[] hostPort = connectConfig.getProxyAddress().split(":");
+                    if (hostPort.length == 2) {
+                        String proxyHost = hostPort[0];
+                        int proxyPort = Integer.parseInt(hostPort[1]);
+
+                        builder.proxyDetector(new ProxyDetector() {
+                            @Override
+                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
+                                return HttpConnectProxiedSocketAddress.newBuilder()
+                                        .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
+                                        .setTargetAddress((InetSocketAddress) targetServerAddress)
+                                        .build();
+                            }
+                        });
+                    }
+                }
+
                 if(connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
@@ -95,6 +118,25 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+
+                if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
+                    String[] hostPort = connectConfig.getProxyAddress().split(":");
+                    if (hostPort.length == 2) {
+                        String proxyHost = hostPort[0];
+                        int proxyPort = Integer.parseInt(hostPort[1]);
+
+                        builder.proxyDetector(new ProxyDetector() {
+                            @Override
+                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
+                                return HttpConnectProxiedSocketAddress.newBuilder()
+                                        .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
+                                        .setTargetAddress((InetSocketAddress) targetServerAddress)
+                                        .build();
+                            }
+                        });
+                    }
+                }
+
                 if(connectConfig.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -116,6 +158,24 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(MetadataUtils.newAttachHeadersInterceptor(metadata));
+                
+                if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
+                    String[] hostPort = connectConfig.getProxyAddress().split(":");
+                    if (hostPort.length == 2) {
+                        String proxyHost = hostPort[0];
+                        int proxyPort = Integer.parseInt(hostPort[1]);
+
+                        builder.proxyDetector(new ProxyDetector() {
+                            @Override
+                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
+                                return HttpConnectProxiedSocketAddress.newBuilder()
+                                        .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
+                                        .setTargetAddress((InetSocketAddress) targetServerAddress)
+                                        .build();
+                            }
+                        });
+                    }
+                }
                 if (connectConfig.getSecure()) {
                     builder.useTransportSecurity();
                 }

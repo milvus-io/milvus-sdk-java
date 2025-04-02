@@ -46,6 +46,8 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
+import io.grpc.ProxiedSocketAddress;
+import io.grpc.ProxyDetector;
 import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
@@ -58,6 +60,9 @@ import java.util.concurrent.TimeUnit;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import io.grpc.HttpConnectProxiedSocketAddress;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
@@ -102,7 +107,6 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 SslContext sslContext = GrpcSslContexts.forClient()
                         .trustManager(new File(connectParam.getServerPemPath()))
                         .build();
-
                 NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                         .overrideAuthority(connectParam.getServerName())
                         .sslContext(sslContext)
@@ -112,6 +116,23 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
+                // Add proxy configuration if proxy address is set
+                if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
+                    String[] hostPort = connectParam.getProxyAddress().split(":");
+                    if (hostPort.length == 2) {
+                        String proxyHost = hostPort[0];
+                        int proxyPort = Integer.parseInt(hostPort[1]);
+                        builder.proxyDetector(new ProxyDetector() {
+                            @Override
+                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
+                                return HttpConnectProxiedSocketAddress.newBuilder()
+                                    .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
+                                    .setTargetAddress((InetSocketAddress) targetServerAddress)
+                                    .build();
+                            }
+                        });
+                    }
+                }
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -124,7 +145,6 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .trustManager(new File(connectParam.getCaPemPath()))
                         .keyManager(new File(connectParam.getClientPemPath()), new File(connectParam.getClientKeyPath()))
                         .build();
-
                 NettyChannelBuilder builder = NettyChannelBuilder.forAddress(connectParam.getHost(), connectParam.getPort())
                         .sslContext(sslContext)
                         .maxInboundMessageSize(Integer.MAX_VALUE)
@@ -133,6 +153,24 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
+                
+                // Add proxy configuration if proxy address is set
+                if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
+                    String[] hostPort = connectParam.getProxyAddress().split(":");
+                    if (hostPort.length == 2) {
+                        String proxyHost = hostPort[0];
+                        int proxyPort = Integer.parseInt(hostPort[1]);
+                        builder.proxyDetector(new ProxyDetector() {
+                            @Override
+                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
+                                return HttpConnectProxiedSocketAddress.newBuilder()
+                                    .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
+                                    .setTargetAddress((InetSocketAddress) targetServerAddress)
+                                    .build();
+                            }
+                        });
+                    }
+                }         
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
