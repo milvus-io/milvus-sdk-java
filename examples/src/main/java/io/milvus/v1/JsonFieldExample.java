@@ -130,6 +130,8 @@ public class JsonFieldExample {
             row.addProperty(ID_FIELD, i);
             row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
 
+            // Note: for JSON field, always construct a real JsonObject
+            // don't use row.addProperty(JSON_FIELD, strContent) since the value is treated as a string, not a JsonObject
             JsonObject metadata = new JsonObject();
             metadata.addProperty("path", String.format("\\root/abc/path%d", i));
             metadata.addProperty("size", i);

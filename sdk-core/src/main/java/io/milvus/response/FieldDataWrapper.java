@@ -386,13 +386,7 @@ public class FieldDataWrapper {
 
     public static JsonElement ParseJSONObject(Object object) {
         if (object instanceof String) {
-            // For JSON field, milvus server returns a string value with redundant escape character
-            // and the string value is wrapped by a pair of quotations, the JsonParser.parseString() will
-            // parse it as a JsonPrimitive, not a JsonObject.
-            // Here we convert the string value to a valid JSON string so that
-            // JsonParser.parseString() can parse it to be JsonObject.
-            String ss = ((String)object).replace("\\\"", "\"").replaceAll("^\"|\"$", "");
-            return JsonParser.parseString(ss);
+            return JsonParser.parseString((String)object);
         } else if (object instanceof byte[]) {
             return JsonParser.parseString(new String((byte[]) object));
         } else {
