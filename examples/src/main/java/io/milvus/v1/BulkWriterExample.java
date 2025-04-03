@@ -79,6 +79,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -647,38 +648,8 @@ public class BulkWriterExample {
         List<QueryResultsWrapper.RowRecord> rowRecords = query(expr, Lists.newArrayList("*"));
         System.out.println("Query results:");
         for (QueryResultsWrapper.RowRecord record : rowRecords) {
-            JsonObject rowObject = new JsonObject();
-            // scalar field
-            rowObject.addProperty("id", (Long)record.get("id"));
-            rowObject.addProperty("bool", (Boolean) record.get("bool"));
-            rowObject.addProperty("int8", (Integer) record.get("int8"));
-            rowObject.addProperty("int16", (Integer) record.get("int16"));
-            rowObject.addProperty("int32", (Integer) record.get("int32"));
-            rowObject.addProperty("float", (Float) record.get("float"));
-            rowObject.addProperty("double", (Double) record.get("double"));
-            rowObject.addProperty("varchar", (String) record.get("varchar"));
-            rowObject.add("json", (JsonElement) record.get("json"));
-
-            // vector field
-            rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(record.get("float_vector")));
-            rowObject.add("binary_vector", GSON_INSTANCE.toJsonTree(((ByteBuffer)record.get("binary_vector")).array()));
-            rowObject.add("float16_vector", GSON_INSTANCE.toJsonTree(((ByteBuffer)record.get("float16_vector")).array()));
-            rowObject.add("sparse_vector", GSON_INSTANCE.toJsonTree(record.get("sparse_vector")));
-
-            // array field
-            rowObject.add("array_bool", GSON_INSTANCE.toJsonTree(record.get("array_bool")));
-            rowObject.add("array_int8", GSON_INSTANCE.toJsonTree(record.get("array_int8")));
-            rowObject.add("array_int16", GSON_INSTANCE.toJsonTree(record.get("array_int16")));
-            rowObject.add("array_int32", GSON_INSTANCE.toJsonTree(record.get("array_int32")));
-            rowObject.add("array_int64", GSON_INSTANCE.toJsonTree(record.get("array_int64")));
-            rowObject.add("array_varchar", GSON_INSTANCE.toJsonTree(record.get("array_varchar")));
-            rowObject.add("array_float", GSON_INSTANCE.toJsonTree(record.get("array_float")));
-            rowObject.add("array_double", GSON_INSTANCE.toJsonTree(record.get("array_double")));
-
-            // dynamic field
-            rowObject.addProperty("dynamic", (String) record.get("dynamic"));
-
-            System.out.println(rowObject);
+            Map<String, Object> fieldValues = record.getFieldValues();
+            System.out.println(fieldValues);
         }
     }
 
