@@ -46,6 +46,7 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
+import io.milvus.v2.utils.ClientUtils;
 import io.grpc.ProxiedSocketAddress;
 import io.grpc.ProxyDetector;
 import lombok.NonNull;
@@ -118,20 +119,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .intercept(clientInterceptors);
                 // Add proxy configuration if proxy address is set
                 if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
-                    String[] hostPort = connectParam.getProxyAddress().split(":");
-                    if (hostPort.length == 2) {
-                        String proxyHost = hostPort[0];
-                        int proxyPort = Integer.parseInt(hostPort[1]);
-                        builder.proxyDetector(new ProxyDetector() {
-                            @Override
-                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
-                                return HttpConnectProxiedSocketAddress.newBuilder()
-                                    .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
-                                    .setTargetAddress((InetSocketAddress) targetServerAddress)
-                                    .build();
-                            }
-                        });
-                    }
+                    ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
                 }
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
@@ -156,21 +144,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 
                 // Add proxy configuration if proxy address is set
                 if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
-                    String[] hostPort = connectParam.getProxyAddress().split(":");
-                    if (hostPort.length == 2) {
-                        String proxyHost = hostPort[0];
-                        int proxyPort = Integer.parseInt(hostPort[1]);
-                        builder.proxyDetector(new ProxyDetector() {
-                            @Override
-                            public ProxiedSocketAddress proxyFor(SocketAddress targetServerAddress) {
-                                return HttpConnectProxiedSocketAddress.newBuilder()
-                                    .setProxyAddress(new InetSocketAddress(proxyHost, proxyPort))
-                                    .setTargetAddress((InetSocketAddress) targetServerAddress)
-                                    .build();
-                            }
-                        });
-                    }
-                }         
+                    ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
+                }     
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
@@ -188,6 +163,9 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
+                if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
+                    ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
+                }
                 if(connectParam.isSecure()){
                     builder.useTransportSecurity();
                 }
