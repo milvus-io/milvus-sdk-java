@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class RowRecordWrapper {
     // a cache for output fields
     private ConcurrentHashMap<String, FieldDataWrapper> outputFieldsData = new ConcurrentHashMap<>();
+    // a cache for output dynamic field names
+    private List<String> dynamicFieldNames = null;
 
     public abstract List<QueryResultsWrapper.RowRecord> getRowRecords();
 
@@ -69,46 +71,75 @@ public abstract class RowRecordWrapper {
      * @return <code>RowRecord</code> a row record of the result
      */
     protected QueryResultsWrapper.RowRecord buildRowRecord(QueryResultsWrapper.RowRecord record, long index) {
-        for (String outputKey : getOutputFields()) {
-            boolean isField = false;
-            for (FieldData field : getFieldDataList()) {
-                if (outputKey.equals(field.getFieldName())) {
-                    FieldDataWrapper wrapper = getFieldWrapperInternal(field);
-                    if (index < 0 || index >= wrapper.getRowCount()) {
-                        throw new ParamException("Index out of range");
-                    }
-                    Object value = wrapper.valueByIdx((int)index);
-                    if (wrapper.isJsonField()) {
-                        JsonElement jsonField = FieldDataWrapper.ParseJSONObject(value);
-                        if (wrapper.isDynamicField() && jsonField instanceof JsonObject) {
-                            JsonObject jsonObj = (JsonObject) jsonField;
-                            for (String key: jsonObj.keySet()) {
-                                record.put(key, FieldDataWrapper.ValueOfJSONElement(jsonObj.get(key)));
-                            }
-                        } else {
-                            record.put(field.getFieldName(), jsonField);
-                        }
-                    } else {
-                        record.put(field.getFieldName(), value);
-                    }
-                    isField = true;
-                    break;
-                }
+        List<String> dynamicFields = getDynamicFieldNames();
+        List<FieldData> fieldsData = getFieldDataList();
+        for (FieldData field : fieldsData) {
+            FieldDataWrapper wrapper = getFieldWrapperInternal(field);
+            if (index < 0 || index >= wrapper.getRowCount()) {
+                throw new ParamException("Index out of range");
             }
-
-            // if the output field is not a field name, fetch it from dynamic field
-            if (!isField) {
-                FieldDataWrapper dynamicField = getDynamicWrapper();
-                Object obj = dynamicField.get((int)index, outputKey);
-                if (obj != null) {
-                    record.put(outputKey, obj);
+            Object value = wrapper.valueByIdx((int)index);
+            if (wrapper.isJsonField()) {
+                JsonElement jsonValue = FieldDataWrapper.ParseJSONObject(value);
+                if (!field.getIsDynamic()) {
+                    record.put(field.getFieldName(), jsonValue);
+                    continue;
                 }
+
+                // dynamic field, the value must be a dict
+                if (!(jsonValue instanceof JsonObject)) {
+                    throw new ParamException("The content of dynamic field is not a JSON dict");
+                }
+
+                JsonObject jsonDict = (JsonObject)jsonValue;
+                // the outputFields of QueryRequest/SearchRequest contains a "$meta"
+                // put all key/value pairs of "$meta" into record
+                // else pick some key/value pairs according to the dynamicFields
+                for (String key: jsonDict.keySet()) {
+                    if (dynamicFields.isEmpty() || dynamicFields.contains(key)) {
+                        record.put(key, FieldDataWrapper.ValueOfJSONElement(jsonDict.get(key)));
+                    }
+                }
+            } else {
+                record.put(field.getFieldName(), value);
             }
         }
+
         return record;
+    }
+
+    private List<String> getDynamicFieldNames() {
+        if (dynamicFieldNames != null) {
+            return dynamicFieldNames;
+        }
+
+        dynamicFieldNames = new ArrayList<>();
+        // find out dynamic field names
+        List<FieldData> fieldsData = getFieldDataList();
+        String dynamicFieldName = null;
+        List<String> fieldNames = new ArrayList<>();
+        for (FieldData field : fieldsData) {
+            if (!fieldNames.contains(field.getFieldName())) {
+                fieldNames.add(field.getFieldName());
+            }
+            if (field.getIsDynamic()) {
+                dynamicFieldName = field.getFieldName();
+            }
+        }
+
+        List<String> outputNames = getOutputFields();
+        for (String name : outputNames) {
+            if (name.equals(dynamicFieldName)) {
+                dynamicFieldNames.clear();
+                break;
+            }
+            if (!fieldNames.contains(name)) {
+                dynamicFieldNames.add(name);
+            }
+        }
+        return dynamicFieldNames;
     }
 
     protected abstract List<FieldData> getFieldDataList();
     protected abstract List<String> getOutputFields();
-
 }
