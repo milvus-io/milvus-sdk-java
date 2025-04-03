@@ -80,7 +80,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.4");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.7");
 
     @BeforeAll
     public static void setUp() {
@@ -1008,17 +1008,14 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals("desc_B", descResp.getDescription());
 
-        client.dropCollection(DropCollectionReq.builder()
-                .collectionName("BBB")
-                .build());
-
-        Assertions.assertThrows(MilvusClientException.class, ()->client.describeCollection(DescribeCollectionReq.builder()
-                .collectionName("CCC")
-                .build()));
-
+        // must drop or alter alias before dropping the collection
         client.alterAlias(AlterAliasReq.builder()
                 .collectionName("AAA")
                 .alias("CCC")
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName("BBB")
                 .build());
 
         descResp = client.describeCollection(DescribeCollectionReq.builder()
