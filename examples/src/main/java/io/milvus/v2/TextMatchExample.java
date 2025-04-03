@@ -11,6 +11,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.utility.request.FlushReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
@@ -144,6 +145,9 @@ public class TextMatchExample {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         System.out.printf("%d rows in collection\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+
+        // TEXT_MATCH requires the data is persisted
+        client.flush(FlushReq.builder().collectionNames(Collections.singletonList(COLLECTION_NAME)).build());
 
         // Query by keyword filtering expression
         queryWithFilter(client, "TEXT_MATCH(text, \"distance\")");

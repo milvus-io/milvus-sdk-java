@@ -786,6 +786,8 @@ public class BulkWriterExample {
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "binary_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "float16_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "sparse_vector");
+
+            System.out.println(fetchedEntity);
         }
         System.out.println("Result is correct!");
     }
