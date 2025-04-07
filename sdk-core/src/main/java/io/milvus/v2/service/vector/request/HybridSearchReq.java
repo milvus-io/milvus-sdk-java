@@ -38,6 +38,7 @@ public class HybridSearchReq
     private BaseRanker ranker;
     private int topK;
     private List<String> outFields;
+    private long offset;
     @Builder.Default
     private int roundDecimal = -1;
     @Builder.Default
@@ -46,4 +47,5 @@ public class HybridSearchReq
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+
 }
