@@ -467,8 +467,9 @@ public class VectorUtils {
         }
 
         Map<String, String> props = ranker.getProperties();
-        props.put("limit", String.format("%d", request.getTopK()));
-        props.put("round_decimal", String.format("%d", request.getRoundDecimal()));
+        props.put(Constant.LIMIT, String.format("%d", request.getTopK()));
+        props.put(Constant.ROUND_DECIMAL, String.format("%d", request.getRoundDecimal()));
+        props.put(Constant.OFFSET, String.format("%d", request.getOffset()));
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(props);
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addRankParams);
