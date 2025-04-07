@@ -59,6 +59,7 @@ public class ConnectParam {
     private final String serverName;
     private final String userName;
     private final ThreadLocal<String> clientRequestId;
+    private final String proxyAddress;
 
     protected ConnectParam(@NonNull Builder builder) {
         this.host = builder.host;
@@ -81,6 +82,7 @@ public class ConnectParam {
         this.serverName = builder.serverName;
         this.userName = builder.userName;
         this.clientRequestId = builder.clientRequestId;
+        this.proxyAddress = builder.proxyAddress;
     }
 
     public static Builder newBuilder() {
@@ -120,6 +122,8 @@ public class ConnectParam {
 
         //used to set client_request_id in the grpc header uniquely for every request
         private ThreadLocal<String> clientRequestId;
+        
+        private String proxyAddress;
 
         protected Builder() {
         }
@@ -357,6 +361,17 @@ public class ConnectParam {
 
         public Builder withClientRequestId(@NonNull ThreadLocal<String> clientRequestId) {
             this.clientRequestId = clientRequestId;
+            return this;
+        }
+        
+        /**
+         * Sets the proxy address for connections through a proxy server.
+         * 
+         * @param proxyAddress proxy server address in format "host:port"
+         * @return <code>Builder</code>
+         */
+        public Builder withProxyAddress(String proxyAddress) {
+            this.proxyAddress = proxyAddress;
             return this;
         }
 
