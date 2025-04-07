@@ -56,6 +56,7 @@ public class ConnectConfig {
     private String caPemPath;
     private String serverPemPath;
     private String serverName;
+    private String proxyAddress;
     @Builder.Default
     private Boolean secure = false;
     @Builder.Default
@@ -96,5 +97,9 @@ public class ConnectConfig {
             return true;
         }
         return secure;
+    }
+
+    public String  getProxyAddress(){
+        return proxyAddress;
     }
 }
