@@ -48,8 +48,7 @@ public class JsonFieldExample {
         R<QueryResults> queryRet = client.query(QueryParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
                 .withExpr(expr)
-                .addOutField(ID_FIELD)
-                .addOutField(JSON_FIELD)
+                .withOutFields(Arrays.asList(ID_FIELD, JSON_FIELD, "dynamic1", "dynamic2"))
                 .build());
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryRet.getData());
         System.out.println("\nQuery with expression: " + expr);
@@ -87,7 +86,7 @@ public class JsonFieldExample {
         );
 
         CollectionSchemaParam collectionSchemaParam = CollectionSchemaParam.newBuilder()
-                .withEnableDynamicField(false)
+                .withEnableDynamicField(true)
                 .withFieldTypes(fieldsSchema)
                 .build();
 
@@ -140,7 +139,14 @@ public class JsonFieldExample {
             }
             metadata.add("flags", gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
             row.add(JSON_FIELD, metadata);
-            System.out.println(metadata);
+//            System.out.println(metadata);
+
+            // dynamic fields
+            if (i%2 == 0) {
+                row.addProperty("dynamic1", (double)i/3);
+            } else {
+                row.addProperty("dynamic2", "ok");
+            }
 
             client.insert(InsertParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
@@ -166,5 +172,6 @@ public class JsonFieldExample {
         queryWithExpr(client, "JSON_CONTAINS(metadata[\"flags\"], 9)");
         queryWithExpr(client, "JSON_CONTAINS_ANY(metadata[\"flags\"], [8, 9, 10])");
         queryWithExpr(client, "JSON_CONTAINS_ALL(metadata[\"flags\"], [8, 9, 10])");
+        queryWithExpr(client, "dynamic1 < 2.0");
     }
 }

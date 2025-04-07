@@ -80,7 +80,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.7");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.8");
 
     @BeforeAll
     public static void setUp() {
@@ -1932,7 +1932,7 @@ class MilvusClientV2DockerTest {
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(randomCollectionName)
                 .filter("id >= 0")
-                .outputFields(Lists.newArrayList("*"))
+                .outputFields(Arrays.asList("desc", "flag"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
