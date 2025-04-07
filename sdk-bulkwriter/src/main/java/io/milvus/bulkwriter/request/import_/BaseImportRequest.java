@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.io.Serializable;
+import java.util.Map;
 
 @Data
 @SuperBuilder(toBuilder = true)
@@ -36,4 +37,6 @@ public class BaseImportRequest implements Serializable {
      * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
      */
     private String apiKey;
+
+    private Map<String, Object> options;
 }

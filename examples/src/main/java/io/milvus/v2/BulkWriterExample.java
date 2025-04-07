@@ -198,7 +198,7 @@ public class BulkWriterExample {
             CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
             List<List<String>> batchFiles = allTypesRemoteWriter(collectionSchema, fileType, rows);
             createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, true);
-            callBulkInsert(collectionSchema, batchFiles);
+            callBulkInsert(batchFiles);
             verifyImportData(collectionSchema, originalData);
         }
 
@@ -502,6 +502,7 @@ public class BulkWriterExample {
                 .withFileType(fileType)
                 .withChunkSize(512 * 1024 * 1024)
                 .withConnectParam(connectParam)
+                .withConfig("sep", "|") // only take effect for CSV file
                 .build();
         return new RemoteBulkWriter(bulkWriterParam);
     }
@@ -573,12 +574,15 @@ public class BulkWriterExample {
         }
     }
 
-    private static void callBulkInsert(CreateCollectionReq.CollectionSchema collectionSchema, List<List<String>> batchFiles) throws InterruptedException {
+    private static void callBulkInsert(List<List<String>> batchFiles) throws InterruptedException {
         String url = String.format("http://%s:%s", HOST, PORT);
         System.out.println("\n===================== import files to milvus ====================");
+        Map<String, Object> options = new HashMap<>();
+        options.put("sep", "|"); // this option only take effect for CSV
         MilvusImportRequest milvusImportRequest = MilvusImportRequest.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .files(batchFiles)
+                .options(options)
                 .build();
         String bulkImportResult = BulkImport.bulkImport(url, milvusImportRequest);
         System.out.println(bulkImportResult);
@@ -760,6 +764,9 @@ public class BulkWriterExample {
 
         List<QueryResp.QueryResult> results = query(expr, Lists.newArrayList("*"));
         System.out.println("Verify data...");
+        if (results.size() != QUERY_IDS.size()) {
+            throw new RuntimeException("Result count is incorrect");
+        }
         for (QueryResp.QueryResult result : results) {
             Map<String, Object> fetchedEntity = result.getEntity();
             long id = (Long)fetchedEntity.get("id");
