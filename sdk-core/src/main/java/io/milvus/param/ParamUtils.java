@@ -1046,8 +1046,9 @@ public class ParamUtils {
         // set ranker
         BaseRanker ranker = requestParam.getRanker();
         Map<String, String> props = ranker.getProperties();
-        props.put("limit", String.format("%d", requestParam.getTopK()));
-        props.put("round_decimal", String.format("%d", requestParam.getRoundDecimal()));
+        props.put(Constant.LIMIT, String.format("%d", requestParam.getTopK()));
+        props.put(Constant.ROUND_DECIMAL, String.format("%d", requestParam.getRoundDecimal()));
+        props.put(Constant.OFFSET, String.format("%d", requestParam.getOffset()));
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(props);
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addRankParams);

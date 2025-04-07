@@ -44,6 +44,7 @@ public class HybridSearchParam {
     private final BaseRanker ranker;
     private final int topK;
     private final List<String> outFields;
+    private final long offset;
     private final int roundDecimal;
     private final ConsistencyLevelEnum consistencyLevel;
 
@@ -59,6 +60,7 @@ public class HybridSearchParam {
         this.ranker = builder.ranker;
         this.topK = builder.topK;
         this.outFields = builder.outFields;
+        this.offset = builder.offset;
         this.roundDecimal = builder.roundDecimal;
         this.consistencyLevel = builder.consistencyLevel;
         this.groupByFieldName = builder.groupByFieldName;
@@ -81,6 +83,7 @@ public class HybridSearchParam {
         private BaseRanker ranker = null;
         private Integer topK;
         private final List<String> outFields = Lists.newArrayList();
+        private Long offset = 0L;
         private Integer roundDecimal = -1;
         private ConsistencyLevelEnum consistencyLevel = null;
         private String groupByFieldName = null;
@@ -205,6 +208,17 @@ public class HybridSearchParam {
         }
 
         /**
+         * Specifies the offset place of the returned results.
+         *
+         * @param offset the offset position
+         * @return <code>Builder</code>
+         */
+        public Builder withOffset(@NonNull Long offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        /**
          * Specifies the decimal place of the returned results.
          *
          * @param decimal how many digits after the decimal point
@@ -218,7 +232,7 @@ public class HybridSearchParam {
         /**
          * Groups the results by a scalar field name.
          *
-         * @param fieldName a scalar field name
+         * @param groupByFieldName a scalar field name
          * @return <code>Builder</code>
          */
         public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
