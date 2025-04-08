@@ -70,6 +70,7 @@ import org.testcontainers.milvus.MilvusContainer;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.Function;
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientV2DockerTest {
@@ -1892,6 +1893,13 @@ class MilvusClientV2DockerTest {
                 .isNullable(Boolean.TRUE)
                 .maxLength(100)
                 .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("arr")
+                .dataType(DataType.Array)
+                .elementType(DataType.Int32)
+                .isNullable(Boolean.TRUE)
+                .maxCapacity(100)
+                .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
         indexParams.add(IndexParam.builder()
@@ -1920,7 +1928,11 @@ class MilvusClientV2DockerTest {
             } else {
 //                row.add("flag", JsonNull.INSTANCE);
                 row.addProperty("desc", "AAA");
+
+                List<Integer> arr = Arrays.asList(5, 6);
+                row.add("arr", JsonUtils.toJsonTree(arr));
             }
+
             data.add(row);
         }
 
@@ -1930,11 +1942,30 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(10, insertResp.getInsertCnt());
 
+        Function<Map<String, Object>, Void> checkFunc =
+                entity -> {
+                    long id = (long)entity.get("id");
+                    if (id%2 == 0) {
+                        Assertions.assertEquals((int)id, entity.get("flag"));
+                        Assertions.assertNull(entity.get("desc"));
+                        Assertions.assertNull(entity.get("arr"));
+                    } else {
+                        Assertions.assertEquals(10, entity.get("flag"));
+                        Assertions.assertEquals("AAA", entity.get("desc"));
+                        Object obj = entity.get("arr");
+                        Assertions.assertInstanceOf(List.class, obj);
+                        List<Integer> arr = (List<Integer>)obj;
+                        Assertions.assertEquals(2, arr.size());
+                        Assertions.assertEquals(5, arr.get(0));
+                        Assertions.assertEquals(6, arr.get(1));
+                    }
+                    return null;
+                };
         // query
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(randomCollectionName)
                 .filter("id >= 0")
-                .outputFields(Arrays.asList("desc", "flag"))
+                .outputFields(Arrays.asList("desc", "flag", "arr"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
@@ -1942,14 +1973,7 @@ class MilvusClientV2DockerTest {
         System.out.println("Query results:");
         for (QueryResp.QueryResult result : queryResults) {
             Map<String, Object> entity = result.getEntity();
-            long id = (long)entity.get("id");
-            if (id%2 == 0) {
-                Assertions.assertEquals((int)id, entity.get("flag"));
-                Assertions.assertNull(entity.get("desc"));
-            } else {
-                Assertions.assertEquals(10, entity.get("flag"));
-                Assertions.assertEquals("AAA", entity.get("desc"));
-            }
+            checkFunc.apply(entity);
             System.out.println(result);
         }
 
@@ -1970,13 +1994,7 @@ class MilvusClientV2DockerTest {
         for (SearchResp.SearchResult result : firstResults) {
             long id = (long)result.getId();
             Map<String, Object> entity = result.getEntity();
-            if (id%2 == 0) {
-                Assertions.assertEquals((int)id, entity.get("flag"));
-                Assertions.assertNull(entity.get("desc"));
-            } else {
-                Assertions.assertEquals(10, entity.get("flag"));
-                Assertions.assertEquals("AAA", entity.get("desc"));
-            }
+            checkFunc.apply(entity);
             System.out.println(result);
         }
     }

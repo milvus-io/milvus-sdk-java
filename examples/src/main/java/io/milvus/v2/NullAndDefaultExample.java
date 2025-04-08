@@ -28,7 +28,7 @@ public class NullAndDefaultExample {
         QueryResp queryRet = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .filter(expr)
-                .outputFields(Arrays.asList("nullable_test", "default_test", "nullable_default"))
+                .outputFields(Arrays.asList("nullable_test", "default_test", "nullable_default", "nullable_array"))
                 .build());
         System.out.println("\nQuery with expression: " + expr);
         List<QueryResp.QueryResult> records = queryRet.getQueryResults();
@@ -81,6 +81,14 @@ public class NullAndDefaultExample {
                 .isNullable(true)
                 .defaultValue("I am default value")
                 .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("nullable_array")
+                .dataType(DataType.Array)
+                .elementType(DataType.VarChar)
+                .maxCapacity(10)
+                .maxLength(100)
+                .isNullable(true)
+                .build());
 
         List<IndexParam> indexes = new ArrayList<>();
         indexes.add(IndexParam.builder()
@@ -111,6 +119,9 @@ public class NullAndDefaultExample {
                 row.addProperty("nullable_test", i);
             } else {
                 row.add("nullable_test", JsonNull.INSTANCE);
+
+                List<String> arr = Arrays.asList("A", "B", "C");
+                row.add("nullable_array", gson.toJsonTree(arr));
             }
 
             // some values are default value
