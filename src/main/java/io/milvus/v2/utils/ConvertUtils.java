@@ -138,6 +138,7 @@ public class ConvertUtils {
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
                 .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
+                .shardsNum(response.getShardsNum())
                 .properties(properties)
                 .build();
         return describeCollectionResp;

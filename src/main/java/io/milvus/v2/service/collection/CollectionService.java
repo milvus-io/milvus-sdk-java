@@ -123,7 +123,8 @@ public class CollectionService extends BaseService {
         CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setSchema(grpcSchema.toByteString())
-                .setShardsNum(request.getNumShards());
+                .setShardsNum(request.getNumShards())
+                .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
