@@ -1329,40 +1329,40 @@ public class ParamUtils {
             case UNRECOGNIZED:
                 throw new ParamException("Cannot support this dataType:" + dataType);
             case Int64: {
-                List<Long> longs = objects.stream().map(p -> (Long) p).collect(Collectors.toList());
+                List<Long> longs = objects.stream().map(p -> (p == null) ? null : (Long) p).collect(Collectors.toList());
                 LongArray longArray = LongArray.newBuilder().addAllData(longs).build();
                 return ScalarField.newBuilder().setLongData(longArray).build();
             }
             case Int32:
             case Int16:
             case Int8: {
-                List<Integer> integers = objects.stream().map(p -> p instanceof Short ? ((Short) p).intValue() : (Integer) p).collect(Collectors.toList());
+                List<Integer> integers = objects.stream().map(p -> (p == null) ? null : (p instanceof Short ? ((Short) p).intValue() : (Integer) p)).collect(Collectors.toList());
                 IntArray intArray = IntArray.newBuilder().addAllData(integers).build();
                 return ScalarField.newBuilder().setIntData(intArray).build();
             }
             case Bool: {
-                List<Boolean> booleans = objects.stream().map(p -> (Boolean) p).collect(Collectors.toList());
+                List<Boolean> booleans = objects.stream().map(p -> (p == null) ? null : (Boolean) p).collect(Collectors.toList());
                 BoolArray boolArray = BoolArray.newBuilder().addAllData(booleans).build();
                 return ScalarField.newBuilder().setBoolData(boolArray).build();
             }
             case Float: {
-                List<Float> floats = objects.stream().map(p -> (Float) p).collect(Collectors.toList());
+                List<Float> floats = objects.stream().map(p -> (p == null) ? null : (Float) p).collect(Collectors.toList());
                 FloatArray floatArray = FloatArray.newBuilder().addAllData(floats).build();
                 return ScalarField.newBuilder().setFloatData(floatArray).build();
             }
             case Double: {
-                List<Double> doubles = objects.stream().map(p -> (Double) p).collect(Collectors.toList());
+                List<Double> doubles = objects.stream().map(p -> (p == null) ? null : (Double) p).collect(Collectors.toList());
                 DoubleArray doubleArray = DoubleArray.newBuilder().addAllData(doubles).build();
                 return ScalarField.newBuilder().setDoubleData(doubleArray).build();
             }
             case String:
             case VarChar: {
-                List<String> strings = objects.stream().map(p -> (String) p).collect(Collectors.toList());
+                List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
                 StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
                 return ScalarField.newBuilder().setStringData(stringArray).build();
             }
             case JSON: {
-                List<ByteString> byteStrings = objects.stream().map(p -> ByteString.copyFromUtf8(p.toString()))
+                List<ByteString> byteStrings = objects.stream().map(p -> (p == null) ? null : ByteString.copyFromUtf8(p.toString()))
                         .collect(Collectors.toList());
                 JSONArray jsonArray = JSONArray.newBuilder().addAllData(byteStrings).build();
                 return ScalarField.newBuilder().setJsonData(jsonArray).build();

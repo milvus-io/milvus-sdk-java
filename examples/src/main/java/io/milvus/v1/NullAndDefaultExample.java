@@ -36,6 +36,7 @@ public class NullAndDefaultExample {
                 .addOutField("nullable_test")
                 .addOutField("default_test")
                 .addOutField("nullable_default")
+                .addOutField("nullable_array")
                 .build());
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryRet.getData());
         System.out.println("\nQuery with expression: " + expr);
@@ -82,6 +83,14 @@ public class NullAndDefaultExample {
                         .withDataType(DataType.VarChar)
                         .withMaxLength(64)
                         .withDefaultValue("I am default value")
+                        .withNullable(true)
+                        .build(),
+                FieldType.newBuilder()
+                        .withName("nullable_array")
+                        .withDataType(DataType.Array)
+                        .withElementType(DataType.VarChar)
+                        .withMaxCapacity(10)
+                        .withMaxLength(100)
                         .withNullable(true)
                         .build()
         );
@@ -130,6 +139,9 @@ public class NullAndDefaultExample {
                 row.addProperty("nullable_test", i);
             } else {
                 row.add("nullable_test", JsonNull.INSTANCE);
+
+                List<String> arr = Arrays.asList("A", "B", "C");
+                row.add("nullable_array", gson.toJsonTree(arr));
             }
 
             // some values are default value
