@@ -161,7 +161,8 @@ public class VectorService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-        DescribeCollectionResp descR = collectionService.describeCollection(blockingStub, DescribeCollectionReq.builder().collectionName(request.getCollectionName()).build());
+        DescribeCollectionReq descReq = DescribeCollectionReq.builder().databaseName(request.getDatabaseName()).collectionName(request.getCollectionName()).build();
+        DescribeCollectionResp descR = collectionService.describeCollection(blockingStub, descReq);
 
         if (request.getIds() != null && request.getFilter() == null) {
             request.setFilter(vectorUtils.getExprById(descR.getPrimaryFieldName(), request.getIds()));
