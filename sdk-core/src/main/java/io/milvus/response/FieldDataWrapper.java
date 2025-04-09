@@ -251,13 +251,6 @@ public class FieldDataWrapper {
                 return packData;
             }
             case Array:
-                List<List<?>> array = new ArrayList<>();
-                ArrayArray arrArray = fieldData.getScalars().getArrayData();
-                for (int i = 0; i < arrArray.getDataCount(); i++) {
-                    ScalarField scalar = arrArray.getData(i);
-                    array.add(getScalarData(arrArray.getElementType(), scalar, null));
-                }
-                return array;
             case Int64:
             case Int32:
             case Int16:
@@ -308,6 +301,19 @@ public class FieldDataWrapper {
             case JSON:
                 List<ByteString> dataList = scalar.getJsonData().getDataList();
                 return dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList());
+            case Array:
+                List<List<?>> array = new ArrayList<>();
+                ArrayArray arrArray = fieldData.getScalars().getArrayData();
+                boolean nullable = validData != null && validData.size() == arrArray.getDataCount();
+                for (int i = 0; i < arrArray.getDataCount(); i++) {
+                    if (nullable && validData.get(i) == Boolean.FALSE) {
+                        array.add(null);
+                    } else {
+                        ScalarField rowData = arrArray.getData(i);
+                        array.add(getScalarData(arrArray.getElementType(), rowData, null));
+                    }
+                }
+                return array;
             default:
                 return new ArrayList<>();
         }
