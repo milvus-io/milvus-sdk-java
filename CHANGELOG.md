@@ -1,5 +1,10 @@
 # Changelog
 
+## milvus-sdk-java 2.4.11 (2025-04-09)
+### Bug
+- Fix a bug that consistency level is missed for createCollection()
+- Return shards_num for describeCollection()
+
 ## milvus-sdk-java 2.4.10 (2024-12-31)
 ### Feature
 - Support alterCollectionField interface for V2
