@@ -155,6 +155,25 @@ public class ResourceGroupService extends BaseService {
                 .build();
     }
 
+    public Void transferNode(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, TransferNodeReq request) {
+        if (StringUtils.isEmpty(request.getSourceGroupName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid source group name");
+        }
+        if (StringUtils.isEmpty(request.getTargetGroupName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid target group name");
+        }
+
+        String title = String.format("TransferNode %d nodes from %s to %s", request.getNumOfNodes(),
+                request.getSourceGroupName(), request.getTargetGroupName());
+        Status response = blockingStub.transferNode(TransferNodeRequest.newBuilder()
+                .setSourceResourceGroup(request.getSourceGroupName())
+                .setTargetResourceGroup(request.getTargetGroupName())
+                .setNumNode(request.getNumOfNodes())
+                .build());
+        rpcUtils.handleResponse(title, response);
+        return null;
+    }
+
     public Void transferReplica(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                 TransferReplicaReq request) {
         if (StringUtils.isEmpty(request.getSourceGroupName())) {

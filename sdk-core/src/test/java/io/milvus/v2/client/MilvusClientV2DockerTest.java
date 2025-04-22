@@ -290,6 +290,9 @@ class MilvusClientV2DockerTest {
 
     @Test
     void testFloatVectors() {
+        CheckHealthResp healthy = client.checkHealth();
+        Assertions.assertTrue(healthy.getIsHealthy());
+
         String randomCollectionName = generator.generate(10);
 
         String vectorFieldName = "float_vector";
@@ -321,6 +324,20 @@ class MilvusClientV2DockerTest {
                 .collectionNames(Collections.singletonList(randomCollectionName))
                 .build());
 
+        // get persistent segment info
+        GetPersistentSegmentInfoResp pSegInfo = client.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(1, pSegInfo.getSegmentInfos().size());
+        GetPersistentSegmentInfoResp.PersistentSegmentInfo pInfo = pSegInfo.getSegmentInfos().get(0);
+        Assertions.assertTrue(pInfo.getSegmentID() > 0L);
+        Assertions.assertTrue(pInfo.getCollectionID() > 0L);
+        Assertions.assertTrue(pInfo.getPartitionID() > 0L);
+        Assertions.assertEquals(count, pInfo.getNumOfRows());
+        Assertions.assertEquals("Flushed", pInfo.getState());
+        Assertions.assertEquals("L1", pInfo.getLevel());
+        Assertions.assertFalse(pInfo.getIsSorted());
+
         // compact
         CompactResp compactResp = client.compact(CompactReq.builder()
                 .collectionName(randomCollectionName)
@@ -346,6 +363,25 @@ class MilvusClientV2DockerTest {
         client.loadCollection(LoadCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
+
+        // get query segment info
+        GetQuerySegmentInfoResp qSegInfo = client.getQuerySegmentInfo(GetQuerySegmentInfoReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(1, qSegInfo.getSegmentInfos().size());
+        GetQuerySegmentInfoResp.QuerySegmentInfo qInfo = qSegInfo.getSegmentInfos().get(0);
+        Assertions.assertTrue(qInfo.getSegmentID() > 0L);
+        Assertions.assertTrue(qInfo.getCollectionID() > 0L);
+        Assertions.assertTrue(qInfo.getPartitionID() > 0L);
+        Assertions.assertTrue(qInfo.getMemSize() >= 0L);
+        Assertions.assertEquals(count, qInfo.getNumOfRows());
+        Assertions.assertEquals(vectorFieldName, qInfo.getIndexName());
+        Assertions.assertTrue(qInfo.getIndexID() > 0L);
+        Assertions.assertEquals("Sealed", qInfo.getState());
+        Assertions.assertEquals("L1", qInfo.getLevel());
+        Assertions.assertEquals(1, qInfo.getNodeIDs().size());
+        Assertions.assertTrue(qInfo.getNodeIDs().get(0) > 0L);
+        Assertions.assertTrue(qInfo.getIsSorted());
 
         // create partition, upsert one row to the partition
         String partitionName = "PPP";
