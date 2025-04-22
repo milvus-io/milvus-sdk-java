@@ -28,6 +28,7 @@ import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UtilityService extends BaseService {
     public FlushResp flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
@@ -100,7 +101,7 @@ public class UtilityService extends BaseService {
 
     public GetCompactionStateResp getCompactionState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                      GetCompactionStateReq request) {
-        String title = "Get compaction state";
+        String title = "GetCompactionState";
         io.milvus.grpc.GetCompactionStateRequest getRequest = io.milvus.grpc.GetCompactionStateRequest.newBuilder()
                 .setCompactionID(request.getCompactionID())
                 .build();
@@ -116,7 +117,7 @@ public class UtilityService extends BaseService {
     }
 
     public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
-        String title = String.format("Create alias %s for collection %s", request.getAlias(), request.getCollectionName());
+        String title = String.format("CreateAlias %s for collection %s", request.getAlias(), request.getCollectionName());
         io.milvus.grpc.CreateAliasRequest createAliasRequest = io.milvus.grpc.CreateAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setAlias(request.getAlias())
@@ -128,7 +129,7 @@ public class UtilityService extends BaseService {
     }
 
     public Void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
-        String title = String.format("Drop alias %s", request.getAlias());
+        String title = String.format("DropAlias %s", request.getAlias());
         io.milvus.grpc.DropAliasRequest dropAliasRequest = io.milvus.grpc.DropAliasRequest.newBuilder()
                 .setAlias(request.getAlias())
                 .build();
@@ -139,7 +140,7 @@ public class UtilityService extends BaseService {
     }
 
     public Void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
-        String title = String.format("Alter alias %s for collection %s", request.getAlias(), request.getCollectionName());
+        String title = String.format("AlterAlias %s for collection %s", request.getAlias(), request.getCollectionName());
         io.milvus.grpc.AlterAliasRequest alterAliasRequest = io.milvus.grpc.AlterAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setAlias(request.getAlias())
@@ -151,7 +152,7 @@ public class UtilityService extends BaseService {
     }
 
     public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
-        String title = String.format("Describe alias %s", request.getAlias());
+        String title = String.format("DescribeAlias %s", request.getAlias());
         io.milvus.grpc.DescribeAliasRequest describeAliasRequest = io.milvus.grpc.DescribeAliasRequest.newBuilder()
                 .setAlias(request.getAlias())
                 .build();
@@ -166,7 +167,7 @@ public class UtilityService extends BaseService {
     }
 
     public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListAliasesReq request) {
-        String title = "List aliases";
+        String title = "ListAliases";
         io.milvus.grpc.ListAliasesRequest listAliasesRequest = io.milvus.grpc.ListAliasesRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .build();
@@ -177,6 +178,70 @@ public class UtilityService extends BaseService {
         return ListAliasResp.builder()
                 .collectionName(response.getCollectionName())
                 .alias(response.getAliasesList())
+                .build();
+    }
+
+    public CheckHealthResp checkHealth(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        String title = "CheckHealth";
+        CheckHealthResponse response = blockingStub.checkHealth(CheckHealthRequest.newBuilder().build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<String> states = new ArrayList<>();
+        response.getQuotaStatesList().forEach(s->states.add(s.name()));
+        return CheckHealthResp.builder()
+                .isHealthy(response.getIsHealthy())
+                .reasons(response.getReasonsList().stream().collect(Collectors.toList()))
+                .quotaStates(states)
+                .build();
+    }
+
+    public GetPersistentSegmentInfoResp getPersistentSegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                    GetPersistentSegmentInfoReq request) {
+        String title = String.format("GetPersistentSegmentInfo collectionName %s", request.getCollectionName());
+        GetPersistentSegmentInfoResponse response = blockingStub.getPersistentSegmentInfo(GetPersistentSegmentInfoRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<GetPersistentSegmentInfoResp.PersistentSegmentInfo> segmentInfos = new ArrayList<>();
+        response.getInfosList().forEach(info->{segmentInfos.add(GetPersistentSegmentInfoResp.PersistentSegmentInfo.builder()
+                .segmentID(info.getSegmentID())
+                .collectionID(info.getCollectionID())
+                .partitionID(info.getPartitionID())
+                .numOfRows(info.getNumRows())
+                .state(info.getState().name())
+                .level(info.getLevel().name())
+                .isSorted(info.getIsSorted())
+                .build());});
+        return GetPersistentSegmentInfoResp.builder()
+                .segmentInfos(segmentInfos)
+                .build();
+    }
+
+    public GetQuerySegmentInfoResp getQuerySegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                            GetQuerySegmentInfoReq request) {
+        String title = String.format("GetQuerySegmentInfo collectionName %s", request.getCollectionName());
+        GetQuerySegmentInfoResponse response = blockingStub.getQuerySegmentInfo(GetQuerySegmentInfoRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<GetQuerySegmentInfoResp.QuerySegmentInfo> segmentInfos = new ArrayList<>();
+        response.getInfosList().forEach(info->{segmentInfos.add(GetQuerySegmentInfoResp.QuerySegmentInfo.builder()
+                .segmentID(info.getSegmentID())
+                .collectionID(info.getCollectionID())
+                .partitionID(info.getPartitionID())
+                .memSize(info.getMemSize())
+                .numOfRows(info.getNumRows())
+                .indexName(info.getIndexName())
+                .indexID(info.getIndexID())
+                .state(info.getState().name())
+                .level(info.getLevel().name())
+                .nodeIDs(info.getNodeIdsList())
+                .isSorted(info.getIsSorted())
+                .build());});
+        return GetQuerySegmentInfoResp.builder()
+                .segmentInfos(segmentInfos)
                 .build();
     }
 }
