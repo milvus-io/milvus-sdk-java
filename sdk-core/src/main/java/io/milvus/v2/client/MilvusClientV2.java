@@ -813,6 +813,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Transfer query nodes from source resource group to target resource_group.
+     *
+     * @param request {@link TransferNodeReq}
+     */
+    public void transferNode(TransferNodeReq request) {
+        rpcUtils.retry(()->rgroupService.transferNode(this.getRpcStub(), request));
+    }
+
+    /**
      * Transfer a replica from source resource group to target resource_group.
      *
      * @param request {@link TransferReplicaReq}
@@ -887,6 +896,28 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Gets the information of persistent segments from data node, including row count,
+     * persistence state(growing or flushed), etc.
+     *
+     * @param request get request
+     * @return GetPersistentSegmentInfoResp
+     */
+    GetPersistentSegmentInfoResp getPersistentSegmentInfo(GetPersistentSegmentInfoReq request) {
+        return rpcUtils.retry(()->utilityService.getPersistentSegmentInfo(this.getRpcStub(), request));
+    }
+
+    /**
+     * Gets the query information of segments in a collection from query node, including row count,
+     * memory usage size, index name, etc.
+     *
+     * @param request get request
+     * @return GetQuerySegmentInfoResp
+     */
+    GetQuerySegmentInfoResp getQuerySegmentInfo(GetQuerySegmentInfoReq request){
+        return rpcUtils.retry(()->utilityService.getQuerySegmentInfo(this.getRpcStub(), request));
+    }
+
+    /**
      * trigger an asynchronous compaction in server side
      *
      * @param request compact request
@@ -913,6 +944,15 @@ public class MilvusClientV2 {
      */
     public String getServerVersion() {
         return rpcUtils.retry(()->clientUtils.getServerVersion(this.getRpcStub()));
+    }
+
+    /**
+     * Check server health
+     *
+     * @return CheckHealthResp
+     */
+    CheckHealthResp checkHealth() {
+        return rpcUtils.retry(()->utilityService.checkHealth(this.getRpcStub()));
     }
 
     /**
