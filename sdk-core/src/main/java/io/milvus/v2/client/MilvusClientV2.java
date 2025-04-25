@@ -902,7 +902,7 @@ public class MilvusClientV2 {
      * @param request get request
      * @return GetPersistentSegmentInfoResp
      */
-    GetPersistentSegmentInfoResp getPersistentSegmentInfo(GetPersistentSegmentInfoReq request) {
+    public GetPersistentSegmentInfoResp getPersistentSegmentInfo(GetPersistentSegmentInfoReq request) {
         return rpcUtils.retry(()->utilityService.getPersistentSegmentInfo(this.getRpcStub(), request));
     }
 
@@ -913,7 +913,7 @@ public class MilvusClientV2 {
      * @param request get request
      * @return GetQuerySegmentInfoResp
      */
-    GetQuerySegmentInfoResp getQuerySegmentInfo(GetQuerySegmentInfoReq request){
+    public GetQuerySegmentInfoResp getQuerySegmentInfo(GetQuerySegmentInfoReq request){
         return rpcUtils.retry(()->utilityService.getQuerySegmentInfo(this.getRpcStub(), request));
     }
 
@@ -951,7 +951,7 @@ public class MilvusClientV2 {
      *
      * @return CheckHealthResp
      */
-    CheckHealthResp checkHealth() {
+    public CheckHealthResp checkHealth() {
         return rpcUtils.retry(()->utilityService.checkHealth(this.getRpcStub()));
     }
 
