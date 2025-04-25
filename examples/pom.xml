@@ -42,7 +42,7 @@
     </build>
 
     <properties>
-        <revision>2.5.7</revision>
+        <revision>2.5.8</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
