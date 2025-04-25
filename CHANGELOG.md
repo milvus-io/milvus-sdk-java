@@ -1,5 +1,11 @@
 # Changelog
 
+## milvus-sdk-java 2.5.8 (2025-04-25)
+### Feature
+- Support getPersistentSegmentInfo/getQuerySegmentInfo interfaces for V2
+- Support transferNode interface for V2
+- Support checkHealth interface for V2
+
 ## milvus-sdk-java 2.5.7 (2025-04-09)
 ### Bug
 - Fix a compatible bug with milvus v2.5.8 that QueryResp.QueryResult doesn't return primary key
