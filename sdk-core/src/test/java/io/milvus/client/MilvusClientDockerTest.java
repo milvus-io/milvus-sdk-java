@@ -41,10 +41,7 @@ import io.milvus.param.highlevel.dml.DeleteIdsParam;
 import io.milvus.param.highlevel.dml.GetIdsParam;
 import io.milvus.param.highlevel.dml.response.DeleteResponse;
 import io.milvus.param.highlevel.dml.response.GetResponse;
-import io.milvus.param.index.CreateIndexParam;
-import io.milvus.param.index.DescribeIndexParam;
-import io.milvus.param.index.DropIndexParam;
-import io.milvus.param.index.GetIndexStateParam;
+import io.milvus.param.index.*;
 import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.pool.MilvusClientV1Pool;
@@ -457,13 +454,14 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
 
         // create index on vector field
+        String params = "{\"efConstruction\":64,\"M\":16,\"mmap.enabled\":true}";
         indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withFieldName(DataType.FloatVector.name())
                 .withIndexName("abv")
                 .withIndexType(IndexType.HNSW)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("{\"M\":16,\"efConstruction\":64}")
+                .withExtraParam(params)
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(30L)
@@ -491,7 +489,23 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(rowCount, indexDesc.getIndexedRows());
         Assertions.assertEquals(0L, indexDesc.getPendingIndexRows());
         Assertions.assertTrue(indexDesc.getIndexFailedReason().isEmpty());
+        String extraParams = indexDesc.getExtraParam();
+        Assertions.assertEquals(params.replace("\"", ""), extraParams.replace("\"", ""));
         System.out.println("Index description: " + indexDesc.toString());
+
+        R<RpcStatus> alterR = client.alterIndex(AlterIndexParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withIndexName("abv")
+                .withMMapEnabled(false)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), alterR.getStatus().intValue());
+
+        descIndexR = client.describeIndex(descIndexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
+        indexDescWrapper = new DescIndexResponseWrapper(descIndexR.getData());
+        indexDesc = indexDescWrapper.getIndexDescByFieldName(DataType.FloatVector.name());
+        extraParams = indexDesc.getExtraParam();
+        Assertions.assertEquals("{efConstruction:64,M:16,mmap.enabled:false}", extraParams.replace("\"", ""));
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()

@@ -97,9 +97,14 @@ public class ConvertUtils {
                     // may throw IllegalArgumentException
                     metricType = IndexParam.MetricType.valueOf(param.getValue());
                 } else if (param.getKey().equals(Constant.MMAP_ENABLED)) {
-                    properties.put(param.getKey(), param.getValue());
+                    properties.put(param.getKey(), param.getValue()); // just for compatible with old versions
+                    extraParams.put(param.getKey(), param.getValue());
                 } else if (param.getKey().equals(Constant.PARAMS)) {
-                    extraParams = JsonUtils.fromJson(param.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    Map<String, String> tempParams = JsonUtils.fromJson(param.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    tempParams.remove(Constant.MMAP_ENABLED); // "mmap.enabled" in "params" is not processed by server
+                    extraParams.putAll(tempParams);
+                } else {
+                    extraParams.put(param.getKey(), param.getValue());
                 }
             }
 
