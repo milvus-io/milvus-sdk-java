@@ -1248,6 +1248,9 @@ class MilvusClientV2DockerTest {
         Map<String, String> indexProps = desc.getProperties();
         Assertions.assertTrue(indexProps.containsKey(Constant.MMAP_ENABLED));
         Assertions.assertEquals("false", indexProps.get(Constant.MMAP_ENABLED));
+        extraParams = desc.getExtraParams();
+        Assertions.assertTrue(extraParams.containsKey(Constant.MMAP_ENABLED));
+        Assertions.assertEquals("false", extraParams.get(Constant.MMAP_ENABLED));
 
         client.dropIndexProperties(DropIndexPropertiesReq.builder()
                 .collectionName(randomCollectionName)
@@ -1261,6 +1264,8 @@ class MilvusClientV2DockerTest {
         desc = descResp.getIndexDescByFieldName("vector");
         indexProps = desc.getProperties();
         Assertions.assertFalse(indexProps.containsKey(Constant.MMAP_ENABLED));
+        extraParams = desc.getExtraParams();
+        Assertions.assertFalse(extraParams.containsKey(Constant.MMAP_ENABLED));
 
         // drop index
         client.dropIndex(DropIndexReq.builder()

@@ -21,6 +21,7 @@ package io.milvus.client;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.*;
+import com.google.gson.reflect.TypeToken;
 import io.grpc.StatusRuntimeException;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
@@ -1331,9 +1332,22 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             // prepare index parameters
             CreateIndexRequest.Builder createIndexRequestBuilder = CreateIndexRequest.newBuilder();
-            List<KeyValuePair> extraParamList = ParamUtils.AssembleKvPair(requestParam.getExtraParam());
-            if (CollectionUtils.isNotEmpty(extraParamList)) {
-                extraParamList.forEach(createIndexRequestBuilder::addExtraParams);
+            Map<String, String> extraParams = requestParam.getExtraParam();
+            for (Map.Entry<String, String> entry : extraParams.entrySet()) {
+                if (entry.getKey().equals(Constant.PARAMS)) {
+                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    for (String key : tempParams.keySet()) {
+                        createIndexRequestBuilder.addExtraParams(KeyValuePair.newBuilder()
+                                .setKey(key)
+                                .setValue(tempParams.get(key))
+                                .build());
+                    }
+                } else {
+                    createIndexRequestBuilder.addExtraParams(KeyValuePair.newBuilder()
+                            .setKey(entry.getKey())
+                            .setValue(entry.getValue())
+                            .build());
+                }
             }
 
             CreateIndexRequest.Builder builder = createIndexRequestBuilder

@@ -19,6 +19,8 @@
 
 package io.milvus.response;
 
+import com.google.gson.reflect.TypeToken;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.IndexDescription;
 import io.milvus.grpc.DescribeIndexResponse;
 
@@ -149,12 +151,18 @@ public class DescIndexResponseWrapper {
         }
 
         public String getExtraParam() {
-            if (this.params.containsKey(Constant.PARAMS)) {
-                // may throw IllegalArgumentException
-                return params.get(Constant.PARAMS);
+            Map<String, String> extraParams = new HashMap<>();
+            for (Map.Entry<String, String> entry : this.params.entrySet()) {
+                if (entry.getKey().equals(Constant.INDEX_TYPE) || entry.getKey().equals(Constant.METRIC_TYPE)) {
+                } else if (entry.getKey().equals(Constant.PARAMS)) {
+                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    extraParams.putAll(tempParams);
+                } else {
+                    extraParams.put(entry.getKey(), entry.getValue());
+                }
             }
 
-            return "";
+            return JsonUtils.toJson(extraParams);
         }
     }
 }
