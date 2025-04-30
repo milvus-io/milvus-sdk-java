@@ -164,6 +164,8 @@ public class SchemaUtils {
                 .isNullable(fieldSchema.getNullable())
                 .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
                 .build();
+
+        Map<String, String> typeParams = new HashMap<>();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
             if(keyValuePair.getKey().equals("dim")){
                 schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
@@ -179,7 +181,10 @@ public class SchemaUtils {
                 Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
                 schema.setAnalyzerParams(params);
             }
+            // To maintain compatibility with clientV1, the typeParams here will be returned in their original format.
+            typeParams.put(keyValuePair.getKey(), keyValuePair.getValue());
         }
+        schema.setTypeParams(typeParams);
         return schema;
     }
 
