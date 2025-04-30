@@ -48,6 +48,7 @@
             <organizationUrl>http://www.milvus.io</organizationUrl>
         </developer>
     </developers>
+
     <modules>
         <module>sdk-core</module>
         <module>sdk-bulkwriter</module>
