@@ -1430,7 +1430,7 @@ class MilvusServiceClientTest {
                 .withFieldName("aaa")
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("dummy")
+                .withExtraParam("{\"dummy\": 0}")
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(2L)
@@ -1445,7 +1445,7 @@ class MilvusServiceClientTest {
                 .withFieldName("field1")
                 .withIndexType(IndexType.BIN_IVF_FLAT)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("dummy")
+                .withExtraParam("{\"dummy\": 1}")
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(2L)
@@ -1472,7 +1472,7 @@ class MilvusServiceClientTest {
                 .withFieldName("field1")
                 .withIndexType(IndexType.IVF_FLAT)
                 .withMetricType(MetricType.L2)
-                .withExtraParam("dummy")
+                .withExtraParam("{\"dummy\": 2}")
                 .withSyncMode(Boolean.TRUE)
                 .withSyncWaitingInterval(500L)
                 .withSyncWaitingTimeout(2L)
@@ -2737,7 +2737,8 @@ class MilvusServiceClientTest {
         assertEquals(fieldName, indexDesc.getFieldName());
         assertEquals(indexType, indexDesc.getIndexType());
         assertEquals(metricType, indexDesc.getMetricType());
-        assertEquals(0, extraParam.compareTo(indexDesc.getExtraParam()));
+        String params = indexDesc.getExtraParam();
+        assertEquals(0, extraParam.compareTo(params.replace("\"", "")));
 
         assertFalse(wrapper.toString().isEmpty());
     }
