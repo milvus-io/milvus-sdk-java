@@ -66,15 +66,12 @@ public class IndexService extends BaseService {
             }
             Map<String, Object> extraParams = indexParam.getExtraParams();
             if (extraParams != null && !extraParams.isEmpty()) {
-                JsonObject params = new JsonObject();
                 for (String key : extraParams.keySet()) {
-                    params.addProperty(key, extraParams.get(key).toString());
+                    builder.addExtraParams(KeyValuePair.newBuilder()
+                            .setKey(key)
+                            .setValue(extraParams.get(key).toString())
+                            .build());
                 }
-                // the extra params is a JSON format string like "{\"M\": 8, \"efConstruction\": 64}"
-                builder.addExtraParams(KeyValuePair.newBuilder()
-                        .setKey(Constant.PARAMS)
-                        .setValue(params.toString())
-                        .build());
             }
 
             Status status = blockingStub.createIndex(builder.build());
