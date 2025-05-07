@@ -46,6 +46,7 @@ public class DescribeCollectionResp {
 
     private CreateCollectionReq.CollectionSchema collectionSchema;
     private Long createTime;
+    private Long createUtcTime;
     private ConsistencyLevel consistencyLevel;
     private Integer shardsNum;
     @Builder.Default
