@@ -145,6 +145,7 @@ public class ConvertUtils {
                 .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
+                .createUtcTime(response.getCreatedUtcTimestamp())
                 .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
                 .shardsNum(response.getShardsNum())
                 .properties(properties)
