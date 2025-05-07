@@ -77,7 +77,7 @@
         <!--for Core-->
         <grpc.version>1.59.1</grpc.version>
         <protobuf.version>3.25.5</protobuf.version>
-        <protoc.version>3.24.0</protoc.version>
+        <protoc.version>3.25.5</protoc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
         <versio.maven.deploy.plugin>2.8.2</versio.maven.deploy.plugin>
         <versio.maven.source.plugin>3.2.1</versio.maven.source.plugin>
