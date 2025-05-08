@@ -19,6 +19,7 @@
 
 package io.milvus.bulkwriter.common.utils;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType;
@@ -157,5 +158,12 @@ public class ParquetUtils {
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, true);
                 break;
         }
+    }
+
+    public static Configuration getParquetConfiguration() {
+        // set fs.file.impl.disable.cache to true for this issue: https://github.com/milvus-io/milvus-sdk-java/issues/1381
+        Configuration configuration = new Configuration();
+        configuration.set("fs.file.impl.disable.cache", "true");
+        return configuration;
     }
 }
