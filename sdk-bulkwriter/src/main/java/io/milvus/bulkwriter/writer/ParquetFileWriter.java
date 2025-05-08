@@ -53,7 +53,7 @@ public class ParquetFileWriter implements FormatFileWriter {
         int rowGroupBytes = 16 * 1024 * 1024;
 
         // declare and define the ParquetWriter.
-        Configuration configuration = new Configuration();
+        Configuration configuration = ParquetUtils.getParquetConfiguration();
         GroupWriteSupport.setSchema(messageType, configuration);
         GroupWriteSupport writeSupport = new GroupWriteSupport();
         this.writer = new ParquetWriter<>(new Path(filePath),
