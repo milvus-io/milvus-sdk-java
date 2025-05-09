@@ -1156,6 +1156,10 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(extra)
                 .build());
+        indexes.add(IndexParam.builder()
+                .fieldName("name")
+                .indexType(IndexParam.IndexType.TRIE)
+                .build());
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .collectionSchema(collectionSchema)
@@ -1217,12 +1221,20 @@ class MilvusClientV2DockerTest {
         collProps = descCollResp.getProperties();
         Assertions.assertFalse(collProps.containsKey("prop"));
 
-        // index alter properties
+        // describe scalar index
         DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("name")
+                .build());
+        DescribeIndexResp.IndexDesc desc = descResp.getIndexDescByFieldName("name");
+        Assertions.assertEquals(IndexParam.IndexType.TRIE, desc.getIndexType());
+
+        // index alter properties
+        descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName("vector")
                 .build());
-        DescribeIndexResp.IndexDesc desc = descResp.getIndexDescByFieldName("vector");
+        desc = descResp.getIndexDescByFieldName("vector");
         Assertions.assertEquals("vector", desc.getFieldName());
         Assertions.assertFalse(desc.getIndexName().isEmpty());
         Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
@@ -1270,7 +1282,7 @@ class MilvusClientV2DockerTest {
         // drop index
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
-                .fieldName("vector")
+                .indexName("vector")
                 .build());
 
         IndexParam param = IndexParam.builder()
