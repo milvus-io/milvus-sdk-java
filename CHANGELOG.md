@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 2.5.9 (2025-05-09)
+### Feature
+- Support runAnalyzer() interface
+
+### Bug
+- Fix a bug that index property was not correctly passed
+- Fix an exception to LocalBulkWriter in Java 24 env
+
+### Improvement
+- Add dbName for DescribeIndexReq
+- Bump protobuf/protoc version from 3.24.0 to 3.25.5
+- Bump Gson version from 2.10.0 to 2.13.1
+- describeCollection returns collection createUtcTime
+- Add a static method CreateSchema() to replace non-static method createSchema() in MilvusClientV2
+
 ## milvus-sdk-java 2.5.8 (2025-04-25)
 ### Feature
 - Support getPersistentSegmentInfo/getQuerySegmentInfo interfaces for V2
