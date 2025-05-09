@@ -249,12 +249,22 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Creates a collection schema. This method is deprecated from v2.5.9, replaced by CreateSchema()
+     * @return CreateCollectionReq.CollectionSchema
+     */
+    @Deprecated
+    public CreateCollectionReq.CollectionSchema createSchema() {
+        return CollectionService.createSchema();
+    }
+
+    /**
      * Creates a collection schema.
      * @return CreateCollectionReq.CollectionSchema
      */
-    public CreateCollectionReq.CollectionSchema createSchema() {
-        return collectionService.createSchema();
+    public static CreateCollectionReq.CollectionSchema CreateSchema() {
+        return CollectionService.createSchema();
     }
+
     /**
      * list milvus collections
      *

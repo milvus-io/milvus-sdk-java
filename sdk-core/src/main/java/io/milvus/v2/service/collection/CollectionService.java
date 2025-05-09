@@ -357,7 +357,7 @@ public class CollectionService extends BaseService {
         return getCollectionStatsResp;
     }
 
-    public CreateCollectionReq.CollectionSchema createSchema() {
+    public static CreateCollectionReq.CollectionSchema createSchema() {
         return CreateCollectionReq.CollectionSchema.builder()
                 .build();
     }
