@@ -19,7 +19,9 @@
 
 package io.milvus.v2.service.vector;
 
+import com.google.protobuf.ByteString;
 import io.milvus.common.utils.GTsDict;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.*;
@@ -301,6 +303,53 @@ public class VectorService extends BaseService {
 
         return GetResp.builder()
                 .getResults(queryResp.getQueryResults())
+                .build();
+    }
+
+    public RunAnalyzerResp runAnalyzer(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RunAnalyzerReq request) {
+        String title = "RunAnalyzer";
+        if (request.getTexts().isEmpty()) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Texts list is empty.");
+        }
+
+        RunAnalyzerRequest.Builder builder = RunAnalyzerRequest.newBuilder();
+        List<ByteString> byteStrings = new ArrayList<>();
+        for (String text : request.getTexts()) {
+            byteStrings.add(ByteString.copyFrom(text.getBytes()));
+        }
+
+        String params = JsonUtils.toJson(request.getAnalyzerParams());
+        System.out.println(params);
+        RunAnalyzerRequest runRequest = builder.addAllPlaceholder(byteStrings)
+                .setAnalyzerParams(params)
+                .setWithDetail(request.getWithDetail())
+                .setWithHash(request.getWithHash())
+                .build();
+        RunAnalyzerResponse response = blockingStub.runAnalyzer(runRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<RunAnalyzerResp.AnalyzerResult> toResults = new ArrayList<>();
+        List<AnalyzerResult> results = response.getResultsList();
+        results.forEach((item)->{
+            List<RunAnalyzerResp.AnalyzerToken> toTokens = new ArrayList<>();
+            List<AnalyzerToken> tokens = item.getTokensList();
+            tokens.forEach((token)->{
+                toTokens.add(RunAnalyzerResp.AnalyzerToken.builder()
+                        .token(token.getToken())
+                        .startOffset(token.getStartOffset())
+                        .endOffset(token.getEndOffset())
+                        .position(token.getPosition())
+                        .positionLength(token.getPositionLength())
+                        .hash(token.getHash() & 0xFFFFFFFFL)
+                        .build());
+            });
+            toResults.add(RunAnalyzerResp.AnalyzerResult.builder()
+                    .tokens(toTokens)
+                    .build());
+        });
+
+        return RunAnalyzerResp.builder()
+                .results(toResults)
                 .build();
     }
 }

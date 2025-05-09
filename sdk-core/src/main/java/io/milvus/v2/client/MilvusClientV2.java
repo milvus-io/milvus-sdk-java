@@ -382,7 +382,7 @@ public class MilvusClientV2 {
     /**
      * Get information of all replicas from a collection.
      *
-     * @param request {@link DescribeReplicasReq}
+     * @param request describe replicas request
      */
     public DescribeReplicasResp describeReplicas(DescribeReplicasReq request) {
         return rpcUtils.retry(()->collectionService.describeReplicas(this.getRpcStub(), request));
@@ -528,8 +528,8 @@ public class MilvusClientV2 {
      * Get queryIterator based on scalar field(s) filtered by boolean expression.
      * Note that the order of the returned entities cannot be guaranteed.
      *
-     * @param request {@link QueryIteratorReq}
-     * @return {status:result code,data: QueryIterator}
+     * @param request query iterator request
+     * @return QueryIterator
      */
     public QueryIterator queryIterator(QueryIteratorReq request) {
         return rpcUtils.retry(()->vectorService.queryIterator(this.getRpcStub(), request));
@@ -538,8 +538,8 @@ public class MilvusClientV2 {
     /**
      * Get searchIterator based on a vector field. Use expression to do filtering before search.
      *
-     * @param request {@link SearchIteratorReq}
-     * @return {status:result code, data: SearchIterator}
+     * @param request search iterator request
+     * @return SearchIterator
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
         return rpcUtils.retry(()->vectorService.searchIterator(this.getRpcStub(), request));
@@ -548,11 +548,22 @@ public class MilvusClientV2 {
     /**
      * Get searchIteratorV2 based on a vector field. Use expression to do filtering before search.
      *
-     * @param request {@link SearchIteratorReqV2}
-     * @return {status:result code, data: SearchIteratorV2}
+     * @param request search iterator request V2
+     * @return SearchIteratorV2
      */
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
         return rpcUtils.retry(()->vectorService.searchIteratorV2(this.getRpcStub(), request));
+    }
+
+    /**
+     * Run analyzer. Return result tokens of analysis.
+     * Milvus server supports this interface from v2.5.11
+     *
+     * @param request run analyzer request
+     * @return RunAnalyzerResp
+     */
+    public RunAnalyzerResp runAnalyzer(RunAnalyzerReq request) {
+        return rpcUtils.retry(()->vectorService.runAnalyzer(this.getRpcStub(), request));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

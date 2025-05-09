@@ -81,7 +81,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.8");
+    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.11");
 
     @BeforeAll
     public static void setUp() {
@@ -2378,5 +2378,77 @@ class MilvusClientV2DockerTest {
         Assertions.assertFalse(replica.getChannelName().isEmpty());
         Assertions.assertFalse(replica.getLeaderAddress().isEmpty());
         Assertions.assertNotEquals(0L, replica.getLeaderID());
+    }
+
+    @Test
+    void testRunAnalyzer() {
+        List<String> texts = new ArrayList<>();
+        texts.add("Analyzers (tokenizers) for multi languages");
+        texts.add("2.5 to take advantage of enhancements and fixes!");
+
+        Map<String, Object> analyzerParams = new HashMap<>();
+        analyzerParams.put("tokenizer", "standard");
+        analyzerParams.put("filter",
+                Arrays.asList("lowercase",
+                        new HashMap<String, Object>() {{
+                            put("type", "stop");
+                            put("stop_words", Arrays.asList("to", "of", "for", "the"));
+                        }}));
+
+        RunAnalyzerResp resp = client.runAnalyzer(RunAnalyzerReq.builder()
+                .texts(texts)
+                .analyzerParams(analyzerParams)
+                .withDetail(true)
+                .withHash(true)
+                .build());
+
+        List<RunAnalyzerResp.AnalyzerResult> results = resp.getResults();
+        Assertions.assertEquals(texts.size(), results.size());
+
+        {
+            List<String> tokens1 = Arrays.asList("analyzers", "tokenizers", "multi", "languages");
+            List<Long> startOffset1 = Arrays.asList(0L, 11L, 27L, 33L);
+            List<Long> endOffset1 = Arrays.asList(9L, 21L, 32L, 42L);
+            List<Long> position1 = Arrays.asList(0L, 1L, 3L, 4L);
+            List<Long> positionLen1 = Arrays.asList(1L, 1L, 1L, 1L);
+            List<Long> hash1 = Arrays.asList(1356745679L, 4089107865L, 3314631429L, 2698072953L);
+
+            List<RunAnalyzerResp.AnalyzerToken> outTokens1 = results.get(0).getTokens();
+            System.out.printf("%d tokens%n", outTokens1.size());
+            Assertions.assertEquals(tokens1.size(), outTokens1.size());
+            for (int i = 0; i < outTokens1.size(); i++) {
+                RunAnalyzerResp.AnalyzerToken token = outTokens1.get(i);
+                System.out.println(token);
+                Assertions.assertEquals(tokens1.get(i), token.getToken());
+                Assertions.assertEquals(startOffset1.get(i), token.getStartOffset());
+                Assertions.assertEquals(endOffset1.get(i), token.getEndOffset());
+                Assertions.assertEquals(position1.get(i), token.getPosition());
+                Assertions.assertEquals(positionLen1.get(i), token.getPositionLength());
+                Assertions.assertEquals(hash1.get(i), token.getHash());
+            }
+        }
+
+        {
+            List<String> tokens2 = Arrays.asList("2", "5", "take", "advantage", "enhancements", "and", "fixes");
+            List<Long> startOffset2 = Arrays.asList(0L, 2L, 7L, 12L, 25L, 38L, 42L);
+            List<Long> endOffset2 = Arrays.asList(1L, 3L, 11L, 21L, 37L, 41L, 47L);
+            List<Long> position2 = Arrays.asList(0L, 1L, 3L, 4L, 6L, 7L, 8L);
+            List<Long> positionLen2 = Arrays.asList(1L, 1L, 1L, 1L, 1L, 1L, 1L);
+            List<Long> hash2 = Arrays.asList(450215437L, 2226203566L, 937258619L, 697180577L, 3403941281L, 133536621L, 488262645L);
+
+            List<RunAnalyzerResp.AnalyzerToken> outTokens2 = results.get(1).getTokens();
+            System.out.printf("%d tokens%n", outTokens2.size());
+            Assertions.assertEquals(tokens2.size(), outTokens2.size());
+            for (int i = 0; i < outTokens2.size(); i++) {
+                RunAnalyzerResp.AnalyzerToken token = outTokens2.get(i);
+                System.out.println(token);
+                Assertions.assertEquals(tokens2.get(i), token.getToken());
+                Assertions.assertEquals(startOffset2.get(i), token.getStartOffset());
+                Assertions.assertEquals(endOffset2.get(i), token.getEndOffset());
+                Assertions.assertEquals(position2.get(i), token.getPosition());
+                Assertions.assertEquals(positionLen2.get(i), token.getPositionLength());
+                Assertions.assertEquals(hash2.get(i), token.getHash());
+            }
+        }
     }
 }
