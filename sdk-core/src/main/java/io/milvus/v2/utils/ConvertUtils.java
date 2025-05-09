@@ -91,11 +91,22 @@ public class ConvertUtils {
             Map<String, String> properties = new HashMap<>();
             for(KeyValuePair param : params) {
                 if (param.getKey().equals(Constant.INDEX_TYPE)) {
-                    // may throw IllegalArgumentException
-                    indexType = IndexParam.IndexType.valueOf(param.getValue().toUpperCase());
+                    try {
+                        indexType = IndexParam.IndexType.valueOf(param.getValue().toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        // if the server has new index type but sdk version is old
+                        e.printStackTrace();
+                    }
                 } else if (param.getKey().equals(Constant.METRIC_TYPE)) {
-                    // may throw IllegalArgumentException
-                    metricType = IndexParam.MetricType.valueOf(param.getValue());
+                    // for scalar index such as Trie/STL_SORT, the param.getValue() is empty, no need to parse it
+                    if (!param.getValue().isEmpty()) {
+                        try {
+                            metricType = IndexParam.MetricType.valueOf(param.getValue());
+                        } catch (IllegalArgumentException e) {
+                            // if the server has new metric type but sdk version is old
+                            e.printStackTrace();
+                        }
+                    }
                 } else if (param.getKey().equals(Constant.MMAP_ENABLED)) {
                     properties.put(param.getKey(), param.getValue()); // just for compatible with old versions
                     extraParams.put(param.getKey(), param.getValue());
