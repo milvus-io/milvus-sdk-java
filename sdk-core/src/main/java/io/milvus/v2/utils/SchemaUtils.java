@@ -106,6 +106,10 @@ public class SchemaUtils {
             String params = JsonUtils.toJson(fieldSchema.getAnalyzerParams());
             typeParams.put("analyzer_params", params);
         }
+        if (fieldSchema.getMultiAnalyzerParams() != null) {
+            String params = JsonUtils.toJson(fieldSchema.getMultiAnalyzerParams());
+            typeParams.put("multi_analyzer_params", params);
+        }
 
         List<KeyValuePair> typeParamsList = AssembleKvPair(typeParams);
         if (CollectionUtils.isNotEmpty(typeParamsList)) {
