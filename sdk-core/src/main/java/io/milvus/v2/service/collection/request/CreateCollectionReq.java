@@ -156,6 +156,7 @@ public class CreateCollectionReq {
                     .enableMatch(addFieldReq.getEnableMatch())
                     .analyzerParams(addFieldReq.getAnalyzerParams())
                     .typeParams(addFieldReq.getTypeParams())
+                    .multiAnalyzerParams(addFieldReq.getMultiAnalyzerParams())
                     .build();
             if (addFieldReq.getDataType().equals(DataType.Array)) {
                 if (addFieldReq.getElementType() == null) {
@@ -221,6 +222,7 @@ public class CreateCollectionReq {
 
         // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
         private Map<String, String> typeParams;
+        Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
     }
 
     @Data

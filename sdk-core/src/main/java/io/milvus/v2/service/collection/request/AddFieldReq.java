@@ -58,6 +58,7 @@ public class AddFieldReq {
 
     // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
     private Map<String, String> typeParams;
+    Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
 
     AddFieldReq setDefaultValue(Object obj) {
         enableDefaultValue = true; // automatically set this flag
