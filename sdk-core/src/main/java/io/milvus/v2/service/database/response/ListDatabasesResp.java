@@ -19,13 +19,16 @@
 
 package io.milvus.v2.service.database.response;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @SuperBuilder
 public class ListDatabasesResp {
-    private List<String> databaseNames;
+    @Builder.Default
+    private List<String> databaseNames = new ArrayList<>();
 }

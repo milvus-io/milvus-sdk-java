@@ -35,7 +35,7 @@ import java.util.Map;
 @SuperBuilder
 public class DescribeIndexResp {
     @Builder.Default
-    List<IndexDesc> indexDescriptions = new ArrayList<>();
+    private List<IndexDesc> indexDescriptions = new ArrayList<>();
 
     public IndexDesc getIndexDescByFieldName(@NonNull String fieldName) {
         for (IndexDesc desc : indexDescriptions) {
@@ -68,15 +68,15 @@ public class DescribeIndexResp {
         @Builder.Default
         private Map<String, String> extraParams = new HashMap<>();
         @Builder.Default
-        long indexedRows = 0;
+        private long indexedRows = 0;
         @Builder.Default
-        long totalRows = 0;
+        private long totalRows = 0;
         @Builder.Default
-        long pendingIndexRows = 0;
+        private long pendingIndexRows = 0;
         @Builder.Default
         private IndexBuildState indexState = IndexBuildState.IndexStateNone;
         @Builder.Default
-        String indexFailedReason = "";
+        private String indexFailedReason = "";
 
         // In 2.4/2.5, properties only contains one item "mmap.enabled".
         // To keep consistence with other SDKs, we intend to remove this member from IndexDesc,

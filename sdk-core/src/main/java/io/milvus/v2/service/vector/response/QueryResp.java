@@ -23,19 +23,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @SuperBuilder
 public class QueryResp {
-    private List<QueryResult> queryResults;
+    @Builder.Default
+    private List<QueryResult> queryResults = new ArrayList<>();
     @Builder.Default
     private long sessionTs = 1L; // default eventually ts
 
     @Data
     @SuperBuilder
     public static class QueryResult {
-        private Map<String, Object> entity;
+        @Builder.Default
+        private Map<String, Object> entity = new HashMap<>();
     }
 }

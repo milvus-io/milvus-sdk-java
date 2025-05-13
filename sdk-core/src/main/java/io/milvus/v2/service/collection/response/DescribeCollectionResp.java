@@ -25,6 +25,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +38,10 @@ public class DescribeCollectionResp {
     private String databaseName;
     private String description;
     private Long numOfPartitions;
-
-    private List<String> fieldNames;
-    private List<String> vectorFieldNames;
+    @Builder.Default
+    private List<String> fieldNames = new ArrayList<>();
+    @Builder.Default
+    private List<String> vectorFieldNames = new ArrayList<>();
     private String primaryFieldName;
     private Boolean enableDynamicField;
     private Boolean autoID;
