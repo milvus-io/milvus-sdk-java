@@ -6,7 +6,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class TransferNodeReq {
-    String sourceGroupName;
-    String targetGroupName;
-    Integer numOfNodes;
+    private String sourceGroupName;
+    private String targetGroupName;
+    private Integer numOfNodes;
 }

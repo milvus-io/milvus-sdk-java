@@ -20,15 +20,18 @@
 package io.milvus.v2.service.rbac.response;
 
 import io.milvus.grpc.GrantEntity;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @SuperBuilder
 public class DescribeRoleResp {
-    List<GrantInfo> grantInfos;
+    @Builder.Default
+    private List<GrantInfo> grantInfos = new ArrayList<>();
 
     @Data
     @SuperBuilder
