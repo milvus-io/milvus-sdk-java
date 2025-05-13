@@ -23,21 +23,26 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @SuperBuilder
 public class SearchResp {
-    private List<List<SearchResult>> searchResults;
+    @Builder.Default
+    private List<List<SearchResult>> searchResults = new ArrayList<>();
     @Builder.Default
     private long sessionTs = 1L; // default eventually ts
-    private List<Float> recalls;
+    @Builder.Default
+    private List<Float> recalls = new ArrayList<>();
 
     @Data
     @SuperBuilder
     public static class SearchResult {
-        private Map<String, Object> entity;
+        @Builder.Default
+        private Map<String, Object> entity = new HashMap<>();
         private Float score;
         private Object id;
     }

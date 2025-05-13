@@ -217,12 +217,12 @@ public class CreateCollectionReq {
         @Builder.Default
         private Object defaultValue = null; // only for scalar fields
         private Boolean enableAnalyzer; // for BM25 tokenizer
-        Map<String, Object> analyzerParams; // for BM25 tokenizer
+        private Map<String, Object> analyzerParams; // for BM25 tokenizer
         private Boolean enableMatch; // for BM25 keyword search
 
         // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
         private Map<String, String> typeParams;
-        Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
+        private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
     }
 
     @Data
@@ -231,10 +231,10 @@ public class CreateCollectionReq {
         private String name;
         @Builder.Default
         private String description = "";
-        FunctionType functionType;
+        private FunctionType functionType;
         @Builder.Default
-        List<String> inputFieldNames = new ArrayList<>();
+        private List<String> inputFieldNames = new ArrayList<>();
         @Builder.Default
-        List<String> outputFieldNames = new ArrayList<>();
+        private List<String> outputFieldNames = new ArrayList<>();
     }
 }
