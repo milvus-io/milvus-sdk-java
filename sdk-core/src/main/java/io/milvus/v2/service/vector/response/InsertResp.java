@@ -19,14 +19,17 @@
 
 package io.milvus.v2.service.vector.response;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @SuperBuilder
 public class InsertResp {
     private long InsertCnt;
-    private List<Object> primaryKeys;
+    @Builder.Default
+    private List<Object> primaryKeys = new ArrayList<>();
 }

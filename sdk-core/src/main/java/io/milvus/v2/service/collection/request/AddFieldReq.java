@@ -53,16 +53,20 @@ public class AddFieldReq {
     @Builder.ObtainVia(field = "hiddenField")
     private boolean enableDefaultValue = false; // a flag to pass the default value to server or not
     private Boolean enableAnalyzer; // for BM25 tokenizer
-    Map<String, Object> analyzerParams; // for BM25 tokenizer
+    private Map<String, Object> analyzerParams; // for BM25 tokenizer
     private Boolean enableMatch; // for BM25 keyword search
 
     // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
     private Map<String, String> typeParams;
-    Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
+    private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
 
-    AddFieldReq setDefaultValue(Object obj) {
-        enableDefaultValue = true; // automatically set this flag
-        this.defaultValue = obj;
-        return this;
+    public static abstract class AddFieldReqBuilder<C extends AddFieldReq, B extends AddFieldReq.AddFieldReqBuilder<C, B>> {
+        public B defaultValue(Object value) {
+            this.defaultValue$value = value;
+            this.defaultValue$set = true;
+
+            this.enableDefaultValue = true; // automatically set this flag
+            return self();
+        }
     }
 }

@@ -30,13 +30,13 @@ import java.util.List;
 @SuperBuilder
 public class RunAnalyzerResp {
     @Builder.Default
-    List<AnalyzerResult> results = new ArrayList<>();
+    private List<AnalyzerResult> results = new ArrayList<>();
 
     @Data
     @SuperBuilder
     public static final class AnalyzerResult {
         @Builder.Default
-        List<AnalyzerToken> tokens = new ArrayList<>();
+        private List<AnalyzerToken> tokens = new ArrayList<>();
     }
 
     @Data

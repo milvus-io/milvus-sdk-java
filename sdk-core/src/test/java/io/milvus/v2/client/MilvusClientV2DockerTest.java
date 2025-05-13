@@ -1936,6 +1936,7 @@ class MilvusClientV2DockerTest {
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("flag")
                 .dataType(DataType.Int32)
+                .isNullable(true)
                 .defaultValue((int)10)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
@@ -1951,6 +1952,15 @@ class MilvusClientV2DockerTest {
                 .isNullable(Boolean.TRUE)
                 .maxCapacity(100)
                 .build());
+
+        Assertions.assertThrows(MilvusClientException.class, () ->
+                collectionSchema.addField(AddFieldReq.builder()
+                        .fieldName("illegal")
+                        .dataType(DataType.Bool)
+                        .isNullable(false)
+                        .defaultValue(null)
+                        .build())
+        );
 
         List<IndexParam> indexParams = new ArrayList<>();
         indexParams.add(IndexParam.builder()
@@ -1977,7 +1987,9 @@ class MilvusClientV2DockerTest {
                 row.addProperty("flag", i);
                 row.add("desc", JsonNull.INSTANCE);
             } else {
-//                row.add("flag", JsonNull.INSTANCE);
+                if (i == 5) {
+                    row.add("flag", JsonNull.INSTANCE); // both null or unset will use the default value
+                }
                 row.addProperty("desc", "AAA");
 
                 List<Integer> arr = Arrays.asList(5, 6);
