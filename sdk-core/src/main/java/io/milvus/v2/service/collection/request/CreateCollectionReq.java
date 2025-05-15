@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection.request;
 
 import io.milvus.common.clientenum.FunctionType;
+import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -166,8 +167,7 @@ public class CreateCollectionReq {
                 fieldSchema.setMaxCapacity(addFieldReq.getMaxCapacity());
             } else if (addFieldReq.getDataType().equals(DataType.VarChar)) {
                 fieldSchema.setMaxLength(addFieldReq.getMaxLength());
-            } else if (addFieldReq.getDataType().equals(DataType.FloatVector) || addFieldReq.getDataType().equals(DataType.BinaryVector) ||
-                    addFieldReq.getDataType().equals(DataType.Float16Vector) || addFieldReq.getDataType().equals(DataType.BFloat16Vector)) {
+            } else if (ParamUtils.isDenseVectorDataType(io.milvus.grpc.DataType.valueOf(addFieldReq.getDataType().name()))) {
                 if (addFieldReq.getDimension() == null) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is required for vector field");
                 }

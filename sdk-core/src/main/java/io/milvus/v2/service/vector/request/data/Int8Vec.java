@@ -17,46 +17,29 @@
  * under the License.
  */
 
-package io.milvus.v2.common;
+package io.milvus.v2.service.vector.request.data;
 
-import lombok.Getter;
+import io.milvus.grpc.PlaceholderType;
 
-import java.util.Arrays;
+import java.nio.ByteBuffer;
 
-@Getter
-public enum DataType {
-    None(0),
-    Bool(1),
-    Int8(2),
-    Int16(3),
-    Int32(4),
-    Int64(5),
+public class Int8Vec implements BaseVector {
+    private final ByteBuffer data;
 
-    Float(10),
-    Double(11),
-
-    String(20),
-    VarChar(21), // variable-length strings with a specified maximum length
-    Array(22),
-    JSON(23),
-
-    BinaryVector(100),
-    FloatVector(101),
-    Float16Vector(102),
-    BFloat16Vector(103),
-    SparseFloatVector(104),
-    Int8Vector(105);
-
-    private final int code;
-    DataType(int code) {
-        this.code = code;
+    public Int8Vec(ByteBuffer data) {
+        this.data = data;
     }
-    ;
+    public Int8Vec(byte[] data) {
+        this.data = ByteBuffer.wrap(data);
+    }
 
-    public static DataType forNumber(int code) {
-        return Arrays.stream(DataType.values())
-                .filter(dataType -> dataType.code == code)
-                .findFirst()
-                .orElse(null);
+    @Override
+    public PlaceholderType getPlaceholderType() {
+        return PlaceholderType.Int8Vector;
+    }
+
+    @Override
+    public Object getData() {
+        return this.data;
     }
 }

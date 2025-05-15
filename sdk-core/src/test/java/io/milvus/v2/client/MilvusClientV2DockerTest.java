@@ -81,7 +81,7 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer("milvusdb/milvus:v2.5.11");
+    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID);
 
     @BeforeAll
     public static void setUp() {
@@ -795,6 +795,143 @@ class MilvusClientV2DockerTest {
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
+
+//    @Test
+//    void testInt8Vectors() {
+//        String randomCollectionName = generator.generate(10);
+//        String vectorFieldName = "int8_vector";
+//        int dimension = 8;
+//        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+//                .build();
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName("id")
+//                .dataType(DataType.Int64)
+//                .isPrimaryKey(Boolean.TRUE)
+//                .build());
+//        collectionSchema.addField(AddFieldReq.builder()
+//                .fieldName(vectorFieldName)
+//                .dataType(DataType.Int8Vector)
+//                .dimension(dimension)
+//                .build());
+//
+//        client.dropCollection(DropCollectionReq.builder()
+//                .collectionName(randomCollectionName)
+//                .build());
+//        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+//                .collectionName(randomCollectionName)
+//                .collectionSchema(collectionSchema)
+//                .build();
+//        client.createCollection(requestCreate);
+//
+//        // insert rows
+//        Gson gson = new Gson();
+//        Random RANDOM = new Random();
+//        long count = 10;
+//        List<ByteBuffer> vectors = new ArrayList<>();
+//        List<JsonObject> data = new ArrayList<>();
+//        for (int i = 0; i < count; i++) {
+//            JsonObject row = new JsonObject();
+//            row.addProperty("id", i);
+//
+//            ByteBuffer vector = ByteBuffer.allocate(dimension);
+//            for (int k = 0; k < dimension; ++k) {
+//                vector.put((byte) (RANDOM.nextInt(256) - 128));
+//            }
+//            vectors.add(vector);
+//            row.add(vectorFieldName, gson.toJsonTree(vector.array()));
+//            data.add(row);
+//        }
+//
+//        InsertResp insertResp = client.insert(InsertReq.builder()
+//                .collectionName(randomCollectionName)
+//                .data(data)
+//                .build());
+//        Assertions.assertEquals(count, insertResp.getInsertCnt());
+//
+//        // flush
+//        client.flush(FlushReq.builder()
+//                .collectionNames(Collections.singletonList(randomCollectionName))
+//                .build());
+//
+//        // create index
+//        Map<String,Object> extraParams = new HashMap<>();
+//        extraParams.put("M", 64);
+//        extraParams.put("efConstruction", 200);
+//        IndexParam indexParam = IndexParam.builder()
+//                .fieldName(vectorFieldName)
+//                .indexType(IndexParam.IndexType.HNSW)
+//                .metricType(IndexParam.MetricType.COSINE)
+//                .extraParams(extraParams)
+//                .build();
+//        client.createIndex(CreateIndexReq.builder()
+//                .collectionName(randomCollectionName)
+//                .indexParams(Collections.singletonList(indexParam))
+//                .build());
+//
+//        client.loadCollection(LoadCollectionReq.builder()
+//                .collectionName(randomCollectionName)
+//                .build());
+//
+//        // describe collection
+//        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+//                .collectionName(randomCollectionName)
+//                .build());
+//        Assertions.assertEquals(randomCollectionName, descResp.getCollectionName());
+//
+//        List<String> fieldNames = descResp.getFieldNames();
+//        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fieldNames.size());
+//        CreateCollectionReq.CollectionSchema schema = descResp.getCollectionSchema();
+//        for (String name : fieldNames) {
+//            CreateCollectionReq.FieldSchema f1 = collectionSchema.getField(name);
+//            CreateCollectionReq.FieldSchema f2 = schema.getField(name);
+//            Assertions.assertNotNull(f1);
+//            Assertions.assertNotNull(f2);
+//            Assertions.assertEquals(f1.getName(), f2.getName());
+//            Assertions.assertEquals(f1.getDataType(), f2.getDataType());
+//            Assertions.assertEquals(f1.getDimension(), f2.getDimension());
+//        }
+//
+//        // search in collection
+//        int topK = 3;
+//        List<BaseVector> targetVectors = Arrays.asList(new Int8Vec(vectors.get(5)), new Int8Vec(vectors.get(0)));
+//        SearchResp searchResp = client.search(SearchReq.builder()
+//                .collectionName(randomCollectionName)
+//                .annsField(vectorFieldName)
+//                .data(targetVectors)
+//                .topK(topK)
+//                .outputFields(Collections.singletonList("*"))
+//                .consistencyLevel(ConsistencyLevel.STRONG)
+//                .build());
+//        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+//        Assertions.assertEquals(targetVectors.size(), searchResults.size());
+//
+//        for (List<SearchResp.SearchResult> results : searchResults) {
+//            Assertions.assertEquals(topK, results.size());
+//            for (int i = 0; i < results.size(); i++) {
+//                SearchResp.SearchResult result = results.get(i);
+//                Map<String, Object> entity = result.getEntity();
+//                long id = (long) entity.get("id");
+//                ByteBuffer originVec = vectors.get((int) id);
+//                ByteBuffer getVec = (ByteBuffer) entity.get(vectorFieldName);
+//                Assertions.assertEquals(originVec, getVec);
+//            }
+//        }
+//
+//        // query
+//        QueryResp queryResp = client.query(QueryReq.builder()
+//                .collectionName(randomCollectionName)
+//                .filter("id == 5")
+//                .build());
+//        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+//        Assertions.assertEquals(1, queryResults.size());
+//        {
+//            QueryResp.QueryResult result = queryResults.get(0);
+//            Map<String, Object> entity = result.getEntity();
+//            ByteBuffer originVec = vectors.get(5);
+//            ByteBuffer getVec = (ByteBuffer)entity.get(vectorFieldName);
+//            Assertions.assertEquals(originVec, getVec);
+//        }
+//    }
 
     @Test
     void testHybridSearch() {

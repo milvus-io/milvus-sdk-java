@@ -76,6 +76,9 @@ public class FieldDataWrapper {
     }
 
     // this method returns bytes size of each vector according to vector type
+    // for binary vector, each dimension is one bit, each byte is 8 dim
+    // for int8 vector, each dimension is ony byte, each byte is one dim
+    // for float16 vector, each dimension 2 bytes
     private int checkDim(DataType dt, ByteString data, int dim) {
         if (dt == DataType.BinaryVector) {
             if ((data.size()*8) % dim != 0) {
@@ -91,9 +94,33 @@ public class FieldDataWrapper {
                 throw new IllegalResponseException(msg);
             }
             return dim*2;
+        } else if (dt == DataType.Int8Vector) {
+            if (data.size() % dim != 0) {
+                String msg = String.format("Returned int8 vector data array size %d doesn't match dimension %d",
+                        data.size(), dim);
+                throw new IllegalResponseException(msg);
+            }
+            return dim;
         }
 
         return 0;
+    }
+
+    private ByteString getVectorBytes(FieldData fieldData, DataType dt) {
+        ByteString data;
+        if (dt == DataType.BinaryVector) {
+            data = fieldData.getVectors().getBinaryVector();
+        } else if (dt == DataType.Float16Vector) {
+            data = fieldData.getVectors().getFloat16Vector();
+        } else if (dt == DataType.BFloat16Vector) {
+            data = fieldData.getVectors().getBfloat16Vector();
+        } else if (dt == DataType.Int8Vector) {
+            data = fieldData.getVectors().getInt8Vector();
+        } else {
+            String msg = String.format("Unsupported data type %s returned by FieldData", dt.name());
+            throw new IllegalResponseException(msg);
+        }
+        return data;
     }
 
     /**
@@ -116,20 +143,12 @@ public class FieldDataWrapper {
 
                 return data.size()/dim;
             }
-            case BinaryVector: {
-                // for binary vector, each dimension is one bit, each byte is 8 dim
-                int dim = getDim();
-                ByteString data = fieldData.getVectors().getBinaryVector();
-                int bytePerVec = checkDim(dt, data, dim);
-
-                return data.size()/bytePerVec;
-            }
+            case BinaryVector:
             case Float16Vector:
-            case BFloat16Vector: {
-                // for float16 vector, each dimension 2 bytes
+            case BFloat16Vector:
+            case Int8Vector: {
                 int dim = getDim();
-                ByteString data = (dt == DataType.Float16Vector) ?
-                        fieldData.getVectors().getFloat16Vector() : fieldData.getVectors().getBfloat16Vector();
+                ByteString data = getVectorBytes(fieldData, dt);
                 int bytePerVec = checkDim(dt, data, dim);
 
                 return data.size()/bytePerVec;
@@ -211,25 +230,18 @@ public class FieldDataWrapper {
             }
             case BinaryVector:
             case Float16Vector:
-            case BFloat16Vector: {
+            case BFloat16Vector:
+            case Int8Vector: {
                 int dim = getDim();
-                ByteString data = null;
-                if (dt == DataType.BinaryVector) {
-                    data = fieldData.getVectors().getBinaryVector();
-                } else if (dt == DataType.Float16Vector) {
-                    data = fieldData.getVectors().getFloat16Vector();
-                } else {
-                    data = fieldData.getVectors().getBfloat16Vector();
-                }
-
+                ByteString data = getVectorBytes(fieldData, dt);
                 int bytePerVec = checkDim(dt, data, dim);
                 int count = data.size()/bytePerVec;
                 List<ByteBuffer> packData = new ArrayList<>();
                 for (int i = 0; i < count; ++i) {
                     ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
                     // binary vector doesn't care endian since each byte is independent
-                    // fp16/bf16 vector is sensetive to endian because each dim occupies 2 bytes,
-                    // milvus server stores fp16/bf16 vector as little endian
+                    // fp16/bf16/int8 vector is sensitive to endian because each dim occupies 1~2 bytes,
+                    // milvus server stores fp16/bf16/int8 vector as little endian
                     bf.order(ByteOrder.LITTLE_ENDIAN);
                     bf.put(data.substring(i * bytePerVec, (i + 1) * bytePerVec).toByteArray());
                     packData.add(bf);

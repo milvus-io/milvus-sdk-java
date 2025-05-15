@@ -101,6 +101,8 @@ public class ParamUtils {
     private static int calculateBinVectorDim(DataType dataType, int byteCount) {
         if (dataType == DataType.BinaryVector) {
             return byteCount*8; // for BinaryVector, each byte is 8 dimensions
+        } else if (dataType == DataType.Int8Vector) {
+            return byteCount; // for Int8Vector, each byte is one dimension
         } else {
             if (byteCount%2 != 0) {
                 String msg = "Incorrect byte count for %s type field, byte count is %d, cannot be evenly divided by 2";
@@ -358,7 +360,8 @@ public class ParamUtils {
             }
             case BinaryVector:
             case Float16Vector:
-            case BFloat16Vector: {
+            case BFloat16Vector:
+            case Int8Vector: {
                 if (!(value.isJsonArray())) {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                 }
@@ -726,7 +729,7 @@ public class ParamUtils {
                 ByteString bs = ByteString.copyFrom(array);
                 byteStrings.add(bs);
             } else if (vector instanceof ByteBuffer) {
-                // for fp16/bf16 vector, each vector is a ByteBuffer with little endian
+                // for fp16/bf16/int8 vector, each vector is a ByteBuffer with little endian
                 // for binary vector, each vector is a ByteBuffer no matter which endian
                 // the endian of each ByteBuffer is already specified by the caller
                 plType = PlaceholderType.BinaryVector;
@@ -1138,15 +1141,19 @@ public class ParamUtils {
         }
     }
 
-    public static boolean isVectorDataType(DataType dataType) {
+    public static boolean isDenseVectorDataType(DataType dataType) {
         Set<DataType> vectorDataType = new HashSet<DataType>() {{
             add(DataType.FloatVector);
             add(DataType.BinaryVector);
             add(DataType.Float16Vector);
             add(DataType.BFloat16Vector);
-            add(DataType.SparseFloatVector);
+            add(DataType.Int8Vector);
         }};
         return vectorDataType.contains(dataType);
+    }
+
+    public static boolean isVectorDataType(DataType dataType) {
+        return isDenseVectorDataType(dataType) || dataType == DataType.SparseFloatVector;
     }
 
     public static FieldData genFieldData(FieldType fieldType, List<?> objects) {
@@ -1203,10 +1210,11 @@ public class ParamUtils {
             return VectorField.newBuilder().setDim(dim).setFloatVector(floatArray).build();
         } else if (dataType == DataType.BinaryVector ||
                 dataType == DataType.Float16Vector ||
-                dataType == DataType.BFloat16Vector) {
+                dataType == DataType.BFloat16Vector ||
+                dataType == DataType.Int8Vector) {
             ByteBuffer totalBuf = null;
             int dim = 0;
-            // for fp16/bf16 vector, each vector is a ByteBuffer with little endian
+            // for fp16/bf16/int8 vector, each vector is a ByteBuffer with little endian
             // for binary vector, each vector is a ByteBuffer no matter which endian
             // no need to set totalBuf endian since it is treated as byte array
             for (Object object : objects) {
@@ -1226,8 +1234,10 @@ public class ParamUtils {
                 return VectorField.newBuilder().setDim(dim).setBinaryVector(byteString).build();
             } else if (dataType == DataType.Float16Vector) {
                 return VectorField.newBuilder().setDim(dim).setFloat16Vector(byteString).build();
-            } else {
+            } else if (dataType == DataType.BFloat16Vector) {
                 return VectorField.newBuilder().setDim(dim).setBfloat16Vector(byteString).build();
+            } else {
+                return VectorField.newBuilder().setDim(dim).setInt8Vector(byteString).build();
             }
         } else if  (dataType == DataType.SparseFloatVector) {
             SparseFloatArray sparseArray = genSparseFloatArray(objects);
