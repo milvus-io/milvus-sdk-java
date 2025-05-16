@@ -1138,15 +1138,18 @@ public class ParamUtils {
         }
     }
 
-    public static boolean isVectorDataType(DataType dataType) {
+    public static boolean isDenseVectorDataType(DataType dataType) {
         Set<DataType> vectorDataType = new HashSet<DataType>() {{
             add(DataType.FloatVector);
             add(DataType.BinaryVector);
             add(DataType.Float16Vector);
             add(DataType.BFloat16Vector);
-            add(DataType.SparseFloatVector);
         }};
         return vectorDataType.contains(dataType);
+    }
+
+    public static boolean isVectorDataType(DataType dataType) {
+        return isDenseVectorDataType(dataType) || dataType == DataType.SparseFloatVector;
     }
 
     public static FieldData genFieldData(FieldType fieldType, List<?> objects) {

@@ -44,7 +44,7 @@ public class AddFieldReq {
     @Builder.Default
     private Boolean autoID = Boolean.FALSE;
     private Integer dimension;
-    private io.milvus.v2.common.DataType elementType;
+    private DataType elementType;
     private Integer maxCapacity;
     @Builder.Default
     private Boolean isNullable = Boolean.FALSE; // only for scalar fields(not include Array fields)
