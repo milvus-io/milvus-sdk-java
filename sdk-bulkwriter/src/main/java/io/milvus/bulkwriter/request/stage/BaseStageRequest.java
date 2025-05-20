@@ -17,13 +17,26 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.storage;
+package io.milvus.bulkwriter.request.stage;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.io.File;
+import java.io.Serializable;
+import java.util.Map;
 
-public interface StorageClient {
-    Long getObjectEntity(String bucketName, String objectKey) throws Exception;
-    boolean checkBucketExist(String bucketName) throws Exception;
-    void putObject(File file, String bucketName, String objectKey) throws Exception;
+@Data
+@SuperBuilder(toBuilder = true)
+@AllArgsConstructor
+@NoArgsConstructor
+public class BaseStageRequest implements Serializable {
+    private static final long serialVersionUID = 8192049841043084620L;
+    /**
+     * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
+     */
+    private String apiKey;
+
+    private Map<String, Object> options;
 }
