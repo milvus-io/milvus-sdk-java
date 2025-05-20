@@ -34,6 +34,8 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +46,9 @@ import java.util.stream.Collectors;
 import static io.milvus.param.ParamUtils.AssembleKvPair;
 
 public class SchemaUtils {
+    protected static final Logger logger = LoggerFactory.getLogger(SchemaUtils.class);
+
+
     public static void checkNullEmptyString(String target, String title) {
         if (target == null || StringUtils.isBlank(target)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, title + " cannot be null or empty");
@@ -171,19 +176,27 @@ public class SchemaUtils {
 
         Map<String, String> typeParams = new HashMap<>();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
-            if(keyValuePair.getKey().equals("dim")){
-                schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
-            } else if(keyValuePair.getKey().equals("max_length")){
-                schema.setMaxLength(Integer.parseInt(keyValuePair.getValue()));
-            } else if(keyValuePair.getKey().equals("max_capacity")){
-                schema.setMaxCapacity(Integer.parseInt(keyValuePair.getValue()));
-            } else if(keyValuePair.getKey().equals("enable_analyzer")){
-                schema.setEnableAnalyzer(Boolean.parseBoolean(keyValuePair.getValue()));
-            } else if(keyValuePair.getKey().equals("enable_match")){
-                schema.setEnableMatch(Boolean.parseBoolean(keyValuePair.getValue()));
-            } else if(keyValuePair.getKey().equals("analyzer_params")){
-                Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
-                schema.setAnalyzerParams(params);
+            try {
+                if(keyValuePair.getKey().equals("dim")){
+                    schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
+                } else if(keyValuePair.getKey().equals("max_length")){
+                    schema.setMaxLength(Integer.parseInt(keyValuePair.getValue()));
+                } else if(keyValuePair.getKey().equals("max_capacity")){
+                    schema.setMaxCapacity(Integer.parseInt(keyValuePair.getValue()));
+                } else if(keyValuePair.getKey().equals("enable_analyzer")){
+                    schema.setEnableAnalyzer(Boolean.parseBoolean(keyValuePair.getValue()));
+                } else if(keyValuePair.getKey().equals("enable_match")){
+                    schema.setEnableMatch(Boolean.parseBoolean(keyValuePair.getValue()));
+                } else if(keyValuePair.getKey().equals("analyzer_params")){
+                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
+                    schema.setAnalyzerParams(params);
+                }
+            } catch (Exception e) {
+                /**
+                 * Currently, the kernel does not enforce validation on the input `typeParams`, so this conversion may throw an exception.
+                 * To prevent normal `descCollection` from malfunctioning, we wrap it here in a `try/catch` block.
+                 */
+                logger.error("Failed to convert the typeParams value of {} , key:{}, value:{}", fieldSchema.getName(), keyValuePair.getKey(), keyValuePair.getValue());
             }
             // To maintain compatibility with clientV1, the typeParams here will be returned in their original format.
             typeParams.put(keyValuePair.getKey(), keyValuePair.getValue());
