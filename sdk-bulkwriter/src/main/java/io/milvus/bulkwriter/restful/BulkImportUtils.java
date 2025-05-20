@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter;
+package io.milvus.bulkwriter.restful;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.bulkwriter.request.describe.BaseDescribeImportRequest;
@@ -28,7 +28,7 @@ import io.milvus.common.utils.JsonUtils;
 
 import java.util.Map;
 
-public class BulkImport extends BaseBulkImport {
+public class BulkImportUtils extends BaseRestful {
 
     public static String bulkImport(String url, BaseImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/create";

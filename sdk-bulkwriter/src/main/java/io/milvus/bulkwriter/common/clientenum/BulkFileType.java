@@ -19,15 +19,20 @@
 
 package io.milvus.bulkwriter.common.clientenum;
 
+import lombok.Getter;
+
+@Getter
 public enum BulkFileType {
-    PARQUET(1),
-    JSON(2),
-    CSV(3),
+    PARQUET(1, ".parquet"),
+    JSON(2, ".json"),
+    CSV(3, ".csv"),
     ;
 
     private Integer code;
+    private String suffix;
 
-    BulkFileType(Integer code) {
+    BulkFileType(Integer code, String suffix) {
         this.code = code;
+        this.suffix = suffix;
     }
 }

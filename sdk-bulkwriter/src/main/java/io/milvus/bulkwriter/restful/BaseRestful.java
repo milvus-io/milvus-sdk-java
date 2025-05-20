@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter;
+package io.milvus.bulkwriter.restful;
 
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.ExceptionUtils;
@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseBulkImport {
+public class BaseRestful {
     protected static String postRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             setDefaultOptionsIfCallCloud(params, apiKey);
