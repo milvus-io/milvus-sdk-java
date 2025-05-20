@@ -17,13 +17,25 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.storage;
+package io.milvus.bulkwriter.request.import_;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.io.File;
+import java.util.List;
 
-public interface StorageClient {
-    Long getObjectEntity(String bucketName, String objectKey) throws Exception;
-    boolean checkBucketExist(String bucketName) throws Exception;
-    void putObject(File file, String bucketName, String objectKey) throws Exception;
+@Data
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
+public class StageImportRequest extends BaseImportRequest {
+    private String stageName;
+    private List<List<String>> dataPaths;
+
+    private String clusterId;
+    private String dbName;
+    private String collectionName;
+    private String partitionName;
 }

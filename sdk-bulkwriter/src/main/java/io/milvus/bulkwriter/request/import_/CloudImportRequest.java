@@ -33,6 +33,7 @@ public class CloudImportRequest extends BaseImportRequest {
     private String objectUrl;
     private String accessKey;
     private String secretKey;
+    private String token;
     private String clusterId;
     private String dbName;
     private String collectionName;
