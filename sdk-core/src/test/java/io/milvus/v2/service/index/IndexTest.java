@@ -84,4 +84,14 @@ class IndexTest extends BaseTest {
         List<String> indexNames = client_v2.listIndexes(listIndexesReq);
         logger.info(indexNames.toString());
     }
+
+    @Test
+    void testListIndexesWithVectorFieldNameReturnsOnlyThatIndex() {
+        ListIndexesReq listIndexesReq = ListIndexesReq.builder()
+                .collectionName("test")
+                .filedName("vector")
+                .build();
+        List<String> indexNames = client_v2.listIndexes(listIndexesReq);
+        logger.info(indexNames.toString());
+    }
 }

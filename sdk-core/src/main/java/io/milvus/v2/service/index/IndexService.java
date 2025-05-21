@@ -178,11 +178,10 @@ public class IndexService extends BaseService {
             return new ArrayList<>();
         }
         rpcUtils.handleResponse(title, response.getStatus());
-        List<String> indexNames = new ArrayList<>();
-        response.getIndexDescriptionsList().forEach(index -> {
-            indexNames.add(index.getIndexName());
-        });
-        return indexNames;
+        return response.getIndexDescriptionsList().stream()
+                .filter(desc -> request.getFieldName() == null || desc.getFieldName().equals(request.getFieldName()))
+                .map(IndexDescription::getIndexName)
+                .collect(Collectors.toList());
     }
 
     private void WaitForIndexComplete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
