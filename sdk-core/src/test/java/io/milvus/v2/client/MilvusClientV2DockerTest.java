@@ -1152,6 +1152,7 @@ class MilvusClientV2DockerTest {
         extra.put("efConstruction",64);
         indexes.add(IndexParam.builder()
                 .fieldName("vector")
+                .indexName("abc")
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.COSINE)
                 .extraParams(extra)
@@ -1221,6 +1222,19 @@ class MilvusClientV2DockerTest {
         collProps = descCollResp.getProperties();
         Assertions.assertFalse(collProps.containsKey("prop"));
 
+        // list indexes
+        List<String> names = client.listIndexes(ListIndexesReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("vector")
+                .build());
+        Assertions.assertEquals(1, names.size());
+        Assertions.assertEquals("abc", names.get(0));
+
+        names = client.listIndexes(ListIndexesReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(2, names.size());
+
         // describe scalar index
         DescribeIndexResp descResp = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1282,7 +1296,7 @@ class MilvusClientV2DockerTest {
         // drop index
         client.dropIndex(DropIndexReq.builder()
                 .collectionName(randomCollectionName)
-                .indexName("vector")
+                .indexName("abc")
                 .build());
 
         IndexParam param = IndexParam.builder()
