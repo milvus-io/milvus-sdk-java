@@ -19,7 +19,17 @@
 
 package io.milvus.common.clientenum;
 
+import lombok.Getter;
+
 public enum FunctionType {
-    UNKNOWN,
-    BM25,
+    UNKNOWN(0),
+    BM25(1),
+    ;
+
+    @Getter
+    private final int code;
+
+    FunctionType(int i) {
+        code = i;
+    }
 }

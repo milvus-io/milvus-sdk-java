@@ -129,7 +129,7 @@ public class SchemaUtils {
         FunctionSchema.Builder builder = FunctionSchema.newBuilder()
                 .setName(function.getName())
                 .setDescription(function.getDescription())
-                .setType(FunctionType.valueOf(function.getFunctionType().name()));
+                .setType(FunctionType.forNumber(function.getFunctionType().getCode()));
 
         for (String name : function.getInputFieldNames()) {
             builder.addInputFieldNames(name);
