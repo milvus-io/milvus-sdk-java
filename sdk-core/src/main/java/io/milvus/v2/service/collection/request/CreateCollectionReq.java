@@ -231,7 +231,8 @@ public class CreateCollectionReq {
         private String name;
         @Builder.Default
         private String description = "";
-        private FunctionType functionType;
+        @Builder.Default
+        private FunctionType functionType = FunctionType.UNKNOWN;
         @Builder.Default
         private List<String> inputFieldNames = new ArrayList<>();
         @Builder.Default
