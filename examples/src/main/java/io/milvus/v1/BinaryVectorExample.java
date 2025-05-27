@@ -38,10 +38,10 @@ import java.util.*;
 
 public class BinaryVectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_binary_vector_v1";
-    private static final String ID_FIELD = "id";
+    private static final String ID_FIELD = "pk";
     private static final String VECTOR_FIELD = "vector";
 
-    private static final Integer VECTOR_DIM = 512;
+    private static final Integer VECTOR_DIM = 128;
     
 
     public static void main(String[] args) {
@@ -152,6 +152,8 @@ public class BinaryVectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             ByteBuffer targetVector = vectors.get(k);
+            System.out.printf("\nANN search for vector ID=%d:\n", k);
+            CommonUtils.printBinaryVector(targetVector);
             R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.HAMMING)
@@ -169,13 +171,9 @@ public class BinaryVectorExample {
             List<SearchResultsWrapper.IDScore> scores = resultsWrapper.getIDScore(0);
             System.out.printf("The result of No.%d target vector:\n", i);
             for (SearchResultsWrapper.IDScore score : scores) {
-                System.out.printf("ID: %d, Score: %f, Vector: ", score.getLongID(), score.getScore());
+                System.out.println(score);
                 ByteBuffer vector = (ByteBuffer)score.get(VECTOR_FIELD);
-                vector.rewind();
-                while (vector.hasRemaining()) {
-                    System.out.print(Integer.toBinaryString(vector.get()));
-                }
-                System.out.println();
+                CommonUtils.printBinaryVector(vector);
             }
             if (scores.get(0).getLongID() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
@@ -188,7 +186,7 @@ public class BinaryVectorExample {
         int n = 99;
         R<QueryResults> queryR = milvusClient.query(QueryParam.newBuilder()
                 .withCollectionName(COLLECTION_NAME)
-                .withExpr(String.format("id == %d", n))
+                .withExpr(String.format("%s == %d", ID_FIELD, n))
                 .addOutField(VECTOR_FIELD)
                 .build());
         CommonUtils.handleResponseStatus(queryR);

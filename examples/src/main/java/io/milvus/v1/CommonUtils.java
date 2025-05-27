@@ -96,6 +96,15 @@ public class CommonUtils {
         return vectors;
     }
 
+    public static void printBinaryVector(ByteBuffer vector) {
+        vector.rewind();
+        while (vector.hasRemaining()) {
+            String byteStr = String.format("%8s", Integer.toBinaryString(vector.get())).replace(' ', '0');
+            System.out.print(byteStr);
+        }
+        System.out.println();
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static TBfloat16 genTensorflowBF16Vector(int dimension) {
         Random ran = new Random();
@@ -135,13 +144,22 @@ public class CommonUtils {
         return buffers;
     }
 
-    public static TBfloat16 decodeTensorBF16Vector(ByteBuffer buf) {
+    public static TBfloat16 decodeBF16VectorToTensor(ByteBuffer buf) {
         if (buf.limit()%2 != 0) {
             return null;
         }
         int dim = buf.limit()/2;
         ByteDataBuffer bf = DataBuffers.of(buf.array());
         return Tensor.of(TBfloat16.class, Shape.of(dim), bf);
+    }
+
+    public static List<Float> decodeBF16VectorToFloat(ByteBuffer buf) {
+        List<Float> vector = new ArrayList<>();
+        TBfloat16 tf = decodeBF16VectorToTensor(buf);
+        for (long i = 0; i < tf.size(); i++) {
+            vector.add(tf.getFloat(i));
+        }
+        return vector;
     }
 
 
@@ -183,13 +201,22 @@ public class CommonUtils {
         return buffers;
     }
 
-    public static TFloat16 decodeTensorFP16Vector(ByteBuffer buf) {
+    public static TFloat16 decodeFP16VectorToTensor(ByteBuffer buf) {
         if (buf.limit()%2 != 0) {
             return null;
         }
         int dim = buf.limit()/2;
         ByteDataBuffer bf = DataBuffers.of(buf.array());
         return Tensor.of(TFloat16.class, Shape.of(dim), bf);
+    }
+
+    public static List<Float> decodeFP16VectorToFloat(ByteBuffer buf) {
+        List<Float> vector = new ArrayList<>();
+        TFloat16 tf = decodeFP16VectorToTensor(buf);
+        for (long i = 0; i < tf.size(); i++) {
+            vector.add(tf.getFloat(i));
+        }
+        return vector;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ public class TextMatchExample {
         System.out.println("\nQuery with filter: " + filter);
         List<QueryResp.QueryResult> records = queryRet.getQueryResults();
         for (QueryResp.QueryResult record : records) {
-            System.out.println(record.getEntity());
+            System.out.println(record);
         }
         System.out.printf("%d items matched%n", records.size());
         System.out.println("=============================================================");
