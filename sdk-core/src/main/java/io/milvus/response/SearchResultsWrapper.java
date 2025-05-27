@@ -27,6 +27,7 @@ import io.milvus.param.Constant;
 import io.milvus.response.basic.RowRecordWrapper;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -161,6 +162,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         // set id and score
         IDs ids = results.getIds();
+        String pkName = results.getPrimaryFieldName();
         if (ids.hasIntId()) {
             LongArray longIDs = ids.getIntId();
             if (offset + k > longIDs.getDataCount()) {
@@ -168,7 +170,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore("", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
+                idScores.add(new IDScore(pkName, "", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
@@ -177,7 +179,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore(strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
+                idScores.add(new IDScore(pkName, strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
             }
         } else {
             // in v2.3.3, return an empty list instead of throwing exception
@@ -272,12 +274,14 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      */
     @Getter
     public static final class IDScore {
+        private final String primaryKey;
         private final String strID;
         private final long longID;
         private final float score;
         Map<String, Object> fieldValues = new HashMap<>();
 
-        public IDScore(String strID, long longID, float score) {
+        public IDScore(String primaryKey, String strID, long longID, float score) {
+            this.primaryKey = primaryKey;
             this.strID = strID;
             this.longID = longID;
             this.score = score;
@@ -333,16 +337,12 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         @Override
         public String toString() {
-            List<String> pairs = new ArrayList<>();
-            fieldValues.forEach((keyName, fieldValue) -> {
-                pairs.add(keyName + ":" + fieldValue);
-            });
-
-            if (strID.isEmpty()) {
-                return "(ID: " + getLongID() + " Score: " + getScore() + " OutputFields: " + pairs + ")";
-            } else {
-                return "(ID: '" + getStrID() + "' Score: " + getScore()+ " OutputFields: " + pairs + ")";
+            Object id = strID;
+            if (StringUtils.isEmpty(strID)) {
+                id = longID;
             }
+
+            return "{" + getPrimaryKey() + ": " + id + ", Score: " + getScore() + ", OutputFields: " + fieldValues + "}";
         }
     }
 }

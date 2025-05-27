@@ -349,9 +349,9 @@ public class GeneralExample {
         for (int i = 0; i < vectors.size(); ++i) {
             System.out.println("Search result of No." + i);
             List<SearchResultsWrapper.IDScore> scores = wrapper.getIDScore(i);
-            System.out.println(scores);
-            System.out.println("Output field data for No." + i);
-            System.out.println(wrapper.getFieldData(AGE_FIELD, i));
+            for (SearchResultsWrapper.IDScore score : scores) {
+                System.out.println(score);
+            }
         }
 
         return response;
