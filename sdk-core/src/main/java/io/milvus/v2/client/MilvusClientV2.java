@@ -319,6 +319,13 @@ public class MilvusClientV2 {
         rpcUtils.retry(()-> collectionService.dropCollectionProperties(this.getRpcStub(), request));
     }
     /**
+     * drop a field's properties.
+     * @param request drop field properties request
+     */
+    public void dropCollectionFieldProperties(DropCollectionFieldPropertiesReq request) {
+        rpcUtils.retry(()-> collectionService.dropCollectionFieldProperties(this.getRpcStub(), request));
+    }
+    /**
      * Checks whether a collection exists in Milvus.
      *
      * @param request has collection request
