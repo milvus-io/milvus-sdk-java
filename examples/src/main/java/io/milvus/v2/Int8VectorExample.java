@@ -136,10 +136,9 @@ public class Int8VectorExample {
             List<SearchResp.SearchResult> results = searchResults.get(0);
             System.out.printf("\nThe result of No.%d vector %s:\n", k, Arrays.toString(targetVector.array()));
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %d, Score: %f, Vector: ", (long)result.getId(), result.getScore());
+                System.out.println(result);
                 ByteBuffer vector = (ByteBuffer) result.getEntity().get(VECTOR_FIELD);
-                System.out.print(Arrays.toString(vector.array()));
-                System.out.println();
+                System.out.println(Arrays.toString(vector.array()));
             }
 
             SearchResp.SearchResult firstResult = results.get(0);

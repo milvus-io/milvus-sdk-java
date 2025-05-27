@@ -119,6 +119,7 @@ public class SparseVectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             SortedMap<Long, Float> targetVector = vectors.get(k);
+            System.out.println("\nTarget vector: " + targetVector);
             Map<String,Object> params = new HashMap<>();
             params.put("drop_ratio_search",0.2);
             SearchResp searchResp = client.search(SearchReq.builder()
@@ -136,7 +137,7 @@ public class SparseVectorExample {
             List<SearchResp.SearchResult> results = searchResults.get(0);
             System.out.printf("The result of No.%d target vector:\n", i);
             for (SearchResp.SearchResult result : results) {
-                System.out.println(result.getEntity());
+                System.out.println(result);
             }
 
             SearchResp.SearchResult firstResult = results.get(0);

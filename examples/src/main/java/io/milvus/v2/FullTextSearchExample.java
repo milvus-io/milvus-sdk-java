@@ -38,7 +38,7 @@ public class FullTextSearchExample {
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (List<SearchResp.SearchResult> results : searchResults) {
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
+                System.out.println(result);
             }
         }
         System.out.println("=============================================================");

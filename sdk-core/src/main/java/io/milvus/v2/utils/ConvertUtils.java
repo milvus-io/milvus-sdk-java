@@ -75,6 +75,7 @@ public class ConvertUtils {
             searchResults.add(searchResultsWrapper.getIDScore(i).stream().map(idScore -> SearchResp.SearchResult.builder()
                     .entity(idScore.getFieldValues())
                     .score(idScore.getScore())
+                    .primaryKey(idScore.getPrimaryKey())
                     .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
                     .build()).collect(Collectors.toList()));
         }
