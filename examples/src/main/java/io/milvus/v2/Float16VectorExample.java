@@ -162,9 +162,12 @@ public class Float16VectorExample {
             }
             Map<String, Object> entity = topResult.getEntity();
             ByteBuffer vectorBuf = (ByteBuffer) entity.get(vectorFieldName);
-            if (!vectorBuf.equals(targetVectors.get(i).getData())) {
+            ByteBuffer targetVectorBuf = (ByteBuffer)targetVectors.get(i).getData();
+            if (!vectorBuf.equals(targetVectorBuf)) {
                 throw new RuntimeException("The top1 output vector is incorrect");
             }
+            List<Float> decodedTargetVector = CommonUtils.decodeFloat16Vector(targetVectorBuf,
+                    BF16_VECTOR_FIELD.equals(vectorFieldName));
             // The method for converting float16 vector to float32 vector can be found in
             // CommonUtils.
             List<Float> decodedFpVector = CommonUtils.decodeFloat16Vector(vectorBuf,
@@ -172,7 +175,9 @@ public class Float16VectorExample {
             if (decodedFpVector.size() != VECTOR_DIM) {
                 throw new RuntimeException("The decoded vector dimension is incorrect");
             }
-            System.out.println(results.get(0));
+            System.out.println("\nTarget vector: " + decodedTargetVector);
+            System.out.println("Top0 result: " + topResult);
+            System.out.println("Top0 result vector: " + decodedFpVector);
         }
         System.out.println("Search result of " + vectorFieldName + " is correct");
     }

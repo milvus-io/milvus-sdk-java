@@ -205,7 +205,7 @@ public class GeneralExample {
         for (List<SearchResp.SearchResult> results : searchResults) {
             System.out.println("Search result of No." + i++);
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %s, Score: %f, %s\n", result.getId(), result.getScore(), result.getEntity().toString());
+                System.out.println(result);
             }
         }
     }

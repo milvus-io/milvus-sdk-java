@@ -45,5 +45,12 @@ public class SearchResp {
         private Map<String, Object> entity = new HashMap<>();
         private Float score;
         private Object id;
+        @Builder.Default
+        private String primaryKey = "id";
+
+        @Override
+        public String toString() {
+            return "{" + getPrimaryKey() + ": " + getId() + ", Score: " + getScore() + ", OutputFields: " + entity + "}";
+        }
     }
 }

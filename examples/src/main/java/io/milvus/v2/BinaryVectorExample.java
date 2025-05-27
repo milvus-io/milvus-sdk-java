@@ -42,10 +42,10 @@ import java.util.*;
 
 public class BinaryVectorExample {
     private static final String COLLECTION_NAME = "java_sdk_example_binary_vector_v2";
-    private static final String ID_FIELD = "id";
+    private static final String ID_FIELD = "pk";
     private static final String VECTOR_FIELD = "vector";
 
-    private static final Integer VECTOR_DIM = 512;
+    private static final Integer VECTOR_DIM = 128;
 
 
     public static void main(String[] args) {
@@ -126,6 +126,8 @@ public class BinaryVectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             ByteBuffer targetVector = vectors.get(k);
+            System.out.printf("\nANN search for vector ID=%d:\n", k);
+            CommonUtils.printBinaryVector(targetVector);
             Map<String,Object> params = new HashMap<>();
             params.put("nprobe",16);
             SearchResp searchResp = client.search(SearchReq.builder()
@@ -141,16 +143,11 @@ public class BinaryVectorExample {
             // Here we only input one vector to search, get the result of No.0 vector to check
             List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
             List<SearchResp.SearchResult> results = searchResults.get(0);
-            System.out.printf("The result of No.%d target vector:\n", i);
+            System.out.printf("The result of No.%d target vector, ID=%d:\n", i, k);
             for (SearchResp.SearchResult result : results) {
-                System.out.println(result.getEntity());
-                System.out.printf("ID: %d, Score: %f, Vector: ", result.getId(), result.getScore());
+                System.out.println(result);
                 ByteBuffer vector = (ByteBuffer) result.getEntity().get(VECTOR_FIELD);
-                vector.rewind();
-                while (vector.hasRemaining()) {
-                    System.out.print(Integer.toBinaryString(vector.get()));
-                }
-                System.out.println();
+                CommonUtils.printBinaryVector(vector);
             }
 
             SearchResp.SearchResult firstResult = results.get(0);
@@ -165,7 +162,7 @@ public class BinaryVectorExample {
         int n = 99;
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .filter(String.format("id == %d", n))
+                .filter(String.format("%s == %d", ID_FIELD, n))
                 .outputFields(Collections.singletonList(VECTOR_FIELD))
                 .build());
 

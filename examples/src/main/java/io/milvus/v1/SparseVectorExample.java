@@ -149,6 +149,7 @@ public class SparseVectorExample {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
             SortedMap<Long, Float> targetVector = vectors.get(k);
+            System.out.println("\nTarget vector: " + targetVector);
             R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.IP)

@@ -201,9 +201,6 @@ public class Float16VectorExample {
             SearchResultsWrapper resultsWrapper = new SearchResultsWrapper(searchRet.getData().getResults());
             List<SearchResultsWrapper.IDScore> scores = resultsWrapper.getIDScore(0);
             System.out.printf("The result of No.%d target vector:\n", i);
-            for (SearchResultsWrapper.IDScore score : scores) {
-                System.out.println(score);
-            }
 
             SearchResultsWrapper.IDScore firstScore = scores.get(0);
             if (firstScore.getLongID() != k) {
@@ -223,6 +220,9 @@ public class Float16VectorExample {
                     throw new RuntimeException(String.format("The output vector is not equal to original vector: ID %d", k));
                 }
             }
+            System.out.println("\nTarget vector: " + originVector);
+            System.out.println("Top0 result: " + firstScore);
+            System.out.println("Top0 result vector: " + outputVector);
         }
         System.out.println("Search result is correct");
 
@@ -316,19 +316,13 @@ public class Float16VectorExample {
             throw new RuntimeException("The query result is incorrect");
         }
 
-        List<Float> vector = new ArrayList<>();
+        List<Float> outVector;
         if (bfloat16) {
-            TBfloat16 tf = CommonUtils.decodeTensorBF16Vector(outputBuf);
-            for (long i = 0; i < tf.size(); i++) {
-                vector.add(tf.getFloat(i));
-            }
+            outVector = CommonUtils.decodeBF16VectorToFloat(outputBuf);
         } else {
-            TFloat16 tf = CommonUtils.decodeTensorFP16Vector(outputBuf);
-            for (long i = 0; i < tf.size(); i++) {
-                vector.add(tf.getFloat(i));
-            }
+            outVector = CommonUtils.decodeFP16VectorToFloat(outputBuf);
         }
-        System.out.println(vector);
+        System.out.println("Output vector: " + outVector);
         System.out.println("Query result is correct");
 
         // drop the collection if you don't need the collection anymore

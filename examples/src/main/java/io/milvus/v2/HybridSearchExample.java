@@ -223,7 +223,7 @@ public class HybridSearchExample {
             System.out.printf("============= Search result of No.%d vector =============\n", i);
             List<SearchResp.SearchResult> results = searchResults.get(i);
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("{id: %d, score: %f}%n", result.getId(), result.getScore());
+                System.out.println(result);
             }
         }
     }
