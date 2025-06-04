@@ -250,6 +250,24 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void dropCollectionFieldProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldPropertiesReq request) {
+        String title = String.format("DropCollectionFieldPropertiesReq collectionName:%s fieldName:%s",
+                request.getCollectionName(), request.getFieldName());
+
+        AlterCollectionFieldRequest.Builder builder = AlterCollectionFieldRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setFieldName(request.getFieldName())
+                .addAllDeleteKeys(request.getPropertyKeys());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        Status response = blockingStub.alterCollectionField(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
     public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
         HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
