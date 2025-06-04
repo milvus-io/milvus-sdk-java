@@ -174,7 +174,156 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <scope>provided</scope>
+<!--            <scope>provided</scope>-->
+            <version>1.7.36</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.plugin.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.github.edwgiz</groupId>
+                        <artifactId>log4j-maven-shade-plugin-extensions</artifactId>
+                        <version>${log4j.slf4j.version}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+<!--                            <outputFile>target/milvus-sdk-java-new-shaded-${project.version}.jar</outputFile>-->
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
+                            <createSourcesJar>true</createSourcesJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <keepDependenciesWithProvidedScope>true</keepDependenciesWithProvidedScope>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>META-INF/NOTICE*</exclude>
+                                        <exclude>META-INF/LICENSE*</exclude>
+                                        <exclude>META-INF/DEPENDENCIES</exclude>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>com.fasterxml.jackson.core:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/services/com.fasterxml.jackson.core.JsonFactory</exclude>
+                                        <exclude>META-INF/services/com.fasterxml.jackson.core.ObjectCodec</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <relocations>
+                                <!-- ignore 1 -->
+                                <!-- <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>${shaded.prefix}.com.fasterxml</shadedPattern>
+                                </relocation> -->
+                                <!-- <relocation>
+                                    <pattern>com.alibaba</pattern>
+                                    <shadedPattern>${shaded.prefix}.com.alibaba</shadedPattern>
+                                </relocation> -->
+                                <!-- <relocation>
+                                    <pattern>org.apache.logging</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.apache.logging</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.codehaus</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.codehaus</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>javax.annotation</pattern>
+                                    <shadedPattern>${shaded.prefix}.javax.annotation</shadedPattern>
+                                </relocation> -->
+
+                                <!-- ignore 2 -->
+                                <!-- <relocation>
+                                    <pattern>org.jetbrains</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.jetbrains</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.projectlombok</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.projectlombok</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.tensorflow</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.tensorflow</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.checkerframework</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.checkerframework</shadedPattern>
+                                </relocation> -->
+
+                                <!-- <relocation>
+                                    <pattern>org.slf4j</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.slf4j</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons</pattern>
+                                    <shadedPattern>${shaded.prefix}.org.apache.commons</shadedPattern>
+                                    <excludes>
+                                        <exclude>org.apache.commons.logging.**</exclude>
+                                    </excludes>
+                                </relocation> -->
+
+                                <relocation>
+                                    <pattern>com.google</pattern>
+                                    <shadedPattern>${shaded.prefix}.com.google</shadedPattern>
+                                </relocation>
+
+                                <relocation>
+                                    <pattern>io.grpc</pattern>
+                                    <shadedPattern>${shaded.prefix}.io.grpc</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>okhttp3</pattern>
+                                    <shadedPattern>${shaded.prefix}/okhttp3</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>google/</pattern>
+                                    <shadedPattern>${shaded.prefix}.google.</shadedPattern>
+                                    <includes>
+                                        <include>**/*.proto</include>
+                                    </includes>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.netty</pattern>
+                                    <shadedPattern>${shaded.prefix}.io.netty</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>okio</pattern>
+                                    <shadedPattern>${shaded.prefix}.okio</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <transformer implementation="io.github.edwgiz.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"></transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Multi-Release>true</Multi-Release>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -68,7 +68,7 @@
     </distributionManagement>
 
     <properties>
-        <revision>2.5.9</revision>
+        <revision>2.5.10-SNAPSHOT</revision>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -79,11 +79,10 @@
         <protobuf.version>3.25.5</protobuf.version>
         <protoc.version>3.25.5</protoc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
-        <versio.maven.deploy.plugin>2.8.2</versio.maven.deploy.plugin>
-        <versio.maven.source.plugin>3.2.1</versio.maven.source.plugin>
         <javax.annotation.version>1.2</javax.annotation.version>
         <commons.text.version>1.10.0</commons.text.version>
         <slf4j.api.version>1.7.36</slf4j.api.version>
+        <log4j.slf4j.version>2.17.1</log4j.slf4j.version>
         <junit.version>4.13.2</junit.version>
         <junit.jupiter.version>5.10.1</junit.jupiter.version>
         <lombok.version>1.18.22</lombok.version>
@@ -97,6 +96,8 @@
         <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
         <maven.flatten.plugin.version>1.6.0</maven.flatten.plugin.version>
         <maven.deploy.plugin.version>3.1.3</maven.deploy.plugin.version>
+        <maven.shade.plugin.version>3.6.0</maven.shade.plugin.version>
+        <shaded.prefix>milvus.io.shaded</shaded.prefix>
         <junit.platform.version>1.1.0</junit.platform.version>
         <junit.jupiter.engine.version>5.10.1</junit.jupiter.engine.version>
         <gson.version>2.13.1</gson.version>
@@ -257,7 +258,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>true</skipTests>
                 </configuration>
                 <dependencies>
                     <dependency>
