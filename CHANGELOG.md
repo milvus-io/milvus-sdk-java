@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.5.10 (2025-06-05)
+### Feature
+- Support dropCollectionFieldProperties interface
+- Support multi-language analyzer
+
+### Bug
+- Reformat SearchResult/IDScore print content to show primary key
+- Fix a bug of listIndexes()
+
 ## milvus-sdk-java 2.5.9 (2025-05-09)
 ### Feature
 - Support runAnalyzer() interface
