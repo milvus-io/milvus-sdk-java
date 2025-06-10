@@ -117,13 +117,13 @@ public class SimpleExample {
 
         expressionTemplateValues.forEach((key, value) -> {
             SearchReq request = SearchReq.builder()
-                .collectionName(collectionName)
-                .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
-                .topK(10)
-                .filter(key)
-                .filterTemplateValues(value)
-                .outputFields(Collections.singletonList("*"))
-                .build();
+                    .collectionName(collectionName)
+                    .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
+                    .topK(10)
+                    .filter(key)
+                    .filterTemplateValues(value)
+                    .outputFields(Collections.singletonList("*"))
+                    .build();
             SearchResp statusR = client.search(request);
             List<List<SearchResp.SearchResult>> searchResults2 = statusR.getSearchResults();
             System.out.println("\nSearch with template results:");
