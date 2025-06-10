@@ -304,6 +304,14 @@ public class MilvusClientV2 {
         rpcUtils.retry(()-> collectionService.alterCollectionProperties(this.getRpcStub(), request));
     }
     /**
+     * Add a new field to collection.
+     *
+     * @param request add new field request
+     */
+    public void addCollectionField(AddCollectionFieldReq request) {
+        rpcUtils.retry(()-> collectionService.addCollectionField(this.getRpcStub(), request));
+    }
+    /**
      * Alter a field's properties.
      *
      * @param request alter field properties request
@@ -920,7 +928,7 @@ public class MilvusClientV2 {
         if (request.getWaitFlushedTimeoutMs() > 0L) {
             tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getWaitFlushedTimeoutMs(), TimeUnit.MILLISECONDS);
         }
-        utilityService.waitFlush(tempBlockingStub, response.getCollectionSegmentIDs(), response.getCollectionFlushTs());
+        utilityService.waitFlush(tempBlockingStub, response);
     }
 
     /**

@@ -17,21 +17,14 @@
  * under the License.
  */
 
-package io.milvus.v2.service.utility.response;
+package io.milvus.v2.service.collection.request;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.*;
-
 @Data
 @SuperBuilder
-public class FlushResp {
-    @Builder.Default
-    String databaseName = "";
-    @Builder.Default
-    Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
-    @Builder.Default
-    Map<String, Long> collectionFlushTs = new HashMap<>();
+public class AddCollectionFieldReq extends AddFieldReq{
+    private String collectionName;
+    private String databaseName;
 }

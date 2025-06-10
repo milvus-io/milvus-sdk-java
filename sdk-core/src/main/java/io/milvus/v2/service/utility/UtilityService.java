@@ -52,21 +52,23 @@ public class UtilityService extends BaseService {
         });
         Map<String, Long> collectionFlushTs = response.getCollFlushTsMap();
         return FlushResp.builder()
+                .databaseName(response.getDbName())
                 .collectionSegmentIDs(collectionSegmentIDs)
                 .collectionFlushTs(collectionFlushTs)
                 .build();
     }
 
     // this method is internal use, not expose to user
-    public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                          Map<String, List<Long>> collectionSegmentIDs,
-                          Map<String, Long> collectionFlushTs) {
+    public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushResp flushResp) {
+        Map<String, List<Long>> collectionSegmentIDs = flushResp.getCollectionSegmentIDs();
+        Map<String, Long> collectionFlushTs = flushResp.getCollectionFlushTs();
         collectionSegmentIDs.forEach((collectionName, segmentIDs)->{
             if (collectionFlushTs.containsKey(collectionName)) {
                 Long flushTs = collectionFlushTs.get(collectionName);
                 boolean flushed = false;
                 while (!flushed) {
                     GetFlushStateResponse flushResponse = blockingStub.getFlushState(GetFlushStateRequest.newBuilder()
+                            .setDbName(flushResp.getDatabaseName())
                             .addAllSegmentIDs(segmentIDs)
                             .setFlushTs(flushTs)
                             .build());
