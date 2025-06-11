@@ -31,6 +31,7 @@ import io.milvus.grpc.ValueField;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -214,5 +215,47 @@ public class SchemaUtils {
                 .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()))
                 .build();
         return function;
+    }
+
+    public static CreateCollectionReq.FieldSchema convertFieldReqToFieldSchema(AddFieldReq addFieldReq) {
+        // check the input here to pop error messages earlier
+        if (addFieldReq.isEnableDefaultValue() && addFieldReq.getDefaultValue() == null
+                && addFieldReq.getIsNullable() == Boolean.FALSE) {
+            String msg = String.format("Default value cannot be null for field '%s' that is defined as nullable == false.", addFieldReq.getFieldName());
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+        }
+
+        CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
+                .name(addFieldReq.getFieldName())
+                .dataType(addFieldReq.getDataType())
+                .description(addFieldReq.getDescription())
+                .isPrimaryKey(addFieldReq.getIsPrimaryKey())
+                .isPartitionKey(addFieldReq.getIsPartitionKey())
+                .isClusteringKey(addFieldReq.getIsClusteringKey())
+                .autoID(addFieldReq.getAutoID())
+                .isNullable(addFieldReq.getIsNullable())
+                .defaultValue(addFieldReq.getDefaultValue())
+                .enableAnalyzer(addFieldReq.getEnableAnalyzer())
+                .enableMatch(addFieldReq.getEnableMatch())
+                .analyzerParams(addFieldReq.getAnalyzerParams())
+                .typeParams(addFieldReq.getTypeParams())
+                .multiAnalyzerParams(addFieldReq.getMultiAnalyzerParams())
+                .build();
+        if (addFieldReq.getDataType().equals(io.milvus.v2.common.DataType.Array)) {
+            if (addFieldReq.getElementType() == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Element type, maxCapacity are required for array field");
+            }
+            fieldSchema.setElementType(addFieldReq.getElementType());
+            fieldSchema.setMaxCapacity(addFieldReq.getMaxCapacity());
+        } else if (addFieldReq.getDataType().equals(io.milvus.v2.common.DataType.VarChar)) {
+            fieldSchema.setMaxLength(addFieldReq.getMaxLength());
+        } else if (ParamUtils.isDenseVectorDataType(io.milvus.grpc.DataType.valueOf(addFieldReq.getDataType().name()))) {
+            if (addFieldReq.getDimension() == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is required for vector field");
+            }
+            fieldSchema.setDimension(addFieldReq.getDimension());
+        }
+
+        return fieldSchema;
     }
 }

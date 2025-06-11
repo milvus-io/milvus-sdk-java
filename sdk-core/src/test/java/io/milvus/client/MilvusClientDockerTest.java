@@ -75,10 +75,16 @@ class MilvusClientDockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID);
+    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
+            .withEnv("DEPLOY_MODE", "STANDALONE");
 
     @BeforeAll
     public static void setUp() {
+        try {
+            Thread.sleep(3000); // Sleep for few seconds since the master branch milvus healthz check is bug
+        } catch (InterruptedException ignored) {
+        }
+
         ConnectParam connectParam = connectParamBuilder()
                 .withAuthorization("root", "Milvus")
                 .build();
@@ -2021,6 +2027,7 @@ class MilvusClientDockerTest {
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
             System.out.println("The result of No." + i + " target vector:");
+            Assertions.assertFalse(scores.isEmpty());
             SearchResultsWrapper.IDScore score = scores.get(0);
             System.out.println(score);
             Object extraMeta = score.get("dynamic");

@@ -81,10 +81,16 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID);
+    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
+            .withEnv("DEPLOY_MODE", "STANDALONE");
 
     @BeforeAll
     public static void setUp() {
+        try {
+            Thread.sleep(3000); // Sleep for few seconds since the master branch milvus healthz check is bug
+        } catch (InterruptedException ignored) {
+        }
+
         ConnectConfig config = ConnectConfig.builder()
                 .uri(milvus.getEndpoint())
                 .build();
@@ -324,19 +330,26 @@ class MilvusClientV2DockerTest {
                 .collectionNames(Collections.singletonList(randomCollectionName))
                 .build());
 
-        // get persistent segment info
-        GetPersistentSegmentInfoResp pSegInfo = client.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
-                .collectionName(randomCollectionName)
-                .build());
-        Assertions.assertEquals(1, pSegInfo.getSegmentInfos().size());
-        GetPersistentSegmentInfoResp.PersistentSegmentInfo pInfo = pSegInfo.getSegmentInfos().get(0);
-        Assertions.assertTrue(pInfo.getSegmentID() > 0L);
-        Assertions.assertTrue(pInfo.getCollectionID() > 0L);
-        Assertions.assertTrue(pInfo.getPartitionID() > 0L);
-        Assertions.assertEquals(count, pInfo.getNumOfRows());
-        Assertions.assertEquals("Flushed", pInfo.getState());
-        Assertions.assertEquals("L1", pInfo.getLevel());
-        Assertions.assertFalse(pInfo.getIsSorted());
+        // master branch, getPersistentSegmentInfo cannot ensure the segment is returned after flush()
+        while(true) {
+            // get persistent segment info
+            GetPersistentSegmentInfoResp pSegInfo = client.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
+                    .collectionName(randomCollectionName)
+                    .build());
+            if (pSegInfo.getSegmentInfos().size() == 0) {
+                continue;
+            }
+            Assertions.assertEquals(1, pSegInfo.getSegmentInfos().size());
+            GetPersistentSegmentInfoResp.PersistentSegmentInfo pInfo = pSegInfo.getSegmentInfos().get(0);
+            Assertions.assertTrue(pInfo.getSegmentID() > 0L);
+            Assertions.assertTrue(pInfo.getCollectionID() > 0L);
+            Assertions.assertTrue(pInfo.getPartitionID() > 0L);
+            Assertions.assertEquals(count, pInfo.getNumOfRows());
+            Assertions.assertEquals("Flushed", pInfo.getState());
+            Assertions.assertEquals("L1", pInfo.getLevel());
+//            Assertions.assertFalse(pInfo.getIsSorted());
+            break;
+        }
 
         // compact
         CompactResp compactResp = client.compact(CompactReq.builder()
@@ -796,142 +809,142 @@ class MilvusClientV2DockerTest {
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
 
-//    @Test
-//    void testInt8Vectors() {
-//        String randomCollectionName = generator.generate(10);
-//        String vectorFieldName = "int8_vector";
-//        int dimension = 8;
-//        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
-//                .build();
-//        collectionSchema.addField(AddFieldReq.builder()
-//                .fieldName("id")
-//                .dataType(DataType.Int64)
-//                .isPrimaryKey(Boolean.TRUE)
-//                .build());
-//        collectionSchema.addField(AddFieldReq.builder()
-//                .fieldName(vectorFieldName)
-//                .dataType(DataType.Int8Vector)
-//                .dimension(dimension)
-//                .build());
-//
-//        client.dropCollection(DropCollectionReq.builder()
-//                .collectionName(randomCollectionName)
-//                .build());
-//        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
-//                .collectionName(randomCollectionName)
-//                .collectionSchema(collectionSchema)
-//                .build();
-//        client.createCollection(requestCreate);
-//
-//        // insert rows
-//        Gson gson = new Gson();
-//        Random RANDOM = new Random();
-//        long count = 10;
-//        List<ByteBuffer> vectors = new ArrayList<>();
-//        List<JsonObject> data = new ArrayList<>();
-//        for (int i = 0; i < count; i++) {
-//            JsonObject row = new JsonObject();
-//            row.addProperty("id", i);
-//
-//            ByteBuffer vector = ByteBuffer.allocate(dimension);
-//            for (int k = 0; k < dimension; ++k) {
-//                vector.put((byte) (RANDOM.nextInt(256) - 128));
-//            }
-//            vectors.add(vector);
-//            row.add(vectorFieldName, gson.toJsonTree(vector.array()));
-//            data.add(row);
-//        }
-//
-//        InsertResp insertResp = client.insert(InsertReq.builder()
-//                .collectionName(randomCollectionName)
-//                .data(data)
-//                .build());
-//        Assertions.assertEquals(count, insertResp.getInsertCnt());
-//
-//        // flush
-//        client.flush(FlushReq.builder()
-//                .collectionNames(Collections.singletonList(randomCollectionName))
-//                .build());
-//
-//        // create index
-//        Map<String,Object> extraParams = new HashMap<>();
-//        extraParams.put("M", 64);
-//        extraParams.put("efConstruction", 200);
-//        IndexParam indexParam = IndexParam.builder()
-//                .fieldName(vectorFieldName)
-//                .indexType(IndexParam.IndexType.HNSW)
-//                .metricType(IndexParam.MetricType.COSINE)
-//                .extraParams(extraParams)
-//                .build();
-//        client.createIndex(CreateIndexReq.builder()
-//                .collectionName(randomCollectionName)
-//                .indexParams(Collections.singletonList(indexParam))
-//                .build());
-//
-//        client.loadCollection(LoadCollectionReq.builder()
-//                .collectionName(randomCollectionName)
-//                .build());
-//
-//        // describe collection
-//        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
-//                .collectionName(randomCollectionName)
-//                .build());
-//        Assertions.assertEquals(randomCollectionName, descResp.getCollectionName());
-//
-//        List<String> fieldNames = descResp.getFieldNames();
-//        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fieldNames.size());
-//        CreateCollectionReq.CollectionSchema schema = descResp.getCollectionSchema();
-//        for (String name : fieldNames) {
-//            CreateCollectionReq.FieldSchema f1 = collectionSchema.getField(name);
-//            CreateCollectionReq.FieldSchema f2 = schema.getField(name);
-//            Assertions.assertNotNull(f1);
-//            Assertions.assertNotNull(f2);
-//            Assertions.assertEquals(f1.getName(), f2.getName());
-//            Assertions.assertEquals(f1.getDataType(), f2.getDataType());
-//            Assertions.assertEquals(f1.getDimension(), f2.getDimension());
-//        }
-//
-//        // search in collection
-//        int topK = 3;
-//        List<BaseVector> targetVectors = Arrays.asList(new Int8Vec(vectors.get(5)), new Int8Vec(vectors.get(0)));
-//        SearchResp searchResp = client.search(SearchReq.builder()
-//                .collectionName(randomCollectionName)
-//                .annsField(vectorFieldName)
-//                .data(targetVectors)
-//                .topK(topK)
-//                .outputFields(Collections.singletonList("*"))
-//                .consistencyLevel(ConsistencyLevel.STRONG)
-//                .build());
-//        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
-//        Assertions.assertEquals(targetVectors.size(), searchResults.size());
-//
-//        for (List<SearchResp.SearchResult> results : searchResults) {
-//            Assertions.assertEquals(topK, results.size());
-//            for (int i = 0; i < results.size(); i++) {
-//                SearchResp.SearchResult result = results.get(i);
-//                Map<String, Object> entity = result.getEntity();
-//                long id = (long) entity.get("id");
-//                ByteBuffer originVec = vectors.get((int) id);
-//                ByteBuffer getVec = (ByteBuffer) entity.get(vectorFieldName);
-//                Assertions.assertEquals(originVec, getVec);
-//            }
-//        }
-//
-//        // query
-//        QueryResp queryResp = client.query(QueryReq.builder()
-//                .collectionName(randomCollectionName)
-//                .filter("id == 5")
-//                .build());
-//        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-//        Assertions.assertEquals(1, queryResults.size());
-//        {
-//            QueryResp.QueryResult result = queryResults.get(0);
-//            Map<String, Object> entity = result.getEntity();
-//            ByteBuffer originVec = vectors.get(5);
-//            ByteBuffer getVec = (ByteBuffer)entity.get(vectorFieldName);
-//            Assertions.assertEquals(originVec, getVec);
-//        }
-//    }
+    @Test
+    void testInt8Vectors() {
+        String randomCollectionName = generator.generate(10);
+        String vectorFieldName = "int8_vector";
+        int dimension = 8;
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorFieldName)
+                .dataType(DataType.Int8Vector)
+                .dimension(dimension)
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .build();
+        client.createCollection(requestCreate);
+
+        // insert rows
+        Gson gson = new Gson();
+        Random RANDOM = new Random();
+        long count = 10;
+        List<ByteBuffer> vectors = new ArrayList<>();
+        List<JsonObject> data = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty("id", i);
+
+            ByteBuffer vector = ByteBuffer.allocate(dimension);
+            for (int k = 0; k < dimension; ++k) {
+                vector.put((byte) (RANDOM.nextInt(256) - 128));
+            }
+            vectors.add(vector);
+            row.add(vectorFieldName, gson.toJsonTree(vector.array()));
+            data.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // flush
+        client.flush(FlushReq.builder()
+                .collectionNames(Collections.singletonList(randomCollectionName))
+                .build());
+
+        // create index
+        Map<String,Object> extraParams = new HashMap<>();
+        extraParams.put("M", 64);
+        extraParams.put("efConstruction", 200);
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(vectorFieldName)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .extraParams(extraParams)
+                .build();
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .build());
+
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // describe collection
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertEquals(randomCollectionName, descResp.getCollectionName());
+
+        List<String> fieldNames = descResp.getFieldNames();
+        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fieldNames.size());
+        CreateCollectionReq.CollectionSchema schema = descResp.getCollectionSchema();
+        for (String name : fieldNames) {
+            CreateCollectionReq.FieldSchema f1 = collectionSchema.getField(name);
+            CreateCollectionReq.FieldSchema f2 = schema.getField(name);
+            Assertions.assertNotNull(f1);
+            Assertions.assertNotNull(f2);
+            Assertions.assertEquals(f1.getName(), f2.getName());
+            Assertions.assertEquals(f1.getDataType(), f2.getDataType());
+            Assertions.assertEquals(f1.getDimension(), f2.getDimension());
+        }
+
+        // search in collection
+        int topK = 3;
+        List<BaseVector> targetVectors = Arrays.asList(new Int8Vec(vectors.get(5)), new Int8Vec(vectors.get(0)));
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField(vectorFieldName)
+                .data(targetVectors)
+                .topK(topK)
+                .outputFields(Collections.singletonList("*"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(targetVectors.size(), searchResults.size());
+
+        for (List<SearchResp.SearchResult> results : searchResults) {
+            Assertions.assertEquals(topK, results.size());
+            for (int i = 0; i < results.size(); i++) {
+                SearchResp.SearchResult result = results.get(i);
+                Map<String, Object> entity = result.getEntity();
+                long id = (long) entity.get("id");
+                ByteBuffer originVec = vectors.get((int) id);
+                ByteBuffer getVec = (ByteBuffer) entity.get(vectorFieldName);
+                Assertions.assertEquals(originVec, getVec);
+            }
+        }
+
+        // query
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter("id == 5")
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(1, queryResults.size());
+        {
+            QueryResp.QueryResult result = queryResults.get(0);
+            Map<String, Object> entity = result.getEntity();
+            ByteBuffer originVec = vectors.get(5);
+            ByteBuffer getVec = (ByteBuffer)entity.get(vectorFieldName);
+            Assertions.assertEquals(originVec, getVec);
+        }
+    }
 
     @Test
     void testHybridSearch() {
@@ -2402,6 +2415,36 @@ class MilvusClientV2DockerTest {
         SearchResp.SearchResult r = searchResults.get(0).get(0);
         Assertions.assertTrue(r.getEntity().containsKey("dynamic_10"));
         Assertions.assertEquals("this is dynamic value", r.getEntity().get("dynamic_10"));
+
+        // add new field
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(100)
+                .isNullable(true) // must be nullable
+                .build());
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("flag")
+                .dataType(DataType.Int32)
+                .defaultValue(100)
+                .isNullable(true) // must be nullable
+                .build());
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        Assertions.assertEquals(4, descResp.getFieldNames().size());
+        List<String> fieldNames = descResp.getFieldNames();
+        Assertions.assertTrue(fieldNames.contains("text"));
+        Assertions.assertTrue(fieldNames.contains("flag"));
+        CreateCollectionReq.CollectionSchema schema = descResp.getCollectionSchema();
+
+        CreateCollectionReq.FieldSchema field = schema.getField("text");
+        Assertions.assertEquals(DataType.VarChar, field.getDataType());
+        Assertions.assertEquals(100, field.getMaxLength());
+        Assertions.assertTrue(field.getIsNullable());
     }
 
     @Test

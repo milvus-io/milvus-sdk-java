@@ -255,6 +255,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         // If waiting time exceed timeout, exist the circle
         long tsBegin = System.currentTimeMillis();
         Map<String, LongArray> collectionSegIDs = flushResponse.getCollSegIDsMap();
+        Map<String, Long> flushTsMap = flushResponse.getCollFlushTsMap();
+        String dbName = flushResponse.getDbName();
         collectionSegIDs.forEach((collectionName, segmentIDs) -> {
             while (segmentIDs.getDataCount() > 0) {
                 long tsNow = System.currentTimeMillis();
@@ -263,10 +265,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     break;
                 }
 
-                GetFlushStateRequest getFlushStateRequest = GetFlushStateRequest.newBuilder()
+                GetFlushStateRequest.Builder builder = GetFlushStateRequest.newBuilder()
                         .addAllSegmentIDs(segmentIDs.getDataList())
-                        .build();
-                GetFlushStateResponse response = blockingStub().getFlushState(getFlushStateRequest);
+                        .setCollectionName(collectionName)
+                        .setFlushTs(flushTsMap.get(collectionName));
+                if (StringUtils.isNotEmpty(dbName)) {
+                    builder.setDbName(dbName);
+                }
+
+                GetFlushStateResponse response = blockingStub().getFlushState(builder.build());
                 if (response.getFlushed()) {
                     // if all segment of this collection has been flushed, break this circle and check next collection
                     String msg = segmentIDs.getDataCount() + " segments of " + collectionName + " has been flushed";

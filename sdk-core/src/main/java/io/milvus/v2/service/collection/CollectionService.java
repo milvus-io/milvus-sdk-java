@@ -216,6 +216,24 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void addCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionFieldReq request) {
+        String title = String.format("AddCollectionFieldReq fieldName:%s", request.getFieldName());
+        AddCollectionFieldRequest.Builder builder = AddCollectionFieldRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
+        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema);
+        builder.setSchema(grpcFieldSchema.toByteString());
+
+        Status response = blockingStub.addCollectionField(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
     public Void alterCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionFieldReq request) {
         String title = String.format("AlterCollectionFieldReq collectionName:%s", request.getCollectionName());
         AlterCollectionFieldRequest.Builder builder = AlterCollectionFieldRequest.newBuilder()
