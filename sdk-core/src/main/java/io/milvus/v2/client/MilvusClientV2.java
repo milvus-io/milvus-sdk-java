@@ -920,7 +920,7 @@ public class MilvusClientV2 {
         if (request.getWaitFlushedTimeoutMs() > 0L) {
             tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getWaitFlushedTimeoutMs(), TimeUnit.MILLISECONDS);
         }
-        utilityService.waitFlush(tempBlockingStub, response.getCollectionSegmentIDs(), response.getCollectionFlushTs());
+        utilityService.waitFlush(tempBlockingStub, response);
     }
 
     /**
