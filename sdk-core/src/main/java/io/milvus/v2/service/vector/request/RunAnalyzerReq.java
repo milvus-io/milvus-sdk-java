@@ -36,4 +36,12 @@ public class RunAnalyzerReq {
     private Boolean withDetail = Boolean.FALSE;
     @Builder.Default
     private Boolean withHash = Boolean.FALSE;
+    @Builder.Default
+    private String databaseName = "";
+    @Builder.Default
+    private String collectionName = "";
+    @Builder.Default
+    private String fieldName = "";
+    @Builder.Default
+    private List<String> analyzerNames = new ArrayList<>();
 }
