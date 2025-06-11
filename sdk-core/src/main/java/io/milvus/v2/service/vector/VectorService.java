@@ -318,12 +318,18 @@ public class VectorService extends BaseService {
             byteStrings.add(ByteString.copyFrom(text.getBytes()));
         }
 
+        List<String> analyzerNames = request.getAnalyzerNames();
+        builder.addAllAnalyzerNames(analyzerNames);
+
         String params = JsonUtils.toJson(request.getAnalyzerParams());
         System.out.println(params);
         RunAnalyzerRequest runRequest = builder.addAllPlaceholder(byteStrings)
                 .setAnalyzerParams(params)
                 .setWithDetail(request.getWithDetail())
                 .setWithHash(request.getWithHash())
+                .setDbName(request.getDatabaseName())
+                .setCollectionName(request.getCollectionName())
+                .setFieldName(request.getFieldName())
                 .build();
         RunAnalyzerResponse response = blockingStub.runAnalyzer(runRequest);
         rpcUtils.handleResponse(title, response.getStatus());
