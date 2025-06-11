@@ -38,13 +38,6 @@ public class IndexParam {
     private MetricType metricType;
     private Map<String, Object> extraParams;
 
-    public String getIndexName() {
-        if(indexName == null) {
-            return fieldName;
-        }
-        return indexName;
-    }
-
     public enum MetricType {
         INVALID,
         // Only for float vectors
