@@ -139,6 +139,11 @@ public class SchemaUtils {
             builder.addOutputFieldNames(name);
         }
 
+        List<KeyValuePair> params = ParamUtils.AssembleKvPair(function.getParams());
+        if (CollectionUtils.isNotEmpty(params)) {
+            params.forEach(builder::addParams);
+        }
+
         return builder.build();
     }
 
