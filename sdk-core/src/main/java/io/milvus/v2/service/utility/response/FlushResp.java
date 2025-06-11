@@ -29,6 +29,8 @@ import java.util.*;
 @SuperBuilder
 public class FlushResp {
     @Builder.Default
+    String databaseName = "";
+    @Builder.Default
     Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
     @Builder.Default
     Map<String, Long> collectionFlushTs = new HashMap<>();

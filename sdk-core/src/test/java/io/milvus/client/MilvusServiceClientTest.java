@@ -575,6 +575,7 @@ class MilvusServiceClientTest {
             final long segmentID = 2021L;
             mockServerImpl.setFlushResponse(FlushResponse.newBuilder()
                     .putCollSegIDs(collectionName, LongArray.newBuilder().addData(segmentID).build())
+                    .putCollFlushTs(collectionName, 200L)
                     .build());
             mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
                     .setFlushed(false)
