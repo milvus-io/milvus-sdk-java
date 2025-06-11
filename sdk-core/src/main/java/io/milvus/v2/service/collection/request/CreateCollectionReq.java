@@ -200,5 +200,18 @@ public class CreateCollectionReq {
         private List<String> inputFieldNames = new ArrayList<>();
         @Builder.Default
         private List<String> outputFieldNames = new ArrayList<>();
+        @Builder.Default
+        private Map<String, String> params = new HashMap<>();
+
+        public static abstract class FunctionBuilder<C extends Function, B extends Function.FunctionBuilder<C, B>> {
+            public B param(String key, String value) {
+                if(null == this.params$value ){
+                    this.params$value = new HashMap<>();
+                }
+                this.params$value.put(key, value);
+                this.params$set = true;
+                return self();
+            }
+        }
     }
 }

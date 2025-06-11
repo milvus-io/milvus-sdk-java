@@ -24,8 +24,8 @@ import lombok.Getter;
 public enum FunctionType {
     UNKNOWN(0),
     BM25(1),
-    TextEmbedding(2),
-    Rerank(3),
+    TEXTEMBEDDING(2),
+    RERANK(3),
     ;
 
     @Getter
