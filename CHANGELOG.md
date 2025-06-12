@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.6.0 (2025-06-13)
+### Feature
+- Support jsonPath index
+- Support addCollectionField()
+- Support FunctionType.RERANK
+- Support run analyzer by collection and Field
+- Support Int8Vector
+
+### Bug
+- Fix a bug of flush()
+
 ## milvus-sdk-java 2.5.10 (2025-06-05)
 ### Feature
 - Support dropCollectionFieldProperties interface
