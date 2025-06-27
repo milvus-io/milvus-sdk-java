@@ -114,4 +114,15 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
         implementation("org.slf4j:slf4j-api:1.7.30")
         ```
 
-    
+### Development
+
+For developers interested in contributing to the Milvus Java SDK, please refer to our [DEVELOPMENT.md](DEVELOPMENT.md) file. This document provides detailed instructions on:
+
+- Setting up your development environment
+- Cloning the repository
+- Building the SDK
+- Updating Milvus proto files
+- Running tests
+- Contributing guidelines
+
+We welcome contributions from the community!
