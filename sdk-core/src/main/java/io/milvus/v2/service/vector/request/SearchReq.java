@@ -22,6 +22,7 @@ package io.milvus.v2.service.vector.request;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
+
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -41,13 +42,16 @@ public class SearchReq {
     @Builder.Default
     private String annsField = "";
     private IndexParam.MetricType metricType;
-    private int topK;
+    @Builder.Default
+    @Deprecated
+    private int topK = 0;
     private String filter;
     @Builder.Default
     private List<String> outputFields = new ArrayList<>();
     private List<BaseVector> data;
     private long offset;
-    private long limit;
+    @Builder.Default
+    private long limit = 0L;
 
     @Builder.Default
     private int roundDecimal = -1;
@@ -73,4 +77,22 @@ public class SearchReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     @Builder.Default
     private Map<String, Object> filterTemplateValues = new HashMap<>();
+
+    public static abstract class SearchReqBuilder<C extends SearchReq, B extends SearchReq.SearchReqBuilder<C, B>> {
+        // topK is deprecated, topK and limit must be the same value
+        public B topK(int val) {
+            this.topK$value = val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+        public B limit(long val) {
+            this.topK$value = (int)val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+    }
 }

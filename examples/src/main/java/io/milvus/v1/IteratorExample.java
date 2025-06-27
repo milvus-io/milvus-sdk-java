@@ -239,16 +239,18 @@ public class IteratorExample {
 
     private void iterateQueryResult(QueryIterator queryIterator) {
         int pageIdx = 0;
+        int iterateCount = 0;
         while (true) {
             List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
             if (res.isEmpty()) {
-                System.out.println("query iteration finished, close");
+                System.out.printf("query iteration finished, %d rows iterated, iterator close\n", iterateCount);
                 queryIterator.close();
                 break;
             }
 
             for (QueryResultsWrapper.RowRecord re : res) {
                 System.out.println(re);
+                iterateCount++;
             }
             pageIdx++;
             System.out.printf("page%s-------------------------%n", pageIdx);
@@ -257,16 +259,18 @@ public class IteratorExample {
 
     private void iterateSearchResult(SearchIterator searchIterator) {
         int pageIdx = 0;
+        int iterateCount = 0;
         while (true) {
             List<QueryResultsWrapper.RowRecord> res = searchIterator.next();
             if (res.isEmpty()) {
-                System.out.println("search iteration finished, close");
+                System.out.printf("search iteration finished, %d rows iterated, iterator close\n", iterateCount);
                 searchIterator.close();
                 break;
             }
 
             for (QueryResultsWrapper.RowRecord re : res) {
                 System.out.println(re);
+                iterateCount++;
             }
             pageIdx++;
             System.out.printf("page%s-------------------------%n", pageIdx);
@@ -302,7 +306,7 @@ public class IteratorExample {
                 .withMetricType(MetricType.L2);
 
         if (topK != null) {
-            searchIteratorParamBuilder.withTopK(topK);
+            searchIteratorParamBuilder.withLimit(topK.longValue());
         }
 
         R<SearchIterator> response = milvusClient.searchIterator(searchIteratorParamBuilder.build());

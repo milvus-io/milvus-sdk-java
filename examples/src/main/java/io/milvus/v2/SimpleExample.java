@@ -93,7 +93,7 @@ public class SimpleExample {
                 .collectionName(collectionName)
                 .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
                 .filter("id < 100")
-                .topK(10)
+                .limit(10)
                 .outputFields(Collections.singletonList("*"))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();
@@ -119,7 +119,7 @@ public class SimpleExample {
             SearchReq request = SearchReq.builder()
                     .collectionName(collectionName)
                     .data(Collections.singletonList(new FloatVec(new float[]{1.0f, 1.0f, 1.0f, 1.0f})))
-                    .topK(10)
+                    .limit(10)
                     .filter(key)
                     .filterTemplateValues(value)
                     .outputFields(Collections.singletonList("*"))

@@ -64,7 +64,7 @@ public class GeneralExample {
     private static final IndexType INDEX_TYPE = IndexType.IVF_FLAT;
     private static final String INDEX_PARAM = "{\"nlist\":128}";
 
-    private static final Integer SEARCH_K = 5;
+    private static final Long SEARCH_K = 5L;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
     
 
@@ -331,7 +331,7 @@ public class GeneralExample {
                 .withCollectionName(COLLECTION_NAME)
                 .withMetricType(MetricType.L2)
                 .withOutFields(outFields)
-                .withTopK(SEARCH_K)
+                .withLimit(SEARCH_K)
                 .withFloatVectors(vectors)
                 .withVectorFieldName(VECTOR_FIELD)
                 .withExpr(expr)

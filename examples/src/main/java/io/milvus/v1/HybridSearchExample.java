@@ -226,14 +226,14 @@ public class HybridSearchExample {
                 .withFloatVectors(CommonUtils.generateFloatVectors(FLOAT_VECTOR_DIM, NQ))
                 .withMetricType(FLOAT_VECTOR_METRIC)
                 .withParams("{\"nprobe\": 32}")
-                .withTopK(10)
+                .withLimit(10L)
                 .build();
 
         AnnSearchParam req2 = AnnSearchParam.newBuilder()
                 .withVectorFieldName(BINARY_VECTOR_FIELD)
                 .withBinaryVectors(CommonUtils.generateBinaryVectors(BINARY_VECTOR_DIM, NQ))
                 .withMetricType(BINARY_VECTOR_METRIC)
-                .withTopK(15)
+                .withLimit(15L)
                 .build();
 
         AnnSearchParam req3 = AnnSearchParam.newBuilder()
@@ -241,7 +241,7 @@ public class HybridSearchExample {
                 .withFloat16Vectors(CommonUtils.generateFloat16Vectors(FLOAT16_VECTOR_DIM, NQ, false))
                 .withMetricType(FLOAT16_VECTOR_METRIC)
                 .withParams("{\"ef\":64}")
-                .withTopK(20)
+                .withLimit(20L)
                 .build();
 
         AnnSearchParam req4 = AnnSearchParam.newBuilder()
@@ -249,7 +249,7 @@ public class HybridSearchExample {
                 .withSparseFloatVectors(CommonUtils.generateSparseVectors(NQ))
                 .withMetricType(SPARSE_VECTOR_METRIC)
                 .withParams("{\"drop_ratio_search\":0.2}")
-                .withTopK(20)
+                .withLimit(20L)
                 .build();
 
         HybridSearchParam searchParam = HybridSearchParam.newBuilder()
@@ -262,7 +262,7 @@ public class HybridSearchExample {
                 .addSearchRequest(req2)
                 .addSearchRequest(req3)
                 .addSearchRequest(req4)
-                .withTopK(5)
+                .withLimit(5L)
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .withRanker(RRFRanker.newBuilder()
                         .withK(2)
