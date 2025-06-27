@@ -64,7 +64,7 @@ public class SearchIterator {
 
     private final SearchIteratorParam searchIteratorParam;
     private final int batchSize;
-    private final int topK;
+    private final long topK;
     private final String expr;
     private final String metricType;
 
@@ -127,9 +127,9 @@ public class SearchIterator {
         if (!initSuccess || checkReachedLimit()) {
             return Lists.newArrayList();
         }
-        int retLen = batchSize;
+        long retLen = batchSize;
         if (topK != UNLIMITED) {
-            int leftLen = topK - returnedCount;
+            long leftLen = topK - returnedCount;
             retLen = Math.min(leftLen, retLen);
         }
 
@@ -387,12 +387,12 @@ public class SearchIterator {
         return true;
     }
 
-    private boolean isCacheEnough(int count) {
+    private boolean isCacheEnough(long count) {
         List<QueryResultsWrapper.RowRecord> cachedPage = iteratorCache.fetchCache(cacheId);
         return cachedPage != null && cachedPage.size() >= count;
     }
 
-    private List<QueryResultsWrapper.RowRecord> extractPageFromCache(int count) {
+    private List<QueryResultsWrapper.RowRecord> extractPageFromCache(long count) {
         List<QueryResultsWrapper.RowRecord> cachedPage = iteratorCache.fetchCache(cacheId);
         if (cachedPage == null || cachedPage.size() < count) {
             String msg = String.format("Wrong, try to extract %s result from cache, more than %s there must be sth wrong with code",
@@ -400,8 +400,8 @@ public class SearchIterator {
             throw new ParamException(msg);
         }
 
-        List<QueryResultsWrapper.RowRecord> retPageRes = cachedPage.subList(0, count);
-        List<QueryResultsWrapper.RowRecord> leftCachePage = cachedPage.subList(count, cachedPage.size());
+        List<QueryResultsWrapper.RowRecord> retPageRes = cachedPage.subList(0, (int)count);
+        List<QueryResultsWrapper.RowRecord> leftCachePage = cachedPage.subList((int)count, cachedPage.size());
 
         iteratorCache.cache(cacheId, leftCachePage);
         return retPageRes;

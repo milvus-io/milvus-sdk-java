@@ -197,24 +197,24 @@ public class HybridSearchExample {
                 .vectorFieldName("float_vector")
                 .vectors(floatVectors)
                 .params("{\"nprobe\": 10}")
-                .topK(10)
+                .limit(10)
                 .build());
         searchRequests.add(AnnSearchReq.builder()
                 .vectorFieldName("binary_vector")
                 .vectors(binaryVectors)
-                .topK(50)
+                .limit(50)
                 .build());
         searchRequests.add(AnnSearchReq.builder()
                 .vectorFieldName("sparse_vector")
                 .vectors(sparseVectors)
-                .topK(100)
+                .limit(100)
                 .build());
 
         HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .searchRequests(searchRequests)
                 .ranker(new WeightedRanker(Arrays.asList(0.2f, 0.5f, 0.6f)))
-                .topK(5)
+                .limit(5)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
         SearchResp searchResp = client.hybridSearch(hybridSearchReq);

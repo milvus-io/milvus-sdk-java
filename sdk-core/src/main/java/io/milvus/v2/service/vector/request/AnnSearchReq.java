@@ -31,7 +31,11 @@ import java.util.List;
 @SuperBuilder
 public class AnnSearchReq {
     private String vectorFieldName;
-    private int topK;
+    @Builder.Default
+    @Deprecated
+    private int topK = 0;
+    @Builder.Default
+    private long limit = 0L;
     @Builder.Default
     private String expr = "";
     private List<BaseVector> vectors;
@@ -39,4 +43,23 @@ public class AnnSearchReq {
 
     @Builder.Default
     private IndexParam.MetricType metricType = null;
+
+    public static abstract class AnnSearchReqBuilder<C extends AnnSearchReq, B extends AnnSearchReq.AnnSearchReqBuilder<C, B>> {
+        // topK is deprecated, topK and limit must be the same value
+        public B topK(int val) {
+            this.topK$value = val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+
+        public B limit(long val) {
+            this.topK$value = (int)val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+    }
 }

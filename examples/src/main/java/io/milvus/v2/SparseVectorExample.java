@@ -128,7 +128,7 @@ public class SparseVectorExample {
                     .annsField(VECTOR_FIELD)
                     .outputFields(Collections.singletonList(VECTOR_FIELD))
                     .searchParams(params)
-                    .topK(3)
+                    .limit(3)
                     .build());
 
             // The search() allows multiple target vectors to search in a batch.

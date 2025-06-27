@@ -70,7 +70,7 @@ public class IteratorAdapterV2 {
                 .withPartitionNames(searchIteratorReq.getPartitionNames())
                 .withVectorFieldName(searchIteratorReq.getVectorFieldName())
                 .withMetricType(metricType)
-                .withTopK(searchIteratorReq.getTopK())
+                .withLimit(searchIteratorReq.getLimit())
                 .withExpr(searchIteratorReq.getExpr())
                 .withOutFields(searchIteratorReq.getOutputFields())
                 .withRoundDecimal(searchIteratorReq.getRoundDecimal())

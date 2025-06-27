@@ -171,7 +171,7 @@ public class IteratorExample {
                 .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
                 .expr(expr)
                 .params(StringUtils.isEmpty(params) ? "{}" : params)
-                .topK(topK)
+                .limit(topK)
                 .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
@@ -210,7 +210,7 @@ public class IteratorExample {
                 .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
                 .filter(filter)
                 .searchParams(params==null ? new HashMap<>() : params)
-                .topK(topK)
+                .limit(topK)
                 .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .externalFilterFunc(externalFilterFunc)
