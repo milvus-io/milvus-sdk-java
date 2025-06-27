@@ -47,7 +47,7 @@ public class TextMatchExample {
                 .collectionName(COLLECTION_NAME)
                 .data(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
                 .filter(filter)
-                .topK(10)
+                .limit(10)
                 .outputFields(Collections.singletonList("text"))
                 .build());
         System.out.println("\nSearch by filter: " + filter);

@@ -139,7 +139,7 @@ public class Float16VectorExample {
                 .collectionName(COLLECTION_NAME)
                 .data(targetVectors)
                 .annsField(vectorFieldName)
-                .topK(topK)
+                .limit(topK)
                 .outputFields(Collections.singletonList(vectorFieldName))
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());

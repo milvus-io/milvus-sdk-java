@@ -20,6 +20,7 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.vector.request.ranker.BaseRanker;
 import lombok.Builder;
 import lombok.Data;
@@ -36,7 +37,11 @@ public class HybridSearchReq
     private List<String> partitionNames;
     private List<AnnSearchReq> searchRequests;
     private BaseRanker ranker;
-    private int topK;
+    @Builder.Default
+    @Deprecated
+    private int topK = 0; // deprecated, replaced by "limit"
+    @Builder.Default
+    private long limit = 0L;
     private List<String> outFields;
     private long offset;
     @Builder.Default
@@ -48,4 +53,22 @@ public class HybridSearchReq
     private Integer groupSize;
     private Boolean strictGroupSize;
 
+    public static abstract class HybridSearchReqBuilder<C extends HybridSearchReq, B extends HybridSearchReq.HybridSearchReqBuilder<C, B>> {
+        // topK is deprecated, topK and limit must be the same value
+        public B topK(int val) {
+            this.topK$value = val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+
+        public B limit(long val) {
+            this.topK$value = (int)val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+    }
 }

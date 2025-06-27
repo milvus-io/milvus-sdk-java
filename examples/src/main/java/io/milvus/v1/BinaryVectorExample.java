@@ -157,7 +157,7 @@ public class BinaryVectorExample {
             R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.HAMMING)
-                    .withTopK(3)
+                    .withLimit(3L)
                     .withBinaryVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)

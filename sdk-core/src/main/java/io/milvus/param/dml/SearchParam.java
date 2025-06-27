@@ -43,7 +43,7 @@ public class SearchParam {
     private final List<String> partitionNames;
     private final String metricType;
     private final String vectorFieldName;
-    private final int topK;
+    private final Long topK;
     private final String expr;
     private final List<String> outFields;
     private final List<?> vectors;
@@ -97,7 +97,7 @@ public class SearchParam {
         private final List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.None;
         private String vectorFieldName;
-        private Integer topK;
+        private Long topK;
         private String expr = "";
         private final List<String> outFields = Lists.newArrayList();
         private List<?> vectors;
@@ -202,12 +202,18 @@ public class SearchParam {
 
         /**
          * Sets topK value of ANN search.
+         * withTopK() is deprecated, replaced by withLimit()
          *
          * @param topK topK value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withTopK(@NonNull Integer topK) {
-            this.topK = topK;
+            this.topK = topK.longValue();
+            return this;
+        }
+        public Builder withLimit(@NonNull Long limit) {
+            this.topK = limit;
             return this;
         }
 

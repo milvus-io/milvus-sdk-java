@@ -184,10 +184,11 @@ public class VectorUtils {
                             .build());
         }
 
+        // topK value is deprecated, always use "limit" to set the topK
         builder.addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.TOP_K)
-                                .setValue(String.valueOf(request.getTopK()))
+                                .setValue(String.valueOf(request.getLimit()))
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
@@ -415,7 +416,7 @@ public class VectorUtils {
                 .addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.TOP_K)
-                                .setValue(String.valueOf(annSearchReq.getTopK()))
+                                .setValue(String.valueOf(annSearchReq.getLimit()))
                                 .build());
         if (annSearchReq.getMetricType() != null) {
             builder.addSearchParams(
@@ -466,10 +467,11 @@ public class VectorUtils {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Ranker is null.");
         }
 
+        // topK value is deprecated, always use "limit" to set the topK
         Map<String, String> props = ranker.getProperties();
-        props.put(Constant.LIMIT, String.format("%d", request.getTopK()));
-        props.put(Constant.ROUND_DECIMAL, String.format("%d", request.getRoundDecimal()));
-        props.put(Constant.OFFSET, String.format("%d", request.getOffset()));
+        props.put(Constant.LIMIT, String.valueOf(request.getLimit()));
+        props.put(Constant.ROUND_DECIMAL, String.valueOf(request.getRoundDecimal()));
+        props.put(Constant.OFFSET, String.valueOf(request.getOffset()));
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(props);
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addRankParams);

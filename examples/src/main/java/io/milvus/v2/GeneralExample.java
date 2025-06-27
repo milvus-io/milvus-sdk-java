@@ -187,7 +187,7 @@ public class GeneralExample {
         params.put("nprobe",10);
         SearchResp resp = client.search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .topK(SEARCH_K)
+                .limit(SEARCH_K)
                 .data(vectors)
                 .annsField(VECTOR_FIELD)
                 .filter(filter)

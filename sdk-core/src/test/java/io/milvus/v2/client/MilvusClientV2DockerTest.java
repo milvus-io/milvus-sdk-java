@@ -455,7 +455,7 @@ class MilvusClientV2DockerTest {
                 .partitionNames(Collections.singletonList(partitionName))
                 .annsField(vectorFieldName)
                 .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
-                .topK(10)
+                .limit(10)
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(1, searchResults.size());
@@ -501,7 +501,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .annsField(vectorFieldName)
                 .data(targetVectors)
-                .topK(10)
+                .limit(topk)
                 .outputFields(Collections.singletonList("*"))
                 .build());
         searchResults = searchResp.getSearchResults();
@@ -586,7 +586,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .annsField(vectorFieldName)
                 .data(targetVectors)
-                .topK(10)
+                .limit(topk)
                 .outputFields(Collections.singletonList(vectorFieldName))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
@@ -688,7 +688,7 @@ class MilvusClientV2DockerTest {
                     .collectionName(randomCollectionName)
                     .annsField(float16Field)
                     .data(Collections.singletonList(new Float16Vec(originVector)))
-                    .topK(topk)
+                    .limit(topk)
                     .consistencyLevel(ConsistencyLevel.STRONG)
                     .outputFields(Collections.singletonList(float16Field))
                     .build());
@@ -714,7 +714,7 @@ class MilvusClientV2DockerTest {
                     .collectionName(randomCollectionName)
                     .annsField(bfloat16Field)
                     .data(Collections.singletonList(new BFloat16Vec(originVector)))
-                    .topK(topk)
+                    .limit(topk)
                     .consistencyLevel(ConsistencyLevel.STRONG)
                     .outputFields(Collections.singletonList(bfloat16Field))
                     .build());
@@ -797,7 +797,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .annsField(vectorFieldName)
                 .data(targetVectors)
-                .topK(topk)
+                .limit(topk)
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
@@ -892,24 +892,24 @@ class MilvusClientV2DockerTest {
                 .vectorFieldName("float_vector")
                 .vectors(floatVectors)
                 .params("{\"nprobe\": 10}")
-                .topK(10)
+                .limit(10)
                 .build());
         searchRequests.add(AnnSearchReq.builder()
                 .vectorFieldName("binary_vector")
                 .vectors(binaryVectors)
-                .topK(50)
+                .limit(50)
                 .build());
         searchRequests.add(AnnSearchReq.builder()
                 .vectorFieldName("sparse_vector")
                 .vectors(sparseVectors)
-                .topK(100)
+                .limit(100)
                 .build());
 
         HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
                 .collectionName(randomCollectionName)
                 .searchRequests(searchRequests)
                 .ranker(new RRFRanker(20))
-                .topK(topk)
+                .limit(topk)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
         SearchResp searchResp = client.hybridSearch(hybridSearchReq);
@@ -1469,7 +1469,7 @@ class MilvusClientV2DockerTest {
                 .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
                 .expr("int64_field > 500 && int64_field < 1000")
                 .params("{\"range_filter\": 5.0, \"radius\": 50.0}")
-                .topK(1000)
+                .limit(1000)
                 .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.EVENTUALLY)
                 .build());
@@ -2072,7 +2072,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .annsField("vector")
                 .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
-                .topK(10)
+                .limit(10)
                 .outputFields(Lists.newArrayList("*"))
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build());
@@ -2202,7 +2202,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .annsField("sparse")
                 .data(Collections.singletonList(new EmbeddedText("milvus AI")))
-                .topK(10)
+                .limit(10)
                 .outputFields(Lists.newArrayList("*"))
                 .metricType(IndexParam.MetricType.BM25)
                 .build());
