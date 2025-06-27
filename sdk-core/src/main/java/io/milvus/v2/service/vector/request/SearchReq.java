@@ -73,4 +73,8 @@ public class SearchReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     @Builder.Default
     private Map<String, Object> filterTemplateValues = new HashMap<>();
+
+    public int getTopK() {
+        return topK > 0 ? topK : (int) limit;
+    }
 }
