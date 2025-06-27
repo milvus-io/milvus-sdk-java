@@ -35,8 +35,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.SortedMap;
 
-import static io.milvus.param.Constant.UNLIMITED;
-
 /**
  * Parameters for <code>searchIterator</code> interface.
  */
@@ -48,7 +46,7 @@ public class SearchIteratorParam {
     private final List<String> partitionNames;
     private final String metricType;
     private final String vectorFieldName;
-    private final int topK;
+    private final Long topK;
     private final String expr;
     private final List<String> outFields;
     private final List<?> vectors;
@@ -102,7 +100,7 @@ public class SearchIteratorParam {
         private final List<String> partitionNames = Lists.newArrayList();
         private MetricType metricType = MetricType.None;
         private String vectorFieldName;
-        private Integer topK = UNLIMITED;
+        private Long topK = Constant.UNLIMITED_L;
         private String expr = "";
         private final List<String> outFields = Lists.newArrayList();
         private List<?> vectors;
@@ -207,12 +205,19 @@ public class SearchIteratorParam {
 
         /**
          * Sets topK value of ANN search.
+         * withTopK() is deprecated, replaced by withLimit()
          *
          * @param topK topK value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withTopK(@NonNull Integer topK) {
-            this.topK = topK;
+            this.topK = topK.longValue();
+            return this;
+        }
+
+        public Builder withLimit(@NonNull Long limit) {
+            this.topK = limit;
             return this;
         }
 
@@ -406,7 +411,7 @@ public class SearchIteratorParam {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
             ParamUtils.CheckNullEmptyString(vectorFieldName, "Target field name");
 
-            if (topK != UNLIMITED && topK <= 0) {
+            if (topK != Constant.UNLIMITED_L && topK <= 0) {
                 throw new ParamException("TopK value is illegal");
             }
 

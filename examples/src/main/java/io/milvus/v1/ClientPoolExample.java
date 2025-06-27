@@ -163,7 +163,7 @@ public class ClientPoolExample {
                     R<SearchResults> searchRet = client.search(SearchParam.newBuilder()
                             .withCollectionName(CollectionName)
                             .withMetricType(MetricType.L2)
-                            .withTopK(10)
+                            .withLimit(10L)
                             .withFloatVectors(Collections.singletonList(CommonUtils.generateFloatVector(DIM)))
                             .withVectorFieldName(VectorFieldName)
                             .withParams("{}")

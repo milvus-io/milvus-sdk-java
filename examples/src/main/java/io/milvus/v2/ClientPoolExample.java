@@ -132,7 +132,7 @@ public class ClientPoolExample {
                             .collectionName(CollectionName)
                             .consistencyLevel(ConsistencyLevel.EVENTUALLY)
                             .annsField(VectorFieldName)
-                            .topK(10)
+                            .limit(10)
                             .data(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(DIM))))
                             .build());
                     System.out.println("A search request completed");

@@ -127,7 +127,7 @@ public class Int8VectorExample {
                     .data(Collections.singletonList(new Int8Vec(targetVector)))
                     .annsField(VECTOR_FIELD)
                     .outputFields(Collections.singletonList(VECTOR_FIELD))
-                    .topK(3)
+                    .limit(3)
                     .build());
 
             // The search() allows multiple target vectors to search in a batch.

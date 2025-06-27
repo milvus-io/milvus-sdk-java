@@ -153,7 +153,7 @@ public class SparseVectorExample {
             R<SearchResults> searchRet = milvusClient.search(SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.IP)
-                    .withTopK(3)
+                    .withLimit(3L)
                     .withSparseFloatVectors(Collections.singletonList(targetVector))
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)

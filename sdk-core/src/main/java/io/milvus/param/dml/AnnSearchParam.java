@@ -40,7 +40,7 @@ public class AnnSearchParam {
 
     private final String metricType;
     private final String vectorFieldName;
-    private final int topK;
+    private final Long topK;
     private final String expr;
     private final List<?> vectors;
     private final Long NQ;
@@ -68,7 +68,7 @@ public class AnnSearchParam {
     public static class Builder {
         private MetricType metricType = MetricType.None;
         private String vectorFieldName;
-        private Integer topK;
+        private Long topK;
         private String expr = "";
         private List<?> vectors;
         private Long NQ;
@@ -110,8 +110,14 @@ public class AnnSearchParam {
          * @param topK topK value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withTopK(@NonNull Integer topK) {
-            this.topK = topK;
+            this.topK = topK.longValue();
+            return this;
+        }
+
+        public Builder withLimit(@NonNull Long limit) {
+            this.topK = limit;
             return this;
         }
 
