@@ -97,6 +97,7 @@ public class Constant {
     public static final int MAX_BATCH_SIZE = 16384;
     public static final int NO_CACHE_ID = -1;
     public static final int UNLIMITED = -1;
+    public static final long UNLIMITED_L = -1;
     public static final int DEFAULT_SEARCH_EXTENSION_RATE = 10;
     public static final int MAX_FILTERED_IDS_COUNT_ITERATION = 100000;
     public static final int MAX_TRY_TIME = 20;

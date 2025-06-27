@@ -184,7 +184,7 @@ public class Float16VectorExample {
             SearchParam.Builder builder = SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withMetricType(MetricType.L2)
-                    .withTopK(3)
+                    .withLimit(3L)
                     .withVectorFieldName(VECTOR_FIELD)
                     .addOutField(VECTOR_FIELD)
                     .withParams("{\"nprobe\":32}");
