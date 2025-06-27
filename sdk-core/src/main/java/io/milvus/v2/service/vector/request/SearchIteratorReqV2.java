@@ -1,6 +1,7 @@
 package io.milvus.v2.service.vector.request;
 
 import com.google.common.collect.Lists;
+import io.milvus.param.Constant;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
@@ -25,7 +26,10 @@ public class SearchIteratorReqV2 {
     private IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
     private String vectorFieldName;
     @Builder.Default
-    private int topK = -1;
+    @Deprecated
+    private int topK = Constant.UNLIMITED;
+    @Builder.Default
+    private long limit = Constant.UNLIMITED_L;
     @Builder.Default
     private String filter = "";
     @Builder.Default
@@ -46,4 +50,22 @@ public class SearchIteratorReqV2 {
     private long batchSize = 1000L;
     @Builder.Default
     private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = null;
+
+    public static abstract class SearchIteratorReqV2Builder<C extends SearchIteratorReqV2, B extends SearchIteratorReqV2.SearchIteratorReqV2Builder<C, B>> {
+        // topK is deprecated, topK and limit must be the same value
+        public B topK(int val) {
+            this.topK$value = val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+        public B limit(long val) {
+            this.topK$value = (int)val;
+            this.topK$set = true;
+            this.limit$value = val;
+            this.limit$set = true;
+            return self();
+        }
+    }
 }

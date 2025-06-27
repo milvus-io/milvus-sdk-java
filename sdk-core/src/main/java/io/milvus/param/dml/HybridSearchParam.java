@@ -42,7 +42,7 @@ public class HybridSearchParam {
     private final List<String> partitionNames;
     private final List<AnnSearchParam> searchRequests;
     private final BaseRanker ranker;
-    private final int topK;
+    private final Long topK;
     private final List<String> outFields;
     private final long offset;
     private final int roundDecimal;
@@ -81,7 +81,7 @@ public class HybridSearchParam {
         private final List<String> partitionNames = Lists.newArrayList();
         private final List<AnnSearchParam> searchRequests = Lists.newArrayList();
         private BaseRanker ranker = null;
-        private Integer topK;
+        private Long topK;
         private final List<String> outFields = Lists.newArrayList();
         private Long offset = 0L;
         private Integer roundDecimal = -1;
@@ -174,12 +174,19 @@ public class HybridSearchParam {
 
         /**
          * Sets topK value of ANN search.
+         * withTopK() is deprecated, replaced by withLimit()
          *
          * @param topK topK value
          * @return <code>Builder</code>
          */
+        @Deprecated
         public Builder withTopK(@NonNull Integer topK) {
-            this.topK = topK;
+            this.topK = topK.longValue();
+            return this;
+        }
+
+        public Builder withLimit(@NonNull Long limit) {
+            this.topK = limit;
             return this;
         }
 

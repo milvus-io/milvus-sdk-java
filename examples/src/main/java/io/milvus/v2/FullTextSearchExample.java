@@ -31,7 +31,7 @@ public class FullTextSearchExample {
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .data(Collections.singletonList(new EmbeddedText(text)))
-                .topK(3)
+                .limit(3)
                 .outputFields(Collections.singletonList("text"))
                 .build());
         System.out.println("\nSearch by text: " + text);

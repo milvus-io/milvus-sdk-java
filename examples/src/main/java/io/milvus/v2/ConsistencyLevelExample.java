@@ -100,7 +100,7 @@ public class ConsistencyLevelExample {
         SearchResp searchR = client.search(SearchReq.builder()
                 .collectionName(collectionName)
                 .data(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
-                .topK(topK)
+                .limit(topK)
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();
         return searchResults.get(0);
@@ -162,7 +162,7 @@ public class ConsistencyLevelExample {
             SearchResp searchR = client2.search(SearchReq.builder()
                     .collectionName(collectionName)
                     .data(Collections.singletonList(new FloatVec(vector)))
-                    .topK(1)
+                    .limit(1)
                     .build());
             pool.returnClient(clientName2, client2); // don't forget to return the client to pool
             List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();

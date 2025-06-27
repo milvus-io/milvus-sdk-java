@@ -96,7 +96,7 @@ class VectorTest extends BaseTest {
         SearchReq request = SearchReq.builder()
                 .collectionName("test2")
                 .data(Collections.singletonList(new FloatVec(vectorList)))
-                .topK(10)
+                .limit(10)
                 .offset(0L)
                 .build();
         SearchResp statusR = client_v2.search(request);
@@ -123,7 +123,7 @@ class VectorTest extends BaseTest {
             SearchReq request = SearchReq.builder()
                     .collectionName("test")
                     .data(Collections.singletonList(new FloatVec(vectorList)))
-                    .topK(10)
+                    .limit(10)
                     .offset(0L)
                     .filter(key)
                     .filterTemplateValues(value)

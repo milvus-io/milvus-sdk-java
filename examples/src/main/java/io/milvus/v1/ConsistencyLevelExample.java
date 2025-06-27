@@ -137,7 +137,7 @@ public class ConsistencyLevelExample {
                 .withCollectionName(collectionName)
                 .withVectorFieldName("vector")
                 .withFloatVectors(Collections.singletonList(CommonUtils.generateFloatVector(VECTOR_DIM)))
-                .withTopK(topK)
+                .withLimit((long)topK)
                 .withMetricType(MetricType.L2)
                 .build());
         CommonUtils.handleResponseStatus(searchR);
@@ -204,7 +204,7 @@ public class ConsistencyLevelExample {
                     .withCollectionName(collectionName)
                     .withVectorFieldName("vector")
                     .withFloatVectors(Collections.singletonList(vector))
-                    .withTopK(1)
+                    .withLimit(1L)
                     .withMetricType(MetricType.L2)
                     .build());
             pool.returnClient(clientName2, client2); // don't forget to return the client to pool
