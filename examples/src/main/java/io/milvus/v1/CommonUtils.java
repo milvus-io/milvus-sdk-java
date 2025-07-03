@@ -263,6 +263,27 @@ public class CommonUtils {
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////
+    public static ByteBuffer generateInt8Vector(int dimension) {
+        Random ran = new Random();
+        int byteCount = dimension;
+        // binary vector doesn't care endian since each byte is independent
+        ByteBuffer vector = ByteBuffer.allocate(byteCount);
+        for (int i = 0; i < byteCount; ++i) {
+            vector.put((byte) (ran.nextInt(256) - 128));
+        }
+        return vector;
+    }
+
+    public static List<ByteBuffer> generateInt8Vectors(int dimension, int count) {
+        List<ByteBuffer> vectors = new ArrayList<>();
+        for (int n = 0; n < count; ++n) {
+            ByteBuffer vector = generateInt8Vector(dimension);
+            vectors.add(vector);
+        }
+        return vectors;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static SortedMap<Long, Float> generateSparseVector() {
         Random ran = new Random();
         SortedMap<Long, Float> sparse = new TreeMap<>();

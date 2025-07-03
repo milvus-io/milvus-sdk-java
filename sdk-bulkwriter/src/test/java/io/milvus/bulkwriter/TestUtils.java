@@ -58,6 +58,10 @@ public class TestUtils {
 
     }
 
+    public ByteBuffer generateInt8Vector() {
+        return generateBinaryVector(dimension*8);
+    }
+
     public ByteBuffer generateFloat16Vector() {
         List<Float> vector = generateFloatVector();
         return Float16Utils.f32VectorToFp16Buffer(vector);
