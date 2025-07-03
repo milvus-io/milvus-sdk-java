@@ -144,6 +144,7 @@ public class ParquetFileWriter implements FormatFileWriter {
             case BinaryVector:
             case Float16Vector:
             case BFloat16Vector:
+            case Int8Vector:
                 addBinaryVector(group, paramName, (ByteBuffer) value);
                 break;
             case SparseFloatVector:

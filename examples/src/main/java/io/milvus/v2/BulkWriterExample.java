@@ -373,7 +373,7 @@ public class BulkWriterExample {
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
             row.put("binary_vector", CommonUtils.generateBinaryVector(DIM).array());
-            row.put("float16_vector", CommonUtils.generateFloat16Vector(DIM, false).array());
+            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
             row.put("sparse_vector", CommonUtils.generateSparseVector());
 
             // array field
@@ -405,7 +405,7 @@ public class BulkWriterExample {
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
             row.put("binary_vector", CommonUtils.generateBinaryVector(DIM).array());
-            row.put("float16_vector", CommonUtils.generateFloat16Vector(DIM, false).array());
+            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
             row.put("sparse_vector", CommonUtils.generateSparseVector());
 
             // array field
@@ -450,7 +450,7 @@ public class BulkWriterExample {
             // vector field
             rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(row.get("float_vector")));
             rowObject.add("binary_vector", GSON_INSTANCE.toJsonTree(row.get("binary_vector")));
-            rowObject.add("float16_vector", GSON_INSTANCE.toJsonTree(row.get("float16_vector")));
+            rowObject.add("int8_vector", GSON_INSTANCE.toJsonTree(row.get("int8_vector")));
             rowObject.add("sparse_vector", GSON_INSTANCE.toJsonTree(row.get("sparse_vector")));
 
             // array field
@@ -791,7 +791,7 @@ public class BulkWriterExample {
 
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "float_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "binary_vector");
-            comparePrint(collectionSchema, originalEntity, fetchedEntity, "float16_vector");
+            comparePrint(collectionSchema, originalEntity, fetchedEntity, "int8_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "sparse_vector");
 
             System.out.println(fetchedEntity);
@@ -815,9 +815,9 @@ public class BulkWriterExample {
                 .metricType(IndexParam.MetricType.HAMMING)
                 .build());
         indexes.add(IndexParam.builder()
-                .fieldName("float16_vector")
-                .indexType(IndexParam.IndexType.FLAT)
-                .metricType(IndexParam.MetricType.IP)
+                .fieldName("int8_vector")
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .metricType(IndexParam.MetricType.L2)
                 .build());
         indexes.add(IndexParam.builder()
                 .fieldName("sparse_vector")
@@ -992,8 +992,8 @@ public class BulkWriterExample {
                 .dimension(DIM)
                 .build());
         schemaV2.addField(AddFieldReq.builder()
-                .fieldName("float16_vector")
-                .dataType(DataType.Float16Vector)
+                .fieldName("int8_vector")
+                .dataType(DataType.Int8Vector)
                 .dimension(DIM)
                 .build());
         schemaV2.addField(AddFieldReq.builder()

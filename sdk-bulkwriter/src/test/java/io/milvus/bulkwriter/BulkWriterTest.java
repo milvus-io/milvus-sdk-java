@@ -202,6 +202,11 @@ public class BulkWriterTest {
                 .fieldName("sparse_vector_field")
                 .dataType(DataType.SparseFloatVector)
                 .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("int8_vector_field")
+                .dataType(DataType.Int8Vector)
+                .dimension(DIMENSION)
+                .build());
         return schemaV2;
     }
 
@@ -274,6 +279,7 @@ public class BulkWriterTest {
             rowObject.add("float_vector_field", JsonUtils.toJsonTree(utils.generateFloatVector()));
             rowObject.add("binary_vector_field", JsonUtils.toJsonTree(utils.generateBinaryVector().array()));
             rowObject.add("sparse_vector_field", JsonUtils.toJsonTree(utils.generateSparseVector()));
+            rowObject.add("int8_vector_field", JsonUtils.toJsonTree(utils.generateInt8Vector().array()));
 
             rows.add(rowObject);
         }
@@ -368,6 +374,7 @@ public class BulkWriterTest {
                 rowObject.add("float_vector_field", JsonUtils.toJsonTree(utils.generateFloatVector()));
                 rowObject.add("binary_vector_field", JsonUtils.toJsonTree(utils.generateBinaryVector().array()));
                 rowObject.add("sparse_vector_field", JsonUtils.toJsonTree(utils.generateSparseVector()));
+                rowObject.add("int8_vector_field", JsonUtils.toJsonTree(utils.generateInt8Vector().array()));
                 rowObject.add("arr_int32_field", JsonUtils.toJsonTree(GeneratorUtils.generatorInt32Value(2)));
                 rowObject.add("arr_float_field", JsonUtils.toJsonTree(GeneratorUtils.generatorFloatValue(3)));
                 rowObject.add("arr_varchar_field", JsonUtils.toJsonTree(GeneratorUtils.generatorVarcharValue(4, 5)));
@@ -421,6 +428,12 @@ public class BulkWriterTest {
                 // set incorrect type for varchar field, expect throwing an exception
                 rowObject.addProperty("float_field", 2.5);
                 rowObject.addProperty("varchar_field", 2.5);
+//                localBulkWriter.appendRow(rowObject);
+                Assertions.assertThrows(MilvusException.class, ()->localBulkWriter.appendRow(rowObject));
+
+                // set incorrect value type for int8 vector field, expect throwing an exception
+                rowObject.addProperty("varchar_field", "dummy");
+                rowObject.addProperty("int8_vector_field", Boolean.TRUE);
 //                localBulkWriter.appendRow(rowObject);
                 Assertions.assertThrows(MilvusException.class, ()->localBulkWriter.appendRow(rowObject));
             } catch (Exception e) {

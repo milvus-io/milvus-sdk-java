@@ -289,7 +289,8 @@ public abstract class BulkWriter implements AutoCloseable {
                 case FloatVector:
                 case Float16Vector:
                 case BFloat16Vector:
-                case SparseFloatVector: {
+                case SparseFloatVector:
+                case Int8Vector:{
                     Pair<Object, Integer> objectAndSize = verifyVector(obj, field);
                     rowValues.put(fieldName, objectAndSize.getLeft());
                     rowSize += objectAndSize.getRight();
@@ -368,6 +369,7 @@ public abstract class BulkWriter implements AutoCloseable {
             case FloatVector:
                 return Pair.of(vector, ((List<?>) vector).size() * 4);
             case BinaryVector:
+            case Int8Vector:
                 return Pair.of(vector, ((ByteBuffer)vector).limit());
             case Float16Vector:
             case BFloat16Vector:
