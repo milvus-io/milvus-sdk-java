@@ -81,8 +81,10 @@ public class ParquetUtils {
                 case BinaryVector:
                 case Float16Vector:
                 case BFloat16Vector:
+                case Int8Vector:
+                    boolean isSigned = (field.getDataType() == io.milvus.v2.common.DataType.Int8Vector);
                     setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
-                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, false), field, true);
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, isSigned), field, true);
                     break;
                 case Array:
                     fillArrayType(messageTypeBuilder, field);
