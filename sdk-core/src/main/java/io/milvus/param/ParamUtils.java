@@ -90,6 +90,7 @@ public class ParamUtils {
         typeErrMsg.put(DataType.Float16Vector, "Type mismatch for field '%s': Float16 vector field's value type must be JsonArray of byte[].");
         typeErrMsg.put(DataType.BFloat16Vector, "Type mismatch for field '%s': BFloat16 vector field's value type must be JsonArray of byte[].");
         typeErrMsg.put(DataType.SparseFloatVector, "Type mismatch for field '%s': SparseFloatVector vector field's value type must be JsonObject of Map<Long, Float>.");
+        typeErrMsg.put(DataType.Int8Vector, "Type mismatch for field '%s': Int8Vector vector field's value type must be JsonArray of byte[].");
         return typeErrMsg;
     }
 
