@@ -32,18 +32,23 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
+import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.QueryResp;
+import io.milvus.v2.service.vector.response.SearchResp;
 
 import java.util.*;
 
 public class JsonFieldExample {
     private static final String COLLECTION_NAME = "java_sdk_example_json_v2";
-    private static final String ID_FIELD = "id";
+    private static final String ID_FIELD = "key";
     private static final String VECTOR_FIELD = "vector";
     private static final String JSON_FIELD = "metadata";
     private static final Integer VECTOR_DIM = 128;
 
     private static void queryWithExpr(MilvusClientV2 client, String expr) {
+        System.out.printf("%n=============================Query with expr: '%s'================================%n", expr);
         QueryResp queryRet = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .filter(expr)
@@ -54,7 +59,6 @@ public class JsonFieldExample {
         for (QueryResp.QueryResult record : records) {
             System.out.println(record.getEntity());
         }
-        System.out.println("=============================================================");
     }
 
     public static void main(String[] args) {
@@ -104,22 +108,27 @@ public class JsonFieldExample {
         System.out.println("Collection created");
 
         // Insert rows
+        List<List<Float>> vectors = new ArrayList<>();
+        List<JsonObject> metadatas = new ArrayList<>();
         Gson gson = new Gson();
         for (int i = 0; i < 100; i++) {
             JsonObject row = new JsonObject();
             row.addProperty(ID_FIELD, i);
-            row.add(VECTOR_FIELD, gson.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
+            List<Float> vector = CommonUtils.generateFloatVector(VECTOR_DIM);
+            row.add(VECTOR_FIELD, gson.toJsonTree(vector));
+            vectors.add(vector);
 
             // Note: for JSON field, always construct a real JsonObject
             // don't use row.addProperty(JSON_FIELD, strContent) since the value is treated as a string, not a JsonObject
             JsonObject metadata = new JsonObject();
-            metadata.addProperty("path", String.format("\\root/abc/path%d", i));
+            metadata.addProperty("path", String.format("\\root/abc/path_%d", i));
             metadata.addProperty("size", i);
             if (i%7 == 0) {
                 metadata.addProperty("special", true);
             }
             metadata.add("flags", gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
             row.add(JSON_FIELD, metadata);
+            metadatas.add(metadata);
 //            System.out.println(metadata);
 
             // dynamic fields
@@ -143,6 +152,44 @@ public class JsonFieldExample {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+
+        // Search and output JSON field
+        List<BaseVector> searchVectors = new ArrayList<>();
+        List<JsonObject> expectedMetadatas = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            List<Float> targetVector = vectors.get(i);
+            searchVectors.add(new FloatVec(targetVector));
+            expectedMetadatas.add(metadatas.get(i));
+        }
+        SearchResp searchRet = client.search(SearchReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .data(searchVectors)
+                .limit(3L)
+                .annsField(VECTOR_FIELD)
+                .outputFields(Arrays.asList(ID_FIELD, VECTOR_FIELD, JSON_FIELD))
+                .build());
+
+        System.out.println("\n=============================Search result================================");
+        List<List<SearchResp.SearchResult>> searchResults = searchRet.getSearchResults();
+        for (int i = 0; i < 10; i++) {
+            List<SearchResp.SearchResult> results = searchResults.get(i);
+            System.out.printf("\nThe result of No.%d target vector:\n", i);
+            for (SearchResp.SearchResult result : results) {
+                System.out.println(result);
+            }
+
+            long pk = (long)results.get(0).getId();
+            if (pk != i) {
+                throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d", pk, i));
+            }
+            JsonObject metadata = (JsonObject) results.get(0).getEntity().get(JSON_FIELD);
+            if (!metadata.equals(expectedMetadatas.get(i))) {
+                throw new RuntimeException(String.format("The top1 metadata %s is not equal to target metadata %s",
+                        metadata, expectedMetadatas.get(i)));
+            }
+            List<Float> vector = (List<Float>) results.get(0).getEntity().get(VECTOR_FIELD);
+            CommonUtils.compareFloatVectors(vector, (List<Float>)searchVectors.get(i).getData());
+        }
 
         // Query by filtering JSON
         queryWithExpr(client, "exists metadata[\"special\"]");
