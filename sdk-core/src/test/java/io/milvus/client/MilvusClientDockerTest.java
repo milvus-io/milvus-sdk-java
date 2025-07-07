@@ -678,6 +678,17 @@ class MilvusClientDockerTest {
             for (int k = 0; k < outputVec.size(); k++) {
                 Assertions.assertEquals(targetVectors.get(i).get(k), outputVec.get(k));
             }
+
+            // verify the old way
+            List<QueryResultsWrapper.RowRecord> records = results.getRowRecords(i);
+            obj = records.get(0).get(DataType.FloatVector.name());
+            outputVec = (List<Float>)obj;
+            Assertions.assertEquals(targetVectors.get(i).size(), outputVec.size());
+            for (int k = 0; k < outputVec.size(); k++) {
+                Assertions.assertEquals(targetVectors.get(i).get(k), outputVec.get(k));
+            }
+            double d = (double)records.get(0).get(DataType.Double.name());
+            Assertions.assertEquals(d, compareWeights.get(i));
         }
 
         List<?> fieldData = results.getFieldData(DataType.Double.name(), 0);

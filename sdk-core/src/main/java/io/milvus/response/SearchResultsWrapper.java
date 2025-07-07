@@ -40,8 +40,11 @@ import java.util.Map;
 public class SearchResultsWrapper extends RowRecordWrapper {
     private final SearchResultData results;
 
+    private String primaryKey = "id";
+
     public SearchResultsWrapper(@NonNull SearchResultData results) {
         this.results = results;
+        this.primaryKey = results.getPrimaryFieldName();
     }
 
     /**
@@ -86,13 +89,13 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             IDScore score = idScore.get(i);
             QueryResultsWrapper.RowRecord record = new QueryResultsWrapper.RowRecord();
             if (score.getStrID().isEmpty()) {
-                record.put("id", score.getLongID());
+                record.put(primaryKey, score.getLongID());
             } else {
-                record.put("id", score.getStrID());
+                record.put(primaryKey, score.getStrID());
             }
 
             record.put("score", score.getScore()); // use score instead
-            buildRowRecord(record, i);
+            buildRowRecord(record, indexOfTarget*topK + (long)i);
             records.add(record);
         }
         return records;
@@ -162,7 +165,6 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         // set id and score
         IDs ids = results.getIds();
-        String pkName = results.getPrimaryFieldName();
         if (ids.hasIntId()) {
             LongArray longIDs = ids.getIntId();
             if (offset + k > longIDs.getDataCount()) {
@@ -170,7 +172,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore(pkName, "", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
+                idScores.add(new IDScore(primaryKey, "", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
@@ -179,7 +181,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore(pkName, strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
+                idScores.add(new IDScore(primaryKey, strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
             }
         } else {
             // in v2.3.3, return an empty list instead of throwing exception
