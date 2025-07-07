@@ -68,6 +68,7 @@ class MilvusClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
     private static final int DIMENSION = 256;
+    private static final Random RANDOM = new Random();
     private static final int ARRAY_CAPACITY = 100;
     private static final float FLOAT16_PRECISION = 0.001f;
     private static final float BFLOAT16_PRECISION = 0.01f;
@@ -2866,73 +2867,125 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dropResponse.getStatus().intValue());
     }
 
-    @Test
-    void testCacheCollectionSchema() {
-        String randomCollectionName = generator.generate(10);
+    private static void createSimpleCollection(String collName, String pkName, boolean autoID, int dimension) {
+        client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(collName)
+                .build());
 
         // collection schema
         List<FieldType> fieldsSchema = new ArrayList<>();
         fieldsSchema.add(FieldType.newBuilder()
                 .withPrimaryKey(true)
-                .withAutoID(true)
+                .withAutoID(autoID)
                 .withDataType(DataType.Int64)
-                .withName("id")
+                .withName(pkName)
                 .build());
 
         fieldsSchema.add(FieldType.newBuilder()
                 .withDataType(DataType.FloatVector)
                 .withName("vector")
-                .withDimension(DIMENSION)
+                .withDimension(dimension)
                 .build());
 
         // create collection
         R<RpcStatus> createR = client.createCollection(CreateCollectionParam.newBuilder()
-                .withCollectionName(randomCollectionName)
+                .withCollectionName(collName)
                 .withFieldTypes(fieldsSchema)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+    }
 
-        // insert
+    @Test
+    void testCacheCollectionSchema() {
+        String randomCollectionName = generator.generate(10);
+
+        createSimpleCollection(randomCollectionName, "aaa", false, DIMENSION);
+
+        // insert/upsert correct data
         JsonObject row = new JsonObject();
+        row.addProperty("aaa", 8);
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
         R<MutationResult> insertR = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getInsertCnt());
 
-        // drop collection
-        client.dropCollection(DropCollectionParam.newBuilder()
+        insertR = client.upsert(UpsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
                 .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
 
-        // create a new collection with the same name, different schema
-        fieldsSchema.add(FieldType.newBuilder()
-                .withDataType(DataType.VarChar)
-                .withName("title")
-                .withMaxLength(100)
-                .build());
+        // create a new collection with the same name, different dimension
+        createSimpleCollection(randomCollectionName, "aaa", false, 100);
 
-        createR = client.createCollection(CreateCollectionParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withFieldTypes(fieldsSchema)
-                .build());
-        Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
-
-        // insert wrong data
+        // insert/upsert wrong data, dimension mismatch
         insertR = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        // insert correct data
-        row.addProperty("title", "hello world");
+        insertR = client.upsert(UpsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // insert/upsert correct data
+        List<Float> vector = new ArrayList<>();
+        for (int i = 0; i < 100; ++i) {
+            vector.add(RANDOM.nextFloat());
+        }
+        row.add("vector", JsonUtils.toJsonTree(vector));
         insertR = client.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getInsertCnt());
+
+        insertR = client.upsert(UpsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
+
+        // create a new collection with the same name, different primary key
+        createSimpleCollection(randomCollectionName, "bbb", false, 100);
+
+        // insert/upsert wrong data, primary key name mismatch
+        insertR = client.insert(InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        insertR = client.upsert(UpsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+
+        // insert/upsert correct data
+        row.addProperty("bbb", 5);
+        insertR = client.insert(InsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getInsertCnt());
+
+        insertR = client.upsert(UpsertParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
     }
 
     @Test
