@@ -75,6 +75,18 @@ public class CommonUtils {
         return vectors;
     }
 
+    public static void compareFloatVectors(List<Float> vec1, List<Float> vec2) {
+        if (vec1.size() != vec2.size()) {
+            throw new RuntimeException(String.format("Vector dimension mismatch: %d vs %d", vec1.size(), vec2.size()));
+        }
+        for (int i = 0; i < vec1.size(); i++) {
+            if (Math.abs(vec1.get(i) - vec2.get(i)) > 0.001f) {
+                throw new RuntimeException(String.format("Vector value mismatch: %f vs %f at No.%d value",
+                        vec1.get(i), vec2.get(i), i));
+            }
+        }
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer generateBinaryVector(int dimension) {
         Random ran = new Random();
@@ -281,5 +293,4 @@ public class CommonUtils {
         }
         return vectors;
     }
-
 }
