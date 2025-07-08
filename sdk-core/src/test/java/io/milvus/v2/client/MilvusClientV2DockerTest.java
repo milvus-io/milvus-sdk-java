@@ -1342,18 +1342,29 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("64", extraParams.get("efConstruction"));
     }
 
+    private static void createSimpleCollection(String collName, String pkName, boolean autoID, int dimension) {
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(collName)
+                .build());
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collName)
+                .autoID(autoID)
+                .primaryFieldName(pkName)
+                .dimension(dimension)
+                .enableDynamicField(false)
+                .build());
+    }
+
     @Test
     void testCacheCollectionSchema() {
         String randomCollectionName = generator.generate(10);
 
-        client.createCollection(CreateCollectionReq.builder()
-                .collectionName(randomCollectionName)
-                .autoID(true)
-                .dimension(DIMENSION)
-                .build());
+        createSimpleCollection(randomCollectionName, "aaa", false, DIMENSION);
 
-        // insert
+        // insert/upsert correct data
         JsonObject row = new JsonObject();
+        row.addProperty("aaa", 8);
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
         InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -1361,25 +1372,26 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(1L, insertResp.getInsertCnt());
 
-        // drop collection
-        client.dropCollection(DropCollectionReq.builder()
+        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
                 .build());
+        Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
 
-        // create a new collection with the same name, different schema
-        client.createCollection(CreateCollectionReq.builder()
-                .collectionName(randomCollectionName)
-                .autoID(true)
-                .dimension(100)
-                .build());
+        // create a new collection with the same name, different dimension
+        createSimpleCollection(randomCollectionName, "aaa", false, 100);
 
-        // insert wrong data
+        // insert/upsert wrong data, dimension mismatch
         Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build()));
+        Assertions.assertThrows(MilvusClientException.class, ()->client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
 
-        // insert correct data
+        // insert/upsert correct data
         List<Float> vector = new ArrayList<>();
         for (int i = 0; i < 100; ++i) {
             vector.add(RANDOM.nextFloat());
@@ -1390,6 +1402,39 @@ class MilvusClientV2DockerTest {
                 .data(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(1L, insertResp.getInsertCnt());
+
+        upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
+
+        // create a new collection with the same name, different primary key
+        createSimpleCollection(randomCollectionName, "bbb", false, 100);
+
+        // insert/upsert wrong data, primary key name mismatch
+        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
+        Assertions.assertThrows(MilvusClientException.class, ()->client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
+
+        // insert/upsert correct data
+        row.addProperty("bbb", 5);
+        insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+
+        upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
     }
 
     @Test
