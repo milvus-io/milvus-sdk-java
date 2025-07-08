@@ -107,8 +107,12 @@ public class VectorService extends BaseService {
         if ((status.getCode() != 0 && status.getCode() != 8) ||
                 (!status.getErrorCode().equals(io.milvus.grpc.ErrorCode.Success) &&
                         status.getErrorCode() != io.milvus.grpc.ErrorCode.RateLimit)) {
-            cacheCollectionInfo.remove(combineCacheKey(databaseName, collectionName));
+            removeCollectionCache(databaseName, collectionName);
         }
+    }
+
+    private void removeCollectionCache(String databaseName, String collectionName) {
+        cacheCollectionInfo.remove(combineCacheKey(databaseName, collectionName));
     }
 
     private InsertRequest buildInsertRequest(InsertReq request, DescribeCollectionResponse descResp) {
@@ -119,21 +123,38 @@ public class VectorService extends BaseService {
     }
 
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
-        String title = String.format("InsertRequest collectionName:%s", request.getCollectionName());
+        String collectionName = request.getCollectionName();
+        String title = String.format("InsertRequest collectionName:%s", collectionName);
 
         // TODO: set the database name
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName(), false);
-        InsertRequest rpcRequest = buildInsertRequest(request, descResp);
-        MutationResult response = blockingStub.insert(rpcRequest);
-        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            descResp = getCollectionInfo(blockingStub, "", request.getCollectionName(), true);
-            rpcRequest =  buildInsertRequest(request, descResp);
-            response = blockingStub.insert(rpcRequest);
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", collectionName, false);
+
+        // To handle this bug: https://github.com/milvus-io/milvus/issues/41688
+        // if the collection is already recreated, some schema might be changed, the buildInsertRequest()
+        // could not convert the InsertRequest with the old collectionDesc, we need to update the
+        // collectionDesc and call buildInsertRequest() again.
+        InsertRequest rpcRequest;
+        try {
+            rpcRequest = buildInsertRequest(request, descResp);
+        } catch (Exception ignored) {
+            descResp = getCollectionInfo(blockingStub, "", collectionName, true);
+            rpcRequest = buildInsertRequest(request, descResp);
         }
 
-        cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
+        // If there are multiple clients, the client_A repeatedly do insert, the client_B changes
+        // the collection schema. The server might return a special error code "SchemaMismatch".
+        // If the client_A gets this special error code, it needs to update the collectionDesc and
+        // call insert() again.
+        MutationResult response = blockingStub.insert(rpcRequest);
+        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+            getCollectionInfo(blockingStub, "", collectionName, true);
+            return this.insert(blockingStub, request);
+        }
+
+        // if illegal data, server fails to process insert, else succeed
+        cleanCacheIfFailed(response.getStatus(), "", collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
-        GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
+        GTsDict.getInstance().updateCollectionTs(collectionName, response.getTimestamp());
 
         if (response.getIDs().hasIntId()) {
             List<Object> ids = new ArrayList<>(response.getIDs().getIntId().getDataList());
@@ -158,23 +179,40 @@ public class VectorService extends BaseService {
     }
 
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
-        String title = String.format("UpsertRequest collectionName:%s", request.getCollectionName());
+        String collectionName = request.getCollectionName();
+        String title = String.format("UpsertRequest collectionName:%s", collectionName);
 
         // TODO: set the database name
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", request.getCollectionName(), false);
-        UpsertRequest rpcRequest = buildUpsertRequest(request, descResp);
-        MutationResult response = blockingStub.upsert(rpcRequest);
-        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            descResp = getCollectionInfo(blockingStub, "", request.getCollectionName(), true);
-            rpcRequest =  buildUpsertRequest(request, descResp);
-            response = blockingStub.upsert(rpcRequest);
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, "", collectionName, false);
+
+        // To handle this bug: https://github.com/milvus-io/milvus/issues/41688
+        // if the collection is already recreated, some schema might be changed, the buildUpsertRequest()
+        // could not convert the UpsertRequest with the old collectionDesc, we need to update the
+        // collectionDesc and call buildUpsertRequest() again.
+        UpsertRequest rpcRequest;
+        try {
+            rpcRequest = buildUpsertRequest(request, descResp);
+        } catch (Exception ignored) {
+            descResp = getCollectionInfo(blockingStub, "", collectionName, true);
+            rpcRequest = buildUpsertRequest(request, descResp);
         }
 
-        cleanCacheIfFailed(response.getStatus(), "", request.getCollectionName());
+        // If there are multiple clients, the client_A repeatedly do upsert, the client_B changes
+        // the collection schema. The server might return a special error code "SchemaMismatch".
+        // If the client_A gets this special error code, it needs to update the collectionDesc and
+        // call upsert() again.
+        MutationResult response = blockingStub.upsert(rpcRequest);
+        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+            getCollectionInfo(blockingStub, "", collectionName, true);
+            return this.upsert(blockingStub, request);
+        }
+
+        // if illegal data, server fails to process upsert, else succeed
+        cleanCacheIfFailed(response.getStatus(), "", collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
-        GTsDict.getInstance().updateCollectionTs(request.getCollectionName(), response.getTimestamp());
+        GTsDict.getInstance().updateCollectionTs(collectionName, response.getTimestamp());
         return UpsertResp.builder()
-                .upsertCnt(response.getInsertCnt())
+                .upsertCnt(response.getUpsertCnt())
                 .build();
     }
 
