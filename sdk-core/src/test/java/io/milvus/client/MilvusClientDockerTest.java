@@ -25,6 +25,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.TestUtils;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
@@ -74,6 +75,19 @@ class MilvusClientDockerTest {
     private static final float BFLOAT16_PRECISION = 0.01f;
 
     private static final TestUtils utils = new TestUtils(DIMENSION);
+
+    // this class is for testing the behavior of AbstractMilvusGrpcClient
+    // to expose some internal methods
+    private static class MilvusClientForTest extends MilvusServiceClient {
+        public MilvusClientForTest(ConnectParam connectParam) {
+            super(connectParam);
+        }
+
+        public DescribeCollectionResponse getCollectionInfo(String databaseName, String collectionName) {
+            String key = GTsDict.CombineCollectionName(databaseName, collectionName);
+            return cacheCollectionInfo.get(key);
+        }
+    }
 
     @Container
     private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
@@ -2835,7 +2849,11 @@ class MilvusClientDockerTest {
     @Test
     void testDatabase() {
         String dbName = "test_database";
-        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder().withDatabaseName(dbName).withReplicaNumber(1).withResourceGroups(Arrays.asList("rg1")).build();
+        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder()
+                .withDatabaseName(dbName)
+                .withReplicaNumber(1)
+                .withResourceGroups(Arrays.asList("rg1"))
+                .build();
         R<RpcStatus> createResponse = client.createDatabase(createDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createResponse.getStatus().intValue());
 
@@ -2849,7 +2867,11 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(1, describeDBWrapper.getResourceGroups().size());
 
         // alter database props
-        AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder().withDatabaseName(dbName).withReplicaNumber(3).WithResourceGroups(Arrays.asList("rg1", "rg2", "rg3")).build();
+        AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder()
+                .withDatabaseName(dbName)
+                .withReplicaNumber(3)
+                .WithResourceGroups(Arrays.asList("rg1", "rg2", "rg3"))
+                .build();
         R<RpcStatus> alterDatabaseResponse = client.alterDatabase(alterDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), alterDatabaseResponse.getStatus().intValue());
 
@@ -2867,7 +2889,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dropResponse.getStatus().intValue());
     }
 
-    private static void createSimpleCollection(String collName, String pkName, boolean autoID, int dimension) {
+    private static void createSimpleCollection(MilvusClient client, String collName, String pkName, boolean autoID, int dimension) {
         client.dropCollection(DropCollectionParam.newBuilder()
                 .withCollectionName(collName)
                 .build());
@@ -2896,22 +2918,67 @@ class MilvusClientDockerTest {
     }
 
     @Test
-    void testCacheCollectionSchema() {
+    void testCacheCollectionSchema() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
-        createSimpleCollection(randomCollectionName, "aaa", false, DIMENSION);
+        // create a new db
+        String testDbName = "test_database";
+        CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder()
+                .withDatabaseName(testDbName)
+                .withReplicaNumber(1)
+                .build();
+        R<RpcStatus> dbResponse = client.createDatabase(createDatabaseParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), dbResponse.getStatus().intValue());
 
-        // insert/upsert correct data
+        // create a collection in the default db
+        createSimpleCollection(client, randomCollectionName, "pk", false, DIMENSION);
+
+        // a temp client connect to the new db
+        ConnectParam connectParam = connectParamBuilder()
+                .withAuthorization("root", "Milvus")
+                .withDatabaseName(testDbName)
+                .build();
+        MilvusClientForTest tempClient = new MilvusClientForTest(connectParam);
+
+        // use the temp client to insert correct data into the default collection
+        // there will be a schema cache for this collection in the temp client
+        // there will be timestamp for this collection in the global GTsDict
         JsonObject row = new JsonObject();
-        row.addProperty("aaa", 8);
-        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
-        R<MutationResult> insertR = client.insert(InsertParam.newBuilder()
+        row.addProperty("pk", 8);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
+        R<MutationResult> insertR = tempClient.insert(InsertParam.newBuilder()
+                .withDatabaseName("default")
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
         Assertions.assertEquals(1, insertR.getData().getInsertCnt());
 
+        // check the schema cache of this collection, must be not null
+        DescribeCollectionResponse descResp = tempClient.getCollectionInfo("default", randomCollectionName);
+        Assertions.assertNotNull(descResp);
+
+        // check the timestamp of this collection, must be positive
+        String key1 = GTsDict.CombineCollectionName("default", randomCollectionName);
+        Long ts11 = GTsDict.getInstance().getCollectionTs(key1);
+        Assertions.assertNotNull(ts11);
+        Assertions.assertTrue(ts11 > 0L);
+
+        // insert wrong data, the schema cache will be removed
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
+        insertR = tempClient.insert(InsertParam.newBuilder()
+                .withDatabaseName("default")
+                .withCollectionName(randomCollectionName)
+                .withRows(Collections.singletonList(row))
+                .build());
+        Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        descResp = tempClient.getCollectionInfo("default", randomCollectionName);
+        Assertions.assertNull(descResp);
+
+        // use the default client to do upsert correct data
+        TimeUnit.MILLISECONDS.sleep(100);
+        row.addProperty("pk", 999);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
         insertR = client.upsert(UpsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
@@ -2919,73 +2986,101 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
         Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
 
-        // create a new collection with the same name, different dimension
-        createSimpleCollection(randomCollectionName, "aaa", false, 100);
+        // check the timestamp of this collection, must be a new positive
+        Long ts12 = GTsDict.getInstance().getCollectionTs(key1);
+        Assertions.assertNotNull(ts12);
+        Assertions.assertTrue(ts12 > ts11);
 
-        // insert/upsert wrong data, dimension mismatch
-        insertR = client.insert(InsertParam.newBuilder()
+        // create a new collection with the same name, different schema, in the test db
+        createSimpleCollection(tempClient, randomCollectionName, "aaa", false, 4);
+
+        // use the temp client to insert wrong data, wrong dimension
+        row.addProperty("aaa", 22);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
+        insertR = tempClient.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        insertR = client.upsert(UpsertParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withRows(Collections.singletonList(row))
-                .build());
-        Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
+        // check the timestamp of this collection, must be null
+        String key2 = GTsDict.CombineCollectionName(testDbName, randomCollectionName);
+        Long ts21 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNull(ts21);
 
-        // insert/upsert correct data
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < 100; ++i) {
-            vector.add(RANDOM.nextFloat());
-        }
-        row.add("vector", JsonUtils.toJsonTree(vector));
-        insertR = client.insert(InsertParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withRows(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-        Assertions.assertEquals(1, insertR.getData().getInsertCnt());
-
-        insertR = client.upsert(UpsertParam.newBuilder()
+        // use the temp client to do upsert correct data
+        TimeUnit.MILLISECONDS.sleep(100);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(4)));
+        insertR = tempClient.upsert(UpsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
         Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
 
-        // create a new collection with the same name, different primary key
-        createSimpleCollection(randomCollectionName, "bbb", false, 100);
+        // check the schema cache of this collection, must be not null
+        descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
+        Assertions.assertNotNull(descResp);
 
-        // insert/upsert wrong data, primary key name mismatch
-        insertR = client.insert(InsertParam.newBuilder()
+        // check the timestamp of this collection, must be positive
+        Long ts22 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNotNull(ts22);
+        Assertions.assertTrue(ts22 > 0L);
+
+        // tempClient upsert wrong data
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
+        insertR = tempClient.upsert(UpsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        insertR = client.upsert(UpsertParam.newBuilder()
+        // check the schema cache of this collection, must be null
+        descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
+        Assertions.assertNull(descResp);
+
+        // tempClient delete data
+        R<DeleteResponse> delResp = tempClient.delete(DeleteIdsParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .addPrimaryId(22L)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), delResp.getStatus().intValue());
+
+        // check the schema cache of this collection, must be not null
+        descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
+        Assertions.assertNotNull(descResp);
+
+        // check the timestamp of this collection, must be greater than previous
+        Long ts23 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNotNull(ts23);
+        Assertions.assertTrue(ts23 > ts22);
+
+        // use the default client to drop the collection in the new db
+        R<RpcStatus> dropResp = client.dropCollection(DropCollectionParam.newBuilder()
+                .withCollectionName(randomCollectionName)
+                .withDatabaseName(testDbName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), dropResp.getStatus().intValue());
+
+        // check the timestamp of this collection, must be deleted
+        Long ts31 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNull(ts31);
+
+        // use the temp client to insert correct data into the collection
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(4)));
+        insertR = tempClient.insert(InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
                 .withRows(Collections.singletonList(row))
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        // insert/upsert correct data
-        row.addProperty("bbb", 5);
-        insertR = client.insert(InsertParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withRows(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-        Assertions.assertEquals(1, insertR.getData().getInsertCnt());
+        // check the timestamp of this collection, must be null
+        Long ts32 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNull(ts32);
 
-        insertR = client.upsert(UpsertParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withRows(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-        Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
+        // check the schema cache of this collection, must be null
+        descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
+        Assertions.assertNull(descResp);
     }
 
     @Test

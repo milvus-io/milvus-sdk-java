@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection;
 
+import io.milvus.common.utils.GTsDict;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
@@ -187,14 +188,20 @@ public class CollectionService extends BaseService {
     }
 
     public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
-
-        String title = String.format("DropCollectionRequest collectionName:%s", request.getCollectionName());
-        DropCollectionRequest dropCollectionRequest = DropCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        Status status = blockingStub.dropCollection(dropCollectionRequest);
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("DropCollectionRequest collectionName:%s", collectionName);
+        DropCollectionRequest.Builder builder = DropCollectionRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.dropCollection(builder.build());
         rpcUtils.handleResponse(title, status);
 
+        // remove the last write timestamp for this collection
+        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+        GTsDict.getInstance().removeCollectionTs(key);
         return null;
     }
 
