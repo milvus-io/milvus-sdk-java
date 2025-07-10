@@ -55,6 +55,8 @@ public class InsertReq {
      *
      */
     private List<JsonObject> data;
+    @Builder.Default
+    private String databaseName = "";
     private String collectionName;
     @Builder.Default
     private String partitionName = "";

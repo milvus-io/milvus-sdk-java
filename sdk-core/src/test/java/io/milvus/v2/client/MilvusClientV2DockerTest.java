@@ -27,6 +27,7 @@ import io.milvus.TestUtils;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.resourcegroup.*;
 import io.milvus.common.utils.Float16Utils;
+import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
@@ -70,6 +71,7 @@ import org.testcontainers.milvus.MilvusContainer;
 
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Testcontainers(disabledWithoutDocker = true)
@@ -525,6 +527,15 @@ class MilvusClientV2DockerTest {
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         Assertions.assertEquals(6, queryResults.size());
 
+        // test the withTimeout works well
+        client.withTimeout(1, TimeUnit.NANOSECONDS);
+        Assertions.assertThrows(MilvusClientException.class, ()->client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build()));
+
+        client.withTimeout(0, TimeUnit.SECONDS);
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
 
@@ -1342,7 +1353,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("64", extraParams.get("efConstruction"));
     }
 
-    private static void createSimpleCollection(String collName, String pkName, boolean autoID, int dimension) {
+    private static void createSimpleCollection(MilvusClientV2 client, String collName, String pkName, boolean autoID, int dimension) {
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(collName)
                 .build());
@@ -1357,84 +1368,117 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
-    void testCacheCollectionSchema() {
+    void testCacheCollectionSchema() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
 
-        createSimpleCollection(randomCollectionName, "aaa", false, DIMENSION);
+        // create a new db
+        String testDbName = "test_database";
+        client.createDatabase(CreateDatabaseReq.builder()
+                .databaseName(testDbName)
+                .build());
 
-        // insert/upsert correct data
+        // create a collection in the default db
+        createSimpleCollection(client, randomCollectionName, "pk", false, DIMENSION);
+
+        // a temp client connect to the new db
+        ConnectConfig config = ConnectConfig.builder()
+                .uri(milvus.getEndpoint())
+                .dbName(testDbName)
+                .build();
+        MilvusClientV2 tempClient = new MilvusClientV2(config);
+
+        // use the temp client to insert correct data into the default collection
+        // there will be a schema cache for this collection in the temp client
+        // there will be timestamp for this collection in the global GTsDict
         JsonObject row = new JsonObject();
-        row.addProperty("aaa", 8);
-        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVectors(1).get(0)));
-        InsertResp insertResp = client.insert(InsertReq.builder()
+        row.addProperty("pk", 8);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
+        InsertResp insertResp = tempClient.insert(InsertReq.builder()
+                .databaseName("default")
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(1L, insertResp.getInsertCnt());
 
+        // check the timestamp of this collection, must be positive
+        String key1 = GTsDict.CombineCollectionName("default", randomCollectionName);
+        Long ts11 = GTsDict.getInstance().getCollectionTs(key1);
+        Assertions.assertNotNull(ts11);
+        Assertions.assertTrue(ts11 > 0L);
+
+        // insert wrong data, the schema cache will be removed
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
+        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
+                .databaseName("default")
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build()));
+
+        // use the default client to do upsert correct data
+        TimeUnit.MILLISECONDS.sleep(100);
+        row.addProperty("pk", 999);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
 
-        // create a new collection with the same name, different dimension
-        createSimpleCollection(randomCollectionName, "aaa", false, 100);
+        // check the timestamp of this collection, must be a new positive
+        Long ts12 = GTsDict.getInstance().getCollectionTs(key1);
+        Assertions.assertNotNull(ts12);
+        Assertions.assertTrue(ts12 > ts11);
 
-        // insert/upsert wrong data, dimension mismatch
-        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build()));
-        Assertions.assertThrows(MilvusClientException.class, ()->client.upsert(UpsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build()));
+        // create a new collection with the same name, different schema, in the test db
+        createSimpleCollection(tempClient, randomCollectionName, "aaa", false, 4);
 
-        // insert/upsert correct data
-        List<Float> vector = new ArrayList<>();
-        for (int i = 0; i < 100; ++i) {
-            vector.add(RANDOM.nextFloat());
-        }
-        row.add("vector", JsonUtils.toJsonTree(vector));
-        insertResp = client.insert(InsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(1L, insertResp.getInsertCnt());
-
-        upsertResp = client.upsert(UpsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
-
-        // create a new collection with the same name, different primary key
-        createSimpleCollection(randomCollectionName, "bbb", false, 100);
-
-        // insert/upsert wrong data, primary key name mismatch
-        Assertions.assertThrows(MilvusClientException.class, ()->client.insert(InsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build()));
-        Assertions.assertThrows(MilvusClientException.class, ()->client.upsert(UpsertReq.builder()
+        // use the temp client to insert wrong data, wrong dimension
+        row.addProperty("aaa", 22);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
+        Assertions.assertThrows(MilvusClientException.class, ()->tempClient.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build()));
 
-        // insert/upsert correct data
-        row.addProperty("bbb", 5);
-        insertResp = client.insert(InsertReq.builder()
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+        // check the timestamp of this collection, must be null
+        String key2 = GTsDict.CombineCollectionName(testDbName, randomCollectionName);
+        Long ts21 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNull(ts21);
 
-        upsertResp = client.upsert(UpsertReq.builder()
+        // use the temp client to do upsert correct data
+        TimeUnit.MILLISECONDS.sleep(100);
+        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(4)));
+        upsertResp = tempClient.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build());
         Assertions.assertEquals(1L, upsertResp.getUpsertCnt());
+
+        // check the timestamp of this collection, must be positive
+        Long ts22 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNotNull(ts22);
+        Assertions.assertTrue(ts22 > 0L);
+
+        // tempClient delete data
+        tempClient.delete(DeleteReq.builder()
+                .collectionName(randomCollectionName)
+                .ids(Collections.singletonList(22L))
+                .build());
+
+        // check the timestamp of this collection, must be greater than previous
+        Long ts23 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNotNull(ts23);
+        Assertions.assertTrue(ts23 > ts22);
+
+        // use the default client to drop the collection in the new db
+        client.dropCollection(DropCollectionReq.builder()
+                .databaseName(testDbName)
+                .collectionName(randomCollectionName)
+                .build());
+
+        // check the timestamp of this collection, must be deleted
+        Long ts31 = GTsDict.getInstance().getCollectionTs(key2);
+        Assertions.assertNull(ts31);
     }
 
     @Test

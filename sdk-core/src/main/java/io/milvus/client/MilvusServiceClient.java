@@ -73,6 +73,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final long rpcDeadlineMs;
     private long timeoutMs = 0;
     private RetryParam retryParam = RetryParam.newBuilder().build();
+    private String currentDatabaseName;
 
     public MilvusServiceClient(@NonNull ConnectParam connectParam) {
         this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
@@ -80,6 +81,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
         if (StringUtils.isNotEmpty(connectParam.getDatabaseName())) {
+            currentDatabaseName = connectParam.getDatabaseName();
             metadata.put(Metadata.Key.of("dbname", Metadata.ASCII_STRING_MARSHALLER), connectParam.getDatabaseName());
         }
 
@@ -201,6 +203,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.timeoutMs = src.timeoutMs;
         this.logLevel = src.logLevel;
         this.retryParam = src.retryParam;
+        this.currentDatabaseName = src.currentDatabaseName;
     }
 
     @Override
@@ -220,6 +223,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     @Override
     public boolean clientIsReady() {
         return channel != null && !channel.isShutdown() && !channel.isTerminated();
+    }
+
+    @Override
+    protected String currentDbName() {
+        return currentDatabaseName;
     }
 
     @Override

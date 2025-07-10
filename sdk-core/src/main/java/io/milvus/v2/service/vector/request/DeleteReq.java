@@ -30,6 +30,8 @@ import java.util.Map;
 @Data
 @SuperBuilder
 public class DeleteReq {
+    @Builder.Default
+    private String databaseName = "";
     private String collectionName;
     @Builder.Default
     private String partitionName = "";
