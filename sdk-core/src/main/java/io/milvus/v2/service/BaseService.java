@@ -28,6 +28,7 @@ import io.milvus.v2.utils.ConvertUtils;
 import io.milvus.v2.utils.DataUtils;
 import io.milvus.v2.utils.RpcUtils;
 import io.milvus.v2.utils.VectorUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +38,18 @@ public class BaseService {
     public DataUtils dataUtils = new DataUtils();
     public VectorUtils vectorUtils = new VectorUtils();
     public ConvertUtils convertUtils = new ConvertUtils();
+    private String currentDbName;
+
+    public void setCurrentDbName(String dbName) {
+        currentDbName = dbName;
+    }
+
+    protected String actualDbName(String overwriteName) {
+        if (StringUtils.isNotEmpty(overwriteName)) {
+            return overwriteName;
+        }
+        return currentDbName;
+    }
 
     protected void checkCollectionExist(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String collectionName) {
         HasCollectionRequest request = HasCollectionRequest.newBuilder().setCollectionName(collectionName).build();

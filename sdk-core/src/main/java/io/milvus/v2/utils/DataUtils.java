@@ -32,6 +32,7 @@ import io.milvus.v2.service.vector.request.UpsertReq;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -43,6 +44,7 @@ public class DataUtils {
 
         public InsertRequest convertGrpcInsertRequest(@NonNull InsertReq requestParam,
                                                       DescribeCollectionResp descColl) {
+            String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
 
             // generate insert request builder
@@ -51,6 +53,9 @@ public class DataUtils {
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
                     .setNumRows(requestParam.getData().size());
+            if (StringUtils.isNotEmpty(dbName)) {
+                insertBuilder.setDbName(dbName);
+            }
             upsertBuilder = null;
             fillFieldsData(requestParam, descColl);
             return insertBuilder.build();
@@ -58,14 +63,18 @@ public class DataUtils {
 
         public UpsertRequest convertGrpcUpsertRequest(@NonNull UpsertReq requestParam,
                                                       DescribeCollectionResp descColl) {
+            String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
 
             // generate upsert request builder
-            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
+            MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Upsert).build();
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
                     .setNumRows(requestParam.getData().size());
+            if (StringUtils.isNotEmpty(dbName)) {
+                upsertBuilder.setDbName(dbName);
+            }
             insertBuilder = null;
             fillFieldsData(requestParam, descColl);
             return upsertBuilder.build();

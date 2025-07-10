@@ -83,8 +83,24 @@ public class MilvusClientV2 {
     public MilvusClientV2(ConnectConfig connectConfig) {
         if (connectConfig != null) {
             connect(connectConfig);
+
+            initServices(connectConfig.getDbName());
+
         }
     }
+
+    private void initServices(String dbName) {
+        this.databaseService.setCurrentDbName(dbName);
+        this.collectionService.setCurrentDbName(dbName);
+        this.indexService.setCurrentDbName(dbName);
+        this.vectorService.setCurrentDbName(dbName);
+        this.vectorService.cleanCollectionCache();
+        this.partitionService.setCurrentDbName(dbName);
+        this.rbacService.setCurrentDbName(dbName);
+        this.rgroupService.setCurrentDbName(dbName);
+        this.utilityService.setCurrentDbName(dbName);
+    }
+
     /**
      * connect to Milvus server
      *
@@ -159,6 +175,22 @@ public class MilvusClientV2 {
         rpcUtils.retryConfig(retryConfig);
     }
 
+    public MilvusClientV2 withRetry(RetryConfig retryConfig) {
+        rpcUtils.retryConfig(retryConfig);
+        return this;
+    }
+
+    public MilvusClientV2 withTimeout(long timeout, TimeUnit timeoutUnit) {
+        // the unit of rpcDeadlineMs is millisecond
+        // if the input timeout value is zero, rpcDeadlineMs is zero
+        // if the input timeout value is not zero and less than 1ms, it will be treated as 1ms
+        // if the input timeout value is larger than 1ms, it will be converted to an integer ms value
+        long nn = timeoutUnit.toNanos(timeout);
+        long ms = (nn == 0) ? 0 : (nn < 1000000 ? 1 : nn/1000000);
+        connectConfig.setRpcDeadlineMs(ms);
+        return this;
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Database Operations
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,10 +202,10 @@ public class MilvusClientV2 {
         // check if database exists
         clientUtils.checkDatabaseExist(this.getRpcStub(), dbName);
         try {
-            this.vectorService.cleanCollectionCache();
             this.connectConfig.setDbName(dbName);
             this.close(3);
             this.connect(this.connectConfig);
+            this.initServices(dbName);
         } catch (InterruptedException e){
             logger.error("close connect error");
             throw new RuntimeException(e);

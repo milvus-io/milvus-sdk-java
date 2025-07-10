@@ -19,6 +19,9 @@
 
 package io.milvus.common.utils;
 
+import io.milvus.exception.ParamException;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,6 +40,16 @@ public class GTsDict {
         return TS_DICT;
     }
 
+    public static String CombineCollectionName(String databaseName, String collectionName) {
+        if (collectionName == null || StringUtils.isBlank(collectionName)) {
+            throw new ParamException("Collection name is empty, not able to get collection info.");
+        }
+        if (StringUtils.isEmpty(databaseName)) {
+            databaseName = "default";
+        }
+        return String.format("%s_%s", databaseName, collectionName);
+    }
+
     private ConcurrentMap<String, Long> tsDict = new ConcurrentHashMap<>();
 
     public void updateCollectionTs(String collectionName, long ts) {
@@ -48,5 +61,13 @@ public class GTsDict {
 
     public Long getCollectionTs(String collectionName) {
         return tsDict.get(collectionName);
+    }
+
+    public void removeCollectionTs(String collectionName) {
+        tsDict.remove(collectionName);
+    }
+
+    public void cleanAllCollectionTs() {
+        tsDict.clear();
     }
 }
