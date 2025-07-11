@@ -23,16 +23,14 @@ import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.SSLContext;
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @Data
-@SuperBuilder
+@Builder
 public class ConnectConfig {
     @NonNull
     private String uri;
