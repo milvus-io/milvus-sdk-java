@@ -47,9 +47,6 @@ import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import io.milvus.response.*;
-import io.milvus.v2.service.collection.response.DescribeCollectionResp;
-import io.milvus.v2.service.vector.request.InsertReq;
-import io.milvus.v2.utils.DataUtils;
 import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -68,13 +65,22 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     protected static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
     protected LogLevel logLevel = LogLevel.Info;
 
-    private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
 
     protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
 
     protected abstract MilvusServiceGrpc.MilvusServiceFutureStub futureStub();
 
     protected abstract boolean clientIsReady();
+
+    protected abstract String currentDbName();
+
+    private String actualDbName(String overwriteName) {
+        if (StringUtils.isNotEmpty(overwriteName)) {
+            return overwriteName;
+        }
+        return currentDbName();
+    }
 
     /**
      * This method is for insert/upsert requests to reduce the rpc call of describeCollection()
@@ -83,7 +89,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
      * If insert/upsert get server error, remove the cached collection info.
      */
     private DescribeCollectionResponse getCollectionInfo(String databaseName, String collectionName, boolean forceUpdate) {
-        String key = combineCacheKey(databaseName, collectionName);
+        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
         DescribeCollectionResponse info = cacheCollectionInfo.get(key);
         if (info == null || forceUpdate) {
             String msg = String.format("Fail to describe collection '%s'", collectionName);
@@ -104,17 +110,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         return info;
     }
 
-    private String combineCacheKey(String databaseName, String collectionName) {
-        if (collectionName == null || StringUtils.isBlank(collectionName)) {
-            throw new ParamException("Collection name is empty, not able to get collection info.");
-        }
-        String key = collectionName;
-        if (StringUtils.isNotEmpty(databaseName)) {
-            key = String.format("%s|%s", databaseName, collectionName);
-        }
-        return key;
-    }
-
     /**
      * insert/upsert return an error, but is not a RateLimit error,
      * clean the cache so that the next insert will call describeCollection() to get the latest info.
@@ -127,7 +122,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     private void removeCollectionCache(String databaseName, String collectionName) {
-        cacheCollectionInfo.remove(combineCacheKey(databaseName, collectionName));
+        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
+        cacheCollectionInfo.remove(key);
     }
 
     private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
@@ -658,7 +654,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().dropCollection(dropCollectionRequest);
             handleResponse(title, response);
+
+            // remove the collection schema cache
             removeCollectionCache(dbName, collectionName);
+
+            // remove the last write timestamp for this collection
+            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+            GTsDict.getInstance().removeCollectionTs(key);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1570,22 +1572,27 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
 
         logDebug(requestParam.toString());
-        String title = String.format("DeleteRequest collectionName:%s", requestParam.getCollectionName());
+        String dbName = requestParam.getDatabaseName();
+        String collectionName = requestParam.getCollectionName();
+        String title = String.format("DeleteRequest collectionName:%s", collectionName);
 
         try {
             DeleteRequest.Builder builder = DeleteRequest.newBuilder()
                     .setBase(MsgBase.newBuilder().setMsgType(MsgType.Delete).build())
-                    .setCollectionName(requestParam.getCollectionName())
+                    .setCollectionName(collectionName)
                     .setPartitionName(requestParam.getPartitionName())
                     .setExpr(requestParam.getExpr());
 
-            if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-                builder.setDbName(requestParam.getDatabaseName());
+            if (StringUtils.isNotEmpty(dbName)) {
+                builder.setDbName(dbName);
             }
 
             MutationResult response = blockingStub().delete(builder.build());
             handleResponse(title, response.getStatus());
-            GTsDict.getInstance().updateCollectionTs(requestParam.getCollectionName(), response.getTimestamp());
+
+            // update the last write timestamp for SESSION consistency
+            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1639,10 +1646,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return this.insert(requestParam);
             }
 
-            // if illegal data, server fails to process insert, else succeed
+            // if illegal data, server fails to process insert, , clean the schema cache
+            // so that the next call of dml can update the cache
             cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
             handleResponse(title, response.getStatus());
-            GTsDict.getInstance().updateCollectionTs(collectionName, response.getTimestamp());
+
+            // update the last write timestamp for SESSION consistency
+            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1687,11 +1698,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 new FutureCallback<MutationResult>() {
                     @Override
                     public void onSuccess(MutationResult result) {
-                        // if illegal data, server fails to process insert, else succeed
+                        // if illegal data, server fails to process insert, clean the schema cache
+                        // so that the next call of dml can update the cache
                         cleanCacheIfFailed(result.getStatus(), dbName, collectionName);
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
-                            GTsDict.getInstance().updateCollectionTs(collectionName, result.getTimestamp());
+
+                            // update the last write timestamp for SESSION consistency
+                            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+                            GTsDict.getInstance().updateCollectionTs(key, result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
@@ -1760,10 +1775,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 return this.upsert(requestParam);
             }
 
-            // if illegal data, server fails to process upsert, else succeed
+            // if illegal data, server fails to process upsert, clean the schema cache
+            // so that the next call of dml can update the cache
             cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
             handleResponse(title, response.getStatus());
-            GTsDict.getInstance().updateCollectionTs(collectionName, response.getTimestamp());
+
+            // update the last write timestamp for SESSION consistency
+            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1807,11 +1826,15 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 new FutureCallback<MutationResult>() {
                     @Override
                     public void onSuccess(MutationResult result) {
-                        // if illegal data, server fails to process upsert, else succeed
+                        // if illegal data, server fails to process upsert, clean the schema cache
+                        // so that the next call of dml can update the cache
                         cleanCacheIfFailed(result.getStatus(), dbName, collectionName);
                         if (result.getStatus().getErrorCode() == ErrorCode.Success) {
                             logDebug("{} successfully!", title);
-                            GTsDict.getInstance().updateCollectionTs(collectionName, result.getTimestamp());
+
+                            // update the last write timestamp for SESSION consistency
+                            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+                            GTsDict.getInstance().updateCollectionTs(key, result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
