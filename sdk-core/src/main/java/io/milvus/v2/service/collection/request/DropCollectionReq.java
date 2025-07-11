@@ -26,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class DropCollectionReq {
+    private String databaseName;
     private String collectionName;
     @Deprecated
     @Builder.Default
