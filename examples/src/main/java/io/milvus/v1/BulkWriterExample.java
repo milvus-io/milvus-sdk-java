@@ -18,15 +18,12 @@
  */
 package io.milvus.v1;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import io.milvus.bulkwriter.BulkImport;
 import io.milvus.bulkwriter.BulkWriter;
 import io.milvus.bulkwriter.LocalBulkWriter;
 import io.milvus.bulkwriter.LocalBulkWriterParam;
@@ -46,6 +43,7 @@ import io.milvus.bulkwriter.request.import_.CloudImportRequest;
 import io.milvus.bulkwriter.request.import_.MilvusImportRequest;
 import io.milvus.bulkwriter.request.list.CloudListImportJobsRequest;
 import io.milvus.bulkwriter.request.list.MilvusListImportJobsRequest;
+import io.milvus.bulkwriter.restful.BulkImportUtils;
 import io.milvus.client.MilvusClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.utils.ExceptionUtils;
@@ -69,13 +67,13 @@ import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.GetCollStatResponseWrapper;
 import io.milvus.response.QueryResultsWrapper;
+import io.milvus.v2.bulkwriter.CsvDataObject;
 import org.apache.avro.generic.GenericData;
 import org.apache.http.util.Asserts;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -491,29 +489,6 @@ public class BulkWriterExample {
         }
     }
 
-    private static class CsvDataObject {
-        @JsonProperty
-        private String vector;
-        @JsonProperty
-        private String path;
-        @JsonProperty
-        private String label;
-
-        public String getVector() {
-            return vector;
-        }
-        public String getPath() {
-            return path;
-        }
-        public String getLabel() {
-            return label;
-        }
-        public List<Float> toFloatArray() {
-            return GSON_INSTANCE.fromJson(vector, new TypeToken<List<Float>>() {
-            }.getType());
-        }
-    }
-
     private void callBulkInsert(CollectionSchemaParam collectionSchema, List<List<String>> batchFiles) throws InterruptedException {
         createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, true);
 
@@ -524,7 +499,7 @@ public class BulkWriterExample {
                 .partitionName("")
                 .files(batchFiles)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(url, milvusImportRequest);
+        String bulkImportResult = BulkImportUtils.bulkImport(url, milvusImportRequest);
         System.out.println(bulkImportResult);
 
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
@@ -533,7 +508,7 @@ public class BulkWriterExample {
 
         System.out.println("\n===================== listBulkInsertJobs() ====================");
         MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder().collectionName(ALL_TYPES_COLLECTION_NAME).build();
-        String listImportJobsResult = BulkImport.listImportJobs(url, listImportJobsRequest);
+        String listImportJobsResult = BulkImportUtils.listImportJobs(url, listImportJobsRequest);
         System.out.println(listImportJobsResult);
         while (true) {
             System.out.println("Wait 5 second to check bulkInsert job state...");
@@ -543,7 +518,7 @@ public class BulkWriterExample {
             MilvusDescribeImportRequest request = MilvusDescribeImportRequest.builder()
                     .jobId(jobId)
                     .build();
-            String getImportProgressResult = BulkImport.getImportProgress(url, request);
+            String getImportProgressResult = BulkImportUtils.getImportProgress(url, request);
             System.out.println(getImportProgressResult);
 
             JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
@@ -577,7 +552,7 @@ public class BulkWriterExample {
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(collectionName).partitionName(partitionName)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, bulkImportRequest);
+        String bulkImportResult = BulkImportUtils.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, bulkImportRequest);
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
 
         String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
@@ -585,7 +560,7 @@ public class BulkWriterExample {
 
         System.out.println("\n===================== call cloudListImportJobs ====================");
         CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
-        String listImportJobsResult = BulkImport.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
+        String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
         System.out.println(listImportJobsResult);
         while (true) {
             System.out.println("Wait 5 second to check bulkInsert job state...");
@@ -593,7 +568,7 @@ public class BulkWriterExample {
 
             System.out.println("\n===================== call cloudGetProgress ====================");
             CloudDescribeImportRequest request = CloudDescribeImportRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
-            String getImportProgressResult = BulkImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, request);
+            String getImportProgressResult = BulkImportUtils.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, request);
             JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
             String importProgressState = getImportProgressObject.getAsJsonObject("data").get("state").getAsString();
             String progress = getImportProgressObject.getAsJsonObject("data").get("progress").getAsString();
@@ -740,7 +715,7 @@ public class BulkWriterExample {
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, request);
+        String bulkImportResult = BulkImportUtils.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, request);
         System.out.println(bulkImportResult);
 
         System.out.println("\n===================== get import job progress ====================");
@@ -748,12 +723,12 @@ public class BulkWriterExample {
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
         String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
         CloudDescribeImportRequest getImportProgressRequest = CloudDescribeImportRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
-        String getImportProgressResult = BulkImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, getImportProgressRequest);
+        String getImportProgressResult = BulkImportUtils.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, getImportProgressRequest);
         System.out.println(getImportProgressResult);
 
         System.out.println("\n===================== list import jobs ====================");
         CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
-        String listImportJobsResult = BulkImport.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
+        String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
         System.out.println(listImportJobsResult);
     }
 

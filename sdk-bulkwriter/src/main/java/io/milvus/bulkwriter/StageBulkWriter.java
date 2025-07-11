@@ -19,22 +19,13 @@
 
 package io.milvus.bulkwriter;
 
-import com.azure.storage.blob.models.BlobErrorCode;
-import com.azure.storage.blob.models.BlobStorageException;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import io.milvus.bulkwriter.connect.AzureConnectParam;
-import io.milvus.bulkwriter.connect.S3ConnectParam;
-import io.milvus.bulkwriter.connect.StorageConnectParam;
-import io.milvus.bulkwriter.storage.StorageClient;
-import io.milvus.bulkwriter.storage.client.AzureStorageClient;
-import io.milvus.bulkwriter.storage.client.MinioStorageClient;
+import io.milvus.bulkwriter.model.StageUploadResult;
 import io.milvus.common.utils.ExceptionUtils;
-import io.minio.errors.ErrorResponseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -43,16 +34,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RemoteBulkWriter extends LocalBulkWriter {
-    private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
+public class StageBulkWriter extends LocalBulkWriter {
+    private static final Logger logger = LoggerFactory.getLogger(StageBulkWriter.class);
 
     private String remotePath;
-    private StorageConnectParam connectParam;
-    private StorageClient storageClient;
-
     private List<List<String>> remoteFiles;
+    private StageOperation stageWriter;
+    private StageBulkWriterParam stageBulkWriterParam;
 
-    public RemoteBulkWriter(RemoteBulkWriterParam bulkWriterParam) throws IOException {
+    public StageBulkWriter(StageBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),
                 bulkWriterParam.getChunkSize(),
                 bulkWriterParam.getFileType(),
@@ -61,12 +51,20 @@ public class RemoteBulkWriter extends LocalBulkWriter {
         Path path = Paths.get(bulkWriterParam.getRemotePath());
         Path remoteDirPath = path.resolve(getUUID());
         this.remotePath = remoteDirPath.toString();
-        this.connectParam = bulkWriterParam.getConnectParam();
-        getStorageClient();
+        this.stageWriter = initStageWriterParams(bulkWriterParam);
+        this.stageBulkWriterParam = bulkWriterParam;
 
         this.remoteFiles = Lists.newArrayList();
         logger.info("Remote buffer writer initialized, target path: {}", remotePath);
 
+    }
+
+    private StageOperation initStageWriterParams(StageBulkWriterParam bulkWriterParam) throws IOException {
+        StageOperationParam stageWriterParam = StageOperationParam.newBuilder()
+                .withCloudEndpoint(bulkWriterParam.getCloudEndpoint()).withApiKey(bulkWriterParam.getApiKey())
+                .withStageName(bulkWriterParam.getStageName()).withPath(remotePath)
+                .build();
+        return new StageOperation(stageWriterParam);
     }
 
     @Override
@@ -87,6 +85,13 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     @Override
     public List<List<String>> getBatchFiles() {
         return remoteFiles;
+    }
+
+    public StageUploadResult getStageUploadResult() {
+        return StageUploadResult.builder()
+                .stageName(stageBulkWriterParam.getStageName())
+                .path(remotePath)
+                .build();
     }
 
     @Override
@@ -116,29 +121,6 @@ public class RemoteBulkWriter extends LocalBulkWriter {
         return false;
     }
 
-    private void getStorageClient() {
-        if (storageClient != null) {
-            return;
-        }
-
-        if (connectParam instanceof S3ConnectParam) {
-            S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            storageClient = MinioStorageClient.getStorageClient(
-                    s3ConnectParam.getCloudName(),
-                    s3ConnectParam.getEndpoint(),
-                    s3ConnectParam.getAccessKey(),
-                    s3ConnectParam.getSecretKey(),
-                    s3ConnectParam.getSessionToken(),
-                    s3ConnectParam.getRegion(),
-                    s3ConnectParam.getHttpClient());
-        } else if (connectParam instanceof AzureConnectParam) {
-            AzureConnectParam azureConnectParam = (AzureConnectParam) connectParam;
-            storageClient = AzureStorageClient.getStorageClient(azureConnectParam.getConnStr(),
-                    azureConnectParam.getAccountUrl(),
-                    azureConnectParam.getCredential());
-        }
-    }
-
     private void rmLocal(String file) {
         try {
             Path filePath = Paths.get(file);
@@ -160,19 +142,23 @@ public class RemoteBulkWriter extends LocalBulkWriter {
 
     @Override
     protected void callBack(List<String> fileList) {
+        serialImportData(fileList);
+    }
+
+    @Override
+    public void close() throws Exception {
+        logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
+        exit();
+        logger.info(String.format("RemoteBulkWriter done! output remote files: %s", getBatchFiles()));
+    }
+
+    private void serialImportData(List<String> fileList) {
         List<String> remoteFileList = new ArrayList<>();
         try {
-            if (!bucketExists()) {
-                ExceptionUtils.throwUnExpectedException("Blob storage bucket/container doesn't exist");
-            }
-
             for (String filePath : fileList) {
                 String relativeFilePath = filePath.replace(super.getDataPath(), "");
                 String minioFilePath = getMinioFilePath(remotePath, relativeFilePath);
 
-                if (objectExists(minioFilePath)) {
-                    logger.info(String.format("Remote file %s already exists, will overwrite it", minioFilePath));
-                }
                 uploadObject(filePath, minioFilePath);
                 remoteFileList.add(minioFilePath);
                 rmLocal(filePath);
@@ -186,74 +172,12 @@ public class RemoteBulkWriter extends LocalBulkWriter {
         remoteFiles.add(remoteFileList);
     }
 
-    @Override
-    public void close() throws Exception {
-        logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
-        exit();
-        logger.info(String.format("RemoteBulkWriter done! output remote files: %s", getBatchFiles()));
-    }
-
-    private void getObjectEntity(String objectName) throws Exception {
-        if (connectParam instanceof S3ConnectParam) {
-            S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            storageClient.getObjectEntity(s3ConnectParam.getBucketName(), objectName);
-        } else if (connectParam instanceof AzureConnectParam) {
-            AzureConnectParam azureConnectParam = (AzureConnectParam) connectParam;
-            storageClient.getObjectEntity(azureConnectParam.getContainerName(), objectName);
-        }
-
-        ExceptionUtils.throwUnExpectedException("Blob storage client is not initialized");
-    }
-
-    private boolean objectExists(String objectName) throws Exception {
-        try {
-            getObjectEntity(objectName);
-        } catch (ErrorResponseException e) {
-            if ("NoSuchKey".equals(e.errorResponse().code())) {
-                return false;
-            }
-
-            String msg = String.format("Failed to stat MinIO/S3 object %s, error: %s", objectName, e.errorResponse().message());
-            ExceptionUtils.throwUnExpectedException(msg);
-        } catch (BlobStorageException e) {
-            if (BlobErrorCode.BLOB_NOT_FOUND == e.getErrorCode()) {
-                return false;
-            }
-            String msg = String.format("Failed to stat Azure object %s, error: %s", objectName, e.getServiceMessage());
-            ExceptionUtils.throwUnExpectedException(msg);
-        }
-        return true;
-    }
-
-    private boolean bucketExists() throws Exception {
-        if (connectParam instanceof S3ConnectParam) {
-            S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            return storageClient.checkBucketExist(s3ConnectParam.getBucketName());
-        } else if (connectParam instanceof AzureConnectParam) {
-            AzureConnectParam azureConnectParam = (AzureConnectParam) connectParam;
-            return storageClient.checkBucketExist(azureConnectParam.getContainerName());
-        }
-
-        ExceptionUtils.throwUnExpectedException("Blob storage client is not initialized");
-        return false;
-    }
-
     private void uploadObject(String filePath, String objectName) throws Exception {
         logger.info(String.format("Prepare to upload %s to %s", filePath, objectName));
 
-        File file = new File(filePath);
-        if (connectParam instanceof S3ConnectParam) {
-            S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            storageClient.putObject(file, s3ConnectParam.getBucketName(), objectName);
-        } else if (connectParam instanceof AzureConnectParam) {
-            AzureConnectParam azureConnectParam = (AzureConnectParam) connectParam;
-            storageClient.putObject(file, azureConnectParam.getContainerName(), objectName);
-        } else {
-            ExceptionUtils.throwUnExpectedException("Blob storage client is not initialized");
-        }
+        stageWriter.uploadFileToStage(filePath);
         logger.info(String.format("Upload file %s to %s", filePath, objectName));
     }
-
 
     private static String generatorLocalPath() {
         Path currentWorkingDirectory = Paths.get("").toAbsolutePath();

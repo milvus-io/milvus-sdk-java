@@ -45,6 +45,15 @@ public enum CloudStorage {
         this.replace = replace;
     }
 
+    public static CloudStorage getCloudStorage(String cloudName) {
+        for (CloudStorage cloudStorage : values()) {
+            if (cloudStorage.getCloudName().equals(cloudName)) {
+                return cloudStorage;
+            }
+        }
+        throw new ParamException("no support others cloudName");
+    }
+
     public String getEndpoint(String... replaceParams) {
         if (StringUtils.isEmpty(replace))  {
             return endpoint;

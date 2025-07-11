@@ -30,7 +30,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.InputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 public class AzureStorageClient implements StorageClient {
     private static final Logger logger = LoggerFactory.getLogger(AzureStorageClient.class);
@@ -66,11 +68,11 @@ public class AzureStorageClient implements StorageClient {
         return blobClient.getProperties().getBlobSize();
     }
 
-    public void putObjectStream(InputStream inputStream, long contentLength, String bucketName, String objectKey) {
+    public void putObject(File file, String bucketName, String objectKey) throws FileNotFoundException {
+        FileInputStream fileInputStream = new FileInputStream(file);
         BlobClient blobClient = blobServiceClient.getBlobContainerClient(bucketName).getBlobClient(objectKey);
-        blobClient.upload(inputStream, contentLength);
+        blobClient.upload(fileInputStream, file.length());
     }
-
 
     public boolean checkBucketExist(String bucketName) {
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(bucketName);
