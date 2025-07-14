@@ -2969,6 +2969,8 @@ class MilvusServiceClientTest {
         String fieldName = "test";
         SearchResultData results = SearchResultData.newBuilder()
                 .setTopK(topK)
+                .addTopks(topK)
+                .addTopks(topK) // numQueries=2, the topks list must have 2 elements
                 .setNumQueries(numQueries)
                 .setIds(IDs.newBuilder()
                         .setIntId(LongArray.newBuilder()
@@ -2996,6 +2998,8 @@ class MilvusServiceClientTest {
         // for string id
         results = SearchResultData.newBuilder()
                 .setTopK(topK)
+                .addTopks(topK)
+                .addTopks(topK) // numQueries=2, the topks list must have 2 elements
                 .setNumQueries(numQueries)
                 .setIds(IDs.newBuilder()
                         .setStrId(StringArray.newBuilder()
