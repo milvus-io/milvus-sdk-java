@@ -27,6 +27,7 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
@@ -63,6 +64,8 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+
 
 @Testcontainers(disabledWithoutDocker = true)
 class MilvusClientDockerTest {
@@ -1345,18 +1348,6 @@ class MilvusClientDockerTest {
         R<RpcStatus> createR = client.createCollection(createParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
 
-        // insert data to multiple vector fields
-        int rowCount = 10000;
-        List<InsertParam.Field> fields = generateColumnsData(schema, rowCount, 0);
-
-        InsertParam insertParam = InsertParam.newBuilder()
-                .withCollectionName(randomCollectionName)
-                .withFields(fields)
-                .build();
-
-        R<MutationResult> insertR = client.insert(insertParam);
-        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
-
         // create indexes on multiple vector fields
         CreateIndexParam indexParam = CreateIndexParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -1397,53 +1388,86 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
 
-        // search on multiple vector fields
-        AnnSearchParam param1 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(DataType.FloatVector.name())
-                .withFloatVectors(utils.generateFloatVectors(1))
-                .withMetricType(MetricType.COSINE)
-                .withParams("{\"nprobe\": 32}")
-                .withLimit(10L)
-                .build();
+        // prepare sub requests
+        int nq = 5;
+        long topk = 10L;
+        Function<Integer, HybridSearchParam> genRequestFunc =
+                sparseCount -> {
+                    AnnSearchParam param1 = AnnSearchParam.newBuilder()
+                            .withVectorFieldName(DataType.FloatVector.name())
+                            .withFloatVectors(utils.generateFloatVectors(nq))
+                            .withMetricType(MetricType.COSINE)
+                            .withParams("{\"nprobe\": 32}")
+                            .withLimit(15L)
+                            .build();
 
-        AnnSearchParam param2 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(DataType.BinaryVector.name())
-                .withBinaryVectors(utils.generateBinaryVectors(1))
-                .withMetricType(MetricType.HAMMING)
-                .withParams("{}")
-                .withLimit(5L)
-                .build();
+                    AnnSearchParam param2 = AnnSearchParam.newBuilder()
+                            .withVectorFieldName(DataType.BinaryVector.name())
+                            .withBinaryVectors(utils.generateBinaryVectors(nq))
+                            .withMetricType(MetricType.HAMMING)
+                            .withParams("{}")
+                            .withLimit(5L)
+                            .build();
 
-        AnnSearchParam param3 = AnnSearchParam.newBuilder()
-                .withVectorFieldName(DataType.SparseFloatVector.name())
-                .withSparseFloatVectors(utils.generateSparseVectors(1))
-                .withMetricType(MetricType.IP)
-                .withParams("{\"drop_ratio_search\":0.2}")
-                .withLimit(7L)
-                .build();
+                    List<SortedMap<Long, Float>> sparseVEctors = sparseCount > 0 ?
+                            utils.generateSparseVectors(sparseCount) : new ArrayList<>();
+                    AnnSearchParam param3 = AnnSearchParam.newBuilder()
+                            .withVectorFieldName(DataType.SparseFloatVector.name())
+                            .withSparseFloatVectors(sparseVEctors)
+                            .withMetricType(MetricType.IP)
+                            .withParams("{\"drop_ratio_search\":0.2}")
+                            .withLimit(7L)
+                            .build();
 
-        HybridSearchParam searchParam = HybridSearchParam.newBuilder()
+                    // search with an empty nq, return error
+                    return HybridSearchParam.newBuilder()
+                            .withCollectionName(randomCollectionName)
+                            .addOutField(DataType.SparseFloatVector.name())
+                            .addSearchRequest(param1)
+                            .addSearchRequest(param2)
+                            .addSearchRequest(param3)
+                            .withLimit(topk)
+                            .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                            .withRanker(WeightedRanker.newBuilder()
+                                    .withWeights(Lists.newArrayList(0.5f, 0.5f, 1.0f))
+                                    .build())
+                            .withOutFields(Collections.singletonList("*"))
+                            .build();
+                };
+
+        // search with an empty nq, return error
+        Assertions.assertThrows(ParamException.class, ()->genRequestFunc.apply(0));
+
+        // unequal nq, return error
+        Assertions.assertThrows(ParamException.class, ()->genRequestFunc.apply(1));
+
+        // search on empty collection, no result returned
+        R<SearchResults> searchR = client.hybridSearch(genRequestFunc.apply(nq));
+        Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        for (int i = 0; i < results.getNumQueries(); ++i) {
+            List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
+            Assertions.assertTrue(scores.isEmpty());
+        }
+
+        // insert data to multiple vector fields
+        int rowCount = 10000;
+        List<InsertParam.Field> fields = generateColumnsData(schema, rowCount, 0);
+        InsertParam insertParam = InsertParam.newBuilder()
                 .withCollectionName(randomCollectionName)
-                .addOutField(DataType.SparseFloatVector.name())
-                .addSearchRequest(param1)
-                .addSearchRequest(param2)
-                .addSearchRequest(param3)
-                .withLimit(3L)
-                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
-                .withRanker(WeightedRanker.newBuilder()
-                        .withWeights(Lists.newArrayList(0.5f, 0.5f, 1.0f))
-                        .build())
-                .withOutFields(Collections.singletonList("*"))
+                .withFields(fields)
                 .build();
+        R<MutationResult> insertR = client.insert(insertParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        R<SearchResults> searchR = client.hybridSearch(searchParam);
+        // search on multiple vector fields
+        searchR = client.hybridSearch(genRequestFunc.apply(nq));
         Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
 
-        // print search result
-        SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
+        // check search result
+        results = new SearchResultsWrapper(searchR.getData().getResults());
         List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
         for (SearchResultsWrapper.IDScore score : scores) {
-            System.out.println(score);
             Object id = score.get("id");
             Assertions.assertInstanceOf(Long.class, id);
             Object fv = score.get(DataType.FloatVector.name());
@@ -1456,6 +1480,10 @@ class MilvusClientDockerTest {
             Assertions.assertEquals(DIMENSION, bvec.limit()*8);
             Object sv = score.get(DataType.SparseFloatVector.name());
             Assertions.assertInstanceOf(SortedMap.class, sv);
+        }
+        for (int i = 0; i < results.getNumQueries(); ++i) {
+            scores = results.getIDScore(i);
+            Assertions.assertEquals(topk, scores.size());
         }
 
         // drop collection
