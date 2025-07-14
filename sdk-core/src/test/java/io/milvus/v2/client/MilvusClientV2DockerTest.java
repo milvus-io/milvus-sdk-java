@@ -33,6 +33,7 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.param.Constant;
+import io.milvus.param.dml.HybridSearchParam;
 import io.milvus.pool.MilvusClientV2Pool;
 import io.milvus.pool.PoolConfig;
 import io.milvus.response.QueryResultsWrapper;
@@ -1010,6 +1011,63 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(16, descResp.getFieldNames().size());
         Assertions.assertEquals(3, descResp.getVectorFieldNames().size());
 
+        // prepare sub requests
+        int nq = 5;
+        int topk = 10;
+        Function<Integer, HybridSearchReq> genRequestFunc =
+                sparseCount -> {
+                    List<BaseVector> floatVectors = new ArrayList<>();
+                    List<BaseVector> binaryVectors = new ArrayList<>();
+                    List<BaseVector> sparseVectors = new ArrayList<>();
+                    for (int i = 0; i < nq; i++) {
+                        floatVectors.add(new FloatVec(utils.generateFloatVector()));
+                        binaryVectors.add(new BinaryVec(utils.generateBinaryVector()));
+                    }
+                    for (int i = 0; i < sparseCount; i++) {
+                        sparseVectors.add(new SparseFloatVec(utils.generateSparseVector()));
+                    }
+
+                    List<AnnSearchReq> searchRequests = new ArrayList<>();
+                    searchRequests.add(AnnSearchReq.builder()
+                            .vectorFieldName("float_vector")
+                            .vectors(floatVectors)
+                            .params("{\"nprobe\": 10}")
+                            .limit(15)
+                            .build());
+                    searchRequests.add(AnnSearchReq.builder()
+                            .vectorFieldName("binary_vector")
+                            .vectors(binaryVectors)
+                            .limit(5)
+                            .build());
+                    searchRequests.add(AnnSearchReq.builder()
+                            .vectorFieldName("sparse_vector")
+                            .vectors(sparseVectors)
+                            .limit(7)
+                            .build());
+
+                    return HybridSearchReq.builder()
+                            .collectionName(randomCollectionName)
+                            .searchRequests(searchRequests)
+                            .ranker(new RRFRanker(20))
+                            .limit(topk)
+                            .consistencyLevel(ConsistencyLevel.BOUNDED)
+                            .build();
+        };
+
+        // search with an empty nq, return error
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(0)));
+
+        // unequal nq, return error
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(1)));
+
+        // search on empty collection, no result returned
+        SearchResp searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(nq, searchResults.size());
+        for (List<SearchResp.SearchResult> result : searchResults) {
+            Assertions.assertTrue(result.isEmpty());
+        }
+
         // insert rows
         long count = 10000;
         List<JsonObject> data = generateRandomData(collectionSchema, count);
@@ -1023,45 +1081,9 @@ class MilvusClientV2DockerTest {
         long rowCount = getRowCount(randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
-        // hybrid search in collection
-        int nq = 5;
-        int topk = 10;
-        List<BaseVector> floatVectors = new ArrayList<>();
-        List<BaseVector> binaryVectors = new ArrayList<>();
-        List<BaseVector> sparseVectors = new ArrayList<>();
-        for (int i = 0; i < nq; i++) {
-            floatVectors.add(new FloatVec(utils.generateFloatVector()));
-            binaryVectors.add(new BinaryVec(utils.generateBinaryVector()));
-            sparseVectors.add(new SparseFloatVec(utils.generateSparseVector()));
-        }
-
-        List<AnnSearchReq> searchRequests = new ArrayList<>();
-        searchRequests.add(AnnSearchReq.builder()
-                .vectorFieldName("float_vector")
-                .vectors(floatVectors)
-                .params("{\"nprobe\": 10}")
-                .limit(10)
-                .build());
-        searchRequests.add(AnnSearchReq.builder()
-                .vectorFieldName("binary_vector")
-                .vectors(binaryVectors)
-                .limit(50)
-                .build());
-        searchRequests.add(AnnSearchReq.builder()
-                .vectorFieldName("sparse_vector")
-                .vectors(sparseVectors)
-                .limit(100)
-                .build());
-
-        HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
-                .collectionName(randomCollectionName)
-                .searchRequests(searchRequests)
-                .ranker(new RRFRanker(20))
-                .limit(topk)
-                .consistencyLevel(ConsistencyLevel.BOUNDED)
-                .build();
-        SearchResp searchResp = client.hybridSearch(hybridSearchReq);
-        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        // search again, there are results
+        searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
         for (int i = 0; i < nq; i++) {
             List<SearchResp.SearchResult> results = searchResults.get(i);

@@ -237,6 +237,14 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         return idScores;
     }
 
+    /**
+     * Gets how many nq are searched.
+     * @return how many nq are searched
+     */
+    public long getNumQueries() {
+        return results.getNumQueries();
+    }
+
     @Getter
     private static final class Position {
         private final long offset;
@@ -250,11 +258,12 @@ public class SearchResultsWrapper extends RowRecordWrapper {
     private Position getOffsetByIndex(int indexOfTarget) {
         List<Long> kList = results.getTopksList();
 
-        // if the server didn't return separate topK, use same topK value
+        // if the server didn't return separate topK, use same topK value "0"
+        // will return an empty result for each nq instead of throwing an exception
         if (kList.isEmpty()) {
             kList = new ArrayList<>();
             for (long i = 0; i < results.getNumQueries(); ++i) {
-                kList.add(results.getTopK());
+                kList.add(0L);
             }
         }
 
