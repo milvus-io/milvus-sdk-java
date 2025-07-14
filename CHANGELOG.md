@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 2.5.11 (2025-07-14)
+### Bug
+- Fix a bug of SearchResultsWrapper.getRowRecords() that returns wrong data for output fields
+- Fix a bug of flush that timestamp is not correctly passed
+
+### Improvement
+- Deprecate topK for search/hybridSearch/iterator, replaced with limit
+- Refine collection schema cache
+- Avoid exception when search result is empty
+- Support jsonPath index
+- Support run analyzer by collection and Field
+
 ## milvus-sdk-java 2.5.10 (2025-06-05)
 ### Feature
 - Support dropCollectionFieldProperties interface
