@@ -43,13 +43,17 @@ import java.util.*;
 public class VectorUtils {
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), dbName, collectionName);
         QueryRequest.Builder builder = QueryRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .addAllPartitionNames(request.getPartitionNames())
                 .addAllOutputFields(request.getOutputFields())
+                .setGuaranteeTimestamp(guaranteeTimestamp)
                 .setExpr(request.getFilter());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
@@ -94,17 +98,20 @@ public class VectorUtils {
 
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String collectionName){
+    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String dbName, String collectionName){
         if(consistencyLevel == null){
-            Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+            String key = GTsDict.CombineCollectionName(dbName, collectionName);
+            Long ts = GTsDict.getInstance().getCollectionTs(key);
             return  (ts == null) ? 1L : ts;
         }
         switch (consistencyLevel){
             case STRONG:
                 return 0L;
-            case SESSION:
-                Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
-                return  (ts == null) ? 1L : ts;
+            case SESSION: {
+                String key = GTsDict.CombineCollectionName(dbName, collectionName);
+                Long ts = GTsDict.getInstance().getCollectionTs(key);
+                return (ts == null) ? 1L : ts;
+            }
             case BOUNDED:
                 return 2L; // let server side to determine the bounded time
             default:
@@ -138,14 +145,16 @@ public class VectorUtils {
     }
 
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
         SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
+                .setCollectionName(collectionName);
         if (!request.getPartitionNames().isEmpty()) {
             request.getPartitionNames().forEach(builder::addPartitionNames);
         }
 
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         // prepare target, the input could be vectors or string list for doc-in-doc-out
@@ -259,7 +268,7 @@ public class VectorUtils {
             }
             builder.setGuaranteeTimestamp(guaranteeTimestamp);
         } else {
-            long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), request.getCollectionName());
+            long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), dbName, collectionName);
             builder.setGuaranteeTimestamp(guaranteeTimestamp);
         }
 
@@ -442,14 +451,16 @@ public class VectorUtils {
     }
 
     public HybridSearchRequest ConvertToGrpcHybridSearchRequest(HybridSearchReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
         HybridSearchRequest.Builder builder = HybridSearchRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
+                .setCollectionName(collectionName);
 
         if (request.getPartitionNames() != null && !request.getPartitionNames().isEmpty()) {
             request.getPartitionNames().forEach(builder::addPartitionNames);
         }
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         if (request.getSearchRequests() == null || request.getSearchRequests().isEmpty()) {
@@ -504,6 +515,9 @@ public class VectorUtils {
         if (request.getOutFields() != null && !request.getOutFields().isEmpty()) {
             request.getOutFields().forEach(builder::addOutputFields);
         }
+
+        long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), dbName, collectionName);
+        builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         if (request.getConsistencyLevel() == null) {
             builder.setUseDefaultConsistency(true);

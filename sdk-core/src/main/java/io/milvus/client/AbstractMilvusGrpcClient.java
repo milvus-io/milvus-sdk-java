@@ -464,8 +464,6 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .addAllProperties(propertiesList)
                     .build();
 
-            System.out.println(requestParam.getProperties());
-
             Status response = blockingStub().createDatabase(createDatabaseRequest);
             handleResponse(title, response);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
@@ -1870,6 +1868,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("SearchRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
+            // reset the db name so that the timestamp cache can set correct key for this collection
+            requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
             SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
             SearchResults response = this.blockingStub().search(searchRequest);
 
@@ -1897,6 +1897,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logDebug(requestParam.toString());
         String title = String.format("SearchAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
         SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
         ListenableFuture<SearchResults> response = this.futureStub().search(searchRequest);
 
@@ -1942,6 +1944,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("HybridSearchRequest collectionName:%s", requestParam.getCollectionName());
 
         try {
+            // reset the db name so that the timestamp cache can set correct key for this collection
+            requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
             HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
             SearchResults response = this.blockingStub().hybridSearch(searchRequest);
             handleResponse(title, response.getStatus());
@@ -1965,6 +1969,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logDebug(requestParam.toString());
         String title = String.format("HybridSearchAsyncRequest collectionName:%s", requestParam.getCollectionName());
 
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
         HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
         ListenableFuture<SearchResults> response = this.futureStub().hybridSearch(searchRequest);
 
@@ -2011,6 +2017,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                 requestParam.getCollectionName(), requestParam.getExpr());
 
         try {
+            // reset the db name so that the timestamp cache can set correct key for this collection
+            requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
             QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
             QueryResults response = this.blockingStub().query(queryRequest);
 
@@ -2046,6 +2054,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("QueryAsyncRequest collectionName:%s, expr:%s",
                 requestParam.getCollectionName(), requestParam.getExpr());
 
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
         QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
         ListenableFuture<QueryResults> response = this.futureStub().query(queryRequest);
 

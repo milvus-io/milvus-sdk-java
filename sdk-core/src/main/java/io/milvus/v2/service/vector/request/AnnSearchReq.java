@@ -35,9 +35,12 @@ public class AnnSearchReq {
     @Deprecated
     private int topK = 0;
     @Builder.Default
-    private long limit = 0L;
+    private long limit = 0L; // deprecated, replaced by limit
     @Builder.Default
-    private String expr = "";
+    @Deprecated
+    private String expr = ""; // deprecated, replaced by filter
+    @Builder.Default
+    private String filter = "";
     private List<BaseVector> vectors;
     private String params;
 
@@ -45,7 +48,7 @@ public class AnnSearchReq {
     private IndexParam.MetricType metricType = null;
 
     public static abstract class AnnSearchReqBuilder<C extends AnnSearchReq, B extends AnnSearchReq.AnnSearchReqBuilder<C, B>> {
-        // topK is deprecated, topK and limit must be the same value
+        // topK is deprecated replaced by limit, topK and limit must be the same value
         public B topK(int val) {
             this.topK$value = val;
             this.topK$set = true;
@@ -59,6 +62,23 @@ public class AnnSearchReq {
             this.topK$set = true;
             this.limit$value = val;
             this.limit$set = true;
+            return self();
+        }
+
+        // expr is deprecated replaced by filter, expr and filter must be the same value
+        public B expr(String val) {
+            this.expr$value = val;
+            this.expr$set = true;
+            this.filter$value = val;
+            this.filter$set = true;
+            return self();
+        }
+
+        public B filter(String val) {
+            this.expr$value = val;
+            this.expr$set = true;
+            this.filter$value = val;
+            this.filter$set = true;
             return self();
         }
     }
