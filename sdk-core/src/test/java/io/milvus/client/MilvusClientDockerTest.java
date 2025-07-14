@@ -2916,7 +2916,8 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dropResponse.getStatus().intValue());
     }
 
-    private static void createSimpleCollection(MilvusClient client, String collName, String pkName, boolean autoID, int dimension) {
+    private static void createSimpleCollection(MilvusClient client, String collName, String pkName, boolean autoID,
+                                               int dimension, ConsistencyLevelEnum level) {
         client.dropCollection(DropCollectionParam.newBuilder()
                 .withCollectionName(collName)
                 .build());
@@ -2940,8 +2941,24 @@ class MilvusClientDockerTest {
         R<RpcStatus> createR = client.createCollection(CreateCollectionParam.newBuilder()
                 .withCollectionName(collName)
                 .withFieldTypes(fieldsSchema)
+                .withConsistencyLevel(level)
                 .build());
         Assertions.assertEquals(R.Status.Success.getCode(), createR.getStatus().intValue());
+
+        CreateIndexParam indexParam = CreateIndexParam.newBuilder()
+                .withCollectionName(collName)
+                .withFieldName("vector")
+                .withIndexType(IndexType.FLAT)
+                .withMetricType(MetricType.L2)
+                .build();
+
+        R<RpcStatus> createIndexR = client.createIndex(indexParam);
+        Assertions.assertEquals(R.Status.Success.getCode(), createIndexR.getStatus().intValue());
+
+        R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
+                .withCollectionName(collName)
+                .build());
+        Assertions.assertEquals(R.Status.Success.getCode(), loadR.getStatus().intValue());
     }
 
     @Test
@@ -2958,7 +2975,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dbResponse.getStatus().intValue());
 
         // create a collection in the default db
-        createSimpleCollection(client, randomCollectionName, "pk", false, DIMENSION);
+        createSimpleCollection(client, randomCollectionName, "pk", false, DIMENSION, ConsistencyLevelEnum.BOUNDED);
 
         // a temp client connect to the new db
         ConnectParam connectParam = connectParamBuilder()
@@ -3019,7 +3036,7 @@ class MilvusClientDockerTest {
         Assertions.assertTrue(ts12 > ts11);
 
         // create a new collection with the same name, different schema, in the test db
-        createSimpleCollection(tempClient, randomCollectionName, "aaa", false, 4);
+        createSimpleCollection(tempClient, randomCollectionName, "aaa", false, 4, ConsistencyLevelEnum.BOUNDED);
 
         // use the temp client to insert wrong data, wrong dimension
         row.addProperty("aaa", 22);
@@ -3314,5 +3331,83 @@ class MilvusClientDockerTest {
             }
             System.out.println(score);
         }
+    }
+
+    @Test
+    void testConsistencyLevel() {
+        String randomCollectionName = generator.generate(10);
+        int dim = 4;
+
+        Function<Integer, Void> runTestFunc =
+                rowCount -> {
+                    for (int i = 0; i < rowCount; i++) {
+                        JsonObject row = new JsonObject();
+                        row.addProperty("pk", i);
+                        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
+                        client.insert(InsertParam.newBuilder()
+                                .withCollectionName(randomCollectionName)
+                                .withRows(Collections.singletonList(row))
+                                .build());
+                        // query/search/hybridSearch test
+                        String expr = String.format("pk == %d", i);
+                        if (i%3 == 0) {
+                            R<QueryResults> fetchR = client.query(QueryParam.newBuilder()
+                                    .withCollectionName(randomCollectionName)
+                                    .withExpr(expr)
+                                    .withLimit(5L)
+                                    .addOutField("pk")
+                                    .build());
+                            Assertions.assertEquals(R.Status.Success.getCode(), fetchR.getStatus().intValue());
+                            QueryResultsWrapper oneResult = new QueryResultsWrapper(fetchR.getData());
+                            List<QueryResultsWrapper.RowRecord> records = oneResult.getRowRecords();
+                            Assertions.assertEquals(1L, records.size());
+                        } else if (i%2 == 0) {
+                            R<SearchResults> searchOne = client.search(SearchParam.newBuilder()
+                                    .withCollectionName(randomCollectionName)
+                                    .withVectorFieldName("vector")
+                                    .withLimit(5L)
+                                    .withExpr(expr)
+                                    .withFloatVectors(Collections.singletonList(utils.generateFloatVector(dim)))
+                                    .addOutField("pk")
+                                    .build());
+                            Assertions.assertEquals(R.Status.Success.getCode(), searchOne.getStatus().intValue());
+
+                            SearchResultsWrapper oneResult = new SearchResultsWrapper(searchOne.getData().getResults());
+                            List<SearchResultsWrapper.IDScore> scores = oneResult.getIDScore(0);
+                            Assertions.assertEquals(1, scores.size());
+                        } else {
+                            AnnSearchParam subReq = AnnSearchParam.newBuilder()
+                                    .withVectorFieldName("vector")
+                                    .withExpr(expr)
+                                    .withFloatVectors(Collections.singletonList(utils.generateFloatVector(dim)))
+                                    .withLimit(5L)
+                                    .build();
+
+                            R<SearchResults> searchR = client.hybridSearch(HybridSearchParam.newBuilder()
+                                    .withCollectionName(randomCollectionName)
+                                    .addSearchRequest(subReq)
+                                    .withLimit(5L)
+                                    .withRanker(WeightedRanker.newBuilder()
+                                            .withWeights(Collections.singletonList(1.0f))
+                                            .build())
+                                    .withOutFields(Collections.singletonList("pk"))
+                                    .build());
+                            Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
+                            SearchResultsWrapper oneResult = new SearchResultsWrapper(searchR.getData().getResults());
+                            List<SearchResultsWrapper.IDScore> scores = oneResult.getIDScore(0);
+                            Assertions.assertEquals(1, scores.size());
+                        }
+                    }
+                    return null;
+        };
+
+        // immediately search/query after insert, the data must be visible
+        // test STRONG level
+        createSimpleCollection(client, randomCollectionName, "pk", false, dim, ConsistencyLevelEnum.STRONG);
+        runTestFunc.apply(10);
+
+        // test SESSION level
+        createSimpleCollection(client, randomCollectionName, "pk", false, dim, ConsistencyLevelEnum.SESSION);
+        runTestFunc.apply(100);
     }
 }
