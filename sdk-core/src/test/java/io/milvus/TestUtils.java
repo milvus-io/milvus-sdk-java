@@ -10,8 +10,7 @@ import java.util.*;
 public class TestUtils {
     private int dimension = 256;
     private static final Random RANDOM = new Random();
-
-    public static final String MilvusDockerImageID = "milvusdb/milvus:v2.5.13";
+    public static final String MilvusDockerImageID = "milvusdb/milvus:v2.5.14";
 
     public TestUtils(int dimension) {
         this.dimension = dimension;
