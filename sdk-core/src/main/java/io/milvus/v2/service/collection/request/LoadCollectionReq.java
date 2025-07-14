@@ -29,6 +29,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class LoadCollectionReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private Integer numReplicas = 1;
