@@ -85,6 +85,9 @@ public class CreateCollectionReq {
     public static abstract class CreateCollectionReqBuilder<C extends CreateCollectionReq, B extends CreateCollectionReq.CreateCollectionReqBuilder<C, B>> {
         public B indexParam(IndexParam indexParam) {
             try {
+                if (this.indexParams$value == null) {
+                    this.indexParams$value = new ArrayList<>();
+                }
                 this.indexParams$value.add(indexParam);
             }catch (UnsupportedOperationException _e){
                 this.indexParams$value = new ArrayList<>(this.indexParams$value);
