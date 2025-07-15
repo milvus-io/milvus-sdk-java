@@ -190,9 +190,7 @@ public class CollectionService extends BaseService {
         return listCollectionsResp;
     }
 
-    public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
-        String dbName = request.getDatabaseName();
-        String collectionName = request.getCollectionName();
+    public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName, String collectionName) {
         String title = String.format("DropCollectionRequest collectionName:%s", collectionName);
         DropCollectionRequest.Builder builder = DropCollectionRequest.newBuilder()
                 .setCollectionName(collectionName);
@@ -296,9 +294,9 @@ public class CollectionService extends BaseService {
         return null;
     }
 
-    public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
+    public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String collectionName) {
         HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .build();
         BoolResponse response = blockingStub.hasCollection(hasCollectionRequest);
         rpcUtils.handleResponse("HasCollectionRequest", response.getStatus());

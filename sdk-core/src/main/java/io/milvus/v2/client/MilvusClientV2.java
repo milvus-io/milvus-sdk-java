@@ -311,8 +311,18 @@ public class MilvusClientV2 {
      * @param request drop collection request
      */
     public void dropCollection(DropCollectionReq request) {
-        rpcUtils.retry(()-> collectionService.dropCollection(this.getRpcStub(), request));
+        rpcUtils.retry(()-> collectionService.dropCollection(this.getRpcStub(), request.getDatabaseName(), request.getCollectionName()));
     }
+
+    /**
+     * Drops a collection in Milvus.
+     *
+     * @param collectionName drop collection
+     */
+    public void dropCollection(String collectionName) {
+        rpcUtils.retry(()-> collectionService.dropCollection(this.getRpcStub(), null,collectionName));
+    }
+
     /**
      * Alter a collection in Milvus.
      * Deprecated, replaced by alterCollectionProperties from SDK v2.5.3, to keep consistence with other SDKs
@@ -372,8 +382,19 @@ public class MilvusClientV2 {
      * @return Boolean
      */
     public Boolean hasCollection(HasCollectionReq request) {
-        return rpcUtils.retry(()-> collectionService.hasCollection(this.getRpcStub(), request));
+        return rpcUtils.retry(()-> collectionService.hasCollection(this.getRpcStub(), request.getCollectionName()));
     }
+
+    /**
+     * Checks whether a collection exists in Milvus.
+     *
+     * @param collectionName collectionName
+     * @return Boolean
+     */
+    public Boolean hasCollection(String collectionName) {
+        return rpcUtils.retry(()-> collectionService.hasCollection(this.getRpcStub(), collectionName));
+    }
+
     /**
      * Gets the collection info in Milvus.
      *
