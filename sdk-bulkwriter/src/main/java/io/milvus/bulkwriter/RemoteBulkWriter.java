@@ -35,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
@@ -43,6 +42,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class RemoteBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
@@ -222,6 +222,13 @@ public class RemoteBulkWriter extends LocalBulkWriter {
             }
             String msg = String.format("Failed to stat Azure object %s, error: %s", objectName, e.getServiceMessage());
             ExceptionUtils.throwUnExpectedException(msg);
+        } catch (ExecutionException e) {
+            if (e.getCause().getCause() instanceof ErrorResponseException
+                    && "NoSuchKey".equals(((ErrorResponseException) e.getCause().getCause()).errorResponse().code())) {
+                return false;
+            }
+            String msg = String.format("Failed to stat MinIO/S3 object %s, error: %s", objectName, e.getCause().getMessage());
+            ExceptionUtils.throwUnExpectedException(msg);
         }
         return true;
     }
@@ -243,13 +250,12 @@ public class RemoteBulkWriter extends LocalBulkWriter {
         logger.info(String.format("Prepare to upload %s to %s", filePath, objectName));
 
         File file = new File(filePath);
-        FileInputStream fileInputStream = new FileInputStream(file);
         if (connectParam instanceof S3ConnectParam) {
             S3ConnectParam s3ConnectParam = (S3ConnectParam) connectParam;
-            storageClient.putObjectStream(fileInputStream, file.length(), s3ConnectParam.getBucketName(), objectName);
+            storageClient.putObject(file, s3ConnectParam.getBucketName(), objectName);
         } else if (connectParam instanceof AzureConnectParam) {
             AzureConnectParam azureConnectParam = (AzureConnectParam) connectParam;
-            storageClient.putObjectStream(fileInputStream, file.length(), azureConnectParam.getContainerName(), objectName);
+            storageClient.putObject(file, azureConnectParam.getContainerName(), objectName);
         } else {
             ExceptionUtils.throwUnExpectedException("Blob storage client is not initialized");
         }

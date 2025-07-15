@@ -66,7 +66,7 @@ public class GeneralExample {
 
     private static final Long SEARCH_K = 5L;
     private static final String SEARCH_PARAM = "{\"nprobe\":10}";
-    
+
 
     private R<RpcStatus> createCollection(long timeoutMilliseconds) {
         System.out.println("========== createCollection() ==========");

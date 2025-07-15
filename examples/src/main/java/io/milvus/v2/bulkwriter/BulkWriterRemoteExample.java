@@ -16,9 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package io.milvus.v2;
+package io.milvus.v2.bulkwriter;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.Lists;
@@ -26,18 +25,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import io.milvus.bulkwriter.BulkImport;
 import io.milvus.bulkwriter.BulkWriter;
-import io.milvus.bulkwriter.LocalBulkWriter;
-import io.milvus.bulkwriter.LocalBulkWriterParam;
 import io.milvus.bulkwriter.RemoteBulkWriter;
 import io.milvus.bulkwriter.RemoteBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.CloudStorage;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
-import io.milvus.bulkwriter.common.utils.ImportUtils;
-import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.bulkwriter.connect.AzureConnectParam;
 import io.milvus.bulkwriter.connect.S3ConnectParam;
 import io.milvus.bulkwriter.connect.StorageConnectParam;
@@ -47,28 +40,38 @@ import io.milvus.bulkwriter.request.import_.CloudImportRequest;
 import io.milvus.bulkwriter.request.import_.MilvusImportRequest;
 import io.milvus.bulkwriter.request.list.CloudListImportJobsRequest;
 import io.milvus.bulkwriter.request.list.MilvusListImportJobsRequest;
+import io.milvus.bulkwriter.restful.BulkImportUtils;
 import io.milvus.v1.CommonUtils;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.collection.request.AddFieldReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.collection.request.HasCollectionReq;
+import io.milvus.v2.service.collection.request.LoadCollectionReq;
+import io.milvus.v2.service.collection.request.RefreshLoadReq;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
-import org.apache.avro.generic.GenericData;
-import org.apache.http.util.Asserts;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-public class BulkWriterExample {
+public class BulkWriterRemoteExample {
     // milvus
     public static final String HOST = "127.0.0.1";
     public static final Integer PORT = 19530;
@@ -178,15 +181,8 @@ public class BulkWriterExample {
         createCollection(SIMPLE_COLLECTION_NAME, collectionSchema, false);
 
         for (BulkFileType fileType : fileTypes) {
-            localWriter(collectionSchema, fileType);
-        }
-
-        for (BulkFileType fileType : fileTypes) {
             remoteWriter(collectionSchema, fileType);
         }
-
-        // parallel append
-        parallelAppend(collectionSchema);
     }
 
     private static void exampleAllTypesCollectionRemote(List<BulkFileType> fileTypes) throws Exception {
@@ -197,7 +193,7 @@ public class BulkWriterExample {
         for (BulkFileType fileType : fileTypes) {
             CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
             List<List<String>> batchFiles = allTypesRemoteWriter(collectionSchema, fileType, rows);
-            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, true);
+            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
             callBulkInsert(batchFiles);
             verifyImportData(collectionSchema, originalData);
         }
@@ -207,44 +203,10 @@ public class BulkWriterExample {
 //        for (BulkFileType fileType : fileTypes) {
 //            CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
 //            List<List<String>> batchFiles = allTypesRemoteWriter(collectionSchema, fileType, rows);
-//            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, true);
+//            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
 //            callCloudImport(batchFiles, ALL_TYPES_COLLECTION_NAME, "");
 //            verifyImportData(collectionSchema, originalData);
 //        }
-    }
-
-    private static void localWriter(CreateCollectionReq.CollectionSchema collectionSchema, BulkFileType fileType) throws Exception {
-        System.out.printf("\n===================== local writer (%s) ====================%n", fileType.name());
-        LocalBulkWriterParam bulkWriterParam = LocalBulkWriterParam.newBuilder()
-                .withCollectionSchema(collectionSchema)
-                .withLocalPath("/tmp/bulk_writer")
-                .withFileType(fileType)
-                .withChunkSize(128 * 1024 * 1024)
-                .build();
-
-        try (LocalBulkWriter localBulkWriter = new LocalBulkWriter(bulkWriterParam)) {
-            // read data from csv
-            readCsvSampleData("data/train_embeddings.csv", localBulkWriter);
-
-            // append rows
-            for (int i = 0; i < 100000; i++) {
-                JsonObject row = new JsonObject();
-                row.addProperty("path", "path_" + i);
-                row.add("vector", GSON_INSTANCE.toJsonTree(GeneratorUtils.genFloatVector(DIM)));
-                row.addProperty("label", "label_" + i);
-
-                localBulkWriter.appendRow(row);
-            }
-
-            System.out.printf("%s rows appends%n", localBulkWriter.getTotalRowCount());
-
-            localBulkWriter.commit(false);
-            List<List<String>> batchFiles = localBulkWriter.getBatchFiles();
-            System.out.printf("Local writer done! output local files: %s%n", batchFiles);
-        } catch (Exception e) {
-            System.out.println("Local writer catch exception: " + e);
-            throw e;
-        }
     }
 
     private static void remoteWriter(CreateCollectionReq.CollectionSchema collectionSchema, BulkFileType fileType) throws Exception {
@@ -273,85 +235,6 @@ public class BulkWriterExample {
         } catch (Exception e) {
             System.out.println("Remote writer catch exception: " + e);
             throw e;
-        }
-    }
-
-    private static void parallelAppend(CreateCollectionReq.CollectionSchema collectionSchema) throws Exception {
-        System.out.print("\n===================== parallel append ====================");
-        LocalBulkWriterParam bulkWriterParam = LocalBulkWriterParam.newBuilder()
-                .withCollectionSchema(collectionSchema)
-                .withLocalPath("/tmp/bulk_writer")
-                .withFileType(BulkFileType.PARQUET)
-                .withChunkSize(128 * 1024 * 1024)  // 128MB
-                .build();
-
-        try (LocalBulkWriter localBulkWriter = new LocalBulkWriter(bulkWriterParam)) {
-            List<Thread> threads = new ArrayList<>();
-            int threadCount = 10;
-            int rowsPerThread = 1000;
-            for (int i = 0; i < threadCount; ++i) {
-                int current = i;
-                Thread thread = new Thread(() -> appendRow(localBulkWriter, current * rowsPerThread, (current + 1) * rowsPerThread));
-                threads.add(thread);
-                thread.start();
-                System.out.printf("Thread %s started%n", thread.getName());
-            }
-
-            for (Thread thread : threads) {
-                thread.join();
-                System.out.printf("Thread %s finished%n", thread.getName());
-            }
-
-            System.out.println(localBulkWriter.getTotalRowCount() + " rows appends");
-            localBulkWriter.commit(false);
-            System.out.printf("Append finished, %s rows%n", threadCount * rowsPerThread);
-
-            long rowCount = 0;
-            List<List<String>> batchFiles = localBulkWriter.getBatchFiles();
-            for (List<String> batch : batchFiles) {
-                for (String filePath : batch) {
-                    rowCount += readParquet(filePath);
-                }
-            }
-
-            Asserts.check(rowCount == threadCount * rowsPerThread, String.format("rowCount %s not equals expected %s", rowCount, threadCount * rowsPerThread));
-            System.out.println("Data is correct");
-        } catch (Exception e) {
-            System.out.println("parallelAppend catch exception: " + e);
-            throw e;
-        }
-    }
-
-    private static long readParquet(String localFilePath) throws Exception {
-        final long[] rowCount = {0};
-        new ParquetReaderUtils() {
-            @Override
-            public void readRecord(GenericData.Record record) {
-                rowCount[0]++;
-                String pathValue = record.get("path").toString();
-                String labelValue = record.get("label").toString();
-                Asserts.check(pathValue.replace("path_", "").equals(labelValue.replace("label_", "")), String.format("the suffix of %s not equals the suffix of %s", pathValue, labelValue));
-            }
-        }.readParquet(localFilePath);
-        System.out.printf("The file %s contains %s rows. Verify the content...%n", localFilePath, rowCount[0]);
-        return rowCount[0];
-    }
-
-    private static void appendRow(LocalBulkWriter writer, int begin, int end) {
-        try {
-            for (int i = begin; i < end; ++i) {
-                JsonObject row = new JsonObject();
-                row.addProperty("path", "path_" + i);
-                row.add("vector", GSON_INSTANCE.toJsonTree(GeneratorUtils.genFloatVector(DIM)));
-                row.addProperty("label", "label_" + i);
-
-                writer.appendRow(row);
-                if (i % 100 == 0) {
-                    System.out.printf("%s inserted %s items%n", Thread.currentThread().getName(), i - begin);
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("failed to append row!");
         }
     }
 
@@ -530,7 +413,7 @@ public class BulkWriterExample {
     }
 
     private static void readCsvSampleData(String filePath, BulkWriter writer) throws IOException, InterruptedException {
-        ClassLoader classLoader = BulkWriterExample.class.getClassLoader();
+        ClassLoader classLoader = BulkWriterRemoteExample.class.getClassLoader();
         URL resourceUrl = classLoader.getResource(filePath);
         filePath = new File(resourceUrl.getFile()).getAbsolutePath();
 
@@ -551,29 +434,6 @@ public class BulkWriterExample {
         }
     }
 
-    private static class CsvDataObject {
-        @JsonProperty
-        private String vector;
-        @JsonProperty
-        private String path;
-        @JsonProperty
-        private String label;
-
-        public String getVector() {
-            return vector;
-        }
-        public String getPath() {
-            return path;
-        }
-        public String getLabel() {
-            return label;
-        }
-        public List<Float> toFloatArray() {
-            return GSON_INSTANCE.fromJson(vector, new TypeToken<List<Float>>() {
-            }.getType());
-        }
-    }
-
     private static void callBulkInsert(List<List<String>> batchFiles) throws InterruptedException {
         String url = String.format("http://%s:%s", HOST, PORT);
         System.out.println("\n===================== import files to milvus ====================");
@@ -584,7 +444,7 @@ public class BulkWriterExample {
                 .files(batchFiles)
                 .options(options)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(url, milvusImportRequest);
+        String bulkImportResult = BulkImportUtils.bulkImport(url, milvusImportRequest);
         System.out.println(bulkImportResult);
 
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
@@ -593,7 +453,7 @@ public class BulkWriterExample {
 
         System.out.println("\n===================== listBulkInsertJobs() ====================");
         MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder().collectionName(ALL_TYPES_COLLECTION_NAME).build();
-        String listImportJobsResult = BulkImport.listImportJobs(url, listImportJobsRequest);
+        String listImportJobsResult = BulkImportUtils.listImportJobs(url, listImportJobsRequest);
         System.out.println(listImportJobsResult);
         while (true) {
             System.out.println("Wait 5 second to check bulkInsert job state...");
@@ -603,7 +463,7 @@ public class BulkWriterExample {
             MilvusDescribeImportRequest request = MilvusDescribeImportRequest.builder()
                     .jobId(jobId)
                     .build();
-            String getImportProgressResult = BulkImport.getImportProgress(url, request);
+            String getImportProgressResult = BulkImportUtils.getImportProgress(url, request);
             System.out.println(getImportProgressResult);
 
             JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
@@ -618,53 +478,6 @@ public class BulkWriterExample {
                 break;
             } else {
                 System.out.printf("The job %s is running, state:%s progress:%s%n", jobId, state, progress);
-            }
-        }
-    }
-
-    private static void callCloudImport(List<List<String>> batchFiles, String collectionName, String partitionName) throws InterruptedException {
-        String objectUrl = StorageConsts.cloudStorage == CloudStorage.AZURE
-                ? StorageConsts.cloudStorage.getAzureObjectUrl(StorageConsts.AZURE_ACCOUNT_NAME, StorageConsts.AZURE_CONTAINER_NAME, ImportUtils.getCommonPrefix(batchFiles))
-                : StorageConsts.cloudStorage.getS3ObjectUrl(StorageConsts.STORAGE_BUCKET, ImportUtils.getCommonPrefix(batchFiles), StorageConsts.STORAGE_REGION);
-        String accessKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
-        String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
-
-        System.out.println("\n===================== call cloudImport ====================");
-        CloudImportRequest bulkImportRequest = CloudImportRequest.builder()
-                .objectUrl(objectUrl).accessKey(accessKey).secretKey(secretKey)
-                .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(collectionName).partitionName(partitionName)
-                .apiKey(CloudImportConsts.API_KEY)
-                .build();
-        String bulkImportResult = BulkImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, bulkImportRequest);
-        JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
-
-        String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
-        System.out.println("Create a cloudImport job, job id: " + jobId);
-
-        System.out.println("\n===================== call cloudListImportJobs ====================");
-        CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
-        String listImportJobsResult = BulkImport.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
-        System.out.println(listImportJobsResult);
-        while (true) {
-            System.out.println("Wait 5 second to check bulkInsert job state...");
-            TimeUnit.SECONDS.sleep(5);
-
-            System.out.println("\n===================== call cloudGetProgress ====================");
-            CloudDescribeImportRequest request = CloudDescribeImportRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
-            String getImportProgressResult = BulkImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, request);
-            JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
-            String importProgressState = getImportProgressObject.getAsJsonObject("data").get("state").getAsString();
-            String progress = getImportProgressObject.getAsJsonObject("data").get("progress").getAsString();
-
-            if ("Failed".equals(importProgressState)) {
-                String reason = getImportProgressObject.getAsJsonObject("data").get("reason").getAsString();
-                System.out.printf("The job %s failed, reason: %s%n", jobId, reason);
-                break;
-            } else if ("Completed".equals(importProgressState)) {
-                System.out.printf("The job %s completed%n", jobId);
-                break;
-            } else {
-                System.out.printf("The job %s is running, state:%s progress:%s%n", jobId, importProgressState, progress);
             }
         }
     }
@@ -880,7 +693,7 @@ public class BulkWriterExample {
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
-        String bulkImportResult = BulkImport.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, request);
+        String bulkImportResult = BulkImportUtils.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, request);
         System.out.println(bulkImportResult);
 
         System.out.println("\n===================== get import job progress ====================");
@@ -888,12 +701,12 @@ public class BulkWriterExample {
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
         String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
         CloudDescribeImportRequest getImportProgressRequest = CloudDescribeImportRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
-        String getImportProgressResult = BulkImport.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, getImportProgressRequest);
+        String getImportProgressResult = BulkImportUtils.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, getImportProgressRequest);
         System.out.println(getImportProgressResult);
 
         System.out.println("\n===================== list import jobs ====================");
         CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
-        String listImportJobsResult = BulkImport.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
+        String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
         System.out.println(listImportJobsResult);
     }
 
