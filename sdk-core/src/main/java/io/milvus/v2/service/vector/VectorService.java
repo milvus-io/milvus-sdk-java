@@ -226,6 +226,9 @@ public class VectorService extends BaseService {
             DescribeCollectionResp descResp = collectionService.describeCollection(blockingStub, descReq);
             request.setFilter(vectorUtils.getExprById(descResp.getPrimaryFieldName(), request.getIds()));
         }
+
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        request.setDatabaseName(actualDbName(request.getDatabaseName()));
         QueryResults response = blockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -241,6 +244,8 @@ public class VectorService extends BaseService {
 
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        request.setDatabaseName(actualDbName(request.getDatabaseName()));
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
         SearchResults response = blockingStub.search(searchRequest);
@@ -259,6 +264,8 @@ public class VectorService extends BaseService {
 
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
+        // reset the db name so that the timestamp cache can set correct key for this collection
+        request.setDatabaseName(actualDbName(request.getDatabaseName()));
         HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
 
         SearchResults response = blockingStub.hybridSearch(searchRequest);

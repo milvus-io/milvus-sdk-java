@@ -52,19 +52,19 @@ public class GTsDict {
 
     private ConcurrentMap<String, Long> tsDict = new ConcurrentHashMap<>();
 
-    public void updateCollectionTs(String collectionName, long ts) {
+    public void updateCollectionTs(String name, long ts) {
         // If the collection name exists, use its value to compare to the input ts,
         // only when the input ts is larger than the existing value, replace it with the input ts.
         // If the collection name doesn't exist, directly set the input value.
-        tsDict.compute(collectionName, (key, value) -> (value == null) ? ts : ((ts > value) ? ts : value));
+        tsDict.compute(name, (key, value) -> (value == null) ? ts : ((ts > value) ? ts : value));
     }
 
-    public Long getCollectionTs(String collectionName) {
-        return tsDict.get(collectionName);
+    public Long getCollectionTs(String name) {
+        return tsDict.get(name);
     }
 
-    public void removeCollectionTs(String collectionName) {
-        tsDict.remove(collectionName);
+    public void removeCollectionTs(String name) {
+        tsDict.remove(name);
     }
 
     public void cleanAllCollectionTs() {

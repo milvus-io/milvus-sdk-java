@@ -26,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class RefreshLoadReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private Boolean async = Boolean.TRUE;

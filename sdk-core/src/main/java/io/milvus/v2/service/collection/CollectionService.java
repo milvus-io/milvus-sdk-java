@@ -97,17 +97,18 @@ public class CollectionService extends BaseService {
                         .fieldName(request.getVectorFieldName())
                         .build();
         CreateIndexReq createIndexReq = CreateIndexReq.builder()
+                        .databaseName(request.getDatabaseName())
+                .collectionName(request.getCollectionName())
                         .indexParams(Collections.singletonList(indexParam))
-                        .collectionName(request.getCollectionName())
                         .sync(false)
                         .build();
         indexService.createIndex(blockingStub, createIndexReq);
-        //load collection, set async to true since no need to wait loading progress
+        //load collection, set sync to false since no need to wait loading progress
         try {
-            //TimeUnit.MILLISECONDS.sleep(1000);
             loadCollection(blockingStub, LoadCollectionReq.builder()
-                    .sync(false)
+                    .databaseName(request.getDatabaseName())
                     .collectionName(request.getCollectionName())
+                    .sync(false)
                     .build());
         } catch (Exception e) {
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection failed: " + e);
@@ -160,16 +161,18 @@ public class CollectionService extends BaseService {
         if(request.getIndexParams() != null && !request.getIndexParams().isEmpty()) {
             for(IndexParam indexParam : request.getIndexParams()) {
                 CreateIndexReq createIndexReq = CreateIndexReq.builder()
-                        .indexParams(Collections.singletonList(indexParam))
+                        .databaseName(request.getDatabaseName())
                         .collectionName(request.getCollectionName())
+                        .indexParams(Collections.singletonList(indexParam))
                         .sync(false)
                         .build();
                 indexService.createIndex(blockingStub, createIndexReq);
             }
-            //load collection, set async to true since no need to wait loading progress
+            //load collection, set sync to true since no need to wait loading progress
             loadCollection(blockingStub, LoadCollectionReq.builder()
-                    .sync(false)
+                    .databaseName(request.getDatabaseName())
                     .collectionName(request.getCollectionName())
+                    .sync(false)
                     .build());
         }
 
@@ -329,15 +332,17 @@ public class CollectionService extends BaseService {
 
     public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
-        LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
+        LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
                 .setReplicaNumber(request.getNumReplicas())
                 .setRefresh(request.getRefresh())
                 .addAllLoadFields(request.getLoadFields())
                 .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
-                .addAllResourceGroups(request.getResourceGroups())
-                .build();
-        Status status = blockingStub.loadCollection(loadCollectionRequest);
+                .addAllResourceGroups(request.getResourceGroups());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+        Status status = blockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
         if (request.getSync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
@@ -348,11 +353,13 @@ public class CollectionService extends BaseService {
 
     public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
         String title = String.format("RefreshLoadRequest collectionName:%s", request.getCollectionName());
-        LoadCollectionRequest loadCollectionRequest = LoadCollectionRequest.newBuilder()
+        LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setRefresh(true)
-                .build();
-        Status status = blockingStub.loadCollection(loadCollectionRequest);
+                .setRefresh(true);
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+        Status status = blockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
         if (request.getSync()) {
             WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
