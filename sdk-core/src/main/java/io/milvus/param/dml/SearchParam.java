@@ -28,6 +28,7 @@ import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -38,7 +39,8 @@ import java.util.SortedMap;
  */
 @Getter
 public class SearchParam {
-    private final String databaseName;
+    @Setter
+    private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final String metricType;

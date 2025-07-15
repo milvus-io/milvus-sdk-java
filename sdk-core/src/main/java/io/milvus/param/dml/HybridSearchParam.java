@@ -27,6 +27,7 @@ import io.milvus.param.ParamUtils;
 import io.milvus.param.dml.ranker.BaseRanker;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
@@ -37,7 +38,8 @@ import java.util.List;
 @Getter
 @ToString
 public class HybridSearchParam {
-    private final String databaseName;
+    @Setter
+    private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final List<AnnSearchParam> searchRequests;
