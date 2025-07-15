@@ -88,6 +88,9 @@ public class CreateCollectionReq {
                 this.indexParams$value = new ArrayList<>();
             }
             try {
+                if (this.indexParams$value == null) {
+                    this.indexParams$value = new ArrayList<>();
+                }
                 this.indexParams$value.add(indexParam);
             }catch (UnsupportedOperationException _e){
                 this.indexParams$value = new ArrayList<>(this.indexParams$value);
