@@ -17,13 +17,19 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.storage;
+package io.milvus.bulkwriter.request.stage;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.io.File;
+@Data
+@SuperBuilder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ApplyStageRequest extends BaseStageRequest {
+    private String stageName;
 
-public interface StorageClient {
-    Long getObjectEntity(String bucketName, String objectKey) throws Exception;
-    boolean checkBucketExist(String bucketName) throws Exception;
-    void putObject(File file, String bucketName, String objectKey) throws Exception;
+    private String path;
 }
