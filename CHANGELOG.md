@@ -1,23 +1,41 @@
 # Changelog
 
 ## milvus-sdk-java 2.6.1 (2025-07-15)
+### Feature
+- Support uploading file to Zilliz Cloud Stage for BulkWriter
+
 ### Bug
 - Fix a bug of SearchResultsWrapper.getRowRecords() that returns wrong data for output fields
+- Fix a null pointer bug of CreateCollectionReq.indexParam()
+- Fix a no such key bug of BulkWriter
+- Fix potential bugs of ConsistencyLevel when dml/dql requests across databases
+- Fix potential bugs of collection schema cache when dml requests across databases
 
 ### Improvement
 - Deprecate topK for search/hybridSearch/iterator, replaced with limit
-- Refine collection schema cache
+- Deprecate expr of AnnSearchReq, replaced with filter
+- Add database parameter for HybridSearchParam/QueryParam/SearchParam in V1
+- Add database parameter for LoadCollectionReq/RefreshLoadReq in V2
 - Avoid exception when search result is empty
 - BulkWriter supports Int8Vector
 
 ## milvus-sdk-java 2.5.11 (2025-07-15)
+### Feature
+- Support uploading file to Zilliz Cloud Stage for BulkWriter
+
 ### Bug
 - Fix a bug of SearchResultsWrapper.getRowRecords() that returns wrong data for output fields
 - Fix a bug of flush that timestamp is not correctly passed
+- Fix a null pointer bug of CreateCollectionReq.indexParam()
+- Fix a no such key bug of BulkWriter
+- Fix potential bugs of ConsistencyLevel when dml/dql requests across databases
+- Fix potential bugs of collection schema cache when dml requests across databases
 
 ### Improvement
-- Deprecate topK for search/hybridSearch/iterator, replaced with limit
-- Refine collection schema cache
+- Deprecate topK of search/hybridSearch/iterator, replaced with limit
+- Deprecate expr of AnnSearchReq, replaced with filter
+- Add database parameter for HybridSearchParam/QueryParam/SearchParam in V1
+- Add database parameter for LoadCollectionReq/RefreshLoadReq in V2
 - Avoid exception when search result is empty
 - Support jsonPath index
 - Support run analyzer by collection and Field
