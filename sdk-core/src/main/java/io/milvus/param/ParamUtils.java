@@ -845,14 +845,16 @@ public class ParamUtils {
 
     @SuppressWarnings("unchecked")
     public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
+        String dbName = requestParam.getDatabaseName();
+        String collectionName = requestParam.getCollectionName();
         SearchRequest.Builder builder = SearchRequest.newBuilder()
-                .setCollectionName(requestParam.getCollectionName());
+                .setCollectionName(collectionName);
 
         if (!requestParam.getPartitionNames().isEmpty()) {
             requestParam.getPartitionNames().forEach(builder::addPartitionNames);
         }
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.setDbName(requestParam.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         // prepare target vectors
@@ -942,7 +944,7 @@ public class ParamUtils {
             builder.setDsl(requestParam.getExpr());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
         builder.setTravelTimestamp(requestParam.getTravelTimestamp()); // deprecated
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
@@ -1006,14 +1008,16 @@ public class ParamUtils {
     }
 
     public static HybridSearchRequest convertHybridSearchParam(@NonNull HybridSearchParam requestParam) throws ParamException {
+        String dbName = requestParam.getDatabaseName();
+        String collectionName = requestParam.getCollectionName();
         HybridSearchRequest.Builder builder = HybridSearchRequest.newBuilder()
-                .setCollectionName(requestParam.getCollectionName());
+                .setCollectionName(collectionName);
 
         if (!requestParam.getPartitionNames().isEmpty()) {
             requestParam.getPartitionNames().forEach(builder::addPartitionNames);
         }
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.setDbName(requestParam.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         for (AnnSearchParam req : requestParam.getSearchRequests()) {
@@ -1059,7 +1063,7 @@ public class ParamUtils {
             requestParam.getOutFields().forEach(builder::addOutputFields);
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         if (requestParam.getConsistencyLevel() == null) {
@@ -1072,18 +1076,20 @@ public class ParamUtils {
     }
 
     public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
+        String dbName = requestParam.getDatabaseName();
+        String collectionName = requestParam.getCollectionName();
         boolean useDefaultConsistency = (requestParam.getConsistencyLevel() == null);
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), requestParam.getCollectionName());
+        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
         QueryRequest.Builder builder = QueryRequest.newBuilder()
-                .setCollectionName(requestParam.getCollectionName())
+                .setCollectionName(collectionName)
                 .addAllPartitionNames(requestParam.getPartitionNames())
                 .addAllOutputFields(requestParam.getOutFields())
                 .setExpr(requestParam.getExpr())
                 .setTravelTimestamp(requestParam.getTravelTimestamp())
                 .setGuaranteeTimestamp(guaranteeTimestamp);
 
-        if (StringUtils.isNotEmpty(requestParam.getDatabaseName())) {
-            builder.setDbName(requestParam.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         // a new parameter from v2.2.9, if user didn't specify consistency level, set this parameter to true
@@ -1120,17 +1126,20 @@ public class ParamUtils {
         return builder.build();
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String collectionName){
+    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String dbName, String collectionName){
         if(consistencyLevel == null){
-            Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+            String key = GTsDict.CombineCollectionName(dbName, collectionName);
+            Long ts = GTsDict.getInstance().getCollectionTs(key);
             return  (ts == null) ? 1L : ts;
         }
         switch (consistencyLevel){
             case STRONG:
                 return 0L;
-            case SESSION:
-                Long ts = GTsDict.getInstance().getCollectionTs(collectionName);
+            case SESSION: {
+                String key = GTsDict.CombineCollectionName(dbName, collectionName);
+                Long ts = GTsDict.getInstance().getCollectionTs(key);
                 return (ts == null) ? 1L : ts;
+            }
             case BOUNDED:
                 return 2L; // let server side to determine the bounded time
             default:

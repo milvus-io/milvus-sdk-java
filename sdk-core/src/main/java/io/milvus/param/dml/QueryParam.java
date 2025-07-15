@@ -26,6 +26,7 @@ import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
@@ -37,7 +38,8 @@ import java.util.List;
 @Getter
 @ToString
 public class QueryParam {
-    private final String databaseName;
+    @Setter
+    private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final List<String> outFields;

@@ -33,7 +33,6 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.param.Constant;
-import io.milvus.param.dml.HybridSearchParam;
 import io.milvus.pool.MilvusClientV2Pool;
 import io.milvus.pool.PoolConfig;
 import io.milvus.response.QueryResultsWrapper;
@@ -1375,16 +1374,20 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("64", extraParams.get("efConstruction"));
     }
 
-    private static void createSimpleCollection(MilvusClientV2 client, String collName, String pkName, boolean autoID, int dimension) {
+    private static void createSimpleCollection(MilvusClientV2 client, String dbName, String collName, String pkName, boolean autoID,
+                                               int dimension, ConsistencyLevel level) {
         client.dropCollection(DropCollectionReq.builder()
+                .databaseName(dbName)
                 .collectionName(collName)
                 .build());
 
         client.createCollection(CreateCollectionReq.builder()
+                .databaseName(dbName)
                 .collectionName(collName)
                 .autoID(autoID)
                 .primaryFieldName(pkName)
                 .dimension(dimension)
+                .consistencyLevel(level)
                 .enableDynamicField(false)
                 .build());
     }
@@ -1400,7 +1403,7 @@ class MilvusClientV2DockerTest {
                 .build());
 
         // create a collection in the default db
-        createSimpleCollection(client, randomCollectionName, "pk", false, DIMENSION);
+        createSimpleCollection(client, "", randomCollectionName, "pk", false, DIMENSION, ConsistencyLevel.BOUNDED);
 
         // a temp client connect to the new db
         ConnectConfig config = ConnectConfig.builder()
@@ -1452,7 +1455,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(ts12 > ts11);
 
         // create a new collection with the same name, different schema, in the test db
-        createSimpleCollection(tempClient, randomCollectionName, "aaa", false, 4);
+        createSimpleCollection(tempClient, "", randomCollectionName, "aaa", false, 4, ConsistencyLevel.BOUNDED);
 
         // use the temp client to insert wrong data, wrong dimension
         row.addProperty("aaa", 22);
@@ -2610,5 +2613,99 @@ class MilvusClientV2DockerTest {
                 Assertions.assertEquals(hash2.get(i), token.getHash());
             }
         }
+    }
+
+    @Test
+    void testConsistencyLevel() throws InterruptedException {
+        String randomCollectionName = generator.generate(10);
+        String pkName = "pk";
+        String vectorName = "vector";
+        int dim = 4;
+        String defaultDbName = "default";
+        String tempDbName = "db_for_level";
+
+        // create a temp database
+        client.createDatabase(CreateDatabaseReq.builder()
+                .databaseName(tempDbName)
+                .build());
+
+        Function<String, Void> runTestFunc =
+                dbName -> {
+                    // a client use the temp database
+                    ConnectConfig config = ConnectConfig.builder()
+                            .uri(milvus.getEndpoint())
+                            .dbName(tempDbName)
+                            .build();
+                    MilvusClientV2 tempClient = new MilvusClientV2(config);
+
+                    for (int i = 0; i < 20; i++) {
+                        JsonObject row = new JsonObject();
+                        row.addProperty(pkName, i);
+                        row.add(vectorName, JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
+                        tempClient.insert(InsertReq.builder()
+                                .databaseName(dbName)
+                                .collectionName(randomCollectionName)
+                                .data(Collections.singletonList(row))
+                                .build());
+
+                        // query/search/hybridSearch immediately after insert, data must be visible
+                        String filter = String.format("%s == %d", pkName, i);
+                        if (i % 3 == 0) {
+                            QueryResp queryResp = client.query(QueryReq.builder()
+                                    .databaseName(dbName)
+                                    .collectionName(randomCollectionName)
+                                    .filter(filter)
+                                    .outputFields(Collections.singletonList(pkName))
+                                    .build());
+                            List<QueryResp.QueryResult> oneResult = queryResp.getQueryResults();
+                            Assertions.assertEquals(1, oneResult.size());
+                        } else if (i % 2 == 0) {
+                            SearchResp searchResp = client.search(SearchReq.builder()
+                                    .databaseName(dbName)
+                                    .collectionName(randomCollectionName)
+                                    .annsField(vectorName)
+                                    .filter(filter)
+                                    .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                    .limit(10)
+                                    .build());
+                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                            Assertions.assertEquals(1, oneResult.size());
+                            Assertions.assertEquals(1, oneResult.get(0).size());
+                        } else {
+                            AnnSearchReq subReq = AnnSearchReq.builder()
+                                    .vectorFieldName(vectorName)
+                                    .filter(filter)
+                                    .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                    .limit(7)
+                                    .build();
+
+                            SearchResp searchResp = client.hybridSearch(HybridSearchReq.builder()
+                                    .databaseName(dbName)
+                                    .collectionName(randomCollectionName)
+                                    .searchRequests(Collections.singletonList(subReq))
+                                    .ranker(new RRFRanker(20))
+                                    .limit(5)
+                                    .build());
+                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                            Assertions.assertEquals(1, oneResult.size());
+                            Assertions.assertEquals(1, oneResult.get(0).size());
+                        }
+                    }
+                return null;
+        };
+
+        // test SESSION level
+        createSimpleCollection(client, "", randomCollectionName, pkName, false, dim, ConsistencyLevel.SESSION);
+        runTestFunc.apply(defaultDbName);
+
+        createSimpleCollection(client, tempDbName, randomCollectionName, pkName, false, dim, ConsistencyLevel.SESSION);
+        runTestFunc.apply(tempDbName);
+
+        // test STRONG level
+        createSimpleCollection(client, "", randomCollectionName, pkName, false, dim, ConsistencyLevel.STRONG);
+        runTestFunc.apply(defaultDbName);
+
+        createSimpleCollection(client, tempDbName, randomCollectionName, pkName, false, dim, ConsistencyLevel.STRONG);
+        runTestFunc.apply(tempDbName);
     }
 }

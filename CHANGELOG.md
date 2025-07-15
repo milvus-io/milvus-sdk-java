@@ -1,6 +1,6 @@
 # Changelog
 
-## milvus-sdk-java 2.5.11 (2025-07-14)
+## milvus-sdk-java 2.5.11 (2025-07-15)
 ### Bug
 - Fix a bug of SearchResultsWrapper.getRowRecords() that returns wrong data for output fields
 - Fix a bug of flush that timestamp is not correctly passed
