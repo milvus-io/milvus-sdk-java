@@ -152,7 +152,7 @@ public class PartitionService extends BaseService {
                 Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                System.out.println("Thread was interrupted, failed to complete operation");
+                logger.error("Thread was interrupted, failed to complete operation");
                 return; // or handle interruption appropriately
             }
         }
