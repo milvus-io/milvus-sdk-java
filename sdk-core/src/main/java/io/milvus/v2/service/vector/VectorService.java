@@ -372,7 +372,7 @@ public class VectorService extends BaseService {
         builder.addAllAnalyzerNames(analyzerNames);
 
         String params = JsonUtils.toJson(request.getAnalyzerParams());
-        System.out.println(params);
+        logger.debug(params);
         RunAnalyzerRequest runRequest = builder.addAllPlaceholder(byteStrings)
                 .setAnalyzerParams(params)
                 .setWithDetail(request.getWithDetail())
