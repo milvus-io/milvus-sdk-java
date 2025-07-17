@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -86,7 +88,7 @@ public class StageOperation {
                 File file = new File(localFilePath);
                 long fileStartTime = System.currentTimeMillis();
                 try {
-                    uploadLocalFileToStage(localFilePath);
+                    uploadLocalFileToStage(localFilePath, localDirOrFilePath);
                     long bytes = processedBytes.addAndGet(file.length());
                     long elapsed = System.currentTimeMillis() - fileStartTime;
                     double percent = totalBytes == 0 ? 100.0 : (bytes * 100.0 / totalBytes);
@@ -145,10 +147,19 @@ public class StageOperation {
         return inputPath + "/";
     }
 
-    private String uploadLocalFileToStage(String localFilePath) throws Exception {
+    private String uploadLocalFileToStage(String localFilePath, String rootPath) throws Exception {
         File file = new File(localFilePath);
-        String fileName = file.getName();
-        String remoteFilePath = applyStageResponse.getUploadPath() + fileName;
+        Path filePath = file.toPath().toAbsolutePath();
+        Path root = Paths.get(rootPath).toAbsolutePath();
+
+        String relativePath;
+        if (root.toFile().isFile()) {
+            relativePath = file.getName();
+        } else {
+            relativePath = root.relativize(filePath).toString().replace("\\", "/");
+        }
+
+        String remoteFilePath = applyStageResponse.getUploadPath() + relativePath;
         putObject(file, remoteFilePath);
         return remoteFilePath;
     }
