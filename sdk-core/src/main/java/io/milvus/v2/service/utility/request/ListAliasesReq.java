@@ -25,5 +25,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class ListAliasesReq {
+    private String databaseName;
     private String collectionName;
 }
