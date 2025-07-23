@@ -25,5 +25,6 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class DropAliasReq {
+    private String databaseName;
     private String alias;
 }
