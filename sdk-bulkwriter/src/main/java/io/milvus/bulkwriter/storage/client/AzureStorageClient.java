@@ -78,4 +78,5 @@ public class AzureStorageClient implements StorageClient {
         BlobContainerClient blobContainerClient = blobServiceClient.getBlobContainerClient(bucketName);
         return blobContainerClient.exists();
     }
+
 }

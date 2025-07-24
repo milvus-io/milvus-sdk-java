@@ -27,21 +27,17 @@ import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Parameters for <code>bulkWriter</code> interface.
+ * Parameters for <code>stageManager</code> interface.
  */
 @Getter
 @ToString
-public class StageOperationParam {
+public class StageManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
-    private final String stageName;
-    private final String path;
 
-    private StageOperationParam(@NonNull Builder builder) {
+    private StageManagerParam(@NonNull Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
-        this.stageName = builder.stageName;
-        this.path = builder.path;
     }
 
     public static Builder newBuilder() {
@@ -49,20 +45,21 @@ public class StageOperationParam {
     }
 
     /**
-     * Builder for {@link StageOperationParam} class.
+     * Builder for {@link StageManagerParam} class.
      */
     public static final class Builder {
         private String cloudEndpoint;
 
         private String apiKey;
 
-        private String stageName;
-
-        private String path;
-
         private Builder() {
         }
 
+        /**
+         * The value of the URL is fixed.
+         * For overseas regions, it is: https://api.cloud.zilliz.com
+         * For regions in China, it is: https://api.cloud.zilliz.com.cn
+         */
         public Builder withCloudEndpoint(@NotNull String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
@@ -73,31 +70,16 @@ public class StageOperationParam {
             return this;
         }
 
-        public Builder withStageName(@NotNull String stageName) {
-            this.stageName = stageName;
-            return this;
-        }
-
         /**
-         * Sets the path
-         * If specify the value, will use the path of the upload file
-         */
-        public Builder withPath(String path) {
-            this.path = path;
-            return this;
-        }
-
-        /**
-         * Verifies parameters and creates a new {@link StageOperationParam} instance.
+         * Verifies parameters and creates a new {@link StageManagerParam} instance.
          *
-         * @return {@link StageOperationParam}
+         * @return {@link StageManagerParam}
          */
-        public StageOperationParam build() throws ParamException {
+        public StageManagerParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
             ParamUtils.CheckNullEmptyString(apiKey, "apiKey");
-            ParamUtils.CheckNullEmptyString(stageName, "stageName");
 
-            return new StageOperationParam(this);
+            return new StageManagerParam(this);
         }
     }
 

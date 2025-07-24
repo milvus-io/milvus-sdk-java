@@ -21,7 +21,8 @@ package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import io.milvus.bulkwriter.model.StageUploadResult;
+import io.milvus.bulkwriter.model.UploadFilesResult;
+import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
 import io.milvus.common.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +40,7 @@ public class StageBulkWriter extends LocalBulkWriter {
 
     private String remotePath;
     private List<List<String>> remoteFiles;
-    private StageOperation stageWriter;
+    private StageFileManager stageFileManager;
     private StageBulkWriterParam stageBulkWriterParam;
 
     public StageBulkWriter(StageBulkWriterParam bulkWriterParam) throws IOException {
@@ -51,7 +52,7 @@ public class StageBulkWriter extends LocalBulkWriter {
         Path path = Paths.get(bulkWriterParam.getRemotePath());
         Path remoteDirPath = path.resolve(getUUID());
         this.remotePath = remoteDirPath + "/";
-        this.stageWriter = initStageWriterParams(bulkWriterParam);
+        this.stageFileManager = initStageFileManagerParams(bulkWriterParam);
         this.stageBulkWriterParam = bulkWriterParam;
 
         this.remoteFiles = Lists.newArrayList();
@@ -59,12 +60,12 @@ public class StageBulkWriter extends LocalBulkWriter {
 
     }
 
-    private StageOperation initStageWriterParams(StageBulkWriterParam bulkWriterParam) throws IOException {
-        StageOperationParam stageWriterParam = StageOperationParam.newBuilder()
+    private StageFileManager initStageFileManagerParams(StageBulkWriterParam bulkWriterParam) throws IOException {
+        StageFileManagerParam stageFileManagerParam = StageFileManagerParam.newBuilder()
                 .withCloudEndpoint(bulkWriterParam.getCloudEndpoint()).withApiKey(bulkWriterParam.getApiKey())
-                .withStageName(bulkWriterParam.getStageName()).withPath(remotePath)
+                .withStageName(bulkWriterParam.getStageName())
                 .build();
-        return new StageOperation(stageWriterParam);
+        return new StageFileManager(stageFileManagerParam);
     }
 
     @Override
@@ -87,8 +88,8 @@ public class StageBulkWriter extends LocalBulkWriter {
         return remoteFiles;
     }
 
-    public StageUploadResult getStageUploadResult() {
-        return StageUploadResult.builder()
+    public UploadFilesResult getStageUploadResult() {
+        return UploadFilesResult.builder()
                 .stageName(stageBulkWriterParam.getStageName())
                 .path(remotePath)
                 .build();
@@ -175,8 +176,13 @@ public class StageBulkWriter extends LocalBulkWriter {
     private void uploadObject(String filePath, String objectName) throws Exception {
         logger.info(String.format("Prepare to upload %s to %s", filePath, objectName));
 
-        stageWriter.uploadFileToStage(filePath);
+        UploadFilesRequest uploadFilesRequest = UploadFilesRequest.builder()
+                .sourceFilePath(filePath).targetStagePath(remotePath)
+                .build();
+
+        stageFileManager.uploadFilesAsync(uploadFilesRequest).get();
         logger.info(String.format("Upload file %s to %s", filePath, objectName));
+
     }
 
     private static String generatorLocalPath() {
