@@ -28,7 +28,18 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
-    private String path;
+public class UploadFilesRequest {
+    /**
+     * The full path of a local file or directory:
+     * If it is a file, please include the file name, e.g., /Users/zilliz/data/1.parquet
+     * If it is a directory, please end the path with a /, e.g., /Users/zilliz/data/
+     */
+    private String sourceFilePath;
+
+    /**
+     * The target stage directory path:
+     * Leave it empty to upload to the root directory.
+     * To upload to a specific folder, end the path with a /, e.g., data/
+     */
+    private String targetStagePath;
 }
