@@ -17,18 +17,26 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.response.stage;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+
+import java.util.List;
 
 @Data
-@SuperBuilder
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
-    private String path;
+public class ListStagesResponse {
+
+    private Integer count;
+
+    private Integer currentPage;
+
+    private Integer pageSize;
+
+    private List<StageInfo> stages;
 }

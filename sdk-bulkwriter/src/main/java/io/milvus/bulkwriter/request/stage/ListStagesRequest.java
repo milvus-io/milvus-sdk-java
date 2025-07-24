@@ -28,7 +28,8 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
-    private String path;
+public class ListStagesRequest {
+    private String projectId;
+    private Integer pageSize;
+    private Integer currentPage;
 }
