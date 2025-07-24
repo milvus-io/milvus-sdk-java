@@ -30,6 +30,8 @@ public class ApplyStageResponse implements Serializable {
 
     private String stageName;
 
+    private String stagePrefix;
+
     @AllArgsConstructor
     @NoArgsConstructor
     @Data

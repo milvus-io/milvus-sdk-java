@@ -28,7 +28,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
+public class DeleteStageRequest {
     private String stageName;
-    private String path;
 }
