@@ -26,6 +26,7 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,50 +120,62 @@ public class UtilityService extends BaseService {
     }
 
     public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
-        String title = String.format("CreateAlias %s for collection %s", request.getAlias(), request.getCollectionName());
-        io.milvus.grpc.CreateAliasRequest createAliasRequest = io.milvus.grpc.CreateAliasRequest.newBuilder()
+        String title = String.format("CreateAlias %s for database %s collection %s", request.getAlias(), request.getDatabaseName(), request.getCollectionName());
+        CreateAliasRequest.Builder createAliasRequestBuilder = CreateAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setAlias(request.getAlias())
-                .build();
-        io.milvus.grpc.Status status = blockingStub.createAlias(createAliasRequest);
+                .setAlias(request.getAlias());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            createAliasRequestBuilder.setDbName(request.getDatabaseName());
+        }
+
+        io.milvus.grpc.Status status = blockingStub.createAlias(createAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
-        String title = String.format("DropAlias %s", request.getAlias());
-        io.milvus.grpc.DropAliasRequest dropAliasRequest = io.milvus.grpc.DropAliasRequest.newBuilder()
-                .setAlias(request.getAlias())
-                .build();
-        io.milvus.grpc.Status status = blockingStub.dropAlias(dropAliasRequest);
+        String title = String.format("DropAlias %s for database %s", request.getAlias(), request.getDatabaseName());
+        DropAliasRequest.Builder dropAliasRequestBuilder = io.milvus.grpc.DropAliasRequest.newBuilder()
+                .setAlias(request.getAlias());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            dropAliasRequestBuilder.setDbName(request.getDatabaseName());
+        }
+        io.milvus.grpc.Status status = blockingStub.dropAlias(dropAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
-        String title = String.format("AlterAlias %s for collection %s", request.getAlias(), request.getCollectionName());
-        io.milvus.grpc.AlterAliasRequest alterAliasRequest = io.milvus.grpc.AlterAliasRequest.newBuilder()
+        String title = String.format("AlterAlias %s for database %s collection %s", request.getAlias(), request.getDatabaseName(), request.getCollectionName());
+        AlterAliasRequest.Builder alterAliasRequestBuilder = AlterAliasRequest.newBuilder()
                 .setCollectionName(request.getCollectionName())
-                .setAlias(request.getAlias())
-                .build();
-        io.milvus.grpc.Status status = blockingStub.alterAlias(alterAliasRequest);
+                .setAlias(request.getAlias());
+
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            alterAliasRequestBuilder.setDbName(request.getDatabaseName());
+        }
+
+        io.milvus.grpc.Status status = blockingStub.alterAlias(alterAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
-        String title = String.format("DescribeAlias %s", request.getAlias());
-        io.milvus.grpc.DescribeAliasRequest describeAliasRequest = io.milvus.grpc.DescribeAliasRequest.newBuilder()
-                .setAlias(request.getAlias())
-                .build();
-        io.milvus.grpc.DescribeAliasResponse response = blockingStub.describeAlias(describeAliasRequest);
+        String title = String.format("DescribeAlias %s for database %s", request.getAlias(), request.getDatabaseName());
+        DescribeAliasRequest.Builder describeAliasRequestBuilder = io.milvus.grpc.DescribeAliasRequest.newBuilder()
+                .setAlias(request.getAlias());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            describeAliasRequestBuilder.setDbName(request.getDatabaseName());
+        }
+        io.milvus.grpc.DescribeAliasResponse response = blockingStub.describeAlias(describeAliasRequestBuilder.build());
 
         rpcUtils.handleResponse(title, response.getStatus());
 
         return DescribeAliasResp.builder()
+                .databaseName(response.getDbName())
                 .collectionName(response.getCollection())
                 .alias(response.getAlias())
                 .build();
@@ -170,10 +183,14 @@ public class UtilityService extends BaseService {
 
     public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListAliasesReq request) {
         String title = "ListAliases";
-        io.milvus.grpc.ListAliasesRequest listAliasesRequest = io.milvus.grpc.ListAliasesRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        io.milvus.grpc.ListAliasesResponse response = blockingStub.listAliases(listAliasesRequest);
+        ListAliasesRequest.Builder listAliasesRequestBuilder = ListAliasesRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            listAliasesRequestBuilder.setDbName(request.getDatabaseName());
+        }
+
+        io.milvus.grpc.ListAliasesResponse response = blockingStub.listAliases(listAliasesRequestBuilder.build());
 
         rpcUtils.handleResponse(title, response.getStatus());
 
