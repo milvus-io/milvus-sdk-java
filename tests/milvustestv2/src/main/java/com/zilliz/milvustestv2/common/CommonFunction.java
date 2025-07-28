@@ -1296,7 +1296,10 @@ public class CommonFunction {
         if (ifLoad) {
             milvusClientV2.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
         }
-        insertIntoCollectionByBatch(collectionName, numberEntities, CommonData.dim, vectorType);
+//        insertIntoCollectionByBatch(collectionName, numberEntities, CommonData.dim, vectorType);
+        List<JsonObject> jsonObjects = genCommonData(collectionName, numberEntities);
+        InsertResp insert = milvusClientV2.insert(InsertReq.builder().collectionName(collectionName).data(jsonObjects).build());
+
 
     }
 
@@ -1478,6 +1481,11 @@ public class CommonFunction {
                 } else {
                     jsonObject = generalJsonObjectByDataType(name, dataType, 0, i);
                 }
+                row = JsonObjectUtil.jsonMerge(row, jsonObject);
+            }
+            // 判断是否有动态列
+            if (describeCollectionResp.getCollectionSchema().isEnableDynamicField()) {
+                JsonObject jsonObject = generalJsonObjectByDataType(CommonData.dynamicField, DataType.JSON, 0, i);
                 row = JsonObjectUtil.jsonMerge(row, jsonObject);
             }
             jsonList.add(row);
