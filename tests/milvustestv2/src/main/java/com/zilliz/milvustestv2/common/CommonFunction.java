@@ -275,6 +275,114 @@ public class CommonFunction {
         log.info("create collection:" + collectionName);
         return collectionName;
     }
+    public static String createNewCollectionWithDatabase(int dim, String collectionName, DataType vectorType,String databaseName) {
+        if (collectionName == null || collectionName.equals("")) {
+            collectionName = "Collection_" + GenerateUtil.getRandomString(10);
+        }
+        CreateCollectionReq.FieldSchema fieldInt64 = CreateCollectionReq.FieldSchema.builder()
+                .autoID(false)
+                .dataType(io.milvus.v2.common.DataType.Int64)
+                .isPrimaryKey(true)
+                .name(CommonData.fieldInt64)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt32 = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int32)
+                .name(CommonData.fieldInt32)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt16 = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int16)
+                .name(CommonData.fieldInt16)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldInt8 = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Int8)
+                .name(CommonData.fieldInt8)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldDouble = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Double)
+                .name(CommonData.fieldDouble)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldArray = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Array)
+                .name(CommonData.fieldArray)
+                .elementType(DataType.Int64)
+                .maxCapacity(100)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldBool = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Bool)
+                .name(CommonData.fieldBool)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldVarchar = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.VarChar)
+                .name(CommonData.fieldVarchar)
+                .isPrimaryKey(false)
+                .maxLength(100)
+                .build();
+        CreateCollectionReq.FieldSchema fieldFloat = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.Float)
+                .name(CommonData.fieldFloat)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldJson = CreateCollectionReq.FieldSchema.builder()
+                .dataType(DataType.JSON)
+                .name(CommonData.fieldJson)
+                .isPrimaryKey(false)
+                .build();
+        CreateCollectionReq.FieldSchema fieldVector = CreateCollectionReq.FieldSchema.builder()
+                .dataType(vectorType)
+                .isPrimaryKey(false)
+                .build();
+        if (vectorType == DataType.FloatVector) {
+            fieldVector.setDimension(dim);
+            fieldVector.setName(CommonData.fieldFloatVector);
+        }
+        if (vectorType == DataType.BinaryVector) {
+            fieldVector.setDimension(dim);
+            fieldVector.setName(CommonData.fieldBinaryVector);
+        }
+        if (vectorType == DataType.Float16Vector) {
+            fieldVector.setDimension(dim);
+            fieldVector.setName(CommonData.fieldFloat16Vector);
+        }
+        if (vectorType == DataType.BFloat16Vector) {
+            fieldVector.setDimension(dim);
+            fieldVector.setName(CommonData.fieldBF16Vector);
+        }
+        if (vectorType == DataType.SparseFloatVector) {
+            fieldVector.setName(CommonData.fieldSparseVector);
+        }
+        List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
+        fieldSchemaList.add(fieldInt64);
+        fieldSchemaList.add(fieldInt32);
+        fieldSchemaList.add(fieldInt16);
+        fieldSchemaList.add(fieldInt8);
+        fieldSchemaList.add(fieldFloat);
+        fieldSchemaList.add(fieldDouble);
+        fieldSchemaList.add(fieldArray);
+        fieldSchemaList.add(fieldBool);
+        fieldSchemaList.add(fieldJson);
+        fieldSchemaList.add(fieldVarchar);
+        fieldSchemaList.add(fieldVector);
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(fieldSchemaList)
+                .build();
+        CreateCollectionReq createCollectionReq = CreateCollectionReq.builder()
+                .collectionSchema(collectionSchema)
+                .collectionName(collectionName)
+                .enableDynamicField(false)
+                .description("collection desc")
+                .databaseName(databaseName)
+                .numShards(1)
+                .build();
+        milvusClientV2.createCollection(createCollectionReq);
+        log.info("create collection:" + collectionName);
+        return collectionName;
+    }
     public static String createNewCollectionWithDynamic(int dim, String collectionName, DataType vectorType) {
         if (collectionName == null || collectionName.equals("")) {
             collectionName = "Collection_" + GenerateUtil.getRandomString(10);
