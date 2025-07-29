@@ -26,7 +26,7 @@ public class AddFieldTest extends BaseTest {
     String collectionNameWithLoaded;
     String collectionWithDynamicField;
 
-    @BeforeClass
+    @BeforeClass(alwaysRun = true)
     public void initTestData() {
         collectionName = CommonFunction.createNewCollection(CommonData.dim, null, DataType.FloatVector);
         collectionWithDynamicField = CommonFunction.createNewCollectionWithDynamic(CommonData.dim, null, DataType.FloatVector);
@@ -57,7 +57,7 @@ public class AddFieldTest extends BaseTest {
     }
 
 
-    @AfterClass
+    @AfterClass(alwaysRun = true)
     public void cleanData() {
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
         milvusClientV2.dropCollection(DropCollectionReq.builder().collectionName(collectionWithDynamicField).build());
