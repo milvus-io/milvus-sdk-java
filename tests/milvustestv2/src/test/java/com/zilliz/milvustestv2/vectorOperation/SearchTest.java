@@ -206,7 +206,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search binary vector collection", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "search binary vector collection", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void searchBinaryVectorCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.BinaryVector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -222,7 +222,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search bf16 vector collection", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "search bf16 vector collection", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void searchBF16VectorCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.BFloat16Vector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -238,7 +238,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search float16 vector collection", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "search float16 vector collection", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void searchFloat16VectorCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.Float16Vector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -254,7 +254,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search Sparse vector collection", groups = {"Smoke"})
+    @Test(description = "search Sparse vector collection", groups = {"L1"})
     public void searchSparseVectorCollection() {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.SparseFloatVector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -270,7 +270,7 @@ public class SearchTest extends BaseTest {
 //        Assert.assertEquals(search.getSearchResults().get(0).size(), topK);
     }
 
-    @Test(description = "default search output params return id and distance", groups = {"Smoke"})
+    @Test(description = "default search output params return id and distance", groups = {"L1"})
     public void searchWithDefaultOutput() {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -287,7 +287,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).get(0).getEntity().keySet().size(), 0);
     }
 
-    @Test(description = "search in partition", groups = {"Smoke"}, dataProvider = "searchPartition")
+    @Test(description = "search in partition", groups = {"L1"}, dataProvider = "searchPartition")
     public void searchInPartition(List<String> partitionName, String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -305,7 +305,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search by alias", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "search by alias", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void searchByAlias(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -322,7 +322,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search group by field name", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search group by field name", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchByGroupByField(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -339,7 +339,7 @@ public class SearchTest extends BaseTest {
         }
     }
 
-    @Test(description = "search scalar index collection", groups = {"Smoke"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "filterAndExcept")
+    @Test(description = "search scalar index collection", groups = {"L1"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "filterAndExcept")
     public void searchScalarIndexCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchReq searchParams = SearchReq.builder()
@@ -358,7 +358,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search collection with nullable field", groups = {"Smoke"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "searchNullableField")
+    @Test(description = "search collection with nullable field", groups = {"L1"}, dependsOnMethods = {"createVectorAndScalarIndex"}, dataProvider = "searchNullableField")
     public void searchNullableCollection(String filter, int expect) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, DataType.FloatVector);
         SearchReq searchParams = SearchReq.builder()
@@ -377,7 +377,7 @@ public class SearchTest extends BaseTest {
         Assert.assertEquals(search.getSearchResults().get(0).size(), expect);
     }
 
-    @Test(description = "search by group size", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search by group size", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchByGroupSize(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -395,7 +395,7 @@ public class SearchTest extends BaseTest {
         }
     }
 
-    @Test(description = "search by group size and topK", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search by group size and topK", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchByGroupSizeAndTopK(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -413,7 +413,7 @@ public class SearchTest extends BaseTest {
         }
     }
 
-    @Test(description = "search by group size and topK and strict", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search by group size and topK and strict", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchByGroupSizeAndTopKAndStrict(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         SearchResp search = milvusClientV2.search(SearchReq.builder()
@@ -453,7 +453,7 @@ public class SearchTest extends BaseTest {
         }*/
     }
 
-    @Test(description = "search with expression template", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search with expression template", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchWithExpressionTemplate(String collectionName, DataType vectorType) {
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         Map<String, Map<String, Object>> expressionTemplateValues = new HashMap<>();
@@ -480,7 +480,7 @@ public class SearchTest extends BaseTest {
         });
     }
 
-    @Test(description = "search use hints", groups = {"Smoke"}, dataProvider = "VectorTypeList")
+    @Test(description = "search use hints", groups = {"L1"}, dataProvider = "VectorTypeList")
     public void searchWithHints(String collectionName, DataType vectorType){
         List<BaseVector> data = CommonFunction.providerBaseVector(CommonData.nq, CommonData.dim, vectorType);
         Map<String,Object> params=new HashMap<>();

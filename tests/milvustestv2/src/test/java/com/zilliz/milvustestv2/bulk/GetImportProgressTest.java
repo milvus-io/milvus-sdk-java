@@ -44,7 +44,7 @@ public class GetImportProgressTest extends BaseTest {
                 .collectionName(collectionName).build());
     }
 
-    @Test(description = "get import progress", groups = {"Smoke"})
+    @Test(description = "get import progress", groups = {"L2"})
     public void getImportProgress() {
         MilvusDescribeImportRequest request = MilvusDescribeImportRequest.builder()
                 .jobId(jobId)
