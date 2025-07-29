@@ -45,7 +45,7 @@ public class ListImportJobsTest extends BaseTest {
     }
 
 
-    @Test(description = "list import jobs", groups = {"Smoke"})
+    @Test(description = "list import jobs", groups = {"L2"})
     public void listImportJobs() {
         String s = BulkImport.listImportJobs(System.getProperty("uri") == null ? PropertyFilesUtil.getRunValue("uri") : System.getProperty("uri"),
                 MilvusListImportJobsRequest.builder().collectionName(collectionName).build());
