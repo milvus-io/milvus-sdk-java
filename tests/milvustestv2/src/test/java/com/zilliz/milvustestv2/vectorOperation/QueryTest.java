@@ -324,7 +324,7 @@ public class QueryTest extends BaseTest {
     }
 
 
-    @Test(description = "queryByAlias", groups = {"Smoke"})
+    @Test(description = "queryByAlias", groups = {"L1"})
     public void queryByAlias() {
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(CommonData.alias)
@@ -336,7 +336,7 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), 4);
     }
 
-    @Test(description = "queryInPartition", groups = {"Smoke"}, dataProvider = "queryPartition")
+    @Test(description = "queryInPartition", groups = {"L1"}, dataProvider = "queryPartition")
     public void queryInPartition(List<String> partition, String filter, long expect) {
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(CommonData.defaultFloatVectorCollection)
@@ -348,7 +348,7 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
 
-    @Test(description = "query with different collection", groups = {"Smoke"}, dataProvider = "DiffCollectionWithFilter")
+    @Test(description = "query with different collection", groups = {"L1"}, dataProvider = "DiffCollectionWithFilter")
     public void queryDiffCollection(String collectionName, String filter, long expect) {
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(collectionName)
@@ -359,7 +359,7 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
 
-    @Test(description = "query with nullable field", groups = {"Smoke"}, dataProvider = "queryNullableField")
+    @Test(description = "query with nullable field", groups = {"L1"}, dataProvider = "queryNullableField")
     public void queryByNullFilter(String filter, long expect) {
         QueryResp query = milvusClientV2.query(QueryReq.builder()
                 .collectionName(nullableDefaultCollectionName)
@@ -370,7 +370,7 @@ public class QueryTest extends BaseTest {
         Assert.assertEquals(query.getQueryResults().size(), expect);
     }
 
-    @Test(description = "sampling test", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "sampling test", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void samplingTest(String filter, long expect) {
 //        // 查询collection的segment数量
 //        int segmentSize = 0;
@@ -400,7 +400,7 @@ public class QueryTest extends BaseTest {
         Assert.assertTrue(query.getQueryResults().size() >= (samplingExpect - 1));
     }
 
-    @Test(description = "sampling test with nullable value", groups = {"Smoke"}, dataProvider = "filterAndExceptWithNullable")
+    @Test(description = "sampling test with nullable value", groups = {"L1"}, dataProvider = "filterAndExceptWithNullable")
     public void samplingTestWithNullable(String filter, long expect) {
         double samplingRate = 0.1;
         String samplingFilter = "(" + filter + " )&& random_sample(" + samplingRate + ")";
@@ -424,7 +424,7 @@ public class QueryTest extends BaseTest {
         Assert.assertTrue(query.getQueryResults().size() >= (samplingExpect - 1));
     }
 
-    @Test(description = "sampling test with limit", groups = {"Smoke"}, dataProvider = "filterAndExcept")
+    @Test(description = "sampling test with limit", groups = {"L1"}, dataProvider = "filterAndExcept")
     public void samplingWithLimitTest(String filter, long expect) {
 //        // 查询collection的segment数量
 //        int segmentSize = 0;
