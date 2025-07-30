@@ -227,7 +227,6 @@ public class SearchIterator {
         tailBand = getDistance(lastHit);
         String msg = String.format("set up init parameter for searchIterator width:%s tail_band:%s", width, tailBand);
         logger.debug(msg);
-//        System.out.println(msg);
     }
 
     private void updateFilteredIds(SearchResultsWrapper searchResultsWrapper) {
