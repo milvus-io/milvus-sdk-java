@@ -522,13 +522,6 @@ public class ParamUtils {
                                     DescCollResponseWrapper wrapper) {
             String collectionName = requestParam.getCollectionName();
 
-            // currently, not allow to upsert for collection whose primary key is auto-generated
-            FieldType pk = wrapper.getPrimaryField();
-            if (pk.isAutoID()) {
-                throw new ParamException(String.format("Upsert don't support autoID==True, collection: %s",
-                        requestParam.getCollectionName()));
-            }
-
             // generate upsert request builder
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Insert).build();
             upsertBuilder = UpsertRequest.newBuilder()
@@ -597,7 +590,8 @@ public class ParamUtils {
                 boolean found = false;
                 for (InsertParam.Field field : fields) {
                     if (field.getName().equals(fieldType.getName())) {
-                        if (fieldType.isAutoID()) {
+                        // from v2.4.10, milvus allows upsert for auto-id pk, no need to check for upsert action
+                        if (fieldType.isAutoID() && insertBuilder != null) {
                             String msg = String.format("The primary key: %s is auto generated, no need to input.",
                                     fieldType.getName());
                             throw new ParamException(msg);
@@ -665,7 +659,8 @@ public class ParamUtils {
                         rowFieldData = JsonNull.INSTANCE;
                     }
 
-                    if (fieldType.isAutoID()) {
+                    // from v2.4.10, milvus allows upsert for auto-id pk, no need to check for upsert action
+                    if (fieldType.isAutoID() && insertBuilder != null) {
                         String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
                         throw new ParamException(msg);
                     }
