@@ -1036,7 +1036,7 @@ public class MilvusClientV2 {
         try {
             close(TimeUnit.MINUTES.toSeconds(1));
         } catch (InterruptedException e) {
-            System.out.println("Interrupted during shutdown Milvus client!");
+            logger.error("Interrupted during shutdown Milvus client!");
         }
     }
 
