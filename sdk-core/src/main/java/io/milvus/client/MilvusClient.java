@@ -45,10 +45,16 @@ import io.milvus.param.resourcegroup.*;
 
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The Milvus Client Interface
  */
 public interface MilvusClient {
+
+    Logger logger = LoggerFactory.getLogger(MilvusClient.class);
+
     /**
      * Timeout setting for rpc call.
      *
@@ -99,7 +105,7 @@ public interface MilvusClient {
         try {
             close(TimeUnit.MINUTES.toSeconds(1));
         } catch (InterruptedException e) {
-            System.out.println("Interrupted during shutdown Milvus client!");
+            logger.error("Interrupted during shutdown Milvus client!");
         }
     }
 
