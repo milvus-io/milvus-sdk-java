@@ -19,11 +19,21 @@
 
 package io.milvus.v2.service.vector.response;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @SuperBuilder
 public class UpsertResp {
     private long upsertCnt;
+
+    // From v2.4.10, milvus allows upsert for auto-id=true, the server will return a new pk.
+    // the new pk is not equal to the original pk, the original entity is deleted, and a new entity
+    // is created with this new pk. Here we return this new pk to user.
+    @Builder.Default
+    private List<Object> primaryKeys = new ArrayList<>();
 }
