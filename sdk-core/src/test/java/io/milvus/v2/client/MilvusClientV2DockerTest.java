@@ -1164,6 +1164,7 @@ class MilvusClientV2DockerTest {
                 .data(dataUpdate)
                 .build());
         Assertions.assertEquals(2, upsertResp.getUpsertCnt());
+        Assertions.assertEquals(2, upsertResp.getPrimaryKeys().size());
 
         // get row count
         rowCount = getRowCount(randomCollectionName);

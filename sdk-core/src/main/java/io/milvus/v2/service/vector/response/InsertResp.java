@@ -29,6 +29,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class InsertResp {
+    // TODO: the first character should be lower case, add a new member and deprecate the old member
     private long InsertCnt;
     @Builder.Default
     private List<Object> primaryKeys = new ArrayList<>();
