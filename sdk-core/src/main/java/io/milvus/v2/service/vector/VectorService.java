@@ -148,19 +148,17 @@ public class VectorService extends BaseService {
         String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
         GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
 
+        // handle integer pk or string pk
+        List<Object> ids = new ArrayList<>();
         if (response.getIDs().hasIntId()) {
-            List<Object> ids = new ArrayList<>(response.getIDs().getIntId().getDataList());
-            return InsertResp.builder()
-                    .InsertCnt(response.getInsertCnt())
-                    .primaryKeys(ids)
-                    .build();
-        } else {
-            List<Object> ids = new ArrayList<>(response.getIDs().getStrId().getDataList());
-            return InsertResp.builder()
-                    .InsertCnt(response.getInsertCnt())
-                    .primaryKeys(ids)
-                    .build();
+            ids = new ArrayList<>(response.getIDs().getIntId().getDataList());
+        } else if (response.getIDs().hasStrId()) {
+            ids = new ArrayList<>(response.getIDs().getStrId().getDataList());
         }
+        return InsertResp.builder()
+                .InsertCnt(response.getInsertCnt())
+                .primaryKeys(ids)
+                .build();
     }
 
     private UpsertRequest buildUpsertRequest(UpsertReq request, DescribeCollectionResponse descResp) {
@@ -207,8 +205,17 @@ public class VectorService extends BaseService {
         // update the last write timestamp for SESSION consistency
         String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
         GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+
+        // handle integer pk or string pk
+        List<Object> ids = new ArrayList<>();
+        if (response.getIDs().hasIntId()) {
+            ids = new ArrayList<>(response.getIDs().getIntId().getDataList());
+        } else if (response.getIDs().hasStrId()) {
+            ids = new ArrayList<>(response.getIDs().getStrId().getDataList());
+        }
         return UpsertResp.builder()
                 .upsertCnt(response.getUpsertCnt())
+                .primaryKeys(ids)
                 .build();
     }
 
