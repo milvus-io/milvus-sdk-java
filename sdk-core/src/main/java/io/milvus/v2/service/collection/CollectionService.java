@@ -463,7 +463,7 @@ public class CollectionService extends BaseService {
                 Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                System.out.println("Thread was interrupted, Failed to complete operation");
+                logger.error("Thread was interrupted, Failed to complete operation");
                 return; // or handle interruption appropriately
             }
         }
