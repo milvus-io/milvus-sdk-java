@@ -89,10 +89,10 @@ public class VectorUtils {
         }
 
         // ignore growing
-//        builder.addQueryParams(KeyValuePair.newBuilder()
-//                .setKey(Constant.IGNORE_GROWING)
-//                .setValue(String.valueOf(request.isIgnoreGrowing()))
-//                .build());
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                .setKey(Constant.IGNORE_GROWING)
+                .setValue(String.valueOf(request.isIgnoreGrowing()))
+                .build());
 
         return builder.build();
 
