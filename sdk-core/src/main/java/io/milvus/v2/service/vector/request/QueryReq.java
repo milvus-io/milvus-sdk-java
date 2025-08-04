@@ -41,6 +41,7 @@ public class QueryReq {
     private ConsistencyLevel consistencyLevel = null;
     private long offset;
     private long limit;
+    private boolean ignoreGrowing;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
