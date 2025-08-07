@@ -20,26 +20,49 @@
 package io.milvus.v2.service.vector.request.ranker;
 
 import com.google.gson.JsonObject;
+import io.milvus.common.clientenum.FunctionType;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * The RRF reranking strategy, which merges results from multiple searches, favoring items that consistently appear.
+ * Read the doc for more info: https://milvus.io/docs/rrf-ranker.md
+ *
+ * Note: In v2.6, the Function and Rerank have been unified to support more rerank types: decay and model ranker
+ * https://milvus.io/docs/decay-ranker-overview.md
+ * https://milvus.io/docs/model-ranker-overview.md
+ * So we have to inherit the BaseRanker from Function, this change will lead to uncomfortable issues with
+ * RRFRanker/WeightedRanker in some users client code. We will mention it in release note.
+ *  * In old client code, to declare a WeightedRanker:
+ *  *   RRFRanker ranker = new RRFRanker(20)
+ *  * After this change, the client code should be changed accordingly:
+ *  *   RRFRanker ranker = RRFRanker.builder().k(20).build()
+ *
+ * You also can declare a rrf ranker by Function
+ * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
+ *                 .functionType(FunctionType.RERANK)
+ *                 .param("strategy", "rrf")
+ *                 .param("params", "{\"k\": 60}")
+ *                 .build();
  */
-public class RRFRanker extends BaseRanker {
+@SuperBuilder
+public class RRFRanker extends CreateCollectionReq.Function {
+    @Builder.Default
     private int k = 60;
 
-    public RRFRanker(int k) {
-        this.k = k;
+    public FunctionType getFunctionType() {
+        return FunctionType.RERANK;
     }
 
-    @Override
-    public Map<String, String> getProperties() {
+    public Map<String, String> getParams() {
         JsonObject params = new JsonObject();
         params.addProperty("k", this.k);
 
-        Map<String, String> props = new HashMap<>();
+        Map<String, String> props = super.getParams();
         props.put("strategy", "rrf");
         props.put("params", params.toString());
         return props;
