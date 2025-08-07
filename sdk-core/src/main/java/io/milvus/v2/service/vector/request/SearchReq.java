@@ -21,6 +21,7 @@ package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 
 import lombok.Builder;
@@ -66,6 +67,7 @@ public class SearchReq {
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+    private CreateCollectionReq.Function ranker;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
