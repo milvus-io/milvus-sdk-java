@@ -20,8 +20,7 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
-import io.milvus.v2.service.collection.request.LoadCollectionReq;
-import io.milvus.v2.service.vector.request.ranker.BaseRanker;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -36,7 +35,7 @@ public class HybridSearchReq
     private String collectionName;
     private List<String> partitionNames;
     private List<AnnSearchReq> searchRequests;
-    private BaseRanker ranker;
+    private CreateCollectionReq.Function ranker;
     @Builder.Default
     @Deprecated
     private int topK = 0; // deprecated, replaced by "limit"
