@@ -213,7 +213,7 @@ public class HybridSearchExample {
         HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .searchRequests(searchRequests)
-                .ranker(new WeightedRanker(Arrays.asList(0.2f, 0.5f, 0.6f)))
+                .ranker(WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build())
                 .limit(5)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();

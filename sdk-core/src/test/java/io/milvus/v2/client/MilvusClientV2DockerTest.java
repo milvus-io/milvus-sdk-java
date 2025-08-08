@@ -1047,7 +1047,7 @@ class MilvusClientV2DockerTest {
                     return HybridSearchReq.builder()
                             .collectionName(randomCollectionName)
                             .searchRequests(searchRequests)
-                            .ranker(new RRFRanker(20))
+                            .ranker(RRFRanker.builder().k(20).build())
                             .limit(topk)
                             .consistencyLevel(ConsistencyLevel.BOUNDED)
                             .build();
@@ -2853,7 +2853,7 @@ class MilvusClientV2DockerTest {
                                     .databaseName(dbName)
                                     .collectionName(randomCollectionName)
                                     .searchRequests(Collections.singletonList(subReq))
-                                    .ranker(new RRFRanker(20))
+                                    .ranker(RRFRanker.builder().k(20).build())
                                     .limit(5)
                                     .build());
                             List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
