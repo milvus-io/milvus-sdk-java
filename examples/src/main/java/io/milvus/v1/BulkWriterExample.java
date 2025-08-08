@@ -75,6 +75,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -547,8 +548,9 @@ public class BulkWriterExample {
         String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
 
         System.out.println("\n===================== call cloudImport ====================");
+        List<String> objectUrls = Lists.newArrayList(objectUrl);
         CloudImportRequest bulkImportRequest = CloudImportRequest.builder()
-                .objectUrl(objectUrl).accessKey(accessKey).secretKey(secretKey)
+                .objectUrls(Lists.newArrayList(Collections.singleton(objectUrls))).accessKey(accessKey).secretKey(secretKey)
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(collectionName).partitionName(partitionName)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
@@ -710,8 +712,9 @@ public class BulkWriterExample {
 
     private static void exampleCloudImport() {
         System.out.println("\n===================== import files to cloud vectordb ====================");
+        List<String> objectUrls = Lists.newArrayList(CloudImportConsts.OBJECT_URL);
         CloudImportRequest request = CloudImportRequest.builder()
-                .objectUrl(CloudImportConsts.OBJECT_URL).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
+                .objectUrls(Lists.newArrayList(Collections.singleton(objectUrls))).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
