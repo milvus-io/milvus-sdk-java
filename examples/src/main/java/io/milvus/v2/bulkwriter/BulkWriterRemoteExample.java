@@ -688,8 +688,9 @@ public class BulkWriterRemoteExample {
 
     private static void exampleCloudImport() {
         System.out.println("\n===================== import files to cloud vectordb ====================");
+        List<String> objectUrls = Lists.newArrayList(CloudImportConsts.OBJECT_URL);
         CloudImportRequest request = CloudImportRequest.builder()
-                .objectUrl(CloudImportConsts.OBJECT_URL).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
+                .objectUrls(Lists.newArrayList(Collections.singleton(objectUrls))).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
                 .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
                 .apiKey(CloudImportConsts.API_KEY)
                 .build();
