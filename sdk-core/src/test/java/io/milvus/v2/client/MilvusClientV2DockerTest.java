@@ -1036,7 +1036,7 @@ class MilvusClientV2DockerTest {
         // verify
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(randomCollectionName)
-                .filter("pk == \"pk_2\" or pk == \"pk_5\"")
+                .ids(Arrays.asList("pk_2", "pk_5"))
                 .outputFields(Collections.singletonList("*"))
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
