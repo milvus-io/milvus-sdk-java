@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class StageUploadResult {
+public class UploadFilesResult {
     private String stageName;
     private String path;
 }

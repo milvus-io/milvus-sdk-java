@@ -28,6 +28,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
+public class DeleteFilesRequest {
+    /**
+     * To delete files under a specific folder, end the path with a /, e.g., data/
+     * To delete files under a specific path that start with a certain prefix, use something like data/xxx
+     */
+    private String prefix;
 }

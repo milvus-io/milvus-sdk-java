@@ -46,6 +46,24 @@ public class BaseRestful {
         return null;
     }
 
+    protected static String deleteRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
+        try {
+            setDefaultOptionsIfCallCloud(params, apiKey);
+            kong.unirest.HttpResponse<String> response = Unirest.delete(url)
+                    .connectTimeout(timeout)
+                    .headers(httpHeaders(apiKey))
+                    .asString();
+            if (response.getStatus() != 200) {
+                ExceptionUtils.throwUnExpectedException(String.format("Failed to delete url: %s, status code: %s, msg: %s", url, response.getStatus(), response.getBody()));
+            } else {
+                return response.getBody();
+            }
+        } catch (Exception e) {
+            ExceptionUtils.throwUnExpectedException(String.format("Failed to delete url: %s, error: %s", url, e));
+        }
+        return null;
+    }
+
     protected static String getRequest(String url, String apiKey, Map<String, Object> params, int timeout) {
         try {
             kong.unirest.HttpResponse<String> response = Unirest.get(url)

@@ -28,6 +28,15 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
+public class ListFilesRequest {
+    /**
+     * To list files under a specific folder, end the path with a /, e.g., data/
+     * To list files under a specific path that start with a certain prefix, use something like data/xxx
+     */
+    private String prefix;
+
+    /**
+     * Identifies the portion of the list to be returned with the next list operation.
+     */
+    private String continuationToken;
 }
