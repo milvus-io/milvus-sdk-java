@@ -220,7 +220,9 @@ public class VectorService extends BaseService {
     }
 
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
-        String title = String.format("QueryRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("QueryRequest collectionName:%s, databaseName:%s", collectionName, dbName);
         if (request.getFilter() == null && request.getIds() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be null at the same time");
         } else if (request.getFilter() != null && request.getIds() != null) {
@@ -229,9 +231,19 @@ public class VectorService extends BaseService {
 
 
         if (request.getIds() != null && request.getFilter() == null) {
-            DescribeCollectionReq descReq = DescribeCollectionReq.builder().databaseName(request.getDatabaseName()).collectionName(request.getCollectionName()).build();
-            DescribeCollectionResp descResp = collectionService.describeCollection(blockingStub, descReq);
-            request.setFilter(vectorUtils.getExprById(descResp.getPrimaryFieldName(), request.getIds()));
+            DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
+            String primaryKeyName = "";
+            List<FieldSchema> fields = descResp.getSchema().getFieldsList();
+            for (FieldSchema field : fields) {
+                if (field.getIsPrimaryKey()) {
+                    primaryKeyName = field.getName();
+                    break;
+                }
+            }
+            if (StringUtils.isEmpty(primaryKeyName)) {
+                throw new MilvusClientException(ErrorCode.SERVER_ERROR, "cannot find the primary key field in collection schema");
+            }
+            request.setFilter(vectorUtils.getExprById(primaryKeyName, request.getIds()));
         }
 
         // reset the db name so that the timestamp cache can set correct key for this collection
@@ -287,7 +299,8 @@ public class VectorService extends BaseService {
 
     public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                            QueryIteratorReq request) {
-        DescribeCollectionResponse descResp = describeCollection(blockingStub, request.getDatabaseName(), request.getCollectionName());
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
+                request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new QueryIterator(request, blockingStub, pkField);
@@ -295,7 +308,8 @@ public class VectorService extends BaseService {
 
     public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                             SearchIteratorReq request) {
-        DescribeCollectionResponse descResp = describeCollection(blockingStub, request.getDatabaseName(), request.getCollectionName());
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
+                request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new SearchIterator(request, blockingStub, pkField);
