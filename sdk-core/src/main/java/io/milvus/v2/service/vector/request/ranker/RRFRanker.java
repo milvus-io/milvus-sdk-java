@@ -51,6 +51,16 @@ import java.util.Map;
  */
 @SuperBuilder
 public class RRFRanker extends CreateCollectionReq.Function {
+    // This constructor is to compatible with the old client code like:
+    //  new RRFRanker(10)
+    // Now it is deprecated, user should create a RRFRanker by builder style:
+    //  RRFRanker.builder().k(10).build()
+    @Deprecated
+    public RRFRanker(int k) {
+        super(CreateCollectionReq.Function.builder());
+        this.k = k;
+    }
+
     @Builder.Default
     private int k = 60;
 

@@ -55,6 +55,16 @@ import java.util.Map;
  */
 @SuperBuilder
 public class WeightedRanker extends CreateCollectionReq.Function {
+    // This constructor is to compatible with the old client code like:
+    //  new WeightedRanker(weights)
+    // Now it is deprecated, user should create a WeightedRanker by builder style:
+    //  WeightedRanker.builder().weights(weights).build()
+    @Deprecated
+    public WeightedRanker(List<Float> weights) {
+        super(CreateCollectionReq.Function.builder());
+        this.weights = weights;
+    }
+
     @Builder.Default
     private List<Float> weights = new ArrayList<>();
 
