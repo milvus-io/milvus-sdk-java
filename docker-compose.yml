@@ -3,7 +3,7 @@ version: '3.5'
 services:
   etcd:
     container_name: milvus-javasdk-test-etcd
-    image: quay.io/coreos/etcd:v3.5.5
+    image: quay.io/coreos/etcd:v3.5.18
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -14,7 +14,7 @@ services:
 
   minio:
     container_name: milvus-javasdk-test-minio
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -48,7 +48,7 @@ services:
 
   etcdslave:
     container_name: milvus-javasdk-test-etcd-slave
-    image: quay.io/coreos/etcd:v3.5.5
+    image: quay.io/coreos/etcd:v3.5.18
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd-slave:/etcd
     command: etcd -listen-peer-urls=http://127.0.0.1:2380 -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379,http://0.0.0.0:4001 -initial-advertise-peer-urls=http://127.0.0.1:2380 --initial-cluster default=http://127.0.0.1:2380 --data-dir /etcd
@@ -59,7 +59,7 @@ services:
 
   minioslave:
     container_name: milvus-javasdk-test-minio-slave
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    image: minio/minio:RELEASE.2024-05-28T17-19-04Z
     ports:
       - "19000:9000"
       - "19001:9001"
