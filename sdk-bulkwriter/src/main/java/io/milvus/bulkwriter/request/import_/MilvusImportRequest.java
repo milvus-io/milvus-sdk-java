@@ -30,10 +30,42 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+/*
+  If you want to import data into open-source Milvus,
+  you can use this method to import the data files stored in the bucket where Milvus resides.
+ */
 public class MilvusImportRequest extends BaseImportRequest {
     private static final long serialVersionUID = -1958858397962018740L;
+    /**
+     * This parameter can be specified; defaults to the "default" database.
+     */
     private String dbName;
+
     private String collectionName;
+
+    /**
+     * If the collection has partitionKey enabled:
+     *     - The partitionName parameter cannot be specified for import.
+     * If the collection does not have partitionKey enabled:
+     *     - You may specify partitionName for the import.
+     *     - Defaults to the "default" partition if not specified.
+     */
     private String partitionName;
+
+    /**
+     * Data import can be configured in multiple ways using `files`:
+     * <p>
+     * 1. Multi-path import (multiple files):
+     *    "files": [
+     *        ["parquet-folder-1/1.parquet"],
+     *        ["parquet-folder-2/1.parquet"],
+     *        ["parquet-folder-3/1.parquet"]
+     *    ]
+     * <p>
+     * 2. Single file import:
+     *    "files": [
+     *        ["parquet-folder/1.parquet"]
+     *    ]
+     */
     private List<List<String>> files;
 }
