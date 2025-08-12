@@ -53,6 +53,7 @@ import io.milvus.v2.utils.ClientUtils;
 import io.milvus.v2.utils.RpcUtils;
 import lombok.NonNull;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +86,6 @@ public class MilvusClientV2 {
             connect(connectConfig);
 
             initServices(connectConfig.getDbName());
-
         }
     }
 
@@ -189,6 +189,14 @@ public class MilvusClientV2 {
         long ms = (nn == 0) ? 0 : (nn < 1000000 ? 1 : nn/1000000);
         connectConfig.setRpcDeadlineMs(ms);
         return this;
+    }
+
+    public String currentUsedDatabase() {
+        String dbName = this.connectConfig.getDbName();
+        if (StringUtils.isEmpty(dbName)) {
+            return "default";
+        }
+        return dbName;
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
