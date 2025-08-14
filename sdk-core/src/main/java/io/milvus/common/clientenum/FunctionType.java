@@ -22,16 +22,38 @@ package io.milvus.common.clientenum;
 import lombok.Getter;
 
 public enum FunctionType {
-    UNKNOWN(0),
+    UNKNOWN("Unknown", 0), // in milvus-proto, the name is "Unknown"
     BM25(1),
-    TEXTEMBEDDING(2),
+    TEXTEMBEDDING("TextEmbedding", 2), // in milvus-proto, the name is "TextEmbedding"
     RERANK(3),
     ;
+
+    private final String name;
 
     @Getter
     private final int code;
 
-    FunctionType(int i) {
-        code = i;
+    FunctionType(){
+        this.name = this.name();
+        this.code = this.ordinal();
+    }
+
+    FunctionType(int code){
+        this.name = this.name();
+        this.code = code;
+    }
+
+    FunctionType(String name, int code){
+        this.name = name;
+        this.code = code;
+    }
+
+    public static FunctionType fromName(String name) {
+        for (FunctionType type : FunctionType.values()) {
+            if (type.name().equals(name)) {
+                return type;
+            }
+        }
+        return null;
     }
 }
