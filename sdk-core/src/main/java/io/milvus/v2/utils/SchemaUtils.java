@@ -161,7 +161,7 @@ public class SchemaUtils {
         return collectionSchema;
     }
 
-    private static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
+    public static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
         CreateCollectionReq.FieldSchema schema = CreateCollectionReq.FieldSchema.builder()
                 .name(fieldSchema.getName())
                 .description(fieldSchema.getDescription())
@@ -191,6 +191,9 @@ public class SchemaUtils {
                 } else if(keyValuePair.getKey().equals("analyzer_params")){
                     Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
                     schema.setAnalyzerParams(params);
+                } else if(keyValuePair.getKey().equals("multi_analyzer_params")){
+                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
+                    schema.setMultiAnalyzerParams(params);
                 }
             } catch (Exception e) {
                 /**
@@ -207,14 +210,13 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.Function convertFromGrpcFunction(FunctionSchema functionSchema) {
-        CreateCollectionReq.Function function = CreateCollectionReq.Function.builder()
+        CreateCollectionReq.Function.FunctionBuilder builder = CreateCollectionReq.Function.builder()
                 .name(functionSchema.getName())
                 .description(functionSchema.getDescription())
-                .functionType(io.milvus.common.clientenum.FunctionType.valueOf(functionSchema.getType().name()))
+                .functionType(io.milvus.common.clientenum.FunctionType.fromName(functionSchema.getType().name()))
                 .inputFieldNames(functionSchema.getInputFieldNamesList().stream().collect(Collectors.toList()))
-                .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()))
-                .build();
-        return function;
+                .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()));
+        return builder.build();
     }
 
     public static CreateCollectionReq.FieldSchema convertFieldReqToFieldSchema(AddFieldReq addFieldReq) {
