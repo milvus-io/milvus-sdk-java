@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.5.12 (2025-08-14)
+### Improvement
+- Alias interface support database
+- Allows upsert when autoid=true for MilvusClientV1
+- Support ignoring growing segments for MilvusClientV2.query()
+- Use cached collection schema for query by ids to avoid calling describe_collection()
+- Add objectUrls parameter for bulkimport interfaces
+- Add a method to return the current used database name for MilvusClientV2
+### Bug
+- Fix a bug of Function.multiAnalyzerParams
+
 ## milvus-sdk-java 2.5.11 (2025-07-15)
 ### Feature
 - Support uploading file to Zilliz Cloud Stage for BulkWriter
