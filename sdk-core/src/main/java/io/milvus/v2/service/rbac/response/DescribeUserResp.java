@@ -19,16 +19,64 @@
 
 package io.milvus.v2.service.rbac.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class DescribeUserResp {
-    @Builder.Default
-    private List<String> roles = new ArrayList<>();
+    private List<String> roles;
+
+    private DescribeUserResp(Builder builder) {
+        this.roles = builder.roles;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DescribeUserResp that = (DescribeUserResp) obj;
+        return new EqualsBuilder()
+                .append(roles, that.roles)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return roles != null ? roles.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeUserResp{" +
+                "roles=" + roles +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private List<String> roles = new ArrayList<>();
+
+        private Builder() {}
+
+        public Builder roles(List<String> roles) {
+            this.roles = roles;
+            return this;
+        }
+
+        public DescribeUserResp build() {
+            return new DescribeUserResp(this);
+        }
+    }
 }

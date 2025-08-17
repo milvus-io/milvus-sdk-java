@@ -21,17 +21,32 @@ package io.milvus.param.highlevel.dml.response;
 
 import io.milvus.exception.ParamException;
 import io.milvus.response.QueryResultsWrapper;
-import lombok.Builder;
-import lombok.Getter;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
 /**
  * Parameters for <code>search</code> interface.
  */
-@Builder
 public class SearchResponse {
-    public List<List<QueryResultsWrapper.RowRecord>> rowRecords;
+    private List<List<QueryResultsWrapper.RowRecord>> rowRecords;
+
+    private SearchResponse(Builder builder) {
+        this.rowRecords = builder.rowRecords;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public List<List<QueryResultsWrapper.RowRecord>> getRowRecords() {
+        return rowRecords;
+    }
+
+    public void setRowRecords(List<List<QueryResultsWrapper.RowRecord>> rowRecords) {
+        this.rowRecords = rowRecords;
+    }
 
     /**
      * In old versions(less or equal than v2.3.2), this method only returns results of the first target vector
@@ -40,7 +55,7 @@ public class SearchResponse {
      * @return List of <code>QueryResultsWrapper.RowRecord</code>
      */
     @Deprecated
-    public List<QueryResultsWrapper.RowRecord> getRowRecords() {
+    public List<QueryResultsWrapper.RowRecord> getRowRecordsForFirstTarget() {
         return getRowRecords(0);
     }
 
@@ -51,5 +66,42 @@ public class SearchResponse {
         }
 
         return rowRecords.get(indexOfTarget);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        SearchResponse that = (SearchResponse) obj;
+        return new EqualsBuilder()
+                .append(rowRecords, that.rowRecords)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(rowRecords)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "SearchResponse{" +
+                "rowRecords=" + rowRecords +
+                '}';
+    }
+
+    public static class Builder {
+        private List<List<QueryResultsWrapper.RowRecord>> rowRecords;
+
+        public Builder rowRecords(List<List<QueryResultsWrapper.RowRecord>> rowRecords) {
+            this.rowRecords = rowRecords;
+            return this;
+        }
+
+        public SearchResponse build() {
+            return new SearchResponse(this);
+        }
     }
 }

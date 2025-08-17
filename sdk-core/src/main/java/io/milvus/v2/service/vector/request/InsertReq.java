@@ -20,14 +20,11 @@
 package io.milvus.v2.service.vector.request;
 
 import com.google.gson.JsonObject;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class InsertReq {
     //private List<> fields;
 
@@ -56,9 +53,114 @@ public class InsertReq {
      *
      */
     private List<JsonObject> data;
-    @Builder.Default
-    private String databaseName = "";
+    private String databaseName;
     private String collectionName;
-    @Builder.Default
-    private String partitionName = "";
+    private String partitionName;
+
+    private InsertReq(Builder builder) {
+        this.data = builder.data;
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public List<JsonObject> getData() {
+        return data;
+    }
+
+    public void setData(List<JsonObject> data) {
+        this.data = data;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        InsertReq that = (InsertReq) obj;
+        return new EqualsBuilder()
+                .append(data, that.data)
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(partitionName, that.partitionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(data)
+                .append(databaseName)
+                .append(collectionName)
+                .append(partitionName)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "InsertReq{" +
+                "data=" + data +
+                ", databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
+    }
+
+    public static class Builder {
+        private List<JsonObject> data;
+        private String databaseName = "";
+        private String collectionName;
+        private String partitionName = "";
+
+        public Builder data(List<JsonObject> data) {
+            this.data = data;
+            return this;
+        }
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public InsertReq build() {
+            return new InsertReq(this);
+        }
+    }
 }

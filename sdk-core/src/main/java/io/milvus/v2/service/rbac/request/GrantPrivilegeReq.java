@@ -19,14 +19,119 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class GrantPrivilegeReq {
     private String roleName;
     private String objectType;
     private String privilege;
     private String objectName;
+
+    private GrantPrivilegeReq(Builder builder) {
+        this.roleName = builder.roleName;
+        this.objectType = builder.objectType;
+        this.privilege = builder.privilege;
+        this.objectName = builder.objectName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getObjectType() {
+        return objectType;
+    }
+
+    public void setObjectType(String objectType) {
+        this.objectType = objectType;
+    }
+
+    public String getPrivilege() {
+        return privilege;
+    }
+
+    public void setPrivilege(String privilege) {
+        this.privilege = privilege;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public void setObjectName(String objectName) {
+        this.objectName = objectName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GrantPrivilegeReq that = (GrantPrivilegeReq) obj;
+        return new EqualsBuilder()
+                .append(roleName, that.roleName)
+                .append(objectType, that.objectType)
+                .append(privilege, that.privilege)
+                .append(objectName, that.objectName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleName != null ? roleName.hashCode() : 0;
+        result = 31 * result + (objectType != null ? objectType.hashCode() : 0);
+        result = 31 * result + (privilege != null ? privilege.hashCode() : 0);
+        result = 31 * result + (objectName != null ? objectName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "GrantPrivilegeReq{" +
+                "roleName='" + roleName + '\'' +
+                ", objectType='" + objectType + '\'' +
+                ", privilege='" + privilege + '\'' +
+                ", objectName='" + objectName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String roleName;
+        private String objectType;
+        private String privilege;
+        private String objectName;
+
+        private Builder() {}
+
+        public Builder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        public Builder objectType(String objectType) {
+            this.objectType = objectType;
+            return this;
+        }
+
+        public Builder privilege(String privilege) {
+            this.privilege = privilege;
+            return this;
+        }
+
+        public Builder objectName(String objectName) {
+            this.objectName = objectName;
+            return this;
+        }
+
+        public GrantPrivilegeReq build() {
+            return new GrantPrivilegeReq(this);
+        }
+    }
 }
