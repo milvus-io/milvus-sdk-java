@@ -20,30 +20,42 @@
 package io.milvus.v2.service.collection.response;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+
+import io.milvus.v2.service.collection.CollectionInfo;
 
 public class ListCollectionsResp {
     private List<String> collectionNames;
+    private List<CollectionInfo> collectionInfos;
 
     private ListCollectionsResp(Builder builder) {
         this.collectionNames = builder.collectionNames != null ? builder.collectionNames : new ArrayList<>();
+        this.collectionInfos = builder.collectionInfos != null ? builder.collectionInfos : new ArrayList<>();
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    // Getter
+    // Getters
     public List<String> getCollectionNames() {
         return collectionNames;
     }
 
-    // Setter
+    public List<CollectionInfo> getCollectionInfos() {
+        return collectionInfos;
+    }
+
+    // Setters
     public void setCollectionNames(List<String> collectionNames) {
         this.collectionNames = collectionNames;
+    }
+
+    public void setCollectionInfos(List<CollectionInfo> collectionInfos) {
+        this.collectionInfos = collectionInfos;
     }
 
     @Override
@@ -55,26 +67,37 @@ public class ListCollectionsResp {
 
         return new EqualsBuilder()
                 .append(collectionNames, that.collectionNames)
+                .append(collectionInfos, that.collectionInfos)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(collectionNames);
+        return new HashCodeBuilder(17, 37)
+                .append(collectionNames)
+                .append(collectionInfos)
+                .toHashCode();
     }
 
     @Override
     public String toString() {
         return "ListCollectionsResp{" +
                 "collectionNames=" + collectionNames +
+                ", collectionInfos=" + collectionInfos +
                 '}';
     }
 
     public static class Builder {
         private List<String> collectionNames;
+        private List<CollectionInfo> collectionInfos;
 
         public Builder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
+            return this;
+        }
+
+        public Builder collectionInfos(List<CollectionInfo> collectionInfos) {
+            this.collectionInfos = collectionInfos;
             return this;
         }
 

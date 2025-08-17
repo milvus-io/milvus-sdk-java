@@ -78,6 +78,7 @@ public class ConnectConfig {
         this.secure = builder.secure;
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
+        this.clientRequestId = builder.clientRequestId;
     }
 
     public static Builder builder() {
@@ -151,6 +152,14 @@ public class ConnectConfig {
 
     public SSLContext getSslContext() {
         return sslContext;
+    }
+
+    public ThreadLocal<String> getClientRequestId() {
+        return clientRequestId;
+    }
+
+    public String getProxyAddress() {
+        return proxyAddress;
     }
 
     // Setters
@@ -233,6 +242,10 @@ public class ConnectConfig {
         this.sslContext = sslContext;
     }
 
+    public void setClientRequestId(ThreadLocal<String> clientRequestId) {
+        this.clientRequestId = clientRequestId;
+    }
+
     public String getHost() {
         io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
         return urlParser.getHostname();
@@ -268,10 +281,6 @@ public class ConnectConfig {
         return secure;
     }
 
-    public String getProxyAddress() {
-        return proxyAddress;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -299,6 +308,7 @@ public class ConnectConfig {
                 .append(proxyAddress, that.proxyAddress)
                 .append(secure, that.secure)
                 .append(sslContext, that.sslContext)
+                .append(clientRequestId, that.clientRequestId)
                 .isEquals();
     }
 
@@ -324,6 +334,7 @@ public class ConnectConfig {
                 .append(secure)
                 .append(idleTimeoutMs)
                 .append(sslContext)
+                .append(clientRequestId)
                 .toHashCode();
     }
 
@@ -349,6 +360,7 @@ public class ConnectConfig {
                 ", secure=" + secure +
                 ", idleTimeoutMs=" + idleTimeoutMs +
                 ", sslContext=" + sslContext +
+                ", clientRequestId=" + clientRequestId +
                 '}';
     }
 
@@ -372,6 +384,7 @@ public class ConnectConfig {
         private Boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
+        private ThreadLocal<String> clientRequestId;
 
         public Builder uri(String uri) {
             if (uri == null) {
@@ -468,6 +481,11 @@ public class ConnectConfig {
 
         public Builder sslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
+            return this;
+        }
+
+        public Builder clientRequestId(ThreadLocal<String> clientRequestId) {
+            this.clientRequestId = clientRequestId;
             return this;
         }
 
