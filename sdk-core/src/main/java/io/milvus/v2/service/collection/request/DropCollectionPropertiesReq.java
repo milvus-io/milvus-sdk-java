@@ -19,19 +19,105 @@
 
 package io.milvus.v2.service.collection.request;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class DropCollectionPropertiesReq {
     private String collectionName;
     private String databaseName;
-
-    @Builder.Default
     private List<String> propertyKeys = new ArrayList<>();
+
+    private DropCollectionPropertiesReq(Builder builder) {
+        this.collectionName = builder.collectionName;
+        this.databaseName = builder.databaseName;
+        this.propertyKeys = builder.propertyKeys;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public List<String> getPropertyKeys() {
+        return propertyKeys;
+    }
+
+    public void setPropertyKeys(List<String> propertyKeys) {
+        this.propertyKeys = propertyKeys;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DropCollectionPropertiesReq that = (DropCollectionPropertiesReq) obj;
+        return new EqualsBuilder()
+                .append(collectionName, that.collectionName)
+                .append(databaseName, that.databaseName)
+                .append(propertyKeys, that.propertyKeys)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(collectionName)
+                .append(databaseName)
+                .append(propertyKeys)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "DropCollectionPropertiesReq{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", propertyKeys=" + propertyKeys +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String collectionName;
+        private String databaseName;
+        private List<String> propertyKeys = new ArrayList<>();
+
+        private Builder() {}
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder propertyKeys(List<String> propertyKeys) {
+            this.propertyKeys = propertyKeys;
+            return this;
+        }
+
+        public DropCollectionPropertiesReq build() {
+            return new DropCollectionPropertiesReq(this);
+        }
+    }
 }

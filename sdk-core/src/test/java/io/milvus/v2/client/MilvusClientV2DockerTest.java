@@ -2133,20 +2133,21 @@ class MilvusClientV2DockerTest {
                 .uri(milvus.getEndpoint())
                 .dbName(testDbName)
                 .build();
-        MilvusClientV2 tempClient = new MilvusClientV2(config);
+        // fix tempClient not close
+        MilvusClientV2 tempClient = null;
+        try {
+            tempClient = new MilvusClientV2(config);
 
-        // use the temp client to insert correct data into the default collection
-        // there will be a schema cache for this collection in the temp client
-        // there will be timestamp for this collection in the global GTsDict
-        JsonObject row = new JsonObject();
-        row.addProperty("pk", 8);
-        row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
-        InsertResp insertResp = tempClient.insert(InsertReq.builder()
-                .databaseName("default")
-                .collectionName(randomCollectionName)
-                .data(Collections.singletonList(row))
-                .build());
-        Assertions.assertEquals(1L, insertResp.getInsertCnt());
+            // use the temp client to insert correct data into the default collection
+            // there will be a schema cache for this collection in the temp client
+            // there will be timestamp for this collection in the global GTsDict
+            JsonObject row = new JsonObject();
+            row.addProperty("pk", 8);
+            row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
+            InsertResp insertResp = tempClient.insert(
+                    InsertReq.builder().databaseName("default").collectionName(randomCollectionName)
+                            .data(Collections.singletonList(row)).build());
+            Assertions.assertEquals(1L, insertResp.getInsertCnt());
 
         // check the timestamp of this collection, must be positive
         String key1 = GTsDict.CombineCollectionName("default", randomCollectionName);
@@ -2183,7 +2184,8 @@ class MilvusClientV2DockerTest {
         // use the temp client to insert wrong data, wrong dimension
         row.addProperty("aaa", 22);
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
-        Assertions.assertThrows(MilvusClientException.class, ()->tempClient.insert(InsertReq.builder()
+            MilvusClientV2 finalTempClient = tempClient;
+            Assertions.assertThrows(MilvusClientException.class, ()-> finalTempClient.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
                 .data(Collections.singletonList(row))
                 .build()));
@@ -2224,9 +2226,14 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
 
-        // check the timestamp of this collection, must be deleted
-        Long ts31 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNull(ts31);
+            // check the timestamp of this collection, must be deleted
+            Long ts31 = GTsDict.getInstance().getCollectionTs(key2);
+            Assertions.assertNull(ts31);
+        } finally {
+            if (tempClient != null) {
+                tempClient.close();
+            }
+        }
     }
 
     @Test
@@ -3607,7 +3614,11 @@ class MilvusClientV2DockerTest {
                             .uri(milvus.getEndpoint())
                             .dbName(tempDbName)
                             .build();
-                    MilvusClientV2 tempClient = new MilvusClientV2(config);
+                    // fix tempClient not close bug
+                    MilvusClientV2 tempClient = null;
+                    try {
+
+                        tempClient = new MilvusClientV2(config);
 
                     for (int i = 0; i < 20; i++) {
                         JsonObject row = new JsonObject();
@@ -3650,16 +3661,19 @@ class MilvusClientV2DockerTest {
                                     .limit(7)
                                     .build();
 
-                            SearchResp searchResp = client.hybridSearch(HybridSearchReq.builder()
-                                    .databaseName(dbName)
-                                    .collectionName(randomCollectionName)
-                                    .searchRequests(Collections.singletonList(subReq))
-                                    .ranker(RRFRanker.builder().k(20).build())
-                                    .limit(5)
-                                    .build());
-                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
-                            Assertions.assertEquals(1, oneResult.size());
-                            Assertions.assertEquals(1, oneResult.get(0).size());
+                                SearchResp searchResp = client.hybridSearch(
+                                        HybridSearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                                .searchRequests(Collections.singletonList(subReq))
+                                                .ranker(RRFRanker.builder().k(20).build()).limit(5).build());
+                                List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                                Assertions.assertEquals(1, oneResult.size());
+                                Assertions.assertEquals(1, oneResult.get(0).size());
+                            }
+                        }
+
+                    } finally {
+                        if (tempClient != null) {
+                            tempClient.close();
                         }
                     }
                 return null;

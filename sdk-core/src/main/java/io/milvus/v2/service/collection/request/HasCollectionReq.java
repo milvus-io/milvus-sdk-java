@@ -19,12 +19,65 @@
 
 package io.milvus.v2.service.collection.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Data
-@SuperBuilder
 public class HasCollectionReq {
     private String databaseName;
     private String collectionName;
+
+    private HasCollectionReq(Builder builder) {
+        this.collectionName = builder.collectionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        HasCollectionReq that = (HasCollectionReq) obj;
+        return new EqualsBuilder()
+                .append(collectionName, that.collectionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(collectionName)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "HasCollectionReq{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String collectionName;
+
+        private Builder() {}
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public HasCollectionReq build() {
+            return new HasCollectionReq(this);
+        }
+    }
 }

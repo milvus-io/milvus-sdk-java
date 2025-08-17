@@ -19,12 +19,62 @@
 
 package io.milvus.v2.service.partition.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class ListPartitionsReq {
     private String databaseName;
     private String collectionName;
+
+    private ListPartitionsReq(Builder builder) {
+        this.collectionName = builder.collectionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ListPartitionsReq that = (ListPartitionsReq) obj;
+        return new EqualsBuilder()
+                .append(collectionName, that.collectionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return collectionName != null ? collectionName.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ListPartitionsReq{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String collectionName;
+
+        private Builder() {}
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public ListPartitionsReq build() {
+            return new ListPartitionsReq(this);
+        }
+    }
 }

@@ -19,13 +19,100 @@
 
 package io.milvus.common.resourcegroup;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class NodeInfo {
     private Long nodeId;
     private String address;
     private String hostname;
+
+    private NodeInfo(Builder builder) {
+        this.nodeId = builder.nodeId;
+        this.address = builder.address;
+        this.hostname = builder.hostname;
+    }
+
+    public Long getNodeId() {
+        return nodeId;
+    }
+
+    public void setNodeId(Long nodeId) {
+        this.nodeId = nodeId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getHostname() {
+        return hostname;
+    }
+
+    public void setHostname(String hostname) {
+        this.hostname = hostname;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        NodeInfo nodeInfo = (NodeInfo) obj;
+        return new EqualsBuilder()
+                .append(nodeId, nodeInfo.nodeId)
+                .append(address, nodeInfo.address)
+                .append(hostname, nodeInfo.hostname)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = nodeId != null ? nodeId.hashCode() : 0;
+        result = 31 * result + (address != null ? address.hashCode() : 0);
+        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "NodeInfo{" +
+                "nodeId=" + nodeId +
+                ", address='" + address + '\'' +
+                ", hostname='" + hostname + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Long nodeId;
+        private String address;
+        private String hostname;
+
+        private Builder() {}
+
+        public Builder nodeId(Long nodeId) {
+            this.nodeId = nodeId;
+            return this;
+        }
+
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+
+        public Builder hostname(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public NodeInfo build() {
+            return new NodeInfo(this);
+        }
+    }
 }

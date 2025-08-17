@@ -21,9 +21,6 @@ package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -34,8 +31,6 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkInsert</code> interface.
  */
-@Getter
-@ToString
 public class BulkInsertParam {
     private final String databaseName;
     private final String collectionName;
@@ -43,12 +38,48 @@ public class BulkInsertParam {
     private final List<String> files;
     private final Map<String, String> options;
 
-    private BulkInsertParam(@NonNull Builder builder) {
+    private BulkInsertParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.files = builder.files;
         this.options = builder.options;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public List<String> getFiles() {
+        return files;
+    }
+
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "BulkInsertParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", files=" + files +
+                ", options=" + options +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -84,7 +115,10 @@ public class BulkInsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -107,7 +141,10 @@ public class BulkInsertParam {
          * @param files a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
-        public Builder withFiles(@NonNull List<String> files) {
+        public Builder withFiles(List<String> files) {
+            if (files == null) {
+                throw new IllegalArgumentException("files cannot be null");
+            }
             this.files.addAll(files);
             return this;
         }
@@ -119,7 +156,10 @@ public class BulkInsertParam {
          * @param file a {@link String}
          * @return <code>Builder</code>
          */
-        public Builder addFile(@NonNull String file) {
+        public Builder addFile(String file) {
+            if (file == null) {
+                throw new IllegalArgumentException("file cannot be null");
+            }
             this.files.add(file);
             return this;
         }
@@ -143,7 +183,6 @@ public class BulkInsertParam {
          */
         public BulkInsertParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(collectionName, "Collection name");
-
 
             if (files.isEmpty()) {
                 throw new ParamException("File path is required");

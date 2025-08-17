@@ -21,26 +21,51 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>manualCompact</code> interface.
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
-@Getter
-@ToString
 public class ManualCompactParam {
     private final String collectionName;
 
-    private ManualCompactParam(@NonNull Builder builder) {
+    private ManualCompactParam(Builder builder) {
         this.collectionName = builder.collectionName;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ManualCompactParam that = (ManualCompactParam) obj;
+        return new EqualsBuilder()
+                .append(collectionName, that.collectionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(collectionName)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ManualCompactParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 
     /**
@@ -58,7 +83,10 @@ public class ManualCompactParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }

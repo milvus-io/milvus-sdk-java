@@ -19,17 +19,18 @@
 
 package io.milvus.v2.common;
 
-import lombok.Getter;
-
-@Getter
 public enum CompactionState {
     UndefiedState(0),
     Executing(1),
     Completed(2);
 
     private final int code;
+    
     CompactionState(int code) {
         this.code = code;
     }
-    ;
+
+    public int getCode() {
+        return code;
+    }
 }

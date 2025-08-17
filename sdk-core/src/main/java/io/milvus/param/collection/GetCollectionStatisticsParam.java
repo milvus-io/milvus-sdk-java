@@ -22,24 +22,39 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>getCollectionStatistics</code> interface.
  */
-@Getter
-@ToString
 public class GetCollectionStatisticsParam {
     private final String databaseName;
     private final String collectionName;
     private final boolean flushCollection;
 
-    private GetCollectionStatisticsParam(@NonNull Builder builder) {
+    private GetCollectionStatisticsParam(Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.flushCollection = builder.flushCollection;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public boolean isFlushCollection() {
+        return flushCollection;
+    }
+
+    @Override
+    public String toString() {
+        return "GetCollectionStatisticsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", flushCollection=" + flushCollection +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -77,7 +92,10 @@ public class GetCollectionStatisticsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +106,10 @@ public class GetCollectionStatisticsParam {
          * @param flush <code>Boolean.TRUE</code> require a flush action
          * @return <code>Builder</code>
          */
-        public Builder withFlush(@NonNull Boolean flush) {
+        public Builder withFlush(Boolean flush) {
+            if (flush == null) {
+                throw new IllegalArgumentException("flush cannot be null");
+            }
             this.flushCollection = flush;
             return this;
         }
