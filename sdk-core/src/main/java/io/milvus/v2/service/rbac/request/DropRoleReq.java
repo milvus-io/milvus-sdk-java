@@ -19,11 +19,61 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class DropRoleReq {
     private String roleName;
+
+    private DropRoleReq(Builder builder) {
+        this.roleName = builder.roleName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DropRoleReq that = (DropRoleReq) obj;
+        return new EqualsBuilder()
+                .append(roleName, that.roleName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return roleName != null ? roleName.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "DropRoleReq{" +
+                "roleName='" + roleName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String roleName;
+
+        private Builder() {}
+
+        public Builder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        public DropRoleReq build() {
+            return new DropRoleReq(this);
+        }
+    }
 }

@@ -19,11 +19,61 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class DropPrivilegeGroupReq {
     private String groupName;
+
+    private DropPrivilegeGroupReq(Builder builder) {
+        this.groupName = builder.groupName;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DropPrivilegeGroupReq that = (DropPrivilegeGroupReq) obj;
+        return new EqualsBuilder()
+                .append(groupName, that.groupName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return groupName != null ? groupName.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "DropPrivilegeGroupReq{" +
+                "groupName='" + groupName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String groupName;
+
+        private Builder() {}
+
+        public Builder groupName(String groupName) {
+            this.groupName = groupName;
+            return this;
+        }
+
+        public DropPrivilegeGroupReq build() {
+            return new DropPrivilegeGroupReq(this);
+        }
+    }
 }

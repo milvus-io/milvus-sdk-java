@@ -23,9 +23,6 @@ import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -33,7 +30,6 @@ import java.util.List;
 /**
  * Parameters for <code>insert</code> interface.
  */
-@Getter
 public class InsertParam {
     protected final List<Field> fields;
     protected final List<JsonObject> rows;
@@ -43,13 +39,41 @@ public class InsertParam {
     protected final String partitionName;
     protected final int rowCount;
 
-    protected InsertParam(@NonNull Builder builder) {
+    protected InsertParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.fields = builder.fields;
         this.rowCount = builder.rowCount;
         this.rows = builder.rows;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public List<Field> getFields() {
+        return fields;
+    }
+
+    public List<JsonObject> getRows() {
+        return rows;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public int getRowCount() {
+        return rowCount;
     }
 
     public static Builder newBuilder() {
@@ -87,7 +111,10 @@ public class InsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -99,7 +126,10 @@ public class InsertParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder withPartitionName(@NonNull String partitionName) {
+        public Builder withPartitionName(String partitionName) {
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             this.partitionName = partitionName;
             return this;
         }
@@ -111,7 +141,10 @@ public class InsertParam {
          * @return <code>Builder</code>
          * @see InsertParam.Field
          */
-        public Builder withFields(@NonNull List<InsertParam.Field> fields) {
+        public Builder withFields(List<InsertParam.Field> fields) {
+            if (fields == null) {
+                throw new IllegalArgumentException("fields cannot be null");
+            }
             this.fields = fields;
             return this;
         }
@@ -143,7 +176,10 @@ public class InsertParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
-        public Builder withRows(@NonNull List<JsonObject> rows) {
+        public Builder withRows(List<JsonObject> rows) {
+            if (rows == null) {
+                throw new IllegalArgumentException("rows cannot be null");
+            }
             this.rows = rows;
             return this;
         }
@@ -246,8 +282,6 @@ public class InsertParam {
      * (why? because the rpc proto only support int32/int64 type, actually Int8/Int16/Int32 use int32 type to encode/decode)
      *
      */
-    @lombok.Builder
-    @ToString
     public static class Field {
         private final String name;
         private final List<?> values;
@@ -273,6 +307,41 @@ public class InsertParam {
          */
         public List<?> getValues() {
             return values;
+        }
+
+        // toString method for Field class
+        @Override
+        public String toString() {
+            return "Field{" +
+                    "name='" + name + '\'' +
+                    ", values=" + values +
+                    '}';
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private String name;
+            private List<?> values;
+
+            private Builder() {
+            }
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder values(List<?> values) {
+                this.values = values;
+                return this;
+            }
+
+            public Field build() {
+                return new Field(name, values);
+            }
         }
     }
 

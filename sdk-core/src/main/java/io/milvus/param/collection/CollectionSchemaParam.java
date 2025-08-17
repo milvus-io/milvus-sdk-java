@@ -20,9 +20,6 @@
 package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +27,32 @@ import java.util.List;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
-@Getter
-@ToString
 public class CollectionSchemaParam {
     private final List<FieldType> fieldTypes;
     private final boolean enableDynamicField;
 
-    private CollectionSchemaParam(@NonNull Builder builder) {
+    private CollectionSchemaParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.fieldTypes = builder.fieldTypes;
         this.enableDynamicField = builder.enableDynamicField;
+    }
+
+    public List<FieldType> getFieldTypes() {
+        return fieldTypes;
+    }
+
+    public boolean isEnableDynamicField() {
+        return enableDynamicField;
+    }
+
+    @Override
+    public String toString() {
+        return "CollectionSchemaParam{" +
+                "fieldTypes=" + fieldTypes +
+                ", enableDynamicField=" + enableDynamicField +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -51,9 +65,9 @@ public class CollectionSchemaParam {
     public static final class Builder {
         private final List<FieldType> fieldTypes = new ArrayList<>();
         private boolean enableDynamicField;
+
         private Builder() {
         }
-
 
         /**
          * Sets the collection if enableDynamicField.
@@ -73,7 +87,10 @@ public class CollectionSchemaParam {
          * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
          */
-        public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
+        public Builder withFieldTypes(List<FieldType> fieldTypes) {
+            if (fieldTypes == null) {
+                throw new IllegalArgumentException("fieldTypes cannot be null");
+            }
             this.fieldTypes.addAll(fieldTypes);
             return this;
         }
@@ -85,7 +102,10 @@ public class CollectionSchemaParam {
          * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
          */
-        public Builder addFieldType(@NonNull FieldType fieldType) {
+        public Builder addFieldType(FieldType fieldType) {
+            if (fieldType == null) {
+                throw new IllegalArgumentException("fieldType cannot be null");
+            }
             this.fieldTypes.add(fieldType);
             return this;
         }

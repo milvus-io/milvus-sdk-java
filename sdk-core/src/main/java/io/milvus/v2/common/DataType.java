@@ -19,11 +19,8 @@
 
 package io.milvus.v2.common;
 
-import lombok.Getter;
-
 import java.util.Arrays;
 
-@Getter
 public enum DataType {
     None(0),
     Bool(1),
@@ -48,10 +45,14 @@ public enum DataType {
     Int8Vector(105);
 
     private final int code;
+    
     DataType(int code) {
         this.code = code;
     }
-    ;
+
+    public int getCode() {
+        return code;
+    }
 
     public static DataType forNumber(int code) {
         return Arrays.stream(DataType.values())

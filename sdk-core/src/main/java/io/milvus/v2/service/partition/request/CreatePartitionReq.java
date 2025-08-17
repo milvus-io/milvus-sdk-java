@@ -19,12 +19,81 @@
 
 package io.milvus.v2.service.partition.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class CreatePartitionReq {
     private String collectionName;
     private String partitionName;
+
+    private CreatePartitionReq(Builder builder) {
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        CreatePartitionReq that = (CreatePartitionReq) obj;
+        return new EqualsBuilder()
+                .append(collectionName, that.collectionName)
+                .append(partitionName, that.partitionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = collectionName != null ? collectionName.hashCode() : 0;
+        result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "CreatePartitionReq{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String collectionName;
+        private String partitionName;
+
+        private Builder() {}
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public CreatePartitionReq build() {
+            return new CreatePartitionReq(this);
+        }
+    }
 }

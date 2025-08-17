@@ -20,20 +20,34 @@
 package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Parameters for <code>getBulkInsertState</code> interface.
  */
-@Getter
-@ToString
 public class GetBulkInsertStateParam {
     private final Long task;
 
-    private GetBulkInsertStateParam(@NonNull Builder builder) {
+    private GetBulkInsertStateParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
+        if (builder.task == null) {
+            throw new IllegalArgumentException("task cannot be null");
+        }
         this.task = builder.task;
+    }
+
+    // Getter method to replace @Getter annotation
+    public Long getTask() {
+        return task;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetBulkInsertStateParam{" +
+                "task=" + task +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -55,7 +69,10 @@ public class GetBulkInsertStateParam {
          * @param task task id
          * @return <code>Builder</code>
          */
-        public Builder withTask(@NonNull Long task) {
+        public Builder withTask(Long task) {
+            if (task == null) {
+                throw new IllegalArgumentException("task cannot be null");
+            }
             this.task = task;
             return this;
         }

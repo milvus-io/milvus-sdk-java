@@ -33,9 +33,6 @@ import io.milvus.param.dml.ranker.BaseRanker;
 import io.milvus.response.DescCollResponseWrapper;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -506,8 +503,11 @@ public class ParamUtils {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
 
-        public InsertBuilderWrapper(@NonNull InsertParam requestParam,
+        public InsertBuilderWrapper(InsertParam requestParam,
                                     DescCollResponseWrapper wrapper) {
+            if (requestParam == null) {
+                throw new IllegalArgumentException("requestParam cannot be null");
+            }
             String collectionName = requestParam.getCollectionName();
 
             // generate insert request builder
@@ -522,8 +522,11 @@ public class ParamUtils {
             fillFieldsData(requestParam, wrapper);
         }
 
-        public InsertBuilderWrapper(@NonNull UpsertParam requestParam,
+        public InsertBuilderWrapper(UpsertParam requestParam,
                                     DescCollResponseWrapper wrapper) {
+            if (requestParam == null) {
+                throw new IllegalArgumentException("requestParam cannot be null");
+            }
             String collectionName = requestParam.getCollectionName();
 
             // generate upsert request builder
@@ -843,7 +846,10 @@ public class ParamUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static SearchRequest convertSearchParam(@NonNull SearchParam requestParam) throws ParamException {
+    public static SearchRequest convertSearchParam(SearchParam requestParam) throws ParamException {
+        if (requestParam == null) {
+            throw new IllegalArgumentException("requestParam cannot be null");
+        }
         String dbName = requestParam.getDatabaseName();
         String collectionName = requestParam.getCollectionName();
         SearchRequest.Builder builder = SearchRequest.newBuilder()
@@ -957,8 +963,11 @@ public class ParamUtils {
         return builder.build();
     }
 
-    public static SearchRequest convertAnnSearchParam(@NonNull AnnSearchParam annSearchParam,
+    public static SearchRequest convertAnnSearchParam(AnnSearchParam annSearchParam,
                                                       ConsistencyLevelEnum consistencyLevel) {
+        if (annSearchParam == null) {
+            throw new IllegalArgumentException("annSearchParam cannot be null");
+        }
         SearchRequest.Builder builder = SearchRequest.newBuilder();
         ByteString byteStr = convertPlaceholder(annSearchParam.getVectors(), annSearchParam.getPlType());
         builder.setPlaceholderGroup(byteStr);
@@ -1006,7 +1015,10 @@ public class ParamUtils {
         return builder.build();
     }
 
-    public static HybridSearchRequest convertHybridSearchParam(@NonNull HybridSearchParam requestParam) throws ParamException {
+    public static HybridSearchRequest convertHybridSearchParam(HybridSearchParam requestParam) throws ParamException {
+        if (requestParam == null) {
+            throw new IllegalArgumentException("requestParam cannot be null");
+        }
         String dbName = requestParam.getDatabaseName();
         String collectionName = requestParam.getCollectionName();
         HybridSearchRequest.Builder builder = HybridSearchRequest.newBuilder()
@@ -1074,7 +1086,10 @@ public class ParamUtils {
         return builder.build();
     }
 
-    public static QueryRequest convertQueryParam(@NonNull QueryParam requestParam) {
+    public static QueryRequest convertQueryParam(QueryParam requestParam) {
+        if (requestParam == null) {
+            throw new IllegalArgumentException("requestParam cannot be null");
+        }
         String dbName = requestParam.getDatabaseName();
         String collectionName = requestParam.getCollectionName();
         boolean useDefaultConsistency = (requestParam.getConsistencyLevel() == null);
@@ -1393,7 +1408,10 @@ public class ParamUtils {
      * @param field FieldSchema object
      * @return {@link FieldType} schema of the field
      */
-    public static FieldType ConvertField(@NonNull FieldSchema field) {
+    public static FieldType ConvertField(FieldSchema field) {
+        if (field == null) {
+            throw new IllegalArgumentException("field cannot be null");
+        }
         FieldType.Builder builder = FieldType.newBuilder()
                 .withName(field.getName())
                 .withDescription(field.getDescription())
@@ -1427,7 +1445,10 @@ public class ParamUtils {
      * @param field {@link FieldType} object
      * @return {@link FieldSchema} schema of the field
      */
-    public static FieldSchema ConvertField(@NonNull FieldType field) {
+    public static FieldSchema ConvertField(FieldType field) {
+        if (field == null) {
+            throw new IllegalArgumentException("field cannot be null");
+        }
         FieldSchema.Builder builder = FieldSchema.newBuilder()
                 .setName(field.getName())
                 .setDescription(field.getDescription())
@@ -1568,10 +1589,63 @@ public class ParamUtils {
         return result;
     }
 
-    @Builder
-    @Getter
     public static class InsertDataInfo {
         private final FieldType fieldType;
         private final LinkedList<Object> data;
+
+        private InsertDataInfo(Builder builder) {
+            this.fieldType = builder.fieldType;
+            this.data = builder.data;
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public FieldType getFieldType() {
+            return fieldType;
+        }
+
+        public LinkedList<Object> getData() {
+            return data;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            InsertDataInfo that = (InsertDataInfo) obj;
+            return Objects.equals(fieldType, that.fieldType) &&
+                    Objects.equals(data, that.data);
+        }
+
+        public static class Builder {
+            private FieldType fieldType;
+            private LinkedList<Object> data;
+
+            public Builder fieldType(FieldType fieldType) {
+                this.fieldType = fieldType;
+                return this;
+            }
+
+            public Builder data(LinkedList<Object> data) {
+                this.data = data;
+                return this;
+            }
+
+            public InsertDataInfo build() {
+                if (fieldType == null) {
+                    throw new IllegalArgumentException("fieldType cannot be null");
+                }
+                if (data == null) {
+                    throw new IllegalArgumentException("data cannot be null");
+                }
+                return new InsertDataInfo(this);
+            }
+        }
     }
 }
