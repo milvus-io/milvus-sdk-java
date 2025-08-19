@@ -23,11 +23,11 @@ import com.google.gson.JsonObject;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.Builder;
-import lombok.experimental.SuperBuilder;
+import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -53,8 +53,9 @@ import java.util.Map;
  *                 .param("params", "{\"weights\": [0.4, 0.6]}")
  *                 .build();
  */
-@SuperBuilder
 public class WeightedRanker extends CreateCollectionReq.Function {
+    private List<Float> weights;
+
     // This constructor is to compatible with the old client code like:
     //  new WeightedRanker(weights)
     // Now it is deprecated, user should create a WeightedRanker by builder style:
@@ -65,13 +66,25 @@ public class WeightedRanker extends CreateCollectionReq.Function {
         this.weights = weights;
     }
 
-    @Builder.Default
-    private List<Float> weights = new ArrayList<>();
+    private WeightedRanker(FunctionBuilder builder) {
+        super(builder);
+        this.weights = builder.weights;
+    }
 
+    public List<Float> getWeights() {
+        return weights;
+    }
+
+    public void setWeights(List<Float> weights) {
+        this.weights = weights;
+    }
+
+    @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    @Override
     public Map<String, String> getParams() {
         JsonObject params = new JsonObject();
         params.add("weights", JsonUtils.toJsonTree(this.weights).getAsJsonArray());
@@ -80,5 +93,97 @@ public class WeightedRanker extends CreateCollectionReq.Function {
         props.put("strategy", "weighted");
         props.put("params", params.toString());
         return props;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!super.equals(obj)) return false;
+        WeightedRanker that = (WeightedRanker) obj;
+        return new EqualsBuilder()
+                .append(weights, that.weights)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (weights != null ? weights.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "WeightedRanker{" +
+                "weights=" + weights +
+                ", name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", functionType=" + getFunctionType() +
+                ", inputFieldNames=" + getInputFieldNames() +
+                ", outputFieldNames=" + getOutputFieldNames() +
+                ", params=" + getParams() +
+                '}';
+    }
+
+    public static FunctionBuilder builder() {
+        return new FunctionBuilder();
+    }
+
+    public static class FunctionBuilder extends Function.FunctionBuilder {
+        private List<Float> weights = new ArrayList<>();
+
+        private FunctionBuilder() {}
+
+        public FunctionBuilder weights(List<Float> weights) {
+            this.weights = weights;
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder name(String name) {
+            super.name(name);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder description(String description) {
+            super.description(description);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder functionType(io.milvus.common.clientenum.FunctionType functionType) {
+            super.functionType(functionType);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder inputFieldNames(java.util.List<String> inputFieldNames) {
+            super.inputFieldNames(inputFieldNames);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder outputFieldNames(java.util.List<String> outputFieldNames) {
+            super.outputFieldNames(outputFieldNames);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder params(java.util.Map<String, String> params) {
+            super.params(params);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder param(String key, String value) {
+            super.param(key, value);
+            return this;
+        }
+
+        public WeightedRanker build() {
+            return new WeightedRanker(this);
+        }
     }
 }

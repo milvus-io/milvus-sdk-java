@@ -22,22 +22,37 @@ package io.milvus.param.alias;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>dropAlias</code> interface.
  */
-@Getter
-@ToString
 public class DropAliasParam {
     private final String alias;
     private final String databaseName;
 
-    private DropAliasParam(@NonNull Builder builder) {
+    private DropAliasParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.alias = builder.alias;
         this.databaseName = builder.databaseName;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getAlias() {
+        return alias;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "DropAliasParam{" +
+                "alias='" + alias + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -60,7 +75,10 @@ public class DropAliasParam {
          * @param alias alias of the collection
          * @return <code>Builder</code>
          */
-        public Builder withAlias(@NonNull String alias) {
+        public Builder withAlias(String alias) {
+            if (alias == null) {
+                throw new IllegalArgumentException("alias cannot be null");
+            }
             this.alias = alias;
             return this;
         }

@@ -19,24 +19,150 @@
 
 package io.milvus.v2.common;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Map;
 
-@Data
-@SuperBuilder
 public class IndexParam {
     @NonNull
     private String fieldName;
     private String indexName;
-    @Builder.Default
     private IndexType indexType = IndexType.AUTOINDEX;
     private MetricType metricType;
     private Map<String, Object> extraParams;
+
+    // Constructor for builder
+    private IndexParam(Builder builder) {
+        this.fieldName = builder.fieldName;
+        this.indexName = builder.indexName;
+        this.indexType = builder.indexType;
+        this.metricType = builder.metricType;
+        this.extraParams = builder.extraParams;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getters
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public IndexType getIndexType() {
+        return indexType;
+    }
+
+    public MetricType getMetricType() {
+        return metricType;
+    }
+
+    public Map<String, Object> getExtraParams() {
+        return extraParams;
+    }
+
+    // Setters
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
+    }
+
+    public void setIndexType(IndexType indexType) {
+        this.indexType = indexType;
+    }
+
+    public void setMetricType(MetricType metricType) {
+        this.metricType = metricType;
+    }
+
+    public void setExtraParams(Map<String, Object> extraParams) {
+        this.extraParams = extraParams;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IndexParam that = (IndexParam) o;
+
+        return new EqualsBuilder()
+                .append(fieldName, that.fieldName)
+                .append(indexName, that.indexName)
+                .append(indexType, that.indexType)
+                .append(metricType, that.metricType)
+                .append(extraParams, that.extraParams)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(fieldName)
+                .append(indexName)
+                .append(indexType)
+                .append(metricType)
+                .append(extraParams)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "IndexParam{" +
+                "fieldName='" + fieldName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                ", indexType=" + indexType +
+                ", metricType=" + metricType +
+                ", extraParams=" + extraParams +
+                '}';
+    }
+
+    // Public Builder class
+    public static class Builder {
+        private String fieldName;
+        private String indexName;
+        private IndexType indexType = IndexType.AUTOINDEX;
+        private MetricType metricType;
+        private Map<String, Object> extraParams;
+
+        public Builder fieldName(String fieldName) {
+            this.fieldName = fieldName;
+            return this;
+        }
+
+        public Builder indexName(String indexName) {
+            this.indexName = indexName;
+            return this;
+        }
+
+        public Builder indexType(IndexType indexType) {
+            this.indexType = indexType;
+            return this;
+        }
+
+        public Builder metricType(MetricType metricType) {
+            this.metricType = metricType;
+            return this;
+        }
+
+        public Builder extraParams(Map<String, Object> extraParams) {
+            this.extraParams = extraParams;
+            return this;
+        }
+
+        public IndexParam build() {
+            return new IndexParam(this);
+        }
+    }
 
     public enum MetricType {
         INVALID,
@@ -54,7 +180,6 @@ public class IndexParam {
         ;
     }
 
-    @Getter
     public enum IndexType {
         None(0),
         // Only supported for float vectors
@@ -108,6 +233,15 @@ public class IndexParam {
         IndexType(String name, int code){
             this.name = name;
             this.code = code;
+        }
+
+        // Getters for enum
+        public String getName() {
+            return name;
+        }
+
+        public int getCode() {
+            return code;
         }
     }
 }

@@ -19,16 +19,67 @@
 
 package io.milvus.v2.service.collection.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-@Data
-@SuperBuilder
 public class ListCollectionsResp {
-    @Builder.Default
-    private List<String> collectionNames = new ArrayList<>();
+    private List<String> collectionNames;
+
+    private ListCollectionsResp(Builder builder) {
+        this.collectionNames = builder.collectionNames != null ? builder.collectionNames : new ArrayList<>();
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getter
+    public List<String> getCollectionNames() {
+        return collectionNames;
+    }
+
+    // Setter
+    public void setCollectionNames(List<String> collectionNames) {
+        this.collectionNames = collectionNames;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        ListCollectionsResp that = (ListCollectionsResp) obj;
+        
+        return new EqualsBuilder()
+                .append(collectionNames, that.collectionNames)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(collectionNames);
+    }
+
+    @Override
+    public String toString() {
+        return "ListCollectionsResp{" +
+                "collectionNames=" + collectionNames +
+                '}';
+    }
+
+    public static class Builder {
+        private List<String> collectionNames;
+
+        public Builder collectionNames(List<String> collectionNames) {
+            this.collectionNames = collectionNames;
+            return this;
+        }
+
+        public ListCollectionsResp build() {
+            return new ListCollectionsResp(this);
+        }
+    }
 }

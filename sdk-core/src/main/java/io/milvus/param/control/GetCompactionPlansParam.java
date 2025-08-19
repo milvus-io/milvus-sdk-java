@@ -20,26 +20,51 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>getCompactionStateWithPlans</code> interface.
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
-@Getter
-@ToString
 public class GetCompactionPlansParam {
     private final Long compactionID;
 
-    private GetCompactionPlansParam(@NonNull Builder builder) {
+    private GetCompactionPlansParam(Builder builder) {
         this.compactionID = builder.compactionID;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public Long getCompactionID() {
+        return compactionID;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GetCompactionPlansParam that = (GetCompactionPlansParam) obj;
+        return new EqualsBuilder()
+                .append(compactionID, that.compactionID)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(compactionID)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "GetCompactionPlansParam{" +
+                "compactionID=" + compactionID +
+                '}';
     }
 
     /**
@@ -57,7 +82,11 @@ public class GetCompactionPlansParam {
          * @param compactionID compaction action id
          * @return <code>Builder</code>
          */
-        public Builder withCompactionID(@NonNull Long compactionID) {
+        public Builder withCompactionID(Long compactionID) {
+            // Replace @NonNull logic with explicit null check
+            if (compactionID == null) {
+                throw new IllegalArgumentException("compactionID cannot be null");
+            }
             this.compactionID = compactionID;
             return this;
         }

@@ -20,11 +20,61 @@
 
 package io.milvus.v2.service.partition.response;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class GetPartitionStatsResp {
     private Long numOfEntities;
+
+    private GetPartitionStatsResp(Builder builder) {
+        this.numOfEntities = builder.numOfEntities;
+    }
+
+    public Long getNumOfEntities() {
+        return numOfEntities;
+    }
+
+    public void setNumOfEntities(Long numOfEntities) {
+        this.numOfEntities = numOfEntities;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GetPartitionStatsResp that = (GetPartitionStatsResp) obj;
+        return new EqualsBuilder()
+                .append(numOfEntities, that.numOfEntities)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return numOfEntities != null ? numOfEntities.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "GetPartitionStatsResp{" +
+                "numOfEntities=" + numOfEntities +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Long numOfEntities;
+
+        private Builder() {}
+
+        public Builder numOfEntities(Long numOfEntities) {
+            this.numOfEntities = numOfEntities;
+            return this;
+        }
+
+        public GetPartitionStatsResp build() {
+            return new GetPartitionStatsResp(this);
+        }
+    }
 }

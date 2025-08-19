@@ -19,9 +19,6 @@
 
 package io.milvus.utils;
 
-import lombok.Getter;
-import lombok.ToString;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
@@ -29,8 +26,6 @@ import java.util.Objects;
 /**
  * @author: wei.hu@zilliz.com
  */
-@Getter
-@ToString
 public class URLParser {
 
     private String hostname;
@@ -70,4 +65,31 @@ public class URLParser {
         }
     }
 
+    // Getter methods to replace @Getter annotation
+    public String getHostname() {
+        return hostname;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "URLParser{" +
+                "hostname='" + hostname + '\'' +
+                ", port=" + port +
+                ", database='" + database + '\'' +
+                ", secure=" + secure +
+                '}';
+    }
 }

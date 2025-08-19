@@ -51,8 +51,6 @@ import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.ClientUtils;
 import io.milvus.v2.utils.RpcUtils;
-import lombok.NonNull;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +61,6 @@ import java.util.concurrent.TimeUnit;
 public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
     private ManagedChannel channel;
-    @Setter
     private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final ClientUtils clientUtils = new ClientUtils();
     private final DatabaseService databaseService = new DatabaseService();
@@ -87,6 +84,11 @@ public class MilvusClientV2 {
 
             initServices(connectConfig.getDbName());
         }
+    }
+
+    // Setter for blockingStub (replacing @Setter)
+    public void setBlockingStub(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        this.blockingStub = blockingStub;
     }
 
     private void initServices(String dbName) {
@@ -206,7 +208,10 @@ public class MilvusClientV2 {
      * use Database
      * @param dbName databaseName
      */
-    public void useDatabase(@NonNull String dbName) throws InterruptedException {
+    public void useDatabase(String dbName) throws InterruptedException {
+        if (dbName == null) {
+            throw new IllegalArgumentException("dbName cannot be null");
+        }
         // check if database exists
         clientUtils.checkDatabaseExist(this.getRpcStub(), dbName);
         try {
