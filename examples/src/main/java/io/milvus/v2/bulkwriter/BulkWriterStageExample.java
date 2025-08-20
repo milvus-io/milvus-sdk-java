@@ -27,7 +27,7 @@ import io.milvus.bulkwriter.StageBulkWriter;
 import io.milvus.bulkwriter.StageBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
-import io.milvus.bulkwriter.model.StageUploadResult;
+import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.describe.CloudDescribeImportRequest;
 import io.milvus.bulkwriter.request.import_.StageImportRequest;
 import io.milvus.bulkwriter.request.list.CloudListImportJobsRequest;
@@ -118,7 +118,7 @@ public class BulkWriterStageExample {
         CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
         createCollection(COLLECTION_NAME, collectionSchema, false);
 
-        StageUploadResult stageUploadResult = stageRemoteWriter(collectionSchema, fileType, rows);
+        UploadFilesResult stageUploadResult = stageRemoteWriter(collectionSchema, fileType, rows);
         callStageImport(stageUploadResult.getStageName(), stageUploadResult.getPath());
         verifyImportData(collectionSchema, originalData);
     }
@@ -284,7 +284,7 @@ public class BulkWriterStageExample {
         return data;
     }
 
-    private static StageUploadResult stageRemoteWriter(CreateCollectionReq.CollectionSchema collectionSchema,
+    private static UploadFilesResult stageRemoteWriter(CreateCollectionReq.CollectionSchema collectionSchema,
                                                        BulkFileType fileType,
                                                        List<JsonObject> data) throws Exception {
         System.out.printf("\n===================== all field types (%s) ====================%n", fileType.name());
@@ -297,7 +297,7 @@ public class BulkWriterStageExample {
             System.out.println("Generate data files...");
             stageBulkWriter.commit(false);
 
-            StageUploadResult stageUploadResult = stageBulkWriter.getStageUploadResult();
+            UploadFilesResult stageUploadResult = stageBulkWriter.getStageUploadResult();
             System.out.printf("Data files have been uploaded: %s%n", stageUploadResult);
             return stageUploadResult;
         } catch (Exception e) {
