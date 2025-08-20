@@ -99,7 +99,7 @@ public class VectorService extends BaseService {
         }
     }
 
-    private void removeCollectionCache(String databaseName, String collectionName) {
+    public void removeCollectionCache(String databaseName, String collectionName) {
         String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
         cacheCollectionInfo.remove(key);
     }
