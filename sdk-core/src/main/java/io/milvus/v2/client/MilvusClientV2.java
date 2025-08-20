@@ -320,6 +320,7 @@ public class MilvusClientV2 {
      */
     public void dropCollection(DropCollectionReq request) {
         rpcUtils.retry(()-> collectionService.dropCollection(this.getRpcStub(), request));
+        vectorService.removeCollectionCache(request.getDatabaseName(), request.getCollectionName());
     }
     /**
      * Alter a collection in Milvus.
