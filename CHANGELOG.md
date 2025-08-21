@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.6.3 (2025-08-20)
+### Improvement
+- Support stageManager & stageFileManager
+
 ## milvus-sdk-java 2.6.2 (2025-08-14)
 ### Improvement
 - Alias interface support database
