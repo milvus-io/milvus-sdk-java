@@ -682,7 +682,7 @@ class MilvusClientV2DockerTest {
         for (int i = 0; i < DIMENSION; ++i) {
             originVector.add((float)1/(i+1));
         }
-        System.out.println("Original float32 vector: " + originVector);
+//        System.out.println("Original float32 vector: " + originVector);
         row.add(float16Field, JsonUtils.toJsonTree(Float16Utils.f32VectorToFp16Buffer(originVector).array()));
         row.add(bfloat16Field, JsonUtils.toJsonTree(Float16Utils.f32VectorToBf16Buffer(originVector).array()));
 
@@ -716,7 +716,7 @@ class MilvusClientV2DockerTest {
             for (int i = 0; i < outputVector.size(); i++) {
                 Assertions.assertEquals(originVector.get(i), outputVector.get(i), 0.001f);
             }
-            System.out.println("Output float16 vector: " + outputVector);
+//            System.out.println("Output float16 vector: " + outputVector);
         }
 
         // search the bfloat16 vector field
@@ -742,7 +742,7 @@ class MilvusClientV2DockerTest {
             for (int i = 0; i < outputVector.size(); i++) {
                 Assertions.assertEquals(originVector.get(i), outputVector.get(i), 0.01f);
             }
-            System.out.println("Output bfloat16 vector: " + outputVector);
+//            System.out.println("Output bfloat16 vector: " + outputVector);
         }
 
         // get row count
@@ -2195,12 +2195,12 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1, searchResults.size());
         List<SearchResp.SearchResult> firstResults = searchResults.get(0);
         Assertions.assertEquals(10, firstResults.size());
-        System.out.println("Search results:");
+//        System.out.println("Search results:");
         for (SearchResp.SearchResult result : firstResults) {
             long id = (long)result.getId();
             Map<String, Object> entity = result.getEntity();
             checkFunc.apply(entity);
-            System.out.println(result);
+//            System.out.println(result);
         }
     }
 
