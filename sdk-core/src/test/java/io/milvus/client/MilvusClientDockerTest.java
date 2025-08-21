@@ -604,7 +604,7 @@ class MilvusClientDockerTest {
         for (String fieldName : outputFields) {
             FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
             System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-            System.out.println(wrapper.getFieldData());
+//            System.out.println(wrapper.getFieldData());
             Assertions.assertEquals(nq, wrapper.getFieldData().size());
 
             if (fieldName.compareTo("id") == 0) {
@@ -685,8 +685,8 @@ class MilvusClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
-            System.out.println(scores);
+//            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+//            System.out.println(scores);
             Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
 
             Object obj = scores.get(0).get(DataType.FloatVector.name());
@@ -965,8 +965,8 @@ class MilvusClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
-            System.out.println(scores);
+//            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+//            System.out.println(scores);
             Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
             ByteBuffer buf = (ByteBuffer) scores.get(0).get(DataType.BinaryVector.name());
             Assertions.assertArrayEquals(targetVectors.get(i).array(), buf.array());
@@ -1082,11 +1082,11 @@ class MilvusClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
-            System.out.println(scores);
-            if (targetVectorIDs.get(i) != scores.get(0).getLongID()) {
-                System.out.println(targetVectors.get(i));
-            }
+//            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+//            System.out.println(scores);
+//            if (targetVectorIDs.get(i) != scores.get(0).getLongID()) {
+//                System.out.println(targetVectors.get(i));
+//            }
             Assertions.assertEquals(targetVectorIDs.get(i), scores.get(0).getLongID());
 
             Object v = scores.get(0).get(DataType.SparseFloatVector.name());
@@ -1607,11 +1607,11 @@ class MilvusClientDockerTest {
 
             // verify search result
             SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
-            System.out.println("Search results:");
+//            System.out.println("Search results:");
             for (int i = 0; i < targetVectors.size(); ++i) {
                 List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
                 Assertions.assertEquals(topK, scores.size());
-                System.out.println(scores.toString());
+//                System.out.println(scores.toString());
             }
 
             // get query results
@@ -1623,7 +1623,7 @@ class MilvusClientDockerTest {
             for (String fieldName : outputFields) {
                 FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
                 System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-                System.out.println(wrapper.getFieldData());
+//                System.out.println(wrapper.getFieldData());
                 Assertions.assertEquals(queryIDs.size(), wrapper.getFieldData().size());
             }
 
@@ -1807,7 +1807,7 @@ class MilvusClientDockerTest {
         for (String fieldName : outputFields) {
             FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
             System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-            System.out.println(wrapper.getFieldData());
+//            System.out.println(wrapper.getFieldData());
             Assertions.assertEquals(nq, wrapper.getFieldData().size());
 
             if (fieldName.compareTo("id") == 0) {
@@ -1842,8 +1842,8 @@ class MilvusClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + queryIds.get(i) + "):");
-            System.out.println(scores);
+//            System.out.println("The result of No." + i + " target vector(ID = " + queryIds.get(i) + "):");
+//            System.out.println(scores);
             Assertions.assertEquals(scores.get(0).getStrID(), queryIds.get(i));
         }
 
@@ -2080,8 +2080,8 @@ class MilvusClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector:");
-            Assertions.assertFalse(scores.isEmpty());
+//            System.out.println("The result of No." + i + " target vector:");
+//            Assertions.assertFalse(scores.isEmpty());
             SearchResultsWrapper.IDScore score = scores.get(0);
             System.out.println(score);
             Object extraMeta = score.get("dynamic");
@@ -2256,9 +2256,9 @@ class MilvusClientDockerTest {
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
-        System.out.println("Search results:");
+//        System.out.println("Search results:");
         for (SearchResultsWrapper.IDScore score : scores) {
-            System.out.println(score);
+//            System.out.println(score);
             long id = score.getLongID();
             List<?> strArray = (List<?>)score.get(varcharArrayName);
             Assertions.assertEquals(id%10000, (long)strArray.size());
@@ -2286,9 +2286,9 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), searchR.getStatus().intValue());
         results = new SearchResultsWrapper(searchR.getData().getResults());
         scores = results.getIDScore(0);
-        System.out.println("Search results:");
+//        System.out.println("Search results:");
         for (SearchResultsWrapper.IDScore score : scores) {
-            System.out.println(score);
+//            System.out.println(score);
             long id = score.getLongID();
             Assertions.assertTrue(id == 10068 || id == 68 || id == 10045 || id == 45);
         }
@@ -3322,7 +3322,7 @@ class MilvusClientDockerTest {
         // verify the search result
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         List<SearchResultsWrapper.IDScore> scores = results.getIDScore(0);
-        System.out.println("Search results:");
+//        System.out.println("Search results:");
         Assertions.assertEquals(10, scores.size());
         for (SearchResultsWrapper.IDScore score : scores) {
             long id = score.getLongID();
@@ -3334,7 +3334,7 @@ class MilvusClientDockerTest {
                 Assertions.assertEquals(10, fieldValues.get("flag"));
                 Assertions.assertEquals("AAA", fieldValues.get("desc"));
             }
-            System.out.println(score);
+//            System.out.println(score);
         }
     }
 
