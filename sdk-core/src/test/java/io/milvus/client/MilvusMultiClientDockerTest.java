@@ -38,6 +38,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -90,27 +93,35 @@ class MilvusMultiClientDockerTest {
         }
     }
 
+    private static void runCommand(String command) {
+        System.out.println(command);
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            Process proc = runtime.exec(command);
+            InputStream inputStream = proc.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            boolean ok = proc.waitFor(10, TimeUnit.MINUTES);
+            if (!ok) {
+                System.out.println("Failed to run command in time: " + command);
+            }
+            System.out.println("Command done: " + command);
+        } catch (Throwable t) {
+            System.out.println("Failed to run command: " + command + ", error: " + t.getMessage());
+        }
+    }
+
     private static void startDockerContainer() {
         if (!useDockerCompose) {
             return;
         }
 
-        // start the test container
-        Runtime runtime = Runtime.getRuntime();
-        String bashCommand = "docker compose up -d";
-
-        try {
-            System.out.println(bashCommand);
-            Process pro = runtime.exec(bashCommand);
-            int status = pro.waitFor();
-            if (status != 0) {
-                System.out.println("Failed to start docker compose, status " + status);
-            }
-
-            System.out.println("Milvus service started");
-        } catch (Throwable t) {
-            System.out.println("Failed to execute docker compose up: " + t.getMessage());
-        }
+        runCommand("docker compose version");
+        runCommand("docker compose up -d");
 
         MultiConnectParam connectParam = multiConnectParamBuilder()
                 .withAuthorization("root", "Milvus")
@@ -126,37 +137,8 @@ class MilvusMultiClientDockerTest {
             return;
         }
 
-        // stop all test dockers
-        Runtime runtime = Runtime.getRuntime();
-        String bashCommand = "docker compose down";
-
-        try {
-            System.out.println("Milvus service stopping...");
-            TimeUnit.SECONDS.sleep(5);
-            System.out.println(bashCommand);
-            Process pro = runtime.exec(bashCommand);
-            int status = pro.waitFor();
-            if (status != 0) {
-                System.out.println("Failed to stop test docker containers" + pro.getOutputStream().toString());
-            }
-        } catch (Throwable t) {
-            System.out.println("Failed to execute docker compose down: " + t.getMessage());
-        }
-
-        // clean up log dir
-        runtime = Runtime.getRuntime();
-        bashCommand = "docker compose rm";
-
-        try {
-            System.out.println(bashCommand);
-            Process pro = runtime.exec(bashCommand);
-            int status = pro.waitFor();
-            if (status != 0) {
-                System.out.println("Failed to clean up test docker containers" + pro.getOutputStream().toString());
-            }
-        } catch (Throwable t) {
-            System.out.println("Failed to remove docker compose volume:" + t.getMessage());
-        }
+        runCommand("docker compose down");
+        runCommand("docker compose rm");
     }
 
     @BeforeAll
@@ -382,7 +364,7 @@ class MilvusMultiClientDockerTest {
         for (String fieldName : outputFields) {
             FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
             System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-            System.out.println(wrapper.getFieldData());
+//            System.out.println(wrapper.getFieldData());
             assertEquals(nq, wrapper.getFieldData().size());
 
             if (fieldName.compareTo(field1Name) == 0) {
@@ -446,8 +428,8 @@ class MilvusMultiClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
-            System.out.println(scores);
+//            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+//            System.out.println(scores);
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
         }
 
@@ -579,8 +561,8 @@ class MilvusMultiClientDockerTest {
         SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
         for (int i = 0; i < targetVectors.size(); ++i) {
             List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
-            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
-            System.out.println(scores);
+//            System.out.println("The result of No." + i + " target vector(ID = " + targetVectorIDs.get(i) + "):");
+//            System.out.println(scores);
             assertEquals(targetVectorIDs.get(i).longValue(), scores.get(0).getLongID());
         }
 
@@ -720,11 +702,11 @@ class MilvusMultiClientDockerTest {
 
             // verify search result
             SearchResultsWrapper results = new SearchResultsWrapper(searchR.getData().getResults());
-            System.out.println("Search results:");
+//            System.out.println("Search results:");
             for (int i = 0; i < targetVectors.size(); ++i) {
                 List<SearchResultsWrapper.IDScore> scores = results.getIDScore(i);
                 assertEquals(topK, scores.size());
-                System.out.println(scores);
+//                System.out.println(scores);
             }
 
             // get query results
@@ -736,7 +718,7 @@ class MilvusMultiClientDockerTest {
             for (String fieldName : outputFields) {
                 FieldDataWrapper wrapper = queryResultsWrapper.getFieldWrapper(fieldName);
                 System.out.println("Query data of " + fieldName + ", row count: " + wrapper.getRowCount());
-                System.out.println(wrapper.getFieldData());
+//                System.out.println(wrapper.getFieldData());
                 assertEquals(queryIDs.size(), wrapper.getFieldData().size());
             }
 
