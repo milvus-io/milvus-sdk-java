@@ -48,6 +48,7 @@ public class IndexParam {
         // Only for binary vectors
         HAMMING,
         JACCARD,
+        MHJACCARD,
 
         // Only for sparse vector with BM25
         BM25,
@@ -69,6 +70,7 @@ public class IndexParam {
         DISKANN(10),
         AUTOINDEX(11),
         SCANN(12),
+        IVF_RABITQ(13),
 
         // GPU indexes only for float vectors
         GPU_IVF_FLAT(50),
@@ -79,6 +81,7 @@ public class IndexParam {
         // Only supported for binary vectors
         BIN_FLAT(80),
         BIN_IVF_FLAT(81),
+        MINHASH_LSH(82),
 
         // Only for varchar type field
         TRIE("Trie", 100),
@@ -89,6 +92,8 @@ public class IndexParam {
 
         // Only for sparse vectors
         SPARSE_INVERTED_INDEX(300),
+        // From Milvus 2.5.4 onward, SPARSE_WAND is being deprecated. Instead, it is recommended to
+        // use "inverted_index_algo": "DAAT_WAND" for equivalency while maintaining compatibility.
         SPARSE_WAND(301)
         ;
 
