@@ -58,4 +58,6 @@ public class UpsertReq {
     private String collectionName;
     @Builder.Default
     private String partitionName = "";
+    @Builder.Default
+    private boolean partialUpdate = false;
 }
