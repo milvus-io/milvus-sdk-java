@@ -38,6 +38,7 @@ import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
+import org.apache.hadoop.util.Lists;
 
 import java.util.*;
 
@@ -109,6 +110,14 @@ public class GeneralExample {
         System.out.println("========== describeCollection() ==========");
         DescribeCollectionResp resp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
+                .build());
+        System.out.println(resp);
+    }
+
+    private static void batchDescribeCollections() {
+        System.out.println("========== batchDescribeCollections() ==========");
+        List<DescribeCollectionResp> resp = client.batchDescribeCollection(BatchDescribeCollectionReq.builder()
+                .collectionNames(Lists.newArrayList(COLLECTION_NAME))
                 .build());
         System.out.println(resp);
     }
@@ -213,6 +222,7 @@ public class GeneralExample {
     public static void main(String[] args) {
         createCollection();
         describeCollection();
+//        batchDescribeCollections();
         listCollections();
 
         final String partitionName = "p1";
