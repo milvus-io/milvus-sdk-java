@@ -71,6 +71,7 @@ public class DataUtils {
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
+                    .setPartialUpdate(requestParam.isPartialUpdate())
                     .setNumRows(requestParam.getData().size());
             if (StringUtils.isNotEmpty(dbName)) {
                 upsertBuilder.setDbName(dbName);
@@ -121,7 +122,7 @@ public class DataUtils {
 
             // convert insert data
             List<JsonObject> rowFields = requestParam.getData();
-            checkAndSetRowData(descColl, rowFields);
+            checkAndSetRowData(descColl, rowFields, requestParam.isPartialUpdate());
         }
 
         private void fillFieldsData(InsertReq requestParam, DescribeCollectionResp descColl) {
@@ -138,10 +139,10 @@ public class DataUtils {
 
             // convert insert data
             List<JsonObject> rowFields = requestParam.getData();
-            checkAndSetRowData(descColl, rowFields);
+            checkAndSetRowData(descColl, rowFields, false);
         }
 
-        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows) {
+        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows, boolean partialUpdate) {
             CreateCollectionReq.CollectionSchema collectionSchema = descColl.getCollectionSchema();
             List<CreateCollectionReq.Function> functionsList = collectionSchema.getFunctionList();
             List<String> outputFieldNames = new ArrayList<>();
@@ -177,7 +178,8 @@ public class DataUtils {
                         }
 
                         // if the field doesn't have default value, require user provide the value
-                        if (!field.getIsNullable() && field.getDefaultValue() == null) {
+                        // in v2.6.1 support partial update, user can input partial fields
+                        if (!field.getIsNullable() && field.getDefaultValue() == null && !partialUpdate) {
                             String msg = String.format("The field: %s is not provided.", field.getName());
                             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                         }
