@@ -318,6 +318,19 @@ public class CollectionService extends BaseService {
         return convertUtils.convertDescCollectionResp(response);
     }
 
+    public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
+        String title = String.format("BatchDescribeCollectionRequest collectionNames:%s, databaseName:%s", request.getCollectionNames(), request.getDatabaseName());
+        BatchDescribeCollectionRequest.Builder builder = BatchDescribeCollectionRequest.newBuilder()
+                .addAllCollectionName(request.getCollectionNames());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        BatchDescribeCollectionResponse response = blockingStub.batchDescribeCollection(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+        return convertUtils.convertDescCollectionsResp(response);
+    }
+
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
         String title = String.format("RenameCollectionRequest collectionName:%s", request.getCollectionName());
         RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
