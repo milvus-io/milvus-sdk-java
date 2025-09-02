@@ -159,7 +159,6 @@ public class TextMatchExample {
         // Get row count, set ConsistencyLevel.STRONG to sync the data to query node so that data is visible
         QueryResp countR = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .filter("")
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
