@@ -286,7 +286,6 @@ class MilvusClientV2DockerTest {
     private long getRowCount(String collectionName) {
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(collectionName)
-                .filter("")
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
@@ -519,21 +518,83 @@ class MilvusClientV2DockerTest {
             verifyOutput(row, entity);
         }
 
-        // query
-        QueryResp queryResp = client.query(QueryReq.builder()
-                .collectionName(randomCollectionName)
-                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
-                .build());
-        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        Assertions.assertEquals(6, queryResults.size());
+        {
+            // query with template
+            Map<String,Object> template = new HashMap<>();
+            template.put("id_arr", Arrays.asList(5, 6, 7));
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id in {id_arr}")
+                    .filterTemplateValues(template)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(3, queryResults.size());
+        }
 
-        // test the withTimeout works well
-        client.withTimeout(1, TimeUnit.NANOSECONDS);
-        Assertions.assertThrows(MilvusClientException.class, ()->client.query(QueryReq.builder()
-                .collectionName(randomCollectionName)
-                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
-                .consistencyLevel(ConsistencyLevel.STRONG)
-                .build()));
+        {
+            // query with limit
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .limit(8)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(8, queryResults.size());
+        }
+
+        {
+            // query with limit and filter
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id > 1")
+                    .limit(8)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(8, queryResults.size());
+        }
+
+        {
+            // query with ids
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .ids(Arrays.asList(1, 5, 10))
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(3, queryResults.size());
+        }
+
+        {
+            // query error with 0 limit and empty filter
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .build()));
+        }
+
+        {
+            // query error with ids and filter
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id > 1")
+                    .ids(Arrays.asList(1, 3, 5))
+                    .build()));
+        }
+
+        {
+            // query timeout
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(6, queryResults.size());
+
+            // test the withTimeout works well
+            client.withTimeout(1, TimeUnit.NANOSECONDS);
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .build()));
+        }
 
         client.withTimeout(0, TimeUnit.SECONDS);
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
