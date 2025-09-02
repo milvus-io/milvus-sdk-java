@@ -35,6 +35,7 @@ import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.DataUtils;
 import io.milvus.v2.utils.VectorUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -223,14 +224,11 @@ public class VectorService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("QueryRequest collectionName:%s, databaseName:%s", collectionName, dbName);
-        if (request.getFilter() == null && request.getIds() == null) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be null at the same time");
-        } else if (request.getFilter() != null && request.getIds() != null) {
+        if (StringUtils.isNotEmpty(request.getFilter()) && CollectionUtils.isNotEmpty(request.getIds())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
-
-        if (request.getIds() != null && request.getFilter() == null) {
+        if (CollectionUtils.isNotEmpty(request.getIds())) {
             DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
             String primaryKeyName = "";
             List<FieldSchema> fields = descResp.getSchema().getFieldsList();

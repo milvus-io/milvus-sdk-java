@@ -56,7 +56,7 @@ public class VectorUtils {
             builder.setDbName(dbName);
         }
 
-        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+        if (StringUtils.isNotEmpty(request.getFilter())) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
             filterTemplateValues.forEach((key, value)->{
                 builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
