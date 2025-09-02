@@ -119,7 +119,6 @@ public class IteratorExample {
         // Check row count
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .filter("")
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());

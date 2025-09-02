@@ -36,7 +36,8 @@ public class QueryReq {
     @Builder.Default
     private List<String> outputFields = Collections.singletonList("*");
     private List<Object> ids;
-    private String filter;
+    @Builder.Default
+    private String filter = "";
     @Builder.Default
     private ConsistencyLevel consistencyLevel = null;
     private long offset;
