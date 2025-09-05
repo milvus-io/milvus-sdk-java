@@ -210,8 +210,10 @@ public class QueryIterator {
     private QueryResults executeQuery(String expr, long offset, long limit, long ts, boolean isSeek) {
         // for seeking offset, no need to return output fields
         List<String> outputFields = new ArrayList<>();
+        boolean reduceStopForBest = queryIteratorParam.isReduceStopForBest();
         if (!isSeek) {
             outputFields = queryIteratorParam.getOutFields();
+            reduceStopForBest = false;
         }
         QueryParam queryParam = QueryParam.newBuilder()
                 .withDatabaseName(queryIteratorParam.getDatabaseName())
@@ -230,7 +232,7 @@ public class QueryIterator {
         // reduce stop for best
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.REDUCE_STOP_FOR_BEST)
-                .setValue(String.valueOf(queryIteratorParam.isReduceStopForBest()))
+                .setValue(String.valueOf(reduceStopForBest))
                 .build());
 
         // iterator
