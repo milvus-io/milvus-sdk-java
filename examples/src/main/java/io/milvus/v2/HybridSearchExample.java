@@ -31,6 +31,7 @@ import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.vector.request.AnnSearchReq;
+import io.milvus.v2.service.vector.request.FunctionScore;
 import io.milvus.v2.service.vector.request.HybridSearchReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -212,7 +213,9 @@ public class HybridSearchExample {
         HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .searchRequests(searchRequests)
-                .ranker(WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build())
+                .functionScore(FunctionScore.builder()
+                        .addFunction(WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build())
+                        .build())
                 .limit(5)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();

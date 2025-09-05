@@ -1074,8 +1074,8 @@ class MilvusClientV2DockerTest {
         // prepare sub requests
         int nq = 5;
         int topk = 10;
-        Function<Integer, HybridSearchReq> genRequestFunc =
-                sparseCount -> {
+        Function<Map<String, Object>, HybridSearchReq> genRequestFunc =
+                config -> {
                     List<BaseVector> floatVectors = new ArrayList<>();
                     List<BaseVector> binaryVectors = new ArrayList<>();
                     List<BaseVector> sparseVectors = new ArrayList<>();
@@ -1083,6 +1083,7 @@ class MilvusClientV2DockerTest {
                         floatVectors.add(new FloatVec(utils.generateFloatVector()));
                         binaryVectors.add(new BinaryVec(utils.generateBinaryVector()));
                     }
+                    int sparseCount = (Integer)config.get("sparseCount");
                     for (int i = 0; i < sparseCount; i++) {
                         sparseVectors.add(new SparseFloatVec(utils.generateSparseVector()));
                     }
@@ -1105,23 +1106,40 @@ class MilvusClientV2DockerTest {
                             .limit(7)
                             .build());
 
-                    return HybridSearchReq.builder()
-                            .collectionName(randomCollectionName)
-                            .searchRequests(searchRequests)
-                            .ranker(RRFRanker.builder().k(20).build())
-                            .limit(topk)
-                            .consistencyLevel(ConsistencyLevel.BOUNDED)
-                            .build();
+                    CreateCollectionReq.Function ranker = RRFRanker.builder().k(20).build();
+                    boolean useFunctionScore = (Boolean)config.get("useFunctionScore");
+                    if (useFunctionScore) {
+                        return HybridSearchReq.builder()
+                                .collectionName(randomCollectionName)
+                                .searchRequests(searchRequests)
+                                .functionScore(FunctionScore.builder().addFunction(ranker).build())
+                                .limit(topk)
+                                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                                .build();
+                    } else {
+                        return HybridSearchReq.builder()
+                                .collectionName(randomCollectionName)
+                                .searchRequests(searchRequests)
+                                .ranker(RRFRanker.builder().k(20).build())
+                                .limit(topk)
+                                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                                .build();
+                    }
         };
 
+        Map<String, Object> config = new HashMap<>();
+        config.put("sparseCount", 0);
+        config.put("useFunctionScore", false);
         // search with an empty nq, return error
-        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(0)));
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(config)));
 
         // unequal nq, return error
-        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(1)));
+        config.put("sparseCount", 1);
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(config)));
 
         // search on empty collection, no result returned
-        SearchResp searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        config.put("sparseCount", nq);
+        SearchResp searchResp = client.hybridSearch(genRequestFunc.apply(config));
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
         for (List<SearchResp.SearchResult> result : searchResults) {
@@ -1142,7 +1160,8 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, rowCount);
 
         // search again, there are results
-        searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        config.put("useFunctionScore", true);
+        searchResp = client.hybridSearch(genRequestFunc.apply(config));
         searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
         for (int i = 0; i < nq; i++) {
