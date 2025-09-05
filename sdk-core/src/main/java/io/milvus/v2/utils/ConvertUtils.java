@@ -21,7 +21,14 @@ package io.milvus.v2.utils;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.*;
+import io.milvus.grpc.BatchDescribeCollectionResponse;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.FieldData;
+import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.IndexDescription;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.SearchResults;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.response.QueryResultsWrapper;
@@ -138,6 +145,16 @@ public class ConvertUtils {
         }
 
         return DescribeIndexResp.builder().indexDescriptions(descs).build();
+    }
+
+    public List<DescribeCollectionResp> convertDescCollectionsResp(BatchDescribeCollectionResponse response) {
+        List<DescribeCollectionResp> result = new ArrayList<>();
+        List<DescribeCollectionResponse> responsesList = response.getResponsesList();
+        for (DescribeCollectionResponse collectionResponse : responsesList) {
+            DescribeCollectionResp describeCollectionResp = convertDescCollectionResp(collectionResponse);
+            result.add(describeCollectionResp);
+        }
+        return result;
     }
 
     public DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
