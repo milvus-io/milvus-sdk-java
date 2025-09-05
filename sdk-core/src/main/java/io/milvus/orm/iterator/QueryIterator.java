@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static io.milvus.param.Constant.NO_CACHE_ID;
+import static io.milvus.param.Constant.MAX_BATCH_SIZE;
 import static io.milvus.param.Constant.UNLIMITED;
 
 public class QueryIterator {
@@ -114,11 +115,19 @@ public class QueryIterator {
             return;
         }
 
-        QueryResults response = executeQuery(expr, 0L, offset, this.sessionTs);
-        QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
-        List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
-        int resultIndex = Math.min(res.size(), (int) offset);
-        updateCursor(res.subList(0, resultIndex));
+        long currentOffset = offset;
+        while (currentOffset > 0) {
+            long limit = Math.min(MAX_BATCH_SIZE, currentOffset);
+            String currentExpr = setupNextExpr();
+            QueryResults response = executeQuery(currentExpr, 0L, limit, this.sessionTs);
+            QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
+            List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
+            if (res.isEmpty()) {
+                break;
+            }
+            updateCursor(res);
+            currentOffset -= res.size();
+        }
         offset = 0;
     }
 

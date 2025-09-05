@@ -1624,7 +1624,7 @@ class MilvusClientV2DockerTest {
         client.createCollection(requestCreate);
 
         // insert rows
-        long count = 10000;
+        long count = 20000;
         List<JsonObject> data = generateRandomData(collectionSchema, count);
         InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -1710,13 +1710,15 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(counter > 0);
 
         // query iterator
+        long from = 17777;
+        long to = 18000;
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
                 .collectionName(randomCollectionName)
-                .expr("int64_field < 300")
+                .expr("int64_field < " + String.valueOf(to))
                 .outputFields(Lists.newArrayList("*"))
                 .batchSize(50L)
-                .offset(5)
-                .limit(400)
+                .offset(from)
+                .limit(4000)
                 .consistencyLevel(ConsistencyLevel.EVENTUALLY)
                 .build());
 
@@ -1730,6 +1732,7 @@ class MilvusClientV2DockerTest {
             }
 
             for (QueryResultsWrapper.RowRecord record : res) {
+                Assertions.assertInstanceOf(Long.class, record.get("id"));
                 Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
                 Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
                 Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
@@ -1745,8 +1748,9 @@ class MilvusClientV2DockerTest {
                 Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
                 Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
 
-                long int64Val = (long)record.get("int64_field");
-                Assertions.assertTrue(int64Val < 300L);
+                long int64Val = (long)record.get("id");
+                Assertions.assertTrue(int64Val >= from);
+                Assertions.assertTrue(int64Val < to);
 
                 String varcharVal = (String)record.get("varchar_field");
                 Assertions.assertTrue(varcharVal.startsWith("varchar_"));
@@ -1772,7 +1776,7 @@ class MilvusClientV2DockerTest {
                 counter++;
             }
         }
-        Assertions.assertEquals(295, counter);
+        Assertions.assertEquals(to - from, counter);
 
         // search iterator V2
         SearchIteratorV2 searchIteratorV2 = client.searchIteratorV2(SearchIteratorReqV2.builder()
