@@ -50,9 +50,9 @@ public class ListCollectionsResp {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        
+
         ListCollectionsResp that = (ListCollectionsResp) obj;
-        
+
         return new EqualsBuilder()
                 .append(collectionNames, that.collectionNames)
                 .isEquals();
