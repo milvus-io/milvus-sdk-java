@@ -187,6 +187,9 @@ public class CollectionService extends BaseService {
                 .collectionNames(response.getCollectionNamesList())
                 .build();
 
+        int collectionNamesCount = response.getCollectionNamesCount();
+        for (int i = 0; i < )
+
         return listCollectionsResp;
     }
 

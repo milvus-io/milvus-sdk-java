@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection.response;
 
+import io.milvus.v2.service.collection.CollectionInfo;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -30,5 +31,10 @@ import java.util.List;
 @SuperBuilder
 public class ListCollectionsResp {
     @Builder.Default
+    @Deprecated
+    // use collectionInfos instead
     private List<String> collectionNames = new ArrayList<>();
+
+    @Builder.Default
+    private List<CollectionInfo> collectionInfos = new ArrayList<>();
 }
