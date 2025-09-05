@@ -35,7 +35,6 @@ public class HybridSearchReq
     private String collectionName;
     private List<String> partitionNames;
     private List<AnnSearchReq> searchRequests;
-    private CreateCollectionReq.Function ranker;
     @Builder.Default
     @Deprecated
     private int topK = 0; // deprecated, replaced by "limit"
@@ -51,6 +50,11 @@ public class HybridSearchReq
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+    @Deprecated
+    private CreateCollectionReq.Function ranker;
+    // milvus v2.6.1 supports multi-rankers. The "ranker" still works. It is recommended
+    // to use functionScore even you have only one ranker. Not allow to set both.
+    private FunctionScore functionScore;
 
     public static abstract class HybridSearchReqBuilder<C extends HybridSearchReq, B extends HybridSearchReq.HybridSearchReqBuilder<C, B>> {
         // topK is deprecated, topK and limit must be the same value
