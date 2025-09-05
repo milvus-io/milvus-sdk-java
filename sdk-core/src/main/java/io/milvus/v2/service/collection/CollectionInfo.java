@@ -7,5 +7,5 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class CollectionInfo {
     private String collectionName;
-    private int shardNum;
+    private Integer shardNum;
 }
