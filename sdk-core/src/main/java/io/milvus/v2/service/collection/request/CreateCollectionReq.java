@@ -194,7 +194,8 @@ public class CreateCollectionReq {
     @Data
     @SuperBuilder
     public static class Function {
-        private String name;
+        @Builder.Default
+        private String name = "";
         @Builder.Default
         private String description = "";
         @Builder.Default
