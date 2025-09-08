@@ -67,7 +67,11 @@ public class SearchReq {
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+    @Deprecated
     private CreateCollectionReq.Function ranker;
+    // milvus v2.6.1 supports multi-rankers. The "ranker" still works. It is recommended
+    // to use functionScore even you have only one ranker. Not allow to set both.
+    private FunctionScore functionScore;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
