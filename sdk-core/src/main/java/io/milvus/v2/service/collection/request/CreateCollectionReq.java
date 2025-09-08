@@ -69,7 +69,7 @@ public class CreateCollectionReq {
         if (builder.collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
         }
-        
+
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.description = builder.description;
