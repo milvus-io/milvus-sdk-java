@@ -20,10 +20,12 @@
 package io.milvus.bulkwriter;
 
 import com.google.gson.Gson;
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.common.utils.FileUtils;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.stage.ApplyStageRequest;
 import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
+import io.milvus.bulkwriter.resolver.EndpointResolver;
 import io.milvus.bulkwriter.response.ApplyStageResponse;
 import io.milvus.bulkwriter.restful.DataStageUtils;
 import io.milvus.bulkwriter.storage.StorageClient;
@@ -54,6 +56,7 @@ public class StageFileManager {
     private final String cloudEndpoint;
     private final String apiKey;
     private final String stageName;
+    private final ConnectType connectType;
     private final ExecutorService executor;
 
     private StorageClient storageClient;
@@ -63,7 +66,8 @@ public class StageFileManager {
         this.cloudEndpoint = stageWriterParam.getCloudEndpoint();
         this.apiKey = stageWriterParam.getApiKey();
         this.stageName = stageWriterParam.getStageName();
-        this.executor = Executors.newFixedThreadPool(20);
+        this.connectType = stageWriterParam.getConnectType();
+        this.executor = Executors.newFixedThreadPool(10);
     }
 
     /**
@@ -138,7 +142,7 @@ public class StageFileManager {
     public void shutdownGracefully() {
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
                 logger.warn("Executor didn't terminate in time, forcing shutdown...");
                 executor.shutdownNow();
             }
@@ -168,9 +172,11 @@ public class StageFileManager {
         applyStageResponse = new Gson().fromJson(result, ApplyStageResponse.class);
         logger.info("stage info refreshed");
 
+        String endpoint = EndpointResolver.resolveEndpoint(applyStageResponse.getEndpoint(), applyStageResponse.getCloud(),
+                applyStageResponse.getRegion(), connectType);
         storageClient = MinioStorageClient.getStorageClient(
                 applyStageResponse.getCloud(),
-                applyStageResponse.getEndpoint(),
+                endpoint,
                 applyStageResponse.getCredentials().getTmpAK(),
                 applyStageResponse.getCredentials().getTmpSK(),
                 applyStageResponse.getCredentials().getSessionToken(),
@@ -235,6 +241,8 @@ public class StageFileManager {
         while (attempt < maxRetries) {
             try {
                 return callable.call();
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 attempt++;
                 refreshStageAndClient(stagePath);

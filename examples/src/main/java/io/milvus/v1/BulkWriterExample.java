@@ -448,7 +448,7 @@ public class BulkWriterExample {
 
     private static StorageConnectParam buildStorageConnectParam() {
         StorageConnectParam connectParam;
-        if (StorageConsts.cloudStorage == CloudStorage.AZURE) {
+        if (CloudStorage.isAzCloud(StorageConsts.cloudStorage.getCloudName())) {
             String connectionStr = "DefaultEndpointsProtocol=https;AccountName=" + StorageConsts.AZURE_ACCOUNT_NAME +
                     ";AccountKey=" + StorageConsts.AZURE_ACCOUNT_KEY + ";EndpointSuffix=core.windows.net";
             connectParam = AzureConnectParam.newBuilder()
@@ -541,11 +541,11 @@ public class BulkWriterExample {
     }
 
     private void callCloudImport(List<List<String>> batchFiles, String collectionName, String partitionName) throws InterruptedException {
-        String objectUrl = StorageConsts.cloudStorage == CloudStorage.AZURE
+        String objectUrl = CloudStorage.isAzCloud(StorageConsts.cloudStorage.getCloudName())
                 ? StorageConsts.cloudStorage.getAzureObjectUrl(StorageConsts.AZURE_ACCOUNT_NAME, StorageConsts.AZURE_CONTAINER_NAME, ImportUtils.getCommonPrefix(batchFiles))
                 : StorageConsts.cloudStorage.getS3ObjectUrl(StorageConsts.STORAGE_BUCKET, ImportUtils.getCommonPrefix(batchFiles), StorageConsts.STORAGE_REGION);
-        String accessKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
-        String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
+        String accessKey = CloudStorage.isAzCloud(StorageConsts.cloudStorage.getCloudName()) ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
+        String secretKey = CloudStorage.isAzCloud(StorageConsts.cloudStorage.getCloudName()) ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
 
         System.out.println("\n===================== call cloudImport ====================");
         List<String> objectUrls = Lists.newArrayList(objectUrl);
