@@ -19,6 +19,7 @@
 
 package io.milvus.bulkwriter;
 
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import lombok.Getter;
@@ -35,11 +36,13 @@ public class StageFileManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
     private final String stageName;
+    private final ConnectType connectType;
 
     private StageFileManagerParam(@NonNull Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
         this.stageName = builder.stageName;
+        this.connectType = builder.connectType;
     }
 
     public static Builder newBuilder() {
@@ -55,6 +58,8 @@ public class StageFileManagerParam {
         private String apiKey;
 
         private String stageName;
+
+        private ConnectType connectType = ConnectType.AUTO;
 
         private Builder() {
         }
@@ -76,6 +81,17 @@ public class StageFileManagerParam {
 
         public Builder withStageName(@NotNull String stageName) {
             this.stageName = stageName;
+            return this;
+        }
+
+        /**
+         * Current value is mainly for Aliyun OSS buckets, default is Auto.
+         * In the default case, if the OSS bucket is reachable via the internal endpoint, the internal endpoint will be used;
+         * otherwise, the public endpoint will be used.
+         * You can also force the use of either the internal or public endpoint.
+         */
+        public Builder withConnectType(@NotNull ConnectType connectType) {
+            this.connectType = connectType;
             return this;
         }
 

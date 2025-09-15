@@ -21,6 +21,7 @@ package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
 import io.milvus.common.utils.ExceptionUtils;
@@ -63,7 +64,7 @@ public class StageBulkWriter extends LocalBulkWriter {
     private StageFileManager initStageFileManagerParams(StageBulkWriterParam bulkWriterParam) throws IOException {
         StageFileManagerParam stageFileManagerParam = StageFileManagerParam.newBuilder()
                 .withCloudEndpoint(bulkWriterParam.getCloudEndpoint()).withApiKey(bulkWriterParam.getApiKey())
-                .withStageName(bulkWriterParam.getStageName())
+                .withStageName(bulkWriterParam.getStageName()).withConnectType(ConnectType.AUTO)
                 .build();
         return new StageFileManager(stageFileManagerParam);
     }
