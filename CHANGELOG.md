@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.5.13 (2025-09-17)
+### Feature
+- Support passing request-id and unixmsec to server for MilvusClientV2
+- MilvusClientPool supports different ConnectConfig for different key
+
+### Bug
+- Fix a defect of MilvusClientV2.query() that always requires an empty filter expression
+- Fix a bug of QueryIterator that offset value cannot exceed 16384
+
 ## milvus-sdk-java 2.5.12 (2025-08-14)
 ### Improvement
 - Alias interface support database
