@@ -10,19 +10,22 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String, T> {
     protected static final Logger logger = LoggerFactory.getLogger(PoolClientFactory.class);
-    private final C config;
+    private final C configDefault;
+    private ConcurrentMap<String, C> configForKeys = new ConcurrentHashMap<>();
     private Constructor<?> constructor;
     private Method closeMethod;
     private Method verifyMethod;
 
-    public PoolClientFactory(C config, String clientClassName) throws ClassNotFoundException, NoSuchMethodException {
-        this.config = config;
+    public PoolClientFactory(C configDefault, String clientClassName) throws ClassNotFoundException, NoSuchMethodException {
+        this.configDefault = configDefault;
         try {
             Class<?> clientCls = Class.forName(clientClassName);
-            Class<?> configCls = Class.forName(config.getClass().getName());
+            Class<?> configCls = Class.forName(configDefault.getClass().getName());
             constructor = clientCls.getConstructor(configCls);
             closeMethod = clientCls.getMethod("close", long.class);
             verifyMethod = clientCls.getMethod("clientIsReady");
@@ -32,11 +35,19 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
         }
     }
 
+    public void configForKey(String key, C config) {
+        configForKeys.put(key, config);
+    }
+
     @Override
     public T create(String key) throws Exception {
         try {
-            T client = (T) constructor.newInstance(this.config);
-            return client;
+            C keyConfig = configForKeys.get(key);
+            if (keyConfig == null) {
+                return (T) constructor.newInstance(this.configDefault);
+            } else {
+                return (T) constructor.newInstance(keyConfig);
+            }
         } catch (Exception e) {
             logger.error("Failed to create client, exception: ", e);
             throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
