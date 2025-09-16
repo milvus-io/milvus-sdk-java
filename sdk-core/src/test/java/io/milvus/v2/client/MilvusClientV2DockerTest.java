@@ -2112,7 +2112,14 @@ class MilvusClientV2DockerTest {
 
     @Test
     void testClientPool() {
+        // create a temp database
+        String dummyDb = "dummy_db";
+        client.createDatabase(CreateDatabaseReq.builder()
+                .databaseName(dummyDb)
+                .build());
+
         try {
+            // the default connection config will connect to default db
             ConnectConfig connectConfig = ConnectConfig.builder()
                     .uri(milvus.getEndpoint())
                     .rpcDeadlineMs(100L)
@@ -2121,16 +2128,24 @@ class MilvusClientV2DockerTest {
                     .build();
             MilvusClientV2Pool pool = new MilvusClientV2Pool(poolConfig, connectConfig);
 
+            // clients of the key "dummy_db" will connect to this db
+            pool.configForKey(dummyDb, ConnectConfig.builder()
+                    .uri(milvus.getEndpoint())
+                    .dbName(dummyDb)
+                    .rpcDeadlineMs(100L)
+                    .build());
+
             List<Thread> threadList = new ArrayList<>();
             int threadCount = 10;
             int requestPerThread = 10;
-            String key = "192.168.1.1";
+            String key = "default";
             for (int k = 0; k < threadCount; k++) {
                 Thread t = new Thread(() -> {
                     for (int i = 0; i < requestPerThread; i++) {
                         MilvusClientV2 client = pool.getClient(key);
                         String version = client.getServerVersion();
 //                            System.out.printf("%d, %s%n", i, version);
+                        Assertions.assertEquals(client.currentUsedDatabase(), "default");
                         System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
                         pool.returnClient(key, client);
                     }
@@ -2146,6 +2161,10 @@ class MilvusClientV2DockerTest {
 
             System.out.println(String.format("idle %d, active %d", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key)));
             System.out.println(String.format("total idle %d, total active %d", pool.getTotalIdleClientNumber(), pool.getTotalActiveClientNumber()));
+
+            // get client connect to the dummy db
+            MilvusClientV2 dummyClient = pool.getClient(dummyDb);
+            Assertions.assertEquals(dummyClient.currentUsedDatabase(), dummyDb);
             pool.close();
         } catch (Exception e) {
             System.out.println(e.getMessage());
