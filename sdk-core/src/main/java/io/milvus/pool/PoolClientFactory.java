@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -35,8 +36,20 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
         }
     }
 
-    public void configForKey(String key, C config) {
-        configForKeys.put(key, config);
+    public C configForKey(String key, C config) {
+        return configForKeys.put(key, config);
+    }
+
+    public C removeConfig(String key) {
+        return configForKeys.remove(key);
+    }
+
+    public Set<String> configKeys() {
+        return configForKeys.keySet();
+    }
+
+    public C getConfig(String key) {
+        return configForKeys.get(key);
     }
 
     @Override
