@@ -392,7 +392,7 @@ public class BulkWriterRemoteExample {
 
     private static StorageConnectParam buildStorageConnectParam() {
         StorageConnectParam connectParam;
-        if (StorageConsts.cloudStorage == CloudStorage.AZURE) {
+        if (CloudStorage.isAzCloud(StorageConsts.cloudStorage.getCloudName())) {
             String connectionStr = "DefaultEndpointsProtocol=https;AccountName=" + StorageConsts.AZURE_ACCOUNT_NAME +
                     ";AccountKey=" + StorageConsts.AZURE_ACCOUNT_KEY + ";EndpointSuffix=core.windows.net";
             connectParam = AzureConnectParam.newBuilder()
