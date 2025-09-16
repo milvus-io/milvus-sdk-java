@@ -7,8 +7,6 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Duration;
-
 public class ClientPool<C, T> {
     protected static final Logger logger = LoggerFactory.getLogger(ClientPool.class);
     protected GenericKeyedObjectPool<String, T> clientPool;
@@ -38,6 +36,10 @@ public class ClientPool<C, T> {
         poolConfig.setNumTestsPerEvictionRun(5);
         poolConfig.setMinEvictableIdleTime(config.getMinEvictableIdleDuration());
         this.clientPool = new GenericKeyedObjectPool<String, T>(clientFactory, poolConfig);
+    }
+
+    public void configForKey(String key, C config) {
+        this.clientFactory.configForKey(key, config);
     }
 
     /**
