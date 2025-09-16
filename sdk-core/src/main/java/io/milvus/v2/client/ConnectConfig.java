@@ -61,6 +61,9 @@ public class ConnectConfig {
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
     private SSLContext sslContext;
+    // clientRequestId maintains a map for different threads, each thread can assign a specific id.
+    // the specific id is passed to the server, from the access log we can know which client calls the interface
+    private ThreadLocal<String> clientRequestId;
 
     public String getHost() {
         io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
