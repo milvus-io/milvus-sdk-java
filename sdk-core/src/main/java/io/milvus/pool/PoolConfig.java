@@ -10,13 +10,13 @@ import java.time.Duration;
 @SuperBuilder
 public class PoolConfig {
     @Builder.Default
-    private int maxIdlePerKey = 5;
+    private int maxIdlePerKey = 10;
     @Builder.Default
     private int minIdlePerKey = 0;
     @Builder.Default
-    private int maxTotalPerKey = 10;
+    private int maxTotalPerKey = 30;
     @Builder.Default
-    private int maxTotal = 50;
+    private int maxTotal = 1000;
     @Builder.Default
     private boolean blockWhenExhausted = true;
     @Builder.Default
