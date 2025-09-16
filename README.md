@@ -22,7 +22,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 |     2.3.x      |      2.3.11      |
 |     2.4.x      |      2.4.11      |
 |     2.5.x      |      2.5.12      |
-|     2.6.x      |      2.6.3       |
+|     2.6.x      |      2.6.4       |
 
 ### Install Java SDK
 
@@ -34,20 +34,20 @@ You can use **Apache Maven** or **Gradle** add Milvus SDK to your project.
         <dependency>
             <groupId>io.milvus</groupId>
             <artifactId>milvus-sdk-java</artifactId>
-            <version>2.6.3</version>
+            <version>2.6.4</version>
         </dependency>
        ```
 
    - Gradle/Groovy
 
         ```groovy
-        implementation 'io.milvus:milvus-sdk-java:2.6.3'
+        implementation 'io.milvus:milvus-sdk-java:2.6.4'
         ```
 
    - Gradle/Kotlin
 
         ```kotlin
-        implementation("io.milvus:milvus-sdk-java:2.6.3")
+        implementation("io.milvus:milvus-sdk-java:2.6.4")
         ```
   
 From v2.5.2, milvus Java SDK is split into two packages: milvus-sdk-java and milvus-sdk-java-bulkwriter, because BulkWriter requires quite a lot of dependencies. If you don't need BulkWriter tool, you can ignore the milvus-sdk-java-bulkwriter package.
@@ -59,20 +59,20 @@ To use BulkWriter, import milvus-sdk-java-bulkwriter to your project.
      <dependency>
          <groupId>io.milvus</groupId>
          <artifactId>milvus-sdk-java-bulkwriter</artifactId>
-         <version>2.6.3</version>
+         <version>2.6.4</version>
      </dependency>
     ```
 
    - Gradle/Groovy
 
      ```groovy
-     implementation 'io.milvus:milvus-sdk-java-bulkwriter:2.6.3'
+     implementation 'io.milvus:milvus-sdk-java-bulkwriter:2.6.4'
      ```
 
    - Gradle/Kotlin
 
      ```kotlin
-     implementation("io.milvus:milvus-sdk-java-bulkwriter:2.6.3")
+     implementation("io.milvus:milvus-sdk-java-bulkwriter:2.6.4")
      ```     
 
 ### Examples

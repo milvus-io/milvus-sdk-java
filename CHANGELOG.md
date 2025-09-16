@@ -1,5 +1,21 @@
 # Changelog
 
+## milvus-sdk-java 2.6.4 (2025-09-17)
+### Feature
+- Support MINHASH_LSH/IVF_RABITQ index type
+- Support MHJACCARD metric type
+- Support passing request-id and unixmsec to server for MilvusClientV2
+- Support batchDescribeCollection() interface for MilvusClientV2
+- Support FunctionScore, multi-reranker for search/hybridSearch of MilvusClientV2
+- MilvusClientPool supports different ConnectConfig for different key
+
+### Improvement
+- Return shards number of each collection for MilvusClientV2.listCollections()
+
+### Bug
+- Fix a defect of MilvusClientV2.query() that always requires an empty filter expression
+- Fix a bug of QueryIterator that offset value cannot exceed 16384
+
 ## milvus-sdk-java 2.6.3 (2025-08-20)
 ### Improvement
 - Support stageManager & stageFileManager
