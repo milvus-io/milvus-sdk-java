@@ -7,6 +7,8 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
+
 public class ClientPool<C, T> {
     protected static final Logger logger = LoggerFactory.getLogger(ClientPool.class);
     protected GenericKeyedObjectPool<String, T> clientPool;
@@ -40,6 +42,18 @@ public class ClientPool<C, T> {
 
     public void configForKey(String key, C config) {
         this.clientFactory.configForKey(key, config);
+    }
+
+    public C removeConfig(String key) {
+        return this.clientFactory.removeConfig(key);
+    }
+
+    public Set<String> configKeys() {
+        return this.clientFactory.configKeys();
+    }
+
+    public C getConfig(String key) {
+        return this.clientFactory.getConfig(key);
     }
 
     /**
