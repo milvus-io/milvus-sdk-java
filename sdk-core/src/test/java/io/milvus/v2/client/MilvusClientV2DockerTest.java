@@ -1976,6 +1976,10 @@ class MilvusClientV2DockerTest {
                     .dbName(dummyDb)
                     .rpcDeadlineMs(100L)
                     .build());
+            Set<String> keys = pool.configKeys();
+            Assertions.assertTrue(keys.contains(dummyDb));
+            ConnectConfig dummyConfig = pool.getConfig(dummyDb);
+            Assertions.assertEquals(dummyConfig.getDbName(), dummyDb);
 
             List<Thread> threadList = new ArrayList<>();
             int threadCount = 10;
@@ -2007,6 +2011,8 @@ class MilvusClientV2DockerTest {
             // get client connect to the dummy db
             MilvusClientV2 dummyClient = pool.getClient(dummyDb);
             Assertions.assertEquals(dummyClient.currentUsedDatabase(), dummyDb);
+            pool.removeConfig(dummyDb);
+            Assertions.assertNull(pool.getConfig(dummyDb));
             pool.close();
         } catch (Exception e) {
             System.out.println(e.getMessage());
