@@ -21,6 +21,7 @@ package io.milvus.v2;
 import com.google.gson.Gson;
 import io.milvus.bulkwriter.StageFileManager;
 import io.milvus.bulkwriter.StageFileManagerParam;
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
 
@@ -35,6 +36,7 @@ public class StageFileManagerExample {
                 .withCloudEndpoint("https://api.cloud.zilliz.com")
                 .withApiKey("_api_key_for_cluster_org_")
                 .withStageName("_stage_name_for_project_")
+                .withConnectType(ConnectType.AUTO)
                 .build();
         stageFileManager = new StageFileManager(stageFileManagerParam);
     }

@@ -84,7 +84,7 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         }
 
         MinioAsyncClient minioClient = minioClientBuilder.build();
-        if (CloudStorage.TC.getCloudName().equals(cloudName)) {
+        if (CloudStorage.isTcCloud(cloudName)) {
             minioClient.enableVirtualStyleEndpoint();
         }
 

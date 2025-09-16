@@ -22,14 +22,25 @@ package io.milvus.bulkwriter.common.clientenum;
 import io.milvus.exception.ParamException;
 import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.util.Lists;
+
+import java.util.List;
 
 public enum CloudStorage {
     MINIO("minio","%s", "minioAddress"),
     AWS("aws","s3.amazonaws.com", null),
     GCP("gcp" ,"storage.googleapis.com", null),
+
+    AZ("az" ,"%s.blob.core.windows.net", "accountName"),
     AZURE("azure" ,"%s.blob.core.windows.net", "accountName"),
+
     ALI("ali","oss-%s.aliyuncs.com", "region"),
-    TC("tc","cos.%s.myqcloud.com", "region")
+    ALIYUN("aliyun","oss-%s.aliyuncs.com", "region"),
+    ALIBABA("alibaba","oss-%s.aliyuncs.com", "region"),
+    ALICLOU("alicloud","oss-%s.aliyuncs.com", "region"),
+
+    TC("tc","cos.%s.myqcloud.com", "region"),
+    TENCENT("tencent","cos.%s.myqcloud.com", "region")
     ;
 
     @Getter
@@ -43,6 +54,27 @@ public enum CloudStorage {
         this.cloudName = cloudName;
         this.endpoint = endpoint;
         this.replace = replace;
+    }
+
+    public static boolean isAliCloud(String cloudName) {
+        List<CloudStorage> aliCloudStorages = Lists.newArrayList(
+                CloudStorage.ALI, CloudStorage.ALIYUN, CloudStorage.ALIBABA, CloudStorage.ALICLOU
+        );
+        return aliCloudStorages.stream().anyMatch(e -> e.getCloudName().equalsIgnoreCase(cloudName));
+    }
+
+    public static boolean isTcCloud(String cloudName) {
+        List<CloudStorage> tcCloudStorages = Lists.newArrayList(
+                CloudStorage.TC, CloudStorage.TENCENT
+        );
+        return tcCloudStorages.stream().anyMatch(e -> e.getCloudName().equalsIgnoreCase(cloudName));
+    }
+
+    public static boolean isAzCloud(String cloudName) {
+        List<CloudStorage> azCloudStorages = Lists.newArrayList(
+                CloudStorage.AZ, CloudStorage.AZURE
+        );
+        return azCloudStorages.stream().anyMatch(e -> e.getCloudName().equalsIgnoreCase(cloudName));
     }
 
     public static CloudStorage getCloudStorage(String cloudName) {
@@ -71,8 +103,12 @@ public enum CloudStorage {
             case GCP:
                 return String.format("https://storage.cloud.google.com/%s/%s", bucketName, commonPrefix);
             case TC:
+            case TENCENT:
                 return String.format("https://%s.cos.%s.myqcloud.com/%s", bucketName, region, commonPrefix);
             case ALI:
+            case ALICLOU:
+            case ALIBABA:
+            case ALIYUN:
                 return String.format("https://%s.oss-%s.aliyuncs.com/%s", bucketName, region, commonPrefix);
             default:
                 throw new ParamException("no support others remote storage address");
@@ -80,7 +116,7 @@ public enum CloudStorage {
     }
 
     public String getAzureObjectUrl(String accountName, String containerName, String commonPrefix) {
-        if (this == CloudStorage.AZURE) {
+        if (CloudStorage.isAzCloud(this.getCloudName())) {
             return String.format("https://%s.blob.core.windows.net/%s/%s", accountName, containerName, commonPrefix);
         }
         throw new ParamException("no support others remote storage address");
