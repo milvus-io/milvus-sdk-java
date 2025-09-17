@@ -14,7 +14,7 @@ public class PoolConfig {
     @Builder.Default
     private int minIdlePerKey = 0;
     @Builder.Default
-    private int maxTotalPerKey = 30;
+    private int maxTotalPerKey = 50;
     @Builder.Default
     private int maxTotal = 1000;
     @Builder.Default
