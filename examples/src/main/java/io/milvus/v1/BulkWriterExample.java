@@ -499,6 +499,7 @@ public class BulkWriterExample {
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .partitionName("")
                 .files(batchFiles)
+                .apiKey(USER_NAME + ":" + PASSWORD)
                 .build();
         String bulkImportResult = BulkImportUtils.bulkImport(url, milvusImportRequest);
         System.out.println(bulkImportResult);
@@ -508,7 +509,9 @@ public class BulkWriterExample {
         System.out.println("Create a bulkInert task, job id: " + jobId);
 
         System.out.println("\n===================== listBulkInsertJobs() ====================");
-        MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder().collectionName(ALL_TYPES_COLLECTION_NAME).build();
+        MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder().collectionName(ALL_TYPES_COLLECTION_NAME)
+                .apiKey(USER_NAME + ":" + PASSWORD)
+                .build();
         String listImportJobsResult = BulkImportUtils.listImportJobs(url, listImportJobsRequest);
         System.out.println(listImportJobsResult);
         while (true) {
@@ -518,6 +521,7 @@ public class BulkWriterExample {
             System.out.println("\n===================== getBulkInsertState() ====================");
             MilvusDescribeImportRequest request = MilvusDescribeImportRequest.builder()
                     .jobId(jobId)
+                    .apiKey(USER_NAME + ":" + PASSWORD)
                     .build();
             String getImportProgressResult = BulkImportUtils.getImportProgress(url, request);
             System.out.println(getImportProgressResult);
