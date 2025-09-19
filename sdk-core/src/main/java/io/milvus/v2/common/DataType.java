@@ -45,7 +45,9 @@ public enum DataType {
     Float16Vector(102),
     BFloat16Vector(103),
     SparseFloatVector(104),
-    Int8Vector(105);
+    Int8Vector(105),
+
+    Struct(201);
 
     private final int code;
     DataType(int code) {
