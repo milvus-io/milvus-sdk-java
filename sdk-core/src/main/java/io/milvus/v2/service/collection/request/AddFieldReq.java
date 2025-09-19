@@ -19,11 +19,17 @@
 
 package io.milvus.v2.service.collection.request;
 
+import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.utils.SchemaUtils;
 import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Data
@@ -59,6 +65,8 @@ public class AddFieldReq {
     // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
     private Map<String, String> typeParams;
     private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
+    @Builder.Default
+    private List<CreateCollectionReq.FieldSchema> structFields = new ArrayList<>(); // only available when dataType is Array and elementType is Struct
 
     public static abstract class AddFieldReqBuilder<C extends AddFieldReq, B extends AddFieldReq.AddFieldReqBuilder<C, B>> {
         public B defaultValue(Object value) {
@@ -66,6 +74,16 @@ public class AddFieldReq {
             this.defaultValue$set = true;
 
             this.enableDefaultValue = true; // automatically set this flag
+            return self();
+        }
+
+        public B addStructField(AddFieldReq addFieldReq) {
+            if (this.structFields$value == null) {
+                this.structFields$value = new ArrayList<>();
+            }
+            CreateCollectionReq.FieldSchema field = SchemaUtils.convertFieldReqToFieldSchema(addFieldReq);
+            this.structFields$value.add(field);
+            this.structFields$set = true;
             return self();
         }
     }
