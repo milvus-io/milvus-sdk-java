@@ -25,7 +25,6 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import lombok.Builder;
 import lombok.experimental.SuperBuilder;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**

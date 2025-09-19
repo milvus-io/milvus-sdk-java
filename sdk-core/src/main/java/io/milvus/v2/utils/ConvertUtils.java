@@ -21,20 +21,15 @@ package io.milvus.v2.utils;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.BatchDescribeCollectionResponse;
-import io.milvus.grpc.DescribeCollectionResponse;
-import io.milvus.grpc.FieldData;
-import io.milvus.grpc.FieldSchema;
-import io.milvus.grpc.IndexDescription;
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.grpc.QueryResults;
-import io.milvus.grpc.SearchResults;
+import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.response.SearchResultsWrapper;
 import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.vector.response.QueryResp;
@@ -47,6 +42,28 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ConvertUtils {
+    public static DataType toProtoDataType(io.milvus.v2.common.DataType dt) {
+        if (dt == null) {
+            return DataType.None;
+        }
+        try {
+            return DataType.valueOf(dt.name());
+        } catch (Exception e) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Failed to convert data type, error: " + e.getMessage());
+        }
+    }
+
+    public static io.milvus.v2.common.DataType toSdkDataType(DataType dt) {
+        if (dt == null) {
+            return io.milvus.v2.common.DataType.None;
+        }
+        try {
+            return io.milvus.v2.common.DataType.valueOf(dt.name());
+        } catch (Exception e) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Failed to convert data type, error: " + e.getMessage());
+        }
+    }
+
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
         List<QueryResp.QueryResult> entities = new ArrayList<>();
         // count(*) ?

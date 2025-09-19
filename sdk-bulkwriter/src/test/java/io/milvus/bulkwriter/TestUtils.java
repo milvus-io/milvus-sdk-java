@@ -91,7 +91,7 @@ public class TestUtils {
     public SortedMap<Long, Float> generateSparseVector() {
         SortedMap<Long, Float> sparse = new TreeMap<>();
         int dim = RANDOM.nextInt(10) + 10;
-        for (int i = 0; i < dim; ++i) {
+        while (sparse.size() < dim) {
             sparse.put((long) RANDOM.nextInt(1000000), RANDOM.nextFloat());
         }
         return sparse;

@@ -21,6 +21,7 @@ package io.milvus.v2.utils;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.exception.ParamException;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.FieldSchema;
@@ -28,6 +29,7 @@ import io.milvus.grpc.FunctionSchema;
 import io.milvus.grpc.FunctionType;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.ValueField;
+import io.milvus.grpc.StructArrayFieldSchema;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -38,12 +40,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.milvus.param.Constant.*;
 import static io.milvus.param.ParamUtils.AssembleKvPair;
 
 public class SchemaUtils {
@@ -55,6 +55,7 @@ public class SchemaUtils {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, title + " cannot be null or empty");
         }
     }
+
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
         checkNullEmptyString(fieldSchema.getName(), "Field name");
 
@@ -147,16 +148,53 @@ public class SchemaUtils {
         return builder.build();
     }
 
+    public static StructArrayFieldSchema convertToGrpcStructFieldSchema(CreateCollectionReq.StructFieldSchema structSchema) {
+        checkNullEmptyString(structSchema.getName(), "Field name");
+        StructArrayFieldSchema.Builder builder = StructArrayFieldSchema.newBuilder()
+                .setName(structSchema.getName())
+                .setDescription(structSchema.getDescription());
+
+        for (CreateCollectionReq.FieldSchema field : structSchema.getFields()) {
+            DataType actualType = DataType.Array;
+            DataType elementType = DataType.valueOf(field.getDataType().name());
+            if (ParamUtils.isVectorDataType(elementType)) {
+                actualType = DataType.ArrayOfVector;
+            }
+            FieldSchema fieldSchema = convertToGrpcFieldSchema(field);
+            // reset data type and capacity
+            fieldSchema = fieldSchema.toBuilder()
+                    .setDataType(actualType)
+                    .setElementType(elementType)
+                    .addTypeParams(KeyValuePair.newBuilder()
+                            .setKey(ARRAY_MAX_CAPACITY)
+                            .setValue(String.valueOf(structSchema.getMaxCapacity()))
+                            .build())
+                    .build();
+            builder.addFields(fieldSchema);
+        }
+        return builder.build();
+    }
+
     public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(schema.getEnableDynamicField())
                 .build();
+
+        // normal fields
         List<CreateCollectionReq.FieldSchema> fieldSchemas = new ArrayList<>();
         for (FieldSchema fieldSchema : schema.getFieldsList()) {
             fieldSchemas.add(convertFromGrpcFieldSchema(fieldSchema));
         }
         collectionSchema.setFieldSchemaList(fieldSchemas);
 
+        // struct fields
+        List<CreateCollectionReq.StructFieldSchema> structSchemas = new ArrayList<>();
+        for (StructArrayFieldSchema fieldSchema : schema.getStructArrayFieldsList()) {
+            structSchemas.add(convertFromGrpcStructFieldSchema(fieldSchema));
+        }
+        collectionSchema.setStructFields(structSchemas);
+
+        // functions
         List<CreateCollectionReq.Function> functions = new ArrayList<>();
         for (FunctionSchema functionSchema : schema.getFunctionsList()) {
             functions.add(convertFromGrpcFunction(functionSchema));
@@ -167,15 +205,27 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.FieldSchema convertFromGrpcFieldSchema(FieldSchema fieldSchema) {
+        // if the fieldSchema belongs to a struct field, its type could be ArrayOfVector/ArrayOfStruct
+        // in fact, its actual type is elementType
+        DataType dataType = fieldSchema.getDataType();
+        DataType elementType = fieldSchema.getElementType();
+        io.milvus.v2.common.DataType actualType;
+        io.milvus.v2.common.DataType actualElementType = io.milvus.v2.common.DataType.None;
+        if (dataType == DataType.ArrayOfVector || dataType == DataType.ArrayOfStruct) {
+            actualType = io.milvus.v2.common.DataType.valueOf(elementType.name());
+        } else {
+            actualType = io.milvus.v2.common.DataType.valueOf(dataType.name());
+            actualElementType = io.milvus.v2.common.DataType.valueOf(elementType.name());
+        }
         CreateCollectionReq.FieldSchema schema = CreateCollectionReq.FieldSchema.builder()
                 .name(fieldSchema.getName())
                 .description(fieldSchema.getDescription())
-                .dataType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getDataType().name()))
+                .dataType(actualType)
                 .isPrimaryKey(fieldSchema.getIsPrimaryKey())
                 .isPartitionKey(fieldSchema.getIsPartitionKey())
                 .isClusteringKey(fieldSchema.getIsClusteringKey())
                 .autoID(fieldSchema.getAutoID())
-                .elementType(io.milvus.v2.common.DataType.valueOf(fieldSchema.getElementType().name()))
+                .elementType(actualElementType)
                 .isNullable(fieldSchema.getNullable())
                 .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
                 .build();
@@ -183,11 +233,11 @@ public class SchemaUtils {
         Map<String, String> typeParams = new HashMap<>();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
             try {
-                if(keyValuePair.getKey().equals("dim")){
+                if(keyValuePair.getKey().equals(VECTOR_DIM)){
                     schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals("max_length")){
+                } else if(keyValuePair.getKey().equals(VARCHAR_MAX_LENGTH)){
                     schema.setMaxLength(Integer.parseInt(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals("max_capacity")){
+                } else if(keyValuePair.getKey().equals(ARRAY_MAX_CAPACITY)){
                     schema.setMaxCapacity(Integer.parseInt(keyValuePair.getValue()));
                 } else if(keyValuePair.getKey().equals("enable_analyzer")){
                     schema.setEnableAnalyzer(Boolean.parseBoolean(keyValuePair.getValue()));
@@ -212,6 +262,30 @@ public class SchemaUtils {
         }
         schema.setTypeParams(typeParams);
         return schema;
+    }
+
+    public static CreateCollectionReq.StructFieldSchema convertFromGrpcStructFieldSchema(StructArrayFieldSchema structSchema) {
+        CreateCollectionReq.StructFieldSchema.StructFieldSchemaBuilder builder =
+                CreateCollectionReq.StructFieldSchema.builder()
+                        .name(structSchema.getName())
+                        .description(structSchema.getDescription());
+        List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
+        for (FieldSchema fieldSchema : structSchema.getFieldsList()) {
+            CreateCollectionReq.FieldSchema field = convertFromGrpcFieldSchema(fieldSchema);
+            builder.maxCapacity(field.getMaxCapacity());
+            // each rpc proto struct's sub-field schema, the data type is Array or ArrayOfVector, the typeParams
+            // contains a "max_capacity" value
+            // reset data type to element type, remove the "max_capacity" from typeParams
+            field.setDataType(ConvertUtils.toSdkDataType(fieldSchema.getElementType()));
+            field.setElementType(io.milvus.v2.common.DataType.None);
+            Map<String, String> params = field.getTypeParams();
+            params.remove(ARRAY_MAX_CAPACITY);
+            field.setTypeParams(params);
+            field.setMaxCapacity(0);
+            fields.add(field);
+        }
+        builder.fields(fields);
+        return builder.build();
     }
 
     public static CreateCollectionReq.Function convertFromGrpcFunction(FunctionSchema functionSchema) {
@@ -266,5 +340,53 @@ public class SchemaUtils {
         }
 
         return fieldSchema;
+    }
+
+    public static CreateCollectionReq.StructFieldSchema convertFieldReqToStructFieldSchema(AddFieldReq addFieldReq) {
+        List<CreateCollectionReq.FieldSchema> fields = addFieldReq.getStructFields();
+        if (fields.isEmpty()) {
+            throw new ParamException("Struct field must have at least one field");
+        }
+        String structName = addFieldReq.getFieldName();
+        if (addFieldReq.getMaxCapacity() == null) {
+            String msg = String.format("maxCapacity not set for struct field: '%s'", structName);
+            throw new ParamException(msg);
+        }
+
+        Set<String> uniqueNames = new HashSet<>();
+        for (CreateCollectionReq.FieldSchema field : fields) {
+            String fieldName = field.getName();
+            uniqueNames.add(fieldName);
+            if (field.getIsPrimaryKey()) {
+                String msg = String.format("Field '%s' in struct '%s' cannot be primary key", fieldName, structName);
+                throw new ParamException(msg);
+            } else if (field.getIsPartitionKey()) {
+                String msg = String.format("Field '%s' in struct '%s' cannot be partition key", fieldName, structName);
+                throw new ParamException(msg);
+            } else if (field.getIsClusteringKey()) {
+                String msg = String.format("Field '%s' in struct '%s' cannot be clustering key", fieldName, structName);
+                throw new ParamException(msg);
+            } else if (field.getAutoID()) {
+                String msg = String.format("Field '%s' in struct '%s' cannot be auto-id", fieldName, structName);
+                throw new ParamException(msg);
+            } else if (field.getIsNullable()) {
+                String msg = String.format("Field '%s' in struct '%s' cannot be nullable", fieldName, structName);
+                throw new ParamException(msg);
+            } else if (field.getDefaultValue() != null) {
+                String msg = String.format("Field '%s' in struct '%s' cannot have default value", fieldName, structName);
+                throw new ParamException(msg);
+            }
+        }
+        if (uniqueNames.size() != fields.size()) {
+            String msg = String.format("Duplicate field names in struct '%s'", structName);
+            throw new ParamException(msg);
+        }
+
+        return CreateCollectionReq.StructFieldSchema.builder()
+                .name(addFieldReq.getFieldName())
+                .description(addFieldReq.getDescription())
+                .fields(fields)
+                .maxCapacity(addFieldReq.getMaxCapacity())
+                .build();
     }
 }
