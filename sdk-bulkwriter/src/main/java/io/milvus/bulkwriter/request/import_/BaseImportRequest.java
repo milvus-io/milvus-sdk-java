@@ -34,7 +34,8 @@ import java.util.Map;
 public class BaseImportRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
-     * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
+     * If you are calling the cloud API, this parameter should be set to your API_KEY.
+     * If you are using Milvus directly, this parameter should be set to your userName:password.
      */
     private String apiKey;
 
