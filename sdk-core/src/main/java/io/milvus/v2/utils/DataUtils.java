@@ -27,6 +27,7 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.vector.request.DeleteReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.UpsertReq;
 import lombok.Builder;
@@ -237,5 +238,23 @@ public class DataUtils {
     public static class InsertDataInfo {
         private final CreateCollectionReq.FieldSchema field;
         private final LinkedList<Object> data;
+    }
+
+    public DeleteRequest ConvertToGrpcDeleteRequest(DeleteReq request) {
+        DeleteRequest.Builder builder = DeleteRequest.newBuilder()
+                .setCollectionName(request.getCollectionName())
+                .setPartitionName(request.getPartitionName())
+                .setExpr(request.getFilter());
+        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
+            Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
+            filterTemplateValues.forEach((key, value)->{
+                builder.putExprTemplateValues(key, VectorUtils.deduceAndCreateTemplateValue(value));
+            });
+        }
+        String dbName = request.getDatabaseName();
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        return builder.build();
     }
 }
