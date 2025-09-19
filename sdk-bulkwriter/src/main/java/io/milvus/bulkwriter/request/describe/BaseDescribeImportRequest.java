@@ -33,7 +33,8 @@ import java.io.Serializable;
 public class BaseDescribeImportRequest implements Serializable {
     private static final long serialVersionUID = -787626534606813089L;
     /**
-     * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
+     * If you are calling the cloud API, this parameter should be set to your API_KEY.
+     * If you are using Milvus directly, this parameter should be set to your userName:password.
      */
     private String apiKey;
 }
