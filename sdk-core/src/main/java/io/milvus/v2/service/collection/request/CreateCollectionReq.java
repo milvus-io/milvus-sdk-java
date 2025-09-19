@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection.request;
 
 import io.milvus.common.clientenum.FunctionType;
+import io.milvus.exception.ParamException;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -134,12 +135,18 @@ public class CreateCollectionReq {
         @Builder.Default
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
         @Builder.Default
+        private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
+        @Builder.Default
         private boolean enableDynamicField = false;
         @Builder.Default
         private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
-            fieldSchemaList.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            if (addFieldReq.getDataType() == DataType.Array && addFieldReq.getElementType() == DataType.Struct) {
+                structFields.add(SchemaUtils.convertFieldReqToStructFieldSchema(addFieldReq));
+            } else {
+                fieldSchemaList.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            }
             return this;
         }
 
@@ -216,6 +223,33 @@ public class CreateCollectionReq {
                 this.params$set = true;
                 return self();
             }
+        }
+    }
+
+    @Data
+    @SuperBuilder
+    public static class StructFieldSchema {
+        private String name;
+        @Builder.Default
+        private String description = "";
+        @Builder.Default
+        private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
+        private Integer maxCapacity;
+
+        public StructFieldSchema addField(AddFieldReq addFieldReq) {
+            if (addFieldReq.getDataType() == DataType.Array || addFieldReq.getElementType() == DataType.Struct) {
+                throw new ParamException("Struct field schema does not support Array, ArrayOfVector or Struct");
+            }
+            fields.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            return this;
+        }
+
+        public DataType getDataType() {
+            return DataType.Array;
+        }
+
+        public DataType getElementType() {
+            return DataType.Struct;
         }
     }
 }
