@@ -332,17 +332,8 @@ public class VectorService extends BaseService {
             DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
             request.setFilter(vectorUtils.getExprById(respR.getPrimaryFieldName(), request.getIds()));
         }
-        DeleteRequest.Builder builder = DeleteRequest.newBuilder()
-                .setCollectionName(collectionName)
-                .setPartitionName(request.getPartitionName())
-                .setExpr(request.getFilter());
-        if (request.getFilter() != null && !request.getFilter().isEmpty()) {
-            Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
-            filterTemplateValues.forEach((key, value)->{
-                builder.putExprTemplateValues(key, VectorUtils.deduceAndCreateTemplateValue(value));
-            });
-        }
-        MutationResult response = blockingStub.delete(builder.build());
+        DeleteRequest rpcRequest = dataUtils.ConvertToGrpcDeleteRequest(request);
+        MutationResult response = blockingStub.delete(rpcRequest);
 
         // if illegal data, server fails to process delete, clean the schema cache
         // so that the next call of dml can update the cache
