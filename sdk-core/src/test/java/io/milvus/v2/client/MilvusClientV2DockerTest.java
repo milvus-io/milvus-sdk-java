@@ -283,8 +283,9 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(arrStrOri, arrStr);
     }
 
-    private long getRowCount(String collectionName) {
+    private long getRowCount(String dbName, String collectionName) {
         QueryResp queryResp = client.query(QueryReq.builder()
+                .databaseName(dbName)
                 .collectionName(collectionName)
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
@@ -414,7 +415,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1, upsertResp.getUpsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count + 1, rowCount);
 
         // describe collection
@@ -638,7 +639,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
         // search in collection
@@ -807,7 +808,7 @@ class MilvusClientV2DockerTest {
         }
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
@@ -851,7 +852,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
         // search in collection
@@ -1156,7 +1157,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
         // search again, there are results
@@ -1175,6 +1176,12 @@ class MilvusClientV2DockerTest {
     @Test
     void testDeleteUpsert() {
         String randomCollectionName = generator.generate(10);
+
+        // create a new db
+        String testDbName = "test_delete_db";
+        client.createDatabase(CreateDatabaseReq.builder()
+                .databaseName(testDbName)
+                .build());
 
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .build();
@@ -1196,7 +1203,9 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.L2)
                 .extraParams(new HashMap<String,Object>(){{put("nlist", 64);}})
                 .build());
+        // create collection in the test db
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .databaseName(testDbName)
                 .collectionName(randomCollectionName)
                 .collectionSchema(collectionSchema)
                 .indexParams(indexParams)
@@ -1213,6 +1222,7 @@ class MilvusClientV2DockerTest {
         }
 
         InsertResp insertResp = client.insert(InsertReq.builder()
+                .databaseName(testDbName)
                 .collectionName(randomCollectionName)
                 .data(data)
                 .build());
@@ -1220,13 +1230,14 @@ class MilvusClientV2DockerTest {
 
         // delete
         DeleteResp deleteResp = client.delete(DeleteReq.builder()
+                .databaseName(testDbName)
                 .collectionName(randomCollectionName)
                 .ids(Arrays.asList("pk_5", "pk_8"))
                 .build());
         Assertions.assertEquals(2, deleteResp.getDeleteCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount(testDbName, randomCollectionName);
         Assertions.assertEquals(8L, rowCount);
 
         // upsert
@@ -1240,6 +1251,7 @@ class MilvusClientV2DockerTest {
         row2.add("float_vector", JsonUtils.toJsonTree(new float[]{2.0f, 2.0f, 2.0f, 2.0f}));
         dataUpdate.add(row2);
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                .databaseName(testDbName)
                 .collectionName(randomCollectionName)
                 .data(dataUpdate)
                 .build());
@@ -1247,11 +1259,12 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(2, upsertResp.getPrimaryKeys().size());
 
         // get row count
-        rowCount = getRowCount(randomCollectionName);
+        rowCount = getRowCount(testDbName, randomCollectionName);
         Assertions.assertEquals(9L, rowCount);
 
         // verify
         QueryResp queryResp = client.query(QueryReq.builder()
+                .databaseName(testDbName)
                 .collectionName(randomCollectionName)
                 .ids(Arrays.asList("pk_2", "pk_5"))
                 .outputFields(Collections.singletonList("*"))
@@ -1281,7 +1294,10 @@ class MilvusClientV2DockerTest {
             Assertions.assertEquals(5.0f, f);
         }
 
-        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+        client.dropCollection(DropCollectionReq.builder()
+                .databaseName(testDbName)
+                .collectionName(randomCollectionName)
+                .build());
     }
 
     @Test
@@ -1615,7 +1631,7 @@ class MilvusClientV2DockerTest {
         String randomCollectionName = generator.generate(10);
 
         // create a new db
-        String testDbName = "test_database";
+        String testDbName = "test_cache_db";
         client.createDatabase(CreateDatabaseReq.builder()
                 .databaseName(testDbName)
                 .build());
@@ -1789,7 +1805,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
         // search iterator
@@ -2113,7 +2129,7 @@ class MilvusClientV2DockerTest {
     @Test
     void testClientPool() {
         // create a temp database
-        String dummyDb = "dummy_db";
+        String dummyDb = "test_pool_db";
         client.createDatabase(CreateDatabaseReq.builder()
                 .databaseName(dummyDb)
                 .build());
@@ -2557,7 +2573,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(3, insertResp.getInsertCnt());
 
         // get row count
-        long rowCount = getRowCount(randomCollectionName);
+        long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(texts.size(), rowCount);
 
         // search
@@ -2901,7 +2917,7 @@ class MilvusClientV2DockerTest {
         String vectorName = "vector";
         int dim = 4;
         String defaultDbName = "default";
-        String tempDbName = "db_for_level";
+        String tempDbName = "test_level_db";
 
         // create a temp database
         client.createDatabase(CreateDatabaseReq.builder()
