@@ -23,23 +23,34 @@ import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.*;
 
 /**
  * The Average Weighted Scoring reranking strategy, which prioritizes vectors based on relevance,
  * averaging their significance.
  */
-@Getter
-@ToString
 public class WeightedRanker extends BaseRanker {
     private final List<Float> weights;
 
-    private WeightedRanker(@NonNull Builder builder) {
+    private WeightedRanker(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.weights = builder.weights;
+    }
+
+    // Getter method to replace @Getter annotation
+    public List<Float> getWeights() {
+        return weights;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "WeightedRanker{" +
+                "weights=" + weights +
+                '}';
     }
 
     @Override
@@ -75,7 +86,11 @@ public class WeightedRanker extends BaseRanker {
          * @param weights weight values
          * @return <code>Builder</code>
          */
-        public Builder withWeights(@NonNull List<Float> weights) {
+        public Builder withWeights(List<Float> weights) {
+            // Replace @NonNull logic with explicit null check
+            if (weights == null) {
+                throw new IllegalArgumentException("weights cannot be null");
+            }
             this.weights = weights;
             return this;
         }

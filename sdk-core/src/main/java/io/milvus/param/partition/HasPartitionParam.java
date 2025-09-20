@@ -22,21 +22,19 @@ package io.milvus.param.partition;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>hasPartition</code> interface.
  */
-@Getter
-@ToString
 public class HasPartitionParam {
     private final String databaseName;
     private final String collectionName;
     private final String partitionName;
 
-    private HasPartitionParam(@NonNull Builder builder) {
+    private HasPartitionParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -44,6 +42,29 @@ public class HasPartitionParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "HasPartitionParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
     }
 
     /**
@@ -74,7 +95,11 @@ public class HasPartitionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -85,7 +110,11 @@ public class HasPartitionParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder withPartitionName(@NonNull String partitionName) {
+        public Builder withPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             this.partitionName = partitionName;
             return this;
         }

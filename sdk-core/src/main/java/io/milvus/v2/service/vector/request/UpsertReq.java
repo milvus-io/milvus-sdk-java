@@ -53,12 +53,14 @@ public class UpsertReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
+    private boolean partialUpdate;
 
     private UpsertReq(Builder builder) {
         this.data = builder.data;
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+        this.partialUpdate = builder.partialUpdate;
     }
 
     public static Builder builder() {
@@ -97,12 +99,21 @@ public class UpsertReq {
         this.partitionName = partitionName;
     }
 
+    public boolean isPartialUpdate() {
+        return partialUpdate;
+    }
+
+    public void setPartialUpdate(boolean partialUpdate) {
+        this.partialUpdate = partialUpdate;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         UpsertReq that = (UpsertReq) obj;
         return new EqualsBuilder()
+                .append(partialUpdate, that.partialUpdate)
                 .append(data, that.data)
                 .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
@@ -117,6 +128,7 @@ public class UpsertReq {
                 .append(databaseName)
                 .append(collectionName)
                 .append(partitionName)
+                .append(partialUpdate)
                 .toHashCode();
     }
 
@@ -127,6 +139,7 @@ public class UpsertReq {
                 ", databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
+                ", partialUpdate=" + partialUpdate +
                 '}';
     }
 
@@ -135,6 +148,7 @@ public class UpsertReq {
         private String databaseName = "";
         private String collectionName;
         private String partitionName = "";
+        private boolean partialUpdate = false; // default value
 
         public Builder data(List<JsonObject> data) {
             this.data = data;
@@ -153,6 +167,11 @@ public class UpsertReq {
 
         public Builder partitionName(String partitionName) {
             this.partitionName = partitionName;
+            return this;
+        }
+
+        public Builder partialUpdate(boolean partialUpdate) {
+            this.partialUpdate = partialUpdate;
             return this;
         }
 

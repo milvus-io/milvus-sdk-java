@@ -23,23 +23,22 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>describeIndex</code> interface.
  */
-@Getter
-@ToString
 public class DescribeIndexParam {
     private final String databaseName;
     private final String collectionName;
     private final String indexName;
     private final String fieldName;
 
-    private DescribeIndexParam(@NonNull Builder builder) {
+    private DescribeIndexParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
@@ -48,6 +47,34 @@ public class DescribeIndexParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "DescribeIndexParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                '}';
     }
 
     /**
@@ -79,7 +106,11 @@ public class DescribeIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }

@@ -29,9 +29,6 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.UpsertReq;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -42,8 +39,11 @@ public class DataUtils {
         private InsertRequest.Builder insertBuilder;
         private UpsertRequest.Builder upsertBuilder;
 
-        public InsertRequest convertGrpcInsertRequest(@NonNull InsertReq requestParam,
+        public InsertRequest convertGrpcInsertRequest(InsertReq requestParam,
                                                       DescribeCollectionResp descColl) {
+            if (requestParam == null) {
+                throw new NullPointerException("requestParam cannot be null");
+            }
             String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
 
@@ -61,8 +61,11 @@ public class DataUtils {
             return insertBuilder.build();
         }
 
-        public UpsertRequest convertGrpcUpsertRequest(@NonNull UpsertReq requestParam,
+        public UpsertRequest convertGrpcUpsertRequest(UpsertReq requestParam,
                                                       DescribeCollectionResp descColl) {
+            if (requestParam == null) {
+                throw new NullPointerException("requestParam cannot be null");
+            }
             String dbName = requestParam.getDatabaseName();
             String collectionName = requestParam.getCollectionName();
 
@@ -71,6 +74,7 @@ public class DataUtils {
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
+                    .setPartialUpdate(requestParam.isPartialUpdate())
                     .setNumRows(requestParam.getData().size());
             if (StringUtils.isNotEmpty(dbName)) {
                 upsertBuilder.setDbName(dbName);
@@ -121,7 +125,7 @@ public class DataUtils {
 
             // convert insert data
             List<JsonObject> rowFields = requestParam.getData();
-            checkAndSetRowData(descColl, rowFields);
+            checkAndSetRowData(descColl, rowFields, requestParam.isPartialUpdate());
         }
 
         private void fillFieldsData(InsertReq requestParam, DescribeCollectionResp descColl) {
@@ -138,10 +142,10 @@ public class DataUtils {
 
             // convert insert data
             List<JsonObject> rowFields = requestParam.getData();
-            checkAndSetRowData(descColl, rowFields);
+            checkAndSetRowData(descColl, rowFields, false);
         }
 
-        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows) {
+        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows, boolean partialUpdate) {
             CreateCollectionReq.CollectionSchema collectionSchema = descColl.getCollectionSchema();
             List<CreateCollectionReq.Function> functionsList = collectionSchema.getFunctionList();
             List<String> outputFieldNames = new ArrayList<>();
@@ -177,7 +181,8 @@ public class DataUtils {
                         }
 
                         // if the field doesn't have default value, require user provide the value
-                        if (!field.getIsNullable() && field.getDefaultValue() == null) {
+                        // in v2.6.1 support partial update, user can input partial fields
+                        if (!field.getIsNullable() && field.getDefaultValue() == null && !partialUpdate) {
                             String msg = String.format("The field: %s is not provided.", field.getName());
                             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                         }
@@ -230,10 +235,48 @@ public class DataUtils {
         }
     }
 
-    @Builder
-    @Getter
     public static class InsertDataInfo {
         private final CreateCollectionReq.FieldSchema field;
         private final LinkedList<Object> data;
+
+        private InsertDataInfo(CreateCollectionReq.FieldSchema field, LinkedList<Object> data) {
+            this.field = field;
+            this.data = data;
+        }
+
+        public CreateCollectionReq.FieldSchema getField() {
+            return field;
+        }
+
+        public LinkedList<Object> getData() {
+            return data;
+        }
+
+        public static InsertDataInfoBuilder builder() {
+            return new InsertDataInfoBuilder();
+        }
+
+        public static class InsertDataInfoBuilder {
+            private CreateCollectionReq.FieldSchema field;
+            private LinkedList<Object> data;
+
+            private InsertDataInfoBuilder() {
+            }
+
+            public InsertDataInfoBuilder field(CreateCollectionReq.FieldSchema field) {
+                this.field = field;
+                return this;
+            }
+
+            public InsertDataInfoBuilder data(LinkedList<Object> data) {
+                this.data = data;
+                return this;
+            }
+
+            public InsertDataInfo build() {
+                return new InsertDataInfo(field, data);
+            }
+        }
     }
+
 }

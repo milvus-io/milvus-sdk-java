@@ -53,7 +53,12 @@ public class SearchReq {
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+    @Deprecated
     private CreateCollectionReq.Function ranker;
+    // milvus v2.6.1 supports multi-rankers. The "ranker" still works. It is recommended
+    // to use functionScore even you have only one ranker. Not allow to set both.
+    private FunctionScore functionScore;
+
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
     // The long list of city will increase the time cost to parse this expression.
@@ -87,6 +92,7 @@ public class SearchReq {
         this.groupSize = builder.groupSize;
         this.strictGroupSize = builder.strictGroupSize;
         this.ranker = builder.ranker;
+        this.functionScore = builder.functionScore;
         this.filterTemplateValues = builder.filterTemplateValues;
     }
 
@@ -261,6 +267,14 @@ public class SearchReq {
         this.ranker = ranker;
     }
 
+    public FunctionScore getFunctionScore() {
+        return functionScore;
+    }
+
+    public void setFunctionScore(FunctionScore functionScore) {
+        this.functionScore = functionScore;
+    }
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -296,6 +310,7 @@ public class SearchReq {
                 .append(groupSize, searchReq.groupSize)
                 .append(strictGroupSize, searchReq.strictGroupSize)
                 .append(ranker, searchReq.ranker)
+                .append(functionScore, searchReq.functionScore)
                 .append(filterTemplateValues, searchReq.filterTemplateValues)
                 .isEquals();
     }
@@ -324,6 +339,7 @@ public class SearchReq {
                 .append(groupSize)
                 .append(strictGroupSize)
                 .append(ranker)
+                .append(functionScore)
                 .append(filterTemplateValues)
                 .toHashCode();
     }
@@ -352,6 +368,7 @@ public class SearchReq {
                 ", groupSize=" + groupSize +
                 ", strictGroupSize=" + strictGroupSize +
                 ", ranker=" + ranker +
+                ", functionScore=" + functionScore +
                 ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
@@ -382,6 +399,7 @@ public class SearchReq {
         private Integer groupSize;
         private Boolean strictGroupSize;
         private CreateCollectionReq.Function ranker;
+        private FunctionScore functionScore;
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
 
         private Builder() {}
@@ -492,6 +510,11 @@ public class SearchReq {
 
         public Builder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
+            return this;
+        }
+
+        public Builder functionScore(FunctionScore functionScore) {
+            this.functionScore = functionScore;
             return this;
         }
 

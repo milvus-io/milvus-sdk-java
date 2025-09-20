@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.utils;
+package io.milvus.common.utils;
 
 import java.net.URI;
 import java.net.URISyntaxException;

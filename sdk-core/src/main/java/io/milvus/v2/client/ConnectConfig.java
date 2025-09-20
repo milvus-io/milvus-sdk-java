@@ -28,6 +28,8 @@ import javax.net.ssl.SSLContext;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import io.milvus.common.utils.URLParser;
+
 public class ConnectConfig {
     private String uri;
     private String token;
@@ -50,6 +52,9 @@ public class ConnectConfig {
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
     private SSLContext sslContext;
+    // clientRequestId maintains a map for different threads, each thread can assign a specific id.
+    // the specific id is passed to the server, from the access log we can know which client calls the interface
+    private ThreadLocal<String> clientRequestId;
 
     // Constructor for builder
     private ConnectConfig(Builder builder) {
@@ -75,6 +80,7 @@ public class ConnectConfig {
         this.secure = builder.secure;
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
+        this.clientRequestId = builder.clientRequestId;
     }
 
     public static Builder builder() {
@@ -148,6 +154,14 @@ public class ConnectConfig {
 
     public SSLContext getSslContext() {
         return sslContext;
+    }
+
+    public ThreadLocal<String> getClientRequestId() {
+        return clientRequestId;
+    }
+
+    public String getProxyAddress() {
+        return proxyAddress;
     }
 
     // Setters
@@ -230,13 +244,17 @@ public class ConnectConfig {
         this.sslContext = sslContext;
     }
 
+    public void setClientRequestId(ThreadLocal<String> clientRequestId) {
+        this.clientRequestId = clientRequestId;
+    }
+
     public String getHost() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
     }
 
     public int getPort() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         int port = urlParser.getPort();
         if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
             port = 443;
@@ -254,7 +272,7 @@ public class ConnectConfig {
     }
 
     public String getDbName() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         return StringUtils.isNotEmpty(urlParser.getDatabase()) ? urlParser.getDatabase() : this.dbName;
     }
 
@@ -263,10 +281,6 @@ public class ConnectConfig {
             return true;
         }
         return secure;
-    }
-
-    public String getProxyAddress() {
-        return proxyAddress;
     }
 
     @Override
@@ -296,6 +310,7 @@ public class ConnectConfig {
                 .append(proxyAddress, that.proxyAddress)
                 .append(secure, that.secure)
                 .append(sslContext, that.sslContext)
+                .append(clientRequestId, that.clientRequestId)
                 .isEquals();
     }
 
@@ -321,6 +336,7 @@ public class ConnectConfig {
                 .append(secure)
                 .append(idleTimeoutMs)
                 .append(sslContext)
+                .append(clientRequestId)
                 .toHashCode();
     }
 
@@ -346,6 +362,7 @@ public class ConnectConfig {
                 ", secure=" + secure +
                 ", idleTimeoutMs=" + idleTimeoutMs +
                 ", sslContext=" + sslContext +
+                ", clientRequestId=" + clientRequestId +
                 '}';
     }
 
@@ -369,6 +386,7 @@ public class ConnectConfig {
         private Boolean secure = false;
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
+        private ThreadLocal<String> clientRequestId;
 
         public Builder uri(String uri) {
             if (uri == null) {
@@ -465,6 +483,11 @@ public class ConnectConfig {
 
         public Builder sslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
+            return this;
+        }
+
+        public Builder clientRequestId(ThreadLocal<String> clientRequestId) {
+            this.clientRequestId = clientRequestId;
             return this;
         }
 

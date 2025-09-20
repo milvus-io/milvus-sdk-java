@@ -21,24 +21,38 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class AddUserToRoleParam {
     private final String userName;
 
     private final String roleName;
 
-    private AddUserToRoleParam(@NonNull AddUserToRoleParam.Builder builder) {
+    private AddUserToRoleParam(AddUserToRoleParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.userName = builder.userName;
         this.roleName = builder.roleName;
     }
 
     public static AddUserToRoleParam.Builder newBuilder() {
         return new AddUserToRoleParam.Builder();
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    @Override
+    public String toString() {
+        return "AddUserToRoleParam{" +
+                "userName='" + userName + '\'' +
+                ", roleName='" + roleName + '\'' +
+                '}';
     }
 
     /**
@@ -57,7 +71,10 @@ public class AddUserToRoleParam {
          * @param userName userName
          * @return <code>Builder</code>
          */
-        public AddUserToRoleParam.Builder withUserName(@NonNull String userName) {
+        public AddUserToRoleParam.Builder withUserName(String userName) {
+            if (userName == null) {
+                throw new IllegalArgumentException("User name cannot be null");
+            }
             this.userName = userName;
             return this;
         }
@@ -68,7 +85,10 @@ public class AddUserToRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public AddUserToRoleParam.Builder withRoleName(@NonNull String roleName) {
+        public AddUserToRoleParam.Builder withRoleName(String roleName) {
+            if (roleName == null) {
+                throw new IllegalArgumentException("Role name cannot be null");
+            }
             this.roleName = roleName;
             return this;
         }

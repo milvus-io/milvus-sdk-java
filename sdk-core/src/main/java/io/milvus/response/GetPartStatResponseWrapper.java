@@ -22,7 +22,6 @@ package io.milvus.response;
 import io.milvus.grpc.GetPartitionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.Constant;
-import lombok.NonNull;
 
 import java.util.List;
 
@@ -32,7 +31,10 @@ import java.util.List;
 public class GetPartStatResponseWrapper {
     private final GetPartitionStatisticsResponse stat;
 
-    public GetPartStatResponseWrapper(@NonNull GetPartitionStatisticsResponse stat) {
+    public GetPartStatResponseWrapper(GetPartitionStatisticsResponse stat) {
+        if (stat == null) {
+            throw new IllegalArgumentException("GetPartitionStatisticsResponse cannot be null");
+        }
         this.stat = stat;
     }
 
@@ -51,5 +53,15 @@ public class GetPartStatResponseWrapper {
         }
 
         return 0;
+    }
+
+    /**
+     * Constructs a <code>String</code> by {@link GetPartStatResponseWrapper} instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "Partition Statistics{" + "row_count:" + getRowCount() + '}';
     }
 }

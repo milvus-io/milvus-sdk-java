@@ -26,9 +26,6 @@ import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
@@ -38,8 +35,6 @@ import java.util.SortedMap;
 /**
  * Parameters for <code>searchIterator</code> interface.
  */
-@Getter
-@ToString
 public class SearchIteratorParam {
     private final String databaseName;
     private final String collectionName;
@@ -63,7 +58,11 @@ public class SearchIteratorParam {
 
     private final long batchSize;
 
-    private SearchIteratorParam(@NonNull Builder builder) {
+    private SearchIteratorParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -89,6 +88,113 @@ public class SearchIteratorParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public String getMetricType() {
+        return metricType;
+    }
+
+    public String getVectorFieldName() {
+        return vectorFieldName;
+    }
+
+    public Long getTopK() {
+        return topK;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public List<String> getOutFields() {
+        return outFields;
+    }
+
+    public List<?> getVectors() {
+        return vectors;
+    }
+
+    public Long getNQ() {
+        return NQ;
+    }
+
+    public int getRoundDecimal() {
+        return roundDecimal;
+    }
+
+    public String getParams() {
+        return params;
+    }
+
+    public long getTravelTimestamp() {
+        return travelTimestamp;
+    }
+
+    public long getGuaranteeTimestamp() {
+        return guaranteeTimestamp;
+    }
+
+    public Long getGracefulTime() {
+        return gracefulTime;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public boolean isIgnoreGrowing() {
+        return ignoreGrowing;
+    }
+
+    public String getGroupByFieldName() {
+        return groupByFieldName;
+    }
+
+    public PlaceholderType getPlType() {
+        return plType;
+    }
+
+    public long getBatchSize() {
+        return batchSize;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "SearchIteratorParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionNames=" + partitionNames +
+                ", metricType='" + metricType + '\'' +
+                ", vectorFieldName='" + vectorFieldName + '\'' +
+                ", topK=" + topK +
+                ", expr='" + expr + '\'' +
+                ", outFields=" + outFields +
+                ", NQ=" + NQ +
+                ", roundDecimal=" + roundDecimal +
+                ", params='" + params + '\'' +
+                ", travelTimestamp=" + travelTimestamp +
+                ", guaranteeTimestamp=" + guaranteeTimestamp +
+                ", gracefulTime=" + gracefulTime +
+                ", consistencyLevel=" + consistencyLevel +
+                ", ignoreGrowing=" + ignoreGrowing +
+                ", groupByFieldName='" + groupByFieldName + '\'' +
+                ", plType=" + plType +
+                ", batchSize=" + batchSize +
+                '}';
     }
 
     /**
@@ -141,7 +247,11 @@ public class SearchIteratorParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -152,7 +262,11 @@ public class SearchIteratorParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("partitionNames cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -174,7 +288,11 @@ public class SearchIteratorParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }
@@ -187,7 +305,11 @@ public class SearchIteratorParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            // Replace @NonNull logic with explicit null check
+            if (metricType == null) {
+                throw new IllegalArgumentException("metricType cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -198,7 +320,11 @@ public class SearchIteratorParam {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
-        public Builder withVectorFieldName(@NonNull String vectorFieldName) {
+        public Builder withVectorFieldName(String vectorFieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (vectorFieldName == null) {
+                throw new IllegalArgumentException("vectorFieldName cannot be null");
+            }
             this.vectorFieldName = vectorFieldName;
             return this;
         }
@@ -211,12 +337,20 @@ public class SearchIteratorParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withTopK(@NonNull Integer topK) {
+        public Builder withTopK(Integer topK) {
+            // Replace @NonNull logic with explicit null check
+            if (topK == null) {
+                throw new IllegalArgumentException("topK cannot be null");
+            }
             this.topK = topK.longValue();
             return this;
         }
 
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.topK = limit;
             return this;
         }
@@ -228,7 +362,11 @@ public class SearchIteratorParam {
          * @param expr filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withExpr(@NonNull String expr) {
+        public Builder withExpr(String expr) {
+            // Replace @NonNull logic with explicit null check
+            if (expr == null) {
+                throw new IllegalArgumentException("expr cannot be null");
+            }
             this.expr = expr;
             return this;
         }
@@ -239,7 +377,11 @@ public class SearchIteratorParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutFields(@NonNull List<String> outFields) {
+        public Builder withOutFields(List<String> outFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outFields == null) {
+                throw new IllegalArgumentException("outFields cannot be null");
+            }
             outFields.forEach(this::addOutField);
             return this;
         }
@@ -250,7 +392,11 @@ public class SearchIteratorParam {
          * @param fieldName filed name
          * @return <code>Builder</code>
          */
-        public Builder addOutField(@NonNull String fieldName) {
+        public Builder addOutField(String fieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (fieldName == null) {
+                throw new IllegalArgumentException("fieldName cannot be null");
+            }
             if (!this.outFields.contains(fieldName)) {
                 this.outFields.add(fieldName);
             }
@@ -271,7 +417,11 @@ public class SearchIteratorParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withVectors(@NonNull List<?> vectors) {
+        public Builder withVectors(List<?> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             return this;
@@ -283,7 +433,11 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
+        public Builder withFloatVectors(List<List<Float>> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.FloatVector;
@@ -296,7 +450,11 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBinaryVectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BinaryVector;
@@ -309,7 +467,11 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withFloat16Vectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.Float16Vector;
@@ -322,7 +484,11 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBFloat16Vectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BFloat16Vector;
@@ -335,7 +501,11 @@ public class SearchIteratorParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
+        public Builder withSparseFloatVectors(List<SortedMap<Long, Float>> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.SparseFloatVector;
@@ -348,7 +518,11 @@ public class SearchIteratorParam {
          * @param decimal how many digits after the decimal point
          * @return <code>Builder</code>
          */
-        public Builder withRoundDecimal(@NonNull Integer decimal) {
+        public Builder withRoundDecimal(Integer decimal) {
+            // Replace @NonNull logic with explicit null check
+            if (decimal == null) {
+                throw new IllegalArgumentException("decimal cannot be null");
+            }
             this.roundDecimal = decimal;
             return this;
         }
@@ -362,7 +536,11 @@ public class SearchIteratorParam {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
-        public Builder withParams(@NonNull String params) {
+        public Builder withParams(String params) {
+            // Replace @NonNull logic with explicit null check
+            if (params == null) {
+                throw new IllegalArgumentException("params cannot be null");
+            }
             this.params = params;
             return this;
         }
@@ -374,7 +552,11 @@ public class SearchIteratorParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
+        public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
+            // Replace @NonNull logic with explicit null check
+            if (ignoreGrowing == null) {
+                throw new IllegalArgumentException("ignoreGrowing cannot be null");
+            }
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
@@ -385,7 +567,11 @@ public class SearchIteratorParam {
          * @param groupByFieldName field name to do grouping
          * @return <code>Builder</code>
          */
-        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+        public Builder withGroupByFieldName(String groupByFieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (groupByFieldName == null) {
+                throw new IllegalArgumentException("groupByFieldName cannot be null");
+            }
             this.groupByFieldName = groupByFieldName;
             return this;
         }

@@ -21,21 +21,32 @@ package io.milvus.param.credential;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class DeleteCredentialParam {
     private final String username;
 
-    private DeleteCredentialParam(@NonNull DeleteCredentialParam.Builder builder) {
+    private DeleteCredentialParam(DeleteCredentialParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.username = builder.username;
     }
 
     public static DeleteCredentialParam.Builder newBuilder() {
         return new DeleteCredentialParam.Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public String getUsername() {
+        return username;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "DeleteCredentialParam{" +
+                "username='" + username + '\'' +
+                '}';
     }
 
     /**
@@ -53,7 +64,11 @@ public class DeleteCredentialParam {
          * @param username username
          * @return <code>Builder</code>
          */
-        public DeleteCredentialParam.Builder withUsername(@NonNull String username) {
+        public DeleteCredentialParam.Builder withUsername(String username) {
+            // Replace @NonNull logic with explicit null check
+            if (username == null) {
+                throw new IllegalArgumentException("username cannot be null");
+            }
             this.username = username;
             return this;
         }
@@ -69,5 +84,4 @@ public class DeleteCredentialParam {
             return new DeleteCredentialParam(this);
         }
     }
-
 }

@@ -19,17 +19,55 @@
 
 package io.milvus.param.highlevel.dml.response;
 
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.List;
 
 /**
  * Parameters for <code>insert</code> interface.
  */
-@Builder
-@Getter
 public class InsertResponse {
-    private Long insertCount;
+    private final Long insertCount;
     public List<?> insertIds;
+
+    private InsertResponse(Builder builder) {
+        this.insertCount = builder.insertCount;
+        this.insertIds = builder.insertIds;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public Long getInsertCount() {
+        return insertCount;
+    }
+
+    public List<?> getInsertIds() {
+        return insertIds;
+    }
+
+    /**
+     * Builder for {@link InsertResponse} class to replace @Builder annotation.
+     */
+    public static class Builder {
+        private Long insertCount;
+        private List<?> insertIds;
+
+        private Builder() {
+        }
+
+        public Builder insertCount(Long insertCount) {
+            this.insertCount = insertCount;
+            return this;
+        }
+
+        public Builder insertIds(List<?> insertIds) {
+            this.insertIds = insertIds;
+            return this;
+        }
+
+        public InsertResponse build() {
+            return new InsertResponse(this);
+        }
+    }
 }

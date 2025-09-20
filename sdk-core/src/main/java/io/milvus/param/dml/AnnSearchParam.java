@@ -24,10 +24,6 @@ import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.SortedMap;
@@ -35,7 +31,6 @@ import java.util.SortedMap;
 /**
  * Parameters for <code>hybridSearch</code> interface.
  */
-@Getter
 public class AnnSearchParam {
 
     private final String metricType;
@@ -47,7 +42,11 @@ public class AnnSearchParam {
     private final String params;
     private final PlaceholderType plType;
 
-    private AnnSearchParam(@NonNull Builder builder) {
+    private AnnSearchParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.metricType = builder.metricType.name();
         this.vectorFieldName = builder.vectorFieldName;
         this.topK = builder.topK;
@@ -60,6 +59,39 @@ public class AnnSearchParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getMetricType() {
+        return metricType;
+    }
+
+    public String getVectorFieldName() {
+        return vectorFieldName;
+    }
+
+    public Long getTopK() {
+        return topK;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public List<?> getVectors() {
+        return vectors;
+    }
+
+    public Long getNQ() {
+        return NQ;
+    }
+
+    public String getParams() {
+        return params;
+    }
+
+    public PlaceholderType getPlType() {
+        return plType;
     }
 
     /**
@@ -88,7 +120,11 @@ public class AnnSearchParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            // Replace @NonNull logic with explicit null check
+            if (metricType == null) {
+                throw new IllegalArgumentException("metricType cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -99,7 +135,11 @@ public class AnnSearchParam {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
-        public Builder withVectorFieldName(@NonNull String vectorFieldName) {
+        public Builder withVectorFieldName(String vectorFieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (vectorFieldName == null) {
+                throw new IllegalArgumentException("vectorFieldName cannot be null");
+            }
             this.vectorFieldName = vectorFieldName;
             return this;
         }
@@ -111,12 +151,20 @@ public class AnnSearchParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withTopK(@NonNull Integer topK) {
+        public Builder withTopK(Integer topK) {
+            // Replace @NonNull logic with explicit null check
+            if (topK == null) {
+                throw new IllegalArgumentException("topK cannot be null");
+            }
             this.topK = topK.longValue();
             return this;
         }
 
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.topK = limit;
             return this;
         }
@@ -128,7 +176,11 @@ public class AnnSearchParam {
          * @param expr filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withExpr(@NonNull String expr) {
+        public Builder withExpr(String expr) {
+            // Replace @NonNull logic with explicit null check
+            if (expr == null) {
+                throw new IllegalArgumentException("expr cannot be null");
+            }
             this.expr = expr;
             return this;
         }
@@ -139,7 +191,11 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
+        public Builder withFloatVectors(List<List<Float>> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.FloatVector;
@@ -152,7 +208,11 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBinaryVectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BinaryVector;
@@ -165,7 +225,11 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withFloat16Vectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.Float16Vector;
@@ -178,7 +242,11 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBFloat16Vectors(List<ByteBuffer> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BFloat16Vector;
@@ -191,7 +259,11 @@ public class AnnSearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
+        public Builder withSparseFloatVectors(List<SortedMap<Long, Float>> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.SparseFloatVector;
@@ -208,7 +280,11 @@ public class AnnSearchParam {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
-        public Builder withParams(@NonNull String params) {
+        public Builder withParams(String params) {
+            // Replace @NonNull logic with explicit null check
+            if (params == null) {
+                throw new IllegalArgumentException("params cannot be null");
+            }
             this.params = params;
             return this;
         }
@@ -227,7 +303,7 @@ public class AnnSearchParam {
             }
 
             if (vectors.isEmpty()) {
-                throw new ParamException("At lease a vector is required for AnnSearchParam");
+                throw new ParamException("At least a vector is required for AnnSearchParam");
             }
 
             SearchParam.verifyVectors(vectors);
@@ -250,7 +326,6 @@ public class AnnSearchParam {
                 ", expr='" + expr + '\'' +
                 ", topK=" + topK +
                 ", nq=" + NQ +
-                ", expr='" + expr + '\'' +
                 ", params='" + params + '\'' +
                 '}';
     }

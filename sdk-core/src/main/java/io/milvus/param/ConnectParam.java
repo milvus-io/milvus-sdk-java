@@ -19,10 +19,8 @@
 
 package io.milvus.param;
 
+import io.milvus.common.utils.URLParser;
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -36,8 +34,6 @@ import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_H
 /**
  * Parameters for client connection.
  */
-@Getter
-@ToString
 public class ConnectParam {
     private final String host;
     private final int port;
@@ -61,7 +57,10 @@ public class ConnectParam {
     private final ThreadLocal<String> clientRequestId;
     private final String proxyAddress;
 
-    protected ConnectParam(@NonNull Builder builder) {
+    protected ConnectParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.host = builder.host;
         this.port = builder.port;
         this.token = builder.token;
@@ -89,10 +88,120 @@ public class ConnectParam {
         return new Builder();
     }
 
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public long getConnectTimeoutMs() {
+        return connectTimeoutMs;
+    }
+
+    public long getKeepAliveTimeMs() {
+        return keepAliveTimeMs;
+    }
+
+    public long getKeepAliveTimeoutMs() {
+        return keepAliveTimeoutMs;
+    }
+
+    public boolean isKeepAliveWithoutCalls() {
+        return keepAliveWithoutCalls;
+    }
+
+    public long getRpcDeadlineMs() {
+        return rpcDeadlineMs;
+    }
+
+    public boolean isSecure() {
+        return secure;
+    }
+
+    public long getIdleTimeoutMs() {
+        return idleTimeoutMs;
+    }
+
+    public String getAuthorization() {
+        return authorization;
+    }
+
+    public String getClientKeyPath() {
+        return clientKeyPath;
+    }
+
+    public String getClientPemPath() {
+        return clientPemPath;
+    }
+
+    public String getCaPemPath() {
+        return caPemPath;
+    }
+
+    public String getServerPemPath() {
+        return serverPemPath;
+    }
+
+    public String getServerName() {
+        return serverName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public ThreadLocal<String> getClientRequestId() {
+        return clientRequestId;
+    }
+
+    public String getProxyAddress() {
+        return proxyAddress;
+    }
+
+    @Override
+    public String toString() {
+        return "ConnectParam{" +
+                "host='" + host + '\'' +
+                ", port=" + port +
+                ", databaseName='" + databaseName + '\'' +
+                ", uri='" + uri + '\'' +
+                ", token='" + token + '\'' +
+                ", connectTimeoutMs=" + connectTimeoutMs +
+                ", keepAliveTimeMs=" + keepAliveTimeMs +
+                ", keepAliveTimeoutMs=" + keepAliveTimeoutMs +
+                ", keepAliveWithoutCalls=" + keepAliveWithoutCalls +
+                ", rpcDeadlineMs=" + rpcDeadlineMs +
+                ", secure=" + secure +
+                ", idleTimeoutMs=" + idleTimeoutMs +
+                ", authorization='" + authorization + '\'' +
+                ", clientKeyPath='" + clientKeyPath + '\'' +
+                ", clientPemPath='" + clientPemPath + '\'' +
+                ", caPemPath='" + caPemPath + '\'' +
+                ", serverPemPath='" + serverPemPath + '\'' +
+                ", serverName='" + serverName + '\'' +
+                ", userName='" + userName + '\'' +
+                ", clientRequestId=" + clientRequestId +
+                ", proxyAddress='" + proxyAddress + '\'' +
+                '}';
+    }
+
     /**
      * Builder for {@link ConnectParam}
      */
-    @Getter
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
@@ -128,13 +237,100 @@ public class ConnectParam {
         protected Builder() {
         }
 
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getDatabaseName() {
+            return databaseName;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public long getConnectTimeoutMs() {
+            return connectTimeoutMs;
+        }
+
+        public long getKeepAliveTimeMs() {
+            return keepAliveTimeMs;
+        }
+
+        public long getKeepAliveTimeoutMs() {
+            return keepAliveTimeoutMs;
+        }
+
+        public boolean isKeepAliveWithoutCalls() {
+            return keepAliveWithoutCalls;
+        }
+
+        public long getRpcDeadlineMs() {
+            return rpcDeadlineMs;
+        }
+
+        public String getClientKeyPath() {
+            return clientKeyPath;
+        }
+
+        public String getClientPemPath() {
+            return clientPemPath;
+        }
+
+        public String getCaPemPath() {
+            return caPemPath;
+        }
+
+        public String getServerPemPath() {
+            return serverPemPath;
+        }
+
+        public String getServerName() {
+            return serverName;
+        }
+
+        public boolean isSecure() {
+            return secure;
+        }
+
+        public long getIdleTimeoutMs() {
+            return idleTimeoutMs;
+        }
+
+        public String getAuthorization() {
+            return authorization;
+        }
+
+        public String getUserName() {
+            return userName;
+        }
+
+        public ThreadLocal<String> getClientRequestId() {
+            return clientRequestId;
+        }
+
+        public String getProxyAddress() {
+            return proxyAddress;
+        }
+
         /**
          * Sets the host name/address.
          *
          * @param host host name/address
          * @return <code>Builder</code>
          */
-        public Builder withHost(@NonNull String host) {
+        public Builder withHost(String host) {
+            if (host == null) {
+                throw new IllegalArgumentException("Host cannot be null");
+            }
             this.host = host;
             return this;
         }
@@ -190,7 +386,10 @@ public class ConnectParam {
          * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
-        public Builder withConnectTimeout(long connectTimeout, @NonNull TimeUnit timeUnit) {
+        public Builder withConnectTimeout(long connectTimeout, TimeUnit timeUnit) {
+            if (timeUnit == null) {
+                throw new IllegalArgumentException("TimeUnit cannot be null");
+            }
             this.connectTimeoutMs = timeUnit.toMillis(connectTimeout);
             return this;
         }
@@ -203,7 +402,10 @@ public class ConnectParam {
          * @param timeUnit keep-alive unit
          * @return <code>Builder</code>
          */
-        public Builder withKeepAliveTime(long keepAliveTime, @NonNull TimeUnit timeUnit) {
+        public Builder withKeepAliveTime(long keepAliveTime, TimeUnit timeUnit) {
+            if (timeUnit == null) {
+                throw new IllegalArgumentException("TimeUnit cannot be null");
+            }
             this.keepAliveTimeMs = timeUnit.toMillis(keepAliveTime);
             return this;
         }
@@ -216,7 +418,10 @@ public class ConnectParam {
          * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
-        public Builder withKeepAliveTimeout(long keepAliveTimeout, @NonNull TimeUnit timeUnit) {
+        public Builder withKeepAliveTimeout(long keepAliveTimeout, TimeUnit timeUnit) {
+            if (timeUnit == null) {
+                throw new IllegalArgumentException("TimeUnit cannot be null");
+            }
             this.keepAliveTimeoutMs = timeUnit.toMillis(keepAliveTimeout);
             return this;
         }
@@ -253,7 +458,10 @@ public class ConnectParam {
          * @param timeUnit timeout unit
          * @return <code>Builder</code>
          */
-        public Builder withIdleTimeout(long idleTimeout, @NonNull TimeUnit timeUnit) {
+        public Builder withIdleTimeout(long idleTimeout, TimeUnit timeUnit) {
+            if (timeUnit == null) {
+                throw new IllegalArgumentException("TimeUnit cannot be null");
+            }
             this.idleTimeoutMs = timeUnit.toMillis(idleTimeout);
             return this;
         }
@@ -267,7 +475,10 @@ public class ConnectParam {
          * @param timeUnit deadline unit
          * @return <code>Builder</code>
          */
-        public Builder withRpcDeadline(long deadline, @NonNull TimeUnit timeUnit) {
+        public Builder withRpcDeadline(long deadline, TimeUnit timeUnit) {
+            if (timeUnit == null) {
+                throw new IllegalArgumentException("TimeUnit cannot be null");
+            }
             this.rpcDeadlineMs = timeUnit.toMillis(deadline);
             return this;
         }
@@ -303,7 +514,10 @@ public class ConnectParam {
          * @param authorization the encoded authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
-        public Builder withAuthorization(@NonNull String authorization) {
+        public Builder withAuthorization(String authorization) {
+            if (authorization == null) {
+                throw new IllegalArgumentException("Authorization cannot be null");
+            }
             this.authorization = authorization;
             return this;
         }
@@ -313,7 +527,10 @@ public class ConnectParam {
          * @param clientKeyPath path of client.key
          * @return <code>Builder</code>
          */
-        public Builder withClientKeyPath(@NonNull String clientKeyPath) {
+        public Builder withClientKeyPath(String clientKeyPath) {
+            if (clientKeyPath == null) {
+                throw new IllegalArgumentException("Client key path cannot be null");
+            }
             this.clientKeyPath = clientKeyPath;
             return this;
         }
@@ -323,7 +540,10 @@ public class ConnectParam {
          * @param clientPemPath path of client.pem
          * @return <code>Builder</code>
          */
-        public Builder withClientPemPath(@NonNull String clientPemPath) {
+        public Builder withClientPemPath(String clientPemPath) {
+            if (clientPemPath == null) {
+                throw new IllegalArgumentException("Client pem path cannot be null");
+            }
             this.clientPemPath = clientPemPath;
             return this;
         }
@@ -333,7 +553,10 @@ public class ConnectParam {
          * @param caPemPath path of ca.pem
          * @return <code>Builder</code>
          */
-        public Builder withCaPemPath(@NonNull String caPemPath) {
+        public Builder withCaPemPath(String caPemPath) {
+            if (caPemPath == null) {
+                throw new IllegalArgumentException("CA pem path cannot be null");
+            }
             this.caPemPath = caPemPath;
             return this;
         }
@@ -343,7 +566,10 @@ public class ConnectParam {
          * @param serverPemPath path of server.pem
          * @return <code>Builder</code>
          */
-        public Builder withServerPemPath(@NonNull String serverPemPath) {
+        public Builder withServerPemPath(String serverPemPath) {
+            if (serverPemPath == null) {
+                throw new IllegalArgumentException("Server pem path cannot be null");
+            }
             this.serverPemPath = serverPemPath;
             return this;
         }
@@ -354,12 +580,18 @@ public class ConnectParam {
          * @param serverName override name for SSL host
          * @return <code>Builder</code>
          */
-        public Builder withServerName(@NonNull String serverName) {
+        public Builder withServerName(String serverName) {
+            if (serverName == null) {
+                throw new IllegalArgumentException("Server name cannot be null");
+            }
             this.serverName = serverName;
             return this;
         }
 
-        public Builder withClientRequestId(@NonNull ThreadLocal<String> clientRequestId) {
+        public Builder withClientRequestId(ThreadLocal<String> clientRequestId) {
+            if (clientRequestId == null) {
+                throw new IllegalArgumentException("Client request id cannot be null");
+            }
             this.clientRequestId = clientRequestId;
             return this;
         }
@@ -389,7 +621,7 @@ public class ConnectParam {
         protected void verify() throws ParamException {
             ParamUtils.CheckNullEmptyString(host, "Host name");
             if (StringUtils.isNotEmpty(uri)) {
-                io.milvus.utils.URLParser result = new io.milvus.utils.URLParser(uri);
+                URLParser result = new URLParser(uri);
                 this.secure = result.isSecure();
                 this.host = result.getHostname();
                 this.port = result.getPort();

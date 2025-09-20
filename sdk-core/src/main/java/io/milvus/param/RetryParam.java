@@ -20,18 +20,10 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
-
 
 /**
  * Parameters for retry on failure.
  */
-@Getter
-@Setter
-@ToString
 public class RetryParam {
     private int maxRetryTimes;
     private long initialBackOffMs;
@@ -39,7 +31,10 @@ public class RetryParam {
     private int backOffMultiplier;
     private boolean retryOnRateLimit;
 
-    protected RetryParam(@NonNull Builder builder) {
+    protected RetryParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.maxRetryTimes = builder.maxRetryTimes;
         this.initialBackOffMs = builder.initialBackOffMs;
         this.maxBackOffMs = builder.maxBackOffMs;
@@ -51,10 +46,60 @@ public class RetryParam {
         return new Builder();
     }
 
+    public int getMaxRetryTimes() {
+        return maxRetryTimes;
+    }
+
+    public void setMaxRetryTimes(int maxRetryTimes) {
+        this.maxRetryTimes = maxRetryTimes;
+    }
+
+    public long getInitialBackOffMs() {
+        return initialBackOffMs;
+    }
+
+    public void setInitialBackOffMs(long initialBackOffMs) {
+        this.initialBackOffMs = initialBackOffMs;
+    }
+
+    public long getMaxBackOffMs() {
+        return maxBackOffMs;
+    }
+
+    public void setMaxBackOffMs(long maxBackOffMs) {
+        this.maxBackOffMs = maxBackOffMs;
+    }
+
+    public int getBackOffMultiplier() {
+        return backOffMultiplier;
+    }
+
+    public void setBackOffMultiplier(int backOffMultiplier) {
+        this.backOffMultiplier = backOffMultiplier;
+    }
+
+    public boolean isRetryOnRateLimit() {
+        return retryOnRateLimit;
+    }
+
+    public void setRetryOnRateLimit(boolean retryOnRateLimit) {
+        this.retryOnRateLimit = retryOnRateLimit;
+    }
+
+    @Override
+    public String toString() {
+        return "RetryParam{" +
+                "maxRetryTimes=" + maxRetryTimes +
+                ", initialBackOffMs=" + initialBackOffMs +
+                ", maxBackOffMs=" + maxBackOffMs +
+                ", backOffMultiplier=" + backOffMultiplier +
+                ", retryOnRateLimit=" + retryOnRateLimit +
+                '}';
+    }
+
     /**
-     * Builder for {@link ConnectParam}
+     * Builder for {@link RetryParam}
      */
-    @Getter
     public static class Builder {
         private int maxRetryTimes = 75;
         private long initialBackOffMs = 10;
@@ -63,6 +108,26 @@ public class RetryParam {
         private boolean retryOnRateLimit = true;
 
         protected Builder() {
+        }
+
+        public int getMaxRetryTimes() {
+            return maxRetryTimes;
+        }
+
+        public long getInitialBackOffMs() {
+            return initialBackOffMs;
+        }
+
+        public long getMaxBackOffMs() {
+            return maxBackOffMs;
+        }
+
+        public int getBackOffMultiplier() {
+            return backOffMultiplier;
+        }
+
+        public boolean isRetryOnRateLimit() {
+            return retryOnRateLimit;
         }
 
         /**

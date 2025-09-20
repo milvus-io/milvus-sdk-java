@@ -397,6 +397,17 @@ public class MilvusClientV2 {
     public DescribeCollectionResp describeCollection(DescribeCollectionReq request) {
         return rpcUtils.retry(()-> collectionService.describeCollection(this.getRpcStub(), request));
     }
+
+    /**
+     * Gets the collections info in Milvus.
+     *
+     * @param request describe collections request
+     * @return List<DescribeCollectionResp>
+     */
+    public List<DescribeCollectionResp> batchDescribeCollection(BatchDescribeCollectionReq request) {
+        return rpcUtils.retry(()-> collectionService.batchDescribeCollections(this.getRpcStub(), request));
+    }
+
     /**
      * get collection stats for a collection in Milvus.
      *

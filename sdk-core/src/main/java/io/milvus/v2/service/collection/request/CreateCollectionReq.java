@@ -1055,7 +1055,7 @@ public class CreateCollectionReq {
         }
 
         public static class FunctionBuilder {
-            private String name;
+            private String name = "";
             private String description = "";
             private FunctionType functionType = FunctionType.UNKNOWN;
             private List<String> inputFieldNames = new ArrayList<>();

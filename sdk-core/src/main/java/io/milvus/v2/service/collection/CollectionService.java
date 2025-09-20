@@ -183,11 +183,24 @@ public class CollectionService extends BaseService {
         ShowCollectionsRequest showCollectionsRequest = ShowCollectionsRequest.newBuilder()
                 .build();
         ShowCollectionsResponse response = blockingStub.showCollections(showCollectionsRequest);
-        ListCollectionsResp listCollectionsResp = ListCollectionsResp.builder()
-                .collectionNames(response.getCollectionNamesList())
-                .build();
 
-        return listCollectionsResp;
+        List<CollectionInfo> collectionInfos = new ArrayList<>();
+        for (int i = 0; i < response.getCollectionNamesCount(); i++) {
+            CollectionInfo collectionInfo = CollectionInfo.builder()
+                    .collectionName(response.getCollectionNames(i))
+                    .build();
+            // Milvus version >= 2.6.1 will additionally return shardNum
+            List<Integer> shardsNums = response.getShardsNumList();
+            if (CollectionUtils.isNotEmpty(shardsNums)) {
+                collectionInfo.setShardNum(response.getShardsNum(i));
+            }
+            collectionInfos.add(collectionInfo);
+        }
+
+        return ListCollectionsResp.builder()
+                .collectionNames(response.getCollectionNamesList())
+                .collectionInfos(collectionInfos)
+                .build();
     }
 
     public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
@@ -316,6 +329,19 @@ public class CollectionService extends BaseService {
         DescribeCollectionResponse response = blockingStub.describeCollection(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
         return convertUtils.convertDescCollectionResp(response);
+    }
+
+    public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
+        String title = String.format("BatchDescribeCollectionRequest collectionNames:%s, databaseName:%s", request.getCollectionNames(), request.getDatabaseName());
+        BatchDescribeCollectionRequest.Builder builder = BatchDescribeCollectionRequest.newBuilder()
+                .addAllCollectionName(request.getCollectionNames());
+        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
+            builder.setDbName(request.getDatabaseName());
+        }
+
+        BatchDescribeCollectionResponse response = blockingStub.batchDescribeCollection(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+        return convertUtils.convertDescCollectionsResp(response);
     }
 
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {

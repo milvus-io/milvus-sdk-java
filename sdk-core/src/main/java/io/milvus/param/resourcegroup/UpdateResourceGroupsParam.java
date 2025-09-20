@@ -25,10 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
-import lombok.NonNull;
-
-@Getter
 public class UpdateResourceGroupsParam {
     private final Map<String, ResourceGroupConfig> resourceGroups;
 
@@ -43,6 +39,10 @@ public class UpdateResourceGroupsParam {
         return new Builder();
     }
 
+    public Map<String, ResourceGroupConfig> getResourceGroups() {
+        return resourceGroups;
+    }
+
     /**
      * Builder for {@link UpdateResourceGroupsParam} class.
      * 
@@ -53,7 +53,13 @@ public class UpdateResourceGroupsParam {
         private Builder() {
         }
 
-        public Builder putResourceGroup(@NonNull String resourceGroupName, @NonNull ResourceGroupConfig resourceGroup) {
+        public Builder putResourceGroup(String resourceGroupName, ResourceGroupConfig resourceGroup) {
+            if (resourceGroupName == null) {
+                throw new IllegalArgumentException("Resource group name cannot be null");
+            }
+            if (resourceGroup == null) {
+                throw new IllegalArgumentException("Resource group cannot be null");
+            }
             if (null == this.resourceGroups) {
                 this.resourceGroups = new HashMap<>();
             }
@@ -76,7 +82,7 @@ public class UpdateResourceGroupsParam {
      * 
      * @return io.milvus.grpc.UpdateResourceGroupsRequest
      */
-    public @NonNull io.milvus.grpc.UpdateResourceGroupsRequest toGRPC() {
+    public io.milvus.grpc.UpdateResourceGroupsRequest toGRPC() {
         io.milvus.grpc.UpdateResourceGroupsRequest.Builder builder = io.milvus.grpc.UpdateResourceGroupsRequest
                 .newBuilder();
         resourceGroups.forEach((k, v) -> {
