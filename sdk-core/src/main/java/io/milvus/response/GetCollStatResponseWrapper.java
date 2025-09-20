@@ -22,7 +22,6 @@ package io.milvus.response;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.Constant;
-import lombok.NonNull;
 
 import java.util.List;
 
@@ -32,7 +31,10 @@ import java.util.List;
 public class GetCollStatResponseWrapper {
     private final GetCollectionStatisticsResponse stat;
 
-    public GetCollStatResponseWrapper(@NonNull GetCollectionStatisticsResponse stat) {
+    public GetCollStatResponseWrapper(GetCollectionStatisticsResponse stat) {
+        if (stat == null) {
+            throw new IllegalArgumentException("GetCollectionStatisticsResponse cannot be null");
+        }
         this.stat = stat;
     }
 
@@ -51,5 +53,15 @@ public class GetCollStatResponseWrapper {
         }
 
         return 0;
+    }
+
+    /**
+     * Construct a <code>String</code> by {@link GetCollStatResponseWrapper} instance.
+     *
+     * @return <code>String</code>
+     */
+    @Override
+    public String toString() {
+        return "Collection Statistics{" + "row_count:" + getRowCount() + '}';
     }
 }

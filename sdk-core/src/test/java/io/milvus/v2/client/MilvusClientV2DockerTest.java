@@ -55,6 +55,7 @@ import io.milvus.v2.service.resourcegroup.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
+import io.milvus.v2.service.vector.request.QueryReq; // 显式导入
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.*;
 import io.milvus.v2.service.vector.response.*;
@@ -2897,52 +2898,38 @@ class MilvusClientV2DockerTest {
                             .uri(milvus.getEndpoint())
                             .dbName(tempDbName)
                             .build();
-                    // fix tempClient not close bug
                     MilvusClientV2 tempClient = null;
                     try {
-
                         tempClient = new MilvusClientV2(config);
 
-                    for (int i = 0; i < 20; i++) {
-                        JsonObject row = new JsonObject();
-                        row.addProperty(pkName, i);
-                        row.add(vectorName, JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
-                        tempClient.insert(InsertReq.builder()
-                                .databaseName(dbName)
-                                .collectionName(randomCollectionName)
-                                .data(Collections.singletonList(row))
-                                .build());
+                        for (int i = 0; i < 20; i++) {
+                            JsonObject row = new JsonObject();
+                            row.addProperty(pkName, i);
+                            row.add(vectorName, JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
+                            tempClient.insert(InsertReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                    .data(Collections.singletonList(row)).build());
 
-                        // query/search/hybridSearch immediately after insert, data must be visible
-                        String filter = String.format("%s == %d", pkName, i);
-                        if (i % 3 == 0) {
-                            QueryResp queryResp = client.query(QueryReq.builder()
-                                    .databaseName(dbName)
-                                    .collectionName(randomCollectionName)
-                                    .filter(filter)
-                                    .outputFields(Collections.singletonList(pkName))
-                                    .build());
-                            List<QueryResp.QueryResult> oneResult = queryResp.getQueryResults();
-                            Assertions.assertEquals(1, oneResult.size());
-                        } else if (i % 2 == 0) {
-                            SearchResp searchResp = client.search(SearchReq.builder()
-                                    .databaseName(dbName)
-                                    .collectionName(randomCollectionName)
-                                    .annsField(vectorName)
-                                    .filter(filter)
-                                    .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
-                                    .limit(10)
-                                    .build());
-                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
-                            Assertions.assertEquals(1, oneResult.size());
-                            Assertions.assertEquals(1, oneResult.get(0).size());
-                        } else {
-                            AnnSearchReq subReq = AnnSearchReq.builder()
-                                    .vectorFieldName(vectorName)
-                                    .filter(filter)
-                                    .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
-                                    .limit(7)
-                                    .build();
+                            // query/search/hybridSearch immediately after insert, data must be visible
+                            String filter = String.format("%s == %d", pkName, i);
+                            if (i % 3 == 0) {
+                                QueryResp queryResp = client.query(
+                                        QueryReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                                .filter(filter).outputFields(Collections.singletonList(pkName)).build());
+                                List<QueryResp.QueryResult> oneResult = queryResp.getQueryResults();
+                                Assertions.assertEquals(1, oneResult.size());
+                            } else if (i % 2 == 0) {
+                                SearchResp searchResp = client.search(
+                                        SearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                                .annsField(vectorName).filter(filter)
+                                                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                                .limit(10).build());
+                                List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                                Assertions.assertEquals(1, oneResult.size());
+                                Assertions.assertEquals(1, oneResult.get(0).size());
+                            } else {
+                                AnnSearchReq subReq = AnnSearchReq.builder().vectorFieldName(vectorName).filter(filter)
+                                        .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                        .limit(7).build();
 
                                 SearchResp searchResp = client.hybridSearch(
                                         HybridSearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
@@ -2953,7 +2940,6 @@ class MilvusClientV2DockerTest {
                                 Assertions.assertEquals(1, oneResult.get(0).size());
                             }
                         }
-
                     } finally {
                         if (tempClient != null) {
                             tempClient.close();

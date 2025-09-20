@@ -20,27 +20,42 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 
 /**
  * Parameters for <code>getFlushAllState</code> interface.
  */
-@Getter
-@ToString
 public class GetFlushAllStateParam {
     private final String databaseName;
     private final long flushAllTs;
 
-    private GetFlushAllStateParam(@NonNull Builder builder) {
+    private GetFlushAllStateParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.flushAllTs = builder.flushAllTs;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public long getFlushAllTs() {
+        return flushAllTs;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetFlushAllStateParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", flushAllTs=" + flushAllTs +
+                '}';
     }
 
     /**
@@ -64,11 +79,14 @@ public class GetFlushAllStateParam {
             return this;
         }
 
-        public Builder withFlushAllTs(@NonNull Long flushAllTs) {
+        public Builder withFlushAllTs(Long flushAllTs) {
+            // Replace @NonNull logic with explicit null check
+            if (flushAllTs == null) {
+                throw new IllegalArgumentException("flushAllTs cannot be null");
+            }
             this.flushAllTs = flushAllTs;
             return this;
         }
-
 
         /**
          * Verifies parameters and creates a new {@link GetFlushAllStateParam} instance.
@@ -79,5 +97,4 @@ public class GetFlushAllStateParam {
             return new GetFlushAllStateParam(this);
         }
     }
-
 }

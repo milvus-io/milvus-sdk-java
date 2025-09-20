@@ -24,7 +24,6 @@ import io.milvus.grpc.GetImportStateResponse;
 import io.milvus.grpc.ImportState;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.Constant;
-import lombok.NonNull;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -36,7 +35,10 @@ import java.util.List;
 public class GetBulkInsertStateWrapper {
     private final GetImportStateResponse response;
 
-    public GetBulkInsertStateWrapper(@NonNull GetImportStateResponse response) {
+    public GetBulkInsertStateWrapper(GetImportStateResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("GetImportStateResponse cannot be null");
+        }
         this.response = response;
     }
 
@@ -159,7 +161,10 @@ public class GetBulkInsertStateWrapper {
         return Integer.parseInt(value);
     }
 
-    private String getInfo(@NonNull String key) {
+    private String getInfo(String key) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
+        }
         List<KeyValuePair> infos = response.getInfosList();
         for (KeyValuePair kv : infos) {
             if (kv.getKey().compareTo(key) == 0) {

@@ -23,9 +23,6 @@ import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.dml.InsertParam;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -33,16 +30,21 @@ import java.util.List;
 /**
  * Parameters for <code>insert</code> interface.
  */
-@Getter
 public class InsertRowsParam {
 
     private final InsertParam insertParam;
+    
     private InsertRowsParam(InsertParam insertParam) {
         this.insertParam = insertParam;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public InsertParam getInsertParam() {
+        return insertParam;
     }
 
     /**
@@ -62,7 +64,11 @@ public class InsertRowsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -94,7 +100,11 @@ public class InsertRowsParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
-        public Builder withRows(@NonNull List<JsonObject> rows) {
+        public Builder withRows(List<JsonObject> rows) {
+            // Replace @NonNull logic with explicit null check
+            if (rows == null) {
+                throw new IllegalArgumentException("rows cannot be null");
+            }
             this.rows = rows;
             return this;
         }

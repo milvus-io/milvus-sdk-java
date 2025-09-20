@@ -26,7 +26,6 @@ import io.milvus.grpc.*;
 import io.milvus.exception.IllegalResponseException;
 
 import io.milvus.param.ParamUtils;
-import lombok.NonNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -46,7 +45,10 @@ public class FieldDataWrapper {
     private final FieldData fieldData;
     private List<?> cacheData = null;
 
-    public FieldDataWrapper(@NonNull FieldData fieldData) {
+    public FieldDataWrapper(FieldData fieldData) {
+        if (fieldData == null) {
+            throw new IllegalArgumentException("FieldData cannot be null");
+        }
         this.fieldData = fieldData;
     }
 
@@ -403,6 +405,9 @@ public class FieldDataWrapper {
     }
 
     public static JsonElement ParseJSONObject(Object object) {
+        if (object == null) {
+            throw new IllegalResponseException("Object cannot be null");
+        }
         if (object instanceof String) {
             return JsonParser.parseString((String)object);
         } else if (object instanceof byte[]) {

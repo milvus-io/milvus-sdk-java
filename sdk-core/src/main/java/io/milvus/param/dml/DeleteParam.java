@@ -22,22 +22,20 @@ package io.milvus.param.dml;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>delete</code> interface.
  */
-@Getter
-@ToString
 public class DeleteParam {
     protected final String databaseName;
     private final String collectionName;
     private final String partitionName;
     private final String expr;
 
-    private DeleteParam(@NonNull Builder builder) {
+    private DeleteParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -46,6 +44,34 @@ public class DeleteParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "DeleteParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", expr='" + expr + '\'' +
+                '}';
     }
 
     /**
@@ -77,7 +103,11 @@ public class DeleteParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +118,11 @@ public class DeleteParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder withPartitionName(@NonNull String partitionName) {
+        public Builder withPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             this.partitionName = partitionName;
             return this;
         }
@@ -100,7 +134,11 @@ public class DeleteParam {
          * @param expr filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withExpr(@NonNull String expr) {
+        public Builder withExpr(String expr) {
+            // Replace @NonNull logic with explicit null check
+            if (expr == null) {
+                throw new IllegalArgumentException("expr cannot be null");
+            }
             this.expr = expr;
             return this;
         }

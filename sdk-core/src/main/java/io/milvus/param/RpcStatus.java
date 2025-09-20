@@ -19,12 +19,9 @@
 
 package io.milvus.param;
 
-import lombok.ToString;
-
 /**
  * Utility class to wrap a message.
  */
-@ToString
 public class RpcStatus {
     public static final String SUCCESS_MSG = "Success";
 
@@ -36,5 +33,10 @@ public class RpcStatus {
 
     public RpcStatus(String msg) {
         this.msg = msg;
+    }
+    
+    @Override
+    public String toString() {
+        return "RpcStatus(msg=" + msg + ")";
     }
 }

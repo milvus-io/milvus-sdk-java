@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.*;
 import com.google.gson.reflect.TypeToken;
 import io.grpc.StatusRuntimeException;
+import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.VectorUtils;
@@ -47,13 +48,12 @@ import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import io.milvus.response.*;
-import lombok.NonNull;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nonnull;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -415,7 +415,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     ///////////////////// API implementation //////////////////////
     @Override
-    public R<Boolean> hasCollection(@NonNull HasCollectionParam requestParam) {
+    public R<Boolean> hasCollection(HasCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -583,7 +584,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> createCollection(@NonNull CreateCollectionParam requestParam) {
+    public R<RpcStatus> createCollection(CreateCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -632,7 +634,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> dropCollection(@NonNull DropCollectionParam requestParam) {
+    public R<RpcStatus> dropCollection(DropCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -670,7 +673,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> loadCollection(@NonNull LoadCollectionParam requestParam) {
+    public R<RpcStatus> loadCollection(LoadCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -710,7 +714,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> releaseCollection(@NonNull ReleaseCollectionParam requestParam) {
+    public R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -771,7 +776,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<DescribeCollectionResponse> describeCollection(@NonNull DescribeCollectionParam requestParam) {
+    public R<DescribeCollectionResponse> describeCollection(DescribeCollectionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -800,7 +806,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetCollectionStatisticsResponse> getCollectionStatistics(@NonNull GetCollectionStatisticsParam requestParam) {
+    public R<GetCollectionStatisticsResponse> getCollectionStatistics(GetCollectionStatisticsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -842,7 +849,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<ShowCollectionsResponse> showCollections(@NonNull ShowCollectionsParam requestParam) {
+    public R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -911,7 +919,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
      * GetFlushState() to check related segments state.
      */
     @Override
-    public R<FlushResponse> flush(@NonNull FlushParam requestParam) {
+    public R<FlushResponse> flush(FlushParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -978,7 +987,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> createPartition(@NonNull CreatePartitionParam requestParam) {
+    public R<RpcStatus> createPartition(CreatePartitionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1009,7 +1019,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> dropPartition(@NonNull DropPartitionParam requestParam) {
+    public R<RpcStatus> dropPartition(DropPartitionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1040,7 +1051,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<Boolean> hasPartition(@NonNull HasPartitionParam requestParam) {
+    public R<Boolean> hasPartition(HasPartitionParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1072,7 +1084,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> loadPartitions(@NonNull LoadPartitionsParam requestParam) {
+    public R<RpcStatus> loadPartitions(LoadPartitionsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1114,7 +1127,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> releasePartitions(@NonNull ReleasePartitionsParam requestParam) {
+    public R<RpcStatus> releasePartitions(ReleasePartitionsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1144,7 +1158,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetPartitionStatisticsResponse> getPartitionStatistics(@NonNull GetPartitionStatisticsParam requestParam) {
+    public R<GetPartitionStatisticsResponse> getPartitionStatistics(GetPartitionStatisticsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1186,7 +1201,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<ShowPartitionsResponse> showPartitions(@NonNull ShowPartitionsParam requestParam) {
+    public R<ShowPartitionsResponse> showPartitions(ShowPartitionsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1216,7 +1232,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> createAlias(@NonNull CreateAliasParam requestParam) {
+    public R<RpcStatus> createAlias(CreateAliasParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1247,7 +1264,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> dropAlias(@NonNull DropAliasParam requestParam) {
+    public R<RpcStatus> dropAlias(DropAliasParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1276,7 +1294,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> alterAlias(@NonNull AlterAliasParam requestParam) {
+    public R<RpcStatus> alterAlias(AlterAliasParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1336,7 +1355,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> createIndex(@NonNull CreateIndexParam requestParam) {
+    public R<RpcStatus> createIndex(CreateIndexParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1399,7 +1419,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<RpcStatus> dropIndex(@NonNull DropIndexParam requestParam) {
+    public R<RpcStatus> dropIndex(DropIndexParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1430,7 +1451,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<DescribeIndexResponse> describeIndex(@NonNull DescribeIndexParam requestParam) {
+    public R<DescribeIndexResponse> describeIndex(DescribeIndexParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1464,7 +1486,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Deprecated
     // use DescribeIndex instead
     @Override
-    public R<GetIndexStateResponse> getIndexState(@NonNull GetIndexStateParam requestParam) {
+    public R<GetIndexStateResponse> getIndexState(GetIndexStateParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1497,7 +1520,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     @Deprecated
     // use DescribeIndex instead
     @Override
-    public R<GetIndexBuildProgressResponse> getIndexBuildProgress(@NonNull GetIndexBuildProgressParam requestParam) {
+    public R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1564,7 +1588,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<MutationResult> delete(@NonNull DeleteParam requestParam) {
+    public R<MutationResult> delete(DeleteParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1609,7 +1634,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<MutationResult> insert(@NonNull InsertParam requestParam) {
+    public R<MutationResult> insert(InsertParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1711,7 +1737,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
 
                     @Override
-                    public void onFailure(@Nonnull Throwable t) {
+                    public void onFailure(Throwable t) {
                         logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
@@ -1839,7 +1865,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
 
                     @Override
-                    public void onFailure(@Nonnull Throwable t) {
+                    public void onFailure(Throwable t) {
                         logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
@@ -1859,7 +1885,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<SearchResults> search(@NonNull SearchParam requestParam) {
+    public R<SearchResults> search(SearchParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1915,7 +1942,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
 
                     @Override
-                    public void onFailure(@Nonnull Throwable t) {
+                    public void onFailure(Throwable t) {
                         logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
@@ -1987,7 +2014,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
 
                     @Override
-                    public void onFailure(@Nonnull Throwable t) {
+                    public void onFailure(Throwable t) {
                         logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
@@ -2007,7 +2034,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<QueryResults> query(@NonNull QueryParam requestParam) {
+    public R<QueryResults> query(QueryParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -2072,7 +2100,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     }
 
                     @Override
-                    public void onFailure(@Nonnull Throwable t) {
+                    public void onFailure(Throwable t) {
                         logError("{} failed:\n{}", title, t.getMessage());
                     }
                 },
@@ -2092,7 +2120,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetMetricsResponse> getMetrics(@NonNull GetMetricsParam requestParam) {
+    public R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -2118,7 +2147,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetFlushStateResponse> getFlushState(@NonNull GetFlushStateParam requestParam) {
+    public R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -2177,7 +2207,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(@NonNull GetPersistentSegmentInfoParam requestParam) {
+    public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -2204,7 +2235,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     @Override
-    public R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(@NonNull GetQuerySegmentInfoParam requestParam) {
+    public R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }

@@ -21,12 +21,7 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class RevokeRolePrivilegeParam {
 
     private final String roleName;
@@ -39,7 +34,10 @@ public class RevokeRolePrivilegeParam {
 
     private final String databaseName;
 
-    private RevokeRolePrivilegeParam(@NonNull RevokeRolePrivilegeParam.Builder builder) {
+    private RevokeRolePrivilegeParam(RevokeRolePrivilegeParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.roleName = builder.roleName;
         this.object = builder.object;
         this.objectName = builder.objectName;
@@ -51,6 +49,37 @@ public class RevokeRolePrivilegeParam {
         return new RevokeRolePrivilegeParam.Builder();
     }
 
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public String getObject() {
+        return object;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public String getPrivilege() {
+        return privilege;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "RevokeRolePrivilegeParam{" +
+                "roleName='" + roleName + '\'' +
+                ", object='" + object + '\'' +
+                ", objectName='" + objectName + '\'' +
+                ", privilege='" + privilege + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
+    }
+
     /**
      * Builder for {@link RevokeRolePrivilegeParam} class.
      */
@@ -60,7 +89,6 @@ public class RevokeRolePrivilegeParam {
         private String objectName;
         private String privilege;
         private String databaseName;
-
 
         private Builder() {
         }
@@ -82,7 +110,10 @@ public class RevokeRolePrivilegeParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public RevokeRolePrivilegeParam.Builder withRoleName(@NonNull String roleName) {
+        public RevokeRolePrivilegeParam.Builder withRoleName(String roleName) {
+            if (roleName == null || roleName.isEmpty()) {
+                throw new IllegalArgumentException("Role name cannot be null or empty");
+            }
             this.roleName = roleName;
             return this;
         }
@@ -93,7 +124,10 @@ public class RevokeRolePrivilegeParam {
          * @param object object
          * @return <code>Builder</code>
          */
-        public RevokeRolePrivilegeParam.Builder withObject(@NonNull String object) {
+        public RevokeRolePrivilegeParam.Builder withObject(String object) {
+            if (object == null || object.isEmpty()) {
+                throw new IllegalArgumentException("Object cannot be null or empty");
+            }
             this.object = object;
             return this;
         }
@@ -104,7 +138,10 @@ public class RevokeRolePrivilegeParam {
          * @param objectName objectName
          * @return <code>Builder</code>
          */
-        public RevokeRolePrivilegeParam.Builder withObjectName(@NonNull String objectName) {
+        public RevokeRolePrivilegeParam.Builder withObjectName(String objectName) {
+            if (objectName == null || objectName.isEmpty()) {
+                throw new IllegalArgumentException("Object name cannot be null or empty");
+            }
             this.objectName = objectName;
             return this;
         }
@@ -115,7 +152,10 @@ public class RevokeRolePrivilegeParam {
          * @param privilege privilege
          * @return <code>Builder</code>
          */
-        public RevokeRolePrivilegeParam.Builder withPrivilege(@NonNull String privilege) {
+        public RevokeRolePrivilegeParam.Builder withPrivilege(String privilege) {
+            if (privilege == null || privilege.isEmpty()) {
+                throw new IllegalArgumentException("Privilege cannot be null or empty");
+            }
             this.privilege = privilege;
             return this;
         }
