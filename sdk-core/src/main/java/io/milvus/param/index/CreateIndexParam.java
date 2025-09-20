@@ -24,9 +24,6 @@ import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -36,8 +33,6 @@ import java.util.Objects;
 /**
  * Parameters for <code>createIndex</code> interface.
  */
-@Getter
-@ToString
 public class CreateIndexParam {
     private final String databaseName;
     private final String collectionName;
@@ -49,7 +44,11 @@ public class CreateIndexParam {
     private final long syncWaitingInterval;
     private final long syncWaitingTimeout;
 
-    private CreateIndexParam(@NonNull Builder builder) {
+    private CreateIndexParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
@@ -71,6 +70,59 @@ public class CreateIndexParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public IndexType getIndexType() {
+        return indexType;
+    }
+
+    public Map<String, String> getExtraParam() {
+        return extraParam;
+    }
+
+    public boolean isSyncMode() {
+        return syncMode;
+    }
+
+    public long getSyncWaitingInterval() {
+        return syncWaitingInterval;
+    }
+
+    public long getSyncWaitingTimeout() {
+        return syncWaitingTimeout;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "CreateIndexParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", fieldName='" + fieldName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                ", indexType=" + indexType +
+                ", extraParam=" + extraParam +
+                ", syncMode=" + syncMode +
+                ", syncWaitingInterval=" + syncWaitingInterval +
+                ", syncWaitingTimeout=" + syncWaitingTimeout +
+                '}';
     }
 
     /**
@@ -119,7 +171,11 @@ public class CreateIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -130,7 +186,11 @@ public class CreateIndexParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
-        public Builder withFieldName(@NonNull String fieldName) {
+        public Builder withFieldName(String fieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (fieldName == null) {
+                throw new IllegalArgumentException("fieldName cannot be null");
+            }
             this.fieldName = fieldName;
             return this;
         }
@@ -141,7 +201,11 @@ public class CreateIndexParam {
          * @param indexType index type
          * @return <code>Builder</code>
          */
-        public Builder withIndexType(@NonNull IndexType indexType) {
+        public Builder withIndexType(IndexType indexType) {
+            // Replace @NonNull logic with explicit null check
+            if (indexType == null) {
+                throw new IllegalArgumentException("indexType cannot be null");
+            }
             this.indexType = indexType;
             return this;
         }
@@ -153,7 +217,11 @@ public class CreateIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withIndexName(@NonNull String indexName) {
+        public Builder withIndexName(String indexName) {
+            // Replace @NonNull logic with explicit null check
+            if (indexName == null) {
+                throw new IllegalArgumentException("indexName cannot be null");
+            }
             this.indexName = indexName;
             return this;
         }
@@ -164,7 +232,11 @@ public class CreateIndexParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            // Replace @NonNull logic with explicit null check
+            if (metricType == null) {
+                throw new IllegalArgumentException("metricType cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -178,7 +250,11 @@ public class CreateIndexParam {
          * @param extraParam extra parameters in .json format
          * @return <code>Builder</code>
          */
-        public Builder withExtraParam(@NonNull String extraParam) {
+        public Builder withExtraParam(String extraParam) {
+            // Replace @NonNull logic with explicit null check
+            if (extraParam == null) {
+                throw new IllegalArgumentException("extraParam cannot be null");
+            }
             this.extraParam = extraParam;
             return this;
         }
@@ -192,7 +268,11 @@ public class CreateIndexParam {
          * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withSyncMode(@NonNull Boolean syncMode) {
+        public Builder withSyncMode(Boolean syncMode) {
+            // Replace @NonNull logic with explicit null check
+            if (syncMode == null) {
+                throw new IllegalArgumentException("syncMode cannot be null");
+            }
             this.syncMode = syncMode;
             return this;
         }
@@ -206,7 +286,11 @@ public class CreateIndexParam {
          * @param milliseconds interval
          * @return <code>Builder</code>
          */
-        public Builder withSyncWaitingInterval(@NonNull Long milliseconds) {
+        public Builder withSyncWaitingInterval(Long milliseconds) {
+            // Replace @NonNull logic with explicit null check
+            if (milliseconds == null) {
+                throw new IllegalArgumentException("milliseconds cannot be null");
+            }
             this.syncWaitingInterval = milliseconds;
             return this;
         }
@@ -219,7 +303,11 @@ public class CreateIndexParam {
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
          */
-        public Builder withSyncWaitingTimeout(@NonNull Long seconds) {
+        public Builder withSyncWaitingTimeout(Long seconds) {
+            // Replace @NonNull logic with explicit null check
+            if (seconds == null) {
+                throw new IllegalArgumentException("seconds cannot be null");
+            }
             this.syncWaitingTimeout = seconds;
             return this;
         }

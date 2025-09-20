@@ -31,10 +31,6 @@ import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.collection.LoadCollectionParam;
 import io.milvus.param.index.CreateIndexParam;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -44,8 +40,6 @@ import java.util.Map;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
-@Getter
-@ToString
 public class CreateSimpleCollectionParam {
     private final CreateCollectionParam createCollectionParam;
     private final CreateIndexParam createIndexParam;
@@ -59,6 +53,29 @@ public class CreateSimpleCollectionParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public CreateCollectionParam getCreateCollectionParam() {
+        return createCollectionParam;
+    }
+
+    public CreateIndexParam getCreateIndexParam() {
+        return createIndexParam;
+    }
+
+    public LoadCollectionParam getLoadCollectionParam() {
+        return loadCollectionParam;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "CreateSimpleCollectionParam{" +
+                "createCollectionParam=" + createCollectionParam +
+                ", createIndexParam=" + createIndexParam +
+                ", loadCollectionParam=" + loadCollectionParam +
+                '}';
     }
 
     /**
@@ -89,7 +106,10 @@ public class CreateSimpleCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -112,7 +132,10 @@ public class CreateSimpleCollectionParam {
          * @param metricType metricType of vectorField
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            if (metricType == null) {
+                throw new IllegalArgumentException("metricType cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -123,7 +146,10 @@ public class CreateSimpleCollectionParam {
          * @param description description of the collection
          * @return <code>Builder</code>
          */
-        public Builder withDescription(@NonNull String description) {
+        public Builder withDescription(String description) {
+            if (description == null) {
+                throw new IllegalArgumentException("description cannot be null");
+            }
             this.description = description;
             return this;
         }
@@ -134,7 +160,10 @@ public class CreateSimpleCollectionParam {
          * @param primaryField primaryFiled name of the collection
          * @return <code>Builder</code>
          */
-        public Builder withPrimaryField(@NonNull String primaryField) {
+        public Builder withPrimaryField(String primaryField) {
+            if (primaryField == null) {
+                throw new IllegalArgumentException("primaryField cannot be null");
+            }
             this.primaryField = primaryField;
             return this;
         }
@@ -145,7 +174,10 @@ public class CreateSimpleCollectionParam {
          * @param vectorField vectorField name of the collection
          * @return <code>Builder</code>
          */
-        public Builder withVectorField(@NonNull String vectorField) {
+        public Builder withVectorField(String vectorField) {
+            if (vectorField == null) {
+                throw new IllegalArgumentException("vectorField cannot be null");
+            }
             this.vectorField = vectorField;
             return this;
         }
@@ -179,7 +211,10 @@ public class CreateSimpleCollectionParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
-        public Builder withConsistencyLevel(@NonNull ConsistencyLevelEnum consistencyLevel) {
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            if (consistencyLevel == null) {
+                throw new IllegalArgumentException("consistencyLevel cannot be null");
+            }
             this.consistencyLevel = consistencyLevel;
             return this;
         }
@@ -190,7 +225,10 @@ public class CreateSimpleCollectionParam {
          * @param primaryFieldType primaryFiled type of the collection
          * @return <code>Builder</code>
          */
-        public Builder withPrimaryFieldType(@NonNull DataType primaryFieldType) {
+        public Builder withPrimaryFieldType(DataType primaryFieldType) {
+            if (primaryFieldType == null) {
+                throw new IllegalArgumentException("primaryFieldType cannot be null");
+            }
             this.primaryFieldType = primaryFieldType;
             return this;
         }
@@ -202,7 +240,10 @@ public class CreateSimpleCollectionParam {
          * @param maxLength maxLength of the primary field
          * @return <code>Builder</code>
          */
-        public Builder withMaxLength(@NonNull Integer maxLength) {
+        public Builder withMaxLength(Integer maxLength) {
+            if (maxLength == null) {
+                throw new IllegalArgumentException("maxLength cannot be null");
+            }
             this.maxLength =  maxLength;
             return this;
         }

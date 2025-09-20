@@ -21,7 +21,6 @@ package io.milvus.response;
 
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
-import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,7 +36,10 @@ public class DescDBResponseWrapper {
     private final DescribeDatabaseResponse response;
     Map<String, String> pairs = new HashMap<>();
 
-    public DescDBResponseWrapper(@NonNull DescribeDatabaseResponse response) {
+    public DescDBResponseWrapper(DescribeDatabaseResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("DescribeDatabaseResponse cannot be null");
+        }
         this.response = response;
         response.getPropertiesList().forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
     }

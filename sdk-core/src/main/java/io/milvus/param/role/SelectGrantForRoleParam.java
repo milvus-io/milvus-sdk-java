@@ -21,25 +21,38 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.partition.ShowPartitionsParam;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class SelectGrantForRoleParam {
     private final String databaseName;
 
     private final String roleName;
 
-    private SelectGrantForRoleParam(@NonNull SelectGrantForRoleParam.Builder builder) {
+    private SelectGrantForRoleParam(SelectGrantForRoleParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.roleName = builder.roleName;
     }
 
     public static SelectGrantForRoleParam.Builder newBuilder() {
         return new SelectGrantForRoleParam.Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    @Override
+    public String toString() {
+        return "SelectGrantForRoleParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", roleName='" + roleName + '\'' +
+                '}';
     }
 
     /**
@@ -69,7 +82,10 @@ public class SelectGrantForRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public SelectGrantForRoleParam.Builder withRoleName(@NonNull String roleName) {
+        public SelectGrantForRoleParam.Builder withRoleName(String roleName) {
+            if (roleName == null) {
+                throw new IllegalArgumentException("Role name cannot be null");
+            }
             this.roleName = roleName;
             return this;
         }

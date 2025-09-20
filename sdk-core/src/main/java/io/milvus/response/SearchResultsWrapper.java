@@ -25,8 +25,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.response.basic.RowRecordWrapper;
-import lombok.Getter;
-import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -42,7 +40,10 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
     private String primaryKey = "id";
 
-    public SearchResultsWrapper(@NonNull SearchResultData results) {
+    public SearchResultsWrapper(SearchResultData results) {
+        if (results == null) {
+            throw new IllegalArgumentException("SearchResultData cannot be null");
+        }
         this.results = results;
         this.primaryKey = results.getPrimaryFieldName();
     }
@@ -54,7 +55,10 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param fieldName field name to get output data
      * @return {@link FieldDataWrapper}
      */
-    public FieldDataWrapper getFieldWrapper(@NonNull String fieldName) throws ParamException {
+    public FieldDataWrapper getFieldWrapper(String fieldName) throws ParamException {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("Field name cannot be null");
+        }
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
             if (fieldName.compareTo(field.getFieldName()) == 0) {
@@ -119,7 +123,10 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * @param indexOfTarget which target vector the field data belongs to
      * @return {@link FieldDataWrapper}
      */
-    public List<?> getFieldData(@NonNull String fieldName, int indexOfTarget) {
+    public List<?> getFieldData(String fieldName, int indexOfTarget) {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("Field name cannot be null");
+        }
         FieldDataWrapper wrapper = null;
         for (int i = 0; i < results.getFieldsDataCount(); ++i) {
             FieldData data = results.getFieldsData(i);
@@ -245,7 +252,6 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         return results.getNumQueries();
     }
 
-    @Getter
     private static final class Position {
         private final long offset;
         private final long k;
@@ -253,6 +259,14 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         public Position(long offset, long k) {
             this.offset = offset;
             this.k = k;
+        }
+
+        public long getOffset() {
+            return offset;
+        }
+
+        public long getK() {
+            return k;
         }
     }
     private Position getOffsetByIndex(int indexOfTarget) {
@@ -283,7 +297,6 @@ public class SearchResultsWrapper extends RowRecordWrapper {
     /**
      * Internal-use class to wrap response of <code>search</code> interface.
      */
-    @Getter
     public static final class IDScore {
         private final String primaryKey;
         private final String strID;
@@ -298,6 +311,36 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             this.score = score;
         }
 
+        public String getPrimaryKey() {
+            return primaryKey;
+        }
+
+        public String getStrID() {
+            return strID;
+        }
+
+        public long getLongID() {
+            return longID;
+        }
+
+        public float getScore() {
+            return score;
+        }
+
+        /**
+         * Get all field values as a map
+         * @return Map containing all field values
+         */
+        public Map<String, Object> getFieldValues() {
+            return new HashMap<>(fieldValues);
+        }
+
+        /**
+         * Add a field value to the existing values
+         * @param keyName field name
+         * @param obj field value
+         * @return true if the value was added, false if the key already exists
+         */
         public boolean put(String keyName, Object obj) {
             if (fieldValues.containsKey(keyName)) {
                 return false;
@@ -325,8 +368,8 @@ public class SearchResultsWrapper extends RowRecordWrapper {
                 // find the value from dynamic field
                 Object meta = fieldValues.get(Constant.DYNAMIC_FIELD_NAME);
                 if (meta != null) {
-                    JsonObject jsonMata = (JsonObject)meta;
-                    Object innerObj = jsonMata.get(keyName);
+                    JsonObject jsonMeta = (JsonObject)meta;
+                    Object innerObj = jsonMeta.get(keyName);
                     if (innerObj != null) {
                         return innerObj;
                     }

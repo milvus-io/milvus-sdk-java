@@ -22,21 +22,30 @@ package io.milvus.param.resourcegroup;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class DescribeResourceGroupParam {
     private final String groupName;
 
-    private DescribeResourceGroupParam(@NonNull Builder builder) {
+    private DescribeResourceGroupParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.groupName = builder.groupName;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeResourceGroupParam{" +
+                "groupName='" + groupName + '\'' +
+                '}';
     }
 
     /**
@@ -54,7 +63,10 @@ public class DescribeResourceGroupParam {
          * @param groupName group name
          * @return <code>Builder</code>
          */
-        public Builder withGroupName(@NonNull String groupName) {
+        public Builder withGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Group name cannot be null");
+            }
             this.groupName = groupName;
             return this;
         }

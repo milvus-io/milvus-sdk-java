@@ -3614,11 +3614,7 @@ class MilvusClientV2DockerTest {
                             .uri(milvus.getEndpoint())
                             .dbName(tempDbName)
                             .build();
-                    // fix tempClient not close bug
-                    MilvusClientV2 tempClient = null;
-                    try {
-
-                        tempClient = new MilvusClientV2(config);
+                    MilvusClientV2 tempClient = new MilvusClientV2(config);
 
                     for (int i = 0; i < 20; i++) {
                         JsonObject row = new JsonObject();
@@ -3661,19 +3657,16 @@ class MilvusClientV2DockerTest {
                                     .limit(7)
                                     .build();
 
-                                SearchResp searchResp = client.hybridSearch(
-                                        HybridSearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
-                                                .searchRequests(Collections.singletonList(subReq))
-                                                .ranker(RRFRanker.builder().k(20).build()).limit(5).build());
-                                List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
-                                Assertions.assertEquals(1, oneResult.size());
-                                Assertions.assertEquals(1, oneResult.get(0).size());
-                            }
-                        }
-
-                    } finally {
-                        if (tempClient != null) {
-                            tempClient.close();
+                            SearchResp searchResp = client.hybridSearch(HybridSearchReq.builder()
+                                    .databaseName(dbName)
+                                    .collectionName(randomCollectionName)
+                                    .searchRequests(Collections.singletonList(subReq))
+                                    .ranker(RRFRanker.builder().k(20).build())
+                                    .limit(5)
+                                    .build());
+                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                            Assertions.assertEquals(1, oneResult.size());
+                            Assertions.assertEquals(1, oneResult.get(0).size());
                         }
                     }
                 return null;

@@ -25,20 +25,13 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
 import io.milvus.param.dml.ranker.BaseRanker;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.util.List;
 
 /**
  * Parameters for <code>search</code> interface.
  */
-@Getter
-@ToString
 public class HybridSearchParam {
-    @Setter
     private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
@@ -54,7 +47,11 @@ public class HybridSearchParam {
     private final Integer groupSize;
     private final Boolean strictGroupSize;
 
-    private HybridSearchParam(@NonNull Builder builder) {
+    private HybridSearchParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -72,6 +69,84 @@ public class HybridSearchParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public List<AnnSearchParam> getSearchRequests() {
+        return searchRequests;
+    }
+
+    public BaseRanker getRanker() {
+        return ranker;
+    }
+
+    public Long getTopK() {
+        return topK;
+    }
+
+    public List<String> getOutFields() {
+        return outFields;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public int getRoundDecimal() {
+        return roundDecimal;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public String getGroupByFieldName() {
+        return groupByFieldName;
+    }
+
+    public Integer getGroupSize() {
+        return groupSize;
+    }
+
+    public Boolean getStrictGroupSize() {
+        return strictGroupSize;
+    }
+
+    // Setter method to replace @Setter annotation
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "HybridSearchParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionNames=" + partitionNames +
+                ", searchRequests=" + searchRequests +
+                ", ranker=" + ranker +
+                ", topK=" + topK +
+                ", outFields=" + outFields +
+                ", offset=" + offset +
+                ", roundDecimal=" + roundDecimal +
+                ", consistencyLevel=" + consistencyLevel +
+                ", groupByFieldName='" + groupByFieldName + '\'' +
+                ", groupSize=" + groupSize +
+                ", strictGroupSize=" + strictGroupSize +
+                '}';
     }
 
     /**
@@ -112,7 +187,11 @@ public class HybridSearchParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -123,7 +202,11 @@ public class HybridSearchParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("partitionNames cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -134,7 +217,11 @@ public class HybridSearchParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }
@@ -147,7 +234,11 @@ public class HybridSearchParam {
          * @param searchParam vector search request
          * @return <code>Builder</code>
          */
-        public Builder addSearchRequest(@NonNull AnnSearchParam searchParam) {
+        public Builder addSearchRequest(AnnSearchParam searchParam) {
+            // Replace @NonNull logic with explicit null check
+            if (searchParam == null) {
+                throw new IllegalArgumentException("searchParam cannot be null");
+            }
             this.searchRequests.add(searchParam);
             return this;
         }
@@ -158,7 +249,11 @@ public class HybridSearchParam {
          * @param ranker concrete ranker object
          * @return <code>Builder</code>
          */
-        public Builder withRanker(@NonNull BaseRanker ranker) {
+        public Builder withRanker(BaseRanker ranker) {
+            // Replace @NonNull logic with explicit null check
+            if (ranker == null) {
+                throw new IllegalArgumentException("ranker cannot be null");
+            }
             this.ranker = ranker;
             return this;
         }
@@ -182,12 +277,20 @@ public class HybridSearchParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withTopK(@NonNull Integer topK) {
+        public Builder withTopK(Integer topK) {
+            // Replace @NonNull logic with explicit null check
+            if (topK == null) {
+                throw new IllegalArgumentException("topK cannot be null");
+            }
             this.topK = topK.longValue();
             return this;
         }
 
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.topK = limit;
             return this;
         }
@@ -198,7 +301,11 @@ public class HybridSearchParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutFields(@NonNull List<String> outFields) {
+        public Builder withOutFields(List<String> outFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outFields == null) {
+                throw new IllegalArgumentException("outFields cannot be null");
+            }
             outFields.forEach(this::addOutField);
             return this;
         }
@@ -209,7 +316,11 @@ public class HybridSearchParam {
          * @param fieldName filed name
          * @return <code>Builder</code>
          */
-        public Builder addOutField(@NonNull String fieldName) {
+        public Builder addOutField(String fieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (fieldName == null) {
+                throw new IllegalArgumentException("fieldName cannot be null");
+            }
             if (!this.outFields.contains(fieldName)) {
                 this.outFields.add(fieldName);
             }
@@ -222,7 +333,11 @@ public class HybridSearchParam {
          * @param offset the offset position
          * @return <code>Builder</code>
          */
-        public Builder withOffset(@NonNull Long offset) {
+        public Builder withOffset(Long offset) {
+            // Replace @NonNull logic with explicit null check
+            if (offset == null) {
+                throw new IllegalArgumentException("offset cannot be null");
+            }
             this.offset = offset;
             return this;
         }
@@ -233,7 +348,11 @@ public class HybridSearchParam {
          * @param decimal how many digits after the decimal point
          * @return <code>Builder</code>
          */
-        public Builder withRoundDecimal(@NonNull Integer decimal) {
+        public Builder withRoundDecimal(Integer decimal) {
+            // Replace @NonNull logic with explicit null check
+            if (decimal == null) {
+                throw new IllegalArgumentException("decimal cannot be null");
+            }
             this.roundDecimal = decimal;
             return this;
         }
@@ -244,7 +363,11 @@ public class HybridSearchParam {
          * @param groupByFieldName a scalar field name
          * @return <code>Builder</code>
          */
-        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+        public Builder withGroupByFieldName(String groupByFieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (groupByFieldName == null) {
+                throw new IllegalArgumentException("groupByFieldName cannot be null");
+            }
             this.groupByFieldName = groupByFieldName;
             return this;
         }
@@ -255,7 +378,11 @@ public class HybridSearchParam {
          * @param groupSize the max number of items
          * @return <code>Builder</code>
          */
-        public Builder withGroupSize(@NonNull Integer groupSize) {
+        public Builder withGroupSize(Integer groupSize) {
+            // Replace @NonNull logic with explicit null check
+            if (groupSize == null) {
+                throw new IllegalArgumentException("groupSize cannot be null");
+            }
             this.groupSize = groupSize;
             return this;
         }
@@ -267,7 +394,11 @@ public class HybridSearchParam {
          * @param strictGroupSize whether to force the number of each group to be groupSize
          * @return <code>Builder</code>
          */
-        public Builder withStrictGroupSize(@NonNull Boolean strictGroupSize) {
+        public Builder withStrictGroupSize(Boolean strictGroupSize) {
+            // Replace @NonNull logic with explicit null check
+            if (strictGroupSize == null) {
+                throw new IllegalArgumentException("strictGroupSize cannot be null");
+            }
             this.strictGroupSize = strictGroupSize;
             return this;
         }
