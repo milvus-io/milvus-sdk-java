@@ -28,6 +28,8 @@ import javax.net.ssl.SSLContext;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import io.milvus.common.utils.URLParser;
+
 public class ConnectConfig {
     private String uri;
     private String token;
@@ -247,12 +249,12 @@ public class ConnectConfig {
     }
 
     public String getHost() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
     }
 
     public int getPort() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         int port = urlParser.getPort();
         if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
             port = 443;
@@ -270,7 +272,7 @@ public class ConnectConfig {
     }
 
     public String getDbName() {
-        io.milvus.utils.URLParser urlParser = new io.milvus.utils.URLParser(this.uri);
+        URLParser urlParser = new URLParser(this.uri);
         return StringUtils.isNotEmpty(urlParser.getDatabase()) ? urlParser.getDatabase() : this.dbName;
     }
 

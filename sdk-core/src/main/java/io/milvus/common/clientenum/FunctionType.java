@@ -19,33 +19,27 @@
 
 package io.milvus.common.clientenum;
 
-import lombok.Getter;
-
 public enum FunctionType {
     UNKNOWN("Unknown", 0), // in milvus-proto, the name is "Unknown"
-    BM25(1),
+    BM25("BM25", 1), // Added missing name parameter
     TEXTEMBEDDING("TextEmbedding", 2), // in milvus-proto, the name is "TextEmbedding"
-    RERANK(3),
-    ;
+    RERANK("RERANK", 3); // Added missing name parameter
 
     private final String name;
-
-    @Getter
     private final int code;
-
-    FunctionType(){
-        this.name = this.name();
-        this.code = this.ordinal();
-    }
-
-    FunctionType(int code){
-        this.name = this.name();
-        this.code = code;
-    }
 
     FunctionType(String name, int code){
         this.name = name;
         this.code = code;
+    }
+
+    // Getter method to replace @Getter annotation
+    public int getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public static FunctionType fromName(String name) {

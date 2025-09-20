@@ -25,15 +25,16 @@ import io.milvus.grpc.MutationResult;
 
 import java.util.List;
 
-import lombok.NonNull;
-
 /**
  * Utility class to wrap response of <code>insert/delete</code> interface.
  */
 public class MutationResultWrapper {
     private final MutationResult result;
 
-    public MutationResultWrapper(@NonNull MutationResult result) {
+    public MutationResultWrapper(MutationResult result) {
+        if (result == null) {
+            throw new IllegalArgumentException("MutationResult cannot be null");
+        }
         this.result = result;
     }
 

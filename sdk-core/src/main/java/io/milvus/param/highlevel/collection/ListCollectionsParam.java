@@ -22,14 +22,10 @@ package io.milvus.param.highlevel.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.ShowType;
 import io.milvus.param.collection.ShowCollectionsParam;
-import lombok.Getter;
-import lombok.ToString;
 
 /**
  * Parameters for <code>listCollections</code> interface.
  */
-@Getter
-@ToString
 public class ListCollectionsParam {
     private final ShowCollectionsParam showCollectionsParam;
 
@@ -39,6 +35,19 @@ public class ListCollectionsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public ShowCollectionsParam getShowCollectionsParam() {
+        return showCollectionsParam;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "ListCollectionsParam{" +
+                "showCollectionsParam=" + showCollectionsParam +
+                '}';
     }
 
     /**

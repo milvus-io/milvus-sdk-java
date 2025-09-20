@@ -22,9 +22,6 @@ package io.milvus.param.dml;
 import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.List;
 
 
@@ -32,7 +29,7 @@ import java.util.List;
  * Parameters for <code>upsert</code> interface.
  */
 public class UpsertParam extends InsertParam {
-    private UpsertParam(@NonNull Builder builder) {
+    private UpsertParam(Builder builder) {
         super(builder);
     }
 
@@ -64,7 +61,11 @@ public class UpsertParam extends InsertParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             super.withCollectionName(collectionName);
             return this;
         }
@@ -76,7 +77,11 @@ public class UpsertParam extends InsertParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder withPartitionName(@NonNull String partitionName) {
+        public Builder withPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             super.withPartitionName(partitionName);
             return this;
         }
@@ -88,7 +93,11 @@ public class UpsertParam extends InsertParam {
          * @return <code>Builder</code>
          * @see InsertParam.Field
          */
-        public Builder withFields(@NonNull List<Field> fields) {
+        public Builder withFields(List<Field> fields) {
+            // Replace @NonNull logic with explicit null check
+            if (fields == null) {
+                throw new IllegalArgumentException("fields cannot be null");
+            }
             super.withFields(fields);
             return this;
         }
@@ -120,7 +129,11 @@ public class UpsertParam extends InsertParam {
          * @return <code>Builder</code>
          * @see JsonObject
          */
-        public Builder withRows(@NonNull List<JsonObject> rows) {
+        public Builder withRows(List<JsonObject> rows) {
+            // Replace @NonNull logic with explicit null check
+            if (rows == null) {
+                throw new IllegalArgumentException("rows cannot be null");
+            }
             super.withRows(rows);
             return this;
         }

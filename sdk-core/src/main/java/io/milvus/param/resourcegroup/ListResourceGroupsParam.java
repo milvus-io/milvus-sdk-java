@@ -17,22 +17,24 @@
  * under the License.
  */
 
-
 package io.milvus.param.resourcegroup;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class ListResourceGroupsParam {
-    private ListResourceGroupsParam(@NonNull Builder builder) {
+    private ListResourceGroupsParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    @Override
+    public String toString() {
+        return "ListResourceGroupsParam{}";
     }
 
     /**

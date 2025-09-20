@@ -28,9 +28,6 @@ import io.milvus.param.Constant;
 import io.milvus.param.IndexType;
 import io.milvus.param.IndexBuildState;
 import io.milvus.param.MetricType;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.*;
 
@@ -40,7 +37,10 @@ import java.util.*;
 public class DescIndexResponseWrapper {
     private final DescribeIndexResponse response;
 
-    public DescIndexResponseWrapper(@NonNull DescribeIndexResponse response) {
+    public DescIndexResponseWrapper(DescribeIndexResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("DescribeIndexResponse cannot be null");
+        }
         this.response = response;
     }
 
@@ -67,7 +67,10 @@ public class DescIndexResponseWrapper {
      * @param fieldName field name to get index description
      * @return {@link IndexDesc} description of the index
      */
-    public IndexDesc getIndexDescByFieldName(@NonNull String fieldName) {
+    public IndexDesc getIndexDescByFieldName(String fieldName) {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("Field name cannot be null");
+        }
         for (IndexDescription desc : response.getIndexDescriptionsList()) {
             if (fieldName.compareTo(desc.getFieldName()) == 0) {
                 return convertIndexDescInternal(desc);
@@ -84,7 +87,10 @@ public class DescIndexResponseWrapper {
      * @param indexName index name to get index description
      * @return {@link IndexDesc} description of the index
      */
-    public IndexDesc getIndexDescByIndexName(@NonNull String indexName) {
+    public IndexDesc getIndexDescByIndexName(String indexName) {
+        if (indexName == null) {
+            throw new IllegalArgumentException("Index name cannot be null");
+        }
         for (IndexDescription desc : response.getIndexDescriptionsList()) {
             if (indexName.compareTo(desc.getIndexName()) == 0) {
                 return convertIndexDescInternal(desc);
@@ -108,8 +114,6 @@ public class DescIndexResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>describeIndex</code> interface.
      */
-    @Getter
-    @ToString
     public static final class IndexDesc {
         private final String fieldName;
         private final String indexName;
@@ -122,14 +126,63 @@ public class DescIndexResponseWrapper {
         private IndexBuildState indexState = IndexBuildState.IndexStateNone;
         String indexFailedReason = "";
 
-        public IndexDesc(@NonNull String fieldName, @NonNull String indexName, long id) {
+        public IndexDesc(String fieldName, String indexName, long id) {
+            if (fieldName == null) {
+                throw new IllegalArgumentException("Field name cannot be null");
+            }
+            if (indexName == null) {
+                throw new IllegalArgumentException("Index name cannot be null");
+            }
             this.fieldName = fieldName;
             this.indexName = indexName;
             this.id = id;
         }
 
-        public void addParam(@NonNull String key, @NonNull String value) {
+        public void addParam(String key, String value) {
+            if (key == null) {
+                throw new IllegalArgumentException("Key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("Value cannot be null");
+            }
             this.params.put(key, value);
+        }
+
+        // Getter methods
+        public String getFieldName() {
+            return fieldName;
+        }
+
+        public String getIndexName() {
+            return indexName;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public Map<String, String> getParams() {
+            return params;
+        }
+
+        public long getIndexedRows() {
+            return indexedRows;
+        }
+
+        public long getTotalRows() {
+            return totalRows;
+        }
+
+        public long getPendingIndexRows() {
+            return pendingIndexRows;
+        }
+
+        public IndexBuildState getIndexState() {
+            return indexState;
+        }
+
+        public String getIndexFailedReason() {
+            return indexFailedReason;
         }
 
         public IndexType getIndexType() {
@@ -163,6 +216,21 @@ public class DescIndexResponseWrapper {
             }
 
             return JsonUtils.toJson(extraParams);
+        }
+
+        @Override
+        public String toString() {
+            return "IndexDesc{" +
+                    "fieldName='" + fieldName + '\'' +
+                    ", indexName='" + indexName + '\'' +
+                    ", id=" + id +
+                    ", params=" + params +
+                    ", indexedRows=" + indexedRows +
+                    ", totalRows=" + totalRows +
+                    ", pendingIndexRows=" + pendingIndexRows +
+                    ", indexState=" + indexState +
+                    ", indexFailedReason='" + indexFailedReason + '\'' +
+                    '}';
         }
     }
 }

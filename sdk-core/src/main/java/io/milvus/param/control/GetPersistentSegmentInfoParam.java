@@ -22,24 +22,34 @@ package io.milvus.param.control;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>getPersistentSegmentInfo</code> interface.
  */
-@Getter
-@ToString
 public class GetPersistentSegmentInfoParam {
     private final String collectionName;
 
-    private GetPersistentSegmentInfoParam(@NonNull Builder builder) {
+    private GetPersistentSegmentInfoParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetPersistentSegmentInfoParam{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
     }
 
     /**
@@ -57,7 +67,11 @@ public class GetPersistentSegmentInfoParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -73,5 +87,4 @@ public class GetPersistentSegmentInfoParam {
             return new GetPersistentSegmentInfoParam(this);
         }
     }
-
 }

@@ -21,9 +21,6 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,15 +28,16 @@ import java.util.List;
 /**
  * Parameters for <code>getMetric</code> interface.
  */
-@Getter
-@ToString
 public class GetFlushStateParam {
     private final String databaseName;
     private final String collectionName;
     private final List<Long> segmentIDs;
     private final Long flushTs;
 
-    private GetFlushStateParam(@NonNull Builder builder) {
+    private GetFlushStateParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.segmentIDs = builder.segmentIDs;
@@ -48,6 +46,34 @@ public class GetFlushStateParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<Long> getSegmentIDs() {
+        return segmentIDs;
+    }
+
+    public Long getFlushTs() {
+        return flushTs;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetFlushStateParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", segmentIDs=" + segmentIDs +
+                ", flushTs=" + flushTs +
+                '}';
     }
 
     /**
@@ -80,7 +106,11 @@ public class GetFlushStateParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withSegmentIDs(@NonNull List<Long> segmentIDs) {
+        public Builder withSegmentIDs(List<Long> segmentIDs) {
+            // Replace @NonNull logic with explicit null check
+            if (segmentIDs == null) {
+                throw new IllegalArgumentException("segmentIDs cannot be null");
+            }
             this.segmentIDs.addAll(segmentIDs);
             return this;
         }
@@ -92,7 +122,11 @@ public class GetFlushStateParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder addSegmentID(@NonNull Long segmentID) {
+        public Builder addSegmentID(Long segmentID) {
+            // Replace @NonNull logic with explicit null check
+            if (segmentID == null) {
+                throw new IllegalArgumentException("segmentID cannot be null");
+            }
             this.segmentIDs.add(segmentID);
             return this;
         }
@@ -103,7 +137,11 @@ public class GetFlushStateParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -114,7 +152,11 @@ public class GetFlushStateParam {
          * @param flushTs a time stamp returned by the flush() response
          * @return <code>Builder</code>
          */
-        public Builder withFlushTs(@NonNull Long flushTs) {
+        public Builder withFlushTs(Long flushTs) {
+            // Replace @NonNull logic with explicit null check
+            if (flushTs == null) {
+                throw new IllegalArgumentException("flushTs cannot be null");
+            }
             this.flushTs = flushTs;
             return this;
         }
@@ -130,5 +172,4 @@ public class GetFlushStateParam {
             return new GetFlushStateParam(this);
         }
     }
-
 }

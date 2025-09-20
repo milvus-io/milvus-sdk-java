@@ -22,9 +22,6 @@ package io.milvus.param.highlevel.dml;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
@@ -33,15 +30,17 @@ import java.util.List;
 /**
  * Parameters for <code>get</code> interface.
  */
-@Getter
-@ToString
 public class GetIdsParam {
     private final String collectionName;
     private final List<?> primaryIds;
     private final List<String> outputFields;
     private final ConsistencyLevelEnum consistencyLevel;
 
-    private GetIdsParam(@NonNull Builder builder) {
+    private GetIdsParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.primaryIds = builder.primaryIds;
         this.outputFields = builder.outputFields;
@@ -50,6 +49,34 @@ public class GetIdsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<?> getPrimaryIds() {
+        return primaryIds;
+    }
+
+    public List<String> getOutputFields() {
+        return outputFields;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetIdsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", primaryIds=" + primaryIds +
+                ", outputFields=" + outputFields +
+                ", consistencyLevel=" + consistencyLevel +
+                '}';
     }
 
     /**
@@ -71,7 +98,11 @@ public class GetIdsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -82,7 +113,11 @@ public class GetIdsParam {
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutputFields(@NonNull List<String> outputFields) {
+        public Builder withOutputFields(List<String> outputFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outputFields == null) {
+                throw new IllegalArgumentException("outputFields cannot be null");
+            }
             this.outputFields.addAll(outputFields);
             return this;
         }
@@ -93,7 +128,11 @@ public class GetIdsParam {
          * @param primaryIds input primary key list
          * @return <code>Builder</code>
          */
-        public Builder withPrimaryIds(@NonNull List<T> primaryIds) {
+        public Builder withPrimaryIds(List<T> primaryIds) {
+            // Replace @NonNull logic with explicit null check
+            if (primaryIds == null) {
+                throw new IllegalArgumentException("primaryIds cannot be null");
+            }
             this.primaryIds.addAll(primaryIds);
             return this;
         }
@@ -104,7 +143,11 @@ public class GetIdsParam {
          * @param primaryId input primary key id
          * @return <code>Builder</code>
          */
-        public Builder addPrimaryId(@NonNull T primaryId) {
+        public Builder addPrimaryId(T primaryId) {
+            // Replace @NonNull logic with explicit null check
+            if (primaryId == null) {
+                throw new IllegalArgumentException("primaryId cannot be null");
+            }
             this.primaryIds.add(primaryId);
             return this;
         }

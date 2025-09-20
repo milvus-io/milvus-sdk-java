@@ -37,4 +37,10 @@ public class ExceptionUtils {
             throw new RuntimeException(r.getMessage());
         }
     }
+
+    public static void checkNotNull(Object obj, String msg) {
+        if (obj == null) {
+            throw new IllegalArgumentException(msg + "cannot be null");
+        }
+    }
 }

@@ -20,16 +20,44 @@
 package io.milvus.param.highlevel.dml.response;
 
 import io.milvus.response.QueryResultsWrapper;
-import lombok.Builder;
-import lombok.Getter;
 
 import java.util.List;
 
 /**
  * Parameters for <code>get</code> interface.
  */
-@Builder
-@Getter
 public class GetResponse {
     public List<QueryResultsWrapper.RowRecord> rowRecords;
+
+    private GetResponse(Builder builder) {
+        this.rowRecords = builder.rowRecords;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public List<QueryResultsWrapper.RowRecord> getRowRecords() {
+        return rowRecords;
+    }
+
+    /**
+     * Builder for {@link GetResponse} class to replace @Builder annotation.
+     */
+    public static class Builder {
+        private List<QueryResultsWrapper.RowRecord> rowRecords;
+
+        private Builder() {
+        }
+
+        public Builder rowRecords(List<QueryResultsWrapper.RowRecord> rowRecords) {
+            this.rowRecords = rowRecords;
+            return this;
+        }
+
+        public GetResponse build() {
+            return new GetResponse(this);
+        }
+    }
 }

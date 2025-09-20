@@ -39,7 +39,6 @@ import io.milvus.v2.service.vector.request.FunctionScore;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
 import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
-import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -48,6 +47,9 @@ import java.util.*;
 public class VectorUtils {
 
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
+        if (request == null) {
+            throw new NullPointerException("request cannot be null");
+        }
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         long guaranteeTimestamp = getGuaranteeTimestamp(request.getConsistencyLevel(), dbName, collectionName);
@@ -403,8 +405,11 @@ public class VectorUtils {
         }
     }
 
-    public static SearchRequest convertAnnSearchParam(@NonNull AnnSearchReq annSearchReq,
+    public static SearchRequest convertAnnSearchParam(AnnSearchReq annSearchReq,
                                                       ConsistencyLevel consistencyLevel) {
+        if (annSearchReq == null) {
+            throw new NullPointerException("annSearchReq cannot be null");
+        }
         SearchRequest.Builder builder = SearchRequest.newBuilder();
         // prepare target vectors
         List<BaseVector> vectors = annSearchReq.getVectors();
@@ -528,7 +533,7 @@ public class VectorUtils {
                 builder.addRankParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.GROUP_SIZE)
-                                .setValue(request.getGroupSize().toString().toString())
+                                .setValue(request.getGroupSize().toString())
                                 .build());
             }
 
