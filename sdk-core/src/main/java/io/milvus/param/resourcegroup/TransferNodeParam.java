@@ -22,18 +22,16 @@ package io.milvus.param.resourcegroup;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class TransferNodeParam {
     private final String sourceGroupName;
     private final String targetGroupName;
     private final int nodeNumber;
 
-    private TransferNodeParam(@NonNull Builder builder) {
+    private TransferNodeParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.sourceGroupName = builder.sourceGroupName;
         this.targetGroupName = builder.targetGroupName;
         this.nodeNumber = builder.nodeNumber;
@@ -41,6 +39,27 @@ public class TransferNodeParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getSourceGroupName() {
+        return sourceGroupName;
+    }
+
+    public String getTargetGroupName() {
+        return targetGroupName;
+    }
+
+    public int getNodeNumber() {
+        return nodeNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "TransferNodeParam{" +
+                "sourceGroupName='" + sourceGroupName + '\'' +
+                ", targetGroupName='" + targetGroupName + '\'' +
+                ", nodeNumber=" + nodeNumber +
+                '}';
     }
 
     /**
@@ -60,7 +79,10 @@ public class TransferNodeParam {
          * @param groupName source group name
          * @return <code>Builder</code>
          */
-        public Builder withSourceGroupName(@NonNull String groupName) {
+        public Builder withSourceGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Source group name cannot be null");
+            }
             this.sourceGroupName = groupName;
             return this;
         }
@@ -71,7 +93,10 @@ public class TransferNodeParam {
          * @param groupName target group name
          * @return <code>Builder</code>
          */
-        public Builder withTargetGroupName(@NonNull String groupName) {
+        public Builder withTargetGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Target group name cannot be null");
+            }
             this.targetGroupName = groupName;
             return this;
         }
@@ -82,7 +107,10 @@ public class TransferNodeParam {
          * @param nodeNumber number of query nodes
          * @return <code>Builder</code>
          */
-        public Builder withNodeNumber(@NonNull Integer nodeNumber) {
+        public Builder withNodeNumber(Integer nodeNumber) {
+            if (nodeNumber == null) {
+                throw new IllegalArgumentException("Node number cannot be null");
+            }
             this.nodeNumber = nodeNumber;
             return this;
         }

@@ -21,21 +21,19 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Parameters for <code>getReplicas</code> interface.
  */
-@Getter
-@ToString
 public class GetReplicasParam {
     private final String databaseName;
     private final String collectionName;
     private boolean withShardNodes;
 
-    private GetReplicasParam(@NonNull Builder builder) {
+    private GetReplicasParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.withShardNodes = true;
@@ -43,6 +41,29 @@ public class GetReplicasParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public boolean isWithShardNodes() {
+        return withShardNodes;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetReplicasParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", withShardNodes=" + withShardNodes +
+                '}';
     }
 
     /**
@@ -61,7 +82,11 @@ public class GetReplicasParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
+            // Replace @NonNull logic with explicit null check
+            if (databaseName == null) {
+                throw new IllegalArgumentException("databaseName cannot be null");
+            }
             this.databaseName = databaseName;
             return this;
         }
@@ -72,7 +97,11 @@ public class GetReplicasParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,5 +117,4 @@ public class GetReplicasParam {
             return new GetReplicasParam(this);
         }
     }
-
 }

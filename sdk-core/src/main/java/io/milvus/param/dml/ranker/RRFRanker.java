@@ -24,22 +24,32 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.milvus.exception.ParamException;
-import io.milvus.param.ParamUtils;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * The RRF reranking strategy, which merges results from multiple searches, favoring items that consistently appear.
  */
-@Getter
-@ToString
 public class RRFRanker extends BaseRanker {
     private final Integer k;
 
-    private RRFRanker(@NonNull Builder builder) {
+    private RRFRanker(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.k = builder.k;
+    }
+
+    // Getter method to replace @Getter annotation
+    public Integer getK() {
+        return k;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "RRFRanker{" +
+                "k=" + k +
+                '}';
     }
 
     @Override
@@ -74,7 +84,11 @@ public class RRFRanker extends BaseRanker {
          * @param k factor value
          * @return <code>Builder</code>
          */
-        public Builder withK(@NonNull Integer k) {
+        public Builder withK(Integer k) {
+            // Replace @NonNull logic with explicit null check
+            if (k == null) {
+                throw new IllegalArgumentException("k cannot be null");
+            }
             this.k = k;
             return this;
         }

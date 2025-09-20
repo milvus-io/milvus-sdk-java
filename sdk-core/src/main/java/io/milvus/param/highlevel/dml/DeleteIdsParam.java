@@ -21,9 +21,6 @@ package io.milvus.param.highlevel.dml;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
@@ -32,14 +29,16 @@ import java.util.List;
 /**
  * Parameters for <code>delete</code> interface.
  */
-@Getter
-@ToString
 public class DeleteIdsParam {
     private final String collectionName;
     private final String partitionName;
     private final List<?> primaryIds;
 
-    private DeleteIdsParam(@NonNull Builder builder) {
+    private DeleteIdsParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.primaryIds = builder.primaryIds;
@@ -47,6 +46,29 @@ public class DeleteIdsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public List<?> getPrimaryIds() {
+        return primaryIds;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "DeleteIdsParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", primaryIds=" + primaryIds +
+                '}';
     }
 
     /**
@@ -66,7 +88,11 @@ public class DeleteIdsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -77,7 +103,11 @@ public class DeleteIdsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder withPartitionName(@NonNull String partitionName) {
+        public Builder withPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             this.partitionName = partitionName;
             return this;
         }
@@ -88,7 +118,11 @@ public class DeleteIdsParam {
          * @param primaryIds input primary key list
          * @return <code>Builder</code>
          */
-        public Builder withPrimaryIds(@NonNull List<T> primaryIds) {
+        public Builder withPrimaryIds(List<T> primaryIds) {
+            // Replace @NonNull logic with explicit null check
+            if (primaryIds == null) {
+                throw new IllegalArgumentException("primaryIds cannot be null");
+            }
             this.primaryIds.addAll(primaryIds);
             return this;
         }
@@ -99,7 +133,11 @@ public class DeleteIdsParam {
          * @param primaryId input primary key id
          * @return <code>Builder</code>
          */
-        public Builder addPrimaryId(@NonNull T primaryId) {
+        public Builder addPrimaryId(T primaryId) {
+            // Replace @NonNull logic with explicit null check
+            if (primaryId == null) {
+                throw new IllegalArgumentException("primaryId cannot be null");
+            }
             this.primaryIds.add(primaryId);
             return this;
         }

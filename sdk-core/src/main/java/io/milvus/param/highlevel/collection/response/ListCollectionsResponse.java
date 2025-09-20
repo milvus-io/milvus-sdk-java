@@ -19,16 +19,46 @@
 
 package io.milvus.param.highlevel.collection.response;
 
-import lombok.Builder;
-import lombok.ToString;
-
 import java.util.List;
 
 /**
  * Parameters for <code>showCollections</code> interface.
  */
-@Builder
-@ToString
 public class ListCollectionsResponse {
     public List<String> collectionNames;
+
+    private ListCollectionsResponse(Builder builder) {
+        this.collectionNames = builder.collectionNames;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "ListCollectionsResponse{" +
+                "collectionNames=" + collectionNames +
+                '}';
+    }
+
+    /**
+     * Builder for {@link ListCollectionsResponse} class to replace @Builder annotation.
+     */
+    public static class Builder {
+        private List<String> collectionNames;
+
+        private Builder() {
+        }
+
+        public Builder collectionNames(List<String> collectionNames) {
+            this.collectionNames = collectionNames;
+            return this;
+        }
+
+        public ListCollectionsResponse build() {
+            return new ListCollectionsResponse(this);
+        }
+    }
 }
