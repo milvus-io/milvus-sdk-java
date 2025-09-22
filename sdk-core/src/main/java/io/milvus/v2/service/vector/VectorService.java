@@ -27,14 +27,11 @@ import io.milvus.orm.iterator.*;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
-import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DescribeCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
 import io.milvus.v2.utils.DataUtils;
-import io.milvus.v2.utils.VectorUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -42,27 +39,22 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
-    public CollectionService collectionService = new CollectionService();
     private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
 
     private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                                          String databaseName, String collectionName) {
-        String msg = String.format("Fail to describe collection '%s'", collectionName);
+                                                          String dbName, String collectionName) {
+        String title = String.format("Describe collection '%s' in database: '%s'", collectionName, dbName);
         DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
                 .setCollectionName(collectionName);
-        if (StringUtils.isNotEmpty(databaseName)) {
-            builder.setDbName(databaseName);
-            msg = String.format("Fail to describe collection '%s' in database '%s'",
-                    collectionName, databaseName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
-        DescribeCollectionRequest describeCollectionRequest = builder.build();
-        DescribeCollectionResponse response = blockingStub.describeCollection(describeCollectionRequest);
-        rpcUtils.handleResponse(msg, response.getStatus());
+        DescribeCollectionResponse response = blockingStub.describeCollection(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
         return response;
     }
 
@@ -115,7 +107,7 @@ public class VectorService extends BaseService {
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("InsertRequest collectionName:%s", collectionName);
+        String title = String.format("Insert to collection: '%s' in database: '%s'", collectionName, dbName);
 
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
 
@@ -172,7 +164,7 @@ public class VectorService extends BaseService {
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("UpsertRequest collectionName:%s", collectionName);
+        String title = String.format("Upsert to collection: '%s' in database: '%s'", collectionName, dbName);
 
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
 
@@ -223,7 +215,7 @@ public class VectorService extends BaseService {
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("QueryRequest collectionName:%s, databaseName:%s", collectionName, dbName);
+        String title = String.format("Query collection: '%s' in database: '%s'", collectionName, dbName);
         if (StringUtils.isNotEmpty(request.getFilter()) && CollectionUtils.isNotEmpty(request.getIds())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
@@ -257,16 +249,17 @@ public class VectorService extends BaseService {
     }
 
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
-        String title = String.format("SearchRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Search collection: '%s' in database: '%s'", collectionName, dbName);
 
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
         // reset the db name so that the timestamp cache can set correct key for this collection
-        request.setDatabaseName(actualDbName(request.getDatabaseName()));
+        request.setDatabaseName(actualDbName(dbName));
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
         SearchResults response = blockingStub.search(searchRequest);
-
         rpcUtils.handleResponse(title, response.getStatus());
 
         return SearchResp.builder()
@@ -277,16 +270,17 @@ public class VectorService extends BaseService {
     }
 
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
-        String title = String.format("HybridSearchRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Hybrid search collection: '%s' in database: '%s'", collectionName, dbName);
 
         //checkCollectionExist(blockingStub, request.getCollectionName());
 
         // reset the db name so that the timestamp cache can set correct key for this collection
-        request.setDatabaseName(actualDbName(request.getDatabaseName()));
+        request.setDatabaseName(actualDbName(dbName));
         HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
 
         SearchResults response = blockingStub.hybridSearch(searchRequest);
-
         rpcUtils.handleResponse(title, response.getStatus());
 
         return SearchResp.builder()
@@ -321,7 +315,7 @@ public class VectorService extends BaseService {
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("DeleteRequest collectionName:%s", collectionName);
+        String title = String.format("Delete entities of collection: '%s' in database: '%s'", collectionName, dbName);
 
         if (request.getFilter() != null && request.getIds() != null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
@@ -349,10 +343,13 @@ public class VectorService extends BaseService {
     }
 
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReq request) {
-        String title = String.format("GetRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
         QueryReq queryReq = QueryReq.builder()
-                .collectionName(request.getCollectionName())
+                .databaseName(dbName)
+                .collectionName(collectionName)
                 .ids(request.getIds())
                 .build();
         if (request.getOutputFields() != null) {

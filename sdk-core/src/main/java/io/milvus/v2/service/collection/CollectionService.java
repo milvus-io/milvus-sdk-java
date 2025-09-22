@@ -52,7 +52,9 @@ public class CollectionService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Dimension is undefined.");
         }
 
-        String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Create collection: '%s' in database: '%s'", collectionName, dbName);
         FieldSchema vectorSchema = FieldSchema.newBuilder()
                 .setName(request.getVectorFieldName())
                 .setDataType(DataType.FloatVector)
@@ -71,7 +73,7 @@ public class CollectionService extends BaseService {
         }
 
         CollectionSchema schema = CollectionSchema.newBuilder()
-                .setName(request.getCollectionName())
+                .setName(collectionName)
                 .setDescription(request.getDescription())
                 .addFields(vectorSchema)
                 .addFields(idSchema)
@@ -79,13 +81,13 @@ public class CollectionService extends BaseService {
                 .build();
 
         CreateCollectionRequest.Builder builder = CreateCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .setSchema(schema.toByteString())
                 .setShardsNum(request.getNumShards())
                 .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
 
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         Status status = blockingStub.createCollection(builder.build());
@@ -97,8 +99,8 @@ public class CollectionService extends BaseService {
                         .fieldName(request.getVectorFieldName())
                         .build();
         CreateIndexReq createIndexReq = CreateIndexReq.builder()
-                        .databaseName(request.getDatabaseName())
-                .collectionName(request.getCollectionName())
+                        .databaseName(dbName)
+                        .collectionName(collectionName)
                         .indexParams(Collections.singletonList(indexParam))
                         .sync(false)
                         .build();
@@ -106,8 +108,8 @@ public class CollectionService extends BaseService {
         //load collection, set sync to false since no need to wait loading progress
         try {
             loadCollection(blockingStub, LoadCollectionReq.builder()
-                    .databaseName(request.getDatabaseName())
-                    .collectionName(request.getCollectionName())
+                    .databaseName(dbName)
+                    .collectionName(collectionName)
                     .sync(false)
                     .build());
         } catch (Exception e) {
@@ -117,11 +119,13 @@ public class CollectionService extends BaseService {
     }
 
     public Void createCollectionWithSchema(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
-        String title = String.format("CreateCollectionRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Create collection: '%s' in database: '%s'", collectionName, dbName);
 
         //convert CollectionSchema to io.milvus.grpc.CollectionSchema
         CollectionSchema.Builder grpcSchemaBuilder = CollectionSchema.newBuilder()
-                .setName(request.getCollectionName())
+                .setName(collectionName)
                 .setDescription(request.getDescription())
                 .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField());
         List<String> outputFields = new ArrayList<>();
@@ -143,8 +147,8 @@ public class CollectionService extends BaseService {
                 .setSchema(grpcSchemaBuilder.build().toByteString())
                 .setShardsNum(request.getNumShards())
                 .setConsistencyLevelValue(request.getConsistencyLevel().getCode());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
@@ -161,8 +165,8 @@ public class CollectionService extends BaseService {
         if(request.getIndexParams() != null && !request.getIndexParams().isEmpty()) {
             for(IndexParam indexParam : request.getIndexParams()) {
                 CreateIndexReq createIndexReq = CreateIndexReq.builder()
-                        .databaseName(request.getDatabaseName())
-                        .collectionName(request.getCollectionName())
+                        .databaseName(dbName)
+                        .collectionName(collectionName)
                         .indexParams(Collections.singletonList(indexParam))
                         .sync(false)
                         .build();
@@ -170,8 +174,8 @@ public class CollectionService extends BaseService {
             }
             //load collection, set sync to true since no need to wait loading progress
             loadCollection(blockingStub, LoadCollectionReq.builder()
-                    .databaseName(request.getDatabaseName())
-                    .collectionName(request.getCollectionName())
+                    .databaseName(dbName)
+                    .collectionName(collectionName)
                     .sync(false)
                     .build());
         }
@@ -179,10 +183,14 @@ public class CollectionService extends BaseService {
         return null;
     }
 
-    public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
-        ShowCollectionsRequest showCollectionsRequest = ShowCollectionsRequest.newBuilder()
-                .build();
-        ShowCollectionsResponse response = blockingStub.showCollections(showCollectionsRequest);
+    public ListCollectionsResp listCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName) {
+        String title = String.format("List collections in database: '%s'", dbName);
+        ShowCollectionsRequest.Builder builder = ShowCollectionsRequest.newBuilder();
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        ShowCollectionsResponse response = blockingStub.showCollections(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
 
         List<CollectionInfo> collectionInfos = new ArrayList<>();
         for (int i = 0; i < response.getCollectionNamesCount(); i++) {
@@ -206,7 +214,7 @@ public class CollectionService extends BaseService {
     public Void dropCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("DropCollectionRequest collectionName:%s", collectionName);
+        String title = String.format("Drop collection: '%s' in database: '%s'", collectionName, dbName);
         DropCollectionRequest.Builder builder = DropCollectionRequest.newBuilder()
                 .setCollectionName(collectionName);
         if (StringUtils.isNotEmpty(dbName)) {
@@ -222,15 +230,17 @@ public class CollectionService extends BaseService {
     }
 
     public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
-        String title = String.format("AlterCollectionPropertiesReq collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Alter properties of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
+                .setCollectionName(collectionName);
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
         }
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         Status response = blockingStub.alterCollection(builder.build());
@@ -240,11 +250,13 @@ public class CollectionService extends BaseService {
     }
 
     public Void addCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionFieldReq request) {
-        String title = String.format("AddCollectionFieldReq fieldName:%s", request.getFieldName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Add field to collection: '%s' in database: '%s'", collectionName, dbName);
         AddCollectionFieldRequest.Builder builder = AddCollectionFieldRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
@@ -258,16 +270,18 @@ public class CollectionService extends BaseService {
     }
 
     public Void alterCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionFieldReq request) {
-        String title = String.format("AlterCollectionFieldReq collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Alter field of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionFieldRequest.Builder builder = AlterCollectionFieldRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .setFieldName(request.getFieldName());
         List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(request.getProperties());
         if (CollectionUtils.isNotEmpty(propertiesList)) {
             propertiesList.forEach(builder::addProperties);
         }
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         Status response = blockingStub.alterCollectionField(builder.build());
@@ -277,12 +291,14 @@ public class CollectionService extends BaseService {
     }
 
     public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
-        String title = String.format("DropCollectionPropertiesReq collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Drop properties of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .addAllDeleteKeys(request.getPropertyKeys());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         Status response = blockingStub.alterCollection(builder.build());
@@ -292,15 +308,18 @@ public class CollectionService extends BaseService {
     }
 
     public Void dropCollectionFieldProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldPropertiesReq request) {
-        String title = String.format("DropCollectionFieldPropertiesReq collectionName:%s fieldName:%s",
-                request.getCollectionName(), request.getFieldName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String fieldName = request.getFieldName();
+        String title = String.format("Drop properties of field: '%s' of collection: '%s' in database: '%s'",
+                fieldName, collectionName, dbName);
 
         AlterCollectionFieldRequest.Builder builder = AlterCollectionFieldRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setFieldName(request.getFieldName())
+                .setCollectionName(collectionName)
+                .setFieldName(fieldName)
                 .addAllDeleteKeys(request.getPropertyKeys());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         Status response = blockingStub.alterCollectionField(builder.build());
@@ -310,20 +329,27 @@ public class CollectionService extends BaseService {
     }
 
     public Boolean hasCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasCollectionReq request) {
-        HasCollectionRequest hasCollectionRequest = HasCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        BoolResponse response = blockingStub.hasCollection(hasCollectionRequest);
-        rpcUtils.handleResponse("HasCollectionRequest", response.getStatus());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Has collection: '%s' in database:'%s'", collectionName, dbName);
+        HasCollectionRequest.Builder builder = HasCollectionRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        BoolResponse response = blockingStub.hasCollection(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
         return response.getValue();
     }
 
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
-        String title = String.format("DescribeCollectionRequest collectionName:%s, databaseName:%s", request.getCollectionName(), request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Describe collection: '%s' in database: '%s'", collectionName, dbName);
         DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         DescribeCollectionResponse response = blockingStub.describeCollection(builder.build());
@@ -332,11 +358,13 @@ public class CollectionService extends BaseService {
     }
 
     public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
-        String title = String.format("BatchDescribeCollectionRequest collectionNames:%s, databaseName:%s", request.getCollectionNames(), request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        List<String> collectionNames = request.getCollectionNames();
+        String title = String.format("Batch describe collections: '%s' in database: '%s'", collectionNames, dbName);
         BatchDescribeCollectionRequest.Builder builder = BatchDescribeCollectionRequest.newBuilder()
-                .addAllCollectionName(request.getCollectionNames());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+                .addAllCollectionName(collectionNames);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         BatchDescribeCollectionResponse response = blockingStub.batchDescribeCollection(builder.build());
@@ -345,86 +373,115 @@ public class CollectionService extends BaseService {
     }
 
     public Void renameCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RenameCollectionReq request) {
-        String title = String.format("RenameCollectionRequest collectionName:%s", request.getCollectionName());
-        RenameCollectionRequest renameCollectionRequest = RenameCollectionRequest.newBuilder()
-                .setOldName(request.getCollectionName())
-                .setNewName(request.getNewCollectionName())
-                .build();
-        Status status = blockingStub.renameCollection(renameCollectionRequest);
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String newName = request.getNewCollectionName();
+        String title = String.format("Rename collection: '%s' to '%s' in database: '%s'", collectionName, newName, dbName);
+        RenameCollectionRequest.Builder builder = RenameCollectionRequest.newBuilder()
+                .setOldName(collectionName)
+                .setNewName(newName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.renameCollection(builder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
-        String title = String.format("LoadCollectionRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Load collection: '%s' in database: '%s'", collectionName, dbName);
         LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .setReplicaNumber(request.getNumReplicas())
                 .setRefresh(request.getRefresh())
                 .addAllLoadFields(request.getLoadFields())
                 .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
                 .addAllResourceGroups(request.getResourceGroups());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
         Status status = blockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
         if (request.getSync()) {
-            WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
+            WaitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout());
         }
 
         return null;
     }
 
     public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
-        String title = String.format("RefreshLoadRequest collectionName:%s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Refresh load collection: '%s' in database: '%s'", collectionName, dbName);
         LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .setRefresh(true);
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            builder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
         Status status = blockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
         if (request.getSync()) {
-            WaitForLoadCollection(blockingStub, request.getCollectionName(), request.getTimeout());
+            WaitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout());
         }
 
         return null;
     }
 
     public Void releaseCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleaseCollectionReq request) {
-        String title = String.format("ReleaseCollectionRequest collectionName:%s", request.getCollectionName());
-        ReleaseCollectionRequest releaseCollectionRequest = ReleaseCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        Status status = blockingStub.releaseCollection(releaseCollectionRequest);
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Release collection: '%s' in database: '%s'", collectionName, dbName);
+        ReleaseCollectionRequest.Builder builder = ReleaseCollectionRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.releaseCollection(builder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
-        // getLoadState
-        String title = String.format("GetLoadStateRequest collectionName:%s", request.getCollectionName());
-        GetLoadStateRequest getLoadStateRequest = GetLoadStateRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        if(request.getPartitionName() != null) {
-            getLoadStateRequest = getLoadStateRequest.toBuilder().addPartitionNames(request.getPartitionName()).build();
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        String title = String.format("Get load state of collection: '%s' in database: '%s'", collectionName, dbName);
+        GetLoadStateRequest.Builder builder = GetLoadStateRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
-        GetLoadStateResponse response = blockingStub.getLoadState(getLoadStateRequest);
+        if (StringUtils.isNotEmpty(partitionName)) {
+            builder.addPartitionNames(partitionName);
+        }
+        GetLoadStateResponse response = blockingStub.getLoadState(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
+        // throw error if cannot find the collection of partition
+        if (response.getState() == LoadState.LoadStateNotExist) {
+            String msg = String.format("collection: '%s' doesn't exist in database: '%s'", collectionName, dbName);
+            if (StringUtils.isNotEmpty(partitionName)) {
+                msg = String.format("partition: '%s' of %s", partitionName, msg);
+            }
+            throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
+        }
         return response.getState() == LoadState.LoadStateLoaded;
     }
 
     public GetCollectionStatsResp getCollectionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetCollectionStatsReq request) {
-        String title = String.format("GetCollectionStatisticsRequest collectionName:%s", request.getCollectionName());
-        GetCollectionStatisticsRequest getCollectionStatisticsRequest = GetCollectionStatisticsRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build();
-        GetCollectionStatisticsResponse response = blockingStub.getCollectionStatistics(getCollectionStatisticsRequest);
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Get statistics of collection: '%s' in database: '%s'", collectionName, dbName);
+        GetCollectionStatisticsRequest.Builder builder = GetCollectionStatisticsRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        GetCollectionStatisticsResponse response = blockingStub.getCollectionStatistics(builder.build());
 
         rpcUtils.handleResponse(title, response.getStatus());
         GetCollectionStatsResp getCollectionStatsResp = GetCollectionStatsResp.builder()
@@ -440,18 +497,18 @@ public class CollectionService extends BaseService {
 
     public DescribeReplicasResp describeReplicas(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                  DescribeReplicasReq request) {
-        if (StringUtils.isEmpty(request.getCollectionName())) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        if (StringUtils.isEmpty(collectionName)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid collection name");
         }
 
-        String title = String.format("DescribeReplicas collectionName:%s", request.getCollectionName());
-
+        String title = String.format("Describe replicas of collection: '%s' in database: '%s'", collectionName, dbName);
         GetReplicasRequest.Builder requestBuilder = GetReplicasRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
+                .setCollectionName(collectionName)
                 .setWithShardNodes(true);
-
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            requestBuilder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            requestBuilder.setDbName(dbName);
         }
 
         GetReplicasResponse response = blockingStub.getReplicas(requestBuilder.build());
@@ -487,13 +544,16 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
-    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String databaseName,
                                        String collectionName, long timeoutMs) {
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (true) {
             // Call the getLoadState method
-            boolean isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder().collectionName(collectionName).build());
+            boolean isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder()
+                    .databaseName(databaseName)
+                    .collectionName(collectionName)
+                    .build());
             if (isLoaded) {
                 return;
             }

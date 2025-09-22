@@ -25,119 +25,166 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.partition.request.*;
 import io.milvus.v2.service.partition.response.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
 public class PartitionService extends BaseService {
     public Void createPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePartitionReq request) {
-        String title = String.format("Create partition %s in collection %s", request.getPartitionName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        String title = String.format("Create partition: '%s' in collection: '%s' in database: '%s'",
+                partitionName, collectionName, dbName);
 
-        CreatePartitionRequest createPartitionRequest = io.milvus.grpc.CreatePartitionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setPartitionName(request.getPartitionName()).build();
-
-        Status status = blockingStub.createPartition(createPartitionRequest);
+        CreatePartitionRequest.Builder builder = CreatePartitionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionName(partitionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.createPartition(builder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void dropPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropPartitionReq request) {
-        String title = String.format("Drop partition %s in collection %s", request.getPartitionName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        String title = String.format("Drop partition: '%s' in collection: '%s' in database: '%s'",
+                partitionName, collectionName, dbName);
 
-        io.milvus.grpc.DropPartitionRequest dropPartitionRequest = io.milvus.grpc.DropPartitionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setPartitionName(request.getPartitionName()).build();
-
-        Status status = blockingStub.dropPartition(dropPartitionRequest);
+        DropPartitionRequest.Builder builder = DropPartitionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionName(partitionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.dropPartition(builder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Boolean hasPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HasPartitionReq request) {
-        String title = String.format("Has partition %s in collection %s", request.getPartitionName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        String title = String.format("Has partition: '%s' in collection: '%s' in database: '%s'",
+                partitionName, collectionName, dbName);
 
-        io.milvus.grpc.HasPartitionRequest hasPartitionRequest = io.milvus.grpc.HasPartitionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setPartitionName(request.getPartitionName()).build();
-
-        io.milvus.grpc.BoolResponse boolResponse = blockingStub.hasPartition(hasPartitionRequest);
+        HasPartitionRequest.Builder builder = HasPartitionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionName(partitionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        BoolResponse boolResponse = blockingStub.hasPartition(builder.build());
         rpcUtils.handleResponse(title, boolResponse.getStatus());
 
         return boolResponse.getValue();
     }
 
     public List<String> listPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListPartitionsReq request) {
-        String title = String.format("List partitions in collection %s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("List partitions in collection: '%s' in database: '%s'", collectionName, dbName);
 
-        io.milvus.grpc.ShowPartitionsRequest showPartitionsRequest = io.milvus.grpc.ShowPartitionsRequest.newBuilder()
-                .setCollectionName(request.getCollectionName()).build();
-
-        io.milvus.grpc.ShowPartitionsResponse showPartitionsResponse = blockingStub.showPartitions(showPartitionsRequest);
+        ShowPartitionsRequest.Builder builder = ShowPartitionsRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        ShowPartitionsResponse showPartitionsResponse = blockingStub.showPartitions(builder.build());
         rpcUtils.handleResponse(title, showPartitionsResponse.getStatus());
 
         return showPartitionsResponse.getPartitionNamesList();
     }
 
-    public GetPartitionStatsResp getPartitionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetPartitionStatsReq request) {
-        String title = String.format("GetCollectionStatisticsRequest collectionName:%s", request.getCollectionName());
-        GetPartitionStatisticsRequest getPartitionStatisticsRequest = GetPartitionStatisticsRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setPartitionName(request.getPartitionName())
-                .build();
-        GetPartitionStatisticsResponse response = blockingStub.getPartitionStatistics(getPartitionStatisticsRequest);
+    public GetPartitionStatsResp getPartitionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                   GetPartitionStatsReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        String title = String.format("Get statistics of partition: '%s' in collection: '%s' in database: '%s'",
+                partitionName, collectionName, dbName);
 
+        GetPartitionStatisticsRequest.Builder builder = GetPartitionStatisticsRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setPartitionName(partitionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        GetPartitionStatisticsResponse response = blockingStub.getPartitionStatistics(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
         GetPartitionStatsResp getPartitionStatsResp = GetPartitionStatsResp.builder()
-                .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count")).map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count"))
+                        .map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
                 .build();
         return getPartitionStatsResp;
     }
 
     public Void loadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadPartitionsReq request) {
-        String title = String.format("Load partitions %s in collection %s", request.getPartitionNames(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        List<String> partitionNames = request.getPartitionNames();
+        String title = String.format("Load partitions: %s in collection: '%s' in database: '%s'",
+                partitionNames, collectionName, dbName);
 
-        io.milvus.grpc.LoadPartitionsRequest loadPartitionsRequest = io.milvus.grpc.LoadPartitionsRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .addAllPartitionNames(request.getPartitionNames())
+        LoadPartitionsRequest.Builder builder = LoadPartitionsRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .addAllPartitionNames(partitionNames)
                 .setReplicaNumber(request.getNumReplicas())
                 .setRefresh(request.getRefresh())
                 .addAllLoadFields(request.getLoadFields())
                 .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
-                .addAllResourceGroups(request.getResourceGroups())
-                .build();
-        Status status = blockingStub.loadPartitions(loadPartitionsRequest);
+                .addAllResourceGroups(request.getResourceGroups());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.loadPartitions(builder.build());
         rpcUtils.handleResponse(title, status);
         if (request.getSync()) {
-            WaitForLoadPartitions(blockingStub, request.getCollectionName(), request.getPartitionNames(), request.getTimeout());
+            WaitForLoadPartitions(blockingStub, dbName, collectionName, partitionNames, request.getTimeout());
         }
 
         return null;
     }
 
     public Void releasePartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ReleasePartitionsReq request) {
-        String title = String.format("Release partitions %s in collection %s", request.getPartitionNames(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        List<String> partitionNames = request.getPartitionNames();
+        String title = String.format("Release partitions: %s in collection: '%s' in database: '%s'",
+                partitionNames, collectionName, dbName);
 
-        io.milvus.grpc.ReleasePartitionsRequest releasePartitionsRequest = io.milvus.grpc.ReleasePartitionsRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .addAllPartitionNames(request.getPartitionNames()).build();
-        Status status = blockingStub.releasePartitions(releasePartitionsRequest);
+        ReleasePartitionsRequest.Builder builder = ReleasePartitionsRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .addAllPartitionNames(partitionNames);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.releasePartitions(builder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
-    private void WaitForLoadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+    private void WaitForLoadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
                                        String collectionName, List<String> partitions, long timeoutMs) {
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
 
         while (true) {
-            GetLoadingProgressResponse response = blockingStub.getLoadingProgress(GetLoadingProgressRequest.newBuilder()
+            GetLoadingProgressRequest.Builder builder = GetLoadingProgressRequest.newBuilder()
                     .setCollectionName(collectionName)
-                    .addAllPartitionNames(partitions)
-                    .build());
-            String title = String.format("GetLoadingProgressRequest collectionName:%s", collectionName);
+                    .addAllPartitionNames(partitions);
+            if (StringUtils.isNotEmpty(dbName)) {
+                builder.setDbName(dbName);
+            }
+            GetLoadingProgressResponse response = blockingStub.getLoadingProgress(builder.build());
+            String title = String.format("Get loading progress of collection: '%s' in database: '%s'", collectionName, dbName);
             rpcUtils.handleResponse(title, response.getStatus());
             if (response.getProgress() >= 100) {
                 return;

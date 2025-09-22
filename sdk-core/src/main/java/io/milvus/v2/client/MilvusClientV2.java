@@ -306,12 +306,22 @@ public class MilvusClientV2 {
     }
 
     /**
-     * list milvus collections
+     * List milvus collections in the current database of the connection
      *
      * @return List of String collection names
      */
     public ListCollectionsResp listCollections() {
-        return rpcUtils.retry(()-> collectionService.listCollections(this.getRpcStub()));
+        return rpcUtils.retry(()-> collectionService.listCollections(this.getRpcStub(), ""));
+    }
+    /**
+     * List milvus collections, can specify the target database
+     * Note: the old API listCollections() doesn't have a ListCollectionsReq argument, we have to create
+     * this new V2 API to avoid incompatible issue.
+     *
+     * @return List of String collection names
+     */
+    public ListCollectionsResp listCollectionsV2(ListCollectionsReq request) {
+        return rpcUtils.retry(()-> collectionService.listCollections(this.getRpcStub(), request.getDatabaseName()));
     }
     /**
      * Drops a collection in Milvus.

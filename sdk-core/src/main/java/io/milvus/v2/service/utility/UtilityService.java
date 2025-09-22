@@ -33,20 +33,23 @@ import java.util.stream.Collectors;
 
 public class UtilityService extends BaseService {
     public FlushResp flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
+        String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();
-        String title = String.format("Flush collections %s", collectionNames);
+        String title = String.format("Flush collections: '%s' in database: '%s'", collectionNames, dbName);
         if (collectionNames.isEmpty()) {
             // consistent with python sdk behavior, throw an error if collection names list is null or empty
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Collection name list can not be null or empty");
         }
 
-        FlushRequest flushRequest = io.milvus.grpc.FlushRequest.newBuilder()
-                .addAllCollectionNames(collectionNames)
-                .build();
-        FlushResponse response = blockingStub.flush(flushRequest);
+        FlushRequest.Builder builder = FlushRequest.newBuilder()
+                .addAllCollectionNames(collectionNames);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        FlushResponse response = blockingStub.flush(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
 
-        Map<String, io.milvus.grpc.LongArray> rpcCollSegIDs = response.getCollSegIDsMap();
+        Map<String, LongArray> rpcCollSegIDs = response.getCollSegIDsMap();
         Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
         rpcCollSegIDs.forEach((key, value)->{
             collectionSegmentIDs.put(key, value.getDataList());
@@ -83,18 +86,25 @@ public class UtilityService extends BaseService {
     }
 
     public CompactResp compact(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CompactReq request) {
-        String title = String.format("Compact collection %s", request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Compact collection: '%s' in database: '%s'", collectionName, dbName);
 
-        DescribeCollectionResponse descResponse = blockingStub.describeCollection(DescribeCollectionRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build());
+        DescribeCollectionRequest.Builder descBuilder = DescribeCollectionRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            descBuilder.setDbName(dbName);
+        }
+        DescribeCollectionResponse descResponse = blockingStub.describeCollection(descBuilder.build());
         rpcUtils.handleResponse(title, descResponse.getStatus());
 
-        io.milvus.grpc.ManualCompactionRequest compactRequest = io.milvus.grpc.ManualCompactionRequest.newBuilder()
+        ManualCompactionRequest.Builder builder = ManualCompactionRequest.newBuilder()
                 .setCollectionID(descResponse.getCollectionID())
-                .setMajorCompaction(request.getIsClustering())
-                .build();
-        io.milvus.grpc.ManualCompactionResponse response = blockingStub.manualCompaction(compactRequest);
+                .setMajorCompaction(request.getIsClustering());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        ManualCompactionResponse response = blockingStub.manualCompaction(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
 
         return CompactResp.builder()
@@ -104,11 +114,11 @@ public class UtilityService extends BaseService {
 
     public GetCompactionStateResp getCompactionState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                      GetCompactionStateReq request) {
-        String title = "GetCompactionState";
-        io.milvus.grpc.GetCompactionStateRequest getRequest = io.milvus.grpc.GetCompactionStateRequest.newBuilder()
+        String title = "Get compaction state";
+        GetCompactionStateRequest getRequest = GetCompactionStateRequest.newBuilder()
                 .setCompactionID(request.getCompactionID())
                 .build();
-        io.milvus.grpc.GetCompactionStateResponse response = blockingStub.getCompactionState(getRequest);
+        GetCompactionStateResponse response = blockingStub.getCompactionState(getRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
         return GetCompactionStateResp.builder()
@@ -120,60 +130,68 @@ public class UtilityService extends BaseService {
     }
 
     public Void createAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateAliasReq request) {
-        String title = String.format("CreateAlias %s for database %s collection %s", request.getAlias(), request.getDatabaseName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String alias = request.getAlias();
+        String title = String.format("Create alias '%s' of collection: '%s' in database: '%s' ", alias, collectionName, dbName);
         CreateAliasRequest.Builder createAliasRequestBuilder = CreateAliasRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setAlias(request.getAlias());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            createAliasRequestBuilder.setDbName(request.getDatabaseName());
+                .setCollectionName(collectionName)
+                .setAlias(alias);
+        if (StringUtils.isNotEmpty(dbName)) {
+            createAliasRequestBuilder.setDbName(dbName);
         }
 
-        io.milvus.grpc.Status status = blockingStub.createAlias(createAliasRequestBuilder.build());
+        Status status = blockingStub.createAlias(createAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void dropAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropAliasReq request) {
-        String title = String.format("DropAlias %s for database %s", request.getAlias(), request.getDatabaseName());
-        DropAliasRequest.Builder dropAliasRequestBuilder = io.milvus.grpc.DropAliasRequest.newBuilder()
-                .setAlias(request.getAlias());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            dropAliasRequestBuilder.setDbName(request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String alias = request.getAlias();
+        String title = String.format("Drop aliases '%s' in database: '%s'", alias, dbName);
+        DropAliasRequest.Builder dropAliasRequestBuilder = DropAliasRequest.newBuilder()
+                .setAlias(alias);
+        if (StringUtils.isNotEmpty(dbName)) {
+            dropAliasRequestBuilder.setDbName(dbName);
         }
-        io.milvus.grpc.Status status = blockingStub.dropAlias(dropAliasRequestBuilder.build());
+        Status status = blockingStub.dropAlias(dropAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public Void alterAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterAliasReq request) {
-        String title = String.format("AlterAlias %s for database %s collection %s", request.getAlias(), request.getDatabaseName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String alias = request.getAlias();
+        String title = String.format("Alter alias '%s' of collection: '%s' in database: '%s'", alias, collectionName, dbName);
         AlterAliasRequest.Builder alterAliasRequestBuilder = AlterAliasRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .setAlias(request.getAlias());
-
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            alterAliasRequestBuilder.setDbName(request.getDatabaseName());
+                .setCollectionName(collectionName)
+                .setAlias(alias);
+        if (StringUtils.isNotEmpty(dbName)) {
+            alterAliasRequestBuilder.setDbName(dbName);
         }
 
-        io.milvus.grpc.Status status = blockingStub.alterAlias(alterAliasRequestBuilder.build());
+        Status status = blockingStub.alterAlias(alterAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
 
         return null;
     }
 
     public DescribeAliasResp describeAlias(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeAliasReq request) {
-        String title = String.format("DescribeAlias %s for database %s", request.getAlias(), request.getDatabaseName());
-        DescribeAliasRequest.Builder describeAliasRequestBuilder = io.milvus.grpc.DescribeAliasRequest.newBuilder()
-                .setAlias(request.getAlias());
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            describeAliasRequestBuilder.setDbName(request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String alias = request.getAlias();
+        String title = String.format("Describe alias '%s' in database: '%s'", alias, dbName);
+        DescribeAliasRequest.Builder builder = DescribeAliasRequest.newBuilder()
+                .setAlias(alias);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
-        io.milvus.grpc.DescribeAliasResponse response = blockingStub.describeAlias(describeAliasRequestBuilder.build());
 
+        DescribeAliasResponse response = blockingStub.describeAlias(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
-
         return DescribeAliasResp.builder()
                 .databaseName(response.getDbName())
                 .collectionName(response.getCollection())
@@ -182,18 +200,17 @@ public class UtilityService extends BaseService {
     }
 
     public ListAliasResp listAliases(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListAliasesReq request) {
-        String title = "ListAliases";
-        ListAliasesRequest.Builder listAliasesRequestBuilder = ListAliasesRequest.newBuilder()
-                .setCollectionName(request.getCollectionName());
-
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            listAliasesRequestBuilder.setDbName(request.getDatabaseName());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("List alias of collection: '%s' in database: '%s'", collectionName, dbName);
+        ListAliasesRequest.Builder builder = ListAliasesRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
-        io.milvus.grpc.ListAliasesResponse response = blockingStub.listAliases(listAliasesRequestBuilder.build());
-
+        ListAliasesResponse response = blockingStub.listAliases(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
-
         return ListAliasResp.builder()
                 .collectionName(response.getCollectionName())
                 .alias(response.getAliasesList())
@@ -201,7 +218,7 @@ public class UtilityService extends BaseService {
     }
 
     public CheckHealthResp checkHealth(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
-        String title = "CheckHealth";
+        String title = "Check health";
         CheckHealthResponse response = blockingStub.checkHealth(CheckHealthRequest.newBuilder().build());
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -216,10 +233,15 @@ public class UtilityService extends BaseService {
 
     public GetPersistentSegmentInfoResp getPersistentSegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                     GetPersistentSegmentInfoReq request) {
-        String title = String.format("GetPersistentSegmentInfo collectionName %s", request.getCollectionName());
-        GetPersistentSegmentInfoResponse response = blockingStub.getPersistentSegmentInfo(GetPersistentSegmentInfoRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build());
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Get persistent segment info in collection: '%s' in database: '%s'", collectionName, dbName);
+        GetPersistentSegmentInfoRequest.Builder builder = GetPersistentSegmentInfoRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        GetPersistentSegmentInfoResponse response = blockingStub.getPersistentSegmentInfo(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
 
         List<GetPersistentSegmentInfoResp.PersistentSegmentInfo> segmentInfos = new ArrayList<>();
@@ -238,11 +260,16 @@ public class UtilityService extends BaseService {
     }
 
     public GetQuerySegmentInfoResp getQuerySegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                                            GetQuerySegmentInfoReq request) {
-        String title = String.format("GetQuerySegmentInfo collectionName %s", request.getCollectionName());
-        GetQuerySegmentInfoResponse response = blockingStub.getQuerySegmentInfo(GetQuerySegmentInfoRequest.newBuilder()
-                .setCollectionName(request.getCollectionName())
-                .build());
+                                                       GetQuerySegmentInfoReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Get query segment info in collection: '%s' in database: '%s'", collectionName, dbName);
+        GetQuerySegmentInfoRequest.Builder builder = GetQuerySegmentInfoRequest.newBuilder()
+                .setCollectionName(request.getCollectionName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        GetQuerySegmentInfoResponse response = blockingStub.getQuerySegmentInfo(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
 
         List<GetQuerySegmentInfoResp.QuerySegmentInfo> segmentInfos = new ArrayList<>();
