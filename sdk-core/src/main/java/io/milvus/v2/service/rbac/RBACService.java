@@ -35,16 +35,15 @@ import java.util.stream.Collectors;
 
 public class RBACService extends BaseService {
     public List<String> listRoles(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
-        String title = "listRoles";
         SelectRoleRequest request = SelectRoleRequest.newBuilder().build();
         SelectRoleResponse response = blockingStub.selectRole(request);
 
-        rpcUtils.handleResponse(title, response.getStatus());
+        rpcUtils.handleResponse("List roles", response.getStatus());
         return response.getResultsList().stream().map(roleResult -> roleResult.getRole().getName()).collect(Collectors.toList());
     }
 
     public Void createRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateRoleReq request) {
-        String title = "createRole";
+        String title = String.format("Create role: '%s'", request.getRoleName());
         CreateRoleRequest createRoleRequest = CreateRoleRequest.newBuilder()
                 .setEntity(RoleEntity.newBuilder()
                         .setName(request.getRoleName())
@@ -57,13 +56,15 @@ public class RBACService extends BaseService {
     }
 
     public DescribeRoleResp describeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeRoleReq request) {
-        String title = "describeRole";
+        String dbName = request.getDbName();
+        String roleName = request.getRoleName();
+        String title = String.format("Describe role: '%s' in database: '%s'", roleName, dbName);
         GrantEntity.Builder builder = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
-                        .setName(request.getRoleName())
+                        .setName(roleName)
                         .build());
-        if (StringUtils.isNotEmpty(request.getDbName())) {
-            builder.setDbName(request.getDbName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
         }
 
         SelectGrantRequest selectGrantRequest = SelectGrantRequest.newBuilder()
@@ -84,7 +85,7 @@ public class RBACService extends BaseService {
     }
 
     public Void dropRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropRoleReq request) {
-        String title = "dropRole";
+        String title = String.format("Drop role: '%s'", request.getRoleName());
         DropRoleRequest dropRoleRequest = DropRoleRequest.newBuilder()
                 .setRoleName(request.getRoleName())
                 .build();
@@ -95,7 +96,7 @@ public class RBACService extends BaseService {
     }
 
     public Void grantPrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReq request) {
-        String title = "grantPrivilege";
+        String title = String.format("Grant privilege for role: '%s'", request.getRoleName());
         GrantEntity entity = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
                         .setName(request.getRoleName())
@@ -116,7 +117,7 @@ public class RBACService extends BaseService {
     }
 
     public Void revokePrivilege(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReq request) {
-        String title = "revokePrivilege";
+        String title = String.format("Revoke privilege for role: '%s'", request.getRoleName());
         GrantEntity entity = GrantEntity.newBuilder()
                 .setRole(RoleEntity.newBuilder()
                         .setName(request.getRoleName())
@@ -137,10 +138,12 @@ public class RBACService extends BaseService {
     }
 
     public Void grantRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantRoleReq request) {
-        String title = "grantRole";
+        String roleName = request.getRoleName();
+        String userName = request.getUserName();
+        String title = String.format("Grant role: '%s' to user: '%s'", roleName, userName);
         OperateUserRoleRequest operateUserRoleRequest = OperateUserRoleRequest.newBuilder()
-                .setUsername(request.getUserName())
-                .setRoleName(request.getRoleName())
+                .setUsername(userName)
+                .setRoleName(roleName)
                 .setType(OperateUserRoleType.AddUserToRole)
                 .build();
         Status status = blockingStub.operateUserRole(operateUserRoleRequest);
@@ -150,10 +153,12 @@ public class RBACService extends BaseService {
     }
 
     public Void revokeRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokeRoleReq request) {
-        String title = "grantRole";
+        String roleName = request.getRoleName();
+        String userName = request.getUserName();
+        String title = String.format("Revoke role: '%s' from user: '%s'", roleName, userName);
         OperateUserRoleRequest operateUserRoleRequest = OperateUserRoleRequest.newBuilder()
-                .setUsername(request.getUserName())
-                .setRoleName(request.getRoleName())
+                .setUsername(userName)
+                .setRoleName(roleName)
                 .setType(OperateUserRoleType.RemoveUserFromRole)
                 .build();
         Status status = blockingStub.operateUserRole(operateUserRoleRequest);
@@ -164,21 +169,19 @@ public class RBACService extends BaseService {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public List<String> listUsers(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
-        String title = "list users";
         ListCredUsersRequest request = ListCredUsersRequest.newBuilder().build();
         ListCredUsersResponse response = blockingStub.listCredUsers(request);
-        rpcUtils.handleResponse(title, response.getStatus());
+        rpcUtils.handleResponse("List users", response.getStatus());
         return response.getUsernamesList();
     }
 
     public DescribeUserResp describeUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeUserReq request) {
-        String title = String.format("describe user %s", request.getUserName());
-        // TODO: check user exists
+        String title = String.format("Describe user: '%s'", request.getUserName());
         SelectUserRequest selectUserRequest = SelectUserRequest.newBuilder()
                 .setUser(UserEntity.newBuilder().setName(request.getUserName()).build())
                 .setIncludeRoleInfo(Boolean.TRUE)
                 .build();
-        io.milvus.grpc.SelectUserResponse response = blockingStub.selectUser(selectUserRequest);
+        SelectUserResponse response = blockingStub.selectUser(selectUserRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         DescribeUserResp describeUserResp = DescribeUserResp.builder()
                 .roles(response.getResultsList().isEmpty()? null : response.getResultsList().get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList()))
@@ -187,7 +190,7 @@ public class RBACService extends BaseService {
     }
 
     public Void createUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateUserReq request) {
-        String title = String.format("create user %s", request.getUserName());
+        String title = String.format("Create user: '%s'", request.getUserName());
         CreateCredentialRequest createCredentialRequest = CreateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
                 .setPassword(Base64.getEncoder().encodeToString(request.getPassword().getBytes(StandardCharsets.UTF_8)))
@@ -200,7 +203,7 @@ public class RBACService extends BaseService {
 
 
     public Void updatePassword(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdatePasswordReq request) {
-        String title = String.format("update password for user %s", request.getUserName());
+        String title = String.format("Update password for user: '%s'", request.getUserName());
         UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
                 .setOldPassword(Base64.getEncoder().encodeToString(request.getPassword().getBytes(StandardCharsets.UTF_8)))
@@ -213,7 +216,7 @@ public class RBACService extends BaseService {
     }
 
     public Void dropUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropUserReq request) {
-        String title = String.format("drop user %s", request.getUserName());
+        String title = String.format("Drop user: '%s'", request.getUserName());
         DeleteCredentialRequest deleteCredentialRequest = DeleteCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
                 .build();
@@ -225,7 +228,7 @@ public class RBACService extends BaseService {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public Void createPrivilegeGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePrivilegeGroupReq request) {
-        String title = String.format("create privilege group %s", request.getGroupName());
+        String title = String.format("Create privilege group: '%s'", request.getGroupName());
         CreatePrivilegeGroupRequest createPrivilegeGroupRequest = CreatePrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .build();
@@ -236,7 +239,7 @@ public class RBACService extends BaseService {
     }
 
     public Void dropPrivilegeGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropPrivilegeGroupReq request) {
-        String title = String.format("drop privilege group %s", request.getGroupName());
+        String title = String.format("Drop privilege group: '%s'", request.getGroupName());
         DropPrivilegeGroupRequest dropPrivilegeGroupRequest = DropPrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .build();
@@ -247,11 +250,10 @@ public class RBACService extends BaseService {
     }
 
     public ListPrivilegeGroupsResp listPrivilegeGroups(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, ListPrivilegeGroupsReq request) {
-        String title = "list privilege groups";
         ListPrivilegeGroupsRequest listPrivilegeGroupsRequest = ListPrivilegeGroupsRequest.newBuilder()
                 .build();
         ListPrivilegeGroupsResponse response = blockingStub.listPrivilegeGroups(listPrivilegeGroupsRequest);
-        rpcUtils.handleResponse(title, response.getStatus());
+        rpcUtils.handleResponse("List privilege groups", response.getStatus());
 
         List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
         response.getPrivilegeGroupsList().forEach((privilegeGroupInfo)->{
@@ -268,7 +270,7 @@ public class RBACService extends BaseService {
     }
 
     public Void addPrivilegesToGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddPrivilegesToGroupReq request) {
-        String title = String.format("add privilege to group %s", request.getGroupName());
+        String title = String.format("Add privilege to group: '%s'", request.getGroupName());
         OperatePrivilegeGroupRequest.Builder builder = OperatePrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .setType(OperatePrivilegeGroupType.AddPrivilegesToGroup);
@@ -283,7 +285,7 @@ public class RBACService extends BaseService {
     }
 
     public Void removePrivilegesFromGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RemovePrivilegesFromGroupReq request) {
-        String title = String.format("remove privilege from group %s", request.getGroupName());
+        String title = String.format("Remove privilege from group: '%s'", request.getGroupName());
         OperatePrivilegeGroupRequest.Builder builder = OperatePrivilegeGroupRequest.newBuilder()
                 .setGroupName(request.getGroupName())
                 .setType(OperatePrivilegeGroupType.RemovePrivilegesFromGroup);
@@ -298,12 +300,15 @@ public class RBACService extends BaseService {
     }
 
     public Void grantPrivilegeV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GrantPrivilegeReqV2 request) {
-        String title = "grantPrivilegeV2";
+        String dbName = request.getDbName();
+        String roleName = request.getRoleName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Grant privilege to user: '%s' for collection: '%s' in database: '%s'", roleName, collectionName, dbName);
         OperatePrivilegeV2Request.Builder builder = OperatePrivilegeV2Request.newBuilder()
-                .setRole(RoleEntity.newBuilder().setName(request.getRoleName()).build())
+                .setRole(RoleEntity.newBuilder().setName(roleName).build())
                 .setGrantor(GrantorEntity.newBuilder().setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
-                .setDbName(request.getDbName())
-                .setCollectionName(request.getCollectionName())
+                .setDbName(dbName)
+                .setCollectionName(collectionName)
                 .setType(OperatePrivilegeType.Grant);
 
         Status response = blockingStub.operatePrivilegeV2(builder.build());
@@ -313,12 +318,15 @@ public class RBACService extends BaseService {
     }
 
     public Void revokePrivilegeV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RevokePrivilegeReqV2 request) {
-        String title = "revokePrivilegeV2";
+        String dbName = request.getDbName();
+        String roleName = request.getRoleName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Revoke privilege from user: '%s' for collection: '%s' in database: '%s'", roleName, collectionName, dbName);
         OperatePrivilegeV2Request.Builder builder = OperatePrivilegeV2Request.newBuilder()
-                .setRole(RoleEntity.newBuilder().setName(request.getRoleName()).build())
+                .setRole(RoleEntity.newBuilder().setName(roleName).build())
                 .setGrantor(GrantorEntity.newBuilder().setPrivilege(PrivilegeEntity.newBuilder().setName(request.getPrivilege()).build()).build())
-                .setDbName(request.getDbName())
-                .setCollectionName(request.getCollectionName())
+                .setDbName(dbName)
+                .setCollectionName(collectionName)
                 .setType(OperatePrivilegeType.Revoke);
 
         Status response = blockingStub.operatePrivilegeV2(builder.build());
