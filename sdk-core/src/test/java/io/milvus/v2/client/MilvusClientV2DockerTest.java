@@ -55,6 +55,7 @@ import io.milvus.v2.service.resourcegroup.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
+import io.milvus.v2.service.vector.request.QueryReq; // 显式导入
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.*;
 import io.milvus.v2.service.vector.response.*;
@@ -286,7 +287,6 @@ class MilvusClientV2DockerTest {
     private long getRowCount(String collectionName) {
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(collectionName)
-                .filter("")
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
@@ -519,21 +519,83 @@ class MilvusClientV2DockerTest {
             verifyOutput(row, entity);
         }
 
-        // query
-        QueryResp queryResp = client.query(QueryReq.builder()
-                .collectionName(randomCollectionName)
-                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
-                .build());
-        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        Assertions.assertEquals(6, queryResults.size());
+        {
+            // query with template
+            Map<String,Object> template = new HashMap<>();
+            template.put("id_arr", Arrays.asList(5, 6, 7));
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id in {id_arr}")
+                    .filterTemplateValues(template)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(3, queryResults.size());
+        }
 
-        // test the withTimeout works well
-        client.withTimeout(1, TimeUnit.NANOSECONDS);
-        Assertions.assertThrows(MilvusClientException.class, ()->client.query(QueryReq.builder()
-                .collectionName(randomCollectionName)
-                .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
-                .consistencyLevel(ConsistencyLevel.STRONG)
-                .build()));
+        {
+            // query with limit
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .limit(8)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(8, queryResults.size());
+        }
+
+        {
+            // query with limit and filter
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id > 1")
+                    .limit(8)
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(8, queryResults.size());
+        }
+
+        {
+            // query with ids
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .ids(Arrays.asList(1, 5, 10))
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(3, queryResults.size());
+        }
+
+        {
+            // query error with 0 limit and empty filter
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .build()));
+        }
+
+        {
+            // query error with ids and filter
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("id > 1")
+                    .ids(Arrays.asList(1, 3, 5))
+                    .build()));
+        }
+
+        {
+            // query timeout
+            QueryResp queryResp = client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                    .build());
+            List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+            Assertions.assertEquals(6, queryResults.size());
+
+            // test the withTimeout works well
+            client.withTimeout(1, TimeUnit.NANOSECONDS);
+            Assertions.assertThrows(MilvusClientException.class, () -> client.query(QueryReq.builder()
+                    .collectionName(randomCollectionName)
+                    .filter("JSON_CONTAINS_ANY(json_field[\"flags\"], [4, 100])")
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .build()));
+        }
 
         client.withTimeout(0, TimeUnit.SECONDS);
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
@@ -1013,8 +1075,8 @@ class MilvusClientV2DockerTest {
         // prepare sub requests
         int nq = 5;
         int topk = 10;
-        Function<Integer, HybridSearchReq> genRequestFunc =
-                sparseCount -> {
+        Function<Map<String, Object>, HybridSearchReq> genRequestFunc =
+                config -> {
                     List<BaseVector> floatVectors = new ArrayList<>();
                     List<BaseVector> binaryVectors = new ArrayList<>();
                     List<BaseVector> sparseVectors = new ArrayList<>();
@@ -1022,6 +1084,7 @@ class MilvusClientV2DockerTest {
                         floatVectors.add(new FloatVec(utils.generateFloatVector()));
                         binaryVectors.add(new BinaryVec(utils.generateBinaryVector()));
                     }
+                    int sparseCount = (Integer)config.get("sparseCount");
                     for (int i = 0; i < sparseCount; i++) {
                         sparseVectors.add(new SparseFloatVec(utils.generateSparseVector()));
                     }
@@ -1044,23 +1107,40 @@ class MilvusClientV2DockerTest {
                             .limit(7)
                             .build());
 
-                    return HybridSearchReq.builder()
-                            .collectionName(randomCollectionName)
-                            .searchRequests(searchRequests)
-                            .ranker(RRFRanker.builder().k(20).build())
-                            .limit(topk)
-                            .consistencyLevel(ConsistencyLevel.BOUNDED)
-                            .build();
+                    CreateCollectionReq.Function ranker = WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build();
+                    boolean useFunctionScore = (Boolean)config.get("useFunctionScore");
+                    if (useFunctionScore) {
+                        return HybridSearchReq.builder()
+                                .collectionName(randomCollectionName)
+                                .searchRequests(searchRequests)
+                                .functionScore(FunctionScore.builder().addFunction(ranker).build())
+                                .limit(topk)
+                                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                                .build();
+                    } else {
+                        return HybridSearchReq.builder()
+                                .collectionName(randomCollectionName)
+                                .searchRequests(searchRequests)
+                                .ranker(RRFRanker.builder().k(20).build())
+                                .limit(topk)
+                                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                                .build();
+                    }
         };
 
+        Map<String, Object> config = new HashMap<>();
+        config.put("sparseCount", 0);
+        config.put("useFunctionScore", false);
         // search with an empty nq, return error
-        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(0)));
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(config)));
 
         // unequal nq, return error
-        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(1)));
+        config.put("sparseCount", 1);
+        Assertions.assertThrows(MilvusClientException.class, ()->client.hybridSearch(genRequestFunc.apply(config)));
 
         // search on empty collection, no result returned
-        SearchResp searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        config.put("sparseCount", nq);
+        SearchResp searchResp = client.hybridSearch(genRequestFunc.apply(config));
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
         for (List<SearchResp.SearchResult> result : searchResults) {
@@ -1081,7 +1161,8 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(count, rowCount);
 
         // search again, there are results
-        searchResp = client.hybridSearch(genRequestFunc.apply(nq));
+        config.put("useFunctionScore", true);
+        searchResp = client.hybridSearch(genRequestFunc.apply(config));
         searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(nq, searchResults.size());
         for (int i = 0; i < nq; i++) {
@@ -1707,7 +1788,7 @@ class MilvusClientV2DockerTest {
         client.createCollection(requestCreate);
 
         // insert rows
-        long count = 10000;
+        long count = 20000;
         List<JsonObject> data = generateRandomData(collectionSchema, count);
         InsertResp insertResp = client.insert(InsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -1793,13 +1874,15 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(counter > 0);
 
         // query iterator
+        long from = 17777;
+        long to = 18000;
         QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
                 .collectionName(randomCollectionName)
-                .expr("int64_field < 300")
+                .expr("int64_field < " + String.valueOf(to))
                 .outputFields(Lists.newArrayList("*"))
                 .batchSize(50L)
-                .offset(5)
-                .limit(400)
+                .offset(from)
+                .limit(4000)
                 .consistencyLevel(ConsistencyLevel.EVENTUALLY)
                 .build());
 
@@ -1813,6 +1896,7 @@ class MilvusClientV2DockerTest {
             }
 
             for (QueryResultsWrapper.RowRecord record : res) {
+                Assertions.assertInstanceOf(Long.class, record.get("id"));
                 Assertions.assertInstanceOf(Boolean.class, record.get("bool_field"));
                 Assertions.assertInstanceOf(Integer.class, record.get("int8_field"));
                 Assertions.assertInstanceOf(Integer.class, record.get("int16_field"));
@@ -1828,8 +1912,9 @@ class MilvusClientV2DockerTest {
                 Assertions.assertInstanceOf(ByteBuffer.class, record.get("bfloat16_vector"));
                 Assertions.assertInstanceOf(SortedMap.class, record.get("sparse_vector"));
 
-                long int64Val = (long)record.get("int64_field");
-                Assertions.assertTrue(int64Val < 300L);
+                long int64Val = (long)record.get("id");
+                Assertions.assertTrue(int64Val >= from);
+                Assertions.assertTrue(int64Val < to);
 
                 String varcharVal = (String)record.get("varchar_field");
                 Assertions.assertTrue(varcharVal.startsWith("varchar_"));
@@ -1850,12 +1935,12 @@ class MilvusClientV2DockerTest {
                 Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
 
                 SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)record.get("sparse_vector");
-                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() < 20); // defined in generateSparseVector()
 
                 counter++;
             }
         }
-        Assertions.assertEquals(295, counter);
+        Assertions.assertEquals(to - from, counter);
 
         // search iterator V2
         SearchIteratorV2 searchIteratorV2 = client.searchIteratorV2(SearchIteratorReqV2.builder()
@@ -1915,7 +2000,7 @@ class MilvusClientV2DockerTest {
                 Assertions.assertEquals(DIMENSION*2, bfloat16Vector.limit());
 
                 SortedMap<Long, Float> sparseVector = (SortedMap<Long, Float>)entity.get("sparse_vector");
-                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() <= 20); // defined in generateSparseVector()
+                Assertions.assertTrue(sparseVector.size() >= 10 && sparseVector.size() < 20); // defined in generateSparseVector()
 
                 counter++;
             }
@@ -2813,52 +2898,38 @@ class MilvusClientV2DockerTest {
                             .uri(milvus.getEndpoint())
                             .dbName(tempDbName)
                             .build();
-                    // fix tempClient not close bug
                     MilvusClientV2 tempClient = null;
                     try {
-
                         tempClient = new MilvusClientV2(config);
 
-                    for (int i = 0; i < 20; i++) {
-                        JsonObject row = new JsonObject();
-                        row.addProperty(pkName, i);
-                        row.add(vectorName, JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
-                        tempClient.insert(InsertReq.builder()
-                                .databaseName(dbName)
-                                .collectionName(randomCollectionName)
-                                .data(Collections.singletonList(row))
-                                .build());
+                        for (int i = 0; i < 20; i++) {
+                            JsonObject row = new JsonObject();
+                            row.addProperty(pkName, i);
+                            row.add(vectorName, JsonUtils.toJsonTree(utils.generateFloatVector(dim)));
+                            tempClient.insert(InsertReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                    .data(Collections.singletonList(row)).build());
 
-                        // query/search/hybridSearch immediately after insert, data must be visible
-                        String filter = String.format("%s == %d", pkName, i);
-                        if (i % 3 == 0) {
-                            QueryResp queryResp = client.query(QueryReq.builder()
-                                    .databaseName(dbName)
-                                    .collectionName(randomCollectionName)
-                                    .filter(filter)
-                                    .outputFields(Collections.singletonList(pkName))
-                                    .build());
-                            List<QueryResp.QueryResult> oneResult = queryResp.getQueryResults();
-                            Assertions.assertEquals(1, oneResult.size());
-                        } else if (i % 2 == 0) {
-                            SearchResp searchResp = client.search(SearchReq.builder()
-                                    .databaseName(dbName)
-                                    .collectionName(randomCollectionName)
-                                    .annsField(vectorName)
-                                    .filter(filter)
-                                    .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
-                                    .limit(10)
-                                    .build());
-                            List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
-                            Assertions.assertEquals(1, oneResult.size());
-                            Assertions.assertEquals(1, oneResult.get(0).size());
-                        } else {
-                            AnnSearchReq subReq = AnnSearchReq.builder()
-                                    .vectorFieldName(vectorName)
-                                    .filter(filter)
-                                    .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
-                                    .limit(7)
-                                    .build();
+                            // query/search/hybridSearch immediately after insert, data must be visible
+                            String filter = String.format("%s == %d", pkName, i);
+                            if (i % 3 == 0) {
+                                QueryResp queryResp = client.query(
+                                        QueryReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                                .filter(filter).outputFields(Collections.singletonList(pkName)).build());
+                                List<QueryResp.QueryResult> oneResult = queryResp.getQueryResults();
+                                Assertions.assertEquals(1, oneResult.size());
+                            } else if (i % 2 == 0) {
+                                SearchResp searchResp = client.search(
+                                        SearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
+                                                .annsField(vectorName).filter(filter)
+                                                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                                .limit(10).build());
+                                List<List<SearchResp.SearchResult>> oneResult = searchResp.getSearchResults();
+                                Assertions.assertEquals(1, oneResult.size());
+                                Assertions.assertEquals(1, oneResult.get(0).size());
+                            } else {
+                                AnnSearchReq subReq = AnnSearchReq.builder().vectorFieldName(vectorName).filter(filter)
+                                        .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector(dim))))
+                                        .limit(7).build();
 
                                 SearchResp searchResp = client.hybridSearch(
                                         HybridSearchReq.builder().databaseName(dbName).collectionName(randomCollectionName)
@@ -2869,7 +2940,6 @@ class MilvusClientV2DockerTest {
                                 Assertions.assertEquals(1, oneResult.get(0).size());
                             }
                         }
-
                     } finally {
                         if (tempClient != null) {
                             tempClient.close();

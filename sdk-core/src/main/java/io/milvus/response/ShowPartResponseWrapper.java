@@ -22,9 +22,6 @@ package io.milvus.response;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.grpc.ShowPartitionsResponse;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +31,10 @@ import java.util.List;
 public class ShowPartResponseWrapper {
     private final ShowPartitionsResponse response;
 
-    public ShowPartResponseWrapper(@NonNull ShowPartitionsResponse response) {
+    public ShowPartResponseWrapper(ShowPartitionsResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("ShowPartitionsResponse cannot be null");
+        }
         this.response = response;
     }
 
@@ -68,9 +68,12 @@ public class ShowPartResponseWrapper {
      * @param partitionName partition name to get information
      * @return {@link PartitionInfo} information of the partition
      */
-    public PartitionInfo getPartitionInfoByName(@NonNull String partitionName) {
+    public PartitionInfo getPartitionInfoByName(String partitionName) {
+        if (partitionName == null) {
+            throw new IllegalArgumentException("Partition name cannot be null");
+        }
         for (int i = 0; i < response.getPartitionNamesCount(); ++i) {
-            if ( partitionName.compareTo(response.getPartitionNames(i)) == 0) {
+            if (partitionName.compareTo(response.getPartitionNames(i)) == 0) {
                 PartitionInfo info = new PartitionInfo(response.getPartitionNames(i), response.getPartitionIDs(i),
                         response.getCreatedUtcTimestamps(i));
                 if (response.getInMemoryPercentagesCount() > i) {
@@ -86,7 +89,6 @@ public class ShowPartResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>showPartitions</code> interface.
      */
-    @Getter
     public static final class PartitionInfo {
         private final String name;
         private final long id;
@@ -101,6 +103,23 @@ public class ShowPartResponseWrapper {
 
         public void setInMemoryPercentage(long inMemoryPercentage) {
             this.inMemoryPercentage = inMemoryPercentage;
+        }
+
+        // Getter methods
+        public String getName() {
+            return name;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public long getUtcTimestamp() {
+            return utcTimestamp;
+        }
+
+        public long getInMemoryPercentage() {
+            return inMemoryPercentage;
         }
 
         @Override
@@ -122,4 +141,3 @@ public class ShowPartResponseWrapper {
                 '}';
     }
 }
-

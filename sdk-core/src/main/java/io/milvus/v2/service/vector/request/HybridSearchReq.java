@@ -30,7 +30,6 @@ public class HybridSearchReq {
     private String collectionName;
     private List<String> partitionNames;
     private List<AnnSearchReq> searchRequests;
-    private CreateCollectionReq.Function ranker;
     @Deprecated
     private int topK; // deprecated, replaced by "limit"
     private long limit;
@@ -41,6 +40,11 @@ public class HybridSearchReq {
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
+    @Deprecated
+    private CreateCollectionReq.Function ranker;
+    // milvus v2.6.1 supports multi-rankers. The "ranker" still works. It is recommended
+    // to use functionScore even you have only one ranker. Not allow to set both.
+    private FunctionScore functionScore;
 
     private HybridSearchReq(Builder builder) {
         this.databaseName = builder.databaseName;
@@ -48,6 +52,7 @@ public class HybridSearchReq {
         this.partitionNames = builder.partitionNames;
         this.searchRequests = builder.searchRequests;
         this.ranker = builder.ranker;
+        this.functionScore = builder.functionScore;
         this.topK = builder.topK;
         this.limit = builder.limit;
         this.outFields = builder.outFields;
@@ -98,6 +103,14 @@ public class HybridSearchReq {
 
     public void setRanker(CreateCollectionReq.Function ranker) {
         this.ranker = ranker;
+    }
+
+    public FunctionScore getFunctionScore() {
+        return functionScore;
+    }
+
+    public void setFunctionScore(FunctionScore functionScore) {
+        this.functionScore = functionScore;
     }
 
     @Deprecated
@@ -189,6 +202,7 @@ public class HybridSearchReq {
                 .append(partitionNames, that.partitionNames)
                 .append(searchRequests, that.searchRequests)
                 .append(ranker, that.ranker)
+                .append(functionScore, that.functionScore)
                 .append(outFields, that.outFields)
                 .append(consistencyLevel, that.consistencyLevel)
                 .append(groupByFieldName, that.groupByFieldName)
@@ -204,6 +218,7 @@ public class HybridSearchReq {
         result = 31 * result + (partitionNames != null ? partitionNames.hashCode() : 0);
         result = 31 * result + (searchRequests != null ? searchRequests.hashCode() : 0);
         result = 31 * result + (ranker != null ? ranker.hashCode() : 0);
+        result = 31 * result + (functionScore != null ? functionScore.hashCode() : 0);
         result = 31 * result + topK;
         result = 31 * result + (int) (limit ^ (limit >>> 32));
         result = 31 * result + (outFields != null ? outFields.hashCode() : 0);
@@ -224,6 +239,7 @@ public class HybridSearchReq {
                 ", partitionNames=" + partitionNames +
                 ", searchRequests=" + searchRequests +
                 ", ranker=" + ranker +
+                ", functionScore=" + functionScore +
                 ", topK=" + topK +
                 ", limit=" + limit +
                 ", outFields=" + outFields +
@@ -246,6 +262,7 @@ public class HybridSearchReq {
         private List<String> partitionNames;
         private List<AnnSearchReq> searchRequests;
         private CreateCollectionReq.Function ranker;
+        private FunctionScore functionScore;
         private int topK = 0; // default value
         private long limit = 0L; // default value
         private List<String> outFields;
@@ -280,6 +297,11 @@ public class HybridSearchReq {
 
         public Builder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
+            return this;
+        }
+
+        public Builder functionScore(FunctionScore functionScore) {
+            this.functionScore = functionScore;
             return this;
         }
 

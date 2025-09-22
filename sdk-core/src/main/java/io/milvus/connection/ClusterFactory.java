@@ -22,7 +22,6 @@ package io.milvus.connection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.QueryNodeSingleSearch;
 import io.milvus.param.ServerAddress;
-import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -41,7 +40,10 @@ public class ClusterFactory {
 
     private ServerMonitor monitor;
 
-    private ClusterFactory(@NonNull Builder builder) {
+    private ClusterFactory(Builder builder) {
+        if (builder == null) {
+            throw new NullPointerException("builder cannot be null");
+        }
         this.serverSettings = builder.serverSettings;
         this.master = this.getDefaultServer();
         this.availableServerSettings = builder.serverSettings;
@@ -114,7 +116,10 @@ public class ClusterFactory {
          * @param serverSettings ServerSetting
          * @return <code>Builder</code>
          */
-        public Builder withServerSetting(@NonNull List<ServerSetting> serverSettings) {
+        public Builder withServerSetting(List<ServerSetting> serverSettings) {
+            if (serverSettings == null) {
+                throw new NullPointerException("serverSettings cannot be null");
+            }
             this.serverSettings = serverSettings;
             return this;
         }

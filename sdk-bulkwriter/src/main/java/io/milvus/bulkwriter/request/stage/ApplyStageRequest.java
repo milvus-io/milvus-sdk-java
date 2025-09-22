@@ -30,6 +30,5 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class ApplyStageRequest extends BaseStageRequest {
     private String stageName;
-
     private String path;
 }

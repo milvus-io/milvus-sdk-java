@@ -19,14 +19,12 @@
 
 package io.milvus.v2.common;
 
-import lombok.NonNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.Map;
 
 public class IndexParam {
-    @NonNull
     private String fieldName;
     private String indexName;
     private IndexType indexType = IndexType.AUTOINDEX;
@@ -35,6 +33,9 @@ public class IndexParam {
 
     // Constructor for builder
     private IndexParam(Builder builder) {
+        if (builder.fieldName == null) {
+            throw new NullPointerException("fieldName cannot be null");
+        }
         this.fieldName = builder.fieldName;
         this.indexName = builder.indexName;
         this.indexType = builder.indexType;
@@ -69,6 +70,9 @@ public class IndexParam {
 
     // Setters
     public void setFieldName(String fieldName) {
+        if (fieldName == null) {
+            throw new NullPointerException("fieldName cannot be null");
+        }
         this.fieldName = fieldName;
     }
 
@@ -135,6 +139,9 @@ public class IndexParam {
         private Map<String, Object> extraParams;
 
         public Builder fieldName(String fieldName) {
+            if (fieldName == null) {
+                throw new NullPointerException("fieldName cannot be null");
+            }
             this.fieldName = fieldName;
             return this;
         }

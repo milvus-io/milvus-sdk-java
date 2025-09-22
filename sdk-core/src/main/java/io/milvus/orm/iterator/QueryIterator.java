@@ -33,9 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.milvus.param.Constant.NO_CACHE_ID;
+import static io.milvus.param.Constant.MAX_BATCH_SIZE;
 import static io.milvus.param.Constant.UNLIMITED;
 
 public class QueryIterator {
@@ -96,7 +98,7 @@ public class QueryIterator {
     // perform a query to get the first time stamp check point
     // the time stamp will be input for the next query to skip something
     private void setupTsByRequest() {
-        QueryResults response = executeQuery(expr, 0L, 1L, 0L);
+        QueryResults response = executeQuery(expr, 0L, 1L, 0L, true);
         if (response.getSessionTs() <= 0) {
             logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
             // fall back to latest session ts by local time
@@ -114,11 +116,19 @@ public class QueryIterator {
             return;
         }
 
-        QueryResults response = executeQuery(expr, 0L, offset, this.sessionTs);
-        QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
-        List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
-        int resultIndex = Math.min(res.size(), (int) offset);
-        updateCursor(res.subList(0, resultIndex));
+        long currentOffset = offset;
+        while (currentOffset > 0) {
+            long limit = Math.min(MAX_BATCH_SIZE, currentOffset);
+            String currentExpr = setupNextExpr();
+            QueryResults response = executeQuery(currentExpr, 0L, limit, this.sessionTs, true);
+            QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
+            List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
+            if (res.isEmpty()) {
+                break;
+            }
+            updateCursor(res);
+            currentOffset -= res.size();
+        }
         offset = 0;
     }
 
@@ -133,7 +143,7 @@ public class QueryIterator {
             iteratorCache.releaseCache(cacheIdInUse);
             String currentExpr = setupNextExpr();
             logger.debug("Query iterator next expression: " + currentExpr);
-            QueryResults response = executeQuery(currentExpr, offset, batchSize, this.sessionTs);
+            QueryResults response = executeQuery(currentExpr, offset, batchSize, this.sessionTs, false);
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
             List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             maybeCache(res);
@@ -197,13 +207,20 @@ public class QueryIterator {
         return ret != null && ret.size() >= batchSize;
     }
 
-    private QueryResults executeQuery(String expr, long offset, long limit, long ts) {
+    private QueryResults executeQuery(String expr, long offset, long limit, long ts, boolean isSeek) {
+        // for seeking offset, no need to return output fields
+        List<String> outputFields = new ArrayList<>();
+        boolean reduceStopForBest = queryIteratorParam.isReduceStopForBest();
+        if (!isSeek) {
+            outputFields = queryIteratorParam.getOutFields();
+            reduceStopForBest = false;
+        }
         QueryParam queryParam = QueryParam.newBuilder()
                 .withDatabaseName(queryIteratorParam.getDatabaseName())
                 .withCollectionName(queryIteratorParam.getCollectionName())
                 .withConsistencyLevel(queryIteratorParam.getConsistencyLevel())
                 .withPartitionNames(queryIteratorParam.getPartitionNames())
-                .withOutFields(queryIteratorParam.getOutFields())
+                .withOutFields(outputFields)
                 .withExpr(expr)
                 .withOffset(offset)
                 .withLimit(limit)
@@ -215,7 +232,7 @@ public class QueryIterator {
         // reduce stop for best
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.REDUCE_STOP_FOR_BEST)
-                .setValue(String.valueOf(queryIteratorParam.isReduceStopForBest()))
+                .setValue(String.valueOf(reduceStopForBest))
                 .build());
 
         // iterator

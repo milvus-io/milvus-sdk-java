@@ -213,7 +213,7 @@ public class QueryReq {
         private List<String> partitionNames = new ArrayList<>();
         private List<String> outputFields = Collections.singletonList("*");
         private List<Object> ids;
-        private String filter;
+        private String filter = "";
         private ConsistencyLevel consistencyLevel = null;
         private long offset;
         private long limit;
