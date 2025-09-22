@@ -63,7 +63,9 @@ public class RpcUtils {
                     code, status.getErrorCode().getNumber());
         }
 
-        logger.debug("{} successfully!", requestInfo);
+        if (logger.isDebugEnabled()) {
+            logger.debug("{} successfully!", requestInfo);
+        }
     }
 
     public <T> T retry(Callable<T> callable) {

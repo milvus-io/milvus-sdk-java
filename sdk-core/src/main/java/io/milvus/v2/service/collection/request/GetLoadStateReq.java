@@ -25,6 +25,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class GetLoadStateReq {
+    private String databaseName;
     private String collectionName;
     private String partitionName;
 }
