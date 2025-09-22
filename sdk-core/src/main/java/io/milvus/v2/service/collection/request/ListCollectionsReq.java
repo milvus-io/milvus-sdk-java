@@ -17,15 +17,13 @@
  * under the License.
  */
 
-package io.milvus.v2.service.partition.request;
+package io.milvus.v2.service.collection.request;
 
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
-public class GetPartitionStatsReq {
+public class ListCollectionsReq {
     private String databaseName;
-    private String collectionName;
-    private String partitionName;
 }

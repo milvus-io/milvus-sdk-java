@@ -26,6 +26,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 public class ListIndexesReq {
+    private String databaseName;
     @NonNull
     private String collectionName;
     private String fieldName;
