@@ -2028,7 +2028,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1, dbNames.size());
         String currentDbName = dbNames.get(0);
 
-        // create a new database
+        // create a temp database
         String tempDatabaseName = "db_temp";
         Map<String, String> properties = new HashMap<>();
         properties.put(Constant.DATABASE_REPLICA_NUMBER, "5");
@@ -2076,10 +2076,10 @@ class MilvusClientV2DockerTest {
         propertiesResp = descDBResp.getProperties();
         Assertions.assertFalse(propertiesResp.containsKey("prop"));
 
-        // switch to the new database
+        // switch to the temp database
         Assertions.assertDoesNotThrow(()->client.useDatabase(tempDatabaseName));
 
-        // create a collection in the new database
+        // create a collection in the temp database
         String randomCollectionName = generator.generate(10);
         String vectorFieldName = "float_vector";
         CreateCollectionReq.CollectionSchema collectionSchema = baseSchema();
@@ -2102,28 +2102,215 @@ class MilvusClientV2DockerTest {
                 .build();
         client.createCollection(requestCreate);
 
-        ListCollectionsResp listCollectionsResp = client.listCollections();
+        // switch to the default database
+        Assertions.assertDoesNotThrow(()->client.useDatabase(currentDbName));
+
+        // list collections in the temp database
+        ListCollectionsResp listCollectionsResp = client.listCollectionsV2(ListCollectionsReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
         List<String> collectionNames = listCollectionsResp.getCollectionNames();
         Assertions.assertEquals(1, collectionNames.size());
         Assertions.assertTrue(collectionNames.contains(randomCollectionName));
 
-        // drop the collection so that we can drop the database later
+        // drop the collection so that we can drop the temp database later
         client.dropCollection(DropCollectionReq.builder()
+                .databaseName(tempDatabaseName)
                 .collectionName(randomCollectionName)
                 .build());
 
-        // switch to the old database
-        Assertions.assertDoesNotThrow(()->client.useDatabase(currentDbName));
-
-        // drop the new database
+        // drop the temp database
         client.dropDatabase(DropDatabaseReq.builder()
                 .databaseName(tempDatabaseName)
                 .build());
 
-        // check the new database is deleted
+        // check the temp database is deleted
         listDatabasesResp = client.listDatabases();
         dbNames = listDatabasesResp.getDatabaseNames();
         Assertions.assertFalse(dbNames.contains(tempDatabaseName));
+    }
+
+    @Test
+    void testOperationsAcrossDB() {
+        // create a temp database
+        String tempDatabaseName = "db_temp";
+        Map<String, String> properties = new HashMap<>();
+        properties.put(Constant.DATABASE_REPLICA_NUMBER, "5");
+        CreateDatabaseReq createDatabaseReq = CreateDatabaseReq.builder()
+                .databaseName(tempDatabaseName)
+                .properties(properties)
+                .build();
+        client.createDatabase(createDatabaseReq);
+
+        // create a collection in the temp database
+        String randomCollectionName = generator.generate(10);
+        String vectorFieldName = "float_vector";
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .autoID(true)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorFieldName)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .build();
+        client.createCollection(requestCreate);
+
+        // has collection
+        Assertions.assertTrue(client.hasCollection(HasCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .build()));
+
+        // list collections
+        ListCollectionsResp listResp = client.listCollectionsV2(ListCollectionsReq.builder()
+                .databaseName(tempDatabaseName)
+                .build());
+        Assertions.assertTrue(listResp.getCollectionNames().contains(randomCollectionName));
+
+        // specify the temp database name to create index
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName(vectorFieldName)
+                .indexType(IndexParam.IndexType.FLAT)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build();
+        client.createIndex(CreateIndexReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .sync(true)
+                .build());
+
+        // specify the temp database name to list index
+        List<String> indexes = client.listIndexes(ListIndexesReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .fieldName(vectorFieldName)
+                .build());
+        Assertions.assertTrue(indexes.contains(vectorFieldName));
+
+        // specify the temp database name to insert
+        JsonObject row = new JsonObject();
+        row.add(vectorFieldName, JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
+        client.insert(InsertReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+
+        // specify the temp database name to flush collection
+        client.flush(FlushReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionNames(Collections.singletonList(randomCollectionName))
+                .waitFlushedTimeoutMs(5000L)
+                .build());
+
+        // specify the temp database name to compact collection
+        client.compact(CompactReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .build());
+
+        // specify the temp database name to load collection
+        client.loadCollection(LoadCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .sync(true)
+                .build());
+
+        // specify the temp database name to release collection
+        client.releaseCollection(ReleaseCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .build());
+
+        // specify the temp database name to get load state of collection
+        Assertions.assertFalse(client.getLoadState(GetLoadStateReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .build()));
+
+        // create a partition in the temp database
+        String partitionName = "temp_part";
+        client.createPartition(CreatePartitionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionName(partitionName)
+                .build());
+
+        // has partition
+        Assertions.assertTrue(client.hasPartition(HasPartitionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionName(partitionName)
+                .build()));
+
+        // list partitions
+        List<String> partitions = client.listPartitions(ListPartitionsReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .build());
+        Assertions.assertTrue(partitions.contains(partitionName));
+
+        // specify the temp database name to load partition
+        client.loadPartitions(LoadPartitionsReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionNames(Collections.singletonList(partitionName))
+                .sync(true)
+                .build());
+
+        // specify the temp database name to get load state of partition
+        Assertions.assertTrue(client.getLoadState(GetLoadStateReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionName(partitionName)
+                .build()));
+
+        // specify the temp database name to release partition
+        client.releasePartitions(ReleasePartitionsReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionNames(Collections.singletonList(partitionName))
+                .build());
+
+        // specify the temp database name to drop partition
+        client.dropPartition(DropPartitionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .partitionName(partitionName)
+                .build());
+
+        // specify the temp database name to drop index
+        client.dropIndex(DropIndexReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .fieldName(vectorFieldName)
+                .build());
+
+        // specify the temp database name to rename collection
+        String newCollName = "new_name";
+        client.renameCollection(RenameCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(randomCollectionName)
+                .newCollectionName(newCollName)
+                .build());
+
+        // specify the temp database name to drop collection
+        client.dropCollection(DropCollectionReq.builder()
+                .databaseName(tempDatabaseName)
+                .collectionName(newCollName)
+                .build());
     }
 
     @Test

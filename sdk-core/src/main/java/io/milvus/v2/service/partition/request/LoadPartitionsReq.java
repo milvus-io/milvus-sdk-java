@@ -29,6 +29,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class LoadPartitionsReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private List<String> partitionNames = new ArrayList<>();
