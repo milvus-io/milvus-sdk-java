@@ -67,7 +67,7 @@ public class ResourceGroupService extends BaseService {
 
     public Void createResourceGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                     CreateResourceGroupReq request) {
-        String title = String.format("CreateResourceGroupReq groupName:%s", request.getGroupName());
+        String title = String.format("Create resource group: '%s'", request.getGroupName());
 
         ResourceGroupConfig rpcConfig = convertResourceGroupConfig(request.getConfig());
         CreateResourceGroupRequest rpcRequest = CreateResourceGroupRequest.newBuilder()
@@ -82,8 +82,6 @@ public class ResourceGroupService extends BaseService {
 
     public Void updateResourceGroups(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                      UpdateResourceGroupsReq request) {
-        String title = "UpdateResourceGroupsReq";
-
         Map<String, io.milvus.common.resourcegroup.ResourceGroupConfig> resourceGroups = request.getResourceGroups();
         if (resourceGroups.isEmpty()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Resource group configurations cannot be empty");
@@ -96,13 +94,13 @@ public class ResourceGroupService extends BaseService {
         });
 
         Status status = blockingStub.updateResourceGroups(requestBuilder.build());
-        rpcUtils.handleResponse(title, status);
+        rpcUtils.handleResponse("Update resource groups", status);
         return null;
     }
 
     public Void dropResourceGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                   DropResourceGroupReq request) {
-        String title = String.format("DropResourceGroupReq groupName:%s", request.getGroupName());
+        String title = String.format("Drop resource group: '%s'", request.getGroupName());
 
         DropResourceGroupRequest rpcRequest = DropResourceGroupRequest.newBuilder()
                 .setResourceGroup(request.getGroupName())
@@ -115,9 +113,8 @@ public class ResourceGroupService extends BaseService {
 
     public ListResourceGroupsResp listResourceGroups(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                      ListResourceGroupsReq request) {
-        String title = "ListResourceGroupsReq";
         ListResourceGroupsResponse response = blockingStub.listResourceGroups(ListResourceGroupsRequest.newBuilder().build());
-        rpcUtils.handleResponse(title, response.getStatus());
+        rpcUtils.handleResponse("List resource groups", response.getStatus());
         return ListResourceGroupsResp.builder()
                 .groupNames(response.getResourceGroupsList())
                 .build();
@@ -125,8 +122,7 @@ public class ResourceGroupService extends BaseService {
 
     public DescribeResourceGroupResp describeResourceGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                            DescribeResourceGroupReq request) {
-        String title = String.format("DescribeResourceGroupReq groupName:%s", request.getGroupName());
-
+        String title = String.format("Describe resource group: '%s'", request.getGroupName());
         DescribeResourceGroupRequest rpcRequest = DescribeResourceGroupRequest.newBuilder()
                 .setResourceGroup(request.getGroupName())
                 .build();
@@ -156,19 +152,21 @@ public class ResourceGroupService extends BaseService {
     }
 
     public Void transferNode(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, TransferNodeReq request) {
-        if (StringUtils.isEmpty(request.getSourceGroupName())) {
+        String sourceGroup = request.getSourceGroupName();
+        if (StringUtils.isEmpty(sourceGroup)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid source group name");
         }
-        if (StringUtils.isEmpty(request.getTargetGroupName())) {
+        String targetGroup = request.getTargetGroupName();
+        if (StringUtils.isEmpty(targetGroup)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid target group name");
         }
 
-        String title = String.format("TransferNode %d nodes from %s to %s", request.getNumOfNodes(),
-                request.getSourceGroupName(), request.getTargetGroupName());
+        Integer numOfNodes = request.getNumOfNodes();
+        String title = String.format("Transfer %d nodes from group: '%s' to group: '%s'", numOfNodes, sourceGroup, targetGroup);
         Status response = blockingStub.transferNode(TransferNodeRequest.newBuilder()
-                .setSourceResourceGroup(request.getSourceGroupName())
-                .setTargetResourceGroup(request.getTargetGroupName())
-                .setNumNode(request.getNumOfNodes())
+                .setSourceResourceGroup(sourceGroup)
+                .setTargetResourceGroup(targetGroup)
+                .setNumNode(numOfNodes)
                 .build());
         rpcUtils.handleResponse(title, response);
         return null;
@@ -176,27 +174,32 @@ public class ResourceGroupService extends BaseService {
 
     public Void transferReplica(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                 TransferReplicaReq request) {
-        if (StringUtils.isEmpty(request.getSourceGroupName())) {
+        String sourceGroup = request.getSourceGroupName();
+        if (StringUtils.isEmpty(sourceGroup)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid source group name");
         }
-        if (StringUtils.isEmpty(request.getTargetGroupName())) {
+        String targetGroup = request.getTargetGroupName();
+        if (StringUtils.isEmpty(targetGroup)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid target group name");
         }
-        if (StringUtils.isEmpty(request.getCollectionName())) {
+        String collectionName = request.getCollectionName();
+        if (StringUtils.isEmpty(collectionName)) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Invalid collection name");
         }
 
-        String title = String.format("TransferReplicaReq sourceGroupName:%s targetGroupName:%s collectionName:%s",
-                request.getSourceGroupName(), request.getTargetGroupName(), request.getCollectionName());
+        String dbName = request.getDatabaseName();
+        Long numOfReplicas = request.getNumberOfReplicas();
+        String title = String.format("Transfer %d replicas from group: '%s' to group: '%s' of collection: '%s'",
+                numOfReplicas, sourceGroup, targetGroup, collectionName);
 
         TransferReplicaRequest.Builder requestBuilder = TransferReplicaRequest.newBuilder()
-                .setSourceResourceGroup(request.getSourceGroupName())
-                .setTargetResourceGroup(request.getTargetGroupName())
-                .setCollectionName(request.getCollectionName())
-                .setNumReplica(request.getNumberOfReplicas());
+                .setSourceResourceGroup(sourceGroup)
+                .setTargetResourceGroup(targetGroup)
+                .setCollectionName(collectionName)
+                .setNumReplica(numOfReplicas);
 
-        if (StringUtils.isNotEmpty(request.getDatabaseName())) {
-            requestBuilder.setDbName(request.getDatabaseName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            requestBuilder.setDbName(dbName);
         }
 
         Status status = blockingStub.transferReplica(requestBuilder.build());

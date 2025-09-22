@@ -28,6 +28,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class GetReq {
+    private String databaseName;
     private String collectionName;
     @Builder.Default
     private String partitionName = "";

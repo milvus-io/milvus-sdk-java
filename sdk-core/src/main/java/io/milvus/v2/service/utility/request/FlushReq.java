@@ -29,6 +29,7 @@ import java.util.List;
 @Data
 @SuperBuilder
 public class FlushReq {
+    private String databaseName;
     @Builder.Default
     private List<String> collectionNames = new ArrayList<>();
 
