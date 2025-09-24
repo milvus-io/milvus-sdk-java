@@ -11,7 +11,7 @@ public class TestUtils {
     private int dimension = 256;
     private static final Random RANDOM = new Random();
 
-    public static final String MilvusDockerImageID = "milvusdb/milvus:v2.6.1";
+    public static final String MilvusDockerImageID = "milvusdb/milvus:master-20250922-200ee4cb-amd64";
 
     public TestUtils(int dimension) {
         this.dimension = dimension;
@@ -89,7 +89,7 @@ public class TestUtils {
     public SortedMap<Long, Float> generateSparseVector() {
         SortedMap<Long, Float> sparse = new TreeMap<>();
         int dim = RANDOM.nextInt(10) + 10;
-        for (int i = 0; i < dim; ++i) {
+        while (sparse.size() < dim) {
             sparse.put((long) RANDOM.nextInt(1000000), RANDOM.nextFloat());
         }
         return sparse;

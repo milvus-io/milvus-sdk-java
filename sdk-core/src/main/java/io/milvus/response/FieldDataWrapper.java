@@ -30,9 +30,7 @@ import lombok.NonNull;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.protobuf.ByteString;
@@ -72,7 +70,11 @@ public class FieldDataWrapper {
         if (!isVectorField()) {
             throw new IllegalResponseException("Not a vector field");
         }
-        return (int) fieldData.getVectors().getDim();
+        return getDimInternal(fieldData.getVectors());
+    }
+
+    private int getDimInternal(VectorField vector) {
+        return (int) vector.getDim();
     }
 
     // this method returns bytes size of each vector according to vector type
@@ -106,16 +108,16 @@ public class FieldDataWrapper {
         return 0;
     }
 
-    private ByteString getVectorBytes(FieldData fieldData, DataType dt) {
+    private ByteString getVectorBytes(VectorField vd, DataType dt) {
         ByteString data;
         if (dt == DataType.BinaryVector) {
-            data = fieldData.getVectors().getBinaryVector();
+            data = vd.getBinaryVector();
         } else if (dt == DataType.Float16Vector) {
-            data = fieldData.getVectors().getFloat16Vector();
+            data = vd.getFloat16Vector();
         } else if (dt == DataType.BFloat16Vector) {
-            data = fieldData.getVectors().getBfloat16Vector();
+            data = vd.getBfloat16Vector();
         } else if (dt == DataType.Int8Vector) {
-            data = fieldData.getVectors().getInt8Vector();
+            data = vd.getInt8Vector();
         } else {
             String msg = String.format("Unsupported data type %s returned by FieldData", dt.name());
             throw new IllegalResponseException(msg);
@@ -148,7 +150,7 @@ public class FieldDataWrapper {
             case BFloat16Vector:
             case Int8Vector: {
                 int dim = getDim();
-                ByteString data = getVectorBytes(fieldData, dt);
+                ByteString data = getVectorBytes(fieldData.getVectors(), dt);
                 int bytePerVec = checkDim(dt, data, dim);
 
                 return data.size()/bytePerVec;
@@ -176,6 +178,20 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getJsonData().getDataCount();
             case Array:
                 return fieldData.getScalars().getArrayData().getDataCount();
+            case ArrayOfStruct: {
+                List<FieldData> structData = fieldData.getStructArrays().getFieldsList();
+                for (FieldData fd : structData) {
+                    if (fd.getType() == DataType.Array) {
+                        return fd.getScalars().getArrayData().getDataCount();
+                    } else if (fd.getType() == DataType.ArrayOfVector) {
+                        FieldDataWrapper tempWrapper = new FieldDataWrapper(fd);
+                        return tempWrapper.getRowCount();
+                    }
+                }
+            }
+            case ArrayOfVector: {
+                return fieldData.getVectors().getVectorArray().getDataCount();
+            }
             default:
                 throw new IllegalResponseException("Unsupported data type returned by FieldData");
         }
@@ -194,6 +210,7 @@ public class FieldDataWrapper {
      *      Varchar field returns List of String
      *      Array field returns List of List
      *      JSON field returns List of String;
+     *      Struct field returns List of List<Map<String, Object>>
      *      etc.
      *
      * Throws {@link IllegalResponseException} if the field type is illegal.
@@ -212,9 +229,50 @@ public class FieldDataWrapper {
     private List<?> getFieldDataInternal() throws IllegalResponseException {
         DataType dt = fieldData.getType();
         switch (dt) {
+            case FloatVector:
+            case BinaryVector:
+            case Float16Vector:
+            case BFloat16Vector:
+            case Int8Vector:
+            case SparseFloatVector:
+                return getVectorData(dt, fieldData.getVectors());
+            case Array:
+            case Int64:
+            case Int32:
+            case Int16:
+            case Int8:
+            case Bool:
+            case Float:
+            case Double:
+            case VarChar:
+            case String:
+            case JSON:
+                return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
+            case ArrayOfStruct:
+                return getStructData(fieldData.getStructArrays(), fieldData.getFieldName());
+            default:
+                throw new IllegalResponseException("Unsupported data type returned by FieldData");
+        }
+    }
+
+    private List<?> setNoneData(List<?> data, List<Boolean> validData) {
+        if (validData != null && validData.size() == data.size()) {
+            List<?> newData = new ArrayList<>(data); // copy the list since the data is come from grpc is not mutable
+            for (int i = 0; i < validData.size(); i++) {
+                if (validData.get(i) == Boolean.FALSE) {
+                    newData.set(i, null);
+                }
+            }
+            return newData;
+        }
+        return data;
+    }
+
+    private List<?> getVectorData(DataType dt, VectorField vector) {
+        switch (dt) {
             case FloatVector: {
-                int dim = getDim();
-                List<Float> data = fieldData.getVectors().getFloatVector().getDataList();
+                int dim = getDimInternal(vector);
+                List<Float> data = vector.getFloatVector().getDataList();
                 if (data.size() % dim != 0) {
                     String msg = String.format("Returned float vector data array size %d doesn't match dimension %d",
                             data.size(), dim);
@@ -232,10 +290,10 @@ public class FieldDataWrapper {
             case Float16Vector:
             case BFloat16Vector:
             case Int8Vector: {
-                int dim = getDim();
-                ByteString data = getVectorBytes(fieldData, dt);
+                int dim = getDimInternal(vector);
+                ByteString data = getVectorBytes(vector, dt);
                 int bytePerVec = checkDim(dt, data, dim);
-                int count = data.size()/bytePerVec;
+                int count = data.size() / bytePerVec;
                 List<ByteBuffer> packData = new ArrayList<>();
                 for (int i = 0; i < count; ++i) {
                     ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
@@ -252,7 +310,7 @@ public class FieldDataWrapper {
                 // in Java sdk, each sparse vector is pairs of long+float
                 // in server side, each sparse vector is stored as uint+float (8 bytes)
                 // don't use sparseArray.getDim() because the dim is the max index of each rows
-                SparseFloatArray sparseArray = fieldData.getVectors().getSparseFloatVector();
+                SparseFloatArray sparseArray = vector.getSparseFloatVector();
                 List<SortedMap<Long, Float>> packData = new ArrayList<>();
                 for (int i = 0; i < sparseArray.getContentsCount(); ++i) {
                     ByteString bs = sparseArray.getContents(i);
@@ -262,34 +320,9 @@ public class FieldDataWrapper {
                 }
                 return packData;
             }
-            case Array:
-            case Int64:
-            case Int32:
-            case Int16:
-            case Int8:
-            case Bool:
-            case Float:
-            case Double:
-            case VarChar:
-            case String:
-            case JSON:
-                return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
             default:
-                throw new IllegalResponseException("Unsupported data type returned by FieldData");
+                return new ArrayList<>();
         }
-    }
-
-    private List<?> setNoneData(List<?> data, List<Boolean> validData) {
-        if (validData != null && validData.size() == data.size()) {
-            List<?> newData = new ArrayList<>(data); // copy the list since the data is come from grpc is not mutable
-            for (int i = 0; i < validData.size(); i++) {
-                if (validData.get(i) == Boolean.FALSE) {
-                    newData.set(i, null);
-                }
-            }
-            return newData;
-        }
-        return data;
     }
 
     private List<?> getScalarData(DataType dt, ScalarField scalar, List<Boolean> validData) {
@@ -315,7 +348,7 @@ public class FieldDataWrapper {
                 return dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList());
             case Array:
                 List<List<?>> array = new ArrayList<>();
-                ArrayArray arrArray = fieldData.getScalars().getArrayData();
+                ArrayArray arrArray = scalar.getArrayData();
                 boolean nullable = validData != null && validData.size() == arrArray.getDataCount();
                 for (int i = 0; i < arrArray.getDataCount(); i++) {
                     if (nullable && validData.get(i) == Boolean.FALSE) {
@@ -329,6 +362,70 @@ public class FieldDataWrapper {
             default:
                 return new ArrayList<>();
         }
+    }
+
+    private List<?> getStructData(StructArrayField field, String fieldName) {
+        List<List<Map<String, Object>>> packData = new ArrayList<>();
+        if (field.getFieldsCount() == 0) {
+            return packData;
+        }
+
+        // read column data from FieldData
+        // for a struct with two sub-fields "int" and "emb", search with nq=2, topk=3
+        // the column data is like this:
+        //  {
+        //     "int": [[x1, x2], [x1, x2, x3], [x1], [x1, x2], [x1, x2, x3], [x1]],
+        //     "emb": [[emb1, emb2], [emb1, emb2, emb3], [emb1], [emb1m emb2], [emb1, emb2, emb3], [emb1]],
+        //  }
+        Map<String, List<List<?>>> columnsData = new HashMap<>();
+        int rowCount = 0;
+        for (FieldData fd : field.getFieldsList()) {
+            List<List<?>> column = new ArrayList<>();
+            if (fd.getType() == DataType.Array) {
+                column = (List<List<?>>) getScalarData(fd.getType(), fd.getScalars(), fd.getValidDataList());
+                columnsData.put(fd.getFieldName(), column);
+                rowCount = column.size();
+            } else if (fd.getType() == DataType.ArrayOfVector) {
+                VectorArray vecArr = fd.getVectors().getVectorArray();
+                for (VectorField vf : vecArr.getDataList()) {
+                    List<?> vector = getVectorData(vecArr.getElementType(), vf);
+                    column.add(vector);
+                }
+                rowCount = column.size();
+                columnsData.put(fd.getFieldName(), column);
+            } else {
+                throw new IllegalResponseException("Unsupported data type returned by StructArrayField");
+            }
+        }
+
+        // convert column data into struct list, eventually, the packData is like this:
+        //   [
+        //      [{x1, emb1}, {x2, emb2}],
+        //      [{x1, emb1}, {x2, emb2}, {x3, emb3}],
+        //      [{x1, emb1}],
+        //      [{x1, emb1}, {x2, emb2}],
+        //      [{x1, emb1}, {x2, emb2}, {x3, emb3}],
+        //      [{x1, emb1}]
+        //   ]
+        for (int i = 0; i < rowCount; i++) {
+            int elementCount = 0;
+            Map<String, List<?>> rowColumn = new HashMap<>();
+            for (String key : columnsData.keySet()) {
+                List<?> val = columnsData.get(key).get(i);
+                rowColumn.put(key, val);
+                elementCount = val.size();
+            }
+
+            List<Map<String, Object>> structs = new ArrayList<>();
+            for (int k = 0; k < elementCount; k++) {
+                Map<String, Object> struct = new HashMap<>();
+                int finalK = k;
+                rowColumn.forEach((key, val)->struct.put(key, val.get(finalK)));
+                structs.add(struct);
+            }
+            packData.add(structs);
+        }
+        return packData;
     }
 
     public Integer getAsInt(int index, String paramName) throws IllegalResponseException {

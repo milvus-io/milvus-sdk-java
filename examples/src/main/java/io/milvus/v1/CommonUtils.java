@@ -300,7 +300,7 @@ public class CommonUtils {
         Random ran = new Random();
         SortedMap<Long, Float> sparse = new TreeMap<>();
         int dim = ran.nextInt(10) + 10;
-        for (int i = 0; i < dim; ++i) {
+        while (sparse.size() < dim) {
             sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
         }
         return sparse;

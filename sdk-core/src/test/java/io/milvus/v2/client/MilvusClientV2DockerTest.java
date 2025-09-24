@@ -1020,6 +1020,207 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testStruct() {
+        String randomCollectionName = generator.generate(10);
+        String pkField = "key";
+        String normalVectorField = "vector";
+        String normalScalarField = "text";
+        String structField = "clips";
+        String structScalarField = "desc";
+        String structVectorField = "clip";
+        int structCapacity = 300;
+        int varcharLength = 100;
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(pkField)
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(normalVectorField)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(normalScalarField)
+                .dataType(DataType.VarChar)
+                .maxLength(varcharLength)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(structField)
+                .description("dummy")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(structCapacity)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(structScalarField)
+                        .description("dummy")
+                        .dataType(DataType.VarChar)
+                        .maxLength(varcharLength)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(structVectorField)
+                        .description("dummy")
+                        .dataType(DataType.FloatVector)
+                        .dimension(DIMENSION)
+                        .build())
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .build();
+        client.createCollection(requestCreate);
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName(normalVectorField)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(structVectorField)
+                .indexType(IndexParam.IndexType.EMB_LIST_HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM)
+                .build());
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(indexParams)
+                .build());
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // describe
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        CreateCollectionReq.CollectionSchema descSchema = descResp.getCollectionSchema();
+        Assertions.assertEquals(1, descSchema.getStructFields().size());
+        CreateCollectionReq.StructFieldSchema structSchema = descSchema.getStructFields().get(0);
+        Assertions.assertEquals(structField, structSchema.getName());
+        Assertions.assertEquals("dummy", structSchema.getDescription());
+        Assertions.assertEquals(DataType.Array, structSchema.getDataType());
+        Assertions.assertEquals(DataType.Struct, structSchema.getElementType());
+        Assertions.assertEquals(structCapacity, structSchema.getMaxCapacity());
+        Assertions.assertEquals(2, structSchema.getFields().size());
+
+        CreateCollectionReq.FieldSchema field1 = structSchema.getFields().get(0);
+        Assertions.assertEquals(structScalarField, field1.getName());
+        Assertions.assertEquals("dummy", field1.getDescription());
+        Assertions.assertEquals(DataType.VarChar, field1.getDataType());
+        Assertions.assertEquals(varcharLength, field1.getMaxLength());
+
+        CreateCollectionReq.FieldSchema field2 = structSchema.getFields().get(1);
+        Assertions.assertEquals(structVectorField, field2.getName());
+        Assertions.assertEquals("dummy", field2.getDescription());
+        Assertions.assertEquals(DataType.FloatVector, field2.getDataType());
+        Assertions.assertEquals(DIMENSION, field2.getDimension());
+
+        DescribeIndexResp indexDesc = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName(structVectorField)
+                .build());
+        Assertions.assertEquals(1, indexDesc.getIndexDescriptions().size());
+        DescribeIndexResp.IndexDesc desc = indexDesc.getIndexDescriptions().get(0);
+        Assertions.assertEquals(IndexParam.IndexType.EMB_LIST_HNSW, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM, desc.getMetricType());
+
+        // insert
+        Random RANDOM = new Random();
+        List<JsonObject> rows = new ArrayList<>();
+        int count = 20;
+        for (int i = 0; i < count; i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty(pkField, i);
+            row.addProperty(normalScalarField, "text_" + i);
+            row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            JsonArray structArr = new JsonArray();
+            for (int k = 0; k < 5; k++) {
+                JsonObject struct = new JsonObject();
+                struct.addProperty(structScalarField, "No." + k);
+                struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+                structArr.add(struct);
+            }
+            row.add(structField, structArr);
+            rows.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(rows)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // upsert
+        JsonObject row = new JsonObject();
+        row.addProperty(pkField, 6);
+        row.addProperty(normalScalarField, "update_text");
+        row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+        JsonArray structArr = new JsonArray();
+        for (int k = 0; k < 3; k++) {
+            JsonObject struct = new JsonObject();
+            struct.addProperty(structScalarField, "updated_No." + k);
+            struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            structArr.add(struct);
+        }
+        row.add(structField, structArr);
+
+        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(1, upsertResp.getUpsertCnt());
+
+        // query
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter(String.format("%s == 6 or %s == 9", pkField, pkField))
+                .limit(3)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Collections.singletonList("*"))
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey(structField));
+        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey(structField));
+
+        // search
+        List<Map<String, Object>> structs0 = (List<Map<String, Object>>)queryResults.get(0).getEntity().get(structField);
+        EmbeddingList embList0 = new EmbeddingList();
+        for (Map<String, Object> struct : structs0) {
+            embList0.add(new FloatVec((List<Float>)struct.get(structVectorField)));
+        }
+
+        List<Map<String, Object>> structs1 = (List<Map<String, Object>>)queryResults.get(1).getEntity().get(structField);
+        EmbeddingList embList1 = new EmbeddingList();
+        for (Map<String, Object> struct : structs1) {
+            embList1.add(new FloatVec((List<Float>)struct.get(structVectorField)));
+        }
+
+        int topK = 5;
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField(structVectorField)
+                .data(Arrays.asList(embList0, embList1))
+                .limit(topK)
+                .outputFields(Collections.singletonList(structScalarField))
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(2, searchResults.size());
+        for (List<SearchResp.SearchResult> oneResults : searchResults) {
+            Assertions.assertEquals(topK, oneResults.size());
+        }
+        Assertions.assertEquals(6L, (long)searchResults.get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long)searchResults.get(1).get(0).getId());
+    }
+
+    @Test
     void testHybridSearch() {
         String randomCollectionName = generator.generate(10);
 

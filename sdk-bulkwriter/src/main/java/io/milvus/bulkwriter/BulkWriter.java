@@ -33,11 +33,9 @@ import io.milvus.bulkwriter.writer.JSONFileWriter;
 import io.milvus.bulkwriter.writer.ParquetFileWriter;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.common.utils.Float16Utils;
-import io.milvus.grpc.FieldSchema;
-import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.utils.SchemaUtils;
+import io.milvus.v2.utils.DataUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -362,8 +360,7 @@ public abstract class BulkWriter implements AutoCloseable {
     }
 
     private Pair<Object, Integer> verifyVector(JsonElement object, CreateCollectionReq.FieldSchema field) {
-        FieldSchema grpcField = SchemaUtils.convertToGrpcFieldSchema(field);
-        Object vector = ParamUtils.checkFieldValue(ParamUtils.ConvertField(grpcField), object);
+        Object vector = DataUtils.checkFieldValue(field, object);
         io.milvus.v2.common.DataType dataType = field.getDataType();
         switch (dataType) {
             case FloatVector:
@@ -396,8 +393,7 @@ public abstract class BulkWriter implements AutoCloseable {
             return Pair.of(null, 0);
         }
 
-        FieldSchema grpcField = SchemaUtils.convertToGrpcFieldSchema(field);
-        Object varchar = ParamUtils.checkFieldValue(ParamUtils.ConvertField(grpcField), object);
+        Object varchar = DataUtils.checkFieldValue(field, object);
         return Pair.of(varchar, String.valueOf(varchar).length());
     }
 
@@ -411,8 +407,7 @@ public abstract class BulkWriter implements AutoCloseable {
     }
 
     private Pair<Object, Integer> verifyArray(JsonElement object, CreateCollectionReq.FieldSchema field) {
-        FieldSchema grpcField = SchemaUtils.convertToGrpcFieldSchema(field);
-        Object array = ParamUtils.checkFieldValue(ParamUtils.ConvertField(grpcField), object);
+        Object array = DataUtils.checkFieldValue(field, object);
         if (array == null) {
             return Pair.of(null, 0);
         }
