@@ -1220,6 +1220,120 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testTimestamp() {
+        String randomCollectionName = generator.generate(10);
+        String pkField = "pk";
+        String vectorField = "vector";
+        String timestampField = "timestamp";
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(pkField)
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorField)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(timestampField)
+                .dataType(DataType.Timestamptz)
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .build();
+        client.createCollection(requestCreate);
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName(vectorField)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build());
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(indexParams)
+                .build());
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // describe
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        CreateCollectionReq.CollectionSchema descSchema = descResp.getCollectionSchema();
+        List<CreateCollectionReq.FieldSchema> fields = descSchema.getFieldSchemaList();
+        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fields.size());
+        Assertions.assertEquals(timestampField, fields.get(2).getName());
+        Assertions.assertEquals(DataType.Timestamptz, fields.get(2).getDataType());
+
+        // insert
+        List<JsonObject> rows = new ArrayList<>();
+        {
+            JsonObject row = new JsonObject();
+            row.addProperty(pkField, 1);
+            row.addProperty(timestampField, "2025-01-02T00:00:00+08:00"); // Shanghai time
+            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            rows.add(row);
+        }
+        {
+            JsonObject row = new JsonObject();
+            row.addProperty(pkField, 2);
+            row.addProperty(timestampField, "2025-01-02T00:00:00-06:00"); // Chicago time
+            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            rows.add(row);
+        }
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(rows)
+                .build());
+        Assertions.assertEquals(rows.size(), insertResp.getInsertCnt());
+
+        // query
+        Map<String, Object> params = new HashMap<>();
+//        params.put("timezone", "America/Chicago");
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .limit(10)
+                .queryParams(params)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(pkField, timestampField))
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(2, queryResults.size());
+        for (QueryResp.QueryResult res : queryResults) {
+            Assertions.assertTrue(res.getEntity().containsKey(timestampField));
+        }
+
+        // search
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField(vectorField)
+                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
+                .limit(10)
+                .searchParams(params)
+                .outputFields(Arrays.asList(pkField, timestampField))
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        for (List<SearchResp.SearchResult> oneResults : searchResults) {
+            Assertions.assertEquals(2, oneResults.size());
+            for (SearchResp.SearchResult res : oneResults) {
+                Assertions.assertTrue(res.getEntity().containsKey(timestampField));
+            }
+        }
+    }
+
+    @Test
     void testHybridSearch() {
         String randomCollectionName = generator.generate(10);
 
