@@ -44,6 +44,12 @@ public class QueryReq {
     private long limit;
     private boolean ignoreGrowing;
 
+    // Extra parameters for query, timezone, time_fields, etc.
+    // Make sure the value can be converted to String by String.valueOf().
+    // For example: {"timezone": "America/Chicago"}
+    @Builder.Default
+    private Map<String, Object> queryParams = new HashMap<>();
+
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
     // The long list of city will increase the time cost to parse this expression.

@@ -150,7 +150,8 @@ public class TestUtils {
                 }
                 return values;
             }
-            case VarChar: {
+            case VarChar:
+            case Timestamptz: {
                 List<String> values = new ArrayList<>();
                 for (int i = 0; i < maxCapacity; i++) {
                     values.add(String.format("varchar_arr_%d", i));

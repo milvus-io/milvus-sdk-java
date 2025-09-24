@@ -3,7 +3,7 @@ version: '3.5'
 services:
   standalone:
     container_name: milvus-javasdk-standalone-1
-    image: milvusdb/milvus:master-20250922-200ee4cb-amd64
+    image: milvusdb/milvus:master-20250924-20411e52-amd64
     command: [ "milvus", "run", "standalone" ]
     environment:
       - COMMON_STORAGETYPE=local
@@ -24,7 +24,7 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-standalone-2
-    image: milvusdb/milvus:master-20250922-200ee4cb-amd64
+    image: milvusdb/milvus:master-20250924-20411e52-amd64
     command: [ "milvus", "run", "standalone" ]
     environment:
       - COMMON_STORAGETYPE=local
