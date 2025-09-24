@@ -173,6 +173,7 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getDoubleData().getDataCount();
             case VarChar:
             case String:
+            case Timestamptz:
                 return fieldData.getScalars().getStringData().getDataCount();
             case JSON:
                 return fieldData.getScalars().getJsonData().getDataCount();
@@ -246,6 +247,7 @@ public class FieldDataWrapper {
             case Double:
             case VarChar:
             case String:
+            case Timestamptz:
             case JSON:
                 return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
             case ArrayOfStruct:
@@ -341,6 +343,7 @@ public class FieldDataWrapper {
                 return setNoneData(scalar.getDoubleData().getDataList(), validData);
             case VarChar:
             case String:
+            case Timestamptz:
                 ProtocolStringList protoStrList = scalar.getStringData().getDataList();
                 return setNoneData(protoStrList.subList(0, protoStrList.size()), validData);
             case JSON:

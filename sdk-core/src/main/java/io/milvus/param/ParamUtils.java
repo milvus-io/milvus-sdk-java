@@ -270,6 +270,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Timestamptz:
                 for (Object value : values) {
                     if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
                         continue;
@@ -418,6 +419,7 @@ public class ParamUtils {
                 return value.getAsDouble(); // return double for genFieldData()
             case VarChar:
             case String:
+            case Timestamptz:
                 if (!(value.isJsonPrimitive())) {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
                 }
@@ -464,6 +466,7 @@ public class ParamUtils {
                 case Double:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
                 case VarChar:
+                case Timestamptz:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
                 default:
                     throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
@@ -1367,7 +1370,8 @@ public class ParamUtils {
                 return ScalarField.newBuilder().setDoubleData(doubleArray).build();
             }
             case String:
-            case VarChar: {
+            case VarChar:
+            case Timestamptz: {
                 List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
                 StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
                 return ScalarField.newBuilder().setStringData(stringArray).build();
@@ -1505,6 +1509,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Timestamptz:
                 if (obj instanceof String) {
                     return builder.setStringData((String) obj).build();
                 }
@@ -1541,6 +1546,7 @@ public class ParamUtils {
                 return value.getBoolData();
             case VarChar:
             case String:
+            case Timestamptz:
                 return value.getStringData();
             case JSON:
                 return JsonUtils.fromJson(value.getStringData(), JsonObject.class);

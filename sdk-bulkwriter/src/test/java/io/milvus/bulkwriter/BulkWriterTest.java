@@ -521,6 +521,7 @@ public class BulkWriterTest {
                 Assertions.assertEquals(element.getAsDouble(), obj);
                 break;
             case VarChar:
+            case Timestamptz:
             case JSON:
                 verifyJsonString(element.getAsString(), ((Utf8)obj).toString());
                 break;
