@@ -75,6 +75,16 @@ public class VectorUtils {
             builder.setConsistencyLevelValue(request.getConsistencyLevel().getCode());
         }
 
+        // extra parameters
+        Map<String, Object> queryParams = request.getQueryParams();
+        queryParams.forEach((key, value) -> {
+            // for new versions, all keys are in the top level
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(key)
+                    .setValue(String.valueOf(value))
+                    .build());
+        });
+
         // set offset and limit value.
         // directly pass the two values, the server will verify them.
         long offset = request.getOffset();

@@ -39,6 +39,7 @@ public enum DataType {
     VarChar(21), // variable-length strings with a specified maximum length
     Array(22),
     JSON(23),
+    Timestamptz(26),
 
     BinaryVector(100),
     FloatVector(101),
