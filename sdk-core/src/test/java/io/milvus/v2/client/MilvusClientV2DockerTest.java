@@ -1132,7 +1132,6 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(IndexParam.MetricType.MAX_SIM, desc.getMetricType());
 
         // insert
-        Random RANDOM = new Random();
         List<JsonObject> rows = new ArrayList<>();
         int count = 20;
         for (int i = 0; i < count; i++) {
