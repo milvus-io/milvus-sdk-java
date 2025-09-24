@@ -133,12 +133,18 @@ public class CollectionService extends BaseService {
             grpcSchemaBuilder.addFunctions(SchemaUtils.convertToGrpcFunction(function)).build();
             outputFields.addAll(function.getOutputFieldNames());
         }
+        // normal fields
         for (CreateCollectionReq.FieldSchema fieldSchema : request.getCollectionSchema().getFieldSchemaList()) {
             FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema);
             if (outputFields.contains(fieldSchema.getName())) {
                 grpcFieldSchema = grpcFieldSchema.toBuilder().setIsFunctionOutput(true).build();
             }
             grpcSchemaBuilder.addFields(grpcFieldSchema);
+        }
+        // struct fields
+        for (CreateCollectionReq.StructFieldSchema fieldSchema : request.getCollectionSchema().getStructFields()) {
+            StructArrayFieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcStructFieldSchema(fieldSchema);
+            grpcSchemaBuilder.addStructArrayFields(grpcFieldSchema);
         }
 
         //create collection
