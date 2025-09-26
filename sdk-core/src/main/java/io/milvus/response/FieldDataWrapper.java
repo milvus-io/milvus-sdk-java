@@ -175,6 +175,8 @@ public class FieldDataWrapper {
             case String:
             case Timestamptz:
                 return fieldData.getScalars().getStringData().getDataCount();
+            case Geometry:
+                return fieldData.getScalars().getGeometryWktData().getDataCount();
             case JSON:
                 return fieldData.getScalars().getJsonData().getDataCount();
             case Array:
@@ -247,6 +249,7 @@ public class FieldDataWrapper {
             case Double:
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
             case JSON:
                 return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
@@ -343,13 +346,19 @@ public class FieldDataWrapper {
                 return setNoneData(scalar.getDoubleData().getDataList(), validData);
             case VarChar:
             case String:
-            case Timestamptz:
+            case Timestamptz: {
                 ProtocolStringList protoStrList = scalar.getStringData().getDataList();
                 return setNoneData(protoStrList.subList(0, protoStrList.size()), validData);
-            case JSON:
+            }
+            case Geometry: {
+                ProtocolStringList protoGeoList = scalar.getGeometryWktData().getDataList();
+                return setNoneData(protoGeoList.subList(0, protoGeoList.size()), validData);
+            }
+            case JSON: {
                 List<ByteString> dataList = scalar.getJsonData().getDataList();
                 return dataList.stream().map(ByteString::toStringUtf8).collect(Collectors.toList());
-            case Array:
+            }
+            case Array: {
                 List<List<?>> array = new ArrayList<>();
                 ArrayArray arrArray = scalar.getArrayData();
                 boolean nullable = validData != null && validData.size() == arrArray.getDataCount();
@@ -362,6 +371,7 @@ public class FieldDataWrapper {
                     }
                 }
                 return array;
+            }
             default:
                 return new ArrayList<>();
         }
