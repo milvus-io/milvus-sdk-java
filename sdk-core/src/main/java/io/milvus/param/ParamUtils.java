@@ -270,6 +270,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 for (Object value : values) {
                     if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
@@ -419,6 +420,7 @@ public class ParamUtils {
                 return value.getAsDouble(); // return double for genFieldData()
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 if (!(value.isJsonPrimitive())) {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
@@ -466,6 +468,7 @@ public class ParamUtils {
                 case Double:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
                 case VarChar:
+                case Geometry:
                 case Timestamptz:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
                 default:
@@ -1371,6 +1374,7 @@ public class ParamUtils {
             }
             case String:
             case VarChar:
+            case Geometry:
             case Timestamptz: {
                 List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
                 StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
@@ -1509,6 +1513,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 if (obj instanceof String) {
                     return builder.setStringData((String) obj).build();
@@ -1546,6 +1551,7 @@ public class ParamUtils {
                 return value.getBoolData();
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 return value.getStringData();
             case JSON:

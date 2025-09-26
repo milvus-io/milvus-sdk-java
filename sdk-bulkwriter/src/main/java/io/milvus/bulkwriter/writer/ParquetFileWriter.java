@@ -135,6 +135,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                 break;
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
             case JSON:
                 group.append(paramName, (String)value);
@@ -170,6 +171,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                         break;
                     case String:
                     case VarChar:
+                    case Geometry:
                     case Timestamptz:
                         addStringArray(group, paramName, (List<String>) value);
                         break;
