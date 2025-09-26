@@ -33,11 +33,12 @@ public class UpsertReq {
      * Sets the row data to insert. The rows list cannot be empty.
      *
      * Internal class for insert data.
-     * If dataType is Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar, use JsonObject.addProperty(key, value) to input;
+     * If dataType is Bool/Int8/Int16/Int32/Int64/Float/Double/Varchar/Geometry/Timestamptz, use JsonObject.addProperty(key, value) to input;
      * If dataType is FloatVector, use JsonObject.add(key, gson.toJsonTree(List[Float]) to input;
      * If dataType is BinaryVector/Float16Vector/BFloat16Vector, use JsonObject.add(key, gson.toJsonTree(byte[])) to input;
      * If dataType is SparseFloatVector, use JsonObject.add(key, gson.toJsonTree(SortedMap[Long, Float])) to input;
      * If dataType is Array, use JsonObject.add(key, gson.toJsonTree(List of Boolean/Integer/Short/Long/Float/Double/String)) to input;
+     * If dataType is Array and elementType is Struct, use JsonObject.add(key, JsonArray) to input, ensure the JsonArray is a list of JsonObject;
      * If dataType is JSON, use JsonObject.add(key, JsonElement) to input;
      *
      * Note:
