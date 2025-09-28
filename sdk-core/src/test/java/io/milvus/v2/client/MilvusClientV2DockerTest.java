@@ -1298,19 +1298,20 @@ class MilvusClientV2DockerTest {
 //                .build());
 //        Assertions.assertEquals(rows.size(), insertResp.getInsertCnt());
 //
-//        // quer
-//        Map<String, Object> params = new HashMap<>();
-////        params.put("timezone", "America/Chicago");
+//        // query
+//        String filter = String.format("ST_WITHIN(%s, 'POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))')", geoField);
 //        QueryResp queryResp = client.query(QueryReq.builder()
 //                .collectionName(randomCollectionName)
 //                .limit(10)
+//                .filter(filter)
 //                .consistencyLevel(ConsistencyLevel.STRONG)
 //                .outputFields(Arrays.asList(pkField, geoField))
 //                .build());
 //        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-//        Assertions.assertEquals(2, queryResults.size());
+//        Assertions.assertEquals(1, queryResults.size());
 //        for (QueryResp.QueryResult res : queryResults) {
 //            Assertions.assertTrue(res.getEntity().containsKey(geoField));
+//            Assertions.assertEquals(res.getEntity().get(pkField), 2L);
 //        }
 //
 //        // search
@@ -1319,15 +1320,16 @@ class MilvusClientV2DockerTest {
 //                .annsField(vectorField)
 //                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
 //                .limit(10)
-//                .searchParams(params)
+//                .filter(filter)
 //                .outputFields(Arrays.asList(pkField, geoField))
 //                .build());
 //        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
 //        Assertions.assertEquals(1, searchResults.size());
 //        for (List<SearchResp.SearchResult> oneResults : searchResults) {
-//            Assertions.assertEquals(2, oneResults.size());
+//            Assertions.assertEquals(1, oneResults.size());
 //            for (SearchResp.SearchResult res : oneResults) {
 //                Assertions.assertTrue(res.getEntity().containsKey(geoField));
+//                Assertions.assertEquals(res.getId(), 2L);
 //            }
 //        }
     }
