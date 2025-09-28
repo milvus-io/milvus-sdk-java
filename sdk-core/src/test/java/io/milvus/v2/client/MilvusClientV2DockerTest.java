@@ -1220,6 +1220,119 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testGeometry() {
+        String randomCollectionName = generator.generate(10);
+        String pkField = "pk";
+        String vectorField = "vector";
+        String geoField = "geo";
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(pkField)
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorField)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(geoField)
+                .dataType(DataType.Geometry)
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .build();
+        client.createCollection(requestCreate);
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName(vectorField)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build());
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .indexParams(indexParams)
+                .build());
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        // describe
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        CreateCollectionReq.CollectionSchema descSchema = descResp.getCollectionSchema();
+        List<CreateCollectionReq.FieldSchema> fields = descSchema.getFieldSchemaList();
+        Assertions.assertEquals(collectionSchema.getFieldSchemaList().size(), fields.size());
+        Assertions.assertEquals(geoField, fields.get(2).getName());
+        Assertions.assertEquals(DataType.Geometry, fields.get(2).getDataType());
+
+//        // insert
+//        List<JsonObject> rows = new ArrayList<>();
+//        {
+//            JsonObject row = new JsonObject();
+//            row.addProperty(pkField, 1);
+//            row.addProperty(geoField, "POINT (1.0 -1.0)");
+//            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+//            rows.add(row);
+//        }
+//        {
+//            JsonObject row = new JsonObject();
+//            row.addProperty(pkField, 2);
+//            row.addProperty(geoField, "POINT (2.0 2.0)");
+//            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+//            rows.add(row);
+//        }
+//        InsertResp insertResp = client.insert(InsertReq.builder()
+//                .collectionName(randomCollectionName)
+//                .data(rows)
+//                .build());
+//        Assertions.assertEquals(rows.size(), insertResp.getInsertCnt());
+//
+//        // quer
+//        Map<String, Object> params = new HashMap<>();
+////        params.put("timezone", "America/Chicago");
+//        QueryResp queryResp = client.query(QueryReq.builder()
+//                .collectionName(randomCollectionName)
+//                .limit(10)
+//                .consistencyLevel(ConsistencyLevel.STRONG)
+//                .outputFields(Arrays.asList(pkField, geoField))
+//                .build());
+//        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+//        Assertions.assertEquals(2, queryResults.size());
+//        for (QueryResp.QueryResult res : queryResults) {
+//            Assertions.assertTrue(res.getEntity().containsKey(geoField));
+//        }
+//
+//        // search
+//        SearchResp searchResp = client.search(SearchReq.builder()
+//                .collectionName(randomCollectionName)
+//                .annsField(vectorField)
+//                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
+//                .limit(10)
+//                .searchParams(params)
+//                .outputFields(Arrays.asList(pkField, geoField))
+//                .build());
+//        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+//        Assertions.assertEquals(1, searchResults.size());
+//        for (List<SearchResp.SearchResult> oneResults : searchResults) {
+//            Assertions.assertEquals(2, oneResults.size());
+//            for (SearchResp.SearchResult res : oneResults) {
+//                Assertions.assertTrue(res.getEntity().containsKey(geoField));
+//            }
+//        }
+    }
+
+    @Test
     void testTimestamp() {
         String randomCollectionName = generator.generate(10);
         String pkField = "pk";
@@ -1264,6 +1377,14 @@ class MilvusClientV2DockerTest {
                 .build());
         client.loadCollection(LoadCollectionReq.builder()
                 .collectionName(randomCollectionName)
+                .build());
+
+        // set database default timezone
+        Map<String, String> props = new HashMap<>();
+        props.put("timezone", "Asia/Shanghai");
+        client.alterDatabaseProperties(AlterDatabasePropertiesReq.builder()
+                .databaseName("default")
+                .properties(props)
                 .build());
 
         // describe
