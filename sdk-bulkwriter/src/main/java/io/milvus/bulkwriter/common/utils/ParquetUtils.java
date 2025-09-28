@@ -94,6 +94,7 @@ public class ParquetUtils {
                     setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, false);
                     break;
                 case VarChar:
+                case Geometry:
                 case Timestamptz:
                 case JSON:
                 case SparseFloatVector: // sparse vector is parsed as JSON format string in the server side
@@ -137,7 +138,6 @@ public class ParquetUtils {
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, true);
                 break;
             case VarChar:
-            case Timestamptz:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
                         LogicalTypeAnnotation.stringType(), field, true);
                 break;

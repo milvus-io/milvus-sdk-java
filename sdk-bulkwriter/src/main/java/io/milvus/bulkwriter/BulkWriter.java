@@ -295,6 +295,7 @@ public abstract class BulkWriter implements AutoCloseable {
                     break;
                 }
                 case VarChar:
+                case Geometry:
                 case Timestamptz: {
                     Pair<Object, Integer> objectAndSize = verifyVarchar(obj, field);
                     rowValues.put(fieldName, objectAndSize.getLeft());

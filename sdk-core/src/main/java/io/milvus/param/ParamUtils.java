@@ -270,6 +270,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 for (Object value : values) {
                     if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
@@ -419,6 +420,7 @@ public class ParamUtils {
                 return value.getAsDouble(); // return double for genFieldData()
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 if (!(value.isJsonPrimitive())) {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
@@ -466,7 +468,6 @@ public class ParamUtils {
                 case Double:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
                 case VarChar:
-                case Timestamptz:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
                 default:
                     throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
@@ -1376,6 +1377,11 @@ public class ParamUtils {
                 StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
                 return ScalarField.newBuilder().setStringData(stringArray).build();
             }
+            case Geometry: {
+                List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
+                GeometryWktArray wktArray = GeometryWktArray.newBuilder().addAllData(strings).build();
+                return ScalarField.newBuilder().setGeometryWktData(wktArray).build();
+            }
             case JSON: {
                 List<ByteString> byteStrings = objects.stream().map(p -> (p == null) ? null : ByteString.copyFromUtf8(p.toString()))
                         .collect(Collectors.toList());
@@ -1509,6 +1515,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 if (obj instanceof String) {
                     return builder.setStringData((String) obj).build();
@@ -1546,6 +1553,7 @@ public class ParamUtils {
                 return value.getBoolData();
             case VarChar:
             case String:
+            case Geometry:
             case Timestamptz:
                 return value.getStringData();
             case JSON:
