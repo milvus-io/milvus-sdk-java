@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.5.14 (2025-09-30)
+### Improvement
+- Add parameter "databaseName" for the following requests: GetCollectionStatsReq, GetLoadStateReq, HasCollectionReq, ListCollectionsReq, ReleaseCollectionReq, RenameCollectionReq, DropIndexReq, ListIndexesReq, CreatePartitionReq, DropPartitionReq, GetPartitinStatsReq, HasPartitionReq, ListPartitionsReq, LoadPartitionsReq, ReleasePartitionsReq, CompactReq, FlushReq, GetPErsistentSegmentInfoReq, GetQuerySegmentInfoReq,
+- Increase ClientPool default value of maxTotal from 50 to 1000, maxTotalPerKey from 10 to 50, maxIdlePerKey from 5 to 10
+
+### Bug
+- Fix a bug of delete() that databaseName of DeleteReq doesn't work
+
 ## milvus-sdk-java 2.5.13 (2025-09-17)
 ### Feature
 - Support passing request-id and unixmsec to server for MilvusClientV2
