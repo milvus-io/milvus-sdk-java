@@ -1258,6 +1258,10 @@ class MilvusClientV2DockerTest {
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(geoField)
+                .indexType(IndexParam.IndexType.RTREE)
+                .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .indexParams(indexParams)
@@ -1276,62 +1280,62 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(geoField, fields.get(2).getName());
         Assertions.assertEquals(DataType.Geometry, fields.get(2).getDataType());
 
-//        // insert
-//        List<JsonObject> rows = new ArrayList<>();
-//        {
-//            JsonObject row = new JsonObject();
-//            row.addProperty(pkField, 1);
-//            row.addProperty(geoField, "POINT (1.0 -1.0)");
-//            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-//            rows.add(row);
-//        }
-//        {
-//            JsonObject row = new JsonObject();
-//            row.addProperty(pkField, 2);
-//            row.addProperty(geoField, "POINT (2.0 2.0)");
-//            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-//            rows.add(row);
-//        }
-//        InsertResp insertResp = client.insert(InsertReq.builder()
-//                .collectionName(randomCollectionName)
-//                .data(rows)
-//                .build());
-//        Assertions.assertEquals(rows.size(), insertResp.getInsertCnt());
-//
-//        // query
-//        String filter = String.format("ST_WITHIN(%s, 'POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))')", geoField);
-//        QueryResp queryResp = client.query(QueryReq.builder()
-//                .collectionName(randomCollectionName)
-//                .limit(10)
-//                .filter(filter)
-//                .consistencyLevel(ConsistencyLevel.STRONG)
-//                .outputFields(Arrays.asList(pkField, geoField))
-//                .build());
-//        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-//        Assertions.assertEquals(1, queryResults.size());
-//        for (QueryResp.QueryResult res : queryResults) {
-//            Assertions.assertTrue(res.getEntity().containsKey(geoField));
-//            Assertions.assertEquals(res.getEntity().get(pkField), 2L);
-//        }
-//
-//        // search
-//        SearchResp searchResp = client.search(SearchReq.builder()
-//                .collectionName(randomCollectionName)
-//                .annsField(vectorField)
-//                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
-//                .limit(10)
-//                .filter(filter)
-//                .outputFields(Arrays.asList(pkField, geoField))
-//                .build());
-//        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
-//        Assertions.assertEquals(1, searchResults.size());
-//        for (List<SearchResp.SearchResult> oneResults : searchResults) {
-//            Assertions.assertEquals(1, oneResults.size());
-//            for (SearchResp.SearchResult res : oneResults) {
-//                Assertions.assertTrue(res.getEntity().containsKey(geoField));
-//                Assertions.assertEquals(res.getId(), 2L);
-//            }
-//        }
+        // insert
+        List<JsonObject> rows = new ArrayList<>();
+        {
+            JsonObject row = new JsonObject();
+            row.addProperty(pkField, 1);
+            row.addProperty(geoField, "POINT (1.0 -1.0)");
+            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            rows.add(row);
+        }
+        {
+            JsonObject row = new JsonObject();
+            row.addProperty(pkField, 2);
+            row.addProperty(geoField, "POINT (2.0 2.0)");
+            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            rows.add(row);
+        }
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(rows)
+                .build());
+        Assertions.assertEquals(rows.size(), insertResp.getInsertCnt());
+
+        // query
+        String filter = String.format("ST_WITHIN(%s, 'POLYGON ((0 0, 10 0, 10 10, 0 10, 0 0))')", geoField);
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .limit(10)
+                .filter(filter)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(pkField, geoField))
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(1, queryResults.size());
+        for (QueryResp.QueryResult res : queryResults) {
+            Assertions.assertTrue(res.getEntity().containsKey(geoField));
+            Assertions.assertEquals(res.getEntity().get(pkField), 2L);
+        }
+
+        // search
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField(vectorField)
+                .data(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
+                .limit(10)
+                .filter(filter)
+                .outputFields(Arrays.asList(pkField, geoField))
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        for (List<SearchResp.SearchResult> oneResults : searchResults) {
+            Assertions.assertEquals(1, oneResults.size());
+            for (SearchResp.SearchResult res : oneResults) {
+                Assertions.assertTrue(res.getEntity().containsKey(geoField));
+                Assertions.assertEquals(res.getId(), 2L);
+            }
+        }
     }
 
     @Test
