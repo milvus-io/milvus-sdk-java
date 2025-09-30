@@ -1,5 +1,27 @@
 # Changelog
 
+## milvus-sdk-java 2.6.5 (2025-09-30)
+### Feature
+- Support Struct type field
+- Support Timestamptz type field
+- Support Goemetry type field
+- Add MilvusClientV2.updateReplicateConfiguration() for new CDC server
+
+### Improvement
+- Add parameter "databaseName" for the following requests: GetCollectionStatsReq, GetLoadStateReq, HasCollectionReq, ListCollectionsReq, ReleaseCollectionReq, RenameCollectionReq, DropIndexReq, ListIndexesReq, CreatePartitionReq, DropPartitionReq, GetPartitinStatsReq, HasPartitionReq, ListPartitionsReq, LoadPartitionsReq, ReleasePartitionsReq, CompactReq, FlushReq, GetPErsistentSegmentInfoReq, GetQuerySegmentInfoReq,
+- Increase ClientPool default value of maxTotal from 50 to 1000, maxTotalPerKey from 10 to 50, maxIdlePerKey from 5 to 10
+
+### Bug
+- Fix a bug of delete() that databaseName of DeleteReq doesn't work
+
+## milvus-sdk-java 2.5.14 (2025-09-30)
+### Improvement
+- Add parameter "databaseName" for the following requests: GetCollectionStatsReq, GetLoadStateReq, HasCollectionReq, ListCollectionsReq, ReleaseCollectionReq, RenameCollectionReq, DropIndexReq, ListIndexesReq, CreatePartitionReq, DropPartitionReq, GetPartitinStatsReq, HasPartitionReq, ListPartitionsReq, LoadPartitionsReq, ReleasePartitionsReq, CompactReq, FlushReq, GetPErsistentSegmentInfoReq, GetQuerySegmentInfoReq,
+- Increase ClientPool default value of maxTotal from 50 to 1000, maxTotalPerKey from 10 to 50, maxIdlePerKey from 5 to 10
+
+### Bug
+- Fix a bug of delete() that databaseName of DeleteReq doesn't work
+
 ## milvus-sdk-java 2.6.4 (2025-09-17)
 ### Feature
 - Support MINHASH_LSH/IVF_RABITQ index type
@@ -11,6 +33,15 @@
 
 ### Improvement
 - Return shards number of each collection for MilvusClientV2.listCollections()
+
+### Bug
+- Fix a defect of MilvusClientV2.query() that always requires an empty filter expression
+- Fix a bug of QueryIterator that offset value cannot exceed 16384
+
+## milvus-sdk-java 2.5.13 (2025-09-17)
+### Feature
+- Support passing request-id and unixmsec to server for MilvusClientV2
+- MilvusClientPool supports different ConnectConfig for different key
 
 ### Bug
 - Fix a defect of MilvusClientV2.query() that always requires an empty filter expression
