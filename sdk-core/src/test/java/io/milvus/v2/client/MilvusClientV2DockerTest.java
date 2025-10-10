@@ -1636,6 +1636,11 @@ class MilvusClientV2DockerTest {
                 .dataType(DataType.FloatVector)
                 .dimension(4)
                 .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(1024)
+                .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
         indexParams.add(IndexParam.builder()
@@ -1657,7 +1662,8 @@ class MilvusClientV2DockerTest {
         List<JsonObject> data = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             JsonObject row = new JsonObject();
-            row.addProperty("pk", String.format("pk_%d", i));
+            row.addProperty("pk", "pk_" + i);
+            row.addProperty("text", "desc_" + i);
             row.add("float_vector", JsonUtils.toJsonTree(new float[]{(float)i, (float)(i + 1), (float)(i + 2), (float)(i + 3)}));
             data.add(row);
         }
@@ -1682,57 +1688,82 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(8L, rowCount);
 
         // upsert
-        List<JsonObject> dataUpdate = new ArrayList<>();
-        JsonObject row1 = new JsonObject();
-        row1.addProperty("pk", "pk_5");
-        row1.add("float_vector", JsonUtils.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
-        dataUpdate.add(row1);
-        JsonObject row2 = new JsonObject();
-        row2.addProperty("pk", "pk_2");
-        row2.add("float_vector", JsonUtils.toJsonTree(new float[]{2.0f, 2.0f, 2.0f, 2.0f}));
-        dataUpdate.add(row2);
-        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
-                .databaseName(testDbName)
-                .collectionName(randomCollectionName)
-                .data(dataUpdate)
-                .build());
-        Assertions.assertEquals(2, upsertResp.getUpsertCnt());
-        Assertions.assertEquals(2, upsertResp.getPrimaryKeys().size());
+        // id=5 and id=8 has been deleted, need to provide all fields
+        {
+            JsonObject row1 = new JsonObject();
+            row1.addProperty("pk", "pk_5");
+            row1.addProperty("text", "updated_5");
+            row1.add("float_vector", JsonUtils.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
+
+            JsonObject row2 = new JsonObject();
+            row2.addProperty("pk", "pk_8");
+            row2.addProperty("text", "updated_8");
+            row2.add("float_vector", JsonUtils.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
+
+            UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                    .databaseName(testDbName)
+                    .collectionName(randomCollectionName)
+                    .data(Arrays.asList(row1, row2))
+                    .build());
+            Assertions.assertEquals(2, upsertResp.getUpsertCnt());
+            Assertions.assertEquals(2, upsertResp.getPrimaryKeys().size());
+        }
+        // id=2 is a partial update, "text" old value is reused
+        {
+            JsonObject row = new JsonObject();
+            row.addProperty("pk", "pk_2");
+            row.add("float_vector", JsonUtils.toJsonTree(new float[]{5.0f, 5.0f, 5.0f, 5.0f}));
+
+            UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                    .databaseName(testDbName)
+                    .collectionName(randomCollectionName)
+                    .data(Collections.singletonList(row))
+                    .partialUpdate(true)
+                    .build());
+            Assertions.assertEquals(1, upsertResp.getUpsertCnt());
+            Assertions.assertEquals(1, upsertResp.getPrimaryKeys().size());
+        }
 
         // get row count
         rowCount = getRowCount(testDbName, randomCollectionName);
-        Assertions.assertEquals(9L, rowCount);
+        Assertions.assertEquals(10L, rowCount);
 
         // verify
         QueryResp queryResp = client.query(QueryReq.builder()
                 .databaseName(testDbName)
                 .collectionName(randomCollectionName)
-                .ids(Arrays.asList("pk_2", "pk_5"))
+                .ids(Arrays.asList("pk_2", "pk_5", "pk_8"))
                 .outputFields(Collections.singletonList("*"))
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
-        Assertions.assertEquals(2, queryResults.size());
+        Assertions.assertEquals(3, queryResults.size());
 
-        QueryResp.QueryResult result1 = queryResults.get(0);
-        Map<String, Object> entity1 = result1.getEntity();
-        Assertions.assertTrue(entity1.containsKey("pk"));
-        Assertions.assertEquals("pk_2", entity1.get("pk"));
-        Assertions.assertTrue(entity1.containsKey("float_vector"));
-        Assertions.assertTrue(entity1.get("float_vector") instanceof List);
-        List<Float> vector1 = (List<Float>) entity1.get("float_vector");
-        for (Float f : vector1) {
-            Assertions.assertEquals(2.0f, f);
+        {
+            QueryResp.QueryResult result = queryResults.get(0);
+            Map<String, Object> entity = result.getEntity();
+            Assertions.assertTrue(entity.containsKey("pk"));
+            Assertions.assertEquals("pk_2", entity.get("pk"));
+            Assertions.assertEquals("desc_2", entity.get("text"));
+            Assertions.assertTrue(entity.containsKey("float_vector"));
+            Assertions.assertTrue(entity.get("float_vector") instanceof List);
+            List<Float> vector1 = (List<Float>) entity.get("float_vector");
+            for (Float f : vector1) {
+                Assertions.assertEquals(5.0f, f);
+            }
         }
 
-        QueryResp.QueryResult result2 = queryResults.get(1);
-        Map<String, Object> entity2 = result2.getEntity();
-        Assertions.assertTrue(entity2.containsKey("pk"));
-        Assertions.assertEquals("pk_5", entity2.get("pk"));
-        Assertions.assertTrue(entity2.containsKey("float_vector"));
-        Assertions.assertTrue(entity2.get("float_vector") instanceof List);
-        List<Float> vector2 = (List<Float>) entity2.get("float_vector");
-        for (Float f : vector2) {
-            Assertions.assertEquals(5.0f, f);
+        {
+            QueryResp.QueryResult result = queryResults.get(1);
+            Map<String, Object> entity = result.getEntity();
+            Assertions.assertTrue(entity.containsKey("pk"));
+            Assertions.assertEquals("pk_5", entity.get("pk"));
+            Assertions.assertEquals("updated_5", entity.get("text"));
+            Assertions.assertTrue(entity.containsKey("float_vector"));
+            Assertions.assertTrue(entity.get("float_vector") instanceof List);
+            List<Float> vector2 = (List<Float>) entity.get("float_vector");
+            for (Float f : vector2) {
+                Assertions.assertEquals(5.0f, f);
+            }
         }
 
         client.dropCollection(DropCollectionReq.builder()
