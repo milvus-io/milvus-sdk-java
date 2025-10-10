@@ -250,9 +250,13 @@ public class DataUtils {
                     return;
                 }
 
-                // if the field doesn't have default value, require user provide the value
                 // in v2.6.1 support partial update, user can input partial fields
-                if (!field.getIsNullable() && field.getDefaultValue() == null && !partialUpdate) {
+                if (partialUpdate) {
+                    return;
+                }
+
+                // if the field doesn't have default value, require user provide the value
+                if (!field.getIsNullable() && field.getDefaultValue() == null) {
                     String msg = String.format("The field: %s is not provided.", fieldName);
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                 }
