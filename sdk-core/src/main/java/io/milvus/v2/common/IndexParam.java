@@ -89,12 +89,15 @@ public class IndexParam {
         // Only for varchar type field
         TRIE("Trie", 100),
 
+        // Only for varchar type field and json_path of JSON field
+        NGRAM(101),
+
         // Only for geometry type field
-        RTREE("RTREE", 120),
+        RTREE(120),
 
         // Only for scalar type field
         STL_SORT(200), // only for numeric type field
-        INVERTED(201), // works for all scalar fields except JSON type field
+        INVERTED(201), // works for all scalar fields and json_path of JSON field
         BITMAP(202), // works for all scalar fields except JSON, FLOAT and DOUBLE type fields
 
         // Only for sparse vectors
