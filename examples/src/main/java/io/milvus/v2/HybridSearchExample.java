@@ -73,7 +73,7 @@ public class HybridSearchExample {
     private static final String SPARSE_VECTOR_FIELD = "sparse_vector";
     private static final IndexParam.MetricType SPARSE_VECTOR_METRIC = IndexParam.MetricType.IP;
 
-    private void createCollection() {
+    private static void createCollection() {
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
@@ -147,7 +147,7 @@ public class HybridSearchExample {
         System.out.println("Collection created");
     }
 
-    private void insertData() {
+    private static void insertData() {
         long idCount = 0;
         int rowCount = 10000;
         // Insert entities by rows
@@ -167,11 +167,10 @@ public class HybridSearchExample {
                 .collectionName(COLLECTION_NAME)
                 .data(rows)
                 .build());
-
-        System.out.printf("%d entities inserted by rows\n", rowCount);
+        printRowCount();
     }
 
-    private void hybridSearch() {
+    private static void printRowCount() {
         // Get row count, set ConsistencyLevel.STRONG to sync the data to query node so that data is visible
         QueryResp countR = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -179,7 +178,9 @@ public class HybridSearchExample {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+    }
 
+    private static void hybridSearch() {
         // Search on multiple vector fields
         int NQ = 2;
         List<BaseVector> floatVectors = new ArrayList<>();
@@ -229,7 +230,7 @@ public class HybridSearchExample {
         }
     }
 
-    private void dropCollection() {
+    private static void dropCollection() {
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
@@ -237,11 +238,10 @@ public class HybridSearchExample {
     }
 
     public static void main(String[] args) {
-        io.milvus.v2.HybridSearchExample example = new io.milvus.v2.HybridSearchExample();
-        example.createCollection();
-        example.insertData();
-        example.hybridSearch();
-        example.dropCollection();
+        createCollection();
+        insertData();
+        hybridSearch();
+        dropCollection();
 
         client.close();
     }
