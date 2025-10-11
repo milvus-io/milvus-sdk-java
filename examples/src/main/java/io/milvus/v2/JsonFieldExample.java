@@ -98,6 +98,32 @@ public class JsonFieldExample {
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
 
+        // Create INVERTED index for a specific entry of JSON field
+        // Index for JSON field is supported from milvus v2.5.7 and fully supported in v2.5.13+
+        // Read the doc for more info: https://milvus.io/docs/json-indexing.md
+        Map<String,Object> p1 = new HashMap<>();
+        p1.put("json_path", "metadata[\"flags\"]");
+        p1.put("json_cast_type", "array_double");
+        indexes.add(IndexParam.builder()
+                .fieldName(JSON_FIELD)
+                .indexType(IndexParam.IndexType.INVERTED)
+                .extraParams(p1)
+                .build());
+
+        // Create NGRAM index for a specific entry of JSON field
+        // NGRAM index for JSON field is supported from milvus v2.6.2
+        // Read the doc for more info: https://milvus.io/docs/ngram.md
+        Map<String,Object> p2 = new HashMap<>();
+        p2.put("json_path","metadata[\"path\"]");
+        p2.put("json_cast_type", "varchar");
+        p2.put("min_gram", 3);
+        p2.put("max_gram", 5);
+        indexes.add(IndexParam.builder()
+                .fieldName(JSON_FIELD)
+                .indexType(IndexParam.IndexType.NGRAM)
+                .extraParams(p2)
+                .build());
+
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .collectionSchema(collectionSchema)
@@ -121,7 +147,7 @@ public class JsonFieldExample {
             // Note: for JSON field, always construct a real JsonObject
             // don't use row.addProperty(JSON_FIELD, strContent) since the value is treated as a string, not a JsonObject
             JsonObject metadata = new JsonObject();
-            metadata.addProperty("path", String.format("\\root/abc/path_%d", i));
+            metadata.addProperty("path", String.format("\\root/abc_%d/path_%d", i, i));
             metadata.addProperty("size", i);
             if (i%7 == 0) {
                 metadata.addProperty("special", true);
@@ -197,6 +223,7 @@ public class JsonFieldExample {
         queryWithExpr(client, "JSON_CONTAINS(metadata[\"flags\"], 9)");
         queryWithExpr(client, "JSON_CONTAINS_ANY(metadata[\"flags\"], [8, 9, 10])");
         queryWithExpr(client, "JSON_CONTAINS_ALL(metadata[\"flags\"], [8, 9, 10])");
+        queryWithExpr(client, "metadata[\"path\"] LIKE \"%c_5%\"");
         queryWithExpr(client, "dynamic1 < 2.0");
 
         client.close();

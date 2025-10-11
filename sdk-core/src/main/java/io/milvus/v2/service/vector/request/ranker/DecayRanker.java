@@ -30,16 +30,28 @@ import java.util.Map;
  * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
  * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
  *
- * You also can declare a decay ranker by Function
- * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
+ * Example:
+ * DecayRanker decay = DecayRanker.builder()
+ *                  .name("time_decay")
+ *                  .description("time decay")
+ *                  .inputFieldNames(Collections.singletonList("timestamp"))
+ *                  .function("gauss")
+ *                  .origin(100)
+ *                  .scale(50)
+ *                  .offset(24)
+ *                  .decay(0.5)
+ *                  .build()
+ *
+ * You also can declare a decay ranker by Function:
+ * CreateCollectionReq.Function decay = CreateCollectionReq.Function.builder()
  *                 .functionType(FunctionType.RERANK)
  *                 .name("time_decay")
  *                 .description("time decay")
  *                 .inputFieldNames(Collections.singletonList("timestamp"))
  *                 .param("reranker", "decay")
  *                 .param("function", "gauss")
- *                 .param("origin", "1000")
- *                 .param("scale", "10000")
+ *                 .param("origin", "100")
+ *                 .param("scale", "50")
  *                 .param("offset", "24")
  *                 .param("decay", "0.5")
  *                 .build();
@@ -49,7 +61,9 @@ public class DecayRanker extends CreateCollectionReq.Function {
     @Builder.Default
     private String function = "gauss";
     private Number origin;
+    private Number offset;
     private Number scale;
+    private Number decay;
 
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
@@ -63,8 +77,14 @@ public class DecayRanker extends CreateCollectionReq.Function {
         if (origin != null) {
             props.put("origin", origin.toString());
         }
+        if (offset != null) {
+            props.put("offset", offset.toString());
+        }
         if (scale != null) {
             props.put("scale", scale.toString());
+        }
+        if (decay != null) {
+            props.put("decay", decay.toString());
         }
         return props;
     }
