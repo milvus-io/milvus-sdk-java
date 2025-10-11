@@ -53,8 +53,14 @@ public class IndexParam {
         // Only for sparse vector with BM25
         BM25,
 
-        // Only for struct vector
-        MAX_SIM,
+        // Only for float vector inside struct
+        MAX_SIM, // equal to MAX_SIM_COSINE
+        MAX_SIM_COSINE,
+        MAX_SIM_IP,
+        MAX_SIM_L2,
+        // Only for binary vector inside struct
+        MAX_SIM_JACCARD,
+        MAX_SIM_HAMMING,
         ;
     }
 
@@ -105,9 +111,6 @@ public class IndexParam {
         // From Milvus 2.5.4 onward, SPARSE_WAND is being deprecated. Instead, it is recommended to
         // use "inverted_index_algo": "DAAT_WAND" for equivalency while maintaining compatibility.
         SPARSE_WAND(301),
-
-        // Only for struct vector
-        EMB_LIST_HNSW(401),
         ;
 
         private final String name;
