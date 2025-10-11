@@ -1028,6 +1028,7 @@ class MilvusClientV2DockerTest {
         String structField = "clips";
         String structScalarField = "desc";
         String structVectorField = "clip";
+        String structBinVectorField = "clip_bin";
         int structCapacity = 300;
         int varcharLength = 100;
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
@@ -1065,6 +1066,12 @@ class MilvusClientV2DockerTest {
                         .dataType(DataType.FloatVector)
                         .dimension(DIMENSION)
                         .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(structBinVectorField)
+                        .description("dummy")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(DIMENSION)
+                        .build())
                 .build());
 
         client.dropCollection(DropCollectionReq.builder()
@@ -1084,9 +1091,14 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName(structVectorField)
-                .indexType(IndexParam.IndexType.EMB_LIST_HNSW)
-                .metricType(IndexParam.MetricType.MAX_SIM)
+                .fieldName("clips[clip]")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM_L2)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("clips[clip_bin]")
+                .indexType(IndexParam.IndexType.BIN_IVF_FLAT)
+                .metricType(IndexParam.MetricType.MAX_SIM_HAMMING)
                 .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1128,8 +1140,8 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(1, indexDesc.getIndexDescriptions().size());
         DescribeIndexResp.IndexDesc desc = indexDesc.getIndexDescriptions().get(0);
-        Assertions.assertEquals(IndexParam.IndexType.EMB_LIST_HNSW, desc.getIndexType());
-        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM, desc.getMetricType());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_COSINE, desc.getMetricType());
 
         // insert
         List<JsonObject> rows = new ArrayList<>();
