@@ -1028,6 +1028,7 @@ class MilvusClientV2DockerTest {
         String structField = "clips";
         String structScalarField = "desc";
         String structVectorField = "clip";
+        String structBinVectorField = "clip_bin";
         int structCapacity = 300;
         int varcharLength = 100;
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
@@ -1065,6 +1066,12 @@ class MilvusClientV2DockerTest {
                         .dataType(DataType.FloatVector)
                         .dimension(DIMENSION)
                         .build())
+//                .addStructField(AddFieldReq.builder()
+//                        .fieldName(structBinVectorField)
+//                        .description("dummy")
+//                        .dataType(DataType.BinaryVector)
+//                        .dimension(DIMENSION)
+//                        .build())
                 .build());
 
         client.dropCollection(DropCollectionReq.builder()
@@ -1084,10 +1091,17 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName(structVectorField)
-                .indexType(IndexParam.IndexType.EMB_LIST_HNSW)
-                .metricType(IndexParam.MetricType.MAX_SIM)
+                .fieldName("clips[clip]")
+                .indexName("index1")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM_L2)
                 .build());
+//        indexParams.add(IndexParam.builder()
+//                .fieldName("clips[clip_bin]")
+//                .indexName("index2")
+//                .indexType(IndexParam.IndexType.AUTOINDEX)
+//                .metricType(IndexParam.MetricType.MAX_SIM_HAMMING)
+//                .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .indexParams(indexParams)
@@ -1125,11 +1139,12 @@ class MilvusClientV2DockerTest {
         DescribeIndexResp indexDesc = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .fieldName(structVectorField)
+                .indexName("index1")
                 .build());
         Assertions.assertEquals(1, indexDesc.getIndexDescriptions().size());
         DescribeIndexResp.IndexDesc desc = indexDesc.getIndexDescriptions().get(0);
-        Assertions.assertEquals(IndexParam.IndexType.EMB_LIST_HNSW, desc.getIndexType());
-        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM, desc.getMetricType());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_L2, desc.getMetricType());
 
         // insert
         List<JsonObject> rows = new ArrayList<>();
@@ -1144,6 +1159,7 @@ class MilvusClientV2DockerTest {
                 JsonObject struct = new JsonObject();
                 struct.addProperty(structScalarField, "No." + k);
                 struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+//                struct.add(structBinVectorField, JsonUtils.toJsonTree(utils.generateBinaryVector(DIMENSION).array()));
                 structArr.add(struct);
             }
             row.add(structField, structArr);
@@ -1166,6 +1182,7 @@ class MilvusClientV2DockerTest {
             JsonObject struct = new JsonObject();
             struct.addProperty(structScalarField, "updated_No." + k);
             struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+//            struct.add(structBinVectorField, JsonUtils.toJsonTree(utils.generateBinaryVector(DIMENSION).array()));
             structArr.add(struct);
         }
         row.add(structField, structArr);
@@ -1190,14 +1207,14 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(queryResults.get(1).getEntity().containsKey(structField));
 
         // search
-        List<Map<String, Object>> structs0 = (List<Map<String, Object>>)queryResults.get(0).getEntity().get(structField);
         EmbeddingList embList0 = new EmbeddingList();
+        EmbeddingList embList1 = new EmbeddingList();
+
+        List<Map<String, Object>> structs0 = (List<Map<String, Object>>)queryResults.get(0).getEntity().get(structField);
         for (Map<String, Object> struct : structs0) {
             embList0.add(new FloatVec((List<Float>)struct.get(structVectorField)));
         }
-
         List<Map<String, Object>> structs1 = (List<Map<String, Object>>)queryResults.get(1).getEntity().get(structField);
-        EmbeddingList embList1 = new EmbeddingList();
         for (Map<String, Object> struct : structs1) {
             embList1.add(new FloatVec((List<Float>)struct.get(structVectorField)));
         }
@@ -1205,10 +1222,10 @@ class MilvusClientV2DockerTest {
         int topK = 5;
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(randomCollectionName)
-                .annsField(structVectorField)
+                .annsField("clips[clip]")
                 .data(Arrays.asList(embList0, embList1))
                 .limit(topK)
-                .outputFields(Collections.singletonList(structScalarField))
+                .outputFields(Collections.singletonList("clips[desc]"))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(2, searchResults.size());

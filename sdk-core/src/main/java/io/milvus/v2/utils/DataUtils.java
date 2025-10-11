@@ -371,10 +371,19 @@ public class DataUtils {
     @SuppressWarnings("unchecked")
     public static VectorArray genVectorArray(DataType dataType, List<?> objects) {
         VectorArray.Builder builder = VectorArray.newBuilder().setElementType(dataType);
-        if (dataType == DataType.FloatVector) {
-            // each object is List<List<Float>>
-            for (Object object : objects) {
-                if (object instanceof List) {
+        switch (dataType) {
+            case FloatVector:
+            case BinaryVector:
+            case Float16Vector:
+            case BFloat16Vector:
+            case Int8Vector: {
+                // for FloatVector, objects is List<List<List<Float>>>
+                // for others, objects is List<List<List<ByteBuffer>>>
+                for (Object object : objects) {
+                    if (!(object instanceof List)) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Input value is not List<> for type: " + dataType.name());
+                    }
+
                     List<?> listOfList = (List<?>) object;
                     if (listOfList.isEmpty()) {
                         // struct field value is empty, fill the VectorArray with zero-dim vectors?
@@ -394,16 +403,14 @@ public class DataUtils {
                         throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                     }
                     builder.addData(vf);
-                } else {
-                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "The type of FloatVector must be List<>");
                 }
+                return builder.build();
             }
-
-            return builder.build();
+            default:
+                // so far, struct field only supports FloatVector/BinaryVector/Float16Vector/BFloat16Vector/Int8Vector
+                String msg = String.format("Illegal vector dataType %s for struct field", dataType.name());
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
         }
-        // so far, struct field only supports FloatVector
-        String msg = String.format("Illegal vector dataType %s for struct field", dataType.name());
-        throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
     }
 
     public DeleteRequest ConvertToGrpcDeleteRequest(DeleteReq request) {
