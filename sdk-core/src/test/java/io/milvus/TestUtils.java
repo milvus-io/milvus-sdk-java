@@ -11,7 +11,7 @@ public class TestUtils {
     private int dimension = 256;
     private static final Random RANDOM = new Random();
 
-    public static final String MilvusDockerImageID = "milvusdb/milvus:master-20250929-ca1cc7c9-amd64";
+    public static final String MilvusDockerImageID = "milvusdb/milvus:2.6-20251015-bb4446e5-amd64";
 
     public TestUtils(int dimension) {
         this.dimension = dimension;
