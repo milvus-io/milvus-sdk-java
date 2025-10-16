@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 2.6.6 (2025-10-17)
+### Feature
+- Support NGRAM index
+- Support BoostRanker
+
+### Improvement
+- Support new metric types MAX_SIM_COSINE/MAX_SIM_IP/MAX_SIM_L2/MAX_SIM_JACCARD/MAX_SIM_HAMMING for vector fields inside Struct field
+- Delete index type EMB_LIST_HNSW due to design change of server-side, use normal index types for vector fields inside Struct field
+
+### Bug
+- Fix a critical bug that partial upsert override field value to null
+
 ## milvus-sdk-java 2.6.5 (2025-09-30)
 ### Feature
 - Support Struct type field
