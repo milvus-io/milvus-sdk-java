@@ -21,12 +21,7 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class SelectGrantForRoleAndObjectParam {
 
     private final String roleName;
@@ -35,7 +30,10 @@ public class SelectGrantForRoleAndObjectParam {
 
     private final String objectName;
 
-    private SelectGrantForRoleAndObjectParam(@NonNull SelectGrantForRoleAndObjectParam.Builder builder) {
+    private SelectGrantForRoleAndObjectParam(SelectGrantForRoleAndObjectParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.roleName = builder.roleName;
         this.object = builder.object;
         this.objectName = builder.objectName;
@@ -43,6 +41,27 @@ public class SelectGrantForRoleAndObjectParam {
 
     public static SelectGrantForRoleAndObjectParam.Builder newBuilder() {
         return new SelectGrantForRoleAndObjectParam.Builder();
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public String getObject() {
+        return object;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    @Override
+    public String toString() {
+        return "SelectGrantForRoleAndObjectParam{" +
+                "roleName='" + roleName + '\'' +
+                ", object='" + object + '\'' +
+                ", objectName='" + objectName + '\'' +
+                '}';
     }
 
     /**
@@ -53,7 +72,6 @@ public class SelectGrantForRoleAndObjectParam {
         private String object;
         private String objectName;
 
-
         private Builder() {
         }
 
@@ -63,7 +81,10 @@ public class SelectGrantForRoleAndObjectParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public SelectGrantForRoleAndObjectParam.Builder withRoleName(@NonNull String roleName) {
+        public SelectGrantForRoleAndObjectParam.Builder withRoleName(String roleName) {
+            if (roleName == null) {
+                throw new IllegalArgumentException("Role name cannot be null");
+            }
             this.roleName = roleName;
             return this;
         }
@@ -74,7 +95,10 @@ public class SelectGrantForRoleAndObjectParam {
          * @param object object
          * @return <code>Builder</code>
          */
-        public SelectGrantForRoleAndObjectParam.Builder withObject(@NonNull String object) {
+        public SelectGrantForRoleAndObjectParam.Builder withObject(String object) {
+            if (object == null) {
+                throw new IllegalArgumentException("Object cannot be null");
+            }
             this.object = object;
             return this;
         }
@@ -85,7 +109,10 @@ public class SelectGrantForRoleAndObjectParam {
          * @param objectName objectName
          * @return <code>Builder</code>
          */
-        public SelectGrantForRoleAndObjectParam.Builder withObjectName(@NonNull String objectName) {
+        public SelectGrantForRoleAndObjectParam.Builder withObjectName(String objectName) {
+            if (objectName == null) {
+                throw new IllegalArgumentException("Object name cannot be null");
+            }
             this.objectName = objectName;
             return this;
         }

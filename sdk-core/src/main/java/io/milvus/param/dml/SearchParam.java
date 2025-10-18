@@ -26,9 +26,6 @@ import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -37,9 +34,7 @@ import java.util.SortedMap;
 /**
  * Parameters for <code>search</code> interface.
  */
-@Getter
 public class SearchParam {
-    @Setter
     private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
@@ -62,7 +57,10 @@ public class SearchParam {
     private final Boolean strictGroupSize;
     private final PlaceholderType plType;
 
-    private SearchParam(@NonNull Builder builder) {
+    private SearchParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -84,6 +82,96 @@ public class SearchParam {
         this.groupSize = builder.groupSize;
         this.strictGroupSize = builder.strictGroupSize;
         this.plType = builder.plType;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public String getMetricType() {
+        return metricType;
+    }
+
+    public String getVectorFieldName() {
+        return vectorFieldName;
+    }
+
+    public Long getTopK() {
+        return topK;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public List<String> getOutFields() {
+        return outFields;
+    }
+
+    public List<?> getVectors() {
+        return vectors;
+    }
+
+    public Long getNQ() {
+        return NQ;
+    }
+
+    public int getRoundDecimal() {
+        return roundDecimal;
+    }
+
+    public String getParams() {
+        return params;
+    }
+
+    public long getTravelTimestamp() {
+        return travelTimestamp;
+    }
+
+    public long getGuaranteeTimestamp() {
+        return guaranteeTimestamp;
+    }
+
+    public Long getGracefulTime() {
+        return gracefulTime;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public boolean isIgnoreGrowing() {
+        return ignoreGrowing;
+    }
+
+    public String getGroupByFieldName() {
+        return groupByFieldName;
+    }
+
+    public Integer getGroupSize() {
+        return groupSize;
+    }
+
+    public Boolean getStrictGroupSize() {
+        return strictGroupSize;
+    }
+
+    public PlaceholderType getPlType() {
+        return plType;
+    }
+
+    // Setter method to replace @Setter annotation
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public static Builder newBuilder() {
@@ -140,7 +228,10 @@ public class SearchParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -151,7 +242,10 @@ public class SearchParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("partitionNames cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -173,7 +267,10 @@ public class SearchParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }
@@ -186,7 +283,10 @@ public class SearchParam {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            if (metricType == null) {
+                throw new IllegalArgumentException("metricType cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -197,7 +297,10 @@ public class SearchParam {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
-        public Builder withVectorFieldName(@NonNull String vectorFieldName) {
+        public Builder withVectorFieldName(String vectorFieldName) {
+            if (vectorFieldName == null) {
+                throw new IllegalArgumentException("vectorFieldName cannot be null");
+            }
             this.vectorFieldName = vectorFieldName;
             return this;
         }
@@ -210,11 +313,17 @@ public class SearchParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withTopK(@NonNull Integer topK) {
+        public Builder withTopK(Integer topK) {
+            if (topK == null) {
+                throw new IllegalArgumentException("topK cannot be null");
+            }
             this.topK = topK.longValue();
             return this;
         }
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.topK = limit;
             return this;
         }
@@ -226,7 +335,10 @@ public class SearchParam {
          * @param expr filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withExpr(@NonNull String expr) {
+        public Builder withExpr(String expr) {
+            if (expr == null) {
+                throw new IllegalArgumentException("expr cannot be null");
+            }
             this.expr = expr;
             return this;
         }
@@ -237,7 +349,10 @@ public class SearchParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutFields(@NonNull List<String> outFields) {
+        public Builder withOutFields(List<String> outFields) {
+            if (outFields == null) {
+                throw new IllegalArgumentException("outFields cannot be null");
+            }
             outFields.forEach(this::addOutField);
             return this;
         }
@@ -248,7 +363,10 @@ public class SearchParam {
          * @param fieldName filed name
          * @return <code>Builder</code>
          */
-        public Builder addOutField(@NonNull String fieldName) {
+        public Builder addOutField(String fieldName) {
+            if (fieldName == null) {
+                throw new IllegalArgumentException("fieldName cannot be null");
+            }
             if (!this.outFields.contains(fieldName)) {
                 this.outFields.add(fieldName);
             }
@@ -269,7 +387,10 @@ public class SearchParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withVectors(@NonNull List<?> vectors) {
+        public Builder withVectors(List<?> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             return this;
@@ -281,7 +402,10 @@ public class SearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloatVectors(@NonNull List<List<Float>> vectors) {
+        public Builder withFloatVectors(List<List<Float>> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.FloatVector;
@@ -294,7 +418,10 @@ public class SearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBinaryVectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBinaryVectors(List<ByteBuffer> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BinaryVector;
@@ -307,7 +434,10 @@ public class SearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withFloat16Vectors(List<ByteBuffer> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.Float16Vector;
@@ -320,7 +450,10 @@ public class SearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withBFloat16Vectors(@NonNull List<ByteBuffer> vectors) {
+        public Builder withBFloat16Vectors(List<ByteBuffer> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.BFloat16Vector;
@@ -333,7 +466,10 @@ public class SearchParam {
          * @param vectors target vectors to search
          * @return <code>Builder</code>
          */
-        public Builder withSparseFloatVectors(@NonNull List<SortedMap<Long, Float>> vectors) {
+        public Builder withSparseFloatVectors(List<SortedMap<Long, Float>> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             this.NQ = (long) vectors.size();
             this.plType = PlaceholderType.SparseFloatVector;
@@ -346,7 +482,10 @@ public class SearchParam {
          * @param decimal how many digits after the decimal point
          * @return <code>Builder</code>
          */
-        public Builder withRoundDecimal(@NonNull Integer decimal) {
+        public Builder withRoundDecimal(Integer decimal) {
+            if (decimal == null) {
+                throw new IllegalArgumentException("decimal cannot be null");
+            }
             this.roundDecimal = decimal;
             return this;
         }
@@ -360,7 +499,10 @@ public class SearchParam {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
-        public Builder withParams(@NonNull String params) {
+        public Builder withParams(String params) {
+            if (params == null) {
+                throw new IllegalArgumentException("params cannot be null");
+            }
             this.params = params;
             return this;
         }
@@ -372,7 +514,10 @@ public class SearchParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
+        public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
+            if (ignoreGrowing == null) {
+                throw new IllegalArgumentException("ignoreGrowing cannot be null");
+            }
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
@@ -383,7 +528,10 @@ public class SearchParam {
          * @param groupByFieldName field name to do grouping
          * @return <code>Builder</code>
          */
-        public Builder withGroupByFieldName(@NonNull String groupByFieldName) {
+        public Builder withGroupByFieldName(String groupByFieldName) {
+            if (groupByFieldName == null) {
+                throw new IllegalArgumentException("groupByFieldName cannot be null");
+            }
             this.groupByFieldName = groupByFieldName;
             return this;
         }
@@ -394,7 +542,10 @@ public class SearchParam {
          * @param groupSize the max number of items
          * @return <code>Builder</code>
          */
-        public Builder withGroupSize(@NonNull Integer groupSize) {
+        public Builder withGroupSize(Integer groupSize) {
+            if (groupSize == null) {
+                throw new IllegalArgumentException("groupSize cannot be null");
+            }
             this.groupSize = groupSize;
             return this;
         }
@@ -406,7 +557,10 @@ public class SearchParam {
          * @param strictGroupSize whether to force the number of each group to be groupSize
          * @return <code>Builder</code>
          */
-        public Builder withStrictGroupSize(@NonNull Boolean strictGroupSize) {
+        public Builder withStrictGroupSize(Boolean strictGroupSize) {
+            if (strictGroupSize == null) {
+                throw new IllegalArgumentException("strictGroupSize cannot be null");
+            }
             this.strictGroupSize = strictGroupSize;
             return this;
         }

@@ -19,11 +19,61 @@
 
 package io.milvus.v2.service.database.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class DropDatabaseReq {
     private String databaseName;
+
+    private DropDatabaseReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DropDatabaseReq that = (DropDatabaseReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return databaseName != null ? databaseName.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "DropDatabaseReq{" +
+                "databaseName='" + databaseName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public DropDatabaseReq build() {
+            return new DropDatabaseReq(this);
+        }
+    }
 }

@@ -21,7 +21,6 @@ package io.milvus.response;
 
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.grpc.ImportResponse;
-import lombok.NonNull;
 
 /**
  * Util class to wrap response of <code>bulkInsert</code> interface.
@@ -29,7 +28,10 @@ import lombok.NonNull;
 public class BulkInsertResponseWrapper {
     private final ImportResponse response;
 
-    public BulkInsertResponseWrapper(@NonNull ImportResponse response) {
+    public BulkInsertResponseWrapper(ImportResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("Response cannot be null");
+        }
         this.response = response;
     }
 

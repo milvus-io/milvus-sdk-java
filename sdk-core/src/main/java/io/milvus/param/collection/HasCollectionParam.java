@@ -22,22 +22,35 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>hasCollection</code> interface.
  */
-@Getter
-@ToString
 public class HasCollectionParam {
     private final String collectionName;
     private final String databaseName;
 
-    private HasCollectionParam(@NonNull Builder builder) {
+    private HasCollectionParam(Builder builder) {
+        if (builder.collectionName == null) {
+            throw new IllegalArgumentException("collectionName cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "HasCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -71,7 +84,10 @@ public class HasCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }

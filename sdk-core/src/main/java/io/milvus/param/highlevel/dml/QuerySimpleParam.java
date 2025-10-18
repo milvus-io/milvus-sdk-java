@@ -23,10 +23,6 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.dml.QueryParam;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +30,6 @@ import java.util.List;
 /**
  * Parameters for <code>query</code> interface.
  */
-@Getter
-@ToString
 public class QuerySimpleParam {
     private final String collectionName;
     private final List<String> outputFields;
@@ -44,7 +38,11 @@ public class QuerySimpleParam {
     private final Long limit;
     private final ConsistencyLevelEnum consistencyLevel;
 
-    private QuerySimpleParam(@NotNull Builder builder) {
+    private QuerySimpleParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.outputFields = builder.outputFields;
         this.filter = builder.filter;
@@ -55,6 +53,44 @@ public class QuerySimpleParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getOutputFields() {
+        return outputFields;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public Long getOffset() {
+        return offset;
+    }
+
+    public Long getLimit() {
+        return limit;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "QuerySimpleParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", outputFields=" + outputFields +
+                ", filter='" + filter + '\'' +
+                ", offset=" + offset +
+                ", limit=" + limit +
+                ", consistencyLevel=" + consistencyLevel +
+                '}';
     }
 
     /**
@@ -77,7 +113,11 @@ public class QuerySimpleParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +128,11 @@ public class QuerySimpleParam {
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutputFields(@NonNull List<String> outputFields) {
+        public Builder withOutputFields(List<String> outputFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outputFields == null) {
+                throw new IllegalArgumentException("outputFields cannot be null");
+            }
             this.outputFields.addAll(outputFields);
             return this;
         }
@@ -100,7 +144,11 @@ public class QuerySimpleParam {
          * @param filter filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withFilter(@NonNull String filter) {
+        public Builder withFilter(String filter) {
+            // Replace @NonNull logic with explicit null check
+            if (filter == null) {
+                throw new IllegalArgumentException("filter cannot be null");
+            }
             this.filter = filter;
             return this;
         }
@@ -112,7 +160,11 @@ public class QuerySimpleParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
-        public Builder withOffset(@NonNull Long offset) {
+        public Builder withOffset(Long offset) {
+            // Replace @NonNull logic with explicit null check
+            if (offset == null) {
+                throw new IllegalArgumentException("offset cannot be null");
+            }
             this.offset = offset;
             return this;
         }
@@ -124,7 +176,11 @@ public class QuerySimpleParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.limit = limit;
             return this;
         }

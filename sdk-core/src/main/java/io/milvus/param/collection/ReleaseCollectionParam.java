@@ -22,22 +22,32 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>releaseCollection</code> interface.
  */
-@Getter
-@ToString
 public class ReleaseCollectionParam {
     private final String databaseName;
     private final String collectionName;
 
-    private ReleaseCollectionParam(@NonNull Builder builder) {
+    private ReleaseCollectionParam(Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "ReleaseCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -71,7 +81,10 @@ public class ReleaseCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }

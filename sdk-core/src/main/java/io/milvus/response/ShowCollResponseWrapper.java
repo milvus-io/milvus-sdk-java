@@ -22,9 +22,6 @@ package io.milvus.response;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.grpc.ShowCollectionsResponse;
 
-import lombok.Getter;
-import lombok.NonNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +31,10 @@ import java.util.List;
 public class ShowCollResponseWrapper {
     private final ShowCollectionsResponse response;
 
-    public ShowCollResponseWrapper(@NonNull ShowCollectionsResponse response) {
+    public ShowCollResponseWrapper(ShowCollectionsResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("ShowCollectionsResponse cannot be null");
+        }
         this.response = response;
     }
 
@@ -58,7 +58,7 @@ public class ShowCollResponseWrapper {
             CollectionInfo info = new CollectionInfo(response.getCollectionNames(i), response.getCollectionIds(i),
                     response.getCreatedUtcTimestamps(i));
             if (response.getInMemoryPercentagesCount() > i) {
-                info.SetInMemoryPercentage(response.getInMemoryPercentages(i));
+                info.setInMemoryPercentage(response.getInMemoryPercentages(i));
             }
             results.add(info);
         }
@@ -72,13 +72,16 @@ public class ShowCollResponseWrapper {
      * @param collectionName collection name to get information
      * @return {@link CollectionInfo} information of the collection
      */
-    public CollectionInfo getCollectionInfoByName(@NonNull String collectionName) {
+    public CollectionInfo getCollectionInfoByName(String collectionName) {
+        if (collectionName == null) {
+            throw new IllegalArgumentException("Collection name cannot be null");
+        }
         for (int i = 0; i < response.getCollectionNamesCount(); ++i) {
-            if ( collectionName.compareTo(response.getCollectionNames(i)) == 0) {
+            if (collectionName.compareTo(response.getCollectionNames(i)) == 0) {
                 CollectionInfo info = new CollectionInfo(response.getCollectionNames(i), response.getCollectionIds(i),
                         response.getCreatedUtcTimestamps(i));
                 if (response.getInMemoryPercentagesCount() > i) {
-                    info.SetInMemoryPercentage(response.getInMemoryPercentages(i));
+                    info.setInMemoryPercentage(response.getInMemoryPercentages(i));
                 }
                 return info;
             }
@@ -90,7 +93,6 @@ public class ShowCollResponseWrapper {
     /**
      * Internal-use class to wrap response of <code>showCollections</code> interface.
      */
-    @Getter
     public static final class CollectionInfo {
         private final String name;
         private final long id;
@@ -103,8 +105,25 @@ public class ShowCollResponseWrapper {
             this.utcTimestamp = utcTimestamp;
         }
 
-        public void SetInMemoryPercentage(long inMemoryPercentage) {
+        public void setInMemoryPercentage(long inMemoryPercentage) {
             this.inMemoryPercentage = inMemoryPercentage;
+        }
+
+        // Getter methods
+        public String getName() {
+            return name;
+        }
+
+        public long getId() {
+            return id;
+        }
+
+        public long getUtcTimestamp() {
+            return utcTimestamp;
+        }
+
+        public long getInMemoryPercentage() {
+            return inMemoryPercentage;
         }
 
         @Override
@@ -126,4 +145,3 @@ public class ShowCollResponseWrapper {
                 '}';
     }
 }
-

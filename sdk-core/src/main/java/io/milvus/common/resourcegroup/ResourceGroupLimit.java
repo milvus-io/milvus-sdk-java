@@ -19,10 +19,8 @@
 
 package io.milvus.common.resourcegroup;
 
-import lombok.Getter;
-import lombok.NonNull;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Getter
 public class ResourceGroupLimit {
     private Integer nodeNum;
 
@@ -31,7 +29,10 @@ public class ResourceGroupLimit {
      * 
      * @param nodeNum query node number in this group
      */
-    public ResourceGroupLimit(@NonNull Integer nodeNum) {
+    public ResourceGroupLimit(Integer nodeNum) {
+        if (nodeNum == null) {
+            throw new IllegalArgumentException("Node number cannot be null");
+        }
         this.nodeNum = nodeNum;
     }
 
@@ -40,7 +41,10 @@ public class ResourceGroupLimit {
      * 
      * @param grpcLimit grpc object to set limit of node number
      */
-    public ResourceGroupLimit(@NonNull io.milvus.grpc.ResourceGroupLimit grpcLimit) {
+    public ResourceGroupLimit(io.milvus.grpc.ResourceGroupLimit grpcLimit) {
+        if (grpcLimit == null) {
+            throw new IllegalArgumentException("GRPC limit cannot be null");
+        }
         this.nodeNum = grpcLimit.getNodeNum();
     }
 
@@ -49,7 +53,41 @@ public class ResourceGroupLimit {
      * 
      * @return <code>io.milvus.grpc.ResourceGroupLimit</code>
      */
-    public @NonNull io.milvus.grpc.ResourceGroupLimit toGRPC() {
-        return io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(nodeNum).build();
+    public io.milvus.grpc.ResourceGroupLimit toGRPC() {
+        io.milvus.grpc.ResourceGroupLimit result = io.milvus.grpc.ResourceGroupLimit.newBuilder().setNodeNum(nodeNum).build();
+        if (result == null) {
+            throw new IllegalStateException("Failed to create GRPC ResourceGroupLimit");
+        }
+        return result;
+    }
+
+    public Integer getNodeNum() {
+        return nodeNum;
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceGroupLimit{" +
+                "nodeNum=" + nodeNum +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ResourceGroupLimit that = (ResourceGroupLimit) obj;
+        return new EqualsBuilder()
+                .append(nodeNum, that.nodeNum)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return nodeNum != null ? nodeNum.hashCode() : 0;
     }
 }

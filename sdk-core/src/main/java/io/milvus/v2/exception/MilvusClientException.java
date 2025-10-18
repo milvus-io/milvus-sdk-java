@@ -19,9 +19,6 @@
 
 package io.milvus.v2.exception;
 
-import lombok.Getter;
-
-@Getter
 public class MilvusClientException extends RuntimeException {
 
     private final ErrorCode errorCode;
@@ -44,5 +41,18 @@ public class MilvusClientException extends RuntimeException {
         this.errorCode = errorCode;
         this.serverErrCode = serverErrCode;
         this.legacyServerCode = legacyServerCode;
+    }
+
+    // Getters
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    public int getServerErrCode() {
+        return serverErrCode;
+    }
+
+    public int getLegacyServerCode() {
+        return legacyServerCode;
     }
 }

@@ -265,7 +265,7 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.StructFieldSchema convertFromGrpcStructFieldSchema(StructArrayFieldSchema structSchema) {
-        CreateCollectionReq.StructFieldSchema.StructFieldSchemaBuilder builder =
+        CreateCollectionReq.StructFieldSchema.Builder builder =
                 CreateCollectionReq.StructFieldSchema.builder()
                         .name(structSchema.getName())
                         .description(structSchema.getDescription());

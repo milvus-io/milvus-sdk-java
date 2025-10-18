@@ -23,10 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,8 +30,6 @@ import java.util.Objects;
 /**
  * Parameters for <code>loadCollection</code> interface.
  */
-@Getter
-@ToString
 public class LoadCollectionParam {
     private final String databaseName;
     private final String collectionName;
@@ -48,7 +42,10 @@ public class LoadCollectionParam {
     private final List<String> loadFields;
     private final boolean skipLoadDynamicField;
 
-    public LoadCollectionParam(@NonNull Builder builder) {
+    public LoadCollectionParam(Builder builder) {
+        if (builder.collectionName == null) {
+            throw new IllegalArgumentException("collectionName cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.syncLoad = builder.syncLoad;
@@ -59,6 +56,62 @@ public class LoadCollectionParam {
         this.resourceGroups = builder.resourceGroups;
         this.loadFields = builder.loadFields;
         this.skipLoadDynamicField = builder.skipLoadDynamicField;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public boolean isSyncLoad() {
+        return syncLoad;
+    }
+
+    public long getSyncLoadWaitingInterval() {
+        return syncLoadWaitingInterval;
+    }
+
+    public long getSyncLoadWaitingTimeout() {
+        return syncLoadWaitingTimeout;
+    }
+
+    public int getReplicaNumber() {
+        return replicaNumber;
+    }
+
+    public boolean isRefresh() {
+        return refresh;
+    }
+
+    public List<String> getResourceGroups() {
+        return resourceGroups;
+    }
+
+    public List<String> getLoadFields() {
+        return loadFields;
+    }
+
+    public boolean isSkipLoadDynamicField() {
+        return skipLoadDynamicField;
+    }
+
+    @Override
+    public String toString() {
+        return "LoadCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", syncLoad=" + syncLoad +
+                ", syncLoadWaitingInterval=" + syncLoadWaitingInterval +
+                ", syncLoadWaitingTimeout=" + syncLoadWaitingTimeout +
+                ", replicaNumber=" + replicaNumber +
+                ", refresh=" + refresh +
+                ", resourceGroups=" + resourceGroups +
+                ", loadFields=" + loadFields +
+                ", skipLoadDynamicField=" + skipLoadDynamicField +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -130,7 +183,10 @@ public class LoadCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -144,7 +200,10 @@ public class LoadCollectionParam {
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withSyncLoad(@NonNull Boolean syncLoad) {
+        public Builder withSyncLoad(Boolean syncLoad) {
+            if (syncLoad == null) {
+                throw new IllegalArgumentException("syncLoad cannot be null");
+            }
             this.syncLoad = syncLoad;
             return this;
         }
@@ -157,7 +216,10 @@ public class LoadCollectionParam {
          * @return <code>Builder</code>
          * @see Constant
          */
-        public Builder withSyncLoadWaitingInterval(@NonNull Long milliseconds) {
+        public Builder withSyncLoadWaitingInterval(Long milliseconds) {
+            if (milliseconds == null) {
+                throw new IllegalArgumentException("milliseconds cannot be null");
+            }
             this.syncLoadWaitingInterval = milliseconds;
             return this;
         }
@@ -170,7 +232,10 @@ public class LoadCollectionParam {
          * @return <code>Builder</code>
          * @see Constant
          */
-        public Builder withSyncLoadWaitingTimeout(@NonNull Long seconds) {
+        public Builder withSyncLoadWaitingTimeout(Long seconds) {
+            if (seconds == null) {
+                throw new IllegalArgumentException("seconds cannot be null");
+            }
             this.syncLoadWaitingTimeout = seconds;
             return this;
         }
@@ -181,7 +246,10 @@ public class LoadCollectionParam {
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
-        public Builder withReplicaNumber(@NonNull Integer replicaNumber) {
+        public Builder withReplicaNumber(Integer replicaNumber) {
+            if (replicaNumber == null) {
+                throw new IllegalArgumentException("replicaNumber cannot be null");
+            }
             this.replicaNumber = replicaNumber;
             return this;
         }
@@ -196,7 +264,10 @@ public class LoadCollectionParam {
          * @param refresh <code>Boolean.TRUE</code> is refresh mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
-        public Builder withRefresh(@NonNull Boolean refresh) {
+        public Builder withRefresh(Boolean refresh) {
+            if (refresh == null) {
+                throw new IllegalArgumentException("refresh cannot be null");
+            }
             this.refresh = refresh;
             return this;
         }
@@ -208,7 +279,10 @@ public class LoadCollectionParam {
          * @param resourceGroups a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
-        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+        public Builder withResourceGroups(List<String> resourceGroups) {
+            if (resourceGroups == null) {
+                throw new IllegalArgumentException("resourceGroups cannot be null");
+            }
             this.resourceGroups.addAll(resourceGroups);
             return this;
         }
@@ -220,7 +294,10 @@ public class LoadCollectionParam {
          * @param loadFields a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
-        public Builder withLoadFields(@NonNull List<String> loadFields) {
+        public Builder withLoadFields(List<String> loadFields) {
+            if (loadFields == null) {
+                throw new IllegalArgumentException("loadFields cannot be null");
+            }
             loadFields.forEach((field)->{
                 if (!this.loadFields.contains(field)) {
                     this.loadFields.add(field);
@@ -236,7 +313,10 @@ public class LoadCollectionParam {
          * @param skip <code>Boolean.TRUE</code> skip dynamic field, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
-        public Builder withSkipLoadDynamicField(@NonNull Boolean skip) {
+        public Builder withSkipLoadDynamicField(Boolean skip) {
+            if (skip == null) {
+                throw new IllegalArgumentException("skip cannot be null");
+            }
             this.skipLoadDynamicField = skip;
             return this;
         }

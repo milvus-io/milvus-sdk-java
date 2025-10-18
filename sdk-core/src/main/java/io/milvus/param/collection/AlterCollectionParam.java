@@ -22,9 +22,6 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,17 +29,39 @@ import java.util.Map;
 /**
  * Parameters for <code>alterCollection</code> interface.
  */
-@Getter
-@ToString
 public class AlterCollectionParam {
     private final String collectionName;
     private final String databaseName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private AlterCollectionParam(@NonNull Builder builder) {
+    private AlterCollectionParam(Builder builder) {
+        if (builder.collectionName == null) {
+            throw new IllegalArgumentException("collectionName cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.properties.putAll(builder.properties);
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    @Override
+    public String toString() {
+        return "AlterCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", properties=" + properties +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -58,7 +77,6 @@ public class AlterCollectionParam {
 
         private final Map<String, String> properties = new HashMap<>();
 
-
         private Builder() {
         }
 
@@ -68,7 +86,10 @@ public class AlterCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -93,7 +114,10 @@ public class AlterCollectionParam {
          * @param ttlSeconds TTL seconds, value should be 0 or greater
          * @return <code>Builder</code>
          */
-        public Builder withTTL(@NonNull Integer ttlSeconds) {
+        public Builder withTTL(Integer ttlSeconds) {
+            if (ttlSeconds == null) {
+                throw new IllegalArgumentException("ttlSeconds cannot be null");
+            }
             if (ttlSeconds < 0) {
                 throw new ParamException("The ttlSeconds value should be 0 or greater");
             }
@@ -118,7 +142,13 @@ public class AlterCollectionParam {
          * @param value the value
          * @return <code>Builder</code>
          */
-        public Builder withProperty(@NonNull String key, @NonNull String value) {
+        public Builder withProperty(String key, String value) {
+            if (key == null) {
+                throw new IllegalArgumentException("key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
             this.properties.put(key, value);
             return this;
         }

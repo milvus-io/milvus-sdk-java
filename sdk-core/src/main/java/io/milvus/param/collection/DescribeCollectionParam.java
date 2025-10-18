@@ -22,22 +22,32 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>describeCollection</code> interface.
  */
-@Getter
-@ToString
 public class DescribeCollectionParam {
-    private final String databaseName;
     private final String collectionName;
+    private final String databaseName;
 
-    private DescribeCollectionParam(@NonNull Builder builder) {
-        this.databaseName = builder.databaseName;
+    private DescribeCollectionParam(Builder builder) {
         this.collectionName = builder.collectionName;
+        this.databaseName = builder.databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -48,8 +58,8 @@ public class DescribeCollectionParam {
      * Builder for {@link DescribeCollectionParam} class.
      */
     public static final class Builder {
-        private String databaseName;
         private String collectionName;
+        private String databaseName;
 
         private Builder() {
         }
@@ -71,7 +81,10 @@ public class DescribeCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }

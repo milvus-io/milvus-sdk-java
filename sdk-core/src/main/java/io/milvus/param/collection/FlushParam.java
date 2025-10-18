@@ -23,10 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -35,8 +31,6 @@ import java.util.Objects;
  * Parameters for <code>flush</code> interface.
  * Note that the flush interface is not exposed currently.
  */
-@Getter
-@ToString
 public class FlushParam {
     private final String databaseName;
     private final List<String> collectionNames;
@@ -44,12 +38,46 @@ public class FlushParam {
     private final long syncFlushWaitingInterval;
     private final long syncFlushWaitingTimeout;
 
-    private FlushParam(@NonNull Builder builder) {
+    private FlushParam(Builder builder) {
+        if (builder.collectionNames == null) {
+            throw new IllegalArgumentException("collectionNames cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
         this.syncFlush = builder.syncFlush;
         this.syncFlushWaitingInterval = builder.syncFlushWaitingInterval;
         this.syncFlushWaitingTimeout = builder.syncFlushWaitingTimeout;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public List<String> getCollectionNames() {
+        return collectionNames;
+    }
+
+    public Boolean getSyncFlush() {
+        return syncFlush;
+    }
+
+    public long getSyncFlushWaitingInterval() {
+        return syncFlushWaitingInterval;
+    }
+
+    public long getSyncFlushWaitingTimeout() {
+        return syncFlushWaitingTimeout;
+    }
+
+    @Override
+    public String toString() {
+        return "FlushParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionNames=" + collectionNames +
+                ", syncFlush=" + syncFlush +
+                ", syncFlushWaitingInterval=" + syncFlushWaitingInterval +
+                ", syncFlushWaitingTimeout=" + syncFlushWaitingTimeout +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -97,7 +125,10 @@ public class FlushParam {
          * @param collectionNames a list of collections
          * @return <code>Builder</code>
          */
-        public Builder withCollectionNames(@NonNull List<String> collectionNames) {
+        public Builder withCollectionNames(List<String> collectionNames) {
+            if (collectionNames == null) {
+                throw new IllegalArgumentException("collectionNames cannot be null");
+            }
             this.collectionNames.addAll(collectionNames);
             return this;
         }
@@ -108,7 +139,10 @@ public class FlushParam {
          * @param collectionName name of the collections
          * @return <code>Builder</code>
          */
-        public Builder addCollectionName(@NonNull String collectionName) {
+        public Builder addCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionNames.add(collectionName);
             return this;
         }
@@ -122,7 +156,10 @@ public class FlushParam {
          * @param syncFlush <code>Boolean.TRUE</code> is sync mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
-        public Builder withSyncFlush(@NonNull Boolean syncFlush) {
+        public Builder withSyncFlush(Boolean syncFlush) {
+            if (syncFlush == null) {
+                throw new IllegalArgumentException("syncFlush cannot be null");
+            }
             this.syncFlush = syncFlush;
             return this;
         }
@@ -135,7 +172,10 @@ public class FlushParam {
          * @param milliseconds interval
          * @return <code>Builder</code>
          */
-        public Builder withSyncFlushWaitingInterval(@NonNull Long milliseconds) {
+        public Builder withSyncFlushWaitingInterval(Long milliseconds) {
+            if (milliseconds == null) {
+                throw new IllegalArgumentException("milliseconds cannot be null");
+            }
             this.syncFlushWaitingInterval = milliseconds;
             return this;
         }
@@ -148,7 +188,10 @@ public class FlushParam {
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
          */
-        public Builder withSyncFlushWaitingTimeout(@NonNull Long seconds) {
+        public Builder withSyncFlushWaitingTimeout(Long seconds) {
+            if (seconds == null) {
+                throw new IllegalArgumentException("seconds cannot be null");
+            }
             this.syncFlushWaitingTimeout = seconds;
             return this;
         }

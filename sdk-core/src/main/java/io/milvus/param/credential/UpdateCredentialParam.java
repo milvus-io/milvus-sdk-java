@@ -21,18 +21,16 @@ package io.milvus.param.credential;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class UpdateCredentialParam {
     private final String username;
     private final String oldPassword;
     private final String newPassword;
 
-    private UpdateCredentialParam(@NonNull UpdateCredentialParam.Builder builder) {
+    private UpdateCredentialParam(UpdateCredentialParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.username = builder.username;
         this.oldPassword = builder.oldPassword;
         this.newPassword = builder.newPassword;
@@ -40,6 +38,29 @@ public class UpdateCredentialParam {
 
     public static UpdateCredentialParam.Builder newBuilder() {
         return new UpdateCredentialParam.Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getUsername() {
+        return username;
+    }
+
+    public String getOldPassword() {
+        return oldPassword;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "UpdateCredentialParam{" +
+                "username='" + username + '\'' +
+                ", oldPassword='" + oldPassword + '\'' +
+                ", newPassword='" + newPassword + '\'' +
+                '}';
     }
 
     /**
@@ -59,7 +80,11 @@ public class UpdateCredentialParam {
          * @param username username
          * @return <code>Builder</code>
          */
-        public UpdateCredentialParam.Builder withUsername(@NonNull String username) {
+        public UpdateCredentialParam.Builder withUsername(String username) {
+            // Replace @NonNull logic with explicit null check
+            if (username == null) {
+                throw new IllegalArgumentException("username cannot be null");
+            }
             this.username = username;
             return this;
         }
@@ -70,7 +95,11 @@ public class UpdateCredentialParam {
          * @param password old password
          * @return <code>Builder</code>
          */
-        public UpdateCredentialParam.Builder withOldPassword(@NonNull String password) {
+        public UpdateCredentialParam.Builder withOldPassword(String password) {
+            // Replace @NonNull logic with explicit null check
+            if (password == null) {
+                throw new IllegalArgumentException("password cannot be null");
+            }
             this.oldPassword = password;
             return this;
         }
@@ -81,7 +110,11 @@ public class UpdateCredentialParam {
          * @param password password
          * @return <code>Builder</code>
          */
-        public UpdateCredentialParam.Builder withNewPassword(@NonNull String password) {
+        public UpdateCredentialParam.Builder withNewPassword(String password) {
+            // Replace @NonNull logic with explicit null check
+            if (password == null) {
+                throw new IllegalArgumentException("password cannot be null");
+            }
             this.newPassword = password;
             return this;
         }
@@ -99,5 +132,4 @@ public class UpdateCredentialParam {
             return new UpdateCredentialParam(this);
         }
     }
-
 }

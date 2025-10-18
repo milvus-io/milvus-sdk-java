@@ -20,7 +20,6 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
-import lombok.NonNull;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -36,7 +35,10 @@ public class QueryNodeSingleSearch {
     private final List<?> vectors;
     private final String params;
 
-    private QueryNodeSingleSearch(@NonNull Builder builder) {
+    private QueryNodeSingleSearch(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.metricType = builder.metricType;
         this.vectorFieldName = builder.vectorFieldName;
@@ -87,7 +89,10 @@ public class QueryNodeSingleSearch {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("Collection name cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -98,7 +103,10 @@ public class QueryNodeSingleSearch {
          * @param metricType metric type
          * @return <code>Builder</code>
          */
-        public Builder withMetricType(@NonNull MetricType metricType) {
+        public Builder withMetricType(MetricType metricType) {
+            if (metricType == null) {
+                throw new IllegalArgumentException("Metric type cannot be null");
+            }
             this.metricType = metricType;
             return this;
         }
@@ -109,7 +117,10 @@ public class QueryNodeSingleSearch {
          * @param vectorFieldName vector field name
          * @return <code>Builder</code>
          */
-        public Builder withVectorFieldName(@NonNull String vectorFieldName) {
+        public Builder withVectorFieldName(String vectorFieldName) {
+            if (vectorFieldName == null) {
+                throw new IllegalArgumentException("Vector field name cannot be null");
+            }
             this.vectorFieldName = vectorFieldName;
             return this;
         }
@@ -123,7 +134,10 @@ public class QueryNodeSingleSearch {
          *                if vector type is SparseFloatVector, values is List of SortedMap[Long, Float]
          * @return <code>Builder</code>
          */
-        public Builder withVectors(@NonNull List<?> vectors) {
+        public Builder withVectors(List<?> vectors) {
+            if (vectors == null) {
+                throw new IllegalArgumentException("Vectors cannot be null");
+            }
             this.vectors = vectors;
             return this;
         }
@@ -137,7 +151,10 @@ public class QueryNodeSingleSearch {
          * @param params extra parameters in json format
          * @return <code>Builder</code>
          */
-        public Builder withParams(@NonNull String params) {
+        public Builder withParams(String params) {
+            if (params == null) {
+                throw new IllegalArgumentException("Params cannot be null");
+            }
             this.params = params;
             return this;
         }

@@ -2897,7 +2897,8 @@ class MilvusClientDockerTest {
         AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder()
                 .withDatabaseName(dbName)
                 .withReplicaNumber(3)
-                .WithResourceGroups(Arrays.asList("rg1", "rg2", "rg3"))
+                // fix W is UpperCase
+                .withResourceGroups(Arrays.asList("rg1", "rg2", "rg3"))
                 .build();
         R<RpcStatus> alterDatabaseResponse = client.alterDatabase(alterDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), alterDatabaseResponse.getStatus().intValue());

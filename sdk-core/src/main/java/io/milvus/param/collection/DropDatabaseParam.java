@@ -21,20 +21,29 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Parameters for <code>dropDatabase</code> interface.
  */
-@Getter
-@ToString
 public class DropDatabaseParam {
     private final String databaseName;
 
-    private DropDatabaseParam(@NonNull Builder builder) {
+    private DropDatabaseParam(Builder builder) {
+        if (builder.databaseName == null) {
+            throw new IllegalArgumentException("databaseName cannot be null");
+        }
         this.databaseName = builder.databaseName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "DropDatabaseParam{" +
+                "databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -51,12 +60,15 @@ public class DropDatabaseParam {
         }
 
         /**
-         * Sets the databaseName name. Database name cannot be empty or null.
+         * Set the database name. Database name cannot be empty or null.
          *
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
+            if (databaseName == null) {
+                throw new IllegalArgumentException("databaseName cannot be null");
+            }
             this.databaseName = databaseName;
             return this;
         }

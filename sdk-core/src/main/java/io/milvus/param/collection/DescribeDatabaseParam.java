@@ -17,61 +17,72 @@
  * under the License.
  */
 
- package io.milvus.param.collection;
+package io.milvus.param.collection;
 
- import io.milvus.exception.ParamException;
- import io.milvus.param.ParamUtils;
- 
- import lombok.Getter;
- import lombok.NonNull;
- import lombok.ToString;
- 
- /**
-  * Parameters for <code>describeDatabase</code> interface.
-  */
- @Getter
- @ToString
- public class DescribeDatabaseParam {
-     private final String databaseName;
- 
-     private DescribeDatabaseParam(@NonNull Builder builder) {
-         this.databaseName = builder.databaseName;
-     }
- 
-     public static Builder newBuilder() {
-         return new Builder();
-     }
- 
-     /**
-      * Builder for {@link DescribeDatabaseParam} class.
-      */
-     public static final class Builder {
-         private String databaseName;
- 
-         private Builder() {
-         }
- 
-         /**
-          * Sets the database name. database name can be nil.
-          *
-          * @param databaseName database name
-          * @return <code>Builder</code>
-          */
-         public Builder withDatabaseName(String databaseName) {
-             this.databaseName = databaseName;
-             return this;
-         }
- 
-         /**
-          * Verifies parameters and creates a new {@link DescribeDatabaseParam} instance.
-          *
-          * @return {@link DescribeDatabaseParam}
-          */
-         public DescribeDatabaseParam build() throws ParamException {
+import io.milvus.exception.ParamException;
+import io.milvus.param.ParamUtils;
+
+/**
+ * Parameters for <code>describeDatabase</code> interface.
+ */
+public class DescribeDatabaseParam {
+    private final String databaseName;
+
+    private DescribeDatabaseParam(Builder builder) {
+        if (builder.databaseName == null) {
+            throw new IllegalArgumentException("databaseName cannot be null");
+        }
+        this.databaseName = builder.databaseName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeDatabaseParam{" +
+                "databaseName='" + databaseName + '\'' +
+                '}';
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    /**
+     * Builder for {@link DescribeDatabaseParam} class.
+     */
+    public static final class Builder {
+        private String databaseName;
+
+        private Builder() {
+        }
+
+        /**
+         * Set the database name. Database name cannot be empty or null.
+         *
+         * @param databaseName database name
+         * @return <code>Builder</code>
+         */
+        public Builder withDatabaseName(String databaseName) {
+            if (databaseName == null) {
+                throw new IllegalArgumentException("databaseName cannot be null");
+            }
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        /**
+         * Verifies parameters and creates a new {@link DescribeDatabaseParam} instance.
+         *
+         * @return {@link DescribeDatabaseParam}
+         */
+        public DescribeDatabaseParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(databaseName, "Database name");
- 
-             return new DescribeDatabaseParam(this);
-         }
-     }
- 
- }
+
+            return new DescribeDatabaseParam(this);
+        }
+    }
+
+}

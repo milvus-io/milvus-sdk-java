@@ -20,15 +20,64 @@
 package io.milvus.v2.service.rbac.response;
 
 import io.milvus.v2.service.rbac.PrivilegeGroup;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-@Data
-@SuperBuilder
 public class ListPrivilegeGroupsResp {
-    @Builder.Default
-    private List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
+    private List<PrivilegeGroup> privilegeGroups;
+
+    private ListPrivilegeGroupsResp(Builder builder) {
+        this.privilegeGroups = builder.privilegeGroups;
+    }
+
+    public List<PrivilegeGroup> getPrivilegeGroups() {
+        return privilegeGroups;
+    }
+
+    public void setPrivilegeGroups(List<PrivilegeGroup> privilegeGroups) {
+        this.privilegeGroups = privilegeGroups;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ListPrivilegeGroupsResp that = (ListPrivilegeGroupsResp) obj;
+        return new EqualsBuilder()
+                .append(privilegeGroups, that.privilegeGroups)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return privilegeGroups != null ? privilegeGroups.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ListPrivilegeGroupsResp{" +
+                "privilegeGroups=" + privilegeGroups +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
+
+        private Builder() {}
+
+        public Builder privilegeGroups(List<PrivilegeGroup> privilegeGroups) {
+            this.privilegeGroups = privilegeGroups;
+            return this;
+        }
+
+        public ListPrivilegeGroupsResp build() {
+            return new ListPrivilegeGroupsResp(this);
+        }
+    }
 }

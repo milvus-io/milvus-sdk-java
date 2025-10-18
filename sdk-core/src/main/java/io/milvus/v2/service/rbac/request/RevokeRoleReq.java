@@ -19,12 +19,81 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class RevokeRoleReq {
     private String userName;
     private String roleName;
+
+    private RevokeRoleReq(Builder builder) {
+        this.userName = builder.userName;
+        this.roleName = builder.roleName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        RevokeRoleReq that = (RevokeRoleReq) obj;
+        return new EqualsBuilder()
+                .append(userName, that.userName)
+                .append(roleName, that.roleName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userName != null ? userName.hashCode() : 0;
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "RevokeRoleReq{" +
+                "userName='" + userName + '\'' +
+                ", roleName='" + roleName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String userName;
+        private String roleName;
+
+        private Builder() {}
+
+        public Builder userName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        public Builder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        public RevokeRoleReq build() {
+            return new RevokeRoleReq(this);
+        }
+    }
 }

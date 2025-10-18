@@ -20,27 +20,37 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 
 /**
  * Parameters for <code>getCompactionState</code> interface.
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+16+--+Compaction">Compaction function design</a>
  */
-@Getter
-@ToString
 public class GetCompactionStateParam {
     private final Long compactionID;
 
-    private GetCompactionStateParam(@NonNull Builder builder) {
+    private GetCompactionStateParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.compactionID = builder.compactionID;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter method to replace @Getter annotation
+    public Long getCompactionID() {
+        return compactionID;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetCompactionStateParam{" +
+                "compactionID=" + compactionID +
+                '}';
     }
 
     /**
@@ -58,7 +68,11 @@ public class GetCompactionStateParam {
          * @param compactionID compaction action id
          * @return <code>Builder</code>
          */
-        public Builder withCompactionID(@NonNull Long compactionID) {
+        public Builder withCompactionID(Long compactionID) {
+            // Replace @NonNull logic with explicit null check
+            if (compactionID == null) {
+                throw new IllegalArgumentException("compactionID cannot be null");
+            }
             this.compactionID = compactionID;
             return this;
         }

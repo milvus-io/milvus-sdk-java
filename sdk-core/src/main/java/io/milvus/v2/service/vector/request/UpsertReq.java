@@ -20,14 +20,11 @@
 package io.milvus.v2.service.vector.request;
 
 import com.google.gson.JsonObject;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class UpsertReq {
     /**
      * Sets the row data to insert. The rows list cannot be empty.
@@ -54,11 +51,133 @@ public class UpsertReq {
      *
      */
     private List<JsonObject> data;
-    @Builder.Default
-    private String databaseName = "";
+    private String databaseName;
     private String collectionName;
-    @Builder.Default
-    private String partitionName = "";
-    @Builder.Default
-    private boolean partialUpdate = false;
+    private String partitionName;
+    private boolean partialUpdate;
+
+    private UpsertReq(Builder builder) {
+        this.data = builder.data;
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+        this.partialUpdate = builder.partialUpdate;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public List<JsonObject> getData() {
+        return data;
+    }
+
+    public void setData(List<JsonObject> data) {
+        this.data = data;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    public boolean isPartialUpdate() {
+        return partialUpdate;
+    }
+
+    public void setPartialUpdate(boolean partialUpdate) {
+        this.partialUpdate = partialUpdate;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        UpsertReq that = (UpsertReq) obj;
+        return new EqualsBuilder()
+                .append(partialUpdate, that.partialUpdate)
+                .append(data, that.data)
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(partitionName, that.partitionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(data)
+                .append(databaseName)
+                .append(collectionName)
+                .append(partitionName)
+                .append(partialUpdate)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "UpsertReq{" +
+                "data=" + data +
+                ", databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", partialUpdate=" + partialUpdate +
+                '}';
+    }
+
+    public static class Builder {
+        private List<JsonObject> data;
+        private String databaseName = "";
+        private String collectionName;
+        private String partitionName = "";
+        private boolean partialUpdate = false; // default value
+
+        public Builder data(List<JsonObject> data) {
+            this.data = data;
+            return this;
+        }
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public Builder partialUpdate(boolean partialUpdate) {
+            this.partialUpdate = partialUpdate;
+            return this;
+        }
+
+        public UpsertReq build() {
+            return new UpsertReq(this);
+        }
+    }
 }

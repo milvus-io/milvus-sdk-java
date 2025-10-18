@@ -23,10 +23,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -34,8 +30,6 @@ import java.util.Objects;
 /**
  * Parameters for <code>loadPartition</code> interface.
  */
-@Getter
-@ToString
 public class LoadPartitionsParam {
     private final String databaseName;
     private final String collectionName;
@@ -49,7 +43,10 @@ public class LoadPartitionsParam {
     private final List<String> loadFields;
     private final boolean skipLoadDynamicField;
 
-    private LoadPartitionsParam(@NonNull Builder builder) {
+    private LoadPartitionsParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -65,6 +62,69 @@ public class LoadPartitionsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public boolean isSyncLoad() {
+        return syncLoad;
+    }
+
+    public long getSyncLoadWaitingInterval() {
+        return syncLoadWaitingInterval;
+    }
+
+    public long getSyncLoadWaitingTimeout() {
+        return syncLoadWaitingTimeout;
+    }
+
+    public int getReplicaNumber() {
+        return replicaNumber;
+    }
+
+    public boolean isRefresh() {
+        return refresh;
+    }
+
+    public List<String> getResourceGroups() {
+        return resourceGroups;
+    }
+
+    public List<String> getLoadFields() {
+        return loadFields;
+    }
+
+    public boolean isSkipLoadDynamicField() {
+        return skipLoadDynamicField;
+    }
+
+    // toString method
+    @Override
+    public String toString() {
+        return "LoadPartitionsParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionNames=" + partitionNames +
+                ", syncLoad=" + syncLoad +
+                ", syncLoadWaitingInterval=" + syncLoadWaitingInterval +
+                ", syncLoadWaitingTimeout=" + syncLoadWaitingTimeout +
+                ", replicaNumber=" + replicaNumber +
+                ", refresh=" + refresh +
+                ", resourceGroups=" + resourceGroups +
+                ", loadFields=" + loadFields +
+                ", skipLoadDynamicField=" + skipLoadDynamicField +
+                '}';
     }
 
     /**
@@ -133,7 +193,10 @@ public class LoadPartitionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("Collection name cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -144,7 +207,10 @@ public class LoadPartitionsParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("Partition names cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -155,7 +221,10 @@ public class LoadPartitionsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            if (partitionName == null) {
+                throw new IllegalArgumentException("Partition name cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }
@@ -171,7 +240,10 @@ public class LoadPartitionsParam {
          * @param syncLoad <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withSyncLoad(@NonNull Boolean syncLoad) {
+        public Builder withSyncLoad(Boolean syncLoad) {
+            if (syncLoad == null) {
+                throw new IllegalArgumentException("SyncLoad cannot be null");
+            }
             this.syncLoad = syncLoad;
             return this;
         }
@@ -184,7 +256,10 @@ public class LoadPartitionsParam {
          * @return <code>Builder</code>
          * @see Constant
          */
-        public Builder withSyncLoadWaitingInterval(@NonNull Long milliseconds) {
+        public Builder withSyncLoadWaitingInterval(Long milliseconds) {
+            if (milliseconds == null) {
+                throw new IllegalArgumentException("Milliseconds cannot be null");
+            }
             this.syncLoadWaitingInterval = milliseconds;
             return this;
         }
@@ -197,7 +272,10 @@ public class LoadPartitionsParam {
          * @return <code>Builder</code>
          * @see Constant
          */
-        public Builder withSyncLoadWaitingTimeout(@NonNull Long seconds) {
+        public Builder withSyncLoadWaitingTimeout(Long seconds) {
+            if (seconds == null) {
+                throw new IllegalArgumentException("Seconds cannot be null");
+            }
             this.syncLoadWaitingTimeout = seconds;
             return this;
         }
@@ -208,7 +286,10 @@ public class LoadPartitionsParam {
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
-        public Builder withReplicaNumber(@NonNull Integer replicaNumber) {
+        public Builder withReplicaNumber(Integer replicaNumber) {
+            if (replicaNumber == null) {
+                throw new IllegalArgumentException("Replica number cannot be null");
+            }
             this.replicaNumber = replicaNumber;
             return this;
         }
@@ -223,7 +304,10 @@ public class LoadPartitionsParam {
          * @param refresh <code>Boolean.TRUE</code> is refresh mode, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
-        public Builder withRefresh(@NonNull Boolean refresh) {
+        public Builder withRefresh(Boolean refresh) {
+            if (refresh == null) {
+                throw new IllegalArgumentException("Refresh cannot be null");
+            }
             this.refresh = refresh;
             return this;
         }
@@ -235,7 +319,10 @@ public class LoadPartitionsParam {
          * @param resourceGroups a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
-        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+        public Builder withResourceGroups(List<String> resourceGroups) {
+            if (resourceGroups == null) {
+                throw new IllegalArgumentException("Resource groups cannot be null");
+            }
             this.resourceGroups.addAll(resourceGroups);
             return this;
         }
@@ -247,7 +334,10 @@ public class LoadPartitionsParam {
          * @param loadFields a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */
-        public Builder withLoadFields(@NonNull List<String> loadFields) {
+        public Builder withLoadFields(List<String> loadFields) {
+            if (loadFields == null) {
+                throw new IllegalArgumentException("Load fields cannot be null");
+            }
             loadFields.forEach((field)->{
                 if (!this.loadFields.contains(field)) {
                     this.loadFields.add(field);
@@ -263,7 +353,10 @@ public class LoadPartitionsParam {
          * @param skip <code>Boolean.TRUE</code> skip dynamic field, <code>Boolean.FALSE</code> is not
          * @return <code>Builder</code>
          */
-        public Builder withSkipLoadDynamicField(@NonNull Boolean skip) {
+        public Builder withSkipLoadDynamicField(Boolean skip) {
+            if (skip == null) {
+                throw new IllegalArgumentException("Skip cannot be null");
+            }
             this.skipLoadDynamicField = skip;
             return this;
         }

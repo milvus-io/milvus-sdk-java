@@ -19,13 +19,100 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class UpdatePasswordReq {
     private String userName;
     private String password;
     private String newPassword;
+
+    private UpdatePasswordReq(Builder builder) {
+        this.userName = builder.userName;
+        this.password = builder.password;
+        this.newPassword = builder.newPassword;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        UpdatePasswordReq that = (UpdatePasswordReq) obj;
+        return new EqualsBuilder()
+                .append(userName, that.userName)
+                .append(password, that.password)
+                .append(newPassword, that.newPassword)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = userName != null ? userName.hashCode() : 0;
+        result = 31 * result + (password != null ? password.hashCode() : 0);
+        result = 31 * result + (newPassword != null ? newPassword.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "UpdatePasswordReq{" +
+                "userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                ", newPassword='" + newPassword + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String userName;
+        private String password;
+        private String newPassword;
+
+        private Builder() {}
+
+        public Builder userName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        public Builder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public Builder newPassword(String newPassword) {
+            this.newPassword = newPassword;
+            return this;
+        }
+
+        public UpdatePasswordReq build() {
+            return new UpdatePasswordReq(this);
+        }
+    }
 }

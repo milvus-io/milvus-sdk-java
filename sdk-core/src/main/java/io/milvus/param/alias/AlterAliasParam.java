@@ -22,24 +22,44 @@ package io.milvus.param.alias;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>alterAlias</code> interface.
  */
-@Getter
-@ToString
 public class AlterAliasParam {
     private final String collectionName;
     private final String databaseName;
     private final String alias;
 
-    private AlterAliasParam(@NonNull AlterAliasParam.Builder builder) {
+    private AlterAliasParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.alias = builder.alias;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "AlterAliasParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", alias='" + alias + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -63,7 +83,10 @@ public class AlterAliasParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -85,7 +108,10 @@ public class AlterAliasParam {
          * @param alias alias of the collection
          * @return <code>Builder</code>
          */
-        public Builder withAlias(@NonNull String alias) {
+        public Builder withAlias(String alias) {
+            if (alias == null) {
+                throw new IllegalArgumentException("alias cannot be null");
+            }
             this.alias = alias;
             return this;
         }

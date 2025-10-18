@@ -19,14 +19,90 @@
 
 package io.milvus.v2.service.collection.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class BatchDescribeCollectionReq {
     private String databaseName;
     private List<String> collectionNames;
+
+    // Private constructor for builder
+    private BatchDescribeCollectionReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionNames = builder.collectionNames;
+    }
+
+    // Static method to create builder
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getter methods
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public List<String> getCollectionNames() {
+        return collectionNames;
+    }
+
+    // Setter methods
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public void setCollectionNames(List<String> collectionNames) {
+        this.collectionNames = collectionNames;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        BatchDescribeCollectionReq that = (BatchDescribeCollectionReq) o;
+
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionNames, that.collectionNames)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(databaseName)
+                .append(collectionNames)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "BatchDescribeCollectionReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionNames=" + collectionNames +
+                '}';
+    }
+
+    // Builder class
+    public static class Builder {
+        private String databaseName;
+        private List<String> collectionNames;
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionNames(List<String> collectionNames) {
+            this.collectionNames = collectionNames;
+            return this;
+        }
+
+        public BatchDescribeCollectionReq build() {
+            return new BatchDescribeCollectionReq(this);
+        }
+    }
 }

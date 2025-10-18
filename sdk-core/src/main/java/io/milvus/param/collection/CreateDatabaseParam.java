@@ -22,9 +22,6 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,15 +30,32 @@ import java.util.Map;
 /**
  * Parameters for <code>createDatabase</code> interface.
  */
-@Getter
-@ToString
 public class CreateDatabaseParam {
     private final String databaseName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private CreateDatabaseParam(@NonNull Builder builder) {
+    private CreateDatabaseParam(Builder builder) {
+        if (builder.databaseName == null) {
+            throw new IllegalArgumentException("databaseName cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.properties.putAll(builder.properties);
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateDatabaseParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", properties=" + properties +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -65,12 +79,15 @@ public class CreateDatabaseParam {
          * @param databaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withDatabaseName(@NonNull String databaseName) {
+        public Builder withDatabaseName(String databaseName) {
+            if (databaseName == null) {
+                throw new IllegalArgumentException("databaseName cannot be null");
+            }
             this.databaseName = databaseName;
             return this;
         }
 
-         /**
+        /**
          * Sets the replica number in database level, then if load collection doesn't have replica number, it will use this replica number.
          * @param replicaNumber replica number
          * @return <code>Builder</code>
@@ -84,9 +101,11 @@ public class CreateDatabaseParam {
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
-        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+        public Builder withResourceGroups(List<String> resourceGroups) {
+            if (resourceGroups == null) {
+                throw new IllegalArgumentException("resourceGroups cannot be null");
+            }
             return this.withProperty(Constant.DATABASE_RESOURCE_GROUPS, String.join(",", resourceGroups));
-
         }
 
         /**
@@ -96,7 +115,13 @@ public class CreateDatabaseParam {
          * @param value the value
          * @return <code>Builder</code>
          */
-        public Builder withProperty(@NonNull String key, @NonNull String value) {
+        public Builder withProperty(String key, String value) {
+            if (key == null) {
+                throw new IllegalArgumentException("key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
             this.properties.put(key, value);
             return this;
         }

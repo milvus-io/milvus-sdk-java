@@ -19,12 +19,81 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class DescribeRoleReq {
     private String roleName;
     private String dbName;
+
+    private DescribeRoleReq(Builder builder) {
+        this.roleName = builder.roleName;
+        this.dbName = builder.dbName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DescribeRoleReq that = (DescribeRoleReq) obj;
+        return new EqualsBuilder()
+                .append(roleName, that.roleName)
+                .append(dbName, that.dbName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleName != null ? roleName.hashCode() : 0;
+        result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeRoleReq{" +
+                "roleName='" + roleName + '\'' +
+                ", dbName='" + dbName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String roleName;
+        private String dbName;
+
+        private Builder() {}
+
+        public Builder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        public Builder dbName(String dbName) {
+            this.dbName = dbName;
+            return this;
+        }
+
+        public DescribeRoleReq build() {
+            return new DescribeRoleReq(this);
+        }
+    }
 }

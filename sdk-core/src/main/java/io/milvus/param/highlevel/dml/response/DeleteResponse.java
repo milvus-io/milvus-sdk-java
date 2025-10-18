@@ -19,23 +19,76 @@
 
 package io.milvus.param.highlevel.dml.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.ToString;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
 /**
  * Parameters for <code>delete</code> interface.
  */
-@Builder
-@Getter
-@ToString
 public class DeleteResponse {
     /**
      * In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
      * Mark is as deprecated, keep it to compatible with the legacy code
      */
     @Deprecated
-    public List<?> deleteIds;
+    private List<?> deleteIds;
+
+    private DeleteResponse(Builder builder) {
+        this.deleteIds = builder.deleteIds;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * @deprecated In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
+     */
+    @Deprecated
+    public List<?> getDeleteIds() {
+        return deleteIds;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DeleteResponse that = (DeleteResponse) obj;
+        return new EqualsBuilder()
+                .append(deleteIds, that.deleteIds)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(deleteIds)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteResponse{" +
+                "deleteIds=" + deleteIds +
+                '}';
+    }
+
+    public static class Builder {
+        private List<?> deleteIds;
+
+        /**
+         * @deprecated In the new version(greater or equal than 2.3.2), this method only returns an empty list and does not return specific values
+         */
+        @Deprecated
+        public Builder deleteIds(List<?> deleteIds) {
+            this.deleteIds = deleteIds;
+            return this;
+        }
+
+        public DeleteResponse build() {
+            return new DeleteResponse(this);
+        }
+    }
 }

@@ -19,17 +19,84 @@
 
 package io.milvus.v2.service.database.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
-@SuperBuilder
 public class DescribeDatabaseResp {
     private String databaseName;
-    @Builder.Default
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties;
+
+    private DescribeDatabaseResp(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.properties = builder.properties;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DescribeDatabaseResp that = (DescribeDatabaseResp) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(properties, that.properties)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (properties != null ? properties.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "DescribeDatabaseResp{" +
+                "databaseName='" + databaseName + '\'' +
+                ", properties=" + properties +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private Map<String, String> properties = new HashMap<>();
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder properties(Map<String, String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public DescribeDatabaseResp build() {
+            return new DescribeDatabaseResp(this);
+        }
+    }
 }

@@ -20,19 +20,23 @@
 package io.milvus.param.credential;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class ListCredUsersParam {
 
-    private ListCredUsersParam(@NonNull ListCredUsersParam.Builder builder) {
+    private ListCredUsersParam(ListCredUsersParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
     }
 
     public static ListCredUsersParam.Builder newBuilder() {
         return new ListCredUsersParam.Builder();
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "ListCredUsersParam{}";
     }
 
     /**
@@ -52,5 +56,4 @@ public class ListCredUsersParam {
             return new ListCredUsersParam(this);
         }
     }
-
 }

@@ -777,7 +777,7 @@ class MilvusServiceClientTest {
         // test throw exception with illegal input
         List<String> names = new ArrayList<>();
         names.add(null);
-        assertThrows(NullPointerException.class, () ->
+        assertThrows(IllegalArgumentException.class, () ->
                 ShowCollectionsParam.newBuilder()
                         .withCollectionNames(names)
                         .build()
@@ -1015,7 +1015,7 @@ class MilvusServiceClientTest {
 
         List<String> names = new ArrayList<>();
         names.add(null);
-        assertThrows(NullPointerException.class, () -> LoadPartitionsParam.newBuilder()
+        assertThrows(IllegalArgumentException.class, () -> LoadPartitionsParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(names)
                 .build()
@@ -1155,7 +1155,7 @@ class MilvusServiceClientTest {
 
         List<String> names = new ArrayList<>();
         names.add(null);
-        assertThrows(NullPointerException.class, () -> ReleasePartitionsParam.newBuilder()
+        assertThrows(IllegalArgumentException.class, () -> ReleasePartitionsParam.newBuilder()
                 .withCollectionName("collection1")
                 .withPartitionNames(names)
                 .build()
@@ -1217,7 +1217,7 @@ class MilvusServiceClientTest {
 
         List<String> names = new ArrayList<>();
         names.add(null);
-        assertThrows(NullPointerException.class, () -> ShowPartitionsParam.newBuilder()
+        assertThrows(IllegalArgumentException.class, () -> ShowPartitionsParam.newBuilder()
                 .withCollectionName("collection1`")
                 .withPartitionNames(names)
                 .build()

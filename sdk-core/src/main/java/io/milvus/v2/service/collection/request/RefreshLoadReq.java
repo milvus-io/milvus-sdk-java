@@ -19,37 +19,144 @@
 
 package io.milvus.v2.service.collection.request;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Data
-@SuperBuilder
 public class RefreshLoadReq {
     private String databaseName;
     private String collectionName;
-    @Builder.Default
     private Boolean async = Boolean.TRUE;
-    @Builder.Default
     private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded. "async" is deprecated, use "sync" instead
-    @Builder.Default
     private Long timeout = 60000L; // timeout value for waiting the collection to be fully loaded
 
-    public static abstract class RefreshLoadReqBuilder<C extends RefreshLoadReq, B extends RefreshLoadReq.RefreshLoadReqBuilder<C, B>> {
-        public B async(Boolean async) {
-            this.async$value = async;
-            this.async$set = true;
-            this.sync$value = !async;
-            this.sync$set = true;
-            return self();
+    private RefreshLoadReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+        this.async = builder.async;
+        this.sync = builder.sync;
+        this.timeout = builder.timeout;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public Boolean getAsync() {
+        return async;
+    }
+
+    public void setAsync(Boolean async) {
+        this.async = async;
+        this.sync = !async;
+    }
+
+    public Boolean getSync() {
+        return sync;
+    }
+
+    public void setSync(Boolean sync) {
+        this.sync = sync;
+        this.async = !sync;
+    }
+
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Long timeout) {
+        this.timeout = timeout;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        RefreshLoadReq that = (RefreshLoadReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(async, that.async)
+                .append(sync, that.sync)
+                .append(timeout, that.timeout)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(databaseName)
+                .append(collectionName)
+                .append(async)
+                .append(sync)
+                .append(timeout)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "RefreshLoadReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", async=" + async +
+                ", sync=" + sync +
+                ", timeout=" + timeout +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private String collectionName;
+        private Boolean async = Boolean.TRUE;
+        private Boolean sync = Boolean.TRUE;
+        private Long timeout = 60000L;
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
         }
 
-        public B sync(Boolean sync) {
-            this.sync$value = sync;
-            this.sync$set = true;
-            this.async$value = !sync;
-            this.async$set = true;
-            return self();
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder async(Boolean async) {
+            this.async = async;
+            this.sync = !async;
+            return this;
+        }
+
+        public Builder sync(Boolean sync) {
+            this.sync = sync;
+            this.async = !sync;
+            return this;
+        }
+
+        public Builder timeout(Long timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
+        public RefreshLoadReq build() {
+            return new RefreshLoadReq(this);
         }
     }
 }

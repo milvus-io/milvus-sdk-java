@@ -22,9 +22,11 @@ package io.milvus.v2.service.vector.request.ranker;
 import com.google.gson.JsonObject;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.Builder;
-import lombok.experimental.SuperBuilder;
+import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,8 +50,9 @@ import java.util.Map;
  *                 .param("params", "{\"k\": 60}")
  *                 .build();
  */
-@SuperBuilder
 public class RRFRanker extends CreateCollectionReq.Function {
+    private int k;
+
     // This constructor is to compatible with the old client code like:
     //  new RRFRanker(10)
     // Now it is deprecated, user should create a RRFRanker by builder style:
@@ -60,13 +63,25 @@ public class RRFRanker extends CreateCollectionReq.Function {
         this.k = k;
     }
 
-    @Builder.Default
-    private int k = 60;
+    private RRFRanker(FunctionBuilder builder) {
+        super(builder);
+        this.k = builder.k;
+    }
 
+    public int getK() {
+        return k;
+    }
+
+    public void setK(int k) {
+        this.k = k;
+    }
+
+    @Override
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
     }
 
+    @Override
     public Map<String, String> getParams() {
         JsonObject params = new JsonObject();
         params.addProperty("k", this.k);
@@ -75,5 +90,97 @@ public class RRFRanker extends CreateCollectionReq.Function {
         props.put("strategy", "rrf");
         props.put("params", params.toString());
         return props;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        if (!super.equals(obj)) return false;
+        RRFRanker rrfRanker = (RRFRanker) obj;
+        return new EqualsBuilder()
+                .append(k, rrfRanker.k)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + k;
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "RRFRanker{" +
+                "k=" + k +
+                ", name='" + getName() + '\'' +
+                ", description='" + getDescription() + '\'' +
+                ", functionType=" + getFunctionType() +
+                ", inputFieldNames=" + getInputFieldNames() +
+                ", outputFieldNames=" + getOutputFieldNames() +
+                ", params=" + getParams() +
+                '}';
+    }
+
+    public static FunctionBuilder builder() {
+        return new FunctionBuilder();
+    }
+
+    public static class FunctionBuilder extends Function.FunctionBuilder {
+        private int k = 60;
+
+        private FunctionBuilder() {}
+
+        public FunctionBuilder k(int k) {
+            this.k = k;
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder name(String name) {
+            super.name(name);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder description(String description) {
+            super.description(description);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder functionType(FunctionType functionType) {
+            super.functionType(functionType);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder inputFieldNames(List<String> inputFieldNames) {
+            super.inputFieldNames(inputFieldNames);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder outputFieldNames(List<String> outputFieldNames) {
+            super.outputFieldNames(outputFieldNames);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder params(Map<String, String> params) {
+            super.params(params);
+            return this;
+        }
+
+        @Override
+        public FunctionBuilder param(String key, String value) {
+            super.param(key, value);
+            return this;
+        }
+
+        public RRFRanker build() {
+            return new RRFRanker(this);
+        }
     }
 }

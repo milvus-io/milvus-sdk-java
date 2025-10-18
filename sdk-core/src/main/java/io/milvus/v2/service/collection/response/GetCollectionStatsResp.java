@@ -19,11 +19,65 @@
 
 package io.milvus.v2.service.collection.response;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
+import java.util.Objects;
+
 public class GetCollectionStatsResp {
     private Long numOfEntities;
+
+    private GetCollectionStatsResp(Builder builder) {
+        this.numOfEntities = builder.numOfEntities;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    // Getter
+    public Long getNumOfEntities() {
+        return numOfEntities;
+    }
+
+    // Setter
+    public void setNumOfEntities(Long numOfEntities) {
+        this.numOfEntities = numOfEntities;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        
+        GetCollectionStatsResp that = (GetCollectionStatsResp) obj;
+        
+        return new EqualsBuilder()
+                .append(numOfEntities, that.numOfEntities)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(numOfEntities);
+    }
+
+    @Override
+    public String toString() {
+        return "GetCollectionStatsResp{" +
+                "numOfEntities=" + numOfEntities +
+                '}';
+    }
+
+    public static class Builder {
+        private Long numOfEntities;
+
+        public Builder numOfEntities(Long numOfEntities) {
+            this.numOfEntities = numOfEntities;
+            return this;
+        }
+
+        public GetCollectionStatsResp build() {
+            return new GetCollectionStatsResp(this);
+        }
+    }
 }

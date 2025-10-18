@@ -24,10 +24,6 @@ import io.milvus.grpc.DataType;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +31,6 @@ import java.util.Map;
  * Parameters for a collection field.
  * @see CreateCollectionParam
  */
-@Getter
-@ToString
 public class FieldType {
     private final String name;
     private final boolean primaryKey;
@@ -51,7 +45,10 @@ public class FieldType {
     private final boolean nullable;
     private final Object defaultValue;
 
-    private FieldType(@NonNull Builder builder){
+    private FieldType(Builder builder){
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.name = builder.name;
         this.primaryKey = builder.primaryKey;
         this.description = builder.description;
@@ -64,6 +61,55 @@ public class FieldType {
         this.elementType = builder.elementType;
         this.nullable = builder.nullable;
         this.defaultValue = builder.defaultValue;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getName() {
+        return name;
+    }
+
+    public boolean isPrimaryKey() {
+        return primaryKey;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public Map<String, String> getTypeParams() {
+        return typeParams;
+    }
+
+    public boolean isAutoID() {
+        return autoID;
+    }
+
+    public boolean isPartitionKey() {
+        return partitionKey;
+    }
+
+    public boolean isClusteringKey() {
+        return clusteringKey;
+    }
+
+    public boolean isDynamic() {
+        return isDynamic;
+    }
+
+    public DataType getElementType() {
+        return elementType;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public Object getDefaultValue() {
+        return defaultValue;
     }
 
     public int getDimension() {
@@ -88,6 +134,25 @@ public class FieldType {
         }
 
         return 0;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "FieldType{" +
+                "name='" + name + '\'' +
+                ", primaryKey=" + primaryKey +
+                ", description='" + description + '\'' +
+                ", dataType=" + dataType +
+                ", typeParams=" + typeParams +
+                ", autoID=" + autoID +
+                ", partitionKey=" + partitionKey +
+                ", clusteringKey=" + clusteringKey +
+                ", isDynamic=" + isDynamic +
+                ", elementType=" + elementType +
+                ", nullable=" + nullable +
+                ", defaultValue=" + defaultValue +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -115,7 +180,10 @@ public class FieldType {
         private Builder() {
         }
 
-        public Builder withName(@NonNull String name) {
+        public Builder withName(String name) {
+            if (name == null) {
+                throw new IllegalArgumentException("name cannot be null");
+            }
             this.name = name;
             return this;
         }
@@ -149,7 +217,10 @@ public class FieldType {
          * @param description description of the field
          * @return <code>Builder</code>
          */
-        public Builder withDescription(@NonNull String description) {
+        public Builder withDescription(String description) {
+            if (description == null) {
+                throw new IllegalArgumentException("description cannot be null");
+            }
             this.description = description;
             return this;
         }
@@ -160,7 +231,10 @@ public class FieldType {
          * @param dataType data type of the field
          * @return <code>Builder</code>
          */
-        public Builder withDataType(@NonNull DataType dataType) {
+        public Builder withDataType(DataType dataType) {
+            if (dataType == null) {
+                throw new IllegalArgumentException("dataType cannot be null");
+            }
             this.dataType = dataType;
             return this;
         }
@@ -171,7 +245,10 @@ public class FieldType {
          * @param elementType element type of the Array type field
          * @return <code>Builder</code>
          */
-        public Builder withElementType(@NonNull DataType elementType) {
+        public Builder withElementType(DataType elementType) {
+            if (elementType == null) {
+                throw new IllegalArgumentException("elementType cannot be null");
+            }
             this.elementType = elementType;
             return this;
         }
@@ -183,7 +260,13 @@ public class FieldType {
          * @param value parameter value
          * @return <code>Builder</code>
          */
-        public Builder addTypeParam(@NonNull String key, @NonNull String value) {
+        public Builder addTypeParam(String key, String value) {
+            if (key == null) {
+                throw new IllegalArgumentException("key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
             this.typeParams.put(key, value);
             return this;
         }
@@ -194,7 +277,10 @@ public class FieldType {
          * @param typeParams parameters of the field
          * @return <code>Builder</code>
          */
-        public Builder withTypeParams(@NonNull Map<String, String> typeParams) {
+        public Builder withTypeParams(Map<String, String> typeParams) {
+            if (typeParams == null) {
+                throw new IllegalArgumentException("typeParams cannot be null");
+            }
             typeParams.forEach(this.typeParams::put);
             return this;
         }
@@ -205,7 +291,10 @@ public class FieldType {
          * @param dimension dimension of the field
          * @return <code>Builder</code>
          */
-        public Builder withDimension(@NonNull Integer dimension) {
+        public Builder withDimension(Integer dimension) {
+            if (dimension == null) {
+                throw new IllegalArgumentException("dimension cannot be null");
+            }
             this.typeParams.put(Constant.VECTOR_DIM, dimension.toString());
             return this;
         }
@@ -216,7 +305,10 @@ public class FieldType {
          * @param maxLength max length of a varchar field
          * @return <code>Builder</code>
          */
-        public Builder withMaxLength(@NonNull Integer maxLength) {
+        public Builder withMaxLength(Integer maxLength) {
+            if (maxLength == null) {
+                throw new IllegalArgumentException("maxLength cannot be null");
+            }
             this.typeParams.put(Constant.VARCHAR_MAX_LENGTH, maxLength.toString());
             return this;
         }
@@ -228,7 +320,10 @@ public class FieldType {
          * @param maxCapacity max capacity of an array field
          * @return <code>Builder</code>
          */
-        public Builder withMaxCapacity(@NonNull Integer maxCapacity) {
+        public Builder withMaxCapacity(Integer maxCapacity) {
+            if (maxCapacity == null) {
+                throw new IllegalArgumentException("maxCapacity cannot be null");
+            }
             if (maxCapacity <= 0 || maxCapacity > 4096) {
                 throw new ParamException("Array field max capacity value must be within range [1, 4096]");
             }

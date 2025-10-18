@@ -19,18 +19,85 @@
 
 package io.milvus.v2.service.vector.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class InsertResp {
     // TODO: the first character should be lower case, add a new member and deprecate the old member
     private long InsertCnt;
-    @Builder.Default
-    private List<Object> primaryKeys = new ArrayList<>();
+    private List<Object> primaryKeys;
+
+    private InsertResp(Builder builder) {
+        this.InsertCnt = builder.InsertCnt;
+        this.primaryKeys = builder.primaryKeys;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public long getInsertCnt() {
+        return InsertCnt;
+    }
+
+    public void setInsertCnt(long insertCnt) {
+        InsertCnt = insertCnt;
+    }
+
+    public List<Object> getPrimaryKeys() {
+        return primaryKeys;
+    }
+
+    public void setPrimaryKeys(List<Object> primaryKeys) {
+        this.primaryKeys = primaryKeys;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        InsertResp that = (InsertResp) obj;
+        return new EqualsBuilder()
+                .append(InsertCnt, that.InsertCnt)
+                .append(primaryKeys, that.primaryKeys)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(InsertCnt)
+                .append(primaryKeys)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "InsertResp{" +
+                "InsertCnt=" + InsertCnt +
+                ", primaryKeys=" + primaryKeys +
+                '}';
+    }
+
+    public static class Builder {
+        private long InsertCnt;
+        private List<Object> primaryKeys = new ArrayList<>();
+
+        public Builder InsertCnt(long insertCnt) {
+            InsertCnt = insertCnt;
+            return this;
+        }
+
+        public Builder primaryKeys(List<Object> primaryKeys) {
+            this.primaryKeys = primaryKeys;
+            return this;
+        }
+
+        public InsertResp build() {
+            return new InsertResp(this);
+        }
+    }
 }

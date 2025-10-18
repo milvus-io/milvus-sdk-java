@@ -19,19 +19,18 @@
 
 package io.milvus.common.resourcegroup;
 
-import lombok.Getter;
-import lombok.NonNull;
-
-@Getter
 public class ResourceGroupTransfer {
-    private String resourceGroupName;
+    private final String resourceGroupName;
 
     /**
      * Constructor with resource group name.
      * 
      * @param resourceGroupName resource group name
      */
-    public ResourceGroupTransfer(@NonNull String resourceGroupName) {
+    public ResourceGroupTransfer(String resourceGroupName) {
+        if (resourceGroupName == null) {
+            throw new IllegalArgumentException("resourceGroupName cannot be null");
+        }
         this.resourceGroupName = resourceGroupName;
     }
 
@@ -40,8 +39,20 @@ public class ResourceGroupTransfer {
      * 
      * @param grpcTransfer grpc transfer object
      */
-    public ResourceGroupTransfer(@NonNull io.milvus.grpc.ResourceGroupTransfer grpcTransfer) {
+    public ResourceGroupTransfer(io.milvus.grpc.ResourceGroupTransfer grpcTransfer) {
+        if (grpcTransfer == null) {
+            throw new IllegalArgumentException("grpcTransfer cannot be null");
+        }
         this.resourceGroupName = grpcTransfer.getResourceGroup();
+    }
+
+    /**
+     * Get resource group name
+     * 
+     * @return resource group name
+     */
+    public String getResourceGroupName() {
+        return resourceGroupName;
     }
 
     /**
@@ -49,9 +60,14 @@ public class ResourceGroupTransfer {
      * 
      * @return io.milvus.grpc.ResourceGroupTransfer
      */
-    public @NonNull io.milvus.grpc.ResourceGroupTransfer toGRPC() {
-        return io.milvus.grpc.ResourceGroupTransfer.newBuilder()
+    public io.milvus.grpc.ResourceGroupTransfer toGRPC() {
+        io.milvus.grpc.ResourceGroupTransfer result = io.milvus.grpc.ResourceGroupTransfer.newBuilder()
                 .setResourceGroup(resourceGroupName)
                 .build();
+        
+        if (result == null) {
+            throw new IllegalStateException("Failed to create GRPC ResourceGroupTransfer");
+        }
+        return result;
     }
 }

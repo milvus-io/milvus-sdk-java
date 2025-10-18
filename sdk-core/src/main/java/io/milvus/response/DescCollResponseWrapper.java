@@ -26,7 +26,6 @@ import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
-import lombok.NonNull;
 
 import java.util.*;
 
@@ -38,7 +37,10 @@ public class DescCollResponseWrapper {
 
     Map<String, String> pairs = new HashMap<>();
 
-    public DescCollResponseWrapper(@NonNull DescribeCollectionResponse response) {
+    public DescCollResponseWrapper(DescribeCollectionResponse response) {
+        if (response == null) {
+            throw new IllegalArgumentException("Response cannot be null");
+        }
         this.response = response;
         response.getPropertiesList().forEach((prop) -> pairs.put(prop.getKey(), prop.getValue()));
     }
@@ -144,7 +146,10 @@ public class DescCollResponseWrapper {
      * @param fieldName field name to get field description
      * @return {@link FieldType} schema of the field
      */
-    public FieldType getFieldByName(@NonNull String fieldName) {
+    public FieldType getFieldByName(String fieldName) {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("Field name cannot be null");
+        }
         CollectionSchema schema = response.getSchema();
         for (int i = 0; i < schema.getFieldsCount(); ++i) {
             FieldSchema field = schema.getFields(i);

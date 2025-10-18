@@ -19,8 +19,6 @@
 
 package io.milvus.v2.common;
 
-import lombok.Getter;
-@Getter
 public enum ConsistencyLevel{
     STRONG("Strong", 0),
     SESSION("Session", 1),
@@ -29,9 +27,18 @@ public enum ConsistencyLevel{
     ;
     private final String name;
     private final int code;
+    
     ConsistencyLevel(String name, int code) {
         this.name = name;
         this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getCode() {
+        return code;
     }
 
     public static ConsistencyLevel fromName(String name) {
