@@ -8,11 +8,20 @@ public class GetPersistentSegmentInfoReq {
     private String collectionName;
 
     private GetPersistentSegmentInfoReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -29,6 +38,7 @@ public class GetPersistentSegmentInfoReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         GetPersistentSegmentInfoReq that = (GetPersistentSegmentInfoReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .isEquals();
     }
@@ -36,6 +46,7 @@ public class GetPersistentSegmentInfoReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .toHashCode();
     }
@@ -43,12 +54,19 @@ public class GetPersistentSegmentInfoReq {
     @Override
     public String toString() {
         return "GetPersistentSegmentInfoReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 '}';
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

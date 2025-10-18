@@ -32,6 +32,7 @@ public class GetReq {
     private List<String> outputFields;
 
     private GetReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
         this.ids = builder.ids;
@@ -40,6 +41,14 @@ public class GetReq {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -80,6 +89,7 @@ public class GetReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         GetReq that = (GetReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(partitionName, that.partitionName)
                 .append(ids, that.ids)
@@ -90,6 +100,7 @@ public class GetReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .append(partitionName)
                 .append(ids)
@@ -100,7 +111,8 @@ public class GetReq {
     @Override
     public String toString() {
         return "GetReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 ", ids=" + ids +
                 ", outputFields=" + outputFields +
@@ -108,10 +120,16 @@ public class GetReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName = "";
         private List<Object> ids;
         private List<String> outputFields;
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

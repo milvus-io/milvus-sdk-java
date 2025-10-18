@@ -27,8 +27,17 @@ public class CreatePartitionReq {
     private String partitionName;
 
     private CreatePartitionReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -53,6 +62,7 @@ public class CreatePartitionReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         CreatePartitionReq that = (CreatePartitionReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(partitionName, that.partitionName)
                 .isEquals();
@@ -60,7 +70,8 @@ public class CreatePartitionReq {
 
     @Override
     public int hashCode() {
-        int result = collectionName != null ? collectionName.hashCode() : 0;
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
         result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
         return result;
     }
@@ -68,7 +79,8 @@ public class CreatePartitionReq {
     @Override
     public String toString() {
         return "CreatePartitionReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 '}';
     }
@@ -78,10 +90,16 @@ public class CreatePartitionReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

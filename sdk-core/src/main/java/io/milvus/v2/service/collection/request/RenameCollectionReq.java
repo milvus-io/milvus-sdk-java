@@ -28,8 +28,17 @@ public class RenameCollectionReq {
     private String newCollectionName;
 
     private RenameCollectionReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.newCollectionName = builder.newCollectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -54,6 +63,7 @@ public class RenameCollectionReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         RenameCollectionReq that = (RenameCollectionReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(newCollectionName, that.newCollectionName)
                 .isEquals();
@@ -62,6 +72,7 @@ public class RenameCollectionReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .append(newCollectionName)
                 .toHashCode();
@@ -70,7 +81,8 @@ public class RenameCollectionReq {
     @Override
     public String toString() {
         return "RenameCollectionReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", newCollectionName='" + newCollectionName + '\'' +
                 '}';
     }
@@ -80,10 +92,16 @@ public class RenameCollectionReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String newCollectionName;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

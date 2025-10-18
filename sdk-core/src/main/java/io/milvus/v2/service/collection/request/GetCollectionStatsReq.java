@@ -27,7 +27,16 @@ public class GetCollectionStatsReq {
     private String collectionName;
 
     private GetCollectionStatsReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -44,6 +53,7 @@ public class GetCollectionStatsReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         GetCollectionStatsReq that = (GetCollectionStatsReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .isEquals();
     }
@@ -51,6 +61,7 @@ public class GetCollectionStatsReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .toHashCode();
     }
@@ -58,7 +69,8 @@ public class GetCollectionStatsReq {
     @Override
     public String toString() {
         return "GetCollectionStatsReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 '}';
     }
 
@@ -67,9 +79,15 @@ public class GetCollectionStatsReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

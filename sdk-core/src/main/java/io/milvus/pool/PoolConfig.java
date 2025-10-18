@@ -170,10 +170,10 @@ public class PoolConfig {
     }
 
     public static class Builder {
-        private int maxIdlePerKey = 5;
+        private int maxIdlePerKey = 10;
         private int minIdlePerKey = 0;
-        private int maxTotalPerKey = 10;
-        private int maxTotal = 50;
+        private int maxTotalPerKey = 50;
+        private int maxTotal = 1000;
         private boolean blockWhenExhausted = true;
         private Duration maxBlockWaitDuration = Duration.ofSeconds(3L);
         private Duration evictionPollingInterval = Duration.ofSeconds(60L);

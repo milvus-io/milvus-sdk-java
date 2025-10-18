@@ -30,9 +30,18 @@ public class ReleaseCollectionReq {
     private Long timeout = 60000L;
 
     private ReleaseCollectionReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.async = builder.async;
         this.timeout = builder.timeout;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -67,6 +76,7 @@ public class ReleaseCollectionReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         ReleaseCollectionReq that = (ReleaseCollectionReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(async, that.async)
                 .append(timeout, that.timeout)
@@ -76,6 +86,7 @@ public class ReleaseCollectionReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .append(async)
                 .append(timeout)
@@ -85,7 +96,8 @@ public class ReleaseCollectionReq {
     @Override
     public String toString() {
         return "ReleaseCollectionReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", async=" + async +
                 ", timeout=" + timeout +
                 '}';
@@ -96,11 +108,17 @@ public class ReleaseCollectionReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private Boolean async = Boolean.TRUE;
         private Long timeout = 60000L;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

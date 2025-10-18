@@ -37,6 +37,7 @@ public class LoadPartitionsReq {
     private List<String> resourceGroups;
 
     private LoadPartitionsReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
         this.numReplicas = builder.numReplicas;
@@ -46,6 +47,14 @@ public class LoadPartitionsReq {
         this.loadFields = builder.loadFields;
         this.skipLoadDynamicField = builder.skipLoadDynamicField;
         this.resourceGroups = builder.resourceGroups;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -126,6 +135,7 @@ public class LoadPartitionsReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         LoadPartitionsReq that = (LoadPartitionsReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(partitionNames, that.partitionNames)
                 .append(numReplicas, that.numReplicas)
@@ -140,7 +150,8 @@ public class LoadPartitionsReq {
 
     @Override
     public int hashCode() {
-        int result = collectionName != null ? collectionName.hashCode() : 0;
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
         result = 31 * result + (partitionNames != null ? partitionNames.hashCode() : 0);
         result = 31 * result + (numReplicas != null ? numReplicas.hashCode() : 0);
         result = 31 * result + (sync != null ? sync.hashCode() : 0);
@@ -155,7 +166,8 @@ public class LoadPartitionsReq {
     @Override
     public String toString() {
         return "LoadPartitionsReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", numReplicas=" + numReplicas +
                 ", sync=" + sync +
@@ -172,6 +184,7 @@ public class LoadPartitionsReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
         private Integer numReplicas = 1;
@@ -183,6 +196,11 @@ public class LoadPartitionsReq {
         private List<String> resourceGroups = new ArrayList<>();
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

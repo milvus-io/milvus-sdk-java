@@ -29,8 +29,17 @@ public class ReleasePartitionsReq {
     private List<String> partitionNames;
 
     private ReleasePartitionsReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -55,6 +64,7 @@ public class ReleasePartitionsReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         ReleasePartitionsReq that = (ReleasePartitionsReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(partitionNames, that.partitionNames)
                 .isEquals();
@@ -62,7 +72,8 @@ public class ReleasePartitionsReq {
 
     @Override
     public int hashCode() {
-        int result = collectionName != null ? collectionName.hashCode() : 0;
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
         result = 31 * result + (partitionNames != null ? partitionNames.hashCode() : 0);
         return result;
     }
@@ -70,7 +81,8 @@ public class ReleasePartitionsReq {
     @Override
     public String toString() {
         return "ReleasePartitionsReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", partitionNames=" + partitionNames +
                 '}';
     }
@@ -80,10 +92,16 @@ public class ReleasePartitionsReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private List<String> partitionNames;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

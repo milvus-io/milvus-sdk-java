@@ -40,7 +40,6 @@ public class QueryReq {
     // Extra parameters for query, timezone, time_fields, etc.
     // Make sure the value can be converted to String by String.valueOf().
     // For example: {"timezone": "America/Chicago"}
-    @Builder.Default
     private Map<String, Object> queryParams = new HashMap<>();
 
     // Expression template, to improve expression parsing performance in complicated list
@@ -64,6 +63,7 @@ public class QueryReq {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.queryParams = builder.queryParams;
         this.filterTemplateValues = builder.filterTemplateValues;
     }
 
@@ -151,6 +151,14 @@ public class QueryReq {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    public Map<String, Object> getQueryParams() {
+        return queryParams;
+    }
+
+    public void setQueryParams(Map<String, Object> queryParams) {
+        this.queryParams = queryParams;
+    }
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -175,6 +183,7 @@ public class QueryReq {
                 .append(ids, that.ids)
                 .append(filter, that.filter)
                 .append(consistencyLevel, that.consistencyLevel)
+                .append(queryParams, that.queryParams)
                 .append(filterTemplateValues, that.filterTemplateValues)
                 .isEquals();
     }
@@ -192,6 +201,7 @@ public class QueryReq {
                 .append(offset)
                 .append(limit)
                 .append(ignoreGrowing)
+                .append(queryParams)
                 .append(filterTemplateValues)
                 .toHashCode();
     }
@@ -209,6 +219,7 @@ public class QueryReq {
                 ", offset=" + offset +
                 ", limit=" + limit +
                 ", ignoreGrowing=" + ignoreGrowing +
+                ", queryParams=" + queryParams +
                 ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
@@ -224,6 +235,7 @@ public class QueryReq {
         private long offset;
         private long limit;
         private boolean ignoreGrowing;
+        private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
         public Builder databaseName(String databaseName) {
@@ -273,6 +285,11 @@ public class QueryReq {
 
         public Builder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        public Builder queryParams(Map<String, Object> queryParams) {
+            this.queryParams = queryParams;
             return this;
         }
 
