@@ -28,8 +28,17 @@ public class GetLoadStateReq {
     private String partitionName;
 
     private GetLoadStateReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -54,6 +63,7 @@ public class GetLoadStateReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         GetLoadStateReq that = (GetLoadStateReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(partitionName, that.partitionName)
                 .isEquals();
@@ -62,6 +72,7 @@ public class GetLoadStateReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .append(partitionName)
                 .toHashCode();
@@ -70,7 +81,8 @@ public class GetLoadStateReq {
     @Override
     public String toString() {
         return "GetLoadStateReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 '}';
     }
@@ -80,10 +92,16 @@ public class GetLoadStateReq {
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private String partitionName;
 
         private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

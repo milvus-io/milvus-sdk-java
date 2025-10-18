@@ -20,8 +20,13 @@
 package io.milvus.v2.service.collection.request;
 
 import io.milvus.v2.common.DataType;
+import io.milvus.v2.service.collection.request.CreateCollectionReq.FieldSchema;
+import io.milvus.v2.utils.SchemaUtils;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -48,6 +53,8 @@ public class AddFieldReq {
     private Map<String, String> typeParams;
     private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
 
+    private List<FieldSchema> structFields;
+
     AddFieldReq(Builder builder) {
         this.fieldName = builder.fieldName;
         this.description = builder.description != null ? builder.description : "";
@@ -68,6 +75,7 @@ public class AddFieldReq {
         this.enableMatch = builder.enableMatch;
         this.typeParams = builder.typeParams;
         this.multiAnalyzerParams = builder.multiAnalyzerParams;
+        this.structFields = builder.structFields != null ? builder.structFields : new ArrayList<>();
     }
 
     public static Builder builder() {
@@ -151,6 +159,10 @@ public class AddFieldReq {
         return multiAnalyzerParams;
     }
 
+    public List<FieldSchema> getStructFields() {
+        return structFields;
+    }
+
     // Setters
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
@@ -228,6 +240,10 @@ public class AddFieldReq {
         this.multiAnalyzerParams = multiAnalyzerParams;
     }
 
+    public void setStructFields(List<FieldSchema> structFields) {
+        this.structFields = structFields;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -255,6 +271,7 @@ public class AddFieldReq {
                 .append(enableMatch, that.enableMatch)
                 .append(typeParams, that.typeParams)
                 .append(multiAnalyzerParams, that.multiAnalyzerParams)
+                .append(structFields, that.structFields)
                 .isEquals();
     }
 
@@ -263,7 +280,8 @@ public class AddFieldReq {
         return Objects.hash(fieldName, description, dataType, maxLength, isPrimaryKey,
                 isPartitionKey, isClusteringKey, autoID, dimension, elementType,
                 maxCapacity, isNullable, defaultValue, enableDefaultValue,
-                enableAnalyzer, analyzerParams, enableMatch, typeParams, multiAnalyzerParams);
+                enableAnalyzer, analyzerParams, enableMatch, typeParams, multiAnalyzerParams,
+                structFields);
     }
 
     @Override
@@ -288,6 +306,7 @@ public class AddFieldReq {
                 ", enableMatch=" + enableMatch +
                 ", typeParams=" + typeParams +
                 ", multiAnalyzerParams=" + multiAnalyzerParams +
+                ", structFields=" + structFields +
                 '}';
     }
 
@@ -311,6 +330,7 @@ public class AddFieldReq {
         private Boolean enableMatch;
         private Map<String, String> typeParams;
         private Map<String, Object> multiAnalyzerParams;
+        private List<FieldSchema> structFields;
 
         public Builder fieldName(String fieldName) {
             this.fieldName = fieldName;
@@ -405,6 +425,15 @@ public class AddFieldReq {
 
         public Builder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
             this.multiAnalyzerParams = multiAnalyzerParams;
+            return this;
+        }
+
+        public Builder addStructField(AddFieldReq addFieldReq) {
+            if (this.structFields == null) {
+                this.structFields = new ArrayList<>();
+            }
+            CreateCollectionReq.FieldSchema field = SchemaUtils.convertFieldReqToFieldSchema(addFieldReq);
+            this.structFields.add(field);
             return this;
         }
 

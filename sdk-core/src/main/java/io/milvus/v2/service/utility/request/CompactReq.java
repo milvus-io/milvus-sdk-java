@@ -28,12 +28,21 @@ public class CompactReq {
     private Boolean isClustering = Boolean.FALSE;
 
     private CompactReq(Builder builder) {
+        this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.isClustering = builder.isClustering;
     }
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
     }
 
     public String getCollectionName() {
@@ -58,6 +67,7 @@ public class CompactReq {
         if (obj == null || getClass() != obj.getClass()) return false;
         CompactReq that = (CompactReq) obj;
         return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
                 .append(collectionName, that.collectionName)
                 .append(isClustering, that.isClustering)
                 .isEquals();
@@ -66,6 +76,7 @@ public class CompactReq {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
+                .append(databaseName)
                 .append(collectionName)
                 .append(isClustering)
                 .toHashCode();
@@ -74,14 +85,21 @@ public class CompactReq {
     @Override
     public String toString() {
         return "CompactReq{" +
-                "collectionName='" + collectionName + '\'' +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
                 ", isClustering=" + isClustering +
                 '}';
     }
 
     public static class Builder {
+        private String databaseName;
         private String collectionName;
         private Boolean isClustering = Boolean.FALSE;
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
 
         public Builder collectionName(String collectionName) {
             this.collectionName = collectionName;

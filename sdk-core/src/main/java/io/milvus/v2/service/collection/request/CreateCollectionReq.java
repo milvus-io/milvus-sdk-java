@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection.request;
 
 import io.milvus.common.clientenum.FunctionType;
+import io.milvus.exception.ParamException;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -447,17 +448,24 @@ public class CreateCollectionReq {
 
     public static class CollectionSchema {
         private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
+        private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
+
         private boolean enableDynamicField = false;
         private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
         private CollectionSchema(Builder builder) {
             this.fieldSchemaList = builder.fieldSchemaList;
+            this.structFields = builder.structFields;
             this.enableDynamicField = builder.enableDynamicField;
             this.functionList = builder.functionList;
         }
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
-            fieldSchemaList.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            if (addFieldReq.getDataType() == DataType.Array && addFieldReq.getElementType() == DataType.Struct) {
+                structFields.add(SchemaUtils.convertFieldReqToStructFieldSchema(addFieldReq));
+            } else {
+                fieldSchemaList.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            }
             return this;
         }
 
@@ -481,6 +489,14 @@ public class CreateCollectionReq {
 
         public void setFieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
             this.fieldSchemaList = fieldSchemaList;
+        }
+
+        public List<CreateCollectionReq.StructFieldSchema> getStructFields() {
+            return structFields;
+        }
+
+        public void setStructFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
+            this.structFields = structFields;
         }
 
         public boolean isEnableDynamicField() {
@@ -507,6 +523,7 @@ public class CreateCollectionReq {
             return new EqualsBuilder()
                     .append(enableDynamicField, that.enableDynamicField)
                     .append(fieldSchemaList, that.fieldSchemaList)
+                    .append(structFields, that.structFields)
                     .append(functionList, that.functionList)
                     .isEquals();
         }
@@ -515,6 +532,7 @@ public class CreateCollectionReq {
         public int hashCode() {
             return new HashCodeBuilder(17, 37)
                     .append(fieldSchemaList)
+                    .append(structFields)
                     .append(enableDynamicField)
                     .append(functionList)
                     .toHashCode();
@@ -524,6 +542,7 @@ public class CreateCollectionReq {
         public String toString() {
             return "CollectionSchema{" +
                     "fieldSchemaList=" + fieldSchemaList +
+                    ", structFields=" + structFields +
                     ", enableDynamicField=" + enableDynamicField +
                     ", functionList=" + functionList +
                     '}';
@@ -535,6 +554,7 @@ public class CreateCollectionReq {
 
         public static class Builder {
             private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
+            private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
             private boolean enableDynamicField = false;
             private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
@@ -542,6 +562,11 @@ public class CreateCollectionReq {
 
             public Builder fieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
                 this.fieldSchemaList = fieldSchemaList;
+                return this;
+            }
+
+            public Builder structFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
+                this.structFields = structFields;
                 return this;
             }
 
@@ -947,7 +972,7 @@ public class CreateCollectionReq {
     }
 
     public static class Function {
-        private String name;
+        private String name = "";
         private String description = "";
         private FunctionType functionType = FunctionType.UNKNOWN;
         private List<String> inputFieldNames = new ArrayList<>();
@@ -1104,6 +1129,139 @@ public class CreateCollectionReq {
 
             public Function build() {
                 return new Function(this);
+            }
+        }
+    }
+
+    public static class StructFieldSchema {
+        private String name;
+        private String description = "";
+        private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
+        private Integer maxCapacity;
+
+        private StructFieldSchema(Builder builder) {
+            this.name = builder.name;
+            this.description = builder.description;
+            this.fields = builder.fields;
+            this.maxCapacity = builder.maxCapacity;
+        }
+
+        public StructFieldSchema addField(AddFieldReq addFieldReq) {
+            if (addFieldReq.getDataType() == DataType.Array || addFieldReq.getElementType() == DataType.Struct) {
+                throw new ParamException("Struct field schema does not support Array, ArrayOfVector or Struct");
+            }
+            fields.add(SchemaUtils.convertFieldReqToFieldSchema(addFieldReq));
+            return this;
+        }
+
+        public DataType getDataType() {
+            return DataType.Array;
+        }
+
+        public DataType getElementType() {
+            return DataType.Struct;
+        }
+
+        // Getters and Setters
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public List<CreateCollectionReq.FieldSchema> getFields() {
+            return fields;
+        }
+
+        public void setFields(List<CreateCollectionReq.FieldSchema> fields) {
+            this.fields = fields;
+        }
+
+        public Integer getMaxCapacity() {
+            return maxCapacity;
+        }
+
+        public void setMaxCapacity(Integer maxCapacity) {
+            this.maxCapacity = maxCapacity;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
+            StructFieldSchema that = (StructFieldSchema) obj;
+            return new EqualsBuilder()
+                    .append(name, that.name)
+                    .append(description, that.description)
+                    .append(fields, that.fields)
+                    .append(maxCapacity, that.maxCapacity)
+                    .isEquals();
+        }
+
+        @Override
+        public int hashCode() {
+            return new HashCodeBuilder(17, 37)
+                    .append(name)
+                    .append(description)
+                    .append(fields)
+                    .append(maxCapacity)
+                    .toHashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "StructFieldSchema{" +
+                    "name='" + name + '\'' +
+                    ", description='" + description + '\'' +
+                    ", fields=" + fields +
+                    ", maxCapacity=" + maxCapacity +
+                    '}';
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private String name;
+            private String description = "";
+            private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
+            private Integer maxCapacity;
+
+            private Builder() {}
+
+            public Builder name(String name) {
+                this.name = name;
+                return this;
+            }
+
+            public Builder description(String description) {
+                this.description = description;
+                return this;
+            }
+
+            public Builder fields(List<CreateCollectionReq.FieldSchema> fields) {
+                this.fields = fields;
+                return this;
+            }
+
+            public Builder maxCapacity(Integer maxCapacity) {
+                this.maxCapacity = maxCapacity;
+                return this;
+            }
+
+            public StructFieldSchema build() {
+                return new StructFieldSchema(this);
             }
         }
     }
