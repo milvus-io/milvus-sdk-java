@@ -229,7 +229,7 @@ public class SchemaUtilsTest {
 
             if (rpcSchema.getName().equals("varchar_field")) {
                 List<String> keys = new ArrayList<>();
-                rpcSchema.getTypeParamsList().forEach((kv)-> keys.add(kv.getKey()));
+                rpcSchema.getTypeParamsList().forEach((kv) -> keys.add(kv.getKey()));
                 Assertions.assertTrue(keys.contains("enable_analyzer"));
                 Assertions.assertTrue(keys.contains("enable_match"));
                 Assertions.assertTrue(keys.contains("analyzer_params"));
@@ -256,7 +256,7 @@ public class SchemaUtilsTest {
             Map<String, String> originParams = fieldSchema.getTypeParams();
             if (originParams != null) {
                 Map<String, String> typeParams = newSchema.getTypeParams();
-                originParams.forEach((k ,v)->{
+                originParams.forEach((k, v) -> {
                     Assertions.assertTrue(typeParams.containsKey(k));
                     Assertions.assertEquals(typeParams.get(k), originParams.get(k));
                 });

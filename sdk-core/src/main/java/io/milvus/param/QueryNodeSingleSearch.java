@@ -144,7 +144,7 @@ public class QueryNodeSingleSearch {
 
         /**
          * Sets the search parameters specific to the index type.
-         *
+         * <p>
          * For example: IVF index, the search parameters can be "{\"nprobe\":10}"
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *

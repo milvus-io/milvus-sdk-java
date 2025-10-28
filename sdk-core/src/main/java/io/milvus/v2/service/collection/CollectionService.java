@@ -27,7 +27,10 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.collection.request.*;
-import io.milvus.v2.service.collection.response.*;
+import io.milvus.v2.service.collection.response.DescribeCollectionResp;
+import io.milvus.v2.service.collection.response.DescribeReplicasResp;
+import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.utils.SchemaUtils;
@@ -95,15 +98,15 @@ public class CollectionService extends BaseService {
 
         //create index
         IndexParam indexParam = IndexParam.builder()
-                        .metricType(IndexParam.MetricType.valueOf(request.getMetricType()))
-                        .fieldName(request.getVectorFieldName())
-                        .build();
+                .metricType(IndexParam.MetricType.valueOf(request.getMetricType()))
+                .fieldName(request.getVectorFieldName())
+                .build();
         CreateIndexReq createIndexReq = CreateIndexReq.builder()
-                        .databaseName(dbName)
-                        .collectionName(collectionName)
-                        .indexParams(Collections.singletonList(indexParam))
-                        .sync(false)
-                        .build();
+                .databaseName(dbName)
+                .collectionName(collectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .sync(false)
+                .build();
         indexService.createIndex(blockingStub, createIndexReq);
         //load collection, set sync to false since no need to wait loading progress
         try {
@@ -168,8 +171,8 @@ public class CollectionService extends BaseService {
         rpcUtils.handleResponse(title, createCollectionResponse);
 
         //create index
-        if(request.getIndexParams() != null && !request.getIndexParams().isEmpty()) {
-            for(IndexParam indexParam : request.getIndexParams()) {
+        if (request.getIndexParams() != null && !request.getIndexParams().isEmpty()) {
+            for (IndexParam indexParam : request.getIndexParams()) {
                 CreateIndexReq createIndexReq = CreateIndexReq.builder()
                         .databaseName(dbName)
                         .collectionName(collectionName)

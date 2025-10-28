@@ -19,24 +19,112 @@
 
 package io.milvus.bulkwriter.response.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class ListStagesResponse {
-
     private Integer count;
-
     private Integer currentPage;
-
     private Integer pageSize;
-
     private List<StageInfo> stages;
+
+    public ListStagesResponse() {
+    }
+
+    public ListStagesResponse(Integer count, Integer currentPage, Integer pageSize, List<StageInfo> stages) {
+        this.count = count;
+        this.currentPage = currentPage;
+        this.pageSize = pageSize;
+        this.stages = stages;
+    }
+
+    private ListStagesResponse(ListStagesResponseBuilder builder) {
+        this.count = builder.count;
+        this.currentPage = builder.currentPage;
+        this.pageSize = builder.pageSize;
+        this.stages = builder.stages;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
+    public Integer getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Integer currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public List<StageInfo> getStages() {
+        return stages;
+    }
+
+    public void setStages(List<StageInfo> stages) {
+        this.stages = stages;
+    }
+
+    @Override
+    public String toString() {
+        return "ListStagesResponse{" +
+                ", count=" + count +
+                ", currentPage=" + currentPage +
+                ", pageSize=" + pageSize +
+                '}';
+    }
+
+    public static ListStagesResponseBuilder builder() {
+        return new ListStagesResponseBuilder();
+    }
+
+    public static class ListStagesResponseBuilder {
+        private Integer count;
+        private Integer currentPage;
+        private Integer pageSize;
+        private List<StageInfo> stages;
+
+        private ListStagesResponseBuilder() {
+            this.count = 0;
+            this.currentPage = 0;
+            this.pageSize = 0;
+            this.stages = new ArrayList<>();
+        }
+
+        public ListStagesResponseBuilder count(Integer count) {
+            this.count = count;
+            return this;
+        }
+
+        public ListStagesResponseBuilder currentPage(Integer currentPage) {
+            this.currentPage = currentPage;
+            return this;
+        }
+
+        public ListStagesResponseBuilder pageSize(Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public ListStagesResponseBuilder stages(List<StageInfo> stages) {
+            this.stages = stages;
+            return this;
+        }
+
+        public ListStagesResponse build() {
+            return new ListStagesResponse(this);
+        }
+    }
 }

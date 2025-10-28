@@ -19,14 +19,12 @@
 
 package io.milvus.common.resourcegroup;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class ResourceGroupLimit {
     private Integer nodeNum;
 
     /**
      * Constructor with node number.
-     * 
+     *
      * @param nodeNum query node number in this group
      */
     public ResourceGroupLimit(Integer nodeNum) {
@@ -38,7 +36,7 @@ public class ResourceGroupLimit {
 
     /**
      * Constructor from grpc
-     * 
+     *
      * @param grpcLimit grpc object to set limit of node number
      */
     public ResourceGroupLimit(io.milvus.grpc.ResourceGroupLimit grpcLimit) {
@@ -50,7 +48,7 @@ public class ResourceGroupLimit {
 
     /**
      * Transfer to grpc
-     * 
+     *
      * @return <code>io.milvus.grpc.ResourceGroupLimit</code>
      */
     public io.milvus.grpc.ResourceGroupLimit toGRPC() {
@@ -70,24 +68,5 @@ public class ResourceGroupLimit {
         return "ResourceGroupLimit{" +
                 "nodeNum=" + nodeNum +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        ResourceGroupLimit that = (ResourceGroupLimit) obj;
-        return new EqualsBuilder()
-                .append(nodeNum, that.nodeNum)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return nodeNum != null ? nodeNum.hashCode() : 0;
     }
 }

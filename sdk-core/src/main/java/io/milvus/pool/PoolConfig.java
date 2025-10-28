@@ -1,7 +1,5 @@
 package io.milvus.pool;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.time.Duration;
 
 public class PoolConfig {
@@ -113,44 +111,6 @@ public class PoolConfig {
 
     public void setTestOnReturn(boolean testOnReturn) {
         this.testOnReturn = testOnReturn;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        PoolConfig that = (PoolConfig) obj;
-        return new EqualsBuilder()
-                .append(maxIdlePerKey, that.maxIdlePerKey)
-                .append(minIdlePerKey, that.minIdlePerKey)
-                .append(maxTotalPerKey, that.maxTotalPerKey)
-                .append(maxTotal, that.maxTotal)
-                .append(blockWhenExhausted, that.blockWhenExhausted)
-                .append(maxBlockWaitDuration, that.maxBlockWaitDuration)
-                .append(evictionPollingInterval, that.evictionPollingInterval)
-                .append(minEvictableIdleDuration, that.minEvictableIdleDuration)
-                .append(testOnBorrow, that.testOnBorrow)
-                .append(testOnReturn, that.testOnReturn)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = maxIdlePerKey;
-        result = 31 * result + minIdlePerKey;
-        result = 31 * result + maxTotalPerKey;
-        result = 31 * result + maxTotal;
-        result = 31 * result + (blockWhenExhausted ? 1 : 0);
-        result = 31 * result + (maxBlockWaitDuration != null ? maxBlockWaitDuration.hashCode() : 0);
-        result = 31 * result + (evictionPollingInterval != null ? evictionPollingInterval.hashCode() : 0);
-        result = 31 * result + (minEvictableIdleDuration != null ? minEvictableIdleDuration.hashCode() : 0);
-        result = 31 * result + (testOnBorrow ? 1 : 0);
-        result = 31 * result + (testOnReturn ? 1 : 0);
-        return result;
     }
 
     @Override

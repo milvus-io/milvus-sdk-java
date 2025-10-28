@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class ReleaseCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -29,7 +26,7 @@ public class ReleaseCollectionReq {
     private Boolean async = Boolean.TRUE;
     private Long timeout = 60000L;
 
-    private ReleaseCollectionReq(Builder builder) {
+    private ReleaseCollectionReq(ReleaseCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.async = builder.async;
@@ -71,29 +68,6 @@ public class ReleaseCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ReleaseCollectionReq that = (ReleaseCollectionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(async, that.async)
-                .append(timeout, that.timeout)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(async)
-                .append(timeout)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ReleaseCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -103,35 +77,36 @@ public class ReleaseCollectionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ReleaseCollectionReqBuilder builder() {
+        return new ReleaseCollectionReqBuilder();
     }
 
-    public static class Builder {
+    public static class ReleaseCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
         private Boolean async = Boolean.TRUE;
         private Long timeout = 60000L;
 
-        private Builder() {}
+        private ReleaseCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public ReleaseCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public ReleaseCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
         @Deprecated
-        public Builder async(Boolean async) {
+        public ReleaseCollectionReqBuilder async(Boolean async) {
             this.async = async;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public ReleaseCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }

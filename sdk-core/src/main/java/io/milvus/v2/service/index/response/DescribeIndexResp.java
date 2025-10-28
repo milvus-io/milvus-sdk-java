@@ -21,7 +21,6 @@ package io.milvus.v2.service.index.response;
 
 import io.milvus.v2.common.IndexBuildState;
 import io.milvus.v2.common.IndexParam;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +30,7 @@ import java.util.Map;
 public class DescribeIndexResp {
     private List<IndexDesc> indexDescriptions;
 
-    private DescribeIndexResp(Builder builder) {
+    private DescribeIndexResp(DescribeIndexRespBuilder builder) {
         this.indexDescriptions = builder.indexDescriptions;
     }
 
@@ -68,37 +67,23 @@ public class DescribeIndexResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeIndexResp that = (DescribeIndexResp) obj;
-        return new EqualsBuilder()
-                .append(indexDescriptions, that.indexDescriptions)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return indexDescriptions != null ? indexDescriptions.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DescribeIndexResp{" +
                 "indexDescriptions=" + indexDescriptions +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeIndexRespBuilder builder() {
+        return new DescribeIndexRespBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeIndexRespBuilder {
         private List<IndexDesc> indexDescriptions = new ArrayList<>();
 
-        private Builder() {}
+        private DescribeIndexRespBuilder() {
+        }
 
-        public Builder indexDescriptions(List<IndexDesc> indexDescriptions) {
+        public DescribeIndexRespBuilder indexDescriptions(List<IndexDesc> indexDescriptions) {
             this.indexDescriptions = indexDescriptions;
             return this;
         }
@@ -132,7 +117,7 @@ public class DescribeIndexResp {
         @Deprecated
         private Map<String, String> properties;
 
-        private IndexDesc(Builder builder) {
+        private IndexDesc(IndexDescBuilder builder) {
             this.fieldName = builder.fieldName;
             this.indexName = builder.indexName;
             this.id = builder.id;
@@ -244,44 +229,6 @@ public class DescribeIndexResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            IndexDesc indexDesc = (IndexDesc) obj;
-            return new EqualsBuilder()
-                    .append(id, indexDesc.id)
-                    .append(indexedRows, indexDesc.indexedRows)
-                    .append(totalRows, indexDesc.totalRows)
-                    .append(pendingIndexRows, indexDesc.pendingIndexRows)
-                    .append(fieldName, indexDesc.fieldName)
-                    .append(indexName, indexDesc.indexName)
-                    .append(indexType, indexDesc.indexType)
-                    .append(metricType, indexDesc.metricType)
-                    .append(extraParams, indexDesc.extraParams)
-                    .append(indexState, indexDesc.indexState)
-                    .append(indexFailedReason, indexDesc.indexFailedReason)
-                    .append(properties, indexDesc.properties)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            int result = fieldName != null ? fieldName.hashCode() : 0;
-            result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
-            result = 31 * result + (int) (id ^ (id >>> 32));
-            result = 31 * result + (indexType != null ? indexType.hashCode() : 0);
-            result = 31 * result + (metricType != null ? metricType.hashCode() : 0);
-            result = 31 * result + (extraParams != null ? extraParams.hashCode() : 0);
-            result = 31 * result + (int) (indexedRows ^ (indexedRows >>> 32));
-            result = 31 * result + (int) (totalRows ^ (totalRows >>> 32));
-            result = 31 * result + (int) (pendingIndexRows ^ (pendingIndexRows >>> 32));
-            result = 31 * result + (indexState != null ? indexState.hashCode() : 0);
-            result = 31 * result + (indexFailedReason != null ? indexFailedReason.hashCode() : 0);
-            result = 31 * result + (properties != null ? properties.hashCode() : 0);
-            return result;
-        }
-
-        @Override
         public String toString() {
             return "IndexDesc{" +
                     "fieldName='" + fieldName + '\'' +
@@ -299,11 +246,11 @@ public class DescribeIndexResp {
                     '}';
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static IndexDescBuilder builder() {
+            return new IndexDescBuilder();
         }
 
-        public static class Builder {
+        public static class IndexDescBuilder {
             private String fieldName;
             private String indexName;
             private long id;
@@ -317,64 +264,65 @@ public class DescribeIndexResp {
             private String indexFailedReason = "";
             private Map<String, String> properties = new HashMap<>();
 
-            private Builder() {}
+            private IndexDescBuilder() {
+            }
 
-            public Builder fieldName(String fieldName) {
+            public IndexDescBuilder fieldName(String fieldName) {
                 this.fieldName = fieldName;
                 return this;
             }
 
-            public Builder indexName(String indexName) {
+            public IndexDescBuilder indexName(String indexName) {
                 this.indexName = indexName;
                 return this;
             }
 
-            public Builder id(long id) {
+            public IndexDescBuilder id(long id) {
                 this.id = id;
                 return this;
             }
 
-            public Builder indexType(IndexParam.IndexType indexType) {
+            public IndexDescBuilder indexType(IndexParam.IndexType indexType) {
                 this.indexType = indexType;
                 return this;
             }
 
-            public Builder metricType(IndexParam.MetricType metricType) {
+            public IndexDescBuilder metricType(IndexParam.MetricType metricType) {
                 this.metricType = metricType;
                 return this;
             }
 
-            public Builder extraParams(Map<String, String> extraParams) {
+            public IndexDescBuilder extraParams(Map<String, String> extraParams) {
                 this.extraParams = extraParams;
                 return this;
             }
 
-            public Builder indexedRows(long indexedRows) {
+            public IndexDescBuilder indexedRows(long indexedRows) {
                 this.indexedRows = indexedRows;
                 return this;
             }
 
-            public Builder totalRows(long totalRows) {
+            public IndexDescBuilder totalRows(long totalRows) {
                 this.totalRows = totalRows;
                 return this;
             }
 
-            public Builder pendingIndexRows(long pendingIndexRows) {
+            public IndexDescBuilder pendingIndexRows(long pendingIndexRows) {
                 this.pendingIndexRows = pendingIndexRows;
                 return this;
             }
 
-            public Builder indexState(IndexBuildState indexState) {
+            public IndexDescBuilder indexState(IndexBuildState indexState) {
                 this.indexState = indexState;
                 return this;
             }
 
-            public Builder indexFailedReason(String indexFailedReason) {
+            public IndexDescBuilder indexFailedReason(String indexFailedReason) {
                 this.indexFailedReason = indexFailedReason;
                 return this;
             }
 
-            public Builder properties(Map<String, String> properties) {
+            public IndexDescBuilder properties(Map<String, String> properties) {
                 this.properties = properties;
                 return this;
             }

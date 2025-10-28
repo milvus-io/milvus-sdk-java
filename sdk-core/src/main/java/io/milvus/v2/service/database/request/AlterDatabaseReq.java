@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.database.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +27,7 @@ public class AlterDatabaseReq {
     private String databaseName;
     private Map<String, String> properties = new HashMap<>();
 
-    private AlterDatabaseReq(Builder builder) {
+    private AlterDatabaseReq(AlterDatabaseReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.properties = builder.properties;
     }
@@ -51,24 +49,6 @@ public class AlterDatabaseReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterDatabaseReq that = (AlterDatabaseReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (properties != null ? properties.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "AlterDatabaseReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -76,22 +56,23 @@ public class AlterDatabaseReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterDatabaseReqBuilder builder() {
+        return new AlterDatabaseReqBuilder();
     }
 
-    public static class Builder {
+    public static class AlterDatabaseReqBuilder {
         private String databaseName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private AlterDatabaseReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public AlterDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public AlterDatabaseReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }

@@ -52,6 +52,7 @@ public class Float16VectorExample {
     private static final Integer VECTOR_DIM = 128;
 
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
@@ -162,7 +163,7 @@ public class Float16VectorExample {
             }
             Map<String, Object> entity = topResult.getEntity();
             ByteBuffer vectorBuf = (ByteBuffer) entity.get(vectorFieldName);
-            ByteBuffer targetVectorBuf = (ByteBuffer)targetVectors.get(i).getData();
+            ByteBuffer targetVectorBuf = (ByteBuffer) targetVectors.get(i).getData();
             if (!vectorBuf.equals(targetVectorBuf)) {
                 throw new RuntimeException("The top1 output vector is incorrect");
             }

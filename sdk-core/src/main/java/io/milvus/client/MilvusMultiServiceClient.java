@@ -23,21 +23,29 @@ import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.connection.ClusterFactory;
 import io.milvus.connection.ServerSetting;
 import io.milvus.grpc.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
-import io.milvus.param.alias.*;
-import io.milvus.param.bulkinsert.*;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.*;
-import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
-import io.milvus.orm.iterator.QueryIterator;
-import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
@@ -53,6 +61,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
 
     /**
      * Sets connect param for multi milvus clusters.
+     *
      * @param multiConnectParam multi server connect param
      */
     public MilvusMultiServiceClient(MultiConnectParam multiConnectParam) {
@@ -178,7 +187,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
         List<R<DescribeDatabaseResponse>> response = this.clusterFactory.getAvailableServerSettings().stream()
                 .map(serverSetting -> serverSetting.getClient().describeDatabase(requestParam))
                 .collect(Collectors.toList());
-    return handleResponse(response);
+        return handleResponse(response);
     }
 
     @Override
@@ -598,7 +607,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().listBulkInsertTasks(requestParam);
     }
 
-    public R<CheckHealthResponse> checkHealth(){
+    public R<CheckHealthResponse> checkHealth() {
         return this.clusterFactory.getMaster().getClient().checkHealth();
     }
 
@@ -651,7 +660,7 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return this.clusterFactory.getMaster().getClient().transferReplica(requestParam);
     }
 
-    ///////////////////// High Level API//////////////////////
+    /// ////////////////// High Level API//////////////////////
 
 
     @Override

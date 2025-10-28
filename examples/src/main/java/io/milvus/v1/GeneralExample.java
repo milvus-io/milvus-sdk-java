@@ -46,7 +46,7 @@ public class GeneralExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
-                .withAuthorization("root","Milvus")
+                .withAuthorization("root", "Milvus")
                 .build();
         RetryParam retryParam = RetryParam.newBuilder()
                 .withMaxRetryTimes(3)

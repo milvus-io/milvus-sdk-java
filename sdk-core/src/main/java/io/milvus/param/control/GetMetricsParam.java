@@ -21,8 +21,6 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>getMetric</code> interface.
@@ -43,23 +41,6 @@ public class GetMetricsParam {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetMetricsParam that = (GetMetricsParam) obj;
-        return new EqualsBuilder()
-                .append(request, that.request)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(request)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetMetricsParam{" +
                 "request='" + request + '\'' +
@@ -77,10 +58,10 @@ public class GetMetricsParam {
 
         /**
          * Sets request in .json format to retrieve metric information from server.
-         * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
          *
          * @param request request string in json format
          * @return <code>Builder</code>
+         * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+8+--+Add+metrics+for+proxy">Metric function design</a>
          */
         public Builder withRequest(String request) {
             if (request == null) {

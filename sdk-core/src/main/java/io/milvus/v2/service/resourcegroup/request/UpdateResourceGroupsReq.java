@@ -1,8 +1,6 @@
 package io.milvus.v2.service.resourcegroup.request;
 
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,12 +8,12 @@ import java.util.Map;
 public class UpdateResourceGroupsReq {
     private Map<String, ResourceGroupConfig> resourceGroups;
 
-    private UpdateResourceGroupsReq(Builder builder) {
+    private UpdateResourceGroupsReq(UpdateResourceGroupsReqBuilder builder) {
         this.resourceGroups = builder.resourceGroups;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static UpdateResourceGroupsReqBuilder builder() {
+        return new UpdateResourceGroupsReqBuilder();
     }
 
     public Map<String, ResourceGroupConfig> getResourceGroups() {
@@ -27,33 +25,16 @@ public class UpdateResourceGroupsReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        UpdateResourceGroupsReq that = (UpdateResourceGroupsReq) obj;
-        return new EqualsBuilder()
-                .append(resourceGroups, that.resourceGroups)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(resourceGroups)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "UpdateResourceGroupsReq{" +
                 "resourceGroups=" + resourceGroups +
                 '}';
     }
 
-    public static class Builder {
+    public static class UpdateResourceGroupsReqBuilder {
         private Map<String, ResourceGroupConfig> resourceGroups = new HashMap<>();
 
-        public Builder resourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
+        public UpdateResourceGroupsReqBuilder resourceGroups(Map<String, ResourceGroupConfig> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
         }

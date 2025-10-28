@@ -9,7 +9,7 @@ import java.util.List;
 public class Float16Utils {
     /**
      * Converts a float32 into bf16. May not produce correct values for subnormal floats.
-     *
+     * <p>
      * This method is copied from microsoft ONNX Runtime:
      * https://github.com/microsoft/onnxruntime/blob/main/java/src/main/jvm/ai/onnxruntime/platform/Fp16Conversions.java
      *
@@ -26,7 +26,7 @@ public class Float16Utils {
 
     /**
      * Upcasts a bf16 value stored in a short into a float32 value.
-     *
+     * <p>
      * This method is copied from microsoft ONNX Runtime:
      * https://github.com/microsoft/onnxruntime/blob/main/java/src/main/jvm/ai/onnxruntime/platform/Fp16Conversions.java
      *
@@ -40,7 +40,7 @@ public class Float16Utils {
 
     /**
      * Rounds a float32 value to a fp16 stored in a short.
-     *
+     * <p>
      * This method is copied from microsoft ONNX Runtime:
      * https://github.com/microsoft/onnxruntime/blob/main/java/src/main/jvm/ai/onnxruntime/platform/Fp16Conversions.java
      *
@@ -94,7 +94,7 @@ public class Float16Utils {
 
     /**
      * Upcasts a fp16 value stored in a short to a float32 value.
-     *
+     * <p>
      * This method is copied from microsoft ONNX Runtime:
      * https://github.com/microsoft/onnxruntime/blob/main/java/src/main/jvm/ai/onnxruntime/platform/Fp16Conversions.java
      *

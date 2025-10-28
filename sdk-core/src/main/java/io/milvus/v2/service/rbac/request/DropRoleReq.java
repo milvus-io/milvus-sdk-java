@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DropRoleReq {
     private String roleName;
 
-    private DropRoleReq(Builder builder) {
+    private DropRoleReq(DropRoleReqBuilder builder) {
         this.roleName = builder.roleName;
     }
 
@@ -37,37 +35,23 @@ public class DropRoleReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropRoleReq that = (DropRoleReq) obj;
-        return new EqualsBuilder()
-                .append(roleName, that.roleName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return roleName != null ? roleName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DropRoleReq{" +
                 "roleName='" + roleName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropRoleReqBuilder builder() {
+        return new DropRoleReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropRoleReqBuilder {
         private String roleName;
 
-        private Builder() {}
+        private DropRoleReqBuilder() {
+        }
 
-        public Builder roleName(String roleName) {
+        public DropRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }

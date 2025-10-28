@@ -20,8 +20,6 @@
 package io.milvus.v2.service.utility.response;
 
 import io.milvus.v2.common.CompactionState;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class GetCompactionStateResp {
     private CompactionState state;
@@ -29,15 +27,15 @@ public class GetCompactionStateResp {
     private Long timeoutPlanNo;
     private Long completedPlanNo;
 
-    private GetCompactionStateResp(Builder builder) {
+    private GetCompactionStateResp(GetCompactionStateRespBuilder builder) {
         this.state = builder.state;
         this.executingPlanNo = builder.executingPlanNo;
         this.timeoutPlanNo = builder.timeoutPlanNo;
         this.completedPlanNo = builder.completedPlanNo;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetCompactionStateRespBuilder builder() {
+        return new GetCompactionStateRespBuilder();
     }
 
     public CompactionState getState() {
@@ -73,29 +71,6 @@ public class GetCompactionStateResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetCompactionStateResp that = (GetCompactionStateResp) obj;
-        return new EqualsBuilder()
-                .append(state, that.state)
-                .append(executingPlanNo, that.executingPlanNo)
-                .append(timeoutPlanNo, that.timeoutPlanNo)
-                .append(completedPlanNo, that.completedPlanNo)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(state)
-                .append(executingPlanNo)
-                .append(timeoutPlanNo)
-                .append(completedPlanNo)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetCompactionStateResp{" +
                 "state=" + state +
@@ -105,28 +80,28 @@ public class GetCompactionStateResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class GetCompactionStateRespBuilder {
         private CompactionState state = CompactionState.UndefiedState;
         private Long executingPlanNo = 0L;
         private Long timeoutPlanNo = 0L;
         private Long completedPlanNo = 0L;
 
-        public Builder state(CompactionState state) {
+        public GetCompactionStateRespBuilder state(CompactionState state) {
             this.state = state;
             return this;
         }
 
-        public Builder executingPlanNo(Long executingPlanNo) {
+        public GetCompactionStateRespBuilder executingPlanNo(Long executingPlanNo) {
             this.executingPlanNo = executingPlanNo;
             return this;
         }
 
-        public Builder timeoutPlanNo(Long timeoutPlanNo) {
+        public GetCompactionStateRespBuilder timeoutPlanNo(Long timeoutPlanNo) {
             this.timeoutPlanNo = timeoutPlanNo;
             return this;
         }
 
-        public Builder completedPlanNo(Long completedPlanNo) {
+        public GetCompactionStateRespBuilder completedPlanNo(Long completedPlanNo) {
             this.completedPlanNo = completedPlanNo;
             return this;
         }

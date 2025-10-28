@@ -19,19 +19,15 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import java.util.Objects;
-
 public class ListCollectionsReq {
     private String databaseName;
 
-    private ListCollectionsReq(Builder builder) {
+    private ListCollectionsReq(ListCollectionsReqBuilder builder) {
         this.databaseName = builder.databaseName;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListCollectionsReqBuilder builder() {
+        return new ListCollectionsReqBuilder();
     }
 
     // Getters
@@ -45,35 +41,19 @@ public class ListCollectionsReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        ListCollectionsReq that = (ListCollectionsReq) obj;
-
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(databaseName);
-    }
-
-    @Override
     public String toString() {
         return "ListCollectionsReq{" +
                 "databaseName='" + databaseName +
                 '}';
     }
 
-    public static class Builder {
+    public static class ListCollectionsReqBuilder {
         private String databaseName;
 
-        private Builder() {}
+        private ListCollectionsReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public ListCollectionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }

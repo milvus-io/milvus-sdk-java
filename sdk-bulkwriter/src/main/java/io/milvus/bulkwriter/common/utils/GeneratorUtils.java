@@ -72,7 +72,7 @@ public class GeneratorUtils {
     public static List<Float> generatorFloatValue(int count) {
         List<Float> result = new ArrayList<>();
         for (int i = 0; i < count; ++i) {
-            result.add( (float)i / 3);
+            result.add((float) i / 3);
         }
         return result;
     }
@@ -80,7 +80,7 @@ public class GeneratorUtils {
     public static List<Double> generatorDoubleValue(int count) {
         List<Double> result = new ArrayList<>();
         for (int i = 0; i < count; ++i) {
-            result.add((double)i / 7);
+            result.add((double) i / 7);
         }
         return result;
     }
@@ -135,7 +135,7 @@ public class GeneratorUtils {
         for (int i = 0; i < count; ++i) {
             List<Float> result = new ArrayList<>();
             for (int j = 0; j < dim; ++j) {
-                result.add( (float)j / 3);
+                result.add((float) j / 3);
             }
             floatVector.add(result);
         }

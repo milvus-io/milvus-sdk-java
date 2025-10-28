@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DropUserReq {
     private String userName;
 
-    private DropUserReq(Builder builder) {
+    private DropUserReq(DropUserReqBuilder builder) {
         this.userName = builder.userName;
     }
 
@@ -37,37 +35,23 @@ public class DropUserReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropUserReq that = (DropUserReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return userName != null ? userName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DropUserReq{" +
                 "userName='" + userName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropUserReqBuilder builder() {
+        return new DropUserReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropUserReqBuilder {
         private String userName;
 
-        private Builder() {}
+        private DropUserReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public DropUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }

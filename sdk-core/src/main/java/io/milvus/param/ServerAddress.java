@@ -84,7 +84,7 @@ public class ServerAddress {
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withPort(int port)  {
+        public Builder withPort(int port) {
             this.port = port;
             return this;
         }
@@ -95,7 +95,7 @@ public class ServerAddress {
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withHealthPort(int port)  {
+        public Builder withHealthPort(int port) {
             this.healthPort = port;
             return this;
         }

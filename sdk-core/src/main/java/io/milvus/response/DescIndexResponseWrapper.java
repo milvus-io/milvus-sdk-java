@@ -21,15 +21,17 @@ package io.milvus.response;
 
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.IndexDescription;
 import io.milvus.grpc.DescribeIndexResponse;
-
+import io.milvus.grpc.IndexDescription;
 import io.milvus.param.Constant;
-import io.milvus.param.IndexType;
 import io.milvus.param.IndexBuildState;
+import io.milvus.param.IndexType;
 import io.milvus.param.MetricType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Util class to wrap response of <code>describeIndex</code> interface.
@@ -52,7 +54,7 @@ public class DescIndexResponseWrapper {
     public List<IndexDesc> getIndexDescriptions() {
         List<IndexDesc> results = new ArrayList<>();
         List<IndexDescription> descriptions = response.getIndexDescriptionsList();
-        descriptions.forEach((desc)->{
+        descriptions.forEach((desc) -> {
             IndexDesc res = convertIndexDescInternal(desc);
             results.add(res);
         });
@@ -107,7 +109,7 @@ public class DescIndexResponseWrapper {
         res.pendingIndexRows = desc.getPendingIndexRows();
         res.indexState = IndexBuildState.valueOf(desc.getState().name());
         res.indexFailedReason = desc.getIndexStateFailReason();
-        desc.getParamsList().forEach((kv)-> res.addParam(kv.getKey(), kv.getValue()));
+        desc.getParamsList().forEach((kv) -> res.addParam(kv.getKey(), kv.getValue()));
         return res;
     }
 
@@ -208,7 +210,8 @@ public class DescIndexResponseWrapper {
             for (Map.Entry<String, String> entry : this.params.entrySet()) {
                 if (entry.getKey().equals(Constant.INDEX_TYPE) || entry.getKey().equals(Constant.METRIC_TYPE)) {
                 } else if (entry.getKey().equals(Constant.PARAMS)) {
-                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {
+                    }.getType());
                     extraParams.putAll(tempParams);
                 } else {
                     extraParams.put(entry.getKey(), entry.getValue());

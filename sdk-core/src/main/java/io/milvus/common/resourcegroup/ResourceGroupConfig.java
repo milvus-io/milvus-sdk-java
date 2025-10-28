@@ -19,10 +19,9 @@
 
 package io.milvus.common.resourcegroup;
 
-import java.util.stream.Collectors;
-import java.util.List;
 import java.util.ArrayList;
-import org.apache.commons.lang3.builder.EqualsBuilder;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ResourceGroupConfig {
     private final ResourceGroupLimit requests;
@@ -93,7 +92,7 @@ public class ResourceGroupConfig {
 
         /**
          * Set the transfer from list.
-         * 
+         *
          * @param from missing node should be transfer from given resource group at high priority in repeated list.
          * @return <code>Builder</code>
          */
@@ -107,7 +106,7 @@ public class ResourceGroupConfig {
 
         /**
          * Set the transfer to list.
-         * 
+         *
          * @param to redundant node should be transfer to given resource group at high priority in repeated list.
          * @return <code>Builder</code>
          */
@@ -121,6 +120,7 @@ public class ResourceGroupConfig {
 
         /**
          * Set the node filter.
+         *
          * @param nodeFilter if node filter set, resource group will prefer to accept node which match node filter.
          * @return <code>Builder</code>
          */
@@ -192,30 +192,6 @@ public class ResourceGroupConfig {
         }
 
         return builder.build();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ResourceGroupConfig that = (ResourceGroupConfig) obj;
-        return new EqualsBuilder()
-                .append(requests, that.requests)
-                .append(limits, that.limits)
-                .append(from, that.from)
-                .append(to, that.to)
-                .append(nodeFilter, that.nodeFilter)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = requests != null ? requests.hashCode() : 0;
-        result = 31 * result + (limits != null ? limits.hashCode() : 0);
-        result = 31 * result + (from != null ? from.hashCode() : 0);
-        result = 31 * result + (to != null ? to.hashCode() : 0);
-        result = 31 * result + (nodeFilter != null ? nodeFilter.hashCode() : 0);
-        return result;
     }
 
     @Override

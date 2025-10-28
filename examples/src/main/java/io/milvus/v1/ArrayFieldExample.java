@@ -34,7 +34,10 @@ import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.QueryResultsWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 public class ArrayFieldExample {
     private static final String COLLECTION_NAME = "java_sdk_example_array_v1";
@@ -141,7 +144,7 @@ public class ArrayFieldExample {
             List<String> strArray = new ArrayList<>();
             int capacity = random.nextInt(5) + 5;
             for (int k = 0; k < capacity; k++) {
-                intArray.add((i+k)%100);
+                intArray.add((i + k) % 100);
                 strArray.add(String.format("string-%d-%d", i, k));
             }
             intArrArray.add(intArray);
@@ -186,7 +189,7 @@ public class ArrayFieldExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryRet.getData());
-        System.out.printf("%d rows in collection\n", (long)queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0));
+        System.out.printf("%d rows in collection\n", (long) queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0));
 
         // Query by filtering expression
         queryWithExpr(client, "array_int32[0] == 99");

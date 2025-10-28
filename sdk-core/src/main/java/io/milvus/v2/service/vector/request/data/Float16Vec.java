@@ -31,6 +31,7 @@ public class Float16Vec implements BaseVector {
     public Float16Vec(ByteBuffer data) {
         this.data = data;
     }
+
     public Float16Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }

@@ -1,8 +1,5 @@
 package io.milvus.v2.service.resourcegroup.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class TransferReplicaReq {
     private String sourceGroupName;
     private String targetGroupName;
@@ -10,7 +7,7 @@ public class TransferReplicaReq {
     private String databaseName;
     private Long numberOfReplicas;
 
-    private TransferReplicaReq(Builder builder) {
+    private TransferReplicaReq(TransferReplicaReqBuilder builder) {
         this.sourceGroupName = builder.sourceGroupName;
         this.targetGroupName = builder.targetGroupName;
         this.collectionName = builder.collectionName;
@@ -18,8 +15,8 @@ public class TransferReplicaReq {
         this.numberOfReplicas = builder.numberOfReplicas;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static TransferReplicaReqBuilder builder() {
+        return new TransferReplicaReqBuilder();
     }
 
     public String getSourceGroupName() {
@@ -63,31 +60,6 @@ public class TransferReplicaReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        TransferReplicaReq that = (TransferReplicaReq) obj;
-        return new EqualsBuilder()
-                .append(sourceGroupName, that.sourceGroupName)
-                .append(targetGroupName, that.targetGroupName)
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(numberOfReplicas, that.numberOfReplicas)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(sourceGroupName)
-                .append(targetGroupName)
-                .append(collectionName)
-                .append(databaseName)
-                .append(numberOfReplicas)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "TransferReplicaReq{" +
                 "sourceGroupName='" + sourceGroupName + '\'' +
@@ -98,34 +70,34 @@ public class TransferReplicaReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class TransferReplicaReqBuilder {
         private String sourceGroupName;
         private String targetGroupName;
         private String collectionName;
         private String databaseName;
         private Long numberOfReplicas;
 
-        public Builder sourceGroupName(String sourceGroupName) {
+        public TransferReplicaReqBuilder sourceGroupName(String sourceGroupName) {
             this.sourceGroupName = sourceGroupName;
             return this;
         }
 
-        public Builder targetGroupName(String targetGroupName) {
+        public TransferReplicaReqBuilder targetGroupName(String targetGroupName) {
             this.targetGroupName = targetGroupName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public TransferReplicaReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public TransferReplicaReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder numberOfReplicas(Long numberOfReplicas) {
+        public TransferReplicaReqBuilder numberOfReplicas(Long numberOfReplicas) {
             this.numberOfReplicas = numberOfReplicas;
             return this;
         }

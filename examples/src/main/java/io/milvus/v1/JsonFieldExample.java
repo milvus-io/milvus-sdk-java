@@ -142,7 +142,7 @@ public class JsonFieldExample {
             JsonObject metadata = new JsonObject();
             metadata.addProperty("path", String.format("\\root/abc/path_%d", i));
             metadata.addProperty("size", i);
-            if (i%7 == 0) {
+            if (i % 7 == 0) {
                 metadata.addProperty("special", true);
             }
 
@@ -152,8 +152,8 @@ public class JsonFieldExample {
 //            System.out.println(metadata);
 
             // dynamic fields
-            if (i%2 == 0) {
-                row.addProperty("dynamic1", (double)i/3);
+            if (i % 2 == 0) {
+                row.addProperty("dynamic1", (double) i / 3);
             } else {
                 row.addProperty("dynamic2", "ok");
             }
@@ -172,7 +172,7 @@ public class JsonFieldExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryRet.getData());
-        long rowCount = (long)queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0);
+        long rowCount = (long) queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0);
         System.out.printf("%d rows persisted\n", rowCount);
 
         // search and output JSON field
@@ -221,7 +221,7 @@ public class JsonFieldExample {
             for (QueryResultsWrapper.RowRecord record : records) {
                 System.out.println(record);
             }
-            long pk = (long)records.get(0).get(ID_FIELD);
+            long pk = (long) records.get(0).get(ID_FIELD);
             if (pk != i) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d", pk, i));
             }

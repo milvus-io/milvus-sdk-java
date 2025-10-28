@@ -19,16 +19,73 @@
 
 package io.milvus.bulkwriter.request.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class ApplyStageRequest extends BaseStageRequest {
     private String stageName;
     private String path;
+
+    protected ApplyStageRequest() {
+    }
+
+    protected ApplyStageRequest(String stageName, String path) {
+        this.stageName = stageName;
+        this.path = path;
+    }
+
+    protected ApplyStageRequest(ApplyStageRequestBuilder builder) {
+        super(builder);
+        this.stageName = builder.stageName;
+        this.path = builder.path;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    @Override
+    public String toString() {
+        return "ApplyStageRequest{" +
+                "stageName='" + stageName + '\'' +
+                ", path='" + path + '\'' +
+                '}';
+    }
+
+    public static ApplyStageRequestBuilder builder() {
+        return new ApplyStageRequestBuilder();
+    }
+
+    public static class ApplyStageRequestBuilder extends BaseStageRequestBuilder<ApplyStageRequestBuilder> {
+        private String stageName;
+        private String path;
+
+        private ApplyStageRequestBuilder() {
+            this.stageName = "";
+            this.path = "";
+        }
+
+        public ApplyStageRequestBuilder stageName(String stageName) {
+            this.stageName = stageName;
+            return this;
+        }
+
+        public ApplyStageRequestBuilder path(String path) {
+            this.path = path;
+            return this;
+        }
+
+        public ApplyStageRequest build() {
+            return new ApplyStageRequest(this);
+        }
+    }
 }

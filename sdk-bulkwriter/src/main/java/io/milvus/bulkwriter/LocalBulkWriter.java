@@ -41,9 +41,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class LocalBulkWriter extends BulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(LocalBulkWriter.class);
 
-    private Map<String, Thread> workingThread;
-    private ReentrantLock workingThreadLock;
-    private List<List<String>> localFiles;
+    private final Map<String, Thread> workingThread;
+    private final ReentrantLock workingThreadLock;
+    private final List<List<String>> localFiles;
 
     public LocalBulkWriter(LocalBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(), bulkWriterParam.getChunkSize(), bulkWriterParam.getFileType(), bulkWriterParam.getLocalPath(), bulkWriterParam.getConfig());
@@ -93,7 +93,7 @@ public class LocalBulkWriter extends BulkWriter {
 
         String filePath = super.getFileWriter().getFilePath();
         String msg = String.format("Prepare to commit file:%s, current_file_total_row_count: %s, current_file_total_size:%s, create_new_file:%s",
-                filePath ,super.getTotalRowCount(), super.getTotalSize(), createNewFile);
+                filePath, super.getTotalRowCount(), super.getTotalSize(), createNewFile);
         logger.info(msg);
 
         List<String> fileList = Lists.newArrayList(filePath);

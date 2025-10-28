@@ -101,7 +101,7 @@ public class JsonFieldExample {
         // Create INVERTED index for a specific entry of JSON field
         // Index for JSON field is supported from milvus v2.5.7 and fully supported in v2.5.13+
         // Read the doc for more info: https://milvus.io/docs/json-indexing.md
-        Map<String,Object> p1 = new HashMap<>();
+        Map<String, Object> p1 = new HashMap<>();
         p1.put("json_path", "metadata[\"flags\"]");
         p1.put("json_cast_type", "array_double");
         indexes.add(IndexParam.builder()
@@ -113,8 +113,8 @@ public class JsonFieldExample {
         // Create NGRAM index for a specific entry of JSON field
         // NGRAM index for JSON field is supported from milvus v2.6.2
         // Read the doc for more info: https://milvus.io/docs/ngram.md
-        Map<String,Object> p2 = new HashMap<>();
-        p2.put("json_path","metadata[\"path\"]");
+        Map<String, Object> p2 = new HashMap<>();
+        p2.put("json_path", "metadata[\"path\"]");
         p2.put("json_cast_type", "varchar");
         p2.put("min_gram", 3);
         p2.put("max_gram", 5);
@@ -149,7 +149,7 @@ public class JsonFieldExample {
             JsonObject metadata = new JsonObject();
             metadata.addProperty("path", String.format("\\root/abc_%d/path_%d", i, i));
             metadata.addProperty("size", i);
-            if (i%7 == 0) {
+            if (i % 7 == 0) {
                 metadata.addProperty("special", true);
             }
             metadata.add("flags", gson.toJsonTree(Arrays.asList(i, i + 1, i + 2)));
@@ -158,8 +158,8 @@ public class JsonFieldExample {
 //            System.out.println(metadata);
 
             // dynamic fields
-            if (i%2 == 0) {
-                row.addProperty("dynamic1", (double)i/3);
+            if (i % 2 == 0) {
+                row.addProperty("dynamic1", (double) i / 3);
             } else {
                 row.addProperty("dynamic2", "ok");
             }
@@ -176,7 +176,7 @@ public class JsonFieldExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Search and output JSON field
         List<BaseVector> searchVectors = new ArrayList<>();
@@ -203,7 +203,7 @@ public class JsonFieldExample {
                 System.out.println(result);
             }
 
-            long pk = (long)results.get(0).getId();
+            long pk = (long) results.get(0).getId();
             if (pk != i) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d", pk, i));
             }
@@ -213,7 +213,7 @@ public class JsonFieldExample {
                         metadata, expectedMetadatas.get(i)));
             }
             List<Float> vector = (List<Float>) results.get(0).getEntity().get(VECTOR_FIELD);
-            CommonUtils.compareFloatVectors(vector, (List<Float>)searchVectors.get(i).getData());
+            CommonUtils.compareFloatVectors(vector, (List<Float>) searchVectors.get(i).getData());
         }
 
         // Query by filtering JSON

@@ -19,14 +19,17 @@
 
 package io.milvus.response;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.*;
+import io.milvus.grpc.FieldData;
+import io.milvus.grpc.QueryResults;
 import io.milvus.param.Constant;
-
 import io.milvus.response.basic.RowRecordWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class to wrap response of <code>query</code> interface.
@@ -81,7 +84,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
 
     /**
      * Gets a row record from result.
-     *  Throws {@link ParamException} if the index is illegal.
+     * Throws {@link ParamException} if the index is illegal.
      *
      * @param index index of a row
      * @return <code>RowRecord</code> a row record of the result
@@ -156,7 +159,7 @@ public class QueryResultsWrapper extends RowRecordWrapper {
                 // find the value from dynamic field
                 Object meta = fieldValues.get(Constant.DYNAMIC_FIELD_NAME);
                 if (meta != null) {
-                    JsonObject jsonMata = (JsonObject)meta;
+                    JsonObject jsonMata = (JsonObject) meta;
                     Object innerObj = jsonMata.get(keyName);
                     if (innerObj != null) {
                         return innerObj;

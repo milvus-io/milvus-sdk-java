@@ -23,12 +23,9 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.FieldSchema;
 import io.milvus.v2.utils.SchemaUtils;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class AddFieldReq {
     private String fieldName;
@@ -55,7 +52,7 @@ public class AddFieldReq {
 
     private List<FieldSchema> structFields;
 
-    AddFieldReq(Builder builder) {
+    AddFieldReq(AddFieldReqBuilder<?> builder) {
         this.fieldName = builder.fieldName;
         this.description = builder.description != null ? builder.description : "";
         this.dataType = builder.dataType;
@@ -78,8 +75,8 @@ public class AddFieldReq {
         this.structFields = builder.structFields != null ? builder.structFields : new ArrayList<>();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AddFieldReqBuilder<?> builder() {
+        return new AddFieldReqBuilder<>();
     }
 
     // Getters
@@ -245,46 +242,6 @@ public class AddFieldReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-
-        AddFieldReq that = (AddFieldReq) obj;
-
-        return new EqualsBuilder()
-                .append(enableDefaultValue, that.enableDefaultValue)
-                .append(fieldName, that.fieldName)
-                .append(description, that.description)
-                .append(dataType, that.dataType)
-                .append(maxLength, that.maxLength)
-                .append(isPrimaryKey, that.isPrimaryKey)
-                .append(isPartitionKey, that.isPartitionKey)
-                .append(isClusteringKey, that.isClusteringKey)
-                .append(autoID, that.autoID)
-                .append(dimension, that.dimension)
-                .append(elementType, that.elementType)
-                .append(maxCapacity, that.maxCapacity)
-                .append(isNullable, that.isNullable)
-                .append(defaultValue, that.defaultValue)
-                .append(enableAnalyzer, that.enableAnalyzer)
-                .append(analyzerParams, that.analyzerParams)
-                .append(enableMatch, that.enableMatch)
-                .append(typeParams, that.typeParams)
-                .append(multiAnalyzerParams, that.multiAnalyzerParams)
-                .append(structFields, that.structFields)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(fieldName, description, dataType, maxLength, isPrimaryKey,
-                isPartitionKey, isClusteringKey, autoID, dimension, elementType,
-                maxCapacity, isNullable, defaultValue, enableDefaultValue,
-                enableAnalyzer, analyzerParams, enableMatch, typeParams, multiAnalyzerParams,
-                structFields);
-    }
-
-    @Override
     public String toString() {
         return "AddFieldReq{" +
                 "fieldName='" + fieldName + '\'' +
@@ -310,7 +267,7 @@ public class AddFieldReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class AddFieldReqBuilder<T extends AddFieldReqBuilder<T>> {
         private String fieldName;
         private String description;
         private DataType dataType;
@@ -332,109 +289,109 @@ public class AddFieldReq {
         private Map<String, Object> multiAnalyzerParams;
         private List<FieldSchema> structFields;
 
-        public Builder fieldName(String fieldName) {
+        public T fieldName(String fieldName) {
             this.fieldName = fieldName;
-            return this;
+            return (T) this;
         }
 
-        public Builder description(String description) {
+        public T description(String description) {
             this.description = description;
-            return this;
+            return (T) this;
         }
 
-        public Builder dataType(DataType dataType) {
+        public T dataType(DataType dataType) {
             this.dataType = dataType;
-            return this;
+            return (T) this;
         }
 
-        public Builder maxLength(Integer maxLength) {
+        public T maxLength(Integer maxLength) {
             this.maxLength = maxLength;
-            return this;
+            return (T) this;
         }
 
-        public Builder isPrimaryKey(Boolean isPrimaryKey) {
+        public T isPrimaryKey(Boolean isPrimaryKey) {
             this.isPrimaryKey = isPrimaryKey;
-            return this;
+            return (T) this;
         }
 
-        public Builder isPartitionKey(Boolean isPartitionKey) {
+        public T isPartitionKey(Boolean isPartitionKey) {
             this.isPartitionKey = isPartitionKey;
-            return this;
+            return (T) this;
         }
 
-        public Builder isClusteringKey(Boolean isClusteringKey) {
+        public T isClusteringKey(Boolean isClusteringKey) {
             this.isClusteringKey = isClusteringKey;
-            return this;
+            return (T) this;
         }
 
-        public Builder autoID(Boolean autoID) {
+        public T autoID(Boolean autoID) {
             this.autoID = autoID;
-            return this;
+            return (T) this;
         }
 
-        public Builder dimension(Integer dimension) {
+        public T dimension(Integer dimension) {
             this.dimension = dimension;
-            return this;
+            return (T) this;
         }
 
-        public Builder elementType(DataType elementType) {
+        public T elementType(DataType elementType) {
             this.elementType = elementType;
-            return this;
+            return (T) this;
         }
 
-        public Builder maxCapacity(Integer maxCapacity) {
+        public T maxCapacity(Integer maxCapacity) {
             this.maxCapacity = maxCapacity;
-            return this;
+            return (T) this;
         }
 
-        public Builder isNullable(Boolean isNullable) {
+        public T isNullable(Boolean isNullable) {
             this.isNullable = isNullable;
-            return this;
+            return (T) this;
         }
 
-        public Builder defaultValue(Object defaultValue) {
+        public T defaultValue(Object defaultValue) {
             this.defaultValue = defaultValue;
             this.enableDefaultValue = true;
-            return this;
+            return (T) this;
         }
 
-        public Builder enableDefaultValue(boolean enableDefaultValue) {
+        public T enableDefaultValue(boolean enableDefaultValue) {
             this.enableDefaultValue = enableDefaultValue;
-            return this;
+            return (T) this;
         }
 
-        public Builder enableAnalyzer(Boolean enableAnalyzer) {
+        public T enableAnalyzer(Boolean enableAnalyzer) {
             this.enableAnalyzer = enableAnalyzer;
-            return this;
+            return (T) this;
         }
 
-        public Builder analyzerParams(Map<String, Object> analyzerParams) {
+        public T analyzerParams(Map<String, Object> analyzerParams) {
             this.analyzerParams = analyzerParams;
-            return this;
+            return (T) this;
         }
 
-        public Builder enableMatch(Boolean enableMatch) {
+        public T enableMatch(Boolean enableMatch) {
             this.enableMatch = enableMatch;
-            return this;
+            return (T) this;
         }
 
-        public Builder typeParams(Map<String, String> typeParams) {
+        public T typeParams(Map<String, String> typeParams) {
             this.typeParams = typeParams;
-            return this;
+            return (T) this;
         }
 
-        public Builder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
+        public T multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
             this.multiAnalyzerParams = multiAnalyzerParams;
-            return this;
+            return (T) this;
         }
 
-        public Builder addStructField(AddFieldReq addFieldReq) {
+        public T addStructField(AddFieldReq addFieldReq) {
             if (this.structFields == null) {
                 this.structFields = new ArrayList<>();
             }
             CreateCollectionReq.FieldSchema field = SchemaUtils.convertFieldReqToFieldSchema(addFieldReq);
             this.structFields.add(field);
-            return this;
+            return (T) this;
         }
 
         public AddFieldReq build() {

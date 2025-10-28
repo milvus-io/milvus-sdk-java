@@ -21,32 +21,39 @@ package io.milvus.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import io.milvus.grpc.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.LogLevel;
 import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
 import io.milvus.param.RetryParam;
-import io.milvus.param.alias.*;
-import io.milvus.param.bulkinsert.*;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.*;
-import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
 import io.milvus.param.index.*;
-import io.milvus.orm.iterator.QueryIterator;
-import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.partition.*;
-import io.milvus.param.role.*;
 import io.milvus.param.resourcegroup.*;
-
-import java.util.concurrent.TimeUnit;
-
+import io.milvus.param.role.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Milvus Client Interface
@@ -75,7 +82,7 @@ public interface MilvusClient {
     /**
      * Number of retry attempts.
      *
-     * @param retryTimes     number of retry attempts.
+     * @param retryTimes number of retry attempts.
      * @return <code>MilvusClient</code>
      */
     @Deprecated
@@ -84,8 +91,8 @@ public interface MilvusClient {
     /**
      * Time interval between retry attempts. Default value is 500ms.
      *
-     * @param interval     time interval between retry attempts.
-     * @param timeUnit     time unit
+     * @param interval time interval between retry attempts.
+     * @param timeUnit time unit
      * @return <code>MilvusClient</code>
      */
     @Deprecated
@@ -152,7 +159,7 @@ public interface MilvusClient {
      * Alter database with key value pair. (Available from Milvus v2.4.4)
      *
      * @param requestParam {@link AlterDatabaseParam}
-     * @return  {status:result code, data:RpcStatus{msg: result message}}
+     * @return {status:result code, data:RpcStatus{msg: result message}}
      */
     R<RpcStatus> alterDatabase(AlterDatabaseParam requestParam);
 
@@ -248,9 +255,9 @@ public interface MilvusClient {
     /**
      * Flush all collections. All insertions, deletions, and upserts before `flushAll` will be synced.
      *
-     * @param syncFlushAll {flushAll synchronously or asynchronously}
+     * @param syncFlushAll                {flushAll synchronously or asynchronously}
      * @param syncFlushAllWaitingInterval {wait intervel when flushAll synchronously}
-     * @param syncFlushAllTimeout {timeout when flushAll synchronously}
+     * @param syncFlushAllTimeout         {timeout when flushAll synchronously}
      * @return {status:result code,data: FlushAllResponse{flushAllTs}}
      */
     R<FlushAllResponse> flushAll(boolean syncFlushAll, long syncFlushAllWaitingInterval, long syncFlushAllTimeout);
@@ -761,7 +768,7 @@ public interface MilvusClient {
 
     /**
      * Update resource groups.
-     * 
+     *
      * @param requestParam {@link UpdateResourceGroupsParam}
      * @return {status:result code, data:RpcStatus{msg: result message}}
      */

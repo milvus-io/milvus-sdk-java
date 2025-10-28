@@ -110,7 +110,7 @@ public class SparseVectorExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Pick some vectors from the inserted vectors to search
         // Ensure the returned top1 item's ID should be equal to target vector's ID
@@ -119,8 +119,8 @@ public class SparseVectorExample {
             int k = ran.nextInt(rowCount);
             SortedMap<Long, Float> targetVector = vectors.get(k);
             System.out.println("\nTarget vector: " + targetVector);
-            Map<String,Object> params = new HashMap<>();
-            params.put("drop_ratio_search",0.2);
+            Map<String, Object> params = new HashMap<>();
+            params.put("drop_ratio_search", 0.2);
             SearchResp searchResp = client.search(SearchReq.builder()
                     .collectionName(COLLECTION_NAME)
                     .data(Collections.singletonList(new SparseFloatVec(targetVector)))
@@ -140,7 +140,7 @@ public class SparseVectorExample {
             }
 
             SearchResp.SearchResult firstResult = results.get(0);
-            if ((long)firstResult.getId() != k) {
+            if ((long) firstResult.getId() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
                         firstResult.getId(), k));
             }

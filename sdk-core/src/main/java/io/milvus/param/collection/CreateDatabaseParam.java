@@ -89,6 +89,7 @@ public class CreateDatabaseParam {
 
         /**
          * Sets the replica number in database level, then if load collection doesn't have replica number, it will use this replica number.
+         *
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
@@ -98,6 +99,7 @@ public class CreateDatabaseParam {
 
         /**
          * Sets the resource groups in database level, then if load collection doesn't have resource groups, it will use this resource groups.
+         *
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
@@ -111,7 +113,7 @@ public class CreateDatabaseParam {
         /**
          * Basic method to set a key-value property.
          *
-         * @param key the key
+         * @param key   the key
          * @param value the value
          * @return <code>Builder</code>
          */

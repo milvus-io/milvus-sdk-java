@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.database.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +26,7 @@ public class DescribeDatabaseResp {
     private String databaseName;
     private Map<String, String> properties;
 
-    private DescribeDatabaseResp(Builder builder) {
+    private DescribeDatabaseResp(DescribeDatabaseRespBuilder builder) {
         this.databaseName = builder.databaseName;
         this.properties = builder.properties;
     }
@@ -50,24 +48,6 @@ public class DescribeDatabaseResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeDatabaseResp that = (DescribeDatabaseResp) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (properties != null ? properties.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DescribeDatabaseResp{" +
                 "databaseName='" + databaseName + '\'' +
@@ -75,22 +55,23 @@ public class DescribeDatabaseResp {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeDatabaseRespBuilder builder() {
+        return new DescribeDatabaseRespBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeDatabaseRespBuilder {
         private String databaseName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private DescribeDatabaseRespBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DescribeDatabaseRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public DescribeDatabaseRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }

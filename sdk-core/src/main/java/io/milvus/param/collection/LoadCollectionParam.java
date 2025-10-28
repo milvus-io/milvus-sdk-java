@@ -298,7 +298,7 @@ public class LoadCollectionParam {
             if (loadFields == null) {
                 throw new IllegalArgumentException("loadFields cannot be null");
             }
-            loadFields.forEach((field)->{
+            loadFields.forEach((field) -> {
                 if (!this.loadFields.contains(field)) {
                     this.loadFields.add(field);
                 }

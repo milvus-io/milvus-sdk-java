@@ -19,16 +19,55 @@
 
 package io.milvus.bulkwriter.request.list;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
     private static final long serialVersionUID = 8957739122547766268L;
     private String collectionName;
+
+    protected MilvusListImportJobsRequest() {
+    }
+
+    protected MilvusListImportJobsRequest(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    protected MilvusListImportJobsRequest(MilvusListImportJobsRequestBuilder builder) {
+        super(builder);
+        this.collectionName = builder.collectionName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    @Override
+    public String toString() {
+        return "MilvusListImportJobsRequest{" +
+                "collectionName='" + collectionName + '\'' +
+                '}';
+    }
+
+    public static MilvusListImportJobsRequestBuilder builder() {
+        return new MilvusListImportJobsRequestBuilder();
+    }
+
+    public static class MilvusListImportJobsRequestBuilder extends BaseListImportJobsRequestBuilder<MilvusListImportJobsRequestBuilder> {
+        private String collectionName;
+
+        private MilvusListImportJobsRequestBuilder() {
+            this.collectionName = "";
+        }
+
+        public MilvusListImportJobsRequestBuilder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public MilvusListImportJobsRequest build() {
+            return new MilvusListImportJobsRequest(this);
+        }
+    }
 }

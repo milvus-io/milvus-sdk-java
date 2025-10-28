@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.database.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DropDatabaseReq {
     private String databaseName;
 
-    private DropDatabaseReq(Builder builder) {
+    private DropDatabaseReq(DropDatabaseReqBuilder builder) {
         this.databaseName = builder.databaseName;
     }
 
@@ -37,37 +35,23 @@ public class DropDatabaseReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropDatabaseReq that = (DropDatabaseReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return databaseName != null ? databaseName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DropDatabaseReq{" +
                 "databaseName='" + databaseName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropDatabaseReqBuilder builder() {
+        return new DropDatabaseReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropDatabaseReqBuilder {
         private String databaseName;
 
-        private Builder() {}
+        private DropDatabaseReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DropDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }

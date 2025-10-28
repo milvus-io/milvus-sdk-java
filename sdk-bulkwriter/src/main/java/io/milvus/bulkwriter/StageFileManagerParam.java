@@ -22,27 +22,46 @@ package io.milvus.bulkwriter;
 import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Parameters for <code>stageFileManager</code> interface.
  */
-@Getter
-@ToString
 public class StageFileManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
     private final String stageName;
     private final ConnectType connectType;
 
-    private StageFileManagerParam(@NonNull Builder builder) {
+    private StageFileManagerParam(Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
         this.stageName = builder.stageName;
         this.connectType = builder.connectType;
+    }
+
+    public String getCloudEndpoint() {
+        return cloudEndpoint;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public ConnectType getConnectType() {
+        return connectType;
+    }
+
+    @Override
+    public String toString() {
+        return "StageFileManagerParam{" +
+                "cloudEndpoint='" + cloudEndpoint + '\'' +
+                ", stageName='" + stageName + '\'' +
+                ", connectType=" + connectType +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -69,17 +88,17 @@ public class StageFileManagerParam {
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
-        public Builder withCloudEndpoint(@NotNull String cloudEndpoint) {
+        public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
-        public Builder withApiKey(@NotNull String apiKey) {
+        public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
-        public Builder withStageName(@NotNull String stageName) {
+        public Builder withStageName(String stageName) {
             this.stageName = stageName;
             return this;
         }
@@ -90,7 +109,7 @@ public class StageFileManagerParam {
          * otherwise, the public endpoint will be used.
          * You can also force the use of either the internal or public endpoint.
          */
-        public Builder withConnectType(@NotNull ConnectType connectType) {
+        public Builder withConnectType(ConnectType connectType) {
             this.connectType = connectType;
             return this;
         }

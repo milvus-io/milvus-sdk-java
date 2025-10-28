@@ -22,11 +22,7 @@ package io.milvus.v2.utils;
 import io.grpc.*;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
-import io.grpc.netty.shaded.io.netty.handler.ssl.ApplicationProtocolConfig;
-import io.grpc.netty.shaded.io.netty.handler.ssl.ClientAuth;
-import io.grpc.netty.shaded.io.netty.handler.ssl.IdentityCipherSuiteFilter;
-import io.grpc.netty.shaded.io.netty.handler.ssl.JdkSslContext;
-import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import io.grpc.netty.shaded.io.netty.handler.ssl.*;
 import io.grpc.stub.MetadataUtils;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.*;
@@ -38,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -45,13 +43,12 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 public class ClientUtils {
     Logger logger = LoggerFactory.getLogger(ClientUtils.class);
     RpcUtils rpcUtils = new RpcUtils();
-    public ManagedChannel getChannel(ConnectConfig connectConfig){
+
+    public ManagedChannel getChannel(ConnectConfig connectConfig) {
         ManagedChannel channel = null;
 
         Metadata metadata = new Metadata();
@@ -74,7 +71,7 @@ public class ClientUtils {
                     public void start(ClientCall.Listener<RespT> responseListener, Metadata headers) {
                         String currentMs = String.valueOf(System.currentTimeMillis());
                         headers.put(Metadata.Key.of("client-request-unixmsec", Metadata.ASCII_STRING_MARSHALLER), currentMs);
-                        if(connectConfig.getClientRequestId() != null) {
+                        if (connectConfig.getClientRequestId() != null) {
                             String clientID = connectConfig.getClientRequestId().get();
                             if (!StringUtils.isEmpty(clientID)) {
                                 headers.put(Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER), clientID);
@@ -98,12 +95,12 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
-                
+
                 if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
                     configureProxy(builder, connectConfig.getProxyAddress());
                 }
-                
-                if(connectConfig.isSecure()) {
+
+                if (connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 if (StringUtils.isNotEmpty(connectConfig.getServerName())) {
@@ -130,7 +127,7 @@ public class ClientUtils {
                     configureProxy(builder, connectConfig.getProxyAddress());
                 }
 
-                if(connectConfig.isSecure()){
+                if (connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 channel = builder.build();
@@ -151,11 +148,11 @@ public class ClientUtils {
                         .keepAliveWithoutCalls(connectConfig.isKeepAliveWithoutCalls())
                         .idleTimeout(connectConfig.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
-                
+
                 if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
                     configureProxy(builder, connectConfig.getProxyAddress());
                 }
-                
+
                 if (connectConfig.getSecure()) {
                     builder.useTransportSecurity();
                 }
@@ -176,7 +173,7 @@ public class ClientUtils {
                 if (StringUtils.isNotEmpty(connectConfig.getProxyAddress())) {
                     configureProxy(builder, connectConfig.getProxyAddress());
                 }
-                if(connectConfig.isSecure()){
+                if (connectConfig.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 channel = builder.build();
@@ -190,8 +187,8 @@ public class ClientUtils {
 
     /**
      * Configures the proxy settings for a NettyChannelBuilder if proxy address is specified
-     * 
-     * @param builder NettyChannelBuilder to configure
+     *
+     * @param builder       NettyChannelBuilder to configure
      * @param connectConfig Connection configuration containing proxy settings
      */
     public static void configureProxy(ManagedChannelBuilder builder, String proxyAddress) {
@@ -228,6 +225,7 @@ public class ClientUtils {
             throw new IllegalArgumentException("Database " + dbName + " not exist");
         }
     }
+
     public String getServerVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
         rpcUtils.handleResponse("Get server version", response.getStatus());

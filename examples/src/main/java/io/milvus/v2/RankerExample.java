@@ -39,7 +39,10 @@ import io.milvus.v2.service.vector.request.ranker.DecayRanker;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class RankerExample {
     private static final MilvusClientV2 client;
@@ -61,6 +64,7 @@ public class RankerExample {
         public String name;
         public int fromYear;
         public int toYear;
+
         public Person(String name, int from, int to) {
             this.name = name;
             this.fromYear = from;
@@ -186,7 +190,7 @@ public class RankerExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
     }
 
     private static void dropCollection() {

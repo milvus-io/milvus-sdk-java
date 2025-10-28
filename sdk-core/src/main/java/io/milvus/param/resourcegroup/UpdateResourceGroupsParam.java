@@ -45,7 +45,7 @@ public class UpdateResourceGroupsParam {
 
     /**
      * Builder for {@link UpdateResourceGroupsParam} class.
-     * 
+     *
      */
     public static final class Builder {
         private Map<String, ResourceGroupConfig> resourceGroups;
@@ -69,7 +69,7 @@ public class UpdateResourceGroupsParam {
 
         /**
          * Builds the UpdateResourceGroupsParam object.
-         * 
+         *
          * @return {@link UpdateResourceGroupsParam}
          */
         public UpdateResourceGroupsParam build() {
@@ -79,7 +79,7 @@ public class UpdateResourceGroupsParam {
 
     /**
      * Converts to grpc request.
-     * 
+     *
      * @return io.milvus.grpc.UpdateResourceGroupsRequest
      */
     public io.milvus.grpc.UpdateResourceGroupsRequest toGRPC() {

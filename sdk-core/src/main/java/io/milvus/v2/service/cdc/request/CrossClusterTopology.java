@@ -20,9 +20,6 @@
 package io.milvus.v2.service.cdc.request;
 
 
-import java.util.Objects;
-
-
 public class CrossClusterTopology {
     private String sourceClusterId;
     private String targetClusterId;
@@ -51,18 +48,6 @@ public class CrossClusterTopology {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        CrossClusterTopology topology = (CrossClusterTopology) o;
-        return Objects.equals(sourceClusterId, topology.sourceClusterId) && Objects.equals(targetClusterId, topology.targetClusterId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(sourceClusterId, targetClusterId);
-    }
-
-    @Override
     public String toString() {
         return "CrossClusterTopology{" +
                 "sourceClusterId='" + sourceClusterId + '\'' +
@@ -70,21 +55,25 @@ public class CrossClusterTopology {
                 '}';
     }
 
-    private CrossClusterTopology(Builder builder) {
+    private CrossClusterTopology(CrossClusterTopologyBuilder builder) {
         this.sourceClusterId = builder.sourceClusterId;
         this.targetClusterId = builder.targetClusterId;
     }
 
-    public static class Builder {
+    public static CrossClusterTopologyBuilder builder() {
+        return new CrossClusterTopologyBuilder();
+    }
+
+    public static class CrossClusterTopologyBuilder {
         private String sourceClusterId;
         private String targetClusterId;
 
-        public Builder sourceClusterId(String sourceClusterId) {
+        public CrossClusterTopologyBuilder sourceClusterId(String sourceClusterId) {
             this.sourceClusterId = sourceClusterId;
             return this;
         }
 
-        public Builder targetClusterId(String targetClusterId) {
+        public CrossClusterTopologyBuilder targetClusterId(String targetClusterId) {
             this.targetClusterId = targetClusterId;
             return this;
         }
@@ -92,9 +81,5 @@ public class CrossClusterTopology {
         public CrossClusterTopology build() {
             return new CrossClusterTopology(this);
         }
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 }

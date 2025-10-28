@@ -28,7 +28,7 @@ public enum FunctionType {
     private final String name;
     private final int code;
 
-    FunctionType(String name, int code){
+    FunctionType(String name, int code) {
         this.name = name;
         this.code = code;
     }

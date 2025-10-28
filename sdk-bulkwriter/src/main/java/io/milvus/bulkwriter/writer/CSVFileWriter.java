@@ -33,7 +33,7 @@ public class CSVFileWriter implements FormatFileWriter {
     }
 
     private void initFilePath(String filePathPrefix) {
-        this.filePath = filePathPrefix +  ".csv";
+        this.filePath = filePathPrefix + ".csv";
     }
 
     private void initWriter() throws IOException {
@@ -48,8 +48,8 @@ public class CSVFileWriter implements FormatFileWriter {
         List<String> fieldNameList = Lists.newArrayList(rowValues.keySet());
 
         try {
-            String separator = (String)config.getOrDefault("sep", ",");
-            String nullKey = (String)config.getOrDefault("nullkey", "");
+            String separator = (String) config.getOrDefault("sep", ",");
+            String nullKey = (String) config.getOrDefault("nullkey", "");
 
             if (firstWrite) {
                 writer.write(String.join(separator, fieldNameList));

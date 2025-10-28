@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.index.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class DropIndexPropertiesReq {
     private String indexName;
     private List<String> propertyKeys;
 
-    private DropIndexPropertiesReq(Builder builder) {
+    private DropIndexPropertiesReq(DropIndexPropertiesReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.indexName = builder.indexName;
@@ -70,28 +68,6 @@ public class DropIndexPropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropIndexPropertiesReq that = (DropIndexPropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(indexName, that.indexName)
-                .append(propertyKeys, that.propertyKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = collectionName != null ? collectionName.hashCode() : 0;
-        result = 31 * result + (databaseName != null ? databaseName.hashCode() : 0);
-        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
-        result = 31 * result + (propertyKeys != null ? propertyKeys.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DropIndexPropertiesReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -101,34 +77,35 @@ public class DropIndexPropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropIndexPropertiesReqBuilder builder() {
+        return new DropIndexPropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropIndexPropertiesReqBuilder {
         private String collectionName;
         private String databaseName;
         private String indexName;
         private List<String> propertyKeys = new ArrayList<>();
 
-        private Builder() {}
+        private DropIndexPropertiesReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public DropIndexPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public DropIndexPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder indexName(String indexName) {
+        public DropIndexPropertiesReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
-        public Builder propertyKeys(List<String> propertyKeys) {
+        public DropIndexPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }

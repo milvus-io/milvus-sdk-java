@@ -86,7 +86,7 @@ public class RpcUtils {
         // method to check timeout
         long begin = System.currentTimeMillis();
         long maxRetryTimeoutMs = retryConfig.getMaxRetryTimeoutMs();
-        Callable<Boolean> timeoutChecker = ()->{
+        Callable<Boolean> timeoutChecker = () -> {
             long current = System.currentTimeMillis();
             long cost = (current - begin);
             if (maxRetryTimeoutMs > 0 && cost >= maxRetryTimeoutMs) {
@@ -163,7 +163,7 @@ public class RpcUtils {
                 }
 
                 // reset the next interval value
-                retryIntervalMs = retryIntervalMs*retryConfig.getBackOffMultiplier();
+                retryIntervalMs = retryIntervalMs * retryConfig.getBackOffMultiplier();
                 if (retryIntervalMs > retryConfig.getMaxBackOffMs()) {
                     retryIntervalMs = retryConfig.getMaxBackOffMs();
                 }

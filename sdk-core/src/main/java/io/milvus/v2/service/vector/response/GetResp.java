@@ -19,20 +19,17 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.List;
 
 public class GetResp {
     private List<QueryResp.QueryResult> getResults;
 
-    private GetResp(Builder builder) {
+    private GetResp(GetRespBuilder builder) {
         this.getResults = builder.getResults;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetRespBuilder builder() {
+        return new GetRespBuilder();
     }
 
     public List<QueryResp.QueryResult> getGetResults() {
@@ -44,33 +41,16 @@ public class GetResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetResp that = (GetResp) obj;
-        return new EqualsBuilder()
-                .append(getResults, that.getResults)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(getResults)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetResp{" +
                 "getResults=" + getResults +
                 '}';
     }
 
-    public static class Builder {
+    public static class GetRespBuilder {
         private List<QueryResp.QueryResult> getResults;
 
-        public Builder getResults(List<QueryResp.QueryResult> getResults) {
+        public GetRespBuilder getResults(List<QueryResp.QueryResult> getResults) {
             this.getResults = getResults;
             return this;
         }

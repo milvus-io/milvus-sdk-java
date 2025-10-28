@@ -25,7 +25,7 @@ public enum CompactionState {
     Completed(2);
 
     private final int code;
-    
+
     CompactionState(int code) {
         this.code = code;
     }

@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +28,7 @@ public class AlterCollectionFieldReq {
     private String databaseName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private AlterCollectionFieldReq(Builder builder) {
+    private AlterCollectionFieldReq(AlterCollectionFieldReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.fieldName = builder.fieldName;
         this.databaseName = builder.databaseName;
@@ -69,29 +66,6 @@ public class AlterCollectionFieldReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterCollectionFieldReq that = (AlterCollectionFieldReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(fieldName, that.fieldName)
-                .append(databaseName, that.databaseName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .append(fieldName)
-                .append(databaseName)
-                .append(properties)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "AlterCollectionFieldReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -101,34 +75,35 @@ public class AlterCollectionFieldReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterCollectionFieldReqBuilder builder() {
+        return new AlterCollectionFieldReqBuilder();
     }
 
-    public static class Builder {
+    public static class AlterCollectionFieldReqBuilder {
         private String collectionName;
         private String fieldName;
         private String databaseName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private AlterCollectionFieldReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public AlterCollectionFieldReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder fieldName(String fieldName) {
+        public AlterCollectionFieldReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public AlterCollectionFieldReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder property(String key, String value) {
+        public AlterCollectionFieldReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
             }

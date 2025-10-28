@@ -19,17 +19,13 @@
 
 package io.milvus.bulkwriter;
 
+import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.utils.V2AdapterUtils;
 import io.milvus.bulkwriter.connect.StorageConnectParam;
-import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,8 +33,6 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
-@Getter
-@ToString
 public class RemoteBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final StorageConnectParam connectParam;
@@ -47,13 +41,47 @@ public class RemoteBulkWriterParam {
     private final BulkFileType fileType;
     private final Map<String, Object> config;
 
-    private RemoteBulkWriterParam(@NonNull Builder builder) {
+    private RemoteBulkWriterParam(Builder builder) {
         this.collectionSchema = builder.collectionSchema;
         this.connectParam = builder.connectParam;
         this.remotePath = builder.remotePath;
         this.chunkSize = builder.chunkSize;
         this.fileType = builder.fileType;
         this.config = builder.config;
+    }
+
+    public CreateCollectionReq.CollectionSchema getCollectionSchema() {
+        return collectionSchema;
+    }
+
+    public StorageConnectParam getConnectParam() {
+        return connectParam;
+    }
+
+    public String getRemotePath() {
+        return remotePath;
+    }
+
+    public long getChunkSize() {
+        return chunkSize;
+    }
+
+    public BulkFileType getFileType() {
+        return fileType;
+    }
+
+    public Map<String, Object> getConfig() {
+        return config;
+    }
+
+    @Override
+    public String toString() {
+        return "RemoteBulkWriterParam{" +
+                "collectionSchema=" + collectionSchema +
+                ", remotePath='" + remotePath + '\'' +
+                ", chunkSize=" + chunkSize +
+                ", fileType=" + fileType +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -69,7 +97,7 @@ public class RemoteBulkWriterParam {
         private String remotePath;
         private long chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
-        private Map<String, Object> config = new HashMap<>();
+        private final Map<String, Object> config = new HashMap<>();
 
         private Builder() {
         }
@@ -80,7 +108,7 @@ public class RemoteBulkWriterParam {
          * @param collectionSchema collection info
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CollectionSchemaParam collectionSchema) {
+        public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
         }
@@ -91,12 +119,12 @@ public class RemoteBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CreateCollectionReq.CollectionSchema collectionSchema) {
+        public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
         }
 
-        public Builder withConnectParam(@NotNull StorageConnectParam connectParam) {
+        public Builder withConnectParam(StorageConnectParam connectParam) {
             this.connectParam = connectParam;
             return this;
         }
@@ -107,7 +135,7 @@ public class RemoteBulkWriterParam {
          * @param remotePath remote path
          * @return <code>Builder</code>
          */
-        public Builder withRemotePath(@NonNull String remotePath) {
+        public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
         }
@@ -117,7 +145,7 @@ public class RemoteBulkWriterParam {
             return this;
         }
 
-        public Builder withFileType(@NonNull BulkFileType fileType) {
+        public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
         }

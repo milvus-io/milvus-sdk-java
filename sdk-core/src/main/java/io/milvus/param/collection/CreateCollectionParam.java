@@ -176,10 +176,10 @@ public class CreateCollectionParam {
 
         /**
          * Sets the collection if enableDynamicField.
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param enableDynamicField enableDynamicField of the collection
          * @return <code>Builder</code>
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          */
         @Deprecated
         public Builder withEnableDynamicField(boolean enableDynamicField) {
@@ -203,11 +203,11 @@ public class CreateCollectionParam {
 
         /**
          * Sets the schema of the collection. The schema cannot be empty or null.
-         * @see FieldType
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
+         * @see FieldType
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          */
         @Deprecated
         public Builder withFieldTypes(List<FieldType> fieldTypes) {
@@ -220,11 +220,11 @@ public class CreateCollectionParam {
 
         /**
          * Adds a field schema.
-         * @see FieldType
-         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          *
          * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
+         * @see FieldType
+         * @deprecated Use {@link #withSchema(CollectionSchemaParam)} repace
          */
         @Deprecated
         public Builder addFieldType(FieldType fieldType) {
@@ -237,10 +237,10 @@ public class CreateCollectionParam {
 
         /**
          * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
-         * @see ConsistencyLevelEnum
          *
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
+         * @see ConsistencyLevelEnum
          */
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             if (consistencyLevel == null) {
@@ -267,7 +267,6 @@ public class CreateCollectionParam {
         /**
          * Sets the schema of collection.
          *
-         *
          * @param schema the schema of collection
          * @return <code>Builder</code>
          */
@@ -281,6 +280,7 @@ public class CreateCollectionParam {
 
         /**
          * Sets the replica number in collection level, then if load collection doesn't have replica number, it will use this replica number.
+         *
          * @param replicaNumber replica number
          * @return <code>Builder</code>
          */
@@ -290,6 +290,7 @@ public class CreateCollectionParam {
 
         /**
          * Sets the resource groups in collection level, then if load collection doesn't have resource groups, it will use this resource groups.
+         *
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
@@ -304,7 +305,7 @@ public class CreateCollectionParam {
         /**
          * Basic method to set a key-value property.
          *
-         * @param key the key
+         * @param key   the key
          * @param value the value
          * @return <code>Builder</code>
          */

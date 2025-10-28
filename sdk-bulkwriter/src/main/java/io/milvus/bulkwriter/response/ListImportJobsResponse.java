@@ -19,27 +19,114 @@
 
 package io.milvus.bulkwriter.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class ListImportJobsResponse implements Serializable {
-
     private static final long serialVersionUID = -8400893490624599225L;
-
     private Integer count;
-
     private Integer currentPage;
-
     private Integer pageSize;
-
     private List<Record> records;
+
+    public ListImportJobsResponse() {
+    }
+
+    public ListImportJobsResponse(Integer count, Integer currentPage, Integer pageSize, List<Record> records) {
+        this.count = count;
+        this.currentPage = currentPage;
+        this.pageSize = pageSize;
+        this.records = records;
+    }
+
+    private ListImportJobsResponse(ListImportJobsResponseBuilder builder) {
+        this.count = builder.count;
+        this.currentPage = builder.currentPage;
+        this.pageSize = builder.pageSize;
+        this.records = builder.records;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
+    public Integer getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Integer currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public List<Record> getRecords() {
+        return records;
+    }
+
+    public void setRecords(List<Record> records) {
+        this.records = records;
+    }
+
+    @Override
+    public String toString() {
+        return "ListImportJobsResponse{" +
+                ", count=" + count +
+                ", currentPage=" + currentPage +
+                ", pageSize=" + pageSize +
+                '}';
+    }
+
+    public static ListImportJobsResponseBuilder builder() {
+        return new ListImportJobsResponseBuilder();
+    }
+
+    public static class ListImportJobsResponseBuilder {
+        private Integer count;
+        private Integer currentPage;
+        private Integer pageSize;
+        private List<Record> records;
+
+        private ListImportJobsResponseBuilder() {
+            this.count = 0;
+            this.currentPage = 0;
+            this.pageSize = 0;
+            this.records = new ArrayList<>();
+        }
+
+        public ListImportJobsResponseBuilder count(Integer count) {
+            this.count = count;
+            return this;
+        }
+
+        public ListImportJobsResponseBuilder currentPage(Integer currentPage) {
+            this.currentPage = currentPage;
+            return this;
+        }
+
+        public ListImportJobsResponseBuilder pageSize(Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public ListImportJobsResponseBuilder records(List<Record> records) {
+            this.records = records;
+            return this;
+        }
+
+        public ListImportJobsResponse build() {
+            return new ListImportJobsResponse(this);
+        }
+    }
 }

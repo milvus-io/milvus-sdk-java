@@ -19,36 +19,21 @@
 
 package io.milvus.v1.resourcegroup;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import io.milvus.client.MilvusClient;
+import io.milvus.common.resourcegroup.ResourceGroupConfig;
+import io.milvus.common.resourcegroup.ResourceGroupLimit;
+import io.milvus.common.resourcegroup.ResourceGroupTransfer;
+import io.milvus.exception.MilvusException;
+import io.milvus.grpc.*;
 import io.milvus.param.R;
 import io.milvus.param.RpcStatus;
 import io.milvus.param.collection.GetLoadStateParam;
 import io.milvus.param.collection.ShowCollectionsParam;
 import io.milvus.param.control.GetReplicasParam;
-import io.milvus.param.resourcegroup.CreateResourceGroupParam;
-import io.milvus.param.resourcegroup.DescribeResourceGroupParam;
-import io.milvus.param.resourcegroup.DropResourceGroupParam;
-import io.milvus.param.resourcegroup.ListResourceGroupsParam;
-import io.milvus.param.resourcegroup.TransferReplicaParam;
-import io.milvus.param.resourcegroup.UpdateResourceGroupsParam;
-import io.milvus.common.resourcegroup.ResourceGroupConfig;
-import io.milvus.common.resourcegroup.ResourceGroupLimit;
-import io.milvus.common.resourcegroup.ResourceGroupTransfer;
-import io.milvus.exception.MilvusException;
-import io.milvus.grpc.DescribeResourceGroupResponse;
-import io.milvus.grpc.GetLoadStateResponse;
-import io.milvus.grpc.GetReplicasResponse;
-import io.milvus.grpc.ListDatabasesResponse;
-import io.milvus.grpc.ListResourceGroupsResponse;
-import io.milvus.grpc.LoadState;
-import io.milvus.grpc.ShowCollectionsResponse;
+import io.milvus.param.resourcegroup.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class ResourceGroupManagement {
@@ -65,7 +50,7 @@ public class ResourceGroupManagement {
 
     /**
      * list all resource groups.
-     * 
+     *
      * @return map of resource group name and resource group info.
      */
     public Map<String, ResourceGroupInfo> listResourceGroups() throws Exception {
@@ -134,7 +119,7 @@ public class ResourceGroupManagement {
 
     /**
      * Initialize the cluster with a recycle resource group.
-     * 
+     *
      * @param defaultResourceGroupNodeNum The number of query nodes to initialize
      *                                    the default resource group.
      */
@@ -173,7 +158,7 @@ public class ResourceGroupManagement {
     /**
      * Drop a resource group, before drop resource group, you should scale the
      * resource group to 0 first.
-     * 
+     *
      * @param resourceGroupName
      */
     public void dropResourceGroup(String resourceGroupName) throws Exception {
@@ -184,7 +169,7 @@ public class ResourceGroupManagement {
 
     /**
      * Scale to the number of nodes in a resource group.
-     * 
+     *
      * @param resourceGroupName
      * @param requestNodeNum
      */
@@ -209,7 +194,7 @@ public class ResourceGroupManagement {
     /**
      * Transfer a database to specified resource group.
      * Only support single replica now.
-     * 
+     *
      * @param dbName            The name of the database to transfer.
      * @param resourceGroupName The name of the target resource group.
      */
@@ -238,7 +223,7 @@ public class ResourceGroupManagement {
 
     /**
      * get the resource group name of the collection.
-     * 
+     *
      * @param dbName
      * @param collection
      * @return
@@ -278,7 +263,7 @@ public class ResourceGroupManagement {
     }
 
     /**
-     * 
+     *
      * @param <T>
      * @param response
      * @return

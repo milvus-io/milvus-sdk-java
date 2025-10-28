@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.partition.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +34,7 @@ public class LoadPartitionsReq {
     private Boolean skipLoadDynamicField;
     private List<String> resourceGroups;
 
-    private LoadPartitionsReq(Builder builder) {
+    private LoadPartitionsReq(LoadPartitionsReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -130,40 +128,6 @@ public class LoadPartitionsReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        LoadPartitionsReq that = (LoadPartitionsReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionNames, that.partitionNames)
-                .append(numReplicas, that.numReplicas)
-                .append(sync, that.sync)
-                .append(timeout, that.timeout)
-                .append(refresh, that.refresh)
-                .append(loadFields, that.loadFields)
-                .append(skipLoadDynamicField, that.skipLoadDynamicField)
-                .append(resourceGroups, that.resourceGroups)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (partitionNames != null ? partitionNames.hashCode() : 0);
-        result = 31 * result + (numReplicas != null ? numReplicas.hashCode() : 0);
-        result = 31 * result + (sync != null ? sync.hashCode() : 0);
-        result = 31 * result + (timeout != null ? timeout.hashCode() : 0);
-        result = 31 * result + (refresh != null ? refresh.hashCode() : 0);
-        result = 31 * result + (loadFields != null ? loadFields.hashCode() : 0);
-        result = 31 * result + (skipLoadDynamicField != null ? skipLoadDynamicField.hashCode() : 0);
-        result = 31 * result + (resourceGroups != null ? resourceGroups.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "LoadPartitionsReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -179,11 +143,11 @@ public class LoadPartitionsReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static LoadPartitionsReqBuilder builder() {
+        return new LoadPartitionsReqBuilder();
     }
 
-    public static class Builder {
+    public static class LoadPartitionsReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
@@ -195,54 +159,55 @@ public class LoadPartitionsReq {
         private Boolean skipLoadDynamicField = Boolean.FALSE;
         private List<String> resourceGroups = new ArrayList<>();
 
-        private Builder() {}
+        private LoadPartitionsReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public LoadPartitionsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public LoadPartitionsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public LoadPartitionsReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder numReplicas(Integer numReplicas) {
+        public LoadPartitionsReqBuilder numReplicas(Integer numReplicas) {
             this.numReplicas = numReplicas;
             return this;
         }
 
-        public Builder sync(Boolean sync) {
+        public LoadPartitionsReqBuilder sync(Boolean sync) {
             this.sync = sync;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public LoadPartitionsReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }
 
-        public Builder refresh(Boolean refresh) {
+        public LoadPartitionsReqBuilder refresh(Boolean refresh) {
             this.refresh = refresh;
             return this;
         }
 
-        public Builder loadFields(List<String> loadFields) {
+        public LoadPartitionsReqBuilder loadFields(List<String> loadFields) {
             this.loadFields = loadFields;
             return this;
         }
 
-        public Builder skipLoadDynamicField(Boolean skipLoadDynamicField) {
+        public LoadPartitionsReqBuilder skipLoadDynamicField(Boolean skipLoadDynamicField) {
             this.skipLoadDynamicField = skipLoadDynamicField;
             return this;
         }
 
-        public Builder resourceGroups(List<String> resourceGroups) {
+        public LoadPartitionsReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
         }

@@ -231,7 +231,7 @@ public class BulkWriterLocalExample {
 
     /**
      * @param collectionSchema collection info
-     * @param dropIfExist     if collection already exist, will drop firstly and then create again
+     * @param dropIfExist      if collection already exist, will drop firstly and then create again
      */
     private static void createCollection(String collectionName, CreateCollectionReq.CollectionSchema collectionSchema, boolean dropIfExist) {
         System.out.println("\n===================== create collection ====================");

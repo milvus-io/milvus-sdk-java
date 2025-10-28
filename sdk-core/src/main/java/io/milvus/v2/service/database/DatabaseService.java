@@ -23,7 +23,8 @@ import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.database.request.*;
-import io.milvus.v2.service.database.response.*;
+import io.milvus.v2.service.database.response.DescribeDatabaseResp;
+import io.milvus.v2.service.database.response.ListDatabasesResp;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.HashMap;

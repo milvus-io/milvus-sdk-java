@@ -47,11 +47,13 @@ import java.util.function.Function;
 
 public class IteratorExample {
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
                 .build());
     }
+
     private static final String COLLECTION_NAME = "java_sdk_example_iterator_v2";
     private static final String ID_FIELD = "userID";
     private static final String AGE_FIELD = "userAge";
@@ -200,7 +202,7 @@ public class IteratorExample {
                                          Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc) {
         System.out.println("\n========== searchIteratorV2() ==========");
         System.out.println(String.format("expr='%s', params='%s', batchSize=%d, topK=%d",
-                filter, params==null ? "" : params.toString(), batchSize, topK));
+                filter, params == null ? "" : params.toString(), batchSize, topK));
         SearchIteratorV2 searchIterator = client.searchIteratorV2(SearchIteratorReqV2.builder()
                 .collectionName(COLLECTION_NAME)
                 .outputFields(Lists.newArrayList(AGE_FIELD))
@@ -208,7 +210,7 @@ public class IteratorExample {
                 .vectorFieldName(VECTOR_FIELD)
                 .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
                 .filter(filter)
-                .searchParams(params==null ? new HashMap<>() : params)
+                .searchParams(params == null ? new HashMap<>() : params)
                 .limit(topK)
                 .metricType(IndexParam.MetricType.L2)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
@@ -235,21 +237,21 @@ public class IteratorExample {
 
     public static void main(String[] args) {
         buildCollection();
-        queryIterator("userID < 300",50, 5,400);
+        queryIterator("userID < 300", 50, 5, 400);
         searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
         searchIteratorV1("", "", 10, 99);
         searchIteratorV2("userAge > 10 &&userAge < 20", null, 50, 120, null);
 
-        Map<String,Object> extraParams = new HashMap<>();
-        extraParams.put("radius",15.0);
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("radius", 15.0);
         searchIteratorV2("", extraParams, 50, 100, null);
 
         // use external function to filter the result
-        Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = (List<SearchResp.SearchResult> src)->{
+        Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = (List<SearchResp.SearchResult> src) -> {
             List<SearchResp.SearchResult> newRes = new ArrayList<>();
             for (SearchResp.SearchResult res : src) {
-                long id = (long)res.getId();
-                if (id%2 == 0) {
+                long id = (long) res.getId();
+                if (id % 2 == 0) {
                     newRes.add(res);
                 }
             }

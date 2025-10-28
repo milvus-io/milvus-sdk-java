@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.List;
 
 public class BatchDescribeCollectionReq {
@@ -29,14 +26,14 @@ public class BatchDescribeCollectionReq {
     private List<String> collectionNames;
 
     // Private constructor for builder
-    private BatchDescribeCollectionReq(Builder builder) {
+    private BatchDescribeCollectionReq(BatchDescribeCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
     }
 
     // Static method to create builder
-    public static Builder builder() {
-        return new Builder();
+    public static BatchDescribeCollectionReqBuilder builder() {
+        return new BatchDescribeCollectionReqBuilder();
     }
 
     // Getter methods
@@ -58,27 +55,6 @@ public class BatchDescribeCollectionReq {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BatchDescribeCollectionReq that = (BatchDescribeCollectionReq) o;
-
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionNames, that.collectionNames)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionNames)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "BatchDescribeCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -87,16 +63,16 @@ public class BatchDescribeCollectionReq {
     }
 
     // Builder class
-    public static class Builder {
+    public static class BatchDescribeCollectionReqBuilder {
         private String databaseName;
         private List<String> collectionNames;
 
-        public Builder databaseName(String databaseName) {
+        public BatchDescribeCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionNames(List<String> collectionNames) {
+        public BatchDescribeCollectionReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }

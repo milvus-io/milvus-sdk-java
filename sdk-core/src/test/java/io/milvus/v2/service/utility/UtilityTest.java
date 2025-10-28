@@ -46,6 +46,7 @@ class UtilityTest extends BaseTest {
                 .build();
         client_v2.dropAlias(req);
     }
+
     @Test
     void testAlterAlias() {
         AlterAliasReq req = AlterAliasReq.builder()
@@ -62,6 +63,7 @@ class UtilityTest extends BaseTest {
                 .build();
         DescribeAliasResp statusR = client_v2.describeAlias(req);
     }
+
     @Test
     void listAliases() {
         ListAliasesReq req = ListAliasesReq.builder()

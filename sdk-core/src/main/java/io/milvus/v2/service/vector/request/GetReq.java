@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.vector.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.List;
 
 public class GetReq {
@@ -31,7 +28,7 @@ public class GetReq {
     private List<Object> ids;
     private List<String> outputFields;
 
-    private GetReq(Builder builder) {
+    private GetReq(GetReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -39,8 +36,8 @@ public class GetReq {
         this.outputFields = builder.outputFields;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetReqBuilder builder() {
+        return new GetReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -84,31 +81,6 @@ public class GetReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetReq that = (GetReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .append(ids, that.ids)
-                .append(outputFields, that.outputFields)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionName)
-                .append(ids)
-                .append(outputFields)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -119,34 +91,34 @@ public class GetReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class GetReqBuilder {
         private String databaseName;
         private String collectionName;
         private String partitionName = "";
         private List<Object> ids;
         private List<String> outputFields;
 
-        public Builder databaseName(String databaseName) {
+        public GetReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GetReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public GetReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public Builder ids(List<Object> ids) {
+        public GetReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
         }
 
-        public Builder outputFields(List<String> outputFields) {
+        public GetReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }

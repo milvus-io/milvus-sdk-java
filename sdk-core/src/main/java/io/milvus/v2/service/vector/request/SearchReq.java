@@ -23,8 +23,6 @@ import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -70,7 +68,7 @@ public class SearchReq {
 
     private Map<String, Object> filterTemplateValues;
 
-    private SearchReq(Builder builder) {
+    private SearchReq(SearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -284,67 +282,6 @@ public class SearchReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        SearchReq searchReq = (SearchReq) obj;
-        return new EqualsBuilder()
-                .append(topK, searchReq.topK)
-                .append(offset, searchReq.offset)
-                .append(limit, searchReq.limit)
-                .append(roundDecimal, searchReq.roundDecimal)
-                .append(guaranteeTimestamp, searchReq.guaranteeTimestamp)
-                .append(ignoreGrowing, searchReq.ignoreGrowing)
-                .append(databaseName, searchReq.databaseName)
-                .append(collectionName, searchReq.collectionName)
-                .append(partitionNames, searchReq.partitionNames)
-                .append(annsField, searchReq.annsField)
-                .append(metricType, searchReq.metricType)
-                .append(filter, searchReq.filter)
-                .append(outputFields, searchReq.outputFields)
-                .append(data, searchReq.data)
-                .append(searchParams, searchReq.searchParams)
-                .append(gracefulTime, searchReq.gracefulTime)
-                .append(consistencyLevel, searchReq.consistencyLevel)
-                .append(groupByFieldName, searchReq.groupByFieldName)
-                .append(groupSize, searchReq.groupSize)
-                .append(strictGroupSize, searchReq.strictGroupSize)
-                .append(ranker, searchReq.ranker)
-                .append(functionScore, searchReq.functionScore)
-                .append(filterTemplateValues, searchReq.filterTemplateValues)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionNames)
-                .append(annsField)
-                .append(metricType)
-                .append(topK)
-                .append(filter)
-                .append(outputFields)
-                .append(data)
-                .append(offset)
-                .append(limit)
-                .append(roundDecimal)
-                .append(searchParams)
-                .append(guaranteeTimestamp)
-                .append(gracefulTime)
-                .append(consistencyLevel)
-                .append(ignoreGrowing)
-                .append(groupByFieldName)
-                .append(groupSize)
-                .append(strictGroupSize)
-                .append(ranker)
-                .append(functionScore)
-                .append(filterTemplateValues)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "SearchReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -373,11 +310,11 @@ public class SearchReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static SearchReqBuilder builder() {
+        return new SearchReqBuilder();
     }
 
-    public static class Builder {
+    public static class SearchReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>(); // default value
@@ -402,123 +339,124 @@ public class SearchReq {
         private FunctionScore functionScore;
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
 
-        private Builder() {}
+        private SearchReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public SearchReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public SearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public SearchReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder annsField(String annsField) {
+        public SearchReqBuilder annsField(String annsField) {
             this.annsField = annsField;
             return this;
         }
 
-        public Builder metricType(IndexParam.MetricType metricType) {
+        public SearchReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
         // topK is deprecated, topK and limit must be the same value
         @Deprecated
-        public Builder topK(int topK) {
+        public SearchReqBuilder topK(int topK) {
             this.topK = topK;
             this.limit = topK;
             return this;
         }
 
-        public Builder filter(String filter) {
+        public SearchReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
-        public Builder outputFields(List<String> outputFields) {
+        public SearchReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }
 
-        public Builder data(List<BaseVector> data) {
+        public SearchReqBuilder data(List<BaseVector> data) {
             this.data = data;
             return this;
         }
 
-        public Builder offset(long offset) {
+        public SearchReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
-        public Builder limit(long limit) {
+        public SearchReqBuilder limit(long limit) {
             this.topK = (int) limit;
             this.limit = limit;
             return this;
         }
 
-        public Builder roundDecimal(int roundDecimal) {
+        public SearchReqBuilder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
         }
 
-        public Builder searchParams(Map<String, Object> searchParams) {
+        public SearchReqBuilder searchParams(Map<String, Object> searchParams) {
             this.searchParams = searchParams;
             return this;
         }
 
-        public Builder guaranteeTimestamp(long guaranteeTimestamp) {
+        public SearchReqBuilder guaranteeTimestamp(long guaranteeTimestamp) {
             this.guaranteeTimestamp = guaranteeTimestamp;
             return this;
         }
 
-        public Builder gracefulTime(Long gracefulTime) {
+        public SearchReqBuilder gracefulTime(Long gracefulTime) {
             this.gracefulTime = gracefulTime;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public SearchReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder ignoreGrowing(boolean ignoreGrowing) {
+        public SearchReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
 
-        public Builder groupByFieldName(String groupByFieldName) {
+        public SearchReqBuilder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
         }
 
-        public Builder groupSize(Integer groupSize) {
+        public SearchReqBuilder groupSize(Integer groupSize) {
             this.groupSize = groupSize;
             return this;
         }
 
-        public Builder strictGroupSize(Boolean strictGroupSize) {
+        public SearchReqBuilder strictGroupSize(Boolean strictGroupSize) {
             this.strictGroupSize = strictGroupSize;
             return this;
         }
 
-        public Builder ranker(CreateCollectionReq.Function ranker) {
+        public SearchReqBuilder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
             return this;
         }
 
-        public Builder functionScore(FunctionScore functionScore) {
+        public SearchReqBuilder functionScore(FunctionScore functionScore) {
             this.functionScore = functionScore;
             return this;
         }
 
-        public Builder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+        public SearchReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
         }

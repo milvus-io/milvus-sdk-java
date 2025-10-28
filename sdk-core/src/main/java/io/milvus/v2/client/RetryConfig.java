@@ -19,9 +19,6 @@
 
 package io.milvus.v2.client;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class RetryConfig {
     private int maxRetryTimes = 75;
     private long initialBackOffMs = 10;
@@ -31,7 +28,7 @@ public class RetryConfig {
     private long maxRetryTimeoutMs = 0;
 
     // Constructor for builder pattern
-    private RetryConfig(Builder builder) {
+    private RetryConfig(RetryConfigBuilder builder) {
         this.maxRetryTimes = builder.maxRetryTimes;
         this.initialBackOffMs = builder.initialBackOffMs;
         this.maxBackOffMs = builder.maxBackOffMs;
@@ -40,8 +37,8 @@ public class RetryConfig {
         this.maxRetryTimeoutMs = builder.maxRetryTimeoutMs;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RetryConfigBuilder builder() {
+        return new RetryConfigBuilder();
     }
 
     // Getters
@@ -95,35 +92,6 @@ public class RetryConfig {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        
-        RetryConfig that = (RetryConfig) o;
-        
-        return new EqualsBuilder()
-                .append(maxRetryTimes, that.maxRetryTimes)
-                .append(initialBackOffMs, that.initialBackOffMs)
-                .append(maxBackOffMs, that.maxBackOffMs)
-                .append(backOffMultiplier, that.backOffMultiplier)
-                .append(retryOnRateLimit, that.retryOnRateLimit)
-                .append(maxRetryTimeoutMs, that.maxRetryTimeoutMs)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(maxRetryTimes)
-                .append(initialBackOffMs)
-                .append(maxBackOffMs)
-                .append(backOffMultiplier)
-                .append(retryOnRateLimit)
-                .append(maxRetryTimeoutMs)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "RetryConfig{" +
                 "maxRetryTimes=" + maxRetryTimes +
@@ -136,7 +104,7 @@ public class RetryConfig {
     }
 
     // Builder class with public access modifier
-    public static class Builder {
+    public static class RetryConfigBuilder {
         private int maxRetryTimes = 75;
         private long initialBackOffMs = 10;
         private long maxBackOffMs = 3000;
@@ -144,32 +112,32 @@ public class RetryConfig {
         private boolean retryOnRateLimit = true;
         private long maxRetryTimeoutMs = 0;
 
-        public Builder maxRetryTimes(int maxRetryTimes) {
+        public RetryConfigBuilder maxRetryTimes(int maxRetryTimes) {
             this.maxRetryTimes = maxRetryTimes;
             return this;
         }
 
-        public Builder initialBackOffMs(long initialBackOffMs) {
+        public RetryConfigBuilder initialBackOffMs(long initialBackOffMs) {
             this.initialBackOffMs = initialBackOffMs;
             return this;
         }
 
-        public Builder maxBackOffMs(long maxBackOffMs) {
+        public RetryConfigBuilder maxBackOffMs(long maxBackOffMs) {
             this.maxBackOffMs = maxBackOffMs;
             return this;
         }
 
-        public Builder backOffMultiplier(int backOffMultiplier) {
+        public RetryConfigBuilder backOffMultiplier(int backOffMultiplier) {
             this.backOffMultiplier = backOffMultiplier;
             return this;
         }
 
-        public Builder retryOnRateLimit(boolean retryOnRateLimit) {
+        public RetryConfigBuilder retryOnRateLimit(boolean retryOnRateLimit) {
             this.retryOnRateLimit = retryOnRateLimit;
             return this;
         }
 
-        public Builder maxRetryTimeoutMs(long maxRetryTimeoutMs) {
+        public RetryConfigBuilder maxRetryTimeoutMs(long maxRetryTimeoutMs) {
             this.maxRetryTimeoutMs = maxRetryTimeoutMs;
             return this;
         }

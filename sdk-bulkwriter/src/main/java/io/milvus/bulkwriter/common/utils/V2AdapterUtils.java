@@ -19,7 +19,6 @@
 
 package io.milvus.bulkwriter.common.utils;
 
-import io.milvus.grpc.DataType;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.param.collection.FieldType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
@@ -66,7 +65,7 @@ public class V2AdapterUtils {
 //    }
 
     private static CreateCollectionReq.FieldSchema convertV1Field(FieldType fieldType) {
-        Integer maxLength = fieldType.getMaxLength() > 0 ? fieldType.getMaxLength():65535;
+        Integer maxLength = fieldType.getMaxLength() > 0 ? fieldType.getMaxLength() : 65535;
         Integer dimension = fieldType.getDimension() > 0 ? fieldType.getDimension() : null;
         Integer maxCapacity = fieldType.getMaxCapacity() > 0 ? fieldType.getMaxCapacity() : null;
         io.milvus.v2.common.DataType elementType = fieldType.getElementType() == null ? null : io.milvus.v2.common.DataType.valueOf(fieldType.getElementType().name());

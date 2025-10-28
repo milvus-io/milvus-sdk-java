@@ -19,18 +19,15 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class GetCompactionStateReq {
     private Long compactionID;
 
-    private GetCompactionStateReq(Builder builder) {
+    private GetCompactionStateReq(GetCompactionStateReqBuilder builder) {
         this.compactionID = builder.compactionID;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetCompactionStateReqBuilder builder() {
+        return new GetCompactionStateReqBuilder();
     }
 
     public Long getCompactionID() {
@@ -42,33 +39,16 @@ public class GetCompactionStateReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetCompactionStateReq that = (GetCompactionStateReq) obj;
-        return new EqualsBuilder()
-                .append(compactionID, that.compactionID)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(compactionID)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetCompactionStateReq{" +
                 "compactionID=" + compactionID +
                 '}';
     }
 
-    public static class Builder {
+    public static class GetCompactionStateReqBuilder {
         private Long compactionID;
 
-        public Builder compactionID(Long compactionID) {
+        public GetCompactionStateReqBuilder compactionID(Long compactionID) {
             this.compactionID = compactionID;
             return this;
         }

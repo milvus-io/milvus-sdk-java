@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.vector.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +40,7 @@ public class DeleteReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
 
-    private DeleteReq(Builder builder) {
+    private DeleteReq(DeleteReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -52,8 +49,8 @@ public class DeleteReq {
         this.filterTemplateValues = builder.filterTemplateValues;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DeleteReqBuilder builder() {
+        return new DeleteReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -105,33 +102,6 @@ public class DeleteReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DeleteReq that = (DeleteReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .append(filter, that.filter)
-                .append(ids, that.ids)
-                .append(filterTemplateValues, that.filterTemplateValues)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionName)
-                .append(filter)
-                .append(ids)
-                .append(filterTemplateValues)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DeleteReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -143,7 +113,7 @@ public class DeleteReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class DeleteReqBuilder {
         private String databaseName = "";
         private String collectionName;
         private String partitionName = "";
@@ -151,32 +121,32 @@ public class DeleteReq {
         private List<Object> ids;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
-        public Builder databaseName(String databaseName) {
+        public DeleteReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public DeleteReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public DeleteReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public Builder filter(String filter) {
+        public DeleteReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
-        public Builder ids(List<Object> ids) {
+        public DeleteReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
         }
 
-        public Builder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+        public DeleteReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
         }

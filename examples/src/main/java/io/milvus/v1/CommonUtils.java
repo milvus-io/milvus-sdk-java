@@ -20,7 +20,6 @@ package io.milvus.v1;
 
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.param.R;
-
 import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.ndarray.buffer.ByteDataBuffer;
@@ -69,7 +68,7 @@ public class CommonUtils {
     public static List<List<Float>> generateFixFloatVectors(int dimension, int count) {
         List<List<Float>> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
-            List<Float> vector = generateFloatVector(dimension, (float)n);
+            List<Float> vector = generateFloatVector(dimension, (float) n);
             vectors.add(vector);
         }
         return vectors;
@@ -87,7 +86,7 @@ public class CommonUtils {
         }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer generateBinaryVector(int dimension) {
         Random ran = new Random();
         int byteCount = dimension / 8;
@@ -117,7 +116,7 @@ public class CommonUtils {
         System.out.println();
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
     public static TBfloat16 genTensorflowBF16Vector(int dimension) {
         Random ran = new Random();
         float[] array = new float[dimension];
@@ -131,7 +130,7 @@ public class CommonUtils {
     public static List<TBfloat16> genTensorflowBF16Vectors(int dimension, int count) {
         List<TBfloat16> vectors = new ArrayList<>();
         for (int n = 0; n < count; ++n) {
-           TBfloat16 vector = genTensorflowBF16Vector(dimension);
+            TBfloat16 vector = genTensorflowBF16Vector(dimension);
             vectors.add(vector);
         }
 
@@ -140,7 +139,7 @@ public class CommonUtils {
 
     public static ByteBuffer encodeTensorBF16Vector(TBfloat16 vector) {
         ByteDataBuffer tensorBuf = vector.asRawTensor().data();
-        ByteBuffer buf = ByteBuffer.allocate((int)tensorBuf.size());
+        ByteBuffer buf = ByteBuffer.allocate((int) tensorBuf.size());
         for (long i = 0; i < tensorBuf.size(); i++) {
             buf.put(tensorBuf.getByte(i));
         }
@@ -157,10 +156,10 @@ public class CommonUtils {
     }
 
     public static TBfloat16 decodeBF16VectorToTensor(ByteBuffer buf) {
-        if (buf.limit()%2 != 0) {
+        if (buf.limit() % 2 != 0) {
             return null;
         }
-        int dim = buf.limit()/2;
+        int dim = buf.limit() / 2;
         ByteDataBuffer bf = DataBuffers.of(buf.array());
         return Tensor.of(TBfloat16.class, Shape.of(dim), bf);
     }
@@ -197,7 +196,7 @@ public class CommonUtils {
 
     public static ByteBuffer encodeTensorFP16Vector(TFloat16 vector) {
         ByteDataBuffer tensorBuf = vector.asRawTensor().data();
-        ByteBuffer buf = ByteBuffer.allocate((int)tensorBuf.size());
+        ByteBuffer buf = ByteBuffer.allocate((int) tensorBuf.size());
         for (long i = 0; i < tensorBuf.size(); i++) {
             buf.put(tensorBuf.getByte(i));
         }
@@ -214,10 +213,10 @@ public class CommonUtils {
     }
 
     public static TFloat16 decodeFP16VectorToTensor(ByteBuffer buf) {
-        if (buf.limit()%2 != 0) {
+        if (buf.limit() % 2 != 0) {
             return null;
         }
-        int dim = buf.limit()/2;
+        int dim = buf.limit() / 2;
         ByteDataBuffer bf = DataBuffers.of(buf.array());
         return Tensor.of(TFloat16.class, Shape.of(dim), bf);
     }
@@ -231,7 +230,7 @@ public class CommonUtils {
         return vector;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer encodeFloat16Vector(List<Float> originVector, boolean bfloat16) {
         if (bfloat16) {
             return Float16Utils.f32VectorToBf16Buffer(originVector);
@@ -274,7 +273,7 @@ public class CommonUtils {
         return vectors;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
     public static ByteBuffer generateInt8Vector(int dimension) {
         Random ran = new Random();
         int byteCount = dimension;
@@ -295,13 +294,13 @@ public class CommonUtils {
         return vectors;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////////////////////////////////////////////
     public static SortedMap<Long, Float> generateSparseVector() {
         Random ran = new Random();
         SortedMap<Long, Float> sparse = new TreeMap<>();
         int dim = ran.nextInt(10) + 10;
         while (sparse.size() < dim) {
-            sparse.put((long)ran.nextInt(1000000), ran.nextFloat());
+            sparse.put((long) ran.nextInt(1000000), ran.nextFloat());
         }
         return sparse;
     }

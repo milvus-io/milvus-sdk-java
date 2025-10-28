@@ -57,6 +57,7 @@ public class ClientPoolExample {
         System.out.printf("Key '%s': %d idle clients and %d active clients%n",
                 key, pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
     }
+
     private static void printClientNumber(MilvusClientV2Pool pool) {
         System.out.println("======================================================================");
         System.out.printf("Total %d idle clients and %d active clients%n",
@@ -137,7 +138,7 @@ public class ClientPoolExample {
             Gson gson = new Gson();
             for (int i = 0; i < repeatRequests; i++) {
                 MilvusClientV2 client = null;
-                while(client == null) {
+                while (client == null) {
                     try {
                         // getClient() might exceeds the borrowMaxWaitMillis and throw exception
                         // retry to call until it return a client
@@ -176,7 +177,7 @@ public class ClientPoolExample {
         Thread t = new Thread(() -> {
             for (int i = 0; i < repeatRequests; i++) {
                 MilvusClientV2 client = null;
-                while(client == null) {
+                while (client == null) {
                     try {
                         // getClient() might exceeds the borrowMaxWaitMillis and throw exception
                         // retry to call until it return a client
@@ -222,7 +223,7 @@ public class ClientPoolExample {
                         .outputFields(Collections.singletonList("count(*)"))
                         .consistencyLevel(ConsistencyLevel.STRONG)
                         .build());
-                long rowCount = (long)countR.getQueryResults().get(0).getEntity().get("count(*)");
+                long rowCount = (long) countR.getQueryResults().get(0).getEntity().get("count(*)");
                 System.out.printf("%d rows persisted in collection '%s' of database '%s'%n",
                         rowCount, CollectionName, dbName);
                 if (rowCount != expectedCount) {
@@ -331,7 +332,7 @@ public class ClientPoolExample {
         printClientNumber(pool);
 
         // check row count of each collection, there are threadCount*repeatRequests rows were inserted by multiple threads
-        verifyRowCount(pool, threadCount*repeatRequests);
+        verifyRowCount(pool, threadCount * repeatRequests);
         // drop collections
         dropCollections(pool);
         // drop databases, only after database is empty, it is able to be dropped
@@ -339,7 +340,7 @@ public class ClientPoolExample {
 
         long end = System.currentTimeMillis();
         System.out.printf("%d insert requests and %d search requests finished in %.3f seconds%n",
-                threadCount*repeatRequests*3, threadCount*repeatRequests*3, (end-start)*0.001);
+                threadCount * repeatRequests * 3, threadCount * repeatRequests * 3, (end - start) * 0.001);
 
         printClientNumber(pool);
         pool.clear(); // clear idle clients

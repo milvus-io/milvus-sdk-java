@@ -21,23 +21,32 @@ package io.milvus.bulkwriter;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Parameters for <code>stageManager</code> interface.
  */
-@Getter
-@ToString
 public class StageManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
 
-    private StageManagerParam(@NonNull Builder builder) {
+    private StageManagerParam(Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
+    }
+
+    public String getCloudEndpoint() {
+        return cloudEndpoint;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    @Override
+    public String toString() {
+        return "StageManagerParam{" +
+                "cloudEndpoint='" + cloudEndpoint + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -60,12 +69,12 @@ public class StageManagerParam {
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
-        public Builder withCloudEndpoint(@NotNull String cloudEndpoint) {
+        public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
-        public Builder withApiKey(@NotNull String apiKey) {
+        public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }

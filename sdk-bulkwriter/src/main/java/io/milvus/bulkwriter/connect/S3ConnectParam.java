@@ -21,17 +21,12 @@ package io.milvus.bulkwriter.connect;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import okhttp3.OkHttpClient;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Parameters for <code>RemoteBulkWriter</code> interface.
  */
-@Getter
-@ToString
 public class S3ConnectParam extends StorageConnectParam {
     private final String bucketName;
     private final String endpoint;
@@ -42,7 +37,7 @@ public class S3ConnectParam extends StorageConnectParam {
     private final OkHttpClient httpClient;
     private final String cloudName;
 
-    private S3ConnectParam(@NonNull Builder builder) {
+    private S3ConnectParam(@NotNull Builder builder) {
         this.bucketName = builder.bucketName;
         this.endpoint = builder.endpoint;
         this.accessKey = builder.accessKey;
@@ -51,6 +46,51 @@ public class S3ConnectParam extends StorageConnectParam {
         this.region = builder.region;
         this.httpClient = builder.httpClient;
         this.cloudName = builder.cloudName;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public String getSecretKey() {
+        return secretKey;
+    }
+
+    public String getSessionToken() {
+        return sessionToken;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public OkHttpClient getHttpClient() {
+        return httpClient;
+    }
+
+    public String getCloudName() {
+        return cloudName;
+    }
+
+    @Override
+    public String toString() {
+        return "S3ConnectParam{" +
+                "bucketName='" + bucketName + '\'' +
+                ", endpoint='" + endpoint + '\'' +
+                ", accessKey='" + accessKey + '\'' +
+                ", secretKey='" + secretKey + '\'' +
+                ", sessionToken='" + sessionToken + '\'' +
+                ", region='" + region + '\'' +
+                ", cloudName='" + cloudName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -90,7 +130,7 @@ public class S3ConnectParam extends StorageConnectParam {
          * @param bucketName bucket info
          * @return <code>Builder</code>
          */
-        public Builder withBucketName(@NonNull String bucketName) {
+        public Builder withBucketName(@NotNull String bucketName) {
             this.bucketName = bucketName;
             return this;
         }
@@ -101,32 +141,32 @@ public class S3ConnectParam extends StorageConnectParam {
          * @param endpoint endpoint info
          * @return <code>Builder</code>
          */
-        public Builder withEndpoint(@NonNull String endpoint) {
+        public Builder withEndpoint(@NotNull String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
 
-        public Builder withAccessKey(@NonNull String accessKey) {
+        public Builder withAccessKey(@NotNull String accessKey) {
             this.accessKey = accessKey;
             return this;
         }
 
-        public Builder withSecretKey(@NonNull String secretKey) {
+        public Builder withSecretKey(@NotNull String secretKey) {
             this.secretKey = secretKey;
             return this;
         }
 
-        public Builder withSessionToken(@NonNull String sessionToken) {
+        public Builder withSessionToken(@NotNull String sessionToken) {
             this.sessionToken = sessionToken;
             return this;
         }
 
-        public Builder withRegion(@NonNull String region) {
+        public Builder withRegion(@NotNull String region) {
             this.region = region;
             return this;
         }
 
-        public Builder withHttpClient(@NonNull OkHttpClient httpClient) {
+        public Builder withHttpClient(@NotNull OkHttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }

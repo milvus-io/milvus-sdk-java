@@ -19,13 +19,11 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class CreateUserReq {
     private String userName;
     private String password;
 
-    private CreateUserReq(Builder builder) {
+    private CreateUserReq(CreateUserReqBuilder builder) {
         this.userName = builder.userName;
         this.password = builder.password;
     }
@@ -47,24 +45,6 @@ public class CreateUserReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreateUserReq that = (CreateUserReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .append(password, that.password)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userName != null ? userName.hashCode() : 0;
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "CreateUserReq{" +
                 "userName='" + userName + '\'' +
@@ -72,22 +52,23 @@ public class CreateUserReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreateUserReqBuilder builder() {
+        return new CreateUserReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreateUserReqBuilder {
         private String userName;
         private String password;
 
-        private Builder() {}
+        private CreateUserReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public CreateUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
-        public Builder password(String password) {
+        public CreateUserReqBuilder password(String password) {
             this.password = password;
             return this;
         }

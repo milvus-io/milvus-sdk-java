@@ -146,7 +146,7 @@ public class ConsistencyLevelExample {
             row.add("vector", gson.toJsonTree(vector));
 
             // insert by a MilvusClient
-            String clientName1 = String.format("client_%d", i%10);
+            String clientName1 = String.format("client_%d", i % 10);
             MilvusClientV2 client1 = pool.getClient(clientName1);
             client1.insert(InsertReq.builder()
                     .collectionName(collectionName)
@@ -157,7 +157,7 @@ public class ConsistencyLevelExample {
 
             // search by another MilvusClient, use the just inserted vector to search
             // the returned item is expected to be the just inserted item
-            String clientName2 = String.format("client_%d", i%10+1);
+            String clientName2 = String.format("client_%d", i % 10 + 1);
             MilvusClientV2 client2 = pool.getClient(clientName2);
             SearchResp searchR = client2.search(SearchReq.builder()
                     .collectionName(collectionName)
@@ -170,7 +170,7 @@ public class ConsistencyLevelExample {
             if (results.size() != 1) {
                 throw new RuntimeException("Search result is empty");
             }
-            if (i != (Long)results.get(0).getId()) {
+            if (i != (Long) results.get(0).getId()) {
                 throw new RuntimeException("The just inserted entity is not found");
             }
             System.out.println("search");

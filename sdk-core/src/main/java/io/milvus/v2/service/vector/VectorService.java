@@ -23,7 +23,9 @@ import com.google.protobuf.ByteString;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
-import io.milvus.orm.iterator.*;
+import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.SearchIterator;
+import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
@@ -290,7 +292,7 @@ public class VectorService extends BaseService {
     }
 
     public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                           QueryIteratorReq request) {
+                                       QueryIteratorReq request) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
@@ -299,7 +301,7 @@ public class VectorService extends BaseService {
     }
 
     public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                            SearchIteratorReq request) {
+                                         SearchIteratorReq request) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
@@ -393,10 +395,10 @@ public class VectorService extends BaseService {
 
         List<RunAnalyzerResp.AnalyzerResult> toResults = new ArrayList<>();
         List<AnalyzerResult> results = response.getResultsList();
-        results.forEach((item)->{
+        results.forEach((item) -> {
             List<RunAnalyzerResp.AnalyzerToken> toTokens = new ArrayList<>();
             List<AnalyzerToken> tokens = item.getTokensList();
-            tokens.forEach((token)->{
+            tokens.forEach((token) -> {
                 toTokens.add(RunAnalyzerResp.AnalyzerToken.builder()
                         .token(token.getToken())
                         .startOffset(token.getStartOffset())

@@ -19,14 +19,11 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class GetCollectionStatsReq {
     private String databaseName;
     private String collectionName;
 
-    private GetCollectionStatsReq(Builder builder) {
+    private GetCollectionStatsReq(GetCollectionStatsReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
@@ -48,25 +45,6 @@ public class GetCollectionStatsReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetCollectionStatsReq that = (GetCollectionStatsReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetCollectionStatsReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -74,22 +52,23 @@ public class GetCollectionStatsReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetCollectionStatsReqBuilder builder() {
+        return new GetCollectionStatsReqBuilder();
     }
 
-    public static class Builder {
+    public static class GetCollectionStatsReqBuilder {
         private String databaseName;
         private String collectionName;
 
-        private Builder() {}
+        private GetCollectionStatsReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public GetCollectionStatsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GetCollectionStatsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }

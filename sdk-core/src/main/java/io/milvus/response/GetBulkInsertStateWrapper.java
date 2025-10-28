@@ -61,13 +61,13 @@ public class GetBulkInsertStateWrapper {
         // for example, if the response return [1, 100, 200, 250], the id ranges are [1, 100), [200, 250)
         // the full id list should be [1, 2, 3 ... , 99, 200, 201, 202 ... , 249]
         List<Long> ranges = response.getIdListList();
-        if (ranges.size()%2 != 0) {
+        if (ranges.size() % 2 != 0) {
             throw new IllegalResponseException("The bulk insert state response id range list is illegal");
         }
         List<Long> ids = new ArrayList<>();
-        for (int i = 0; i < ranges.size()/2; i++) {
-            Long begin = ranges.get(i*2);
-            Long end = ranges.get(i*2+1);
+        for (int i = 0; i < ranges.size() / 2; i++) {
+            Long begin = ranges.get(i * 2);
+            Long end = ranges.get(i * 2 + 1);
             for (long j = begin; j <= end; j++) {
                 ids.add(j);
             }

@@ -1,20 +1,18 @@
 package io.milvus.v2.service.resourcegroup.request;
 
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class CreateResourceGroupReq {
     private String groupName;
     private ResourceGroupConfig config;
 
-    private CreateResourceGroupReq(Builder builder) {
+    private CreateResourceGroupReq(CreateResourceGroupReqBuilder builder) {
         this.groupName = builder.groupName;
         this.config = builder.config;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreateResourceGroupReqBuilder builder() {
+        return new CreateResourceGroupReqBuilder();
     }
 
     public String getGroupName() {
@@ -34,25 +32,6 @@ public class CreateResourceGroupReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreateResourceGroupReq that = (CreateResourceGroupReq) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .append(config, that.config)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(groupName)
-                .append(config)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "CreateResourceGroupReq{" +
                 "groupName='" + groupName + '\'' +
@@ -60,16 +39,16 @@ public class CreateResourceGroupReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class CreateResourceGroupReqBuilder {
         private String groupName;
         private ResourceGroupConfig config;
 
-        public Builder groupName(String groupName) {
+        public CreateResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
-        public Builder config(ResourceGroupConfig config) {
+        public CreateResourceGroupReqBuilder config(ResourceGroupConfig config) {
             this.config = config;
             return this;
         }

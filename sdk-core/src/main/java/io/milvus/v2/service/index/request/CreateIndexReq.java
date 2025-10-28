@@ -20,7 +20,6 @@
 package io.milvus.v2.service.index.request;
 
 import io.milvus.v2.common.IndexParam;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class CreateIndexReq {
     private Boolean sync = Boolean.TRUE; // wait the index to complete
     private Long timeout = 60000L; // timeout value for waiting the index to complete
 
-    private CreateIndexReq(Builder builder) {
+    private CreateIndexReq(CreateIndexReqBuilder builder) {
         if (builder.collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
         }
@@ -86,30 +85,6 @@ public class CreateIndexReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreateIndexReq that = (CreateIndexReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(indexParams, that.indexParams)
-                .append(sync, that.sync)
-                .append(timeout, that.timeout)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (indexParams != null ? indexParams.hashCode() : 0);
-        result = 31 * result + (sync != null ? sync.hashCode() : 0);
-        result = 31 * result + (timeout != null ? timeout.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "CreateIndexReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -120,25 +95,26 @@ public class CreateIndexReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreateIndexReqBuilder builder() {
+        return new CreateIndexReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreateIndexReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<IndexParam> indexParams;
         private Boolean sync = Boolean.TRUE; // wait the index to complete
         private Long timeout = 60000L; // timeout value for waiting the index to complete
 
-        private Builder() {}
+        private CreateIndexReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public CreateIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public CreateIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
             }
@@ -146,17 +122,17 @@ public class CreateIndexReq {
             return this;
         }
 
-        public Builder indexParams(List<IndexParam> indexParams) {
+        public CreateIndexReqBuilder indexParams(List<IndexParam> indexParams) {
             this.indexParams = indexParams;
             return this;
         }
 
-        public Builder sync(Boolean sync) {
+        public CreateIndexReqBuilder sync(Boolean sync) {
             this.sync = sync;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public CreateIndexReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }

@@ -21,14 +21,14 @@ package io.milvus.v2.service.cdc.response;
 
 public class UpdateReplicateConfigurationResp {
 
-    private UpdateReplicateConfigurationResp(Builder builder) {
+    private UpdateReplicateConfigurationResp(UpdateReplicateConfigurationRespBuilder builder) {
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static UpdateReplicateConfigurationRespBuilder builder() {
+        return new UpdateReplicateConfigurationRespBuilder();
     }
 
-    public static class Builder {
+    public static class UpdateReplicateConfigurationRespBuilder {
         public UpdateReplicateConfigurationResp build() {
             return new UpdateReplicateConfigurationResp(this);
         }

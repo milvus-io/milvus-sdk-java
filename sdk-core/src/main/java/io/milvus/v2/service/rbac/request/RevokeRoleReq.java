@@ -19,13 +19,11 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class RevokeRoleReq {
     private String userName;
     private String roleName;
 
-    private RevokeRoleReq(Builder builder) {
+    private RevokeRoleReq(RevokeRoleReqBuilder builder) {
         this.userName = builder.userName;
         this.roleName = builder.roleName;
     }
@@ -47,24 +45,6 @@ public class RevokeRoleReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RevokeRoleReq that = (RevokeRoleReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .append(roleName, that.roleName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userName != null ? userName.hashCode() : 0;
-        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "RevokeRoleReq{" +
                 "userName='" + userName + '\'' +
@@ -72,22 +52,23 @@ public class RevokeRoleReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RevokeRoleReqBuilder builder() {
+        return new RevokeRoleReqBuilder();
     }
 
-    public static class Builder {
+    public static class RevokeRoleReqBuilder {
         private String userName;
         private String roleName;
 
-        private Builder() {}
+        private RevokeRoleReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public RevokeRoleReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
-        public Builder roleName(String roleName) {
+        public RevokeRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }

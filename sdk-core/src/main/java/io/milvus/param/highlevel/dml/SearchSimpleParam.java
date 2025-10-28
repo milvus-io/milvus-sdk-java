@@ -24,7 +24,6 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.dml.SearchParam;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -246,7 +245,6 @@ public class SearchSimpleParam {
 
     /**
      *
-     * Warning: don't use lombok@ToString to annotate this class
      * because large number of vectors will waste time in toString() method.
      *
      */

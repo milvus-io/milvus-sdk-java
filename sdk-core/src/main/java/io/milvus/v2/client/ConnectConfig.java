@@ -19,16 +19,14 @@
 
 package io.milvus.v2.client;
 
-import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
+import io.milvus.common.utils.URLParser;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.net.ssl.SSLContext;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import io.milvus.common.utils.URLParser;
+import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
 
 public class ConnectConfig {
     private String uri;
@@ -57,7 +55,7 @@ public class ConnectConfig {
     private ThreadLocal<String> clientRequestId;
 
     // Constructor for builder
-    private ConnectConfig(Builder builder) {
+    private ConnectConfig(ConnectConfigBuilder builder) {
         if (builder.uri == null) {
             throw new NullPointerException("uri is marked non-null but is null");
         }
@@ -83,8 +81,8 @@ public class ConnectConfig {
         this.clientRequestId = builder.clientRequestId;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ConnectConfigBuilder builder() {
+        return new ConnectConfigBuilder();
     }
 
     // Getters
@@ -284,63 +282,6 @@ public class ConnectConfig {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ConnectConfig that = (ConnectConfig) o;
-
-        return new EqualsBuilder()
-                .append(connectTimeoutMs, that.connectTimeoutMs)
-                .append(keepAliveTimeMs, that.keepAliveTimeMs)
-                .append(keepAliveTimeoutMs, that.keepAliveTimeoutMs)
-                .append(keepAliveWithoutCalls, that.keepAliveWithoutCalls)
-                .append(rpcDeadlineMs, that.rpcDeadlineMs)
-                .append(idleTimeoutMs, that.idleTimeoutMs)
-                .append(uri, that.uri)
-                .append(token, that.token)
-                .append(username, that.username)
-                .append(password, that.password)
-                .append(dbName, that.dbName)
-                .append(clientKeyPath, that.clientKeyPath)
-                .append(clientPemPath, that.clientPemPath)
-                .append(caPemPath, that.caPemPath)
-                .append(serverPemPath, that.serverPemPath)
-                .append(serverName, that.serverName)
-                .append(proxyAddress, that.proxyAddress)
-                .append(secure, that.secure)
-                .append(sslContext, that.sslContext)
-                .append(clientRequestId, that.clientRequestId)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(uri)
-                .append(token)
-                .append(username)
-                .append(password)
-                .append(dbName)
-                .append(connectTimeoutMs)
-                .append(keepAliveTimeMs)
-                .append(keepAliveTimeoutMs)
-                .append(keepAliveWithoutCalls)
-                .append(rpcDeadlineMs)
-                .append(clientKeyPath)
-                .append(clientPemPath)
-                .append(caPemPath)
-                .append(serverPemPath)
-                .append(serverName)
-                .append(proxyAddress)
-                .append(secure)
-                .append(idleTimeoutMs)
-                .append(sslContext)
-                .append(clientRequestId)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ConnectConfig{" +
                 "uri='" + uri + '\'' +
@@ -366,7 +307,7 @@ public class ConnectConfig {
                 '}';
     }
 
-    public static class Builder {
+    public static class ConnectConfigBuilder {
         private String uri;
         private String token;
         private String username;
@@ -388,7 +329,7 @@ public class ConnectConfig {
         private SSLContext sslContext;
         private ThreadLocal<String> clientRequestId;
 
-        public Builder uri(String uri) {
+        public ConnectConfigBuilder uri(String uri) {
             if (uri == null) {
                 throw new NullPointerException("uri is marked non-null but is null");
             }
@@ -396,97 +337,97 @@ public class ConnectConfig {
             return this;
         }
 
-        public Builder token(String token) {
+        public ConnectConfigBuilder token(String token) {
             this.token = token;
             return this;
         }
 
-        public Builder username(String username) {
+        public ConnectConfigBuilder username(String username) {
             this.username = username;
             return this;
         }
 
-        public Builder password(String password) {
+        public ConnectConfigBuilder password(String password) {
             this.password = password;
             return this;
         }
 
-        public Builder dbName(String dbName) {
+        public ConnectConfigBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
-        public Builder connectTimeoutMs(long connectTimeoutMs) {
+        public ConnectConfigBuilder connectTimeoutMs(long connectTimeoutMs) {
             this.connectTimeoutMs = connectTimeoutMs;
             return this;
         }
 
-        public Builder keepAliveTimeMs(long keepAliveTimeMs) {
+        public ConnectConfigBuilder keepAliveTimeMs(long keepAliveTimeMs) {
             this.keepAliveTimeMs = keepAliveTimeMs;
             return this;
         }
 
-        public Builder keepAliveTimeoutMs(long keepAliveTimeoutMs) {
+        public ConnectConfigBuilder keepAliveTimeoutMs(long keepAliveTimeoutMs) {
             this.keepAliveTimeoutMs = keepAliveTimeoutMs;
             return this;
         }
 
-        public Builder keepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
+        public ConnectConfigBuilder keepAliveWithoutCalls(boolean keepAliveWithoutCalls) {
             this.keepAliveWithoutCalls = keepAliveWithoutCalls;
             return this;
         }
 
-        public Builder rpcDeadlineMs(long rpcDeadlineMs) {
+        public ConnectConfigBuilder rpcDeadlineMs(long rpcDeadlineMs) {
             this.rpcDeadlineMs = rpcDeadlineMs;
             return this;
         }
 
-        public Builder clientKeyPath(String clientKeyPath) {
+        public ConnectConfigBuilder clientKeyPath(String clientKeyPath) {
             this.clientKeyPath = clientKeyPath;
             return this;
         }
 
-        public Builder clientPemPath(String clientPemPath) {
+        public ConnectConfigBuilder clientPemPath(String clientPemPath) {
             this.clientPemPath = clientPemPath;
             return this;
         }
 
-        public Builder caPemPath(String caPemPath) {
+        public ConnectConfigBuilder caPemPath(String caPemPath) {
             this.caPemPath = caPemPath;
             return this;
         }
 
-        public Builder serverPemPath(String serverPemPath) {
+        public ConnectConfigBuilder serverPemPath(String serverPemPath) {
             this.serverPemPath = serverPemPath;
             return this;
         }
 
-        public Builder serverName(String serverName) {
+        public ConnectConfigBuilder serverName(String serverName) {
             this.serverName = serverName;
             return this;
         }
 
-        public Builder proxyAddress(String proxyAddress) {
+        public ConnectConfigBuilder proxyAddress(String proxyAddress) {
             this.proxyAddress = proxyAddress;
             return this;
         }
 
-        public Builder secure(Boolean secure) {
+        public ConnectConfigBuilder secure(Boolean secure) {
             this.secure = secure;
             return this;
         }
 
-        public Builder idleTimeoutMs(long idleTimeoutMs) {
+        public ConnectConfigBuilder idleTimeoutMs(long idleTimeoutMs) {
             this.idleTimeoutMs = idleTimeoutMs;
             return this;
         }
 
-        public Builder sslContext(SSLContext sslContext) {
+        public ConnectConfigBuilder sslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
             return this;
         }
 
-        public Builder clientRequestId(ThreadLocal<String> clientRequestId) {
+        public ConnectConfigBuilder clientRequestId(ThreadLocal<String> clientRequestId) {
             this.clientRequestId = clientRequestId;
             return this;
         }

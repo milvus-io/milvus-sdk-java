@@ -19,22 +19,19 @@
 
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.List;
 
 public class ListAliasResp {
     private String collectionName;
     private List<String> alias;
 
-    private ListAliasResp(Builder builder) {
+    private ListAliasResp(ListAliasRespBuilder builder) {
         this.collectionName = builder.collectionName;
         this.alias = builder.alias;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListAliasRespBuilder builder() {
+        return new ListAliasRespBuilder();
     }
 
     public String getCollectionName() {
@@ -54,25 +51,6 @@ public class ListAliasResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ListAliasResp that = (ListAliasResp) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(alias, that.alias)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .append(alias)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ListAliasResp{" +
                 "collectionName='" + collectionName + '\'' +
@@ -80,16 +58,16 @@ public class ListAliasResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class ListAliasRespBuilder {
         private String collectionName;
         private List<String> alias;
 
-        public Builder collectionName(String collectionName) {
+        public ListAliasRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder alias(List<String> alias) {
+        public ListAliasRespBuilder alias(List<String> alias) {
             this.alias = alias;
             return this;
         }

@@ -33,16 +33,18 @@ import io.milvus.param.partition.GetPartitionStatisticsParam;
 import io.milvus.param.partition.ShowPartitionsParam;
 import io.milvus.response.*;
 import org.apache.commons.text.RandomStringGenerator;
-
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -73,11 +75,11 @@ class MilvusMultiClientDockerTest {
                 break;
             }
 
-            try{
+            try {
                 MilvusServiceClient tempClient = new MilvusServiceClient(connectParam);
                 R<CheckHealthResponse> resp = tempClient.checkHealth();
                 if (resp.getData().getIsHealthy()) {
-                    System.out.println(String.format("Milvus service is ready after %d seconds", waitTime));
+                    System.out.printf("Milvus service is ready after %d seconds%n", waitTime);
                     break;
                 }
                 System.out.println("Milvus service is not ready, waiting...");
@@ -87,7 +89,7 @@ class MilvusMultiClientDockerTest {
 
             waitTime += checkInterval;
             if (waitTime > 120) {
-                System.out.println(String.format("Milvus service failed to start within %d seconds", waitTime));
+                System.out.printf("Milvus service failed to start within %d seconds%n", waitTime);
                 break;
             }
         }
@@ -232,7 +234,7 @@ class MilvusMultiClientDockerTest {
                 .build());
 
         DescCollResponseWrapper desc = new DescCollResponseWrapper(response.getData());
-        System.out.println(desc.toString());
+        System.out.println(desc);
 
         // insert data
         int rowCount = 10000;
@@ -313,7 +315,7 @@ class MilvusMultiClientDockerTest {
         assertEquals(R.Status.Success.getCode(), descIndexR.getStatus().intValue());
 
         DescIndexResponseWrapper indexDesc = new DescIndexResponseWrapper(descIndexR.getData());
-        System.out.println("Index description: " + indexDesc.toString());
+        System.out.println("Index description: " + indexDesc);
 
         // load collection
         R<RpcStatus> loadR = client.loadCollection(LoadCollectionParam.newBuilder()
@@ -327,7 +329,7 @@ class MilvusMultiClientDockerTest {
                 .build());
         assertEquals(R.Status.Success.getCode(), showR.getStatus().intValue());
         ShowCollResponseWrapper info = new ShowCollResponseWrapper(showR.getData());
-        System.out.println("Collection info: " + info.toString());
+        System.out.println("Collection info: " + info);
 
         // show partitions
         R<ShowPartitionsResponse> showPartR = client.showPartitions(ShowPartitionsParam.newBuilder()
@@ -336,7 +338,7 @@ class MilvusMultiClientDockerTest {
                 .build());
         assertEquals(R.Status.Success.getCode(), showPartR.getStatus().intValue());
         ShowPartResponseWrapper infoPart = new ShowPartResponseWrapper(showPartR.getData());
-        System.out.println("Partition info: " + infoPart.toString());
+        System.out.println("Partition info: " + infoPart);
 
         // query vectors to verify
         List<Long> queryIDs = new ArrayList<>();
@@ -348,7 +350,7 @@ class MilvusMultiClientDockerTest {
             queryIDs.add(ids.get(i));
             compareWeights.add(weights.get(i));
         }
-        String expr = field1Name + " in " + queryIDs.toString();
+        String expr = field1Name + " in " + queryIDs;
         List<String> outputFields = Arrays.asList(field1Name, field2Name, field3Name, field4Name, field4Name);
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
@@ -685,7 +687,7 @@ class MilvusMultiClientDockerTest {
         ListenableFuture<R<SearchResults>> searchFuture = client.searchAsync(searchParam);
 
         // query async
-        String expr = field1Name + " in " + queryIDs.toString();
+        String expr = field1Name + " in " + queryIDs;
         List<String> outputFields = Arrays.asList(field1Name, field2Name);
         QueryParam queryParam = QueryParam.newBuilder()
                 .withCollectionName(randomCollectionName)
