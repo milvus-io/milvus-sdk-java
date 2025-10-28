@@ -23,22 +23,21 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>getIndexState</code> interface.
  */
-@Getter
-@ToString
 public class GetIndexStateParam {
     private final String databaseName;
     private final String collectionName;
     private final String indexName;
 
-    private GetIndexStateParam(@NonNull Builder builder) {
+    private GetIndexStateParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
@@ -46,6 +45,29 @@ public class GetIndexStateParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "GetIndexStateParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                '}';
     }
 
     /**
@@ -76,7 +98,11 @@ public class GetIndexStateParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +114,11 @@ public class GetIndexStateParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withIndexName(@NonNull String indexName) {
+        public Builder withIndexName(String indexName) {
+            // Replace @NonNull logic with explicit null check
+            if (indexName == null) {
+                throw new IllegalArgumentException("indexName cannot be null");
+            }
             this.indexName = indexName;
             return this;
         }

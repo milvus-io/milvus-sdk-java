@@ -21,25 +21,39 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class SelectUserParam {
 
     private final String userName;
 
     private final boolean includeRoleInfo;
 
-    private SelectUserParam(@NonNull SelectUserParam.Builder builder) {
+    private SelectUserParam(SelectUserParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.userName = builder.userName;
         this.includeRoleInfo = builder.includeRoleInfo;
     }
 
     public static SelectUserParam.Builder newBuilder() {
         return new SelectUserParam.Builder();
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public boolean isIncludeRoleInfo() {
+        return includeRoleInfo;
+    }
+
+    @Override
+    public String toString() {
+        return "SelectUserParam{" +
+                "userName='" + userName + '\'' +
+                ", includeRoleInfo=" + includeRoleInfo +
+                '}';
     }
 
     /**
@@ -58,7 +72,10 @@ public class SelectUserParam {
          * @param userName userName
          * @return <code>Builder</code>
          */
-        public SelectUserParam.Builder withUserName(@NonNull String userName) {
+        public SelectUserParam.Builder withUserName(String userName) {
+            if (userName == null) {
+                throw new IllegalArgumentException("User name cannot be null");
+            }
             this.userName = userName;
             return this;
         }

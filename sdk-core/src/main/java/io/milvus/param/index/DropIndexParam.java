@@ -23,22 +23,25 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Parameters for <code>dropIndex</code> interface.
  */
-@Getter
-@ToString
 public class DropIndexParam {
     private final String databaseName;
     private final String collectionName;
     private final String indexName;
 
-    private DropIndexParam(@NonNull Builder builder) {
+    private DropIndexParam(Builder builder) {
+        if (builder.collectionName == null) {
+            throw new IllegalArgumentException("Collection name cannot be null");
+        }
+        if (builder.indexName == null) {
+            throw new IllegalArgumentException("Index name cannot be null");
+        }
+        
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
@@ -46,6 +49,51 @@ public class DropIndexParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    @Override
+    public String toString() {
+        return "DropIndexParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        DropIndexParam that = (DropIndexParam) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(indexName, that.indexName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
+        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
+        return result;
     }
 
     /**
@@ -76,7 +124,10 @@ public class DropIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("Collection name cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +139,10 @@ public class DropIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withIndexName(@NonNull String indexName) {
+        public Builder withIndexName(String indexName) {
+            if (indexName == null) {
+                throw new IllegalArgumentException("Index name cannot be null");
+            }
             this.indexName = indexName;
             return this;
         }

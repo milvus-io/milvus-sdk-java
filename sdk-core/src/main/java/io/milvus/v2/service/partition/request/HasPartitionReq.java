@@ -19,13 +19,100 @@
 
 package io.milvus.v2.service.partition.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class HasPartitionReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
+
+    private HasPartitionReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        HasPartitionReq that = (HasPartitionReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(partitionName, that.partitionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
+        result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "HasPartitionReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private String collectionName;
+        private String partitionName;
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public HasPartitionReq build() {
+            return new HasPartitionReq(this);
+        }
+    }
 }

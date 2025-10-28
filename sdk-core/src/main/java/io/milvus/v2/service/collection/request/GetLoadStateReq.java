@@ -19,13 +19,102 @@
 
 package io.milvus.v2.service.collection.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Data
-@SuperBuilder
 public class GetLoadStateReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
+
+    private GetLoadStateReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GetLoadStateReq that = (GetLoadStateReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .append(partitionName, that.partitionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(databaseName)
+                .append(collectionName)
+                .append(partitionName)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "GetLoadStateReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private String collectionName;
+        private String partitionName;
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public Builder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public GetLoadStateReq build() {
+            return new GetLoadStateReq(this);
+        }
+    }
 }

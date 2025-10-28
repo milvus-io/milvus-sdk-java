@@ -25,6 +25,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
+import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.exception.MilvusException;
 import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
@@ -49,7 +50,6 @@ import io.milvus.param.role.*;
 import io.milvus.v2.utils.ClientUtils;
 import io.grpc.ProxiedSocketAddress;
 import io.grpc.ProxyDetector;
-import lombok.NonNull;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
@@ -75,7 +75,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private RetryParam retryParam = RetryParam.newBuilder().build();
     private String currentDatabaseName;
 
-    public MilvusServiceClient(@NonNull ConnectParam connectParam) {
+    public MilvusServiceClient(ConnectParam connectParam) {
+        ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
         this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
 
         Metadata metadata = new Metadata();
@@ -417,7 +418,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
      * 3. sdk language type and version
      * 4. the client's local time
      */
-    private R<ConnectResponse> connect(@NonNull ConnectParam connectParam) {
+    private R<ConnectResponse> connect(ConnectParam connectParam) {
+        ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
         ClientInfo info = ClientInfo.newBuilder()
                 .setSdkType("Java")
                 .setSdkVersion(getSDKVersion())
@@ -620,12 +622,14 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     }
 
     @Override
-    public R<GetIndexStateResponse> getIndexState(@NonNull GetIndexStateParam requestParam) {
+    public R<GetIndexStateResponse> getIndexState(GetIndexStateParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         return retry(()-> super.getIndexState(requestParam));
     }
 
     @Override
-    public R<GetIndexBuildProgressResponse> getIndexBuildProgress(@NonNull GetIndexBuildProgressParam requestParam) {
+    public R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam) {
+        ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         return retry(()-> super.getIndexBuildProgress(requestParam));
     }
 

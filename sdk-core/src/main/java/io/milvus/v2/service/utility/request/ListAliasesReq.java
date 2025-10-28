@@ -19,12 +19,81 @@
 
 package io.milvus.v2.service.utility.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Data
-@SuperBuilder
 public class ListAliasesReq {
     private String databaseName;
     private String collectionName;
+
+    private ListAliasesReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.collectionName = builder.collectionName;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ListAliasesReq that = (ListAliasesReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(collectionName, that.collectionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(databaseName)
+                .append(collectionName)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "ListAliasesReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                '}';
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private String collectionName;
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public ListAliasesReq build() {
+            return new ListAliasesReq(this);
+        }
+    }
 }

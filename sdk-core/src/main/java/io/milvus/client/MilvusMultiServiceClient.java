@@ -41,7 +41,6 @@ import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
-import lombok.NonNull;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
@@ -56,7 +55,10 @@ public class MilvusMultiServiceClient implements MilvusClient {
      * Sets connect param for multi milvus clusters.
      * @param multiConnectParam multi server connect param
      */
-    public MilvusMultiServiceClient(@NonNull MultiConnectParam multiConnectParam) {
+    public MilvusMultiServiceClient(MultiConnectParam multiConnectParam) {
+        if (multiConnectParam == null) {
+            throw new IllegalArgumentException("multiConnectParam must not be null");
+        }
 
         List<ServerSetting> serverSettings = multiConnectParam.getHosts().stream()
                 .map(host -> {
@@ -723,4 +725,3 @@ public class MilvusMultiServiceClient implements MilvusClient {
         return R.failed(R.Status.Unknown, "Response is empty.");
     }
 }
-

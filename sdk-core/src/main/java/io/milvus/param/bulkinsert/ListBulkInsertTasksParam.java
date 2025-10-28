@@ -20,24 +20,45 @@
 package io.milvus.param.bulkinsert;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * Parameters for <code>listBulkInsertTasks</code> interface.
  */
-@Getter
-@ToString
 public class ListBulkInsertTasksParam {
     private final String databaseName;
     private final String collectionName;
     private final int limit;
 
-    private ListBulkInsertTasksParam(@NonNull Builder builder) {
+    private ListBulkInsertTasksParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.limit = builder.limit;
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "ListBulkInsertTasksParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", limit=" + limit +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -76,7 +97,10 @@ public class ListBulkInsertTasksParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -88,7 +112,10 @@ public class ListBulkInsertTasksParam {
          * @param limit limit number
          * @return <code>Builder</code>
          */
-        public Builder withLimit(@NonNull Integer limit) {
+        public Builder withLimit(Integer limit) {
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.limit = limit;
             if (this.limit < 0) {
                 this.limit = 0;

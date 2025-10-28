@@ -24,10 +24,6 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +31,7 @@ import java.util.List;
 /**
  * Parameters for <code>query</code> interface.
  */
-@Getter
-@ToString
 public class QueryParam {
-    @Setter
     private String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
@@ -52,7 +45,11 @@ public class QueryParam {
     private final long limit;
     private final boolean ignoreGrowing;
 
-    private QueryParam(@NonNull Builder builder) {
+    private QueryParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -69,6 +66,79 @@ public class QueryParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public List<String> getOutFields() {
+        return outFields;
+    }
+
+    public String getExpr() {
+        return expr;
+    }
+
+    public long getTravelTimestamp() {
+        return travelTimestamp;
+    }
+
+    public long getGuaranteeTimestamp() {
+        return guaranteeTimestamp;
+    }
+
+    public long getGracefulTime() {
+        return gracefulTime;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public long getLimit() {
+        return limit;
+    }
+
+    public boolean isIgnoreGrowing() {
+        return ignoreGrowing;
+    }
+
+    // Setter method to replace @Setter annotation
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "QueryParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionNames=" + partitionNames +
+                ", outFields=" + outFields +
+                ", expr='" + expr + '\'' +
+                ", travelTimestamp=" + travelTimestamp +
+                ", guaranteeTimestamp=" + guaranteeTimestamp +
+                ", gracefulTime=" + gracefulTime +
+                ", consistencyLevel=" + consistencyLevel +
+                ", offset=" + offset +
+                ", limit=" + limit +
+                ", ignoreGrowing=" + ignoreGrowing +
+                '}';
     }
 
     /**
@@ -108,7 +178,11 @@ public class QueryParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -130,7 +204,11 @@ public class QueryParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("partitionNames cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -141,7 +219,11 @@ public class QueryParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }
@@ -154,7 +236,11 @@ public class QueryParam {
          * @param outFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutFields(@NonNull List<String> outFields) {
+        public Builder withOutFields(List<String> outFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outFields == null) {
+                throw new IllegalArgumentException("outFields cannot be null");
+            }
             outFields.forEach(this::addOutField);
             return this;
         }
@@ -165,7 +251,11 @@ public class QueryParam {
          * @param fieldName field name
          * @return <code>Builder</code>
          */
-        public Builder addOutField(@NonNull String fieldName) {
+        public Builder addOutField(String fieldName) {
+            // Replace @NonNull logic with explicit null check
+            if (fieldName == null) {
+                throw new IllegalArgumentException("fieldName cannot be null");
+            }
             if (!this.outFields.contains(fieldName)) {
                 this.outFields.add(fieldName);
             }
@@ -179,7 +269,11 @@ public class QueryParam {
          * @param expr filtering expression
          * @return <code>Builder</code>
          */
-        public Builder withExpr(@NonNull String expr) {
+        public Builder withExpr(String expr) {
+            // Replace @NonNull logic with explicit null check
+            if (expr == null) {
+                throw new IllegalArgumentException("expr cannot be null");
+            }
             this.expr = expr;
             return this;
         }
@@ -191,7 +285,11 @@ public class QueryParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
-        public Builder withOffset(@NonNull Long offset) {
+        public Builder withOffset(Long offset) {
+            // Replace @NonNull logic with explicit null check
+            if (offset == null) {
+                throw new IllegalArgumentException("offset cannot be null");
+            }
             this.offset = offset;
             return this;
         }
@@ -203,7 +301,11 @@ public class QueryParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.limit = limit;
             return this;
         }
@@ -215,7 +317,11 @@ public class QueryParam {
          * @param ignoreGrowing <code>Boolean.TRUE</code> ignore, Boolean.FALSE is not
          * @return <code>Builder</code>
          */
-        public Builder withIgnoreGrowing(@NonNull Boolean ignoreGrowing) {
+        public Builder withIgnoreGrowing(Boolean ignoreGrowing) {
+            // Replace @NonNull logic with explicit null check
+            if (ignoreGrowing == null) {
+                throw new IllegalArgumentException("ignoreGrowing cannot be null");
+            }
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }

@@ -25,8 +25,6 @@ import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 
 import io.milvus.response.basic.RowRecordWrapper;
-import lombok.Getter;
-import lombok.NonNull;
 
 import java.util.*;
 
@@ -36,7 +34,10 @@ import java.util.*;
 public class QueryResultsWrapper extends RowRecordWrapper {
     private final QueryResults results;
 
-    public QueryResultsWrapper(@NonNull QueryResults results) {
+    public QueryResultsWrapper(QueryResults results) {
+        if (results == null) {
+            throw new IllegalArgumentException("QueryResults cannot be null");
+        }
         this.results = results;
     }
 
@@ -47,7 +48,10 @@ public class QueryResultsWrapper extends RowRecordWrapper {
      * @param fieldName field name to get output data
      * @return {@link FieldDataWrapper}
      */
-    public FieldDataWrapper getFieldWrapper(@NonNull String fieldName) throws ParamException {
+    public FieldDataWrapper getFieldWrapper(String fieldName) throws ParamException {
+        if (fieldName == null) {
+            throw new IllegalArgumentException("Field name cannot be null");
+        }
         List<FieldData> fields = results.getFieldsDataList();
         for (FieldData field : fields) {
             if (fieldName.compareTo(field.getFieldName()) == 0) {
@@ -115,11 +119,14 @@ public class QueryResultsWrapper extends RowRecordWrapper {
     /**
      * Internal-use class to wrap response of <code>query</code> interface.
      */
-    @Getter
     public static final class RowRecord {
         Map<String, Object> fieldValues = new HashMap<>();
 
         public RowRecord() {
+        }
+
+        public Map<String, Object> getFieldValues() {
+            return fieldValues;
         }
 
         public boolean put(String keyName, Object obj) {

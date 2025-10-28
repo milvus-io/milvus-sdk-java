@@ -19,11 +19,61 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class DropUserReq {
     private String userName;
+
+    private DropUserReq(Builder builder) {
+        this.userName = builder.userName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DropUserReq that = (DropUserReq) obj;
+        return new EqualsBuilder()
+                .append(userName, that.userName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return userName != null ? userName.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "DropUserReq{" +
+                "userName='" + userName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String userName;
+
+        private Builder() {}
+
+        public Builder userName(String userName) {
+            this.userName = userName;
+            return this;
+        }
+
+        public DropUserReq build() {
+            return new DropUserReq(this);
+        }
+    }
 }

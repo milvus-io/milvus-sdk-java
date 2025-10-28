@@ -22,14 +22,13 @@ package io.milvus.common.resourcegroup;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Getter
 public class ResourceGroupNodeFilter {
     private final Map<String, String> nodeLabels;
 
@@ -37,12 +36,38 @@ public class ResourceGroupNodeFilter {
         this.nodeLabels = builder.nodeLabels;
     }
 
+    /**
+     * Constructor from grpc
+     * @param filter grpc filter object
+     */
+    public ResourceGroupNodeFilter(io.milvus.grpc.ResourceGroupNodeFilter filter) {
+        if (filter == null) {
+            throw new IllegalArgumentException("filter cannot be null");
+        }
+        this.nodeLabels = filter.getNodeLabelsList().stream().collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
 
-    public static final class Builder {
+    /**
+     * Create ResourceGroupNodeFilter from grpc object
+     * @param filter grpc filter object
+     * @return ResourceGroupNodeFilter instance
+     */
+    public static ResourceGroupNodeFilter fromGRPC(io.milvus.grpc.ResourceGroupNodeFilter filter) {
+        return new ResourceGroupNodeFilter(filter);
+    }
+
+    // Getter method to replace @Getter annotation
+    public Map<String, String> getNodeLabels() {
+        return nodeLabels;
+    }
+
+    public static class Builder {
         private Map<String, String> nodeLabels = new HashMap<>();
+        
         private Builder() {
         }
 
@@ -52,7 +77,14 @@ public class ResourceGroupNodeFilter {
          * @param value label value
          * @return <code>Builder</code>
          */
-        public Builder withNodeLabel(@NonNull String key, @NonNull String value) {
+        public Builder withNodeLabel(String key, String value) {
+            // Replace @NonNull logic with explicit null checks
+            if (key == null) {
+                throw new IllegalArgumentException("key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
             this.nodeLabels.put(key, value);
             return this;
         }
@@ -66,19 +98,44 @@ public class ResourceGroupNodeFilter {
      * Transfer to grpc
      * @return io.milvus.grpc.ResourceGroupNodeFilter
      */
-    public @NonNull io.milvus.grpc.ResourceGroupNodeFilter toGRPC() {
+    public io.milvus.grpc.ResourceGroupNodeFilter toGRPC() {
         List<KeyValuePair> pair = ParamUtils.AssembleKvPair(nodeLabels);
-        return io.milvus.grpc.ResourceGroupNodeFilter.newBuilder()
+        io.milvus.grpc.ResourceGroupNodeFilter result = io.milvus.grpc.ResourceGroupNodeFilter.newBuilder()
                 .addAllNodeLabels(pair)
-               .build();
+                .build();
+        
+        // Replace @NonNull logic with explicit null check
+        if (result == null) {
+            throw new IllegalStateException("Failed to create GRPC ResourceGroupNodeFilter");
+        }
+        return result;
     }
 
-    /**
-     * Constructor from grpc
-     * @param filter grpc filter object
-     */
-    public ResourceGroupNodeFilter(io.milvus.grpc.ResourceGroupNodeFilter filter) {
-        this.nodeLabels = filter.getNodeLabelsList().stream().collect(Collectors.toMap(KeyValuePair::getKey, KeyValuePair::getValue));
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ResourceGroupNodeFilter that = (ResourceGroupNodeFilter) obj;
+        return new EqualsBuilder()
+                .append(nodeLabels, that.nodeLabels)
+                .isEquals();
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nodeLabels);
+    }
+
+    @Override
+    public String toString() {
+        return "ResourceGroupNodeFilter{" +
+                "nodeLabels=" + nodeLabels +
+                '}';
+    }
+
 
 }

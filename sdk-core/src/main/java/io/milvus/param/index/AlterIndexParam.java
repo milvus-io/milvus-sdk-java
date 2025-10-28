@@ -22,9 +22,6 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,15 +29,17 @@ import java.util.Map;
 /**
  * Parameters for <code>alterIndex</code> interface.
  */
-@Getter
-@ToString
 public class AlterIndexParam {
     private final String collectionName;
     private final String databaseName;
     private final String indexName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private AlterIndexParam(@NonNull Builder builder) {
+    private AlterIndexParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.indexName = builder.indexName;
@@ -49,6 +48,34 @@ public class AlterIndexParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "AlterIndexParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", indexName='" + indexName + '\'' +
+                ", properties=" + properties +
+                '}';
     }
 
     /**
@@ -61,7 +88,6 @@ public class AlterIndexParam {
 
         private final Map<String, String> properties = new HashMap<>();
 
-
         private Builder() {
         }
 
@@ -71,7 +97,11 @@ public class AlterIndexParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -93,7 +123,11 @@ public class AlterIndexParam {
          * @param indexName index name
          * @return <code>Builder</code>
          */
-        public Builder withIndexName(@NonNull String indexName) {
+        public Builder withIndexName(String indexName) {
+            // Replace @NonNull logic with explicit null check
+            if (indexName == null) {
+                throw new IllegalArgumentException("indexName cannot be null");
+            }
             this.indexName = indexName;
             return this;
         }
@@ -115,7 +149,14 @@ public class AlterIndexParam {
          * @param value the value
          * @return <code>Builder</code>
          */
-        public Builder withProperty(@NonNull String key, @NonNull String value) {
+        public Builder withProperty(String key, String value) {
+            // Replace @NonNull logic with explicit null check
+            if (key == null) {
+                throw new IllegalArgumentException("key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("value cannot be null");
+            }
             this.properties.put(key, value);
             return this;
         }
@@ -132,5 +173,4 @@ public class AlterIndexParam {
             return new AlterIndexParam(this);
         }
     }
-
 }
