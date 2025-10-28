@@ -21,28 +21,53 @@ package io.milvus.param.collection;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
-import java.util.Objects;
 
 /**
  * Parameters for <code>renameCollection</code> interface.
  */
-@Getter
-@ToString
 public class RenameCollectionParam {
     private final String oldDatabaseName;
     private final String newDatabaseName;
     private final String oldCollectionName;
     private final String newCollectionName;
 
-    public RenameCollectionParam(@NonNull Builder builder) {
+    public RenameCollectionParam(Builder builder) {
+        if (builder.oldCollectionName == null) {
+            throw new IllegalArgumentException("oldCollectionName cannot be null");
+        }
+        if (builder.newCollectionName == null) {
+            throw new IllegalArgumentException("newCollectionName cannot be null");
+        }
         this.oldDatabaseName = builder.oldDatabaseName;
         this.newDatabaseName = builder.newDatabaseName;
         this.oldCollectionName = builder.oldCollectionName;
         this.newCollectionName = builder.newCollectionName;
+    }
+
+    public String getOldCollectionName() {
+        return oldCollectionName;
+    }
+
+    public String getNewCollectionName() {
+        return newCollectionName;
+    }
+
+    public String getOldDatabaseName() {
+        return oldDatabaseName;
+    }
+
+    public String getNewDatabaseName() {
+        return newDatabaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "RenameCollectionParam{" +
+                "oldCollectionName='" + oldCollectionName + '\'' +
+                ", newCollectionName='" + newCollectionName + '\'' +
+                ", oldDatabaseName='" + oldDatabaseName + '\'' +
+                ", newDatabaseName='" + newDatabaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -56,31 +81,30 @@ public class RenameCollectionParam {
         private String oldDatabaseName;
         private String newDatabaseName;
         private String oldCollectionName;
-
         private String newCollectionName;
 
         private Builder() {
         }
 
         /**
-         * Sets the old database name. database name can be nil.
+         * Sets the old database name. Database name can be nil.
          *
-         * @param databaseName database name
+         * @param oldDatabaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withOldDatabaseName(String databaseName) {
-            this.oldDatabaseName = databaseName;
+        public Builder withOldDatabaseName(String oldDatabaseName) {
+            this.oldDatabaseName = oldDatabaseName;
             return this;
         }
 
         /**
-         * Sets the old database name. database name can be nil.
+         * Sets the new database name. Database name can be nil.
          *
-         * @param databaseName database name
+         * @param newDatabaseName database name
          * @return <code>Builder</code>
          */
-        public Builder withNewDatabaseName(String databaseName) {
-            this.newDatabaseName = databaseName;
+        public Builder withNewDatabaseName(String newDatabaseName) {
+            this.newDatabaseName = newDatabaseName;
             return this;
         }
 
@@ -90,7 +114,10 @@ public class RenameCollectionParam {
          * @param oldCollectionName old collection name
          * @return <code>Builder</code>
          */
-        public Builder withOldCollectionName(@NonNull String oldCollectionName) {
+        public Builder withOldCollectionName(String oldCollectionName) {
+            if (oldCollectionName == null) {
+                throw new IllegalArgumentException("oldCollectionName cannot be null");
+            }
             this.oldCollectionName = oldCollectionName;
             return this;
         }
@@ -101,7 +128,10 @@ public class RenameCollectionParam {
          * @param newCollectionName new collection name
          * @return <code>Builder</code>
          */
-        public Builder withNewCollectionName(@NonNull String newCollectionName) {
+        public Builder withNewCollectionName(String newCollectionName) {
+            if (newCollectionName == null) {
+                throw new IllegalArgumentException("newCollectionName cannot be null");
+            }
             this.newCollectionName = newCollectionName;
             return this;
         }

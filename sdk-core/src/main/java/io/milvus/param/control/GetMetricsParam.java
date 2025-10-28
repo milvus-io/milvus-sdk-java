@@ -21,25 +21,49 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>getMetric</code> interface.
  */
-@Getter
-@ToString
 public class GetMetricsParam {
     private final String request;
 
-    private GetMetricsParam(@NonNull Builder builder) {
+    private GetMetricsParam(Builder builder) {
         this.request = builder.request;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getRequest() {
+        return request;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GetMetricsParam that = (GetMetricsParam) obj;
+        return new EqualsBuilder()
+                .append(request, that.request)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(request)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "GetMetricsParam{" +
+                "request='" + request + '\'' +
+                '}';
     }
 
     /**
@@ -58,7 +82,10 @@ public class GetMetricsParam {
          * @param request request string in json format
          * @return <code>Builder</code>
          */
-        public Builder withRequest(@NonNull String request) {
+        public Builder withRequest(String request) {
+            if (request == null) {
+                throw new IllegalArgumentException("request cannot be null");
+            }
             this.request = request;
             return this;
         }

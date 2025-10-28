@@ -23,23 +23,37 @@ package io.milvus.param.resourcegroup;
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class CreateResourceGroupParam {
     private final String groupName;
     private final ResourceGroupConfig config;
 
-    private CreateResourceGroupParam(@NonNull Builder builder) {
+    private CreateResourceGroupParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.groupName = builder.groupName;
         this.config = builder.config;
     }
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public ResourceGroupConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateResourceGroupParam{" +
+                "groupName='" + groupName + '\'' +
+                ", config=" + config +
+                '}';
     }
 
     /**
@@ -58,7 +72,10 @@ public class CreateResourceGroupParam {
          * @param groupName group name
          * @return <code>Builder</code>
          */
-        public Builder withGroupName(@NonNull String groupName) {
+        public Builder withGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Group name cannot be null");
+            }
             this.groupName = groupName;
             return this;
         }
@@ -69,7 +86,10 @@ public class CreateResourceGroupParam {
          * @param config configuration of resource group
          * @return <code>Builder</code>
          */
-        public Builder withConfig(@NonNull ResourceGroupConfig config) {
+        public Builder withConfig(ResourceGroupConfig config) {
+            if (config == null) {
+                throw new IllegalArgumentException("Config cannot be null");
+            }
             this.config = config;
             return this;
         }

@@ -19,11 +19,62 @@
 
 package io.milvus.v2.service.vector.response;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-@Data
-@SuperBuilder
 public class DeleteResp {
     private long deleteCnt;
+
+    private DeleteResp(Builder builder) {
+        this.deleteCnt = builder.deleteCnt;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public long getDeleteCnt() {
+        return deleteCnt;
+    }
+
+    public void setDeleteCnt(long deleteCnt) {
+        this.deleteCnt = deleteCnt;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DeleteResp that = (DeleteResp) obj;
+        return new EqualsBuilder()
+                .append(deleteCnt, that.deleteCnt)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(deleteCnt)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteResp{" +
+                "deleteCnt=" + deleteCnt +
+                '}';
+    }
+
+    public static class Builder {
+        private long deleteCnt;
+
+        public Builder deleteCnt(long deleteCnt) {
+            this.deleteCnt = deleteCnt;
+            return this;
+        }
+
+        public DeleteResp build() {
+            return new DeleteResp(this);
+        }
+    }
 }

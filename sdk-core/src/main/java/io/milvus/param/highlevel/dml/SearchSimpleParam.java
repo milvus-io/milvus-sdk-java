@@ -25,9 +25,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.dml.SearchParam;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +35,6 @@ import java.util.Map;
 /**
  * Parameters for <code>search</code> interface.
  */
-@Getter
 public class SearchSimpleParam {
     private final String collectionName;
     private final List<?> vectors;
@@ -51,6 +47,10 @@ public class SearchSimpleParam {
     private final ConsistencyLevelEnum consistencyLevel;
 
     private SearchSimpleParam(@NotNull Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.vectors = builder.vectors;
         this.outputFields = builder.outputFields;
@@ -63,6 +63,39 @@ public class SearchSimpleParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<?> getVectors() {
+        return vectors;
+    }
+
+    public List<String> getOutputFields() {
+        return outputFields;
+    }
+
+    public String getFilter() {
+        return filter;
+    }
+
+    public Long getOffset() {
+        return offset;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
     }
 
     /**
@@ -88,7 +121,11 @@ public class SearchSimpleParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -100,7 +137,11 @@ public class SearchSimpleParam {
          * @return <code>Builder</code>
          * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
-        public Builder withFilter(@NonNull String filter) {
+        public Builder withFilter(String filter) {
+            // Replace @NonNull logic with explicit null check
+            if (filter == null) {
+                throw new IllegalArgumentException("filter cannot be null");
+            }
             this.filter = filter;
             return this;
         }
@@ -111,7 +152,11 @@ public class SearchSimpleParam {
          * @param outputFields output fields
          * @return <code>Builder</code>
          */
-        public Builder withOutputFields(@NonNull List<String> outputFields) {
+        public Builder withOutputFields(List<String> outputFields) {
+            // Replace @NonNull logic with explicit null check
+            if (outputFields == null) {
+                throw new IllegalArgumentException("outputFields cannot be null");
+            }
             this.outputFields.addAll(outputFields);
             return this;
         }
@@ -122,7 +167,11 @@ public class SearchSimpleParam {
          * @param vectors list of target vectors: List of List Float;
          * @return <code>Builder</code>
          */
-        public Builder withVectors(@NonNull List<?> vectors) {
+        public Builder withVectors(List<?> vectors) {
+            // Replace @NonNull logic with explicit null check
+            if (vectors == null) {
+                throw new IllegalArgumentException("vectors cannot be null");
+            }
             this.vectors = vectors;
             return this;
         }
@@ -134,7 +183,11 @@ public class SearchSimpleParam {
          * @param offset a value to define the position
          * @return <code>Builder</code>
          */
-        public Builder withOffset(@NonNull Long offset) {
+        public Builder withOffset(Long offset) {
+            // Replace @NonNull logic with explicit null check
+            if (offset == null) {
+                throw new IllegalArgumentException("offset cannot be null");
+            }
             this.offset = offset;
             return this;
         }
@@ -147,7 +200,11 @@ public class SearchSimpleParam {
          * @param limit a value to define the limit of returned entities
          * @return <code>Builder</code>
          */
-        public Builder withLimit(@NonNull Long limit) {
+        public Builder withLimit(Long limit) {
+            // Replace @NonNull logic with explicit null check
+            if (limit == null) {
+                throw new IllegalArgumentException("limit cannot be null");
+            }
             this.limit = Math.toIntExact(limit);
             return this;
         }

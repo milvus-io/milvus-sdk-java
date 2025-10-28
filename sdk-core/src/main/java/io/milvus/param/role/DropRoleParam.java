@@ -21,22 +21,31 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class DropRoleParam {
 
     private final String roleName;
 
-    private DropRoleParam(@NonNull DropRoleParam.Builder builder) {
+    private DropRoleParam(DropRoleParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.roleName = builder.roleName;
     }
 
     public static DropRoleParam.Builder newBuilder() {
         return new DropRoleParam.Builder();
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    @Override
+    public String toString() {
+        return "DropRoleParam{" +
+                "roleName='" + roleName + '\'' +
+                '}';
     }
 
     /**
@@ -54,7 +63,10 @@ public class DropRoleParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public DropRoleParam.Builder withRoleName(@NonNull String roleName) {
+        public DropRoleParam.Builder withRoleName(String roleName) {
+            if (roleName == null) {
+                throw new IllegalArgumentException("Role name cannot be null");
+            }
             this.roleName = roleName;
             return this;
         }

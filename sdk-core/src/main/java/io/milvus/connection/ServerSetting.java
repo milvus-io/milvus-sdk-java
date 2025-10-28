@@ -24,7 +24,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.ServerAddress;
-import lombok.NonNull;
 
 /**
  * Defined address and Milvus clients for each server.
@@ -33,7 +32,10 @@ public class ServerSetting {
     private final ServerAddress serverAddress;
     private final MilvusClient client;
 
-    public ServerSetting(@NonNull Builder builder) {
+    public ServerSetting(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.serverAddress = builder.serverAddress;
         this.client = builder.milvusClient;
     }
@@ -64,7 +66,10 @@ public class ServerSetting {
          * @param serverAddress ServerAddress host,port/server
          * @return <code>Builder</code>
          */
-        public Builder withHost(@NonNull ServerAddress serverAddress) {
+        public Builder withHost(ServerAddress serverAddress) {
+            if (serverAddress == null) {
+                throw new IllegalArgumentException("serverAddress cannot be null");
+            }
             this.serverAddress = serverAddress;
             return this;
         }

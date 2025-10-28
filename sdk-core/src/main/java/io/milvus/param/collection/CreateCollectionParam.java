@@ -23,9 +23,6 @@ import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,8 +32,6 @@ import java.util.Map;
 /**
  * Parameters for <code>createCollection</code> interface.
  */
-@Getter
-@ToString
 public class CreateCollectionParam {
     private final String collectionName;
     private final int shardsNum;
@@ -49,7 +44,10 @@ public class CreateCollectionParam {
     private final boolean enableDynamicField;
     private final Map<String, String> properties = new HashMap<>();
 
-    private CreateCollectionParam(@NonNull Builder builder) {
+    private CreateCollectionParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.shardsNum = builder.shardsNum;
         this.description = builder.description;
@@ -63,6 +61,59 @@ public class CreateCollectionParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public int getShardsNum() {
+        return shardsNum;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getPartitionsNum() {
+        return partitionsNum;
+    }
+
+    public ConsistencyLevelEnum getConsistencyLevel() {
+        return consistencyLevel;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public List<FieldType> getFieldTypes() {
+        return fieldTypes;
+    }
+
+    public boolean isEnableDynamicField() {
+        return enableDynamicField;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    // toString method
+    @Override
+    public String toString() {
+        return "CreateCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", shardsNum=" + shardsNum +
+                ", description='" + description + '\'' +
+                ", partitionsNum=" + partitionsNum +
+                ", consistencyLevel=" + consistencyLevel +
+                ", databaseName='" + databaseName + '\'' +
+                ", fieldTypes=" + fieldTypes +
+                ", enableDynamicField=" + enableDynamicField +
+                ", properties=" + properties +
+                '}';
     }
 
     /**
@@ -91,7 +142,10 @@ public class CreateCollectionParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("Collection name cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -139,7 +193,10 @@ public class CreateCollectionParam {
          * @param description description of the collection
          * @return <code>Builder</code>
          */
-        public Builder withDescription(@NonNull String description) {
+        public Builder withDescription(String description) {
+            if (description == null) {
+                throw new IllegalArgumentException("Description cannot be null");
+            }
             this.description = description;
             return this;
         }
@@ -153,7 +210,10 @@ public class CreateCollectionParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder withFieldTypes(@NonNull List<FieldType> fieldTypes) {
+        public Builder withFieldTypes(List<FieldType> fieldTypes) {
+            if (fieldTypes == null) {
+                throw new IllegalArgumentException("FieldTypes cannot be null");
+            }
             this.fieldTypes.addAll(fieldTypes);
             return this;
         }
@@ -167,7 +227,10 @@ public class CreateCollectionParam {
          * @return <code>Builder</code>
          */
         @Deprecated
-        public Builder addFieldType(@NonNull FieldType fieldType) {
+        public Builder addFieldType(FieldType fieldType) {
+            if (fieldType == null) {
+                throw new IllegalArgumentException("FieldType cannot be null");
+            }
             this.fieldTypes.add(fieldType);
             return this;
         }
@@ -179,7 +242,10 @@ public class CreateCollectionParam {
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
          */
-        public Builder withConsistencyLevel(@NonNull ConsistencyLevelEnum consistencyLevel) {
+        public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
+            if (consistencyLevel == null) {
+                throw new IllegalArgumentException("ConsistencyLevel cannot be null");
+            }
             this.consistencyLevel = consistencyLevel;
             return this;
         }
@@ -205,7 +271,10 @@ public class CreateCollectionParam {
          * @param schema the schema of collection
          * @return <code>Builder</code>
          */
-        public Builder withSchema(@NonNull CollectionSchemaParam schema) {
+        public Builder withSchema(CollectionSchemaParam schema) {
+            if (schema == null) {
+                throw new IllegalArgumentException("Schema cannot be null");
+            }
             this.schema = schema;
             return this;
         }
@@ -224,7 +293,10 @@ public class CreateCollectionParam {
          * @param resourceGroups resource group names
          * @return <code>Builder</code>
          */
-        public Builder withResourceGroups(@NonNull List<String> resourceGroups) {
+        public Builder withResourceGroups(List<String> resourceGroups) {
+            if (resourceGroups == null) {
+                throw new IllegalArgumentException("ResourceGroups cannot be null");
+            }
             return this.withProperty(Constant.COLLECTION_RESOURCE_GROUPS, String.join(",", resourceGroups));
 
         }
@@ -236,7 +308,13 @@ public class CreateCollectionParam {
          * @param value the value
          * @return <code>Builder</code>
          */
-        public Builder withProperty(@NonNull String key, @NonNull String value) {
+        public Builder withProperty(String key, String value) {
+            if (key == null) {
+                throw new IllegalArgumentException("Key cannot be null");
+            }
+            if (value == null) {
+                throw new IllegalArgumentException("Value cannot be null");
+            }
             this.properties.put(key, value);
             return this;
         }

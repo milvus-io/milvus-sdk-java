@@ -23,24 +23,21 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.ShowType;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Parameters for <code>showCollections</code> interface.
  */
-@Getter
-@ToString
 public class ShowCollectionsParam {
     private final List<String> collectionNames;
     private final ShowType showType;
     private final String databaseName;
 
-    private ShowCollectionsParam(@NonNull Builder builder) {
+    private ShowCollectionsParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.collectionNames = builder.collectionNames;
         this.showType = builder.showType;
         this.databaseName = builder.databaseName;
@@ -48,6 +45,29 @@ public class ShowCollectionsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods
+    public List<String> getCollectionNames() {
+        return collectionNames;
+    }
+
+    public ShowType getShowType() {
+        return showType;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    // toString method
+    @Override
+    public String toString() {
+        return "ShowCollectionsParam{" +
+                "collectionNames=" + collectionNames +
+                ", showType=" + showType +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     /**
@@ -75,7 +95,10 @@ public class ShowCollectionsParam {
          * @param collectionNames list of collection names
          * @return <code>Builder</code>
          */
-        public Builder withCollectionNames(@NonNull List<String> collectionNames) {
+        public Builder withCollectionNames(List<String> collectionNames) {
+            if (collectionNames == null) {
+                throw new IllegalArgumentException("CollectionNames cannot be null");
+            }
             collectionNames.forEach(this::addCollectionName);
             return this;
         }
@@ -97,7 +120,10 @@ public class ShowCollectionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder addCollectionName(@NonNull String collectionName) {
+        public Builder addCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("CollectionName cannot be null");
+            }
             if (!this.collectionNames.contains(collectionName)) {
                 this.collectionNames.add(collectionName);
             }
