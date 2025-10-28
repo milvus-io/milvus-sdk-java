@@ -338,7 +338,7 @@ public class LoadPartitionsParam {
             if (loadFields == null) {
                 throw new IllegalArgumentException("Load fields cannot be null");
             }
-            loadFields.forEach((field)->{
+            loadFields.forEach((field) -> {
                 if (!this.loadFields.contains(field)) {
                     this.loadFields.add(field);
                 }

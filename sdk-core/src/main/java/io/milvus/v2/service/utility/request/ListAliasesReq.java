@@ -19,20 +19,17 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class ListAliasesReq {
     private String databaseName;
     private String collectionName;
 
-    private ListAliasesReq(Builder builder) {
+    private ListAliasesReq(ListAliasesReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListAliasesReqBuilder builder() {
+        return new ListAliasesReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -52,25 +49,6 @@ public class ListAliasesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ListAliasesReq that = (ListAliasesReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "ListAliasesReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -78,16 +56,16 @@ public class ListAliasesReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class ListAliasesReqBuilder {
         private String databaseName;
         private String collectionName;
 
-        public Builder databaseName(String databaseName) {
+        public ListAliasesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public ListAliasesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }

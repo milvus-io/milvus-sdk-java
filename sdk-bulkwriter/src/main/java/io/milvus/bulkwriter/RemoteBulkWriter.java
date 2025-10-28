@@ -47,11 +47,11 @@ import java.util.concurrent.ExecutionException;
 public class RemoteBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(RemoteBulkWriter.class);
 
-    private String remotePath;
-    private StorageConnectParam connectParam;
+    private final String remotePath;
+    private final StorageConnectParam connectParam;
     private StorageClient storageClient;
 
-    private List<List<String>> remoteFiles;
+    private final List<List<String>> remoteFiles;
 
     public RemoteBulkWriter(RemoteBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),

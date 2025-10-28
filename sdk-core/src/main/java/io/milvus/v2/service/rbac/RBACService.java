@@ -167,7 +167,7 @@ public class RBACService extends BaseService {
         return null;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////
     public List<String> listUsers(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         ListCredUsersRequest request = ListCredUsersRequest.newBuilder().build();
         ListCredUsersResponse response = blockingStub.listCredUsers(request);
@@ -184,7 +184,7 @@ public class RBACService extends BaseService {
         SelectUserResponse response = blockingStub.selectUser(selectUserRequest);
         rpcUtils.handleResponse(title, response.getStatus());
         DescribeUserResp describeUserResp = DescribeUserResp.builder()
-                .roles(response.getResultsList().isEmpty()? null : response.getResultsList().get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList()))
+                .roles(response.getResultsList().isEmpty() ? null : response.getResultsList().get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList()))
                 .build();
         return describeUserResp;
     }
@@ -226,7 +226,7 @@ public class RBACService extends BaseService {
         return null;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////////////////////////////
     public Void createPrivilegeGroup(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePrivilegeGroupReq request) {
         String title = String.format("Create privilege group: '%s'", request.getGroupName());
         CreatePrivilegeGroupRequest createPrivilegeGroupRequest = CreatePrivilegeGroupRequest.newBuilder()
@@ -256,9 +256,9 @@ public class RBACService extends BaseService {
         rpcUtils.handleResponse("List privilege groups", response.getStatus());
 
         List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
-        response.getPrivilegeGroupsList().forEach((privilegeGroupInfo)->{
+        response.getPrivilegeGroupsList().forEach((privilegeGroupInfo) -> {
             List<String> privileges = new ArrayList<>();
-            privilegeGroupInfo.getPrivilegesList().forEach((privilege)->{
+            privilegeGroupInfo.getPrivilegesList().forEach((privilege) -> {
                 privileges.add(privilege.getName());
             });
             privilegeGroups.add(PrivilegeGroup.builder().groupName(privilegeGroupInfo.getGroupName()).privileges(privileges).build());

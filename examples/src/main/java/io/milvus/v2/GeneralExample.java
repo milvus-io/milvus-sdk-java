@@ -27,12 +27,7 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.AddFieldReq;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DescribeCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.LoadCollectionReq;
-import io.milvus.v2.service.collection.request.ReleaseCollectionReq;
+import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.partition.request.CreatePartitionReq;
@@ -44,15 +39,11 @@ import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class GeneralExample {
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
@@ -96,8 +87,8 @@ public class GeneralExample {
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
-        Map<String,Object> extraParams = new HashMap<>();
-        extraParams.put("nlist",128);
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("nlist", 128);
         indexes.add(IndexParam.builder()
                 .fieldName(VECTOR_FIELD)
                 .indexName(INDEX_NAME)
@@ -193,8 +184,8 @@ public class GeneralExample {
         }
 
         long begin = System.currentTimeMillis();
-        Map<String,Object> params = new HashMap<>();
-        params.put("nprobe",10);
+        Map<String, Object> params = new HashMap<>();
+        params.put("nprobe", 10);
         SearchResp resp = client.search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .limit(SEARCH_K)

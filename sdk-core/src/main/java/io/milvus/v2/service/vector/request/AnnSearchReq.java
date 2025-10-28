@@ -21,8 +21,6 @@ package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
@@ -38,7 +36,7 @@ public class AnnSearchReq {
     private String params;
     private IndexParam.MetricType metricType;
 
-    private AnnSearchReq(Builder builder) {
+    private AnnSearchReq(AnnSearchReqBuilder builder) {
         this.vectorFieldName = builder.vectorFieldName;
         this.topK = builder.topK;
         this.limit = builder.limit;
@@ -49,8 +47,8 @@ public class AnnSearchReq {
         this.metricType = builder.metricType;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AnnSearchReqBuilder builder() {
+        return new AnnSearchReqBuilder();
     }
 
     public String getVectorFieldName() {
@@ -126,37 +124,6 @@ public class AnnSearchReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AnnSearchReq that = (AnnSearchReq) obj;
-        return new EqualsBuilder()
-                .append(topK, that.topK)
-                .append(limit, that.limit)
-                .append(vectorFieldName, that.vectorFieldName)
-                .append(expr, that.expr)
-                .append(filter, that.filter)
-                .append(vectors, that.vectors)
-                .append(params, that.params)
-                .append(metricType, that.metricType)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(vectorFieldName)
-                .append(topK)
-                .append(limit)
-                .append(expr)
-                .append(filter)
-                .append(vectors)
-                .append(params)
-                .append(metricType)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "AnnSearchReq{" +
                 "vectorFieldName='" + vectorFieldName + '\'' +
@@ -170,7 +137,7 @@ public class AnnSearchReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class AnnSearchReqBuilder {
         private String vectorFieldName;
         private int topK = 0;
         private long limit = 0L;
@@ -180,20 +147,20 @@ public class AnnSearchReq {
         private String params;
         private IndexParam.MetricType metricType = null;
 
-        public Builder vectorFieldName(String vectorFieldName) {
+        public AnnSearchReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
         // topK is deprecated replaced by limit, topK and limit must be the same value
         @Deprecated
-        public Builder topK(int val) {
+        public AnnSearchReqBuilder topK(int val) {
             this.topK = val;
             this.limit = val;
             return this;
         }
 
-        public Builder limit(long val) {
+        public AnnSearchReqBuilder limit(long val) {
             this.topK = (int) val;
             this.limit = val;
             return this;
@@ -201,29 +168,29 @@ public class AnnSearchReq {
 
         // expr is deprecated replaced by filter, expr and filter must be the same value
         @Deprecated
-        public Builder expr(String val) {
+        public AnnSearchReqBuilder expr(String val) {
             this.expr = val;
             this.filter = val;
             return this;
         }
 
-        public Builder filter(String val) {
+        public AnnSearchReqBuilder filter(String val) {
             this.expr = val;
             this.filter = val;
             return this;
         }
 
-        public Builder vectors(List<BaseVector> vectors) {
+        public AnnSearchReqBuilder vectors(List<BaseVector> vectors) {
             this.vectors = vectors;
             return this;
         }
 
-        public Builder params(String params) {
+        public AnnSearchReqBuilder params(String params) {
             this.params = params;
             return this;
         }
 
-        public Builder metricType(IndexParam.MetricType metricType) {
+        public AnnSearchReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
         }

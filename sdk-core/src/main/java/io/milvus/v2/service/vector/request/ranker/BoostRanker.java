@@ -22,6 +22,7 @@ package io.milvus.v2.service.vector.request.ranker;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -30,27 +31,27 @@ import java.util.Map;
 /**
  * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
  * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
- *
+ * <p>
  * Example:
  * BoostRanker boost = BoostRanker.builder()
- *                  .name("xxx_boost")
- *                  .description("boost on xxx")
- *                  .filter("xxx == 2")
- *                  .weight(0.5)
- *                  .randomScoreSeed(123)
- *                  .randomScoreField("id")
- *                  .build()
- *
+ * .name("xxx_boost")
+ * .description("boost on xxx")
+ * .filter("xxx == 2")
+ * .weight(0.5)
+ * .randomScoreSeed(123)
+ * .randomScoreField("id")
+ * .build()
+ * <p>
  * You also can declare a decay ranker by Function
  * CreateCollectionReq.Function boost = CreateCollectionReq.Function.builder()
- *                  .functionType(FunctionType.RERANK)
- *                  .name("xxx_boost")
- *                  .description("boost on xxx")
- *                  .param("reranker", "boost")
- *                  .param("filter", "xxx == 2")
- *                  .param("weight", "0.5")
- *                  .param("random_score", "{\"seed\": 123, \"field\": \"id\"}")
- *                  .build();
+ * .functionType(FunctionType.RERANK)
+ * .name("xxx_boost")
+ * .description("boost on xxx")
+ * .param("reranker", "boost")
+ * .param("filter", "xxx == 2")
+ * .param("weight", "0.5")
+ * .param("random_score", "{\"seed\": 123, \"field\": \"id\"}")
+ * .build();
  */
 public class BoostRanker extends CreateCollectionReq.Function {
     private String filter;
@@ -58,7 +59,7 @@ public class BoostRanker extends CreateCollectionReq.Function {
     private Long randomScoreSeed;
     private String randomScoreField;
 
-    private BoostRanker(Builder builder) {
+    private BoostRanker(BoostRankerBuilder builder) {
         super(builder);
         this.filter = builder.filter;
         this.weight = builder.weight;
@@ -110,36 +111,36 @@ public class BoostRanker extends CreateCollectionReq.Function {
         return randomScoreField;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static BoostRankerBuilder builder() {
+        return new BoostRankerBuilder();
     }
 
-    public static class Builder extends CreateCollectionReq.Function.FunctionBuilder {
+    public static class BoostRankerBuilder extends Function.FunctionBuilder<BoostRankerBuilder> {
         private String filter;
         private Float weight;
         private Long randomScoreSeed;
         private String randomScoreField;
 
-        private Builder() {
+        private BoostRankerBuilder() {
             super();
         }
 
-        public Builder filter(String filter) {
+        public BoostRankerBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
-        public Builder weight(Float weight) {
+        public BoostRankerBuilder weight(Float weight) {
             this.weight = weight;
             return this;
         }
 
-        public Builder randomScoreSeed(Long randomScoreSeed) {
+        public BoostRankerBuilder randomScoreSeed(Long randomScoreSeed) {
             this.randomScoreSeed = randomScoreSeed;
             return this;
         }
 
-        public Builder randomScoreField(String randomScoreField) {
+        public BoostRankerBuilder randomScoreField(String randomScoreField) {
             this.randomScoreField = randomScoreField;
             return this;
         }

@@ -5,7 +5,8 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.resourcegroup.request.*;
-import io.milvus.v2.service.resourcegroup.response.*;
+import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
+import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -20,21 +21,21 @@ public class ResourceGroupService extends BaseService {
 
         ResourceGroupConfig.Builder builder = ResourceGroupConfig.newBuilder();
         builder.setRequests(ResourceGroupLimit.newBuilder()
-                .setNodeNum(config.getRequests().getNodeNum()))
+                        .setNodeNum(config.getRequests().getNodeNum()))
                 .build();
         builder.setLimits(ResourceGroupLimit.newBuilder()
-                .setNodeNum(config.getLimits().getNodeNum()))
+                        .setNodeNum(config.getLimits().getNodeNum()))
                 .build();
 
         for (io.milvus.common.resourcegroup.ResourceGroupTransfer groupFrom : config.getFrom()) {
             builder.addTransferFrom(ResourceGroupTransfer.newBuilder()
-                    .setResourceGroup(groupFrom.getResourceGroupName()))
+                            .setResourceGroup(groupFrom.getResourceGroupName()))
                     .build();
         }
 
         for (io.milvus.common.resourcegroup.ResourceGroupTransfer groupTo : config.getTo()) {
             builder.addTransferTo(ResourceGroupTransfer.newBuilder()
-                    .setResourceGroup(groupTo.getResourceGroupName()))
+                            .setResourceGroup(groupTo.getResourceGroupName()))
                     .build();
         }
 
@@ -47,12 +48,12 @@ public class ResourceGroupService extends BaseService {
 
     private static io.milvus.common.resourcegroup.ResourceGroupConfig convertResourceGroupConfig(ResourceGroupConfig config) {
         List<io.milvus.common.resourcegroup.ResourceGroupTransfer> fromList = new ArrayList<>();
-        config.getTransferFromList().forEach((groupFrom)->{
+        config.getTransferFromList().forEach((groupFrom) -> {
             fromList.add(new io.milvus.common.resourcegroup.ResourceGroupTransfer(groupFrom.getResourceGroup()));
         });
 
         List<io.milvus.common.resourcegroup.ResourceGroupTransfer> toList = new ArrayList<>();
-        config.getTransferToList().forEach((groupTo)->{
+        config.getTransferToList().forEach((groupTo) -> {
             toList.add(new io.milvus.common.resourcegroup.ResourceGroupTransfer(groupTo.getResourceGroup()));
         });
 
@@ -132,7 +133,7 @@ public class ResourceGroupService extends BaseService {
 
         ResourceGroup rgroup = response.getResourceGroup();
         List<io.milvus.common.resourcegroup.NodeInfo> nodes = new ArrayList<>();
-        rgroup.getNodesList().forEach((node)->{
+        rgroup.getNodesList().forEach((node) -> {
             nodes.add(io.milvus.common.resourcegroup.NodeInfo.builder()
                     .nodeId(node.getNodeId())
                     .address(node.getAddress())

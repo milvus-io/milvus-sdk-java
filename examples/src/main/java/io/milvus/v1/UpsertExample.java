@@ -50,6 +50,7 @@ public class UpsertExample {
                 .build();
         client = new MilvusServiceClient(connectParam);
     }
+
     private static final String COLLECTION_NAME = "java_sdk_example_upsert_v1";
     private static final String ID_FIELD = "pk";
     private static final String VECTOR_FIELD = "vector";

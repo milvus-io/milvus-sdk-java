@@ -22,14 +22,7 @@ package io.milvus.v2.utils;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.CollectionSchema;
-import io.milvus.grpc.DataType;
-import io.milvus.grpc.FieldSchema;
-import io.milvus.grpc.FunctionSchema;
-import io.milvus.grpc.FunctionType;
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.grpc.ValueField;
-import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -83,13 +76,13 @@ public class SchemaUtils {
 
         // assemble typeParams for FieldSchema
         Map<String, String> typeParams = fieldSchema.getTypeParams() == null ? new HashMap<>() : fieldSchema.getTypeParams();
-        if(fieldSchema.getDimension() != null){
+        if (fieldSchema.getDimension() != null) {
             typeParams.put("dim", String.valueOf(fieldSchema.getDimension()));
         }
 //        if (Objects.equals(fieldSchema.getName(), partitionKeyField)) {
 //            schema = schema.toBuilder().setIsPartitionKey(Boolean.TRUE).build();
 //        }
-        if(fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null){
+        if (fieldSchema.getDataType() == io.milvus.v2.common.DataType.VarChar && fieldSchema.getMaxLength() != null) {
             typeParams.put("max_length", String.valueOf(fieldSchema.getMaxLength()));
         }
         if (fieldSchema.getDataType() == io.milvus.v2.common.DataType.Array) {
@@ -233,21 +226,23 @@ public class SchemaUtils {
         Map<String, String> typeParams = new HashMap<>();
         for (KeyValuePair keyValuePair : fieldSchema.getTypeParamsList()) {
             try {
-                if(keyValuePair.getKey().equals(VECTOR_DIM)){
+                if (keyValuePair.getKey().equals(VECTOR_DIM)) {
                     schema.setDimension(Integer.parseInt(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals(VARCHAR_MAX_LENGTH)){
+                } else if (keyValuePair.getKey().equals(VARCHAR_MAX_LENGTH)) {
                     schema.setMaxLength(Integer.parseInt(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals(ARRAY_MAX_CAPACITY)){
+                } else if (keyValuePair.getKey().equals(ARRAY_MAX_CAPACITY)) {
                     schema.setMaxCapacity(Integer.parseInt(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals("enable_analyzer")){
+                } else if (keyValuePair.getKey().equals("enable_analyzer")) {
                     schema.setEnableAnalyzer(Boolean.parseBoolean(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals("enable_match")){
+                } else if (keyValuePair.getKey().equals("enable_match")) {
                     schema.setEnableMatch(Boolean.parseBoolean(keyValuePair.getValue()));
-                } else if(keyValuePair.getKey().equals("analyzer_params")){
-                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
+                } else if (keyValuePair.getKey().equals("analyzer_params")) {
+                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {
+                    }.getType());
                     schema.setAnalyzerParams(params);
-                }  else if(keyValuePair.getKey().equals("multi_analyzer_params")){
-                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {}.getType());
+                } else if (keyValuePair.getKey().equals("multi_analyzer_params")) {
+                    Map<String, Object> params = JsonUtils.fromJson(keyValuePair.getValue(), new TypeToken<Map<String, Object>>() {
+                    }.getType());
                     schema.setMultiAnalyzerParams(params);
                 }
             } catch (Exception e) {
@@ -265,7 +260,7 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.StructFieldSchema convertFromGrpcStructFieldSchema(StructArrayFieldSchema structSchema) {
-        CreateCollectionReq.StructFieldSchema.Builder builder =
+        CreateCollectionReq.StructFieldSchema.StructFieldSchemaBuilder builder =
                 CreateCollectionReq.StructFieldSchema.builder()
                         .name(structSchema.getName())
                         .description(structSchema.getDescription());
@@ -296,7 +291,7 @@ public class SchemaUtils {
                 .inputFieldNames(functionSchema.getInputFieldNamesList().stream().collect(Collectors.toList()))
                 .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()));
         List<KeyValuePair> pairs = functionSchema.getParamsList();
-        pairs.forEach((kv)->builder.param(kv.getKey(), kv.getValue()));
+        pairs.forEach((kv) -> builder.param(kv.getKey(), kv.getValue()));
         return builder.build();
     }
 

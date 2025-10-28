@@ -19,23 +19,20 @@
 
 package io.milvus.v1.resourcegroup;
 
+import io.milvus.common.resourcegroup.ResourceGroupConfig;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import io.milvus.common.resourcegroup.ResourceGroupConfig;
-import lombok.Getter;
-import lombok.NonNull;
-
-@Getter
 public class ResourceGroupInfo {
     private String resourceGroupName;
     private ResourceGroupConfig resourceGroupConfig;
     private Set<String> fullDatabases; // databases belong to this resource group completely.
     private Set<String> partialDatabases; // databases belong to this resource group partially, some collection is in
-                                          // other resource group.
+    // other resource group.
     private Set<NodeInfo> nodes; // actual query node in this resource group.
 
-    private ResourceGroupInfo(@NonNull Builder builder) {
+    private ResourceGroupInfo(Builder builder) {
         this.resourceGroupName = builder.resourceGroupName;
         this.resourceGroupConfig = builder.resourceGroupConfig;
         this.fullDatabases = builder.fullDatabases;
@@ -52,6 +49,26 @@ public class ResourceGroupInfo {
         }
     }
 
+    public String getResourceGroupName() {
+        return resourceGroupName;
+    }
+
+    public ResourceGroupConfig getResourceGroupConfig() {
+        return resourceGroupConfig;
+    }
+
+    public Set<String> getFullDatabases() {
+        return fullDatabases;
+    }
+
+    public Set<String> getPartialDatabases() {
+        return partialDatabases;
+    }
+
+    public Set<NodeInfo> getNodes() {
+        return nodes;
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -63,12 +80,12 @@ public class ResourceGroupInfo {
         private Set<String> partialDatabases;
         private Set<NodeInfo> nodes; // actual query node in this resource group.
 
-        public Builder withResourceGroupName(@NonNull String resourceGroupName) {
+        public Builder withResourceGroupName(String resourceGroupName) {
             this.resourceGroupName = resourceGroupName;
             return this;
         }
 
-        public Builder addFullDatabases(@NonNull String databaseName) {
+        public Builder addFullDatabases(String databaseName) {
             if (this.fullDatabases == null) {
                 this.fullDatabases = new HashSet<String>();
             }
@@ -76,7 +93,7 @@ public class ResourceGroupInfo {
             return this;
         }
 
-        public Builder addPartialDatabases(@NonNull String databaseName) {
+        public Builder addPartialDatabases(String databaseName) {
             if (this.partialDatabases == null) {
                 this.partialDatabases = new HashSet<String>();
             }
@@ -84,7 +101,7 @@ public class ResourceGroupInfo {
             return this;
         }
 
-        public Builder addAvailableNode(@NonNull NodeInfo node) {
+        public Builder addAvailableNode(NodeInfo node) {
             if (this.nodes == null) {
                 this.nodes = new HashSet<NodeInfo>();
             }
@@ -92,7 +109,7 @@ public class ResourceGroupInfo {
             return this;
         }
 
-        public Builder withConfig(@NonNull ResourceGroupConfig resourceGroupConfig) {
+        public Builder withConfig(ResourceGroupConfig resourceGroupConfig) {
             this.resourceGroupConfig = resourceGroupConfig;
             return this;
         }
@@ -104,7 +121,7 @@ public class ResourceGroupInfo {
 
     /**
      * Check if this resource group is the default resource group.
-     * 
+     *
      * @return true if this resource group is the default resource group.
      */
     public boolean isDefaultResourceGroup() {
@@ -113,7 +130,7 @@ public class ResourceGroupInfo {
 
     /**
      * Check if this resource group is the recycle resource group.
-     * 
+     *
      * @return true if this resource group is the recycle resource group.
      */
     public boolean isRecycleResourceGroup() {

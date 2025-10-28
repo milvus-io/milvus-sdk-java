@@ -19,15 +19,13 @@
 
 package io.milvus.v2.service.rbac.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class DescribeUserResp {
     private List<String> roles;
 
-    private DescribeUserResp(Builder builder) {
+    private DescribeUserResp(DescribeUserRespBuilder builder) {
         this.roles = builder.roles;
     }
 
@@ -40,37 +38,23 @@ public class DescribeUserResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeUserResp that = (DescribeUserResp) obj;
-        return new EqualsBuilder()
-                .append(roles, that.roles)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return roles != null ? roles.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DescribeUserResp{" +
                 "roles=" + roles +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeUserRespBuilder builder() {
+        return new DescribeUserRespBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeUserRespBuilder {
         private List<String> roles = new ArrayList<>();
 
-        private Builder() {}
+        private DescribeUserRespBuilder() {
+        }
 
-        public Builder roles(List<String> roles) {
+        public DescribeUserRespBuilder roles(List<String> roles) {
             this.roles = roles;
             return this;
         }

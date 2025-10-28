@@ -24,7 +24,7 @@ public class ResourceGroupTransfer {
 
     /**
      * Constructor with resource group name.
-     * 
+     *
      * @param resourceGroupName resource group name
      */
     public ResourceGroupTransfer(String resourceGroupName) {
@@ -36,7 +36,7 @@ public class ResourceGroupTransfer {
 
     /**
      * Constructor from grpc
-     * 
+     *
      * @param grpcTransfer grpc transfer object
      */
     public ResourceGroupTransfer(io.milvus.grpc.ResourceGroupTransfer grpcTransfer) {
@@ -48,7 +48,7 @@ public class ResourceGroupTransfer {
 
     /**
      * Get resource group name
-     * 
+     *
      * @return resource group name
      */
     public String getResourceGroupName() {
@@ -57,14 +57,14 @@ public class ResourceGroupTransfer {
 
     /**
      * Transfer to grpc
-     * 
+     *
      * @return io.milvus.grpc.ResourceGroupTransfer
      */
     public io.milvus.grpc.ResourceGroupTransfer toGRPC() {
         io.milvus.grpc.ResourceGroupTransfer result = io.milvus.grpc.ResourceGroupTransfer.newBuilder()
                 .setResourceGroup(resourceGroupName)
                 .build();
-        
+
         if (result == null) {
             throw new IllegalStateException("Failed to create GRPC ResourceGroupTransfer");
         }

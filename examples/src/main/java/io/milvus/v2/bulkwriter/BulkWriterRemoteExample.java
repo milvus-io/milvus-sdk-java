@@ -47,12 +47,7 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.AddFieldReq;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.HasCollectionReq;
-import io.milvus.v2.service.collection.request.LoadCollectionReq;
-import io.milvus.v2.service.collection.request.RefreshLoadReq;
+import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
@@ -61,13 +56,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -243,13 +232,13 @@ public class BulkWriterRemoteExample {
         for (int i = 0; i < count; ++i) {
             Map<String, Object> row = new HashMap<>();
             // scalar field
-            row.put("id", (long)i);
+            row.put("id", (long) i);
             row.put("bool", i % 5 == 0);
             row.put("int8", i % 128);
             row.put("int16", i % 1000);
             row.put("int32", i % 100000);
-            row.put("float", (float)i / 3);
-            row.put("double", (double)i / 7);
+            row.put("float", (float) i / 3);
+            row.put("double", (double) i / 7);
             row.put("varchar", "varchar_" + i);
             row.put("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
 
@@ -275,7 +264,7 @@ public class BulkWriterRemoteExample {
         {
             Map<String, Object> row = new HashMap<>();
             // scalar field
-            row.put("id", (long)data.size());
+            row.put("id", (long) data.size());
             row.put("bool", null);
             row.put("int8", null);
             row.put("int16", 16);
@@ -312,7 +301,7 @@ public class BulkWriterRemoteExample {
             JsonObject rowObject = new JsonObject();
 
             // scalar field
-            rowObject.addProperty("id", (Number)row.get("id"));
+            rowObject.addProperty("id", (Number) row.get("id"));
             if (row.get("bool") != null) { // nullable value can be missed
                 rowObject.addProperty("bool", (Boolean) row.get("bool"));
             }
@@ -328,7 +317,7 @@ public class BulkWriterRemoteExample {
             // Note: for JSON field, use gson.fromJson() to construct a real JsonObject
             // don't use rowObject.addProperty("json", jsonContent) since the value is treated as a string, not a JsonObject
             Object jsonContent = row.get("json");
-            rowObject.add("json", jsonContent == null ? null : GSON_INSTANCE.fromJson((String)jsonContent, JsonElement.class));
+            rowObject.add("json", jsonContent == null ? null : GSON_INSTANCE.fromJson((String) jsonContent, JsonElement.class));
 
             // vector field
             rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(row.get("float_vector")));
@@ -488,7 +477,7 @@ public class BulkWriterRemoteExample {
 
     /**
      * @param collectionSchema collection info
-     * @param dropIfExist     if collection already exist, will drop firstly and then create again
+     * @param dropIfExist      if collection already exist, will drop firstly and then create again
      */
     private static void createCollection(String collectionName, CreateCollectionReq.CollectionSchema collectionSchema, boolean dropIfExist) {
         System.out.println("\n===================== create collection ====================");
@@ -523,7 +512,7 @@ public class BulkWriterRemoteExample {
                 expectedValue = field.getDefaultValue();
                 // for Int8/Int16 value, the default value is Short type, the returned value is Integer type
                 if (expectedValue instanceof Short) {
-                    expectedValue = ((Short)expectedValue).intValue();
+                    expectedValue = ((Short) expectedValue).intValue();
                 }
             }
         }
@@ -541,19 +530,19 @@ public class BulkWriterRemoteExample {
 
         boolean matched;
         if (fetchedValue instanceof Float) {
-            matched = Math.abs((Float)fetchedValue - (Float)expectedValue) < 1e-4;
+            matched = Math.abs((Float) fetchedValue - (Float) expectedValue) < 1e-4;
         } else if (fetchedValue instanceof Double) {
-            matched = Math.abs((Double)fetchedValue - (Double)expectedValue) < 1e-8;
+            matched = Math.abs((Double) fetchedValue - (Double) expectedValue) < 1e-8;
         } else if (fetchedValue instanceof JsonElement) {
-            JsonElement expectedJson = GSON_INSTANCE.fromJson((String)expectedValue, JsonElement.class);
+            JsonElement expectedJson = GSON_INSTANCE.fromJson((String) expectedValue, JsonElement.class);
             matched = fetchedValue.equals(expectedJson);
         } else if (fetchedValue instanceof ByteBuffer) {
-            byte[] bb = ((ByteBuffer)fetchedValue).array();
-            matched = Arrays.equals(bb, (byte[])expectedValue);
+            byte[] bb = ((ByteBuffer) fetchedValue).array();
+            matched = Arrays.equals(bb, (byte[]) expectedValue);
         } else if (fetchedValue instanceof List) {
             matched = fetchedValue.equals(expectedValue);
             // currently, for array field, null value, the server returns an empty list
-            if (((List<?>) fetchedValue).isEmpty() && expectedValue==null) {
+            if (((List<?>) fetchedValue).isEmpty() && expectedValue == null) {
                 matched = true;
             }
         } else {
@@ -572,7 +561,7 @@ public class BulkWriterRemoteExample {
     private static void verifyImportData(CreateCollectionReq.CollectionSchema collectionSchema, List<Map<String, Object>> rows) {
         createIndex();
 
-        List<Long> QUERY_IDS = Lists.newArrayList(1L, (long)rows.get(rows.size()-1).get("id"));
+        List<Long> QUERY_IDS = Lists.newArrayList(1L, (long) rows.get(rows.size() - 1).get("id"));
         System.out.printf("Load collection and query items %s%n", QUERY_IDS);
         loadCollection();
 
@@ -586,8 +575,8 @@ public class BulkWriterRemoteExample {
         }
         for (QueryResp.QueryResult result : results) {
             Map<String, Object> fetchedEntity = result.getEntity();
-            long id = (Long)fetchedEntity.get("id");
-            Map<String, Object> originalEntity = rows.get((int)id);
+            long id = (Long) fetchedEntity.get("id");
+            Map<String, Object> originalEntity = rows.get((int) id);
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "bool");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "int8");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "int16");
@@ -687,7 +676,7 @@ public class BulkWriterRemoteExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        return (long)countR.getQueryResults().get(0).getEntity().get("count(*)");
+        return (long) countR.getQueryResults().get(0).getEntity().get("count(*)");
     }
 
     private static void exampleCloudImport() {
@@ -762,7 +751,7 @@ public class BulkWriterRemoteExample {
         schemaV2.addField(AddFieldReq.builder()
                 .fieldName("int8")
                 .dataType(DataType.Int8)
-                .defaultValue((short)88)
+                .defaultValue((short) 88)
                 .build());
         schemaV2.addField(AddFieldReq.builder()
                 .fieldName("int16")
@@ -778,7 +767,7 @@ public class BulkWriterRemoteExample {
                 .fieldName("float")
                 .dataType(DataType.Float)
                 .isNullable(true)
-                .defaultValue((float)3.14159)
+                .defaultValue((float) 3.14159)
                 .build());
         schemaV2.addField(AddFieldReq.builder()
                 .fieldName("double")

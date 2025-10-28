@@ -24,8 +24,6 @@ import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,25 +32,25 @@ import java.util.Map;
  * The Model reranking strategy, which transforms Milvus search by integrating advanced language models
  * that understand semantic relationships between queries and documents.
  * Read the doc for more info: https://milvus.io/docs/model-ranker-overview.md
- *
+ * <p>
  * You also can declare a model ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
- *                 .functionType(FunctionType.RERANK)
- *                 .name("semantic_ranker")
- *                 .description("semantic ranker")
- *                 .inputFieldNames(Collections.singletonList("document"))
- *                 .param("reranker", "model")
- *                 .param("provider", "tei")
- *                 .param("queries", "[\"machine learning for time series\"]")
- *                 .param("endpoint", "http://model-service:8080")
- *                 .build();
+ * .functionType(FunctionType.RERANK)
+ * .name("semantic_ranker")
+ * .description("semantic ranker")
+ * .inputFieldNames(Collections.singletonList("document"))
+ * .param("reranker", "model")
+ * .param("provider", "tei")
+ * .param("queries", "[\"machine learning for time series\"]")
+ * .param("endpoint", "http://model-service:8080")
+ * .build();
  */
 public class ModelRanker extends CreateCollectionReq.Function {
     private String provider;
     private List<String> queries;
     private String endpoint;
 
-    private ModelRanker(FunctionBuilder builder) {
+    private ModelRanker(ModelRankerBuilder builder) {
         super(builder);
         this.provider = builder.provider;
         this.queries = builder.queries;
@@ -104,28 +102,6 @@ public class ModelRanker extends CreateCollectionReq.Function {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        if (!super.equals(obj)) return false;
-        ModelRanker that = (ModelRanker) obj;
-        return new EqualsBuilder()
-                .append(provider, that.provider)
-                .append(queries, that.queries)
-                .append(endpoint, that.endpoint)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (provider != null ? provider.hashCode() : 0);
-        result = 31 * result + (queries != null ? queries.hashCode() : 0);
-        result = 31 * result + (endpoint != null ? endpoint.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "ModelRanker{" +
                 "provider='" + provider + '\'' +
@@ -140,74 +116,34 @@ public class ModelRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
-    public static FunctionBuilder builder() {
-        return new FunctionBuilder();
+    public static ModelRankerBuilder builder() {
+        return new ModelRankerBuilder();
     }
 
-    public static class FunctionBuilder extends Function.FunctionBuilder {
+    public static class ModelRankerBuilder extends Function.FunctionBuilder<ModelRankerBuilder> {
         private String provider = "tei";
         private List<String> queries = new ArrayList<>();
         private String endpoint;
 
-        private FunctionBuilder() {}
+        private ModelRankerBuilder() {
+        }
 
-        public FunctionBuilder provider(String provider) {
+        public ModelRankerBuilder provider(String provider) {
             this.provider = provider;
             return this;
         }
 
-        public FunctionBuilder queries(List<String> queries) {
+        public ModelRankerBuilder queries(List<String> queries) {
             this.queries = queries;
             return this;
         }
 
-        public FunctionBuilder endpoint(String endpoint) {
+        public ModelRankerBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
 
         @Override
-        public FunctionBuilder name(String name) {
-            super.name(name);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder description(String description) {
-            super.description(description);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder functionType(io.milvus.common.clientenum.FunctionType functionType) {
-            super.functionType(functionType);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder inputFieldNames(java.util.List<String> inputFieldNames) {
-            super.inputFieldNames(inputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder outputFieldNames(java.util.List<String> outputFieldNames) {
-            super.outputFieldNames(outputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder params(java.util.Map<String, String> params) {
-            super.params(params);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder param(String key, String value) {
-            super.param(key, value);
-            return this;
-        }
-
         public ModelRanker build() {
             return new ModelRanker(this);
         }

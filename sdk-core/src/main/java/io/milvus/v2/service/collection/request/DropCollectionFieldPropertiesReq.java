@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +28,7 @@ public class DropCollectionFieldPropertiesReq {
     private String fieldName;
     private List<String> propertyKeys = new ArrayList<>();
 
-    private DropCollectionFieldPropertiesReq(Builder builder) {
+    private DropCollectionFieldPropertiesReq(DropCollectionFieldPropertiesReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.fieldName = builder.fieldName;
@@ -71,29 +68,6 @@ public class DropCollectionFieldPropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropCollectionFieldPropertiesReq that = (DropCollectionFieldPropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(fieldName, that.fieldName)
-                .append(propertyKeys, that.propertyKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .append(databaseName)
-                .append(fieldName)
-                .append(propertyKeys)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DropCollectionFieldPropertiesReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -103,34 +77,35 @@ public class DropCollectionFieldPropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropCollectionFieldPropertiesReqBuilder builder() {
+        return new DropCollectionFieldPropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropCollectionFieldPropertiesReqBuilder {
         private String collectionName;
         private String databaseName;
         private String fieldName;
         private List<String> propertyKeys = new ArrayList<>();
 
-        private Builder() {}
+        private DropCollectionFieldPropertiesReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public DropCollectionFieldPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public DropCollectionFieldPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder fieldName(String fieldName) {
+        public DropCollectionFieldPropertiesReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder propertyKeys(List<String> propertyKeys) {
+        public DropCollectionFieldPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }

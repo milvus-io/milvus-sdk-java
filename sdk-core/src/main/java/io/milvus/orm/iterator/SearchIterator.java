@@ -44,17 +44,12 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
 
-import static io.milvus.param.Constant.DEFAULT_SEARCH_EXTENSION_RATE;
-import static io.milvus.param.Constant.EF;
-import static io.milvus.param.Constant.MAX_BATCH_SIZE;
-import static io.milvus.param.Constant.MAX_FILTERED_IDS_COUNT_ITERATION;
-import static io.milvus.param.Constant.MAX_TRY_TIME;
-import static io.milvus.param.Constant.NO_CACHE_ID;
-import static io.milvus.param.Constant.RADIUS;
-import static io.milvus.param.Constant.RANGE_FILTER;
-import static io.milvus.param.Constant.UNLIMITED;
+import static io.milvus.param.Constant.*;
 
 public class SearchIterator {
     private static final Logger logger = LoggerFactory.getLogger(SearchIterator.class);
@@ -168,7 +163,8 @@ public class SearchIterator {
         if (null != searchIteratorParam.getParams() && !searchIteratorParam.getParams().isEmpty()) {
             params = new HashMap<>();
         }
-        params = JsonUtils.fromJson(searchIteratorParam.getParams(), new TypeToken<Map<String, Object>>() {}.getType());
+        params = JsonUtils.fromJson(searchIteratorParam.getParams(), new TypeToken<Map<String, Object>>() {
+        }.getType());
     }
 
     private void checkForSpecialIndexParam() {
@@ -300,7 +296,7 @@ public class SearchIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        SearchResults response = rpcUtils.retry(()->blockingStub.search(builder.build()));
+        SearchResults response = rpcUtils.retry(() -> blockingStub.search(builder.build()));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
@@ -399,8 +395,8 @@ public class SearchIterator {
             throw new ParamException(msg);
         }
 
-        List<QueryResultsWrapper.RowRecord> retPageRes = cachedPage.subList(0, (int)count);
-        List<QueryResultsWrapper.RowRecord> leftCachePage = cachedPage.subList((int)count, cachedPage.size());
+        List<QueryResultsWrapper.RowRecord> retPageRes = cachedPage.subList(0, (int) count);
+        List<QueryResultsWrapper.RowRecord> leftCachePage = cachedPage.subList((int) count, cachedPage.size());
 
         iteratorCache.cache(cacheId, leftCachePage);
         return retPageRes;
@@ -448,7 +444,8 @@ public class SearchIterator {
         // here we make a new object nextParams, to ensure is it a deep copy, we convert it to JSON string and
         // convert back to a Map<String, Object>.
         Map<String, Object> nextParams = JsonUtils.fromJson(JsonUtils.toJson(params),
-                new TypeToken<Map<String, Object>>() {}.getType());
+                new TypeToken<Map<String, Object>>() {
+                }.getType());
 
         if (metricsPositiveRelated(metricType)) {
             float nextRadius = tailBand + width * coefficient;

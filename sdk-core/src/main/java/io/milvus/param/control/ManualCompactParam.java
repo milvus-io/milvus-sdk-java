@@ -21,8 +21,6 @@ package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>manualCompact</code> interface.
@@ -42,23 +40,6 @@ public class ManualCompactParam {
 
     public String getCollectionName() {
         return collectionName;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ManualCompactParam that = (ManualCompactParam) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .toHashCode();
     }
 
     @Override

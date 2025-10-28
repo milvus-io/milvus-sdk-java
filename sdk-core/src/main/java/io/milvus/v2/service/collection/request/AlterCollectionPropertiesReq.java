@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +27,7 @@ public class AlterCollectionPropertiesReq {
     private String databaseName;
     private final Map<String, String> properties = new HashMap<>();
 
-    private AlterCollectionPropertiesReq(Builder builder) {
+    private AlterCollectionPropertiesReq(AlterCollectionPropertiesReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         if (builder.properties != null) {
@@ -59,27 +56,6 @@ public class AlterCollectionPropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterCollectionPropertiesReq that = (AlterCollectionPropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .append(databaseName)
-                .append(properties)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "AlterCollectionPropertiesReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -88,33 +64,34 @@ public class AlterCollectionPropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterCollectionPropertiesReqBuilder builder() {
+        return new AlterCollectionPropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class AlterCollectionPropertiesReqBuilder {
         private String collectionName;
         private String databaseName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private AlterCollectionPropertiesReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public AlterCollectionPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public AlterCollectionPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public AlterCollectionPropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
-        public Builder property(String key, String value) {
+        public AlterCollectionPropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
             }

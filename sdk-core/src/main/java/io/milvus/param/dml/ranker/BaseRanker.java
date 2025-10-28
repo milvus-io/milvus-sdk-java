@@ -19,7 +19,6 @@
 
 package io.milvus.param.dml.ranker;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public abstract class BaseRanker {

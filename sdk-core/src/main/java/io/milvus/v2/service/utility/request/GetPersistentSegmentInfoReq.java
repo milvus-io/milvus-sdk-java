@@ -1,19 +1,16 @@
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class GetPersistentSegmentInfoReq {
     private String databaseName;
     private String collectionName;
 
-    private GetPersistentSegmentInfoReq(Builder builder) {
+    private GetPersistentSegmentInfoReq(GetPersistentSegmentInfoReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetPersistentSegmentInfoReqBuilder builder() {
+        return new GetPersistentSegmentInfoReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -33,25 +30,6 @@ public class GetPersistentSegmentInfoReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetPersistentSegmentInfoReq that = (GetPersistentSegmentInfoReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetPersistentSegmentInfoReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -59,16 +37,16 @@ public class GetPersistentSegmentInfoReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class GetPersistentSegmentInfoReqBuilder {
         private String databaseName;
         private String collectionName;
 
-        public Builder databaseName(String databaseName) {
+        public GetPersistentSegmentInfoReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GetPersistentSegmentInfoReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }

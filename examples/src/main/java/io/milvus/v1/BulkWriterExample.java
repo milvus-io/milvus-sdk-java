@@ -24,11 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import io.milvus.bulkwriter.BulkWriter;
-import io.milvus.bulkwriter.LocalBulkWriter;
-import io.milvus.bulkwriter.LocalBulkWriterParam;
-import io.milvus.bulkwriter.RemoteBulkWriter;
-import io.milvus.bulkwriter.RemoteBulkWriterParam;
+import io.milvus.bulkwriter.*;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.CloudStorage;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
@@ -50,19 +46,8 @@ import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.GetCollectionStatisticsResponse;
 import io.milvus.grpc.QueryResults;
-import io.milvus.param.ConnectParam;
-import io.milvus.param.IndexType;
-import io.milvus.param.MetricType;
-import io.milvus.param.R;
-import io.milvus.param.RpcStatus;
-import io.milvus.param.collection.CollectionSchemaParam;
-import io.milvus.param.collection.CreateCollectionParam;
-import io.milvus.param.collection.DropCollectionParam;
-import io.milvus.param.collection.FieldType;
-import io.milvus.param.collection.FlushParam;
-import io.milvus.param.collection.GetCollectionStatisticsParam;
-import io.milvus.param.collection.HasCollectionParam;
-import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.*;
+import io.milvus.param.collection.*;
 import io.milvus.param.dml.QueryParam;
 import io.milvus.param.index.CreateIndexParam;
 import io.milvus.response.GetCollStatResponseWrapper;
@@ -74,11 +59,7 @@ import org.apache.http.util.Asserts;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -596,7 +577,7 @@ public class BulkWriterExample {
 
     /**
      * @param collectionSchema collection info
-     * @param dropIfExist     if collection already exist, will drop firstly and then create again
+     * @param dropIfExist      if collection already exist, will drop firstly and then create again
      */
     private void createCollection(String collectionName, CollectionSchemaParam collectionSchema, boolean dropIfExist) {
         System.out.println("\n===================== create collection ====================");

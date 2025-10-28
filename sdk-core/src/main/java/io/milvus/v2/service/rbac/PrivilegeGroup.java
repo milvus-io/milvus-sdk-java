@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.rbac;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class PrivilegeGroup {
     private String groupName;
     private List<String> privileges;
 
-    private PrivilegeGroup(Builder builder) {
+    private PrivilegeGroup(PrivilegeGroupBuilder builder) {
         this.groupName = builder.groupName;
         this.privileges = builder.privileges;
     }
@@ -50,24 +48,6 @@ public class PrivilegeGroup {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        PrivilegeGroup that = (PrivilegeGroup) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .append(privileges, that.privileges)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = groupName != null ? groupName.hashCode() : 0;
-        result = 31 * result + (privileges != null ? privileges.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "PrivilegeGroup{" +
                 "groupName='" + groupName + '\'' +
@@ -75,22 +55,23 @@ public class PrivilegeGroup {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static PrivilegeGroupBuilder builder() {
+        return new PrivilegeGroupBuilder();
     }
 
-    public static class Builder {
+    public static class PrivilegeGroupBuilder {
         private String groupName;
         private List<String> privileges = new ArrayList<>();
 
-        private Builder() {}
+        private PrivilegeGroupBuilder() {
+        }
 
-        public Builder groupName(String groupName) {
+        public PrivilegeGroupBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
-        public Builder privileges(List<String> privileges) {
+        public PrivilegeGroupBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
         }

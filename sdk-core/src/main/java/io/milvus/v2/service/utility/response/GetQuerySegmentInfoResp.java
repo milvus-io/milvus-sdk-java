@@ -1,8 +1,5 @@
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +17,7 @@ public class GetQuerySegmentInfoResp {
         private List<Long> nodeIDs;
         private Boolean isSorted;
 
-        private QuerySegmentInfo(Builder builder) {
+        private QuerySegmentInfo(QuerySegmentInfoBuilder builder) {
             this.segmentID = builder.segmentID;
             this.collectionID = builder.collectionID;
             this.partitionID = builder.partitionID;
@@ -34,8 +31,8 @@ public class GetQuerySegmentInfoResp {
             this.isSorted = builder.isSorted;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static QuerySegmentInfoBuilder builder() {
+            return new QuerySegmentInfoBuilder();
         }
 
         public Long getSegmentID() {
@@ -127,43 +124,6 @@ public class GetQuerySegmentInfoResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            QuerySegmentInfo that = (QuerySegmentInfo) obj;
-            return new EqualsBuilder()
-                    .append(segmentID, that.segmentID)
-                    .append(collectionID, that.collectionID)
-                    .append(partitionID, that.partitionID)
-                    .append(memSize, that.memSize)
-                    .append(numOfRows, that.numOfRows)
-                    .append(indexName, that.indexName)
-                    .append(indexID, that.indexID)
-                    .append(state, that.state)
-                    .append(level, that.level)
-                    .append(nodeIDs, that.nodeIDs)
-                    .append(isSorted, that.isSorted)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(segmentID)
-                    .append(collectionID)
-                    .append(partitionID)
-                    .append(memSize)
-                    .append(numOfRows)
-                    .append(indexName)
-                    .append(indexID)
-                    .append(state)
-                    .append(level)
-                    .append(nodeIDs)
-                    .append(isSorted)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "QuerySegmentInfo{" +
                     "segmentID=" + segmentID +
@@ -180,7 +140,7 @@ public class GetQuerySegmentInfoResp {
                     '}';
         }
 
-        public static class Builder {
+        public static class QuerySegmentInfoBuilder {
             private Long segmentID;
             private Long collectionID;
             private Long partitionID;
@@ -193,57 +153,57 @@ public class GetQuerySegmentInfoResp {
             private List<Long> nodeIDs = new ArrayList<>();
             private Boolean isSorted;
 
-            public Builder segmentID(Long segmentID) {
+            public QuerySegmentInfoBuilder segmentID(Long segmentID) {
                 this.segmentID = segmentID;
                 return this;
             }
 
-            public Builder collectionID(Long collectionID) {
+            public QuerySegmentInfoBuilder collectionID(Long collectionID) {
                 this.collectionID = collectionID;
                 return this;
             }
 
-            public Builder partitionID(Long partitionID) {
+            public QuerySegmentInfoBuilder partitionID(Long partitionID) {
                 this.partitionID = partitionID;
                 return this;
             }
 
-            public Builder memSize(Long memSize) {
+            public QuerySegmentInfoBuilder memSize(Long memSize) {
                 this.memSize = memSize;
                 return this;
             }
 
-            public Builder numOfRows(Long numOfRows) {
+            public QuerySegmentInfoBuilder numOfRows(Long numOfRows) {
                 this.numOfRows = numOfRows;
                 return this;
             }
 
-            public Builder indexName(String indexName) {
+            public QuerySegmentInfoBuilder indexName(String indexName) {
                 this.indexName = indexName;
                 return this;
             }
 
-            public Builder indexID(Long indexID) {
+            public QuerySegmentInfoBuilder indexID(Long indexID) {
                 this.indexID = indexID;
                 return this;
             }
 
-            public Builder state(String state) {
+            public QuerySegmentInfoBuilder state(String state) {
                 this.state = state;
                 return this;
             }
 
-            public Builder level(String level) {
+            public QuerySegmentInfoBuilder level(String level) {
                 this.level = level;
                 return this;
             }
 
-            public Builder nodeIDs(List<Long> nodeIDs) {
+            public QuerySegmentInfoBuilder nodeIDs(List<Long> nodeIDs) {
                 this.nodeIDs = nodeIDs;
                 return this;
             }
 
-            public Builder isSorted(Boolean isSorted) {
+            public QuerySegmentInfoBuilder isSorted(Boolean isSorted) {
                 this.isSorted = isSorted;
                 return this;
             }
@@ -256,12 +216,12 @@ public class GetQuerySegmentInfoResp {
 
     private List<QuerySegmentInfo> segmentInfos;
 
-    private GetQuerySegmentInfoResp(Builder builder) {
+    private GetQuerySegmentInfoResp(GetQuerySegmentInfoRespBuilder builder) {
         this.segmentInfos = builder.segmentInfos;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetQuerySegmentInfoRespBuilder builder() {
+        return new GetQuerySegmentInfoRespBuilder();
     }
 
     public List<QuerySegmentInfo> getSegmentInfos() {
@@ -273,33 +233,16 @@ public class GetQuerySegmentInfoResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetQuerySegmentInfoResp that = (GetQuerySegmentInfoResp) obj;
-        return new EqualsBuilder()
-                .append(segmentInfos, that.segmentInfos)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(segmentInfos)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetQuerySegmentInfoResp{" +
                 "segmentInfos=" + segmentInfos +
                 '}';
     }
 
-    public static class Builder {
+    public static class GetQuerySegmentInfoRespBuilder {
         private List<QuerySegmentInfo> segmentInfos = new ArrayList<>();
 
-        public Builder segmentInfos(List<QuerySegmentInfo> segmentInfos) {
+        public GetQuerySegmentInfoRespBuilder segmentInfos(List<QuerySegmentInfo> segmentInfos) {
             this.segmentInfos = segmentInfos;
             return this;
         }

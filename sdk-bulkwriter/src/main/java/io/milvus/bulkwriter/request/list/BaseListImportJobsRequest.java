@@ -19,18 +19,8 @@
 
 package io.milvus.bulkwriter.request.list;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
 import java.io.Serializable;
 
-
-@Data
-@SuperBuilder(toBuilder = true)
-@AllArgsConstructor
-@NoArgsConstructor
 public class BaseListImportJobsRequest implements Serializable {
     private static final long serialVersionUID = -1890380396466908530L;
     /**
@@ -38,4 +28,51 @@ public class BaseListImportJobsRequest implements Serializable {
      * If you are using Milvus directly, this parameter should be set to your userName:password.
      */
     private String apiKey;
+
+    protected BaseListImportJobsRequest() {
+    }
+
+    protected BaseListImportJobsRequest(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    protected BaseListImportJobsRequest(BaseListImportJobsRequestBuilder<?> builder) {
+        this.apiKey = builder.apiKey;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseListImportJobsRequest{" +
+                "apiKey='" + apiKey + '\'' +
+                '}';
+    }
+
+    public static BaseListImportJobsRequestBuilder<?> builder() {
+        return new BaseListImportJobsRequestBuilder<>();
+    }
+
+    public static class BaseListImportJobsRequestBuilder<T extends BaseListImportJobsRequestBuilder<T>> {
+        private String apiKey = "";
+
+        protected BaseListImportJobsRequestBuilder() {
+            this.apiKey = "";
+        }
+
+        public T apiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return (T) this;
+        }
+
+        public BaseListImportJobsRequest build() {
+            return new BaseListImportJobsRequest(this);
+        }
+    }
 }

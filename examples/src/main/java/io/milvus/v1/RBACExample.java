@@ -37,7 +37,7 @@ public class RBACExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
-                .withAuthorization("root","Milvus")
+                .withAuthorization("root", "Milvus")
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
@@ -118,7 +118,7 @@ public class RBACExample {
 
         // grant privilege to role.
         // grant object is all collections, grant object type is Collection, and the privilege is CreateCollection
-        resp = grantRolePrivilege("role1","Global","*",  "CreateCollection");
+        resp = grantRolePrivilege("role1", "Global", "*", "CreateCollection");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "bind privileges to role fail!");
         System.out.println("grant privilege to role1");
 
@@ -128,7 +128,7 @@ public class RBACExample {
         System.out.println("bind role1 to user");
 
         // revoke privilege from role
-        resp = revokeRolePrivilege("role1","Global","*",  "CreateCollection");
+        resp = revokeRolePrivilege("role1", "Global", "*", "CreateCollection");
         Validate.isTrue(resp.getStatus() == R.success().getStatus(), "revoke privileges to role fail!");
         System.out.println("revoke privilege from role1");
 

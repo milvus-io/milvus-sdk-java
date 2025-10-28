@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.database.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class DropDatabasePropertiesReq {
     private String databaseName;
     private List<String> propertyKeys;
 
-    private DropDatabasePropertiesReq(Builder builder) {
+    private DropDatabasePropertiesReq(DropDatabasePropertiesReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.propertyKeys = builder.propertyKeys;
     }
@@ -50,24 +48,6 @@ public class DropDatabasePropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropDatabasePropertiesReq that = (DropDatabasePropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(propertyKeys, that.propertyKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (propertyKeys != null ? propertyKeys.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DropDatabasePropertiesReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -75,22 +55,23 @@ public class DropDatabasePropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropDatabasePropertiesReqBuilder builder() {
+        return new DropDatabasePropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropDatabasePropertiesReqBuilder {
         private String databaseName;
         private List<String> propertyKeys = new ArrayList<>();
 
-        private Builder() {}
+        private DropDatabasePropertiesReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DropDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder propertyKeys(List<String> propertyKeys) {
+        public DropDatabasePropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }

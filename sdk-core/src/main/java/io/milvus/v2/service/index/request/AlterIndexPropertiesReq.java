@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.index.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +28,7 @@ public class AlterIndexPropertiesReq {
     private String indexName;
     private Map<String, String> properties;
 
-    private AlterIndexPropertiesReq(Builder builder) {
+    private AlterIndexPropertiesReq(AlterIndexPropertiesReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.indexName = builder.indexName;
@@ -70,28 +68,6 @@ public class AlterIndexPropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterIndexPropertiesReq that = (AlterIndexPropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(indexName, that.indexName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = collectionName != null ? collectionName.hashCode() : 0;
-        result = 31 * result + (databaseName != null ? databaseName.hashCode() : 0);
-        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
-        result = 31 * result + (properties != null ? properties.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "AlterIndexPropertiesReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -101,39 +77,40 @@ public class AlterIndexPropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterIndexPropertiesReqBuilder builder() {
+        return new AlterIndexPropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class AlterIndexPropertiesReqBuilder {
         private String collectionName;
         private String databaseName;
         private String indexName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private AlterIndexPropertiesReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public AlterIndexPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public AlterIndexPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder indexName(String indexName) {
+        public AlterIndexPropertiesReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public AlterIndexPropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
-        public Builder property(String key, String value) {
+        public AlterIndexPropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
             }

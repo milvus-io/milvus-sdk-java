@@ -29,6 +29,7 @@ import java.util.Map;
 
 /**
  * Parameters for a collection field.
+ *
  * @see CreateCollectionParam
  */
 public class FieldType {
@@ -36,7 +37,7 @@ public class FieldType {
     private final boolean primaryKey;
     private final String description;
     private final DataType dataType;
-    private final Map<String,String> typeParams;
+    private final Map<String, String> typeParams;
     private final boolean autoID;
     private final boolean partitionKey;
     private final boolean clusteringKey;
@@ -45,7 +46,7 @@ public class FieldType {
     private final boolean nullable;
     private final Object defaultValue;
 
-    private FieldType(Builder builder){
+    private FieldType(Builder builder) {
         if (builder == null) {
             throw new IllegalArgumentException("builder cannot be null");
         }
@@ -167,7 +168,7 @@ public class FieldType {
         private boolean primaryKey = false;
         private String description = "";
         private DataType dataType;
-        private final Map<String,String> typeParams = new HashMap<>();
+        private final Map<String, String> typeParams = new HashMap<>();
         private boolean autoID = false;
         private boolean partitionKey = false;
         private boolean clusteringKey = false;
@@ -256,7 +257,7 @@ public class FieldType {
         /**
          * Adds a parameter pair for the field.
          *
-         * @param key parameter key
+         * @param key   parameter key
          * @param value parameter value
          * @return <code>Builder</code>
          */
@@ -335,7 +336,7 @@ public class FieldType {
          * Enables auto-id function for the field. Note that the auto-id function can only be enabled on primary key field.
          * If auto-id function is enabled, Milvus will automatically generate unique ID for each entity,
          * thus you do not need to provide values for the primary key field when inserting.
-         *
+         * <p>
          * If auto-id is disabled, you need to provide values for the primary key field when inserting.
          *
          * @param autoID true enable auto-id, false disable auto-id
@@ -363,14 +364,14 @@ public class FieldType {
         /**
          * Sets this field is nullable or not.
          * Primary key field, vector fields, Array fields cannot be nullable.
-         *
-         *  1. if the field is nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
-         *     1) if user input JsonNull, this value is replaced by default value
-         *     2) if user input JsonObject, infer this value by type
-         *  2. if the field is not nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
-         *     1) if user input JsonNull, and default value is null, throw error
-         *     2) if user input JsonNull, and default value is not null, this value is replaced by default value
-         *     3) if user input JsonObject, infer this value by type
+         * <p>
+         * 1. if the field is nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
+         * 1) if user input JsonNull, this value is replaced by default value
+         * 2) if user input JsonObject, infer this value by type
+         * 2. if the field is not nullable, user can input JsonNull/JsonObject(for row-based insert), or input null/object(for column-based insert)
+         * 1) if user input JsonNull, and default value is null, throw error
+         * 2) if user input JsonNull, and default value is not null, this value is replaced by default value
+         * 3) if user input JsonObject, infer this value by type
          *
          * @param nullable true is nullable, false is not
          * @return <code>Builder</code>
@@ -393,7 +394,7 @@ public class FieldType {
          * - Double for Double fields
          * - String for Varchar fields
          * - JsonObject for JSON fields
-         *
+         * <p>
          * For JSON field, you can use JsonNull.INSTANCE as default value. For other scalar fields, you can use null as default value.
          *
          * @param obj the default value

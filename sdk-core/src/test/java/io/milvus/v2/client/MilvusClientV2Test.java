@@ -28,11 +28,12 @@ public class MilvusClientV2Test extends BaseTest {
     @Test
     void testMilvusClientV2() {
     }
+
     @Test
     void testUseDatabase() {
         try {
             client_v2.useDatabase("test");
-        }catch (Exception e) {
+        } catch (Exception e) {
             Assertions.assertEquals("Database test not exist", e.getMessage());
         }
 

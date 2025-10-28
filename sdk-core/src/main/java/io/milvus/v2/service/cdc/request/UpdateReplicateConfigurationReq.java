@@ -19,16 +19,14 @@
 
 package io.milvus.v2.service.cdc.request;
 
-import java.util.Objects;
-
 public class UpdateReplicateConfigurationReq {
     private ReplicateConfiguration replicateConfiguration;
 
-    public static Builder builder() {
-        return new Builder();
+    public static UpdateReplicateConfigurationReqBuilder builder() {
+        return new UpdateReplicateConfigurationReqBuilder();
     }
 
-    private UpdateReplicateConfigurationReq(Builder builder) {
+    private UpdateReplicateConfigurationReq(UpdateReplicateConfigurationReqBuilder builder) {
         this.replicateConfiguration = builder.replicateConfiguration;
     }
 
@@ -41,28 +39,16 @@ public class UpdateReplicateConfigurationReq {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        UpdateReplicateConfigurationReq that = (UpdateReplicateConfigurationReq) o;
-        return Objects.equals(replicateConfiguration, that.replicateConfiguration);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(replicateConfiguration);
-    }
-
-    @Override
     public String toString() {
         return "UpdateReplicateConfigurationReq{" +
                 "replicateConfiguration=" + replicateConfiguration +
                 '}';
     }
 
-    public static class Builder {
+    public static class UpdateReplicateConfigurationReqBuilder {
         private ReplicateConfiguration replicateConfiguration;
 
-        public Builder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
+        public UpdateReplicateConfigurationReqBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
             return this;
         }

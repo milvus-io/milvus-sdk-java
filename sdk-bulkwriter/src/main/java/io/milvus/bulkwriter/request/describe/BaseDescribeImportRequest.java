@@ -19,22 +19,61 @@
 
 package io.milvus.bulkwriter.request.describe;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
 import java.io.Serializable;
 
-@Data
-@SuperBuilder(toBuilder = true)
-@AllArgsConstructor
-@NoArgsConstructor
 public class BaseDescribeImportRequest implements Serializable {
     private static final long serialVersionUID = -787626534606813089L;
+
     /**
      * If you are calling the cloud API, this parameter should be set to your API_KEY.
      * If you are using Milvus directly, this parameter should be set to your userName:password.
      */
     private String apiKey;
+
+    public BaseDescribeImportRequest() {
+    }
+
+    public BaseDescribeImportRequest(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    protected BaseDescribeImportRequest(BaseDescribeImportRequestBuilder<?> builder) {
+        this.apiKey = builder.apiKey;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseDescribeImportRequest{" +
+                "apiKey='" + apiKey + '\'' +
+                '}';
+    }
+
+    public static BaseDescribeImportRequestBuilder<?> builder() {
+        return new BaseDescribeImportRequestBuilder<>();
+    }
+
+    public static class BaseDescribeImportRequestBuilder<T extends BaseDescribeImportRequestBuilder<T>> {
+        private String apiKey = "";
+
+        protected BaseDescribeImportRequestBuilder() {
+            this.apiKey = "";
+        }
+
+        public T apiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return (T) this;
+        }
+
+        public BaseDescribeImportRequest build() {
+            return new BaseDescribeImportRequest(this);
+        }
+    }
 }

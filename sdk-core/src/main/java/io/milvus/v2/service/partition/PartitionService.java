@@ -24,7 +24,7 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.partition.request.*;
-import io.milvus.v2.service.partition.response.*;
+import io.milvus.v2.service.partition.response.GetPartitionStatsResp;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;

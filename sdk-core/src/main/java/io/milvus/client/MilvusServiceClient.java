@@ -19,8 +19,8 @@
 
 package io.milvus.client;
 
-import io.grpc.Status;
 import io.grpc.*;
+import io.grpc.Status;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
@@ -32,11 +32,19 @@ import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
-import io.milvus.param.alias.*;
-import io.milvus.param.bulkinsert.*;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
@@ -48,22 +56,17 @@ import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
 import io.milvus.v2.utils.ClientUtils;
-import io.grpc.ProxiedSocketAddress;
-import io.grpc.ProxyDetector;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.time.LocalDateTime;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import io.grpc.HttpConnectProxiedSocketAddress;
 
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
@@ -93,10 +96,10 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
             @Override
             public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
                 return new ForwardingClientCall
-                    .SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
+                        .SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
                     @Override
                     public void start(ClientCall.Listener<RespT> responseListener, Metadata headers) {
-                        if(connectParam.getClientRequestId() != null && !StringUtils.isEmpty(connectParam.getClientRequestId().get())) {
+                        if (connectParam.getClientRequestId() != null && !StringUtils.isEmpty(connectParam.getClientRequestId().get())) {
                             headers.put(Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER), connectParam.getClientRequestId().get());
                         }
                         super.start(responseListener, headers);
@@ -124,7 +127,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
                     ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
                 }
-                if(connectParam.isSecure()){
+                if (connectParam.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 channel = builder.build();
@@ -144,12 +147,12 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         .keepAliveWithoutCalls(connectParam.isKeepAliveWithoutCalls())
                         .idleTimeout(connectParam.getIdleTimeoutMs(), TimeUnit.MILLISECONDS)
                         .intercept(clientInterceptors);
-                
+
                 // Add proxy configuration if proxy address is set
                 if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
                     ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
-                }     
-                if(connectParam.isSecure()){
+                }
+                if (connectParam.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 if (StringUtils.isNotEmpty(connectParam.getServerName())) {
@@ -169,7 +172,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 if (StringUtils.isNotEmpty(connectParam.getProxyAddress())) {
                     ClientUtils.configureProxy(builder, connectParam.getProxyAddress());
                 }
-                if(connectParam.isSecure()){
+                if (connectParam.isSecure()) {
                     builder.useTransportSecurity();
                 }
                 channel = builder.build();
@@ -187,7 +190,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         // calls a RPC Connect() to the remote server, and sends the client info to the server
         // so that the server knows which client is interacting, especially for accesses log.
         this.timeoutMs = connectParam.getConnectTimeoutMs(); // set this value to connectTimeoutMs to control the retry()
-        R<ConnectResponse> resp = this.retry(()->connect(connectParam));
+        R<ConnectResponse> resp = this.retry(() -> connect(connectParam));
         if (resp.getStatus() != R.Status.Success.getCode()) {
             String msg = "Failed to initialize connection. Error: " + resp.getMessage();
             logError(msg);
@@ -319,7 +322,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
         // method to check timeout
         long begin = System.currentTimeMillis();
-        Callable<Boolean> timeoutChecker = ()->{
+        Callable<Boolean> timeoutChecker = () -> {
             long current = System.currentTimeMillis();
             long cost = (current - begin);
             if (this.timeoutMs > 0 && cost >= this.timeoutMs) {
@@ -340,7 +343,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 Exception e = resp.getException();
                 if (e instanceof StatusRuntimeException) {
                     // for rpc exception, some error cannot be retried
-                    StatusRuntimeException rpcException = (StatusRuntimeException)e;
+                    StatusRuntimeException rpcException = (StatusRuntimeException) e;
                     Status.Code code = rpcException.getStatus().getCode();
                     if (code == Status.DEADLINE_EXCEEDED.getCode()
                             || code == Status.PERMISSION_DENIED.getCode()
@@ -358,7 +361,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                         throw new MilvusException(msg, code.value());
                     }
                 } else if (e instanceof ServerException) {
-                    ServerException serverException = (ServerException)e;
+                    ServerException serverException = (ServerException) e;
                     if (timeoutChecker.call() == Boolean.TRUE) {
                         String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
                                 this.timeoutMs, maxRetryTimes, k, e);
@@ -393,7 +396,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 }
 
                 // reset the next interval value
-                retryIntervalMs = retryIntervalMs*this.retryParam.getBackOffMultiplier();
+                retryIntervalMs = retryIntervalMs * this.retryParam.getBackOffMultiplier();
                 if (retryIntervalMs > this.retryParam.getMaxBackOffMs()) {
                     retryIntervalMs = this.retryParam.getMaxBackOffMs();
                 }
@@ -411,7 +414,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
      * This method is internal used, it calls a RPC Connect() to the remote server,
      * and sends the client info to the server so that the server knows which client is interacting,
      * especially for accesses log.
-     *
+     * <p>
      * The info includes:
      * 1. username(if Authentication is enabled)
      * 2. the client computer's name
@@ -468,17 +471,17 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public R<Boolean> hasCollection(HasCollectionParam requestParam) {
-        return retry(()-> super.hasCollection(requestParam));
+        return retry(() -> super.hasCollection(requestParam));
     }
 
     @Override
     public R<RpcStatus> createDatabase(CreateDatabaseParam requestParam) {
-        return retry(()-> super.createDatabase(requestParam));
+        return retry(() -> super.createDatabase(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropDatabase(DropDatabaseParam requestParam) {
-        return retry(()-> super.dropDatabase(requestParam));
+        return retry(() -> super.dropDatabase(requestParam));
     }
 
     @Override
@@ -488,324 +491,324 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public R<RpcStatus> alterDatabase(AlterDatabaseParam requestParam) {
-        return retry(()-> super.alterDatabase(requestParam));
+        return retry(() -> super.alterDatabase(requestParam));
     }
 
     @Override
     public R<DescribeDatabaseResponse> describeDatabase(DescribeDatabaseParam requestParam) {
-        return retry(()-> super.describeDatabase(requestParam));
+        return retry(() -> super.describeDatabase(requestParam));
     }
 
     @Override
     public R<RpcStatus> createCollection(CreateCollectionParam requestParam) {
-        return retry(()-> super.createCollection(requestParam));
+        return retry(() -> super.createCollection(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropCollection(DropCollectionParam requestParam) {
-        return retry(()-> super.dropCollection(requestParam));
+        return retry(() -> super.dropCollection(requestParam));
     }
 
     @Override
     public R<RpcStatus> loadCollection(LoadCollectionParam requestParam) {
-        return retry(()-> super.loadCollection(requestParam));
+        return retry(() -> super.loadCollection(requestParam));
     }
 
     @Override
     public R<RpcStatus> releaseCollection(ReleaseCollectionParam requestParam) {
-        return retry(()-> super.releaseCollection(requestParam));
+        return retry(() -> super.releaseCollection(requestParam));
     }
 
     @Override
     public R<DescribeCollectionResponse> describeCollection(DescribeCollectionParam requestParam) {
-        return retry(()-> super.describeCollection(requestParam));
+        return retry(() -> super.describeCollection(requestParam));
     }
 
     @Override
     public R<GetCollectionStatisticsResponse> getCollectionStatistics(GetCollectionStatisticsParam requestParam) {
-        return retry(()-> super.getCollectionStatistics(requestParam));
+        return retry(() -> super.getCollectionStatistics(requestParam));
     }
 
     @Override
     public R<RpcStatus> renameCollection(RenameCollectionParam requestParam) {
-        return retry(()-> super.renameCollection(requestParam));
+        return retry(() -> super.renameCollection(requestParam));
     }
 
     @Override
     public R<ShowCollectionsResponse> showCollections(ShowCollectionsParam requestParam) {
-        return retry(()-> super.showCollections(requestParam));
+        return retry(() -> super.showCollections(requestParam));
     }
 
     @Override
     public R<RpcStatus> alterCollection(AlterCollectionParam requestParam) {
-        return retry(()-> super.alterCollection(requestParam));
+        return retry(() -> super.alterCollection(requestParam));
     }
 
     @Override
     public R<FlushResponse> flush(FlushParam requestParam) {
-        return retry(()-> super.flush(requestParam));
+        return retry(() -> super.flush(requestParam));
     }
 
     @Override
     public R<FlushAllResponse> flushAll(boolean syncFlushAll, long syncFlushAllWaitingInterval, long syncFlushAllTimeout) {
-        return retry(()-> super.flushAll(syncFlushAll, syncFlushAllWaitingInterval, syncFlushAllTimeout));
+        return retry(() -> super.flushAll(syncFlushAll, syncFlushAllWaitingInterval, syncFlushAllTimeout));
     }
 
     @Override
     public R<RpcStatus> createPartition(CreatePartitionParam requestParam) {
-        return retry(()-> super.createPartition(requestParam));
+        return retry(() -> super.createPartition(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropPartition(DropPartitionParam requestParam) {
-        return retry(()-> super.dropPartition(requestParam));
+        return retry(() -> super.dropPartition(requestParam));
     }
 
     @Override
     public R<Boolean> hasPartition(HasPartitionParam requestParam) {
-        return retry(()-> super.hasPartition(requestParam));
+        return retry(() -> super.hasPartition(requestParam));
     }
 
     @Override
     public R<RpcStatus> loadPartitions(LoadPartitionsParam requestParam) {
-        return retry(()-> super.loadPartitions(requestParam));
+        return retry(() -> super.loadPartitions(requestParam));
     }
 
     @Override
     public R<RpcStatus> releasePartitions(ReleasePartitionsParam requestParam) {
-        return retry(()-> super.releasePartitions(requestParam));
+        return retry(() -> super.releasePartitions(requestParam));
     }
 
     @Override
     public R<GetPartitionStatisticsResponse> getPartitionStatistics(GetPartitionStatisticsParam requestParam) {
-        return retry(()-> super.getPartitionStatistics(requestParam));
+        return retry(() -> super.getPartitionStatistics(requestParam));
     }
 
     @Override
     public R<ShowPartitionsResponse> showPartitions(ShowPartitionsParam requestParam) {
-        return retry(()-> super.showPartitions(requestParam));
+        return retry(() -> super.showPartitions(requestParam));
     }
 
     @Override
     public R<RpcStatus> createAlias(CreateAliasParam requestParam) {
-        return retry(()-> super.createAlias(requestParam));
+        return retry(() -> super.createAlias(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropAlias(DropAliasParam requestParam) {
-        return retry(()-> super.dropAlias(requestParam));
+        return retry(() -> super.dropAlias(requestParam));
     }
 
     @Override
     public R<RpcStatus> alterAlias(AlterAliasParam requestParam) {
-        return retry(()-> super.alterAlias(requestParam));
+        return retry(() -> super.alterAlias(requestParam));
     }
 
     @Override
     public R<ListAliasesResponse> listAliases(ListAliasesParam requestParam) {
-        return retry(()-> super.listAliases(requestParam));
+        return retry(() -> super.listAliases(requestParam));
     }
 
     @Override
     public R<RpcStatus> createIndex(CreateIndexParam requestParam) {
-        return retry(()-> super.createIndex(requestParam));
+        return retry(() -> super.createIndex(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropIndex(DropIndexParam requestParam) {
-        return retry(()-> super.dropIndex(requestParam));
+        return retry(() -> super.dropIndex(requestParam));
     }
 
     @Override
     public R<DescribeIndexResponse> describeIndex(DescribeIndexParam requestParam) {
-        return retry(()-> super.describeIndex(requestParam));
+        return retry(() -> super.describeIndex(requestParam));
     }
 
     @Override
     public R<GetIndexStateResponse> getIndexState(GetIndexStateParam requestParam) {
         ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
-        return retry(()-> super.getIndexState(requestParam));
+        return retry(() -> super.getIndexState(requestParam));
     }
 
     @Override
     public R<GetIndexBuildProgressResponse> getIndexBuildProgress(GetIndexBuildProgressParam requestParam) {
         ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
-        return retry(()-> super.getIndexBuildProgress(requestParam));
+        return retry(() -> super.getIndexBuildProgress(requestParam));
     }
 
     @Override
     public R<MutationResult> insert(InsertParam requestParam) {
-        return retry(()-> super.insert(requestParam));
+        return retry(() -> super.insert(requestParam));
     }
 
     @Override
     public R<MutationResult> upsert(UpsertParam requestParam) {
-        return retry(()-> super.upsert(requestParam));
+        return retry(() -> super.upsert(requestParam));
     }
 
     @Override
     public R<MutationResult> delete(DeleteParam requestParam) {
-        return retry(()-> super.delete(requestParam));
+        return retry(() -> super.delete(requestParam));
     }
 
     @Override
     public R<SearchResults> search(SearchParam requestParam) {
-        return retry(()-> super.search(requestParam));
+        return retry(() -> super.search(requestParam));
     }
 
     @Override
     public R<SearchResults> hybridSearch(HybridSearchParam requestParam) {
-        return retry(()-> super.hybridSearch(requestParam));
+        return retry(() -> super.hybridSearch(requestParam));
     }
 
     @Override
     public R<QueryResults> query(QueryParam requestParam) {
-        return retry(()-> super.query(requestParam));
+        return retry(() -> super.query(requestParam));
     }
 
     @Override
     public R<GetMetricsResponse> getMetrics(GetMetricsParam requestParam) {
-        return retry(()-> super.getMetrics(requestParam));
+        return retry(() -> super.getMetrics(requestParam));
     }
 
     @Override
     public R<GetFlushStateResponse> getFlushState(GetFlushStateParam requestParam) {
-        return retry(()-> super.getFlushState(requestParam));
+        return retry(() -> super.getFlushState(requestParam));
     }
 
     @Override
     public R<GetFlushAllStateResponse> getFlushAllState(GetFlushAllStateParam requestParam) {
-        return retry(()-> super.getFlushAllState(requestParam));
+        return retry(() -> super.getFlushAllState(requestParam));
     }
 
     @Override
     public R<GetPersistentSegmentInfoResponse> getPersistentSegmentInfo(GetPersistentSegmentInfoParam requestParam) {
-        return retry(()-> super.getPersistentSegmentInfo(requestParam));
+        return retry(() -> super.getPersistentSegmentInfo(requestParam));
     }
 
     @Override
     public R<GetQuerySegmentInfoResponse> getQuerySegmentInfo(GetQuerySegmentInfoParam requestParam) {
-        return retry(()-> super.getQuerySegmentInfo(requestParam));
+        return retry(() -> super.getQuerySegmentInfo(requestParam));
     }
 
     @Override
     public R<GetReplicasResponse> getReplicas(GetReplicasParam requestParam) {
-        return retry(()-> super.getReplicas(requestParam));
+        return retry(() -> super.getReplicas(requestParam));
     }
 
     @Override
     public R<RpcStatus> loadBalance(LoadBalanceParam requestParam) {
-        return retry(()-> super.loadBalance(requestParam));
+        return retry(() -> super.loadBalance(requestParam));
     }
 
     @Override
     public R<GetCompactionStateResponse> getCompactionState(GetCompactionStateParam requestParam) {
-        return retry(()-> super.getCompactionState(requestParam));
+        return retry(() -> super.getCompactionState(requestParam));
     }
 
     @Override
     public R<ManualCompactionResponse> manualCompact(ManualCompactParam requestParam) {
-        return retry(()-> super.manualCompact(requestParam));
+        return retry(() -> super.manualCompact(requestParam));
     }
 
     @Override
     public R<GetCompactionPlansResponse> getCompactionStateWithPlans(GetCompactionPlansParam requestParam) {
-        return retry(()-> super.getCompactionStateWithPlans(requestParam));
+        return retry(() -> super.getCompactionStateWithPlans(requestParam));
     }
 
     @Override
     public R<RpcStatus> createCredential(CreateCredentialParam requestParam) {
-        return retry(()-> super.createCredential(requestParam));
+        return retry(() -> super.createCredential(requestParam));
     }
 
     @Override
     public R<RpcStatus> updateCredential(UpdateCredentialParam requestParam) {
-        return retry(()-> super.updateCredential(requestParam));
+        return retry(() -> super.updateCredential(requestParam));
     }
 
     @Override
     public R<RpcStatus> deleteCredential(DeleteCredentialParam requestParam) {
-        return retry(()-> super.deleteCredential(requestParam));
+        return retry(() -> super.deleteCredential(requestParam));
     }
 
     @Override
     public R<ListCredUsersResponse> listCredUsers(ListCredUsersParam requestParam) {
-        return retry(()-> super.listCredUsers(requestParam));
+        return retry(() -> super.listCredUsers(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> createRole(CreateRoleParam requestParam) {
-        return retry(()-> super.createRole(requestParam));
+        return retry(() -> super.createRole(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> dropRole(DropRoleParam requestParam) {
-        return retry(()-> super.dropRole(requestParam));
+        return retry(() -> super.dropRole(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> addUserToRole(AddUserToRoleParam requestParam) {
-        return retry(()-> super.addUserToRole(requestParam));
+        return retry(() -> super.addUserToRole(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> removeUserFromRole(RemoveUserFromRoleParam requestParam) {
-        return retry(()-> super.removeUserFromRole(requestParam));
+        return retry(() -> super.removeUserFromRole(requestParam));
     }
 
 
     @Override
     public R<SelectRoleResponse> selectRole(SelectRoleParam requestParam) {
-        return retry(()-> super.selectRole(requestParam));
+        return retry(() -> super.selectRole(requestParam));
     }
 
 
     @Override
     public R<SelectUserResponse> selectUser(SelectUserParam requestParam) {
-        return retry(()-> super.selectUser(requestParam));
+        return retry(() -> super.selectUser(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> grantRolePrivilege(GrantRolePrivilegeParam requestParam) {
-        return retry(()-> super.grantRolePrivilege(requestParam));
+        return retry(() -> super.grantRolePrivilege(requestParam));
     }
 
 
     @Override
     public R<RpcStatus> revokeRolePrivilege(RevokeRolePrivilegeParam requestParam) {
-        return retry(()-> super.revokeRolePrivilege(requestParam));
+        return retry(() -> super.revokeRolePrivilege(requestParam));
     }
 
 
     @Override
     public R<SelectGrantResponse> selectGrantForRole(SelectGrantForRoleParam requestParam) {
-        return retry(()-> super.selectGrantForRole(requestParam));
+        return retry(() -> super.selectGrantForRole(requestParam));
     }
 
 
     @Override
     public R<SelectGrantResponse> selectGrantForRoleAndObject(SelectGrantForRoleAndObjectParam requestParam) {
-        return retry(()-> super.selectGrantForRoleAndObject(requestParam));
+        return retry(() -> super.selectGrantForRoleAndObject(requestParam));
     }
 
     @Override
     public R<ImportResponse> bulkInsert(BulkInsertParam requestParam) {
-        return retry(()-> super.bulkInsert(requestParam));
+        return retry(() -> super.bulkInsert(requestParam));
     }
 
     @Override
     public R<GetImportStateResponse> getBulkInsertState(GetBulkInsertStateParam requestParam) {
-        return retry(()-> super.getBulkInsertState(requestParam));
+        return retry(() -> super.getBulkInsertState(requestParam));
     }
 
     @Override
     public R<ListImportTasksResponse> listBulkInsertTasks(ListBulkInsertTasksParam requestParam) {
-        return retry(()-> super.listBulkInsertTasks(requestParam));
+        return retry(() -> super.listBulkInsertTasks(requestParam));
     }
 
     @Override
@@ -820,82 +823,82 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public R<GetLoadingProgressResponse> getLoadingProgress(GetLoadingProgressParam requestParam) {
-        return retry(()-> super.getLoadingProgress(requestParam));
+        return retry(() -> super.getLoadingProgress(requestParam));
     }
 
     @Override
     public R<GetLoadStateResponse> getLoadState(GetLoadStateParam requestParam) {
-        return retry(()-> super.getLoadState(requestParam));
+        return retry(() -> super.getLoadState(requestParam));
     }
 
     @Override
     public R<RpcStatus> createResourceGroup(CreateResourceGroupParam requestParam) {
-        return retry(()-> super.createResourceGroup(requestParam));
+        return retry(() -> super.createResourceGroup(requestParam));
     }
 
     @Override
     public R<RpcStatus> dropResourceGroup(DropResourceGroupParam requestParam) {
-        return retry(()-> super.dropResourceGroup(requestParam));
+        return retry(() -> super.dropResourceGroup(requestParam));
     }
 
     @Override
     public R<ListResourceGroupsResponse> listResourceGroups(ListResourceGroupsParam requestParam) {
-        return retry(()-> super.listResourceGroups(requestParam));
+        return retry(() -> super.listResourceGroups(requestParam));
     }
 
     @Override
     public R<DescribeResourceGroupResponse> describeResourceGroup(DescribeResourceGroupParam requestParam) {
-        return retry(()-> super.describeResourceGroup(requestParam));
+        return retry(() -> super.describeResourceGroup(requestParam));
     }
 
     @Override
     public R<RpcStatus> transferNode(TransferNodeParam requestParam) {
-        return retry(()-> super.transferNode(requestParam));
+        return retry(() -> super.transferNode(requestParam));
     }
 
     @Override
     public R<RpcStatus> transferReplica(TransferReplicaParam requestParam) {
-        return retry(()-> super.transferReplica(requestParam));
+        return retry(() -> super.transferReplica(requestParam));
     }
 
     @Override
     public R<RpcStatus> updateResourceGroups(UpdateResourceGroupsParam requestParam) {
-        return retry(()-> super.updateResourceGroups(requestParam));
+        return retry(() -> super.updateResourceGroups(requestParam));
     }
 
     @Override
     public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {
-        return retry(()-> super.createCollection(requestParam));
+        return retry(() -> super.createCollection(requestParam));
     }
 
     @Override
     public R<ListCollectionsResponse> listCollections(ListCollectionsParam requestParam) {
-        return retry(()-> super.listCollections(requestParam));
+        return retry(() -> super.listCollections(requestParam));
     }
 
     @Override
     public R<InsertResponse> insert(InsertRowsParam requestParam) {
-        return retry(()-> super.insert(requestParam));
+        return retry(() -> super.insert(requestParam));
     }
 
     @Override
     public R<DeleteResponse> delete(DeleteIdsParam requestParam) {
-        return retry(()-> super.delete(requestParam));
+        return retry(() -> super.delete(requestParam));
     }
 
     @Override
     public R<GetResponse> get(GetIdsParam requestParam) {
-        return retry(()-> super.get(requestParam));
+        return retry(() -> super.get(requestParam));
     }
 
     @Override
     public R<QueryResponse> query(QuerySimpleParam requestParam) {
-        return retry(()-> super.query(requestParam));
+        return retry(() -> super.query(requestParam));
     }
 
     @Override
     public R<SearchResponse> search(SearchSimpleParam requestParam) {
-        return retry(()-> super.search(requestParam));
+        return retry(() -> super.search(requestParam));
     }
 
     @Override

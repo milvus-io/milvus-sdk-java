@@ -19,22 +19,19 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class AlterAliasReq {
     private String databaseName;
     private String collectionName;
     private String alias;
 
-    private AlterAliasReq(Builder builder) {
+    private AlterAliasReq(AlterAliasReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.alias = builder.alias;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterAliasReqBuilder builder() {
+        return new AlterAliasReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -62,27 +59,6 @@ public class AlterAliasReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterAliasReq that = (AlterAliasReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(alias, that.alias)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(alias)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "AlterAliasReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -91,22 +67,22 @@ public class AlterAliasReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class AlterAliasReqBuilder {
         private String databaseName;
         private String collectionName;
         private String alias;
 
-        public Builder databaseName(String databaseName) {
+        public AlterAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public AlterAliasReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder alias(String alias) {
+        public AlterAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }

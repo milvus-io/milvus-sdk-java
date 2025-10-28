@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +35,7 @@ public class LoadCollectionReq {
     private Boolean skipLoadDynamicField = Boolean.FALSE;
     private List<String> resourceGroups = new ArrayList<>();
 
-    private LoadCollectionReq(Builder builder) {
+    private LoadCollectionReq(LoadCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.numReplicas = builder.numReplicas;
@@ -136,41 +133,6 @@ public class LoadCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        LoadCollectionReq that = (LoadCollectionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(numReplicas, that.numReplicas)
-                .append(async, that.async)
-                .append(sync, that.sync)
-                .append(timeout, that.timeout)
-                .append(refresh, that.refresh)
-                .append(loadFields, that.loadFields)
-                .append(skipLoadDynamicField, that.skipLoadDynamicField)
-                .append(resourceGroups, that.resourceGroups)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(numReplicas)
-                .append(async)
-                .append(sync)
-                .append(timeout)
-                .append(refresh)
-                .append(loadFields)
-                .append(skipLoadDynamicField)
-                .append(resourceGroups)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "LoadCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -186,11 +148,11 @@ public class LoadCollectionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static LoadCollectionReqBuilder builder() {
+        return new LoadCollectionReqBuilder();
     }
 
-    public static class Builder {
+    public static class LoadCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
         private Integer numReplicas = 1;
@@ -202,57 +164,58 @@ public class LoadCollectionReq {
         private Boolean skipLoadDynamicField = Boolean.FALSE;
         private List<String> resourceGroups = new ArrayList<>();
 
-        private Builder() {}
+        private LoadCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public LoadCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public LoadCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder numReplicas(Integer numReplicas) {
+        public LoadCollectionReqBuilder numReplicas(Integer numReplicas) {
             this.numReplicas = numReplicas;
             return this;
         }
 
         @Deprecated
-        public Builder async(Boolean async) {
+        public LoadCollectionReqBuilder async(Boolean async) {
             this.async = async;
             this.sync = !async;
             return this;
         }
 
-        public Builder sync(Boolean sync) {
+        public LoadCollectionReqBuilder sync(Boolean sync) {
             this.sync = sync;
             this.async = !sync;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public LoadCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }
 
-        public Builder refresh(Boolean refresh) {
+        public LoadCollectionReqBuilder refresh(Boolean refresh) {
             this.refresh = refresh;
             return this;
         }
 
-        public Builder loadFields(List<String> loadFields) {
+        public LoadCollectionReqBuilder loadFields(List<String> loadFields) {
             this.loadFields = loadFields;
             return this;
         }
 
-        public Builder skipLoadDynamicField(Boolean skipLoadDynamicField) {
+        public LoadCollectionReqBuilder skipLoadDynamicField(Boolean skipLoadDynamicField) {
             this.skipLoadDynamicField = skipLoadDynamicField;
             return this;
         }
 
-        public Builder resourceGroups(List<String> resourceGroups) {
+        public LoadCollectionReqBuilder resourceGroups(List<String> resourceGroups) {
             this.resourceGroups = resourceGroups;
             return this;
         }

@@ -19,14 +19,12 @@
 
 package io.milvus.v2.service.partition.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class HasPartitionReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
 
-    private HasPartitionReq(Builder builder) {
+    private HasPartitionReq(HasPartitionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -57,26 +55,6 @@ public class HasPartitionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        HasPartitionReq that = (HasPartitionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "HasPartitionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -85,28 +63,29 @@ public class HasPartitionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static HasPartitionReqBuilder builder() {
+        return new HasPartitionReqBuilder();
     }
 
-    public static class Builder {
+    public static class HasPartitionReqBuilder {
         private String databaseName;
         private String collectionName;
         private String partitionName;
 
-        private Builder() {}
+        private HasPartitionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public HasPartitionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public HasPartitionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public HasPartitionReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }

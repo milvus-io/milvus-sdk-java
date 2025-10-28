@@ -49,7 +49,7 @@ public class URLParser {
 
             // port
             port = uri.getPort();
-            if(port <= 0){
+            if (port <= 0) {
                 port = 19530;
             }
 

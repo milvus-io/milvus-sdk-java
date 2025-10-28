@@ -19,15 +19,12 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class RenameCollectionReq {
     private String databaseName;
     private String collectionName;
     private String newCollectionName;
 
-    private RenameCollectionReq(Builder builder) {
+    private RenameCollectionReq(RenameCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.newCollectionName = builder.newCollectionName;
@@ -58,27 +55,6 @@ public class RenameCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RenameCollectionReq that = (RenameCollectionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(newCollectionName, that.newCollectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(newCollectionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "RenameCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -87,28 +63,29 @@ public class RenameCollectionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RenameCollectionReqBuilder builder() {
+        return new RenameCollectionReqBuilder();
     }
 
-    public static class Builder {
+    public static class RenameCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
         private String newCollectionName;
 
-        private Builder() {}
+        private RenameCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public RenameCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public RenameCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder newCollectionName(String newCollectionName) {
+        public RenameCollectionReqBuilder newCollectionName(String newCollectionName) {
             this.newCollectionName = newCollectionName;
             return this;
         }

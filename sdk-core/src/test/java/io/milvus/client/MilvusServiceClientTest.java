@@ -33,7 +33,10 @@ import io.milvus.param.alias.DropAliasParam;
 import io.milvus.param.alias.ListAliasesParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.dml.ranker.RRFRanker;
 import io.milvus.param.index.*;
@@ -138,7 +141,7 @@ class MilvusServiceClientTest {
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.Success.getCode(), response.getStatus());
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
-                    InterruptedException | ExecutionException e) {
+                     InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
                 fail();
@@ -161,7 +164,7 @@ class MilvusServiceClientTest {
                 R<P> response = respFuture.get();
                 assertEquals(R.Status.ClientNotConnected.getCode(), response.getStatus());
             } catch (IllegalArgumentException | InvocationTargetException | IllegalAccessException |
-                    InterruptedException | ExecutionException e) {
+                     InterruptedException | ExecutionException e) {
                 e.printStackTrace();
                 System.out.println(e.getMessage());
                 fail();
@@ -182,11 +185,11 @@ class MilvusServiceClientTest {
         R<RpcStatus> r = R.failed(ErrorCode.UnexpectedError, msg);
         Exception e = r.getException();
         assertEquals(0, msg.compareTo(e.getMessage()));
-        System.out.println(r.toString());
+        System.out.println(r);
 
         r = R.success();
         assertEquals(R.Status.Success.getCode(), r.getStatus());
-        System.out.println(r.toString());
+        System.out.println(r);
     }
 
     @Test
@@ -315,24 +318,24 @@ class MilvusServiceClientTest {
         ThreadLocal<String> clientRequestId = new ThreadLocal<>();
         clientRequestId.set("req1");
         ConnectParam connectParam = ConnectParam.newBuilder()
-            .withHost("localhost")
-            .withPort(testPort)
-            .withConnectTimeout(10000, TimeUnit.MILLISECONDS)
-            .withClientRequestId(clientRequestId)
-            .build();
+                .withHost("localhost")
+                .withPort(testPort)
+                .withConnectTimeout(10000, TimeUnit.MILLISECONDS)
+                .withClientRequestId(clientRequestId)
+                .build();
         RetryParam retryParam = RetryParam.newBuilder()
-            .withMaxRetryTimes(2)
-            .build();
+                .withMaxRetryTimes(2)
+                .build();
 
         MockMilvusServer server = startServer();
         MilvusServiceClient client = new MilvusServiceClient(connectParam);
         client.withRetry(retryParam);
         DescribeCollectionParam param = DescribeCollectionParam.newBuilder()
-            .withCollectionName("collection1")
-            .build();
+                .withCollectionName("collection1")
+                .build();
         R<DescribeCollectionResponse> response = client.describeCollection(param);
 
-        assertTrue(response.getStatus() == 0);
+        assertEquals(0, (int) response.getStatus());
 
         server.stop();
     }
@@ -585,7 +588,7 @@ class MilvusServiceClientTest {
                 try {
                     TimeUnit.SECONDS.sleep(1);
                 } catch (InterruptedException e) {
-                    System.out.println(e.toString());
+                    System.out.println(e);
                 }
                 mockServerImpl.setGetFlushStateResponse(GetFlushStateResponse.newBuilder()
                         .setFlushed(true)
@@ -2151,7 +2154,7 @@ class MilvusServiceClientTest {
                 .withExpr("dummy")
                 .build()
         );
-        
+
         // succeed float vector case
         List<List<Float>> vectors2 = Collections.singletonList(vector2);
         assertDoesNotThrow(() -> SearchParam.newBuilder()
@@ -2621,7 +2624,7 @@ class MilvusServiceClientTest {
         );
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////////////////////////////////
     // Response wrapper test
     private void testScalarField(ScalarField field, DataType type, long rowCount) {
         FieldData fieldData = FieldData.newBuilder()
@@ -2775,7 +2778,7 @@ class MilvusServiceClientTest {
 
         // for binary vector
         dim = 16;
-        int bytesPerVec = (int) (dim/8);
+        int bytesPerVec = (int) (dim / 8);
         int count = 2;
         byte[] binary = new byte[bytesPerVec * count];
         for (int i = 0; i < binary.length; ++i) {
@@ -2797,12 +2800,12 @@ class MilvusServiceClientTest {
 
         List<?> binaryData = wrapper.getFieldData();
         assertEquals(count, binaryData.size());
-        for(int i = 0; i < binaryData.size(); i++) {
+        for (int i = 0; i < binaryData.size(); i++) {
             ByteBuffer vec = (ByteBuffer) binaryData.get(i);
             assertEquals(bytesPerVec, vec.limit());
 
-            for(int j = 0; j < bytesPerVec; j++) {
-                assertEquals(binary[i*bytesPerVec + j], vec.get(j));
+            for (int j = 0; j < bytesPerVec; j++) {
+                assertEquals(binary[i * bytesPerVec + j], vec.get(j));
             }
         }
 

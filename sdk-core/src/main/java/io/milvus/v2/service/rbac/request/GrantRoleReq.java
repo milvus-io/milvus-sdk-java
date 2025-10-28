@@ -19,13 +19,11 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class GrantRoleReq {
     private String userName;
     private String roleName;
 
-    private GrantRoleReq(Builder builder) {
+    private GrantRoleReq(GrantRoleReqBuilder builder) {
         this.userName = builder.userName;
         this.roleName = builder.roleName;
     }
@@ -47,24 +45,6 @@ public class GrantRoleReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GrantRoleReq that = (GrantRoleReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .append(roleName, that.roleName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userName != null ? userName.hashCode() : 0;
-        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "GrantRoleReq{" +
                 "userName='" + userName + '\'' +
@@ -72,22 +52,23 @@ public class GrantRoleReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GrantRoleReqBuilder builder() {
+        return new GrantRoleReqBuilder();
     }
 
-    public static class Builder {
+    public static class GrantRoleReqBuilder {
         private String userName;
         private String roleName;
 
-        private Builder() {}
+        private GrantRoleReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public GrantRoleReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
-        public Builder roleName(String roleName) {
+        public GrantRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }

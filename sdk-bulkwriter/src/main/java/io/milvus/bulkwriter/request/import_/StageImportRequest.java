@@ -19,17 +19,9 @@
 
 package io.milvus.bulkwriter.request.import_;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 /*
   If you want to import data into a Zilliz cloud instance and your data is stored in a Zilliz stage,
   you can use this method to import the data from the stage.
@@ -46,10 +38,10 @@ public class StageImportRequest extends BaseImportRequest {
 
     /**
      * If the collection has partitionKey enabled:
-     *     - The partitionName parameter cannot be specified for import.
+     * - The partitionName parameter cannot be specified for import.
      * If the collection does not have partitionKey enabled:
-     *     - You may specify partitionName for the import.
-     *     - Defaults to the "default" partition if not specified.
+     * - You may specify partitionName for the import.
+     * - Defaults to the "default" partition if not specified.
      */
     private String partitionName;
 
@@ -59,21 +51,160 @@ public class StageImportRequest extends BaseImportRequest {
      * Data import can be configured in multiple ways using `dataPaths`:
      * <p>
      * 1. Multi-path import (multiple folders or files):
-     *    "dataPaths": [
-     *        ["parquet-folder-1/1.parquet"],
-     *        ["parquet-folder-2/1.parquet"],
-     *        ["parquet-folder-3/"]
-     *    ]
+     * "dataPaths": [
+     * ["parquet-folder-1/1.parquet"],
+     * ["parquet-folder-2/1.parquet"],
+     * ["parquet-folder-3/"]
+     * ]
      * <p>
      * 2. Folder import:
-     *    "dataPaths": [
-     *        ["parquet-folder/"]
-     *    ]
+     * "dataPaths": [
+     * ["parquet-folder/"]
+     * ]
      * <p>
      * 3. Single file import:
-     *    "dataPaths": [
-     *        ["parquet-folder/1.parquet"]
-     *    ]
+     * "dataPaths": [
+     * ["parquet-folder/1.parquet"]
+     * ]
      */
     private List<List<String>> dataPaths;
+
+    public StageImportRequest() {
+    }
+
+    public StageImportRequest(String clusterId, String dbName, String collectionName, String partitionName,
+                              String stageName, List<List<String>> dataPaths) {
+        this.clusterId = clusterId;
+        this.dbName = dbName;
+        this.collectionName = collectionName;
+        this.partitionName = partitionName;
+        this.stageName = stageName;
+        this.dataPaths = dataPaths;
+    }
+
+    protected StageImportRequest(StageImportRequestBuilder builder) {
+        super(builder);
+        this.clusterId = builder.clusterId;
+        this.dbName = builder.dbName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+        this.stageName = builder.stageName;
+        this.dataPaths = builder.dataPaths;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public List<List<String>> getDataPaths() {
+        return dataPaths;
+    }
+
+    public void setDataPaths(List<List<String>> dataPaths) {
+        this.dataPaths = dataPaths;
+    }
+
+    @Override
+    public String toString() {
+        return "StageImportRequest{" +
+                "clusterId='" + clusterId + '\'' +
+                ", dbName='" + dbName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", stageName='" + stageName + '\'' +
+                ", dataPaths=" + dataPaths +
+                '}';
+    }
+
+    public static StageImportRequestBuilder builder() {
+        return new StageImportRequestBuilder();
+    }
+
+    public static class StageImportRequestBuilder extends BaseImportRequestBuilder<StageImportRequestBuilder> {
+        private String clusterId;
+        private String dbName;
+        private String collectionName;
+        private String partitionName;
+        private String stageName;
+        private List<List<String>> dataPaths;
+
+        private StageImportRequestBuilder() {
+            this.clusterId = "";
+            this.dbName = "";
+            this.collectionName = "";
+            this.partitionName = "";
+            this.stageName = "";
+            this.dataPaths = new ArrayList<>();
+        }
+
+        public StageImportRequestBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
+            return this;
+        }
+
+        public StageImportRequestBuilder dbName(String dbName) {
+            this.dbName = dbName;
+            return this;
+        }
+
+        public StageImportRequestBuilder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public StageImportRequestBuilder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public StageImportRequestBuilder stageName(String stageName) {
+            this.stageName = stageName;
+            return this;
+        }
+
+        public StageImportRequestBuilder dataPaths(List<List<String>> dataPaths) {
+            this.dataPaths = dataPaths;
+            return this;
+        }
+
+        public StageImportRequest build() {
+            return new StageImportRequest(this);
+        }
+    }
 }

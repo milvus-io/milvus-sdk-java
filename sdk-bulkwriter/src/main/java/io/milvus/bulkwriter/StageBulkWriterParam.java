@@ -25,10 +25,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,8 +32,6 @@ import java.util.Map;
 /**
  * Parameters for <code>stageBulkWriter</code> interface.
  */
-@Getter
-@ToString
 public class StageBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final String remotePath;
@@ -49,7 +43,7 @@ public class StageBulkWriterParam {
     private final String apiKey;
     private final String stageName;
 
-    private StageBulkWriterParam(@NonNull Builder builder) {
+    private StageBulkWriterParam(Builder builder) {
         this.collectionSchema = builder.collectionSchema;
         this.remotePath = builder.remotePath;
         this.chunkSize = builder.chunkSize;
@@ -59,6 +53,50 @@ public class StageBulkWriterParam {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
         this.stageName = builder.stageName;
+    }
+
+    public CreateCollectionReq.CollectionSchema getCollectionSchema() {
+        return collectionSchema;
+    }
+
+    public String getRemotePath() {
+        return remotePath;
+    }
+
+    public long getChunkSize() {
+        return chunkSize;
+    }
+
+    public BulkFileType getFileType() {
+        return fileType;
+    }
+
+    public Map<String, Object> getConfig() {
+        return config;
+    }
+
+    public String getCloudEndpoint() {
+        return cloudEndpoint;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    @Override
+    public String toString() {
+        return "StageBulkWriterParam{" +
+                "collectionSchema=" + collectionSchema +
+                ", remotePath='" + remotePath + '\'' +
+                ", chunkSize=" + chunkSize +
+                ", fileType=" + fileType +
+                ", cloudEndpoint='" + cloudEndpoint + '\'' +
+                ", stageName='" + stageName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -73,7 +111,7 @@ public class StageBulkWriterParam {
         private String remotePath;
         private long chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
-        private Map<String, Object> config = new HashMap<>();
+        private final Map<String, Object> config = new HashMap<>();
 
         private String cloudEndpoint;
         private String apiKey;
@@ -89,7 +127,7 @@ public class StageBulkWriterParam {
          * @param collectionSchema collection info
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CollectionSchemaParam collectionSchema) {
+        public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
         }
@@ -100,7 +138,7 @@ public class StageBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CreateCollectionReq.CollectionSchema collectionSchema) {
+        public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
         }
@@ -111,7 +149,7 @@ public class StageBulkWriterParam {
          * @param remotePath remote path
          * @return <code>Builder</code>
          */
-        public Builder withRemotePath(@NonNull String remotePath) {
+        public Builder withRemotePath(String remotePath) {
             this.remotePath = remotePath;
             return this;
         }
@@ -121,7 +159,7 @@ public class StageBulkWriterParam {
             return this;
         }
 
-        public Builder withFileType(@NonNull BulkFileType fileType) {
+        public Builder withFileType(BulkFileType fileType) {
             this.fileType = fileType;
             return this;
         }
@@ -131,17 +169,17 @@ public class StageBulkWriterParam {
             return this;
         }
 
-        public Builder withCloudEndpoint(@NotNull String cloudEndpoint) {
+        public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
-        public Builder withApiKey(@NotNull String apiKey) {
+        public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
-        public Builder withStageName(@NotNull String stageName) {
+        public Builder withStageName(String stageName) {
             this.stageName = stageName;
             return this;
         }

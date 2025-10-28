@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,13 +28,13 @@ public class QueryResp {
     private List<QueryResult> queryResults;
     private long sessionTs; // default eventually ts
 
-    private QueryResp(Builder builder) {
+    private QueryResp(QueryRespBuilder builder) {
         this.queryResults = builder.queryResults;
         this.sessionTs = builder.sessionTs;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static QueryRespBuilder builder() {
+        return new QueryRespBuilder();
     }
 
     public List<QueryResult> getQueryResults() {
@@ -57,25 +54,6 @@ public class QueryResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        QueryResp that = (QueryResp) obj;
-        return new EqualsBuilder()
-                .append(sessionTs, that.sessionTs)
-                .append(queryResults, that.queryResults)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(queryResults)
-                .append(sessionTs)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "QueryResp{" +
                 "queryResults=" + queryResults +
@@ -83,16 +61,16 @@ public class QueryResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class QueryRespBuilder {
         private List<QueryResult> queryResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
 
-        public Builder queryResults(List<QueryResult> queryResults) {
+        public QueryRespBuilder queryResults(List<QueryResult> queryResults) {
             this.queryResults = queryResults;
             return this;
         }
 
-        public Builder sessionTs(long sessionTs) {
+        public QueryRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
         }
@@ -105,12 +83,12 @@ public class QueryResp {
     public static class QueryResult {
         private Map<String, Object> entity;
 
-        private QueryResult(Builder builder) {
+        private QueryResult(QueryResultBuilder builder) {
             this.entity = builder.entity;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static QueryResultBuilder builder() {
+            return new QueryResultBuilder();
         }
 
         public Map<String, Object> getEntity() {
@@ -122,33 +100,16 @@ public class QueryResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            QueryResult that = (QueryResult) obj;
-            return new EqualsBuilder()
-                    .append(entity, that.entity)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(entity)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "QueryResult{" +
                     "entity=" + entity +
                     '}';
         }
 
-        public static class Builder {
+        public static class QueryResultBuilder {
             private Map<String, Object> entity = new HashMap<>();
 
-            public Builder entity(Map<String, Object> entity) {
+            public QueryResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
                 return this;
             }

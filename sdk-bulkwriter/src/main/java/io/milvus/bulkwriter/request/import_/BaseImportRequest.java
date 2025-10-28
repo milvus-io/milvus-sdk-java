@@ -19,18 +19,10 @@
 
 package io.milvus.bulkwriter.request.import_;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-@Data
-@SuperBuilder(toBuilder = true)
-@AllArgsConstructor
-@NoArgsConstructor
 public class BaseImportRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
@@ -40,4 +32,69 @@ public class BaseImportRequest implements Serializable {
     private String apiKey;
 
     private Map<String, Object> options;
+
+    public BaseImportRequest() {
+    }
+
+    public BaseImportRequest(String apiKey, Map<String, Object> options) {
+        this.apiKey = apiKey;
+        this.options = options;
+    }
+
+    protected BaseImportRequest(BaseImportRequestBuilder<?> builder) {
+        this.apiKey = builder.apiKey;
+        this.options = builder.options;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public Map<String, Object> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, Object> options) {
+        this.options = options;
+    }
+
+    @Override
+    public String toString() {
+        return "BaseImportRequest{" +
+                "apiKey='" + apiKey + '\'' +
+                "options=" + options +
+                '}';
+    }
+
+    public static BaseImportRequestBuilder<?> builder() {
+        return new BaseImportRequestBuilder<>();
+    }
+
+    public static class BaseImportRequestBuilder<T extends BaseImportRequestBuilder<T>> {
+        private String apiKey = "";
+        private Map<String, Object> options;
+
+        protected BaseImportRequestBuilder() {
+            this.apiKey = "";
+            this.options = new HashMap<>();
+        }
+
+        public T apiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return (T) this;
+        }
+
+        public T options(Map<String, Object> options) {
+            this.options = options;
+            return (T) this;
+        }
+
+        public BaseImportRequest build() {
+            return new BaseImportRequest(this);
+        }
+    }
 }

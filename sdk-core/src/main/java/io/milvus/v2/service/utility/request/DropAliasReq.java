@@ -19,20 +19,17 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class DropAliasReq {
     private String databaseName;
     private String alias;
 
-    private DropAliasReq(Builder builder) {
+    private DropAliasReq(DropAliasReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.alias = builder.alias;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropAliasReqBuilder builder() {
+        return new DropAliasReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -52,25 +49,6 @@ public class DropAliasReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropAliasReq that = (DropAliasReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(alias, that.alias)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(alias)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DropAliasReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -78,16 +56,16 @@ public class DropAliasReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class DropAliasReqBuilder {
         private String databaseName;
         private String alias;
 
-        public Builder databaseName(String databaseName) {
+        public DropAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder alias(String alias) {
+        public DropAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }

@@ -19,14 +19,10 @@
 
 package io.milvus.response;
 
-import io.milvus.grpc.*;
+import io.milvus.grpc.DescribeDatabaseResponse;
 import io.milvus.param.Constant;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -97,8 +93,8 @@ public class DescDBResponseWrapper {
     @Override
     public String toString() {
         return "Database Description{" +
-            "name:'" + getDatabaseName() + '\'' +
-            ", properties:" + getProperties() +
-            '}';
+                "name:'" + getDatabaseName() + '\'' +
+                ", properties:" + getProperties() +
+                '}';
     }
 }

@@ -22,7 +22,6 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
 import org.apache.commons.lang3.StringUtils;
 
 /**

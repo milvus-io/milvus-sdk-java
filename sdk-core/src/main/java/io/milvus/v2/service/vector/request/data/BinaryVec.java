@@ -29,9 +29,11 @@ public class BinaryVec implements BaseVector {
     public BinaryVec(ByteBuffer data) {
         this.data = data;
     }
+
     public BinaryVec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }
+
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.BinaryVector;

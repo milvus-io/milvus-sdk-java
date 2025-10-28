@@ -80,7 +80,7 @@ public class ClientPool<C, T> {
      * The caller should ensure the client is returned. Otherwise, the client will keep in active state and cannot be used by the next caller.
      * Throw exceptions if the key doesn't exist or the client is not belong to this key group.
      *
-     * @param key the key of a group where the client belong
+     * @param key        the key of a group where the client belong
      * @param grpcClient the client object to return
      */
     public void returnClient(String key, T grpcClient) {

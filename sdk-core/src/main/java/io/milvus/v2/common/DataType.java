@@ -49,7 +49,7 @@ public enum DataType {
     Struct(201);
 
     private final int code;
-    
+
     DataType(int code) {
         this.code = code;
     }

@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.index.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DescribeIndexReq {
     private String databaseName;
     private String collectionName;
@@ -28,7 +26,7 @@ public class DescribeIndexReq {
     private String indexName;
     private Long timestamp = 0L; // only check segments generated before this timestamp. all the segments will be checked if this value is zero.
 
-    private DescribeIndexReq(Builder builder) {
+    private DescribeIndexReq(DescribeIndexReqBuilder builder) {
         if (builder.collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
         }
@@ -83,30 +81,6 @@ public class DescribeIndexReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeIndexReq that = (DescribeIndexReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(fieldName, that.fieldName)
-                .append(indexName, that.indexName)
-                .append(timestamp, that.timestamp)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (fieldName != null ? fieldName.hashCode() : 0);
-        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
-        result = 31 * result + (timestamp != null ? timestamp.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DescribeIndexReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -117,25 +91,26 @@ public class DescribeIndexReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeIndexReqBuilder builder() {
+        return new DescribeIndexReqBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeIndexReqBuilder {
         private String databaseName;
         private String collectionName;
         private String fieldName;
         private String indexName;
         private Long timestamp = 0L; // only check segments generated before this timestamp. all the segments will be checked if this value is zero.
 
-        private Builder() {}
+        private DescribeIndexReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DescribeIndexReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public DescribeIndexReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
             }
@@ -143,17 +118,17 @@ public class DescribeIndexReq {
             return this;
         }
 
-        public Builder fieldName(String fieldName) {
+        public DescribeIndexReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder indexName(String indexName) {
+        public DescribeIndexReqBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
-        public Builder timestamp(Long timestamp) {
+        public DescribeIndexReqBuilder timestamp(Long timestamp) {
             this.timestamp = timestamp;
             return this;
         }

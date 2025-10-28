@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.database.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +26,7 @@ public class AlterDatabasePropertiesReq {
     private String databaseName;
     private Map<String, String> properties;
 
-    private AlterDatabasePropertiesReq(Builder builder) {
+    private AlterDatabasePropertiesReq(AlterDatabasePropertiesReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.properties = builder.properties;
     }
@@ -50,24 +48,6 @@ public class AlterDatabasePropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AlterDatabasePropertiesReq that = (AlterDatabasePropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (properties != null ? properties.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "AlterDatabasePropertiesReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -75,27 +55,28 @@ public class AlterDatabasePropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AlterDatabasePropertiesReqBuilder builder() {
+        return new AlterDatabasePropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class AlterDatabasePropertiesReqBuilder {
         private String databaseName;
         private Map<String, String> properties = new HashMap<>();
 
-        private Builder() {}
+        private AlterDatabasePropertiesReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public AlterDatabasePropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public AlterDatabasePropertiesReqBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }
 
-        public Builder property(String key, String value) {
+        public AlterDatabasePropertiesReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
             }

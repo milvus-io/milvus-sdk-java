@@ -164,7 +164,7 @@ public class NullAndDefaultExample {
             }
 
             // some values are default value
-            if (i%3==0) {
+            if (i % 3 == 0) {
                 row.addProperty("default_test", 1.0);
             }
 
@@ -197,7 +197,7 @@ public class NullAndDefaultExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         QueryResultsWrapper wrapper = new QueryResultsWrapper(queryRet.getData());
-        long rowCount = (long)wrapper.getFieldWrapper("count(*)").getFieldData().get(0);
+        long rowCount = (long) wrapper.getFieldWrapper("count(*)").getFieldData().get(0);
         System.out.printf("%d rows in collection\n", rowCount);
 
         // Query by filtering expression

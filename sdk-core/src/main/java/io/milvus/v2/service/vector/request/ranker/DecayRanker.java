@@ -23,40 +23,37 @@ import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import java.util.List;
 import java.util.Map;
 
 /**
  * The Decay reranking strategy, which by adjusting search rankings based on numeric field values.
  * Read the doc for more info: https://milvus.io/docs/decay-ranker-overview.md
- *
+ * <p>
  * Example:
  * DecayRanker decay = DecayRanker.builder()
- *                  .name("time_decay")
- *                  .description("time decay")
- *                  .inputFieldNames(Collections.singletonList("timestamp"))
- *                  .function("gauss")
- *                  .origin(100)
- *                  .scale(50)
- *                  .offset(24)
- *                  .decay(0.5)
- *                  .build()
- *
+ * .name("time_decay")
+ * .description("time decay")
+ * .inputFieldNames(Collections.singletonList("timestamp"))
+ * .function("gauss")
+ * .origin(100)
+ * .scale(50)
+ * .offset(24)
+ * .decay(0.5)
+ * .build()
+ * <p>
  * You also can declare a decay ranker by Function:
  * CreateCollectionReq.Function decay = CreateCollectionReq.Function.builder()
- *                 .functionType(FunctionType.RERANK)
- *                 .name("time_decay")
- *                 .description("time decay")
- *                 .inputFieldNames(Collections.singletonList("timestamp"))
- *                 .param("reranker", "decay")
- *                 .param("function", "gauss")
- *                 .param("origin", "100")
- *                 .param("scale", "50")
- *                 .param("offset", "24")
- *                 .param("decay", "0.5")
- *                 .build();
+ * .functionType(FunctionType.RERANK)
+ * .name("time_decay")
+ * .description("time decay")
+ * .inputFieldNames(Collections.singletonList("timestamp"))
+ * .param("reranker", "decay")
+ * .param("function", "gauss")
+ * .param("origin", "100")
+ * .param("scale", "50")
+ * .param("offset", "24")
+ * .param("decay", "0.5")
+ * .build();
  */
 public class DecayRanker extends CreateCollectionReq.Function {
     private String function;
@@ -65,11 +62,13 @@ public class DecayRanker extends CreateCollectionReq.Function {
     private Number scale;
     private Number decay;
 
-    private DecayRanker(FunctionBuilder builder) {
+    private DecayRanker(DecayRankerBuilder builder) {
         super(builder);
         this.function = builder.function;
         this.origin = builder.origin;
+        this.offset = builder.offset;
         this.scale = builder.scale;
+        this.decay = builder.decay;
     }
 
     public String getFunction() {
@@ -88,12 +87,28 @@ public class DecayRanker extends CreateCollectionReq.Function {
         this.origin = origin;
     }
 
+    public Number getOffset() {
+        return offset;
+    }
+
+    public void setOffset(Number offset) {
+        this.offset = offset;
+    }
+
     public Number getScale() {
         return scale;
     }
 
     public void setScale(Number scale) {
         this.scale = scale;
+    }
+
+    public Number getDecay() {
+        return decay;
+    }
+
+    public void setDecay(Number decay) {
+        this.decay = decay;
     }
 
     @Override
@@ -123,33 +138,13 @@ public class DecayRanker extends CreateCollectionReq.Function {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        if (!super.equals(obj)) return false;
-        DecayRanker that = (DecayRanker) obj;
-        return new EqualsBuilder()
-                .append(function, that.function)
-                .append(origin, that.origin)
-                .append(scale, that.scale)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (function != null ? function.hashCode() : 0);
-        result = 31 * result + (origin != null ? origin.hashCode() : 0);
-        result = 31 * result + (scale != null ? scale.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DecayRanker{" +
                 "function='" + function + '\'' +
                 ", origin=" + origin +
+                ", offset=" + offset +
                 ", scale=" + scale +
+                ", decay=" + decay +
                 ", name='" + getName() + '\'' +
                 ", description='" + getDescription() + '\'' +
                 ", functionType=" + getFunctionType() +
@@ -159,74 +154,46 @@ public class DecayRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
-    public static FunctionBuilder builder() {
-        return new FunctionBuilder();
+    public static DecayRankerBuilder builder() {
+        return new DecayRankerBuilder();
     }
 
-    public static class FunctionBuilder extends Function.FunctionBuilder {
+    public static class DecayRankerBuilder extends Function.FunctionBuilder<DecayRankerBuilder> {
         private String function = "gauss";
         private Number origin;
+        private Number offset;
         private Number scale;
+        private Number decay;
 
-        private FunctionBuilder() {}
+        private DecayRankerBuilder() {
+        }
 
-        public FunctionBuilder function(String function) {
+        public DecayRankerBuilder function(String function) {
             this.function = function;
             return this;
         }
 
-        public FunctionBuilder origin(Number origin) {
+        public DecayRankerBuilder origin(Number origin) {
             this.origin = origin;
             return this;
         }
 
-        public FunctionBuilder scale(Number scale) {
+        public DecayRankerBuilder offset(Number offset) {
+            this.offset = offset;
+            return this;
+        }
+
+        public DecayRankerBuilder scale(Number scale) {
             this.scale = scale;
             return this;
         }
 
-        @Override
-        public FunctionBuilder name(String name) {
-            super.name(name);
+        public DecayRankerBuilder decay(Number decay) {
+            this.decay = decay;
             return this;
         }
 
         @Override
-        public FunctionBuilder description(String description) {
-            super.description(description);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder functionType(io.milvus.common.clientenum.FunctionType functionType) {
-            super.functionType(functionType);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder inputFieldNames(List<String> inputFieldNames) {
-            super.inputFieldNames(inputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder outputFieldNames(List<String> outputFieldNames) {
-            super.outputFieldNames(outputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder params(Map<String, String> params) {
-            super.params(params);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder param(String key, String value) {
-            super.param(key, value);
-            return this;
-        }
-
         public DecayRanker build() {
             return new DecayRanker(this);
         }

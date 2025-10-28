@@ -19,20 +19,17 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class DescribeAliasReq {
     private String databaseName;
     private String alias;
 
-    private DescribeAliasReq(Builder builder) {
+    private DescribeAliasReq(DescribeAliasReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.alias = builder.alias;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeAliasReqBuilder builder() {
+        return new DescribeAliasReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -52,25 +49,6 @@ public class DescribeAliasReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeAliasReq that = (DescribeAliasReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(alias, that.alias)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(alias)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DescribeAliasReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -78,16 +56,16 @@ public class DescribeAliasReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class DescribeAliasReqBuilder {
         private String databaseName;
         private String alias;
 
-        public Builder databaseName(String databaseName) {
+        public DescribeAliasReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder alias(String alias) {
+        public DescribeAliasReqBuilder alias(String alias) {
             this.alias = alias;
             return this;
         }

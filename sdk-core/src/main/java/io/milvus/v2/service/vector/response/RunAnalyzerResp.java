@@ -19,21 +19,18 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class RunAnalyzerResp {
     private List<AnalyzerResult> results;
 
-    private RunAnalyzerResp(Builder builder) {
+    private RunAnalyzerResp(RunAnalyzerRespBuilder builder) {
         this.results = builder.results;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RunAnalyzerRespBuilder builder() {
+        return new RunAnalyzerRespBuilder();
     }
 
     public List<AnalyzerResult> getResults() {
@@ -45,33 +42,16 @@ public class RunAnalyzerResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RunAnalyzerResp that = (RunAnalyzerResp) obj;
-        return new EqualsBuilder()
-                .append(results, that.results)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(results)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "RunAnalyzerResp{" +
                 "results=" + results +
                 '}';
     }
 
-    public static class Builder {
+    public static class RunAnalyzerRespBuilder {
         private List<AnalyzerResult> results = new ArrayList<>();
 
-        public Builder results(List<AnalyzerResult> results) {
+        public RunAnalyzerRespBuilder results(List<AnalyzerResult> results) {
             this.results = results;
             return this;
         }
@@ -84,12 +64,12 @@ public class RunAnalyzerResp {
     public static final class AnalyzerResult {
         private List<AnalyzerToken> tokens;
 
-        private AnalyzerResult(Builder builder) {
+        private AnalyzerResult(AnalyzerResultBuilder builder) {
             this.tokens = builder.tokens;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static AnalyzerResultBuilder builder() {
+            return new AnalyzerResultBuilder();
         }
 
         public List<AnalyzerToken> getTokens() {
@@ -101,33 +81,16 @@ public class RunAnalyzerResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            AnalyzerResult that = (AnalyzerResult) obj;
-            return new EqualsBuilder()
-                    .append(tokens, that.tokens)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(tokens)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "AnalyzerResult{" +
                     "tokens=" + tokens +
                     '}';
         }
 
-        public static class Builder {
+        public static class AnalyzerResultBuilder {
             private List<AnalyzerToken> tokens = new ArrayList<>();
 
-            public Builder tokens(List<AnalyzerToken> tokens) {
+            public AnalyzerResultBuilder tokens(List<AnalyzerToken> tokens) {
                 this.tokens = tokens;
                 return this;
             }
@@ -146,7 +109,7 @@ public class RunAnalyzerResp {
         private Long positionLength;
         private Long hash;
 
-        private AnalyzerToken(Builder builder) {
+        private AnalyzerToken(AnalyzerTokenBuilder builder) {
             this.token = builder.token;
             this.startOffset = builder.startOffset;
             this.endOffset = builder.endOffset;
@@ -155,8 +118,8 @@ public class RunAnalyzerResp {
             this.hash = builder.hash;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static AnalyzerTokenBuilder builder() {
+            return new AnalyzerTokenBuilder();
         }
 
         public String getToken() {
@@ -208,33 +171,6 @@ public class RunAnalyzerResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            AnalyzerToken that = (AnalyzerToken) obj;
-            return new EqualsBuilder()
-                    .append(token, that.token)
-                    .append(startOffset, that.startOffset)
-                    .append(endOffset, that.endOffset)
-                    .append(position, that.position)
-                    .append(positionLength, that.positionLength)
-                    .append(hash, that.hash)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(token)
-                    .append(startOffset)
-                    .append(endOffset)
-                    .append(position)
-                    .append(positionLength)
-                    .append(hash)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "AnalyzerToken{" +
                     "token='" + token + '\'' +
@@ -246,7 +182,7 @@ public class RunAnalyzerResp {
                     '}';
         }
 
-        public static class Builder {
+        public static class AnalyzerTokenBuilder {
             private String token;
             private Long startOffset;
             private Long endOffset;
@@ -254,32 +190,32 @@ public class RunAnalyzerResp {
             private Long positionLength;
             private Long hash;
 
-            public Builder token(String token) {
+            public AnalyzerTokenBuilder token(String token) {
                 this.token = token;
                 return this;
             }
 
-            public Builder startOffset(Long startOffset) {
+            public AnalyzerTokenBuilder startOffset(Long startOffset) {
                 this.startOffset = startOffset;
                 return this;
             }
 
-            public Builder endOffset(Long endOffset) {
+            public AnalyzerTokenBuilder endOffset(Long endOffset) {
                 this.endOffset = endOffset;
                 return this;
             }
 
-            public Builder position(Long position) {
+            public AnalyzerTokenBuilder position(Long position) {
                 this.position = position;
                 return this;
             }
 
-            public Builder positionLength(Long positionLength) {
+            public AnalyzerTokenBuilder positionLength(Long positionLength) {
                 this.positionLength = positionLength;
                 return this;
             }
 
-            public Builder hash(Long hash) {
+            public AnalyzerTokenBuilder hash(Long hash) {
                 this.hash = hash;
                 return this;
             }

@@ -231,7 +231,7 @@ public class ConnectParam {
 
         //used to set client_request_id in the grpc header uniquely for every request
         private ThreadLocal<String> clientRequestId;
-        
+
         private String proxyAddress;
 
         protected Builder() {
@@ -341,7 +341,7 @@ public class ConnectParam {
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withPort(int port)  {
+        public Builder withPort(int port) {
             this.port = port;
             return this;
         }
@@ -383,7 +383,7 @@ public class ConnectParam {
          * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param connectTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit       timeout unit
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, TimeUnit timeUnit) {
@@ -399,7 +399,7 @@ public class ConnectParam {
          * Default is 55000 ms.
          *
          * @param keepAliveTime keep-alive value
-         * @param timeUnit keep-alive unit
+         * @param timeUnit      keep-alive unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, TimeUnit timeUnit) {
@@ -415,7 +415,7 @@ public class ConnectParam {
          * Default value is 20000 ms
          *
          * @param keepAliveTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit         timeout unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, TimeUnit timeUnit) {
@@ -439,7 +439,7 @@ public class ConnectParam {
 
         /**
          * Enables the secure for client channel.
-         *
+         * <p>
          * Deprecated from v2.3.6, this flag is auto-detected, no need to specify
          *
          * @param enable true keep-alive
@@ -455,7 +455,7 @@ public class ConnectParam {
          * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
          * @param idleTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit    timeout unit
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, TimeUnit timeUnit) {
@@ -485,6 +485,7 @@ public class ConnectParam {
 
         /**
          * Sets the username and password for this connection
+         *
          * @param username current user
          * @param password password
          * @return <code>Builder</code>
@@ -497,7 +498,7 @@ public class ConnectParam {
 
         /**
          * Sets secure the authorization for this connection, set to True to enable TLS
-         *
+         * <p>
          * Deprecated from v2.3.6, this flag is auto-detected, no need to specify
          *
          * @param secure boolean
@@ -511,6 +512,7 @@ public class ConnectParam {
 
         /**
          * Sets the authorization for this connection
+         *
          * @param authorization the encoded authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
@@ -524,6 +526,7 @@ public class ConnectParam {
 
         /**
          * Set the client.key path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param clientKeyPath path of client.key
          * @return <code>Builder</code>
          */
@@ -537,6 +540,7 @@ public class ConnectParam {
 
         /**
          * Set the client.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param clientPemPath path of client.pem
          * @return <code>Builder</code>
          */
@@ -550,6 +554,7 @@ public class ConnectParam {
 
         /**
          * Set the ca.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param caPemPath path of ca.pem
          * @return <code>Builder</code>
          */
@@ -563,6 +568,7 @@ public class ConnectParam {
 
         /**
          * Set the server.pem path for tls one-way authentication, only takes effect when "secure" is True.
+         *
          * @param serverPemPath path of server.pem
          * @return <code>Builder</code>
          */
@@ -577,6 +583,7 @@ public class ConnectParam {
         /**
          * Set target name override for SSL host name checking, only takes effect when "secure" is True.
          * Note: this value is passed to grpc.ssl_target_name_override
+         *
          * @param serverName override name for SSL host
          * @return <code>Builder</code>
          */
@@ -595,10 +602,10 @@ public class ConnectParam {
             this.clientRequestId = clientRequestId;
             return this;
         }
-        
+
         /**
          * Sets the proxy address for connections through a proxy server.
-         * 
+         *
          * @param proxyAddress proxy server address in format "host:port"
          * @return <code>Builder</code>
          */
@@ -631,7 +638,7 @@ public class ConnectParam {
                 }
             }
 
-            if(host.startsWith(HOST_HTTPS_PREFIX)){
+            if (host.startsWith(HOST_HTTPS_PREFIX)) {
                 this.secure = true;
             }
 

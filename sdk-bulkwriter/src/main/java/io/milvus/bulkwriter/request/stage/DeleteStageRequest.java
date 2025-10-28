@@ -19,15 +19,53 @@
 
 package io.milvus.bulkwriter.request.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class DeleteStageRequest {
     private String stageName;
+
+    public DeleteStageRequest() {
+    }
+
+    public DeleteStageRequest(String stageName) {
+        this.stageName = stageName;
+    }
+
+    protected DeleteStageRequest(DeleteStageRequestBuilder builder) {
+        this.stageName = builder.stageName;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    @Override
+    public String toString() {
+        return "DeleteStageRequest{" +
+                "stageName='" + stageName + '\'' +
+                '}';
+    }
+
+    public static DeleteStageRequestBuilder builder() {
+        return new DeleteStageRequestBuilder();
+    }
+
+    public static class DeleteStageRequestBuilder {
+        private String stageName;
+
+        private DeleteStageRequestBuilder() {
+            this.stageName = "";
+        }
+
+        public DeleteStageRequestBuilder stageName(String stageName) {
+            this.stageName = stageName;
+            return this;
+        }
+
+        public DeleteStageRequest build() {
+            return new DeleteStageRequest(this);
+        }
+    }
 }

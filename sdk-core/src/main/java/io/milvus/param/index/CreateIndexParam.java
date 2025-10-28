@@ -243,7 +243,7 @@ public class CreateIndexParam {
 
         /**
          * Sets the specific index parameters according to index type.
-         *
+         * <p>
          * For example: IVF index, the extra parameters can be "{\"nlist\":1024}".
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
@@ -262,7 +262,7 @@ public class CreateIndexParam {
         /**
          * Enables to sync mode.
          * With sync mode enabled, the client keeps waiting until all segments of the collection are successfully indexed.
-         *
+         * <p>
          * With sync mode disabled, client returns at once after the createIndex() is called.
          *
          * @param syncMode <code>Boolean.TRUE</code> is sync mode, Boolean.FALSE is not
@@ -281,10 +281,10 @@ public class CreateIndexParam {
          * Sets the waiting interval in sync mode. With sync mode enabled, the client constantly checks index state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_INDEX_INTERVAL.
          * Default value is 500 milliseconds.
-         * @see Constant
          *
          * @param milliseconds interval
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncWaitingInterval(Long milliseconds) {
             // Replace @NonNull logic with explicit null check
@@ -296,12 +296,12 @@ public class CreateIndexParam {
         }
 
         /**
-         * Sets the timeout value for sync mode. 
+         * Sets the timeout value for sync mode.
          * Timeout value must be greater than zero and with No upper limit. Default value is 600 seconds.
-         * @see Constant
          *
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncWaitingTimeout(Long seconds) {
             // Replace @NonNull logic with explicit null check

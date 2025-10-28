@@ -39,10 +39,10 @@ import java.util.List;
 public class StageBulkWriter extends LocalBulkWriter {
     private static final Logger logger = LoggerFactory.getLogger(StageBulkWriter.class);
 
-    private String remotePath;
-    private List<List<String>> remoteFiles;
-    private StageFileManager stageFileManager;
-    private StageBulkWriterParam stageBulkWriterParam;
+    private final String remotePath;
+    private final List<List<String>> remoteFiles;
+    private final StageFileManager stageFileManager;
+    private final StageBulkWriterParam stageBulkWriterParam;
 
     public StageBulkWriter(StageBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),

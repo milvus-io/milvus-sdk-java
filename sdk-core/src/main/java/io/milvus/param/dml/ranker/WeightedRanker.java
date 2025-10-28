@@ -23,7 +23,10 @@ import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The Average Weighted Scoring reranking strategy, which prioritizes vectors based on relevance,

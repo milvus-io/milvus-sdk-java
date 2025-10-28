@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class CreateRoleReq {
     private String roleName;
 
-    private CreateRoleReq(Builder builder) {
+    private CreateRoleReq(CreateRoleReqBuilder builder) {
         this.roleName = builder.roleName;
     }
 
@@ -37,37 +35,23 @@ public class CreateRoleReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreateRoleReq that = (CreateRoleReq) obj;
-        return new EqualsBuilder()
-                .append(roleName, that.roleName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return roleName != null ? roleName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "CreateRoleReq{" +
                 "roleName='" + roleName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreateRoleReqBuilder builder() {
+        return new CreateRoleReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreateRoleReqBuilder {
         private String roleName;
 
-        private Builder() {}
+        private CreateRoleReqBuilder() {
+        }
 
-        public Builder roleName(String roleName) {
+        public CreateRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }

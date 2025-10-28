@@ -19,10 +19,10 @@
 
 package io.milvus.v2.service.vector.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RunAnalyzerReq {
     private List<String> texts;
@@ -34,7 +34,7 @@ public class RunAnalyzerReq {
     private String fieldName;
     private List<String> analyzerNames;
 
-    private RunAnalyzerReq(Builder builder) {
+    private RunAnalyzerReq(RunAnalyzerReqBuilder builder) {
         this.texts = builder.texts;
         this.analyzerParams = builder.analyzerParams;
         this.withDetail = builder.withDetail;
@@ -45,8 +45,8 @@ public class RunAnalyzerReq {
         this.analyzerNames = builder.analyzerNames;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RunAnalyzerReqBuilder builder() {
+        return new RunAnalyzerReqBuilder();
     }
 
     public List<String> getTexts() {
@@ -114,37 +114,6 @@ public class RunAnalyzerReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RunAnalyzerReq that = (RunAnalyzerReq) obj;
-        return new EqualsBuilder()
-                .append(texts, that.texts)
-                .append(analyzerParams, that.analyzerParams)
-                .append(withDetail, that.withDetail)
-                .append(withHash, that.withHash)
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(fieldName, that.fieldName)
-                .append(analyzerNames, that.analyzerNames)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(texts)
-                .append(analyzerParams)
-                .append(withDetail)
-                .append(withHash)
-                .append(databaseName)
-                .append(collectionName)
-                .append(fieldName)
-                .append(analyzerNames)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "RunAnalyzerReq{" +
                 "texts=" + texts +
@@ -158,7 +127,7 @@ public class RunAnalyzerReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class RunAnalyzerReqBuilder {
         private List<String> texts = new ArrayList<>();
         private Map<String, Object> analyzerParams = new HashMap<>();
         private Boolean withDetail = Boolean.FALSE;
@@ -168,42 +137,42 @@ public class RunAnalyzerReq {
         private String fieldName = "";
         private List<String> analyzerNames = new ArrayList<>();
 
-        public Builder texts(List<String> texts) {
+        public RunAnalyzerReqBuilder texts(List<String> texts) {
             this.texts = texts;
             return this;
         }
 
-        public Builder analyzerParams(Map<String, Object> analyzerParams) {
+        public RunAnalyzerReqBuilder analyzerParams(Map<String, Object> analyzerParams) {
             this.analyzerParams = analyzerParams;
             return this;
         }
 
-        public Builder withDetail(Boolean withDetail) {
+        public RunAnalyzerReqBuilder withDetail(Boolean withDetail) {
             this.withDetail = withDetail;
             return this;
         }
 
-        public Builder withHash(Boolean withHash) {
+        public RunAnalyzerReqBuilder withHash(Boolean withHash) {
             this.withHash = withHash;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public RunAnalyzerReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public RunAnalyzerReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder fieldName(String fieldName) {
+        public RunAnalyzerReqBuilder fieldName(String fieldName) {
             this.fieldName = fieldName;
             return this;
         }
 
-        public Builder analyzerNames(List<String> analyzerNames) {
+        public RunAnalyzerReqBuilder analyzerNames(List<String> analyzerNames) {
             this.analyzerNames = analyzerNames;
             return this;
         }

@@ -19,17 +19,92 @@
 
 package io.milvus.bulkwriter.request.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
 
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class ListStagesRequest {
     private String projectId;
     private Integer pageSize;
     private Integer currentPage;
+
+    public ListStagesRequest() {
+    }
+
+    public ListStagesRequest(String projectId, Integer pageSize, Integer currentPage) {
+        this.projectId = projectId;
+        this.pageSize = pageSize;
+        this.currentPage = currentPage;
+    }
+
+    protected ListStagesRequest(ListStagesRequestBuilder builder) {
+        this.projectId = builder.projectId;
+        this.pageSize = builder.pageSize;
+        this.currentPage = builder.currentPage;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(Integer pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public Integer getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setCurrentPage(Integer currentPage) {
+        this.currentPage = currentPage;
+    }
+
+    @Override
+    public String toString() {
+        return "ListStagesRequest{" +
+                "projectId='" + projectId + '\'' +
+                ", pageSize=" + pageSize +
+                ", currentPage=" + currentPage +
+                '}';
+    }
+
+    public static ListStagesRequestBuilder builder() {
+        return new ListStagesRequestBuilder();
+    }
+
+    public static class ListStagesRequestBuilder {
+        private String projectId;
+        private Integer pageSize;
+        private Integer currentPage;
+
+        private ListStagesRequestBuilder() {
+            this.projectId = "";
+            this.pageSize = 0;
+            this.currentPage = 0;
+        }
+
+        public ListStagesRequestBuilder projectId(String projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        public ListStagesRequestBuilder pageSize(Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public ListStagesRequestBuilder currentPage(Integer currentPage) {
+            this.currentPage = currentPage;
+            return this;
+        }
+
+        public ListStagesRequest build() {
+            return new ListStagesRequest(this);
+        }
+    }
 }

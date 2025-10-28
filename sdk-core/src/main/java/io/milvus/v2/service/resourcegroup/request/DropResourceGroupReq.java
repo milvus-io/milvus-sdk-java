@@ -1,17 +1,14 @@
 package io.milvus.v2.service.resourcegroup.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class DropResourceGroupReq {
     private String groupName;
 
-    private DropResourceGroupReq(Builder builder) {
+    private DropResourceGroupReq(DropResourceGroupReqBuilder builder) {
         this.groupName = builder.groupName;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropResourceGroupReqBuilder builder() {
+        return new DropResourceGroupReqBuilder();
     }
 
     public String getGroupName() {
@@ -23,33 +20,16 @@ public class DropResourceGroupReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropResourceGroupReq that = (DropResourceGroupReq) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(groupName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DropResourceGroupReq{" +
                 "groupName='" + groupName + '\'' +
                 '}';
     }
 
-    public static class Builder {
+    public static class DropResourceGroupReqBuilder {
         private String groupName;
 
-        public Builder groupName(String groupName) {
+        public DropResourceGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }

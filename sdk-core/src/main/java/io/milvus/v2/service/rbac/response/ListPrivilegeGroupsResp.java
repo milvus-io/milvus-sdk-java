@@ -20,7 +20,6 @@
 package io.milvus.v2.service.rbac.response;
 
 import io.milvus.v2.service.rbac.PrivilegeGroup;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +27,7 @@ import java.util.List;
 public class ListPrivilegeGroupsResp {
     private List<PrivilegeGroup> privilegeGroups;
 
-    private ListPrivilegeGroupsResp(Builder builder) {
+    private ListPrivilegeGroupsResp(ListPrivilegeGroupsRespBuilder builder) {
         this.privilegeGroups = builder.privilegeGroups;
     }
 
@@ -41,37 +40,23 @@ public class ListPrivilegeGroupsResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ListPrivilegeGroupsResp that = (ListPrivilegeGroupsResp) obj;
-        return new EqualsBuilder()
-                .append(privilegeGroups, that.privilegeGroups)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return privilegeGroups != null ? privilegeGroups.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "ListPrivilegeGroupsResp{" +
                 "privilegeGroups=" + privilegeGroups +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListPrivilegeGroupsRespBuilder builder() {
+        return new ListPrivilegeGroupsRespBuilder();
     }
 
-    public static class Builder {
+    public static class ListPrivilegeGroupsRespBuilder {
         private List<PrivilegeGroup> privilegeGroups = new ArrayList<>();
 
-        private Builder() {}
+        private ListPrivilegeGroupsRespBuilder() {
+        }
 
-        public Builder privilegeGroups(List<PrivilegeGroup> privilegeGroups) {
+        public ListPrivilegeGroupsRespBuilder privilegeGroups(List<PrivilegeGroup> privilegeGroups) {
             this.privilegeGroups = privilegeGroups;
             return this;
         }

@@ -19,14 +19,12 @@
 
 package io.milvus.v2.service.partition.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class GetPartitionStatsReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
 
-    private GetPartitionStatsReq(Builder builder) {
+    private GetPartitionStatsReq(GetPartitionStatsReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -57,26 +55,6 @@ public class GetPartitionStatsReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetPartitionStatsReq that = (GetPartitionStatsReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "GetPartitionStatsReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -85,28 +63,29 @@ public class GetPartitionStatsReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetPartitionStatsReqBuilder builder() {
+        return new GetPartitionStatsReqBuilder();
     }
 
-    public static class Builder {
+    public static class GetPartitionStatsReqBuilder {
         private String databaseName;
         private String collectionName;
         private String partitionName;
 
-        private Builder() {}
+        private GetPartitionStatsReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public GetPartitionStatsReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GetPartitionStatsReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public GetPartitionStatsReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }

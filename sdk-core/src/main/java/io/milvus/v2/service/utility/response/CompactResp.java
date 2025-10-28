@@ -19,18 +19,15 @@
 
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class CompactResp {
     private Long compactionID;
 
-    private CompactResp(Builder builder) {
+    private CompactResp(CompactRespBuilder builder) {
         this.compactionID = builder.compactionID;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CompactRespBuilder builder() {
+        return new CompactRespBuilder();
     }
 
     public Long getCompactionID() {
@@ -42,33 +39,16 @@ public class CompactResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CompactResp that = (CompactResp) obj;
-        return new EqualsBuilder()
-                .append(compactionID, that.compactionID)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(compactionID)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "CompactResp{" +
                 "compactionID=" + compactionID +
                 '}';
     }
 
-    public static class Builder {
+    public static class CompactRespBuilder {
         private Long compactionID = 0L;
 
-        public Builder compactionID(Long compactionID) {
+        public CompactRespBuilder compactionID(Long compactionID) {
             this.compactionID = compactionID;
             return this;
         }

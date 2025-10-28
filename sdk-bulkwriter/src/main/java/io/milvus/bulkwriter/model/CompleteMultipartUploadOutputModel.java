@@ -19,7 +19,8 @@ public class CompleteMultipartUploadOutputModel {
     @Element(name = "ETag")
     private String etag;
 
-    public CompleteMultipartUploadOutputModel() {}
+    public CompleteMultipartUploadOutputModel() {
+    }
 
     public String location() {
         return location;

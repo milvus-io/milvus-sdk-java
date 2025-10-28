@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,14 +27,14 @@ public class FlushReq {
     private List<String> collectionNames;
     private Long waitFlushedTimeoutMs; // 0 - waiting util flush task is done
 
-    private FlushReq(Builder builder) {
+    private FlushReq(FlushReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
         this.waitFlushedTimeoutMs = builder.waitFlushedTimeoutMs;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static FlushReqBuilder builder() {
+        return new FlushReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -65,27 +62,6 @@ public class FlushReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        FlushReq that = (FlushReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionNames, that.collectionNames)
-                .append(waitFlushedTimeoutMs, that.waitFlushedTimeoutMs)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionNames)
-                .append(waitFlushedTimeoutMs)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "FlushReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -94,22 +70,22 @@ public class FlushReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class FlushReqBuilder {
         private String databaseName;
         private List<String> collectionNames = new ArrayList<>();
         private Long waitFlushedTimeoutMs = 0L; // 0 - waiting util flush task is done
 
-        public Builder databaseName(String databaseName) {
+        public FlushReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionNames(List<String> collectionNames) {
+        public FlushReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
             return this;
         }
 
-        public Builder waitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
+        public FlushReqBuilder waitFlushedTimeoutMs(Long waitFlushedTimeoutMs) {
             this.waitFlushedTimeoutMs = waitFlushedTimeoutMs;
             return this;
         }

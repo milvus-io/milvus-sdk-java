@@ -22,15 +22,26 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.SearchResults;
 import io.milvus.param.*;
-import io.milvus.param.collection.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.response.*;
-import io.milvus.v2.service.vector.response.QueryResp;
+import io.milvus.param.collection.CreateCollectionParam;
+import io.milvus.param.collection.DropCollectionParam;
+import io.milvus.param.collection.FieldType;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.response.QueryResultsWrapper;
+import io.milvus.response.SearchResultsWrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 
 public class SimpleExample {
@@ -113,7 +124,7 @@ public class SimpleExample {
         for (long i = 1L; i <= 10; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty(ID_FIELD, i);
-            List<Float> vector = Arrays.asList((float)i, (float)i, (float)i, (float)i);
+            List<Float> vector = Arrays.asList((float) i, (float) i, (float) i, (float) i);
             row.add(VECTOR_FIELD, gson.toJsonTree(vector));
             row.addProperty(TITLE_FIELD, "Tom and Jerry " + i);
             rows.add(row);
@@ -135,7 +146,7 @@ public class SimpleExample {
                 .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                 .build());
         QueryResultsWrapper wrapper = new QueryResultsWrapper(queryRet.getData());
-        long rowCount = (long)wrapper.getFieldWrapper("count(*)").getFieldData().get(0);
+        long rowCount = (long) wrapper.getFieldWrapper("count(*)").getFieldData().get(0);
         System.out.printf("%d rows persisted\n", rowCount);
 
         // Construct a vector to search top5 similar records, return the book title for us.
@@ -160,11 +171,11 @@ public class SimpleExample {
         SearchResultsWrapper resultsWrapper = new SearchResultsWrapper(searchRet.getData().getResults());
         List<SearchResultsWrapper.IDScore> scores = resultsWrapper.getIDScore(0);
         System.out.println("The result of No.0 target vector:");
-        for (SearchResultsWrapper.IDScore score:scores) {
-            List<Float> vectorReturned = (List<Float>)score.get(VECTOR_FIELD);
+        for (SearchResultsWrapper.IDScore score : scores) {
+            List<Float> vectorReturned = (List<Float>) score.get(VECTOR_FIELD);
             System.out.println(vectorReturned);
 
-            String title = (String)score.get(TITLE_FIELD);
+            String title = (String) score.get(TITLE_FIELD);
             System.out.println(title);
         }
 
