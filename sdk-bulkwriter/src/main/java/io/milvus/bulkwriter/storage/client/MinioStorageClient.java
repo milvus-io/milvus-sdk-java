@@ -31,6 +31,7 @@ import io.minio.S3Base;
 import io.minio.StatObjectArgs;
 import io.minio.StatObjectResponse;
 import io.minio.Xml;
+import io.minio.credentials.Provider;
 import io.minio.credentials.StaticProvider;
 import io.minio.errors.ErrorResponseException;
 import io.minio.errors.InsufficientDataException;
@@ -40,7 +41,9 @@ import io.minio.http.Method;
 import io.minio.messages.CompleteMultipartUpload;
 import io.minio.messages.ErrorResponse;
 import io.minio.messages.Part;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +75,14 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
                                                       String region,
                                                       OkHttpClient httpClient) {
         MinioAsyncClient.Builder minioClientBuilder = MinioAsyncClient.builder()
-                .endpoint(endpoint)
-                .credentialsProvider(new StaticProvider(accessKey, secretKey, sessionToken));
+                .endpoint(endpoint);
+
+        if (CloudStorage.isGcpCloud(cloudName) && StringUtils.isNotEmpty(sessionToken)) {
+            httpClient = buildAuthorizedClient(httpClient, sessionToken);
+        } else {
+            Provider credentialsProvider = new StaticProvider(accessKey, secretKey, sessionToken);
+            minioClientBuilder.credentialsProvider(credentialsProvider);
+        }
 
         if (StringUtils.isNotEmpty(region)) {
             minioClientBuilder.region(region);
@@ -89,6 +98,26 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         }
 
         return new MinioStorageClient(minioClient);
+    }
+
+    private static OkHttpClient buildAuthorizedClient(OkHttpClient httpClient, String sessionToken) {
+        Interceptor authInterceptor = chain -> {
+            Request original = chain.request();
+            Request requestWithAuth = original.newBuilder()
+                    .header("Authorization", "Bearer " + sessionToken)
+                    .build();
+            return chain.proceed(requestWithAuth);
+        };
+
+        if (httpClient != null) {
+            return httpClient.newBuilder()
+                    .addInterceptor(authInterceptor)
+                    .build();
+        } else {
+            return new OkHttpClient.Builder()
+                    .addInterceptor(authInterceptor)
+                    .build();
+        }
     }
 
     public Long getObjectEntity(String bucketName, String objectKey) throws Exception {
