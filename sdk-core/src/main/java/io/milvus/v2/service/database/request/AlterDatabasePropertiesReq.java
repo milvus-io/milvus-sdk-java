@@ -19,28 +19,92 @@
 
 package io.milvus.v2.service.database.request;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Data
-@SuperBuilder
 public class AlterDatabasePropertiesReq {
     private String databaseName;
-    @Builder.Default
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> properties;
 
-    public static abstract class AlterDatabasePropertiesReqBuilder<C extends AlterDatabasePropertiesReq, B extends AlterDatabasePropertiesReq.AlterDatabasePropertiesReqBuilder<C, B>> {
-        public B property(String key, String value) {
-            if(null == this.properties$value ){
-                this.properties$value = new HashMap<>();
+    private AlterDatabasePropertiesReq(Builder builder) {
+        this.databaseName = builder.databaseName;
+        this.properties = builder.properties;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void setDatabaseName(String databaseName) {
+        this.databaseName = databaseName;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<String, String> properties) {
+        this.properties = properties;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        AlterDatabasePropertiesReq that = (AlterDatabasePropertiesReq) obj;
+        return new EqualsBuilder()
+                .append(databaseName, that.databaseName)
+                .append(properties, that.properties)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = databaseName != null ? databaseName.hashCode() : 0;
+        result = 31 * result + (properties != null ? properties.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "AlterDatabasePropertiesReq{" +
+                "databaseName='" + databaseName + '\'' +
+                ", properties=" + properties +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String databaseName;
+        private Map<String, String> properties = new HashMap<>();
+
+        private Builder() {}
+
+        public Builder databaseName(String databaseName) {
+            this.databaseName = databaseName;
+            return this;
+        }
+
+        public Builder properties(Map<String, String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
+        public Builder property(String key, String value) {
+            if (this.properties == null) {
+                this.properties = new HashMap<>();
             }
-            this.properties$value.put(key, value);
-            this.properties$set = true;
-            return self();
+            this.properties.put(key, value);
+            return this;
+        }
+
+        public AlterDatabasePropertiesReq build() {
+            return new AlterDatabasePropertiesReq(this);
         }
     }
 }

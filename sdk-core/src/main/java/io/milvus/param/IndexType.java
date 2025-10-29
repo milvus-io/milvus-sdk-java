@@ -19,8 +19,6 @@
 
 package io.milvus.param;
 
-import lombok.Getter;
-
 /**
  * Represents the available index types.
  * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Types</a>
@@ -62,10 +60,7 @@ public enum IndexType {
     SPARSE_WAND(301)
     ;
 
-    @Getter
     private final String name;
-
-    @Getter
     private final int code;
 
     IndexType(){
@@ -81,5 +76,13 @@ public enum IndexType {
     IndexType(String name, int code){
         this.name = name;
         this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getCode() {
+        return code;
     }
 }

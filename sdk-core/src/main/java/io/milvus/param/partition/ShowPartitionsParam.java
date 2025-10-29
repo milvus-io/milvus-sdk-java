@@ -23,25 +23,23 @@ import io.milvus.exception.ParamException;
 import io.milvus.grpc.ShowType;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Parameters for <code>showPartition</code> interface.
  */
-@Getter
-@ToString
 public class ShowPartitionsParam {
     private final String databaseName;
     private final String collectionName;
     private final List<String> partitionNames;
     private final ShowType showType;
 
-    private ShowPartitionsParam(@NonNull Builder builder) {
+    private ShowPartitionsParam(Builder builder) {
+        // Replace @NonNull logic with explicit null check
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -50,6 +48,34 @@ public class ShowPartitionsParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public ShowType getShowType() {
+        return showType;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "ShowPartitionsParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionNames=" + partitionNames +
+                ", showType=" + showType +
+                '}';
     }
 
     /**
@@ -85,7 +111,11 @@ public class ShowPartitionsParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -96,7 +126,11 @@ public class ShowPartitionsParam {
          * @param partitionNames partition names list
          * @return <code>Builder</code>
          */
-        public Builder withPartitionNames(@NonNull List<String> partitionNames) {
+        public Builder withPartitionNames(List<String> partitionNames) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionNames == null) {
+                throw new IllegalArgumentException("partitionNames cannot be null");
+            }
             partitionNames.forEach(this::addPartitionName);
             return this;
         }
@@ -107,7 +141,11 @@ public class ShowPartitionsParam {
          * @param partitionName partition name
          * @return <code>Builder</code>
          */
-        public Builder addPartitionName(@NonNull String partitionName) {
+        public Builder addPartitionName(String partitionName) {
+            // Replace @NonNull logic with explicit null check
+            if (partitionName == null) {
+                throw new IllegalArgumentException("partitionName cannot be null");
+            }
             if (!this.partitionNames.contains(partitionName)) {
                 this.partitionNames.add(partitionName);
             }

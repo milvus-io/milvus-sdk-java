@@ -21,12 +21,7 @@ package io.milvus.param.role;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class GrantRolePrivilegeParam {
 
     private final String roleName;
@@ -39,7 +34,10 @@ public class GrantRolePrivilegeParam {
 
     private final String databaseName;
 
-    private GrantRolePrivilegeParam(@NonNull GrantRolePrivilegeParam.Builder builder) {
+    private GrantRolePrivilegeParam(GrantRolePrivilegeParam.Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.roleName = builder.roleName;
         this.object = builder.object;
         this.objectName = builder.objectName;
@@ -49,6 +47,37 @@ public class GrantRolePrivilegeParam {
 
     public static GrantRolePrivilegeParam.Builder newBuilder() {
         return new GrantRolePrivilegeParam.Builder();
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public String getObject() {
+        return object;
+    }
+
+    public String getObjectName() {
+        return objectName;
+    }
+
+    public String getPrivilege() {
+        return privilege;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "GrantRolePrivilegeParam{" +
+                "roleName='" + roleName + '\'' +
+                ", object='" + object + '\'' +
+                ", objectName='" + objectName + '\'' +
+                ", privilege='" + privilege + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     /**
@@ -81,7 +110,10 @@ public class GrantRolePrivilegeParam {
          * @param roleName roleName
          * @return <code>Builder</code>
          */
-        public GrantRolePrivilegeParam.Builder withRoleName(@NonNull String roleName) {
+        public GrantRolePrivilegeParam.Builder withRoleName(String roleName) {
+            if (roleName == null) {
+                throw new IllegalArgumentException("Role name cannot be null");
+            }
             this.roleName = roleName;
             return this;
         }
@@ -92,7 +124,10 @@ public class GrantRolePrivilegeParam {
          * @param object object
          * @return <code>Builder</code>
          */
-        public GrantRolePrivilegeParam.Builder withObject(@NonNull String object) {
+        public GrantRolePrivilegeParam.Builder withObject(String object) {
+            if (object == null) {
+                throw new IllegalArgumentException("Object cannot be null");
+            }
             this.object = object;
             return this;
         }
@@ -103,7 +138,10 @@ public class GrantRolePrivilegeParam {
          * @param objectName objectName
          * @return <code>Builder</code>
          */
-        public GrantRolePrivilegeParam.Builder withObjectName(@NonNull String objectName) {
+        public GrantRolePrivilegeParam.Builder withObjectName(String objectName) {
+            if (objectName == null) {
+                throw new IllegalArgumentException("Object name cannot be null");
+            }
             this.objectName = objectName;
             return this;
         }
@@ -114,7 +152,10 @@ public class GrantRolePrivilegeParam {
          * @param privilege privilege
          * @return <code>Builder</code>
          */
-        public GrantRolePrivilegeParam.Builder withPrivilege(@NonNull String privilege) {
+        public GrantRolePrivilegeParam.Builder withPrivilege(String privilege) {
+            if (privilege == null) {
+                throw new IllegalArgumentException("Privilege cannot be null");
+            }
             this.privilege = privilege;
             return this;
         }

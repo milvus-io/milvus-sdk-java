@@ -20,9 +20,6 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +29,6 @@ import java.util.List;
  *
  * @see <a href="https://wiki.lfaidata.foundation/display/MIL/MEP+17+--+Support+handoff+and+load+balance+segment+on+query+nodes">Handoff and load balance</a>
  */
-@Getter
-@ToString
 public class LoadBalanceParam {
     private final String databaseName;
     private final String collectionName;
@@ -41,7 +36,10 @@ public class LoadBalanceParam {
     private final List<Long> destNodeIDs;
     private final List<Long> segmentIDs;
 
-    private LoadBalanceParam(@NonNull Builder builder) {
+    private LoadBalanceParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("builder cannot be null");
+        }
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.srcNodeID = builder.srcNodeID;
@@ -51,6 +49,39 @@ public class LoadBalanceParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    // Getter methods to replace @Getter annotation
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public Long getSrcNodeID() {
+        return srcNodeID;
+    }
+
+    public List<Long> getDestNodeIDs() {
+        return destNodeIDs;
+    }
+
+    public List<Long> getSegmentIDs() {
+        return segmentIDs;
+    }
+
+    // toString method to replace @ToString annotation
+    @Override
+    public String toString() {
+        return "LoadBalanceParam{" +
+                "databaseName='" + databaseName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", srcNodeID=" + srcNodeID +
+                ", destNodeIDs=" + destNodeIDs +
+                ", segmentIDs=" + segmentIDs +
+                '}';
     }
 
     /**
@@ -83,7 +114,11 @@ public class LoadBalanceParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            // Replace @NonNull logic with explicit null check
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -94,7 +129,11 @@ public class LoadBalanceParam {
          * @param srcNodeID source query node id
          * @return <code>Builder</code>
          */
-        public Builder withSourceNodeID(@NonNull Long srcNodeID) {
+        public Builder withSourceNodeID(Long srcNodeID) {
+            // Replace @NonNull logic with explicit null check
+            if (srcNodeID == null) {
+                throw new IllegalArgumentException("srcNodeID cannot be null");
+            }
             this.srcNodeID = srcNodeID;
             return this;
         }
@@ -105,7 +144,11 @@ public class LoadBalanceParam {
          * @param destNodeID destination query node id
          * @return <code>Builder</code>
          */
-        public Builder addDestinationNodeID(@NonNull Long destNodeID) {
+        public Builder addDestinationNodeID(Long destNodeID) {
+            // Replace @NonNull logic with explicit null check
+            if (destNodeID == null) {
+                throw new IllegalArgumentException("destNodeID cannot be null");
+            }
             if (!destNodeIDs.contains(destNodeID)) {
                 destNodeIDs.add(destNodeID);
             }
@@ -119,7 +162,11 @@ public class LoadBalanceParam {
          * @param destNodeIDs destination query node id array
          * @return <code>Builder</code>
          */
-        public Builder withDestinationNodeID(@NonNull List<Long> destNodeIDs) {
+        public Builder withDestinationNodeID(List<Long> destNodeIDs) {
+            // Replace @NonNull logic with explicit null check
+            if (destNodeIDs == null) {
+                throw new IllegalArgumentException("destNodeIDs cannot be null");
+            }
             destNodeIDs.forEach(this::addDestinationNodeID);
             return this;
         }
@@ -130,7 +177,11 @@ public class LoadBalanceParam {
          * @param segmentID sealed segment id
          * @return <code>Builder</code>
          */
-        public Builder addSegmentID(@NonNull Long segmentID) {
+        public Builder addSegmentID(Long segmentID) {
+            // Replace @NonNull logic with explicit null check
+            if (segmentID == null) {
+                throw new IllegalArgumentException("segmentID cannot be null");
+            }
             if (!segmentIDs.contains(segmentID)) {
                 segmentIDs.add(segmentID);
             }
@@ -144,7 +195,11 @@ public class LoadBalanceParam {
          * @param segmentIDs sealed segments id array
          * @return <code>Builder</code>
          */
-        public Builder withSegmentIDs(@NonNull List<Long> segmentIDs) {
+        public Builder withSegmentIDs(List<Long> segmentIDs) {
+            // Replace @NonNull logic with explicit null check
+            if (segmentIDs == null) {
+                throw new IllegalArgumentException("segmentIDs cannot be null");
+            }
             segmentIDs.forEach(this::addSegmentID);
             return this;
         }
@@ -166,5 +221,4 @@ public class LoadBalanceParam {
             return new LoadBalanceParam(this);
         }
     }
-
 }

@@ -19,16 +19,64 @@
 
 package io.milvus.v2.service.database.response;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
 public class ListDatabasesResp {
-    @Builder.Default
-    private List<String> databaseNames = new ArrayList<>();
+    private List<String> databaseNames;
+
+    private ListDatabasesResp(Builder builder) {
+        this.databaseNames = builder.databaseNames;
+    }
+
+    public List<String> getDatabaseNames() {
+        return databaseNames;
+    }
+
+    public void setDatabaseNames(List<String> databaseNames) {
+        this.databaseNames = databaseNames;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ListDatabasesResp that = (ListDatabasesResp) obj;
+        return new EqualsBuilder()
+                .append(databaseNames, that.databaseNames)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return databaseNames != null ? databaseNames.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ListDatabasesResp{" +
+                "databaseNames=" + databaseNames +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private List<String> databaseNames = new ArrayList<>();
+
+        private Builder() {}
+
+        public Builder databaseNames(List<String> databaseNames) {
+            this.databaseNames = databaseNames;
+            return this;
+        }
+
+        public ListDatabasesResp build() {
+            return new ListDatabasesResp(this);
+        }
+    }
 }

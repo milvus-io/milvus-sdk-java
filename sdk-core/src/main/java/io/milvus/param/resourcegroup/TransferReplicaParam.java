@@ -22,12 +22,7 @@ package io.milvus.param.resourcegroup;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
-@Getter
-@ToString
 public class TransferReplicaParam {
     private final String sourceGroupName;
     private final String targetGroupName;
@@ -35,7 +30,10 @@ public class TransferReplicaParam {
     private final String databaseName;
     private final long replicaNumber;
 
-    private TransferReplicaParam(@NonNull Builder builder) {
+    private TransferReplicaParam(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
         this.sourceGroupName = builder.sourceGroupName;
         this.targetGroupName = builder.targetGroupName;
         this.collectionName = builder.collectionName;
@@ -45,6 +43,37 @@ public class TransferReplicaParam {
 
     public static Builder newBuilder() {
         return new Builder();
+    }
+
+    public String getSourceGroupName() {
+        return sourceGroupName;
+    }
+
+    public String getTargetGroupName() {
+        return targetGroupName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public long getReplicaNumber() {
+        return replicaNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "TransferReplicaParam{" +
+                "sourceGroupName='" + sourceGroupName + '\'' +
+                ", targetGroupName='" + targetGroupName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                ", replicaNumber=" + replicaNumber +
+                '}';
     }
 
     /**
@@ -66,7 +95,10 @@ public class TransferReplicaParam {
          * @param groupName source group name
          * @return <code>Builder</code>
          */
-        public Builder withSourceGroupName(@NonNull String groupName) {
+        public Builder withSourceGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Source group name cannot be null");
+            }
             this.sourceGroupName = groupName;
             return this;
         }
@@ -77,7 +109,10 @@ public class TransferReplicaParam {
          * @param groupName target group name
          * @return <code>Builder</code>
          */
-        public Builder withTargetGroupName(@NonNull String groupName) {
+        public Builder withTargetGroupName(String groupName) {
+            if (groupName == null) {
+                throw new IllegalArgumentException("Target group name cannot be null");
+            }
             this.targetGroupName = groupName;
             return this;
         }
@@ -88,7 +123,10 @@ public class TransferReplicaParam {
          * @param collectionName collection name
          * @return <code>Builder</code>
          */
-        public Builder withCollectionName(@NonNull String collectionName) {
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("Collection name cannot be null");
+            }
             this.collectionName = collectionName;
             return this;
         }
@@ -110,7 +148,10 @@ public class TransferReplicaParam {
          * @param replicaNumber number of replicas to transfer
          * @return <code>Builder</code>
          */
-        public Builder withReplicaNumber(@NonNull Long replicaNumber) {
+        public Builder withReplicaNumber(Long replicaNumber) {
+            if (replicaNumber == null) {
+                throw new IllegalArgumentException("Replica number cannot be null");
+            }
             this.replicaNumber = replicaNumber;
             return this;
         }

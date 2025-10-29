@@ -22,22 +22,35 @@ package io.milvus.param.collection;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
 /**
  * Parameters for <code>dropCollection</code> interface.
  */
-@Getter
-@ToString
 public class DropCollectionParam {
     private final String collectionName;
     private final String databaseName;
 
-    private DropCollectionParam(@NonNull Builder builder) {
+    private DropCollectionParam(Builder builder) {
+        if (builder.collectionName == null) {
+            throw new IllegalArgumentException("collectionName cannot be null");
+        }
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    @Override
+    public String toString() {
+        return "DropCollectionParam{" +
+                "collectionName='" + collectionName + '\'' +
+                ", databaseName='" + databaseName + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -55,24 +68,27 @@ public class DropCollectionParam {
         }
 
         /**
-         * Sets the collection name. Database name can empty or null.
+         * Sets the collection name. Collection name cannot be empty or null.
+         *
+         * @param collectionName collection name
+         * @return <code>Builder</code>
+         */
+        public Builder withCollectionName(String collectionName) {
+            if (collectionName == null) {
+                throw new IllegalArgumentException("collectionName cannot be null");
+            }
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        /**
+         * Sets the database name. Database name can be empty or null.
          *
          * @param databaseName database name
          * @return <code>Builder</code>
          */
         public Builder withDatabaseName(String databaseName) {
             this.databaseName = databaseName;
-            return this;
-        }
-
-        /**
-         * Sets the collection name. Collection name cannot be empty or null.
-         *
-         * @param collectionName collection name
-         * @return <code>Builder</code>
-         */
-        public Builder withCollectionName(@NonNull String collectionName) {
-            this.collectionName = collectionName;
             return this;
         }
 

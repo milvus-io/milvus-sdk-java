@@ -22,7 +22,6 @@ package io.milvus.v2.service.vector.request.ranker;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.experimental.SuperBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -53,12 +52,19 @@ import java.util.Map;
  *                  .param("random_score", "{\"seed\": 123, \"field\": \"id\"}")
  *                  .build();
  */
-@SuperBuilder
 public class BoostRanker extends CreateCollectionReq.Function {
     private String filter;
     private Float weight;
     private Long randomScoreSeed;
     private String randomScoreField;
+
+    private BoostRanker(Builder builder) {
+        super(builder);
+        this.filter = builder.filter;
+        this.weight = builder.weight;
+        this.randomScoreSeed = builder.randomScoreSeed;
+        this.randomScoreField = builder.randomScoreField;
+    }
 
     public FunctionType getFunctionType() {
         return FunctionType.RERANK;
@@ -85,5 +91,62 @@ public class BoostRanker extends CreateCollectionReq.Function {
             props.put("random_score", JsonUtils.toJson(randomScore));
         }
         return props;
+    }
+
+    // Getters
+    public String getFilter() {
+        return filter;
+    }
+
+    public Float getWeight() {
+        return weight;
+    }
+
+    public Long getRandomScoreSeed() {
+        return randomScoreSeed;
+    }
+
+    public String getRandomScoreField() {
+        return randomScoreField;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder extends CreateCollectionReq.Function.FunctionBuilder {
+        private String filter;
+        private Float weight;
+        private Long randomScoreSeed;
+        private String randomScoreField;
+
+        private Builder() {
+            super();
+        }
+
+        public Builder filter(String filter) {
+            this.filter = filter;
+            return this;
+        }
+
+        public Builder weight(Float weight) {
+            this.weight = weight;
+            return this;
+        }
+
+        public Builder randomScoreSeed(Long randomScoreSeed) {
+            this.randomScoreSeed = randomScoreSeed;
+            return this;
+        }
+
+        public Builder randomScoreField(String randomScoreField) {
+            this.randomScoreField = randomScoreField;
+            return this;
+        }
+
+        @Override
+        public BoostRanker build() {
+            return new BoostRanker(this);
+        }
     }
 }

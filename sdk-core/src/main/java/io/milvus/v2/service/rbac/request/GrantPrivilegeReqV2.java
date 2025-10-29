@@ -19,14 +19,119 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import lombok.Data;
-import lombok.experimental.SuperBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
-@Data
-@SuperBuilder
 public class GrantPrivilegeReqV2 {
     private String roleName;
     private String privilege;
     private String dbName;
     private String collectionName;
+
+    private GrantPrivilegeReqV2(Builder builder) {
+        this.roleName = builder.roleName;
+        this.privilege = builder.privilege;
+        this.dbName = builder.dbName;
+        this.collectionName = builder.collectionName;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getPrivilege() {
+        return privilege;
+    }
+
+    public void setPrivilege(String privilege) {
+        this.privilege = privilege;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        GrantPrivilegeReqV2 that = (GrantPrivilegeReqV2) obj;
+        return new EqualsBuilder()
+                .append(roleName, that.roleName)
+                .append(privilege, that.privilege)
+                .append(dbName, that.dbName)
+                .append(collectionName, that.collectionName)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleName != null ? roleName.hashCode() : 0;
+        result = 31 * result + (privilege != null ? privilege.hashCode() : 0);
+        result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
+        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "GrantPrivilegeReqV2{" +
+                "roleName='" + roleName + '\'' +
+                ", privilege='" + privilege + '\'' +
+                ", dbName='" + dbName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private String roleName;
+        private String privilege;
+        private String dbName;
+        private String collectionName;
+
+        private Builder() {}
+
+        public Builder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
+        }
+
+        public Builder privilege(String privilege) {
+            this.privilege = privilege;
+            return this;
+        }
+
+        public Builder dbName(String dbName) {
+            this.dbName = dbName;
+            return this;
+        }
+
+        public Builder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public GrantPrivilegeReqV2 build() {
+            return new GrantPrivilegeReqV2(this);
+        }
+    }
 }

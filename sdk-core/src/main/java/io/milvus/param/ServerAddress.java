@@ -20,7 +20,6 @@
 package io.milvus.param;
 
 import io.milvus.exception.ParamException;
-import lombok.NonNull;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
@@ -29,7 +28,13 @@ public class ServerAddress {
     private final int port;
     private final int healthPort;
 
-    private ServerAddress(@NonNull Builder builder) {
+    private ServerAddress(Builder builder) {
+        if (builder == null) {
+            throw new IllegalArgumentException("Builder cannot be null");
+        }
+        if (builder.host == null) {
+            throw new IllegalArgumentException("Host cannot be null");
+        }
         this.host = builder.host;
         this.port = builder.port;
         this.healthPort = builder.healthPort;
@@ -65,7 +70,10 @@ public class ServerAddress {
          * @param host host name/address
          * @return <code>Builder</code>
          */
-        public Builder withHost(@NonNull String host) {
+        public Builder withHost(String host) {
+            if (host == null) {
+                throw new IllegalArgumentException("Host cannot be null");
+            }
             this.host = host;
             return this;
         }
