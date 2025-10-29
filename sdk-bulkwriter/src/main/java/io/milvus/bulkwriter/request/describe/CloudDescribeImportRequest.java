@@ -19,17 +19,74 @@
 
 package io.milvus.bulkwriter.request.describe;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
     private static final long serialVersionUID = -6479634844757426430L;
     private String clusterId;
     private String jobId;
+
+    public CloudDescribeImportRequest() {
+    }
+
+    public CloudDescribeImportRequest(String clusterId, String jobId) {
+        this.clusterId = clusterId;
+        this.jobId = jobId;
+    }
+
+    protected CloudDescribeImportRequest(CloudDescribeImportRequestBuilder builder) {
+        super(builder);
+        this.clusterId = builder.clusterId;
+        this.jobId = builder.jobId;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    @Override
+    public String toString() {
+        return "CloudDescribeImportRequest{" +
+                "clusterId='" + clusterId + '\'' +
+                ", jobId='" + jobId + '\'' +
+                '}';
+    }
+
+    public static CloudDescribeImportRequestBuilder builder() {
+        return new CloudDescribeImportRequestBuilder();
+    }
+
+    public static class CloudDescribeImportRequestBuilder extends BaseDescribeImportRequestBuilder<CloudDescribeImportRequestBuilder> {
+        private String clusterId;
+        private String jobId;
+
+        private CloudDescribeImportRequestBuilder() {
+            this.clusterId = "";
+            this.jobId = "";
+        }
+
+        public CloudDescribeImportRequestBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
+            return this;
+        }
+
+        public CloudDescribeImportRequestBuilder jobId(String jobId) {
+            this.jobId = jobId;
+            return this;
+        }
+
+        public CloudDescribeImportRequest build() {
+            return new CloudDescribeImportRequest(this);
+        }
+    }
 }

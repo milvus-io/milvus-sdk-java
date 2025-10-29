@@ -21,13 +21,11 @@ package io.milvus.v2.service.collection.response;
 
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class DescribeCollectionResp {
     private String collectionName;
@@ -47,7 +45,7 @@ public class DescribeCollectionResp {
     private Integer shardsNum;
     private final Map<String, String> properties;
 
-    private DescribeCollectionResp(Builder builder) {
+    private DescribeCollectionResp(DescribeCollectionRespBuilder builder) {
         this.collectionName = builder.collectionName;
         this.collectionID = builder.collectionID;
         this.databaseName = builder.databaseName;
@@ -66,8 +64,8 @@ public class DescribeCollectionResp {
         this.properties = builder.properties != null ? builder.properties : new HashMap<>();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeCollectionRespBuilder builder() {
+        return new DescribeCollectionRespBuilder();
     }
 
     // Getters
@@ -197,41 +195,6 @@ public class DescribeCollectionResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        DescribeCollectionResp that = (DescribeCollectionResp) obj;
-        
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(collectionID, that.collectionID)
-                .append(databaseName, that.databaseName)
-                .append(description, that.description)
-                .append(numOfPartitions, that.numOfPartitions)
-                .append(fieldNames, that.fieldNames)
-                .append(vectorFieldNames, that.vectorFieldNames)
-                .append(primaryFieldName, that.primaryFieldName)
-                .append(enableDynamicField, that.enableDynamicField)
-                .append(autoID, that.autoID)
-                .append(collectionSchema, that.collectionSchema)
-                .append(createTime, that.createTime)
-                .append(createUtcTime, that.createUtcTime)
-                .append(consistencyLevel, that.consistencyLevel)
-                .append(shardsNum, that.shardsNum)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(collectionName, collectionID, databaseName, description, 
-                numOfPartitions, fieldNames, vectorFieldNames, primaryFieldName, 
-                enableDynamicField, autoID, collectionSchema, createTime, createUtcTime, 
-                consistencyLevel, shardsNum, properties);
-    }
-
-    @Override
     public String toString() {
         return "DescribeCollectionResp{" +
                 "collectionName='" + collectionName + '\'' +
@@ -253,7 +216,7 @@ public class DescribeCollectionResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class DescribeCollectionRespBuilder {
         private String collectionName;
         private Long collectionID;
         private String databaseName;
@@ -271,82 +234,82 @@ public class DescribeCollectionResp {
         private Integer shardsNum;
         private Map<String, String> properties;
 
-        public Builder collectionName(String collectionName) {
+        public DescribeCollectionRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder collectionID(Long collectionID) {
+        public DescribeCollectionRespBuilder collectionID(Long collectionID) {
             this.collectionID = collectionID;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public DescribeCollectionRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder description(String description) {
+        public DescribeCollectionRespBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public Builder numOfPartitions(Long numOfPartitions) {
+        public DescribeCollectionRespBuilder numOfPartitions(Long numOfPartitions) {
             this.numOfPartitions = numOfPartitions;
             return this;
         }
 
-        public Builder fieldNames(List<String> fieldNames) {
+        public DescribeCollectionRespBuilder fieldNames(List<String> fieldNames) {
             this.fieldNames = fieldNames;
             return this;
         }
 
-        public Builder vectorFieldNames(List<String> vectorFieldNames) {
+        public DescribeCollectionRespBuilder vectorFieldNames(List<String> vectorFieldNames) {
             this.vectorFieldNames = vectorFieldNames;
             return this;
         }
 
-        public Builder primaryFieldName(String primaryFieldName) {
+        public DescribeCollectionRespBuilder primaryFieldName(String primaryFieldName) {
             this.primaryFieldName = primaryFieldName;
             return this;
         }
 
-        public Builder enableDynamicField(Boolean enableDynamicField) {
+        public DescribeCollectionRespBuilder enableDynamicField(Boolean enableDynamicField) {
             this.enableDynamicField = enableDynamicField;
             return this;
         }
 
-        public Builder autoID(Boolean autoID) {
+        public DescribeCollectionRespBuilder autoID(Boolean autoID) {
             this.autoID = autoID;
             return this;
         }
 
-        public Builder collectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
+        public DescribeCollectionRespBuilder collectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
         }
 
-        public Builder createTime(Long createTime) {
+        public DescribeCollectionRespBuilder createTime(Long createTime) {
             this.createTime = createTime;
             return this;
         }
 
-        public Builder createUtcTime(Long createUtcTime) {
+        public DescribeCollectionRespBuilder createUtcTime(Long createUtcTime) {
             this.createUtcTime = createUtcTime;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public DescribeCollectionRespBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder shardsNum(Integer shardsNum) {
+        public DescribeCollectionRespBuilder shardsNum(Integer shardsNum) {
             this.shardsNum = shardsNum;
             return this;
         }
 
-        public Builder properties(Map<String, String> properties) {
+        public DescribeCollectionRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
             return this;
         }

@@ -23,5 +23,6 @@ import io.milvus.grpc.PlaceholderType;
 
 public interface BaseVector {
     PlaceholderType getPlaceholderType();
+
     Object getData();
 }

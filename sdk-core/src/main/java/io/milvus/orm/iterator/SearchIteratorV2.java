@@ -33,7 +33,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import static io.milvus.param.Constant.MAX_BATCH_SIZE;
@@ -77,7 +79,7 @@ public class SearchIteratorV2 {
         }
 
         searchParams = searchIteratorReq.getSearchParams();
-        if (searchParams.containsKey(Constant.OFFSET) && (int)searchParams.get(Constant.OFFSET) > 0) {
+        if (searchParams.containsKey(Constant.OFFSET) && (int) searchParams.get(Constant.OFFSET) > 0) {
             ExceptionUtils.throwUnExpectedException("Offset is not supported for SearchIterator");
         }
 
@@ -99,7 +101,7 @@ public class SearchIteratorV2 {
         if (StringUtils.isNotEmpty(searchIteratorReq.getDatabaseName())) {
             builder.setDbName(searchIteratorReq.getDatabaseName());
         }
-        DescribeCollectionResponse response = rpcUtils.retry(()->this.blockingStub.describeCollection(builder.build()));
+        DescribeCollectionResponse response = rpcUtils.retry(() -> this.blockingStub.describeCollection(builder.build()));
         String title = String.format("DescribeCollectionRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -126,7 +128,7 @@ public class SearchIteratorV2 {
                 .groupByFieldName(searchIteratorReq.getGroupByFieldName())
                 .build();
         SearchRequest searchRequest = new VectorUtils().ConvertToGrpcSearchRequest(request);
-        SearchResults response = rpcUtils.retry(()->this.blockingStub.search(searchRequest));
+        SearchResults response = rpcUtils.retry(() -> this.blockingStub.search(searchRequest));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -200,7 +202,7 @@ public class SearchIteratorV2 {
             searchParams.put("search_iter_id", iterInfo.getToken());
         }
 
-        long ts = (long)searchParams.get("guarantee_timestamp");
+        long ts = (long) searchParams.get("guarantee_timestamp");
         if (ts <= 0) {
             if (response.getSessionTs() > 0) {
                 searchParams.put("guarantee_timestamp", response.getSessionTs());

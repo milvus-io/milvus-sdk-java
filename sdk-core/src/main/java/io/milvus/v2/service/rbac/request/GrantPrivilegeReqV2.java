@@ -19,15 +19,13 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class GrantPrivilegeReqV2 {
     private String roleName;
     private String privilege;
     private String dbName;
     private String collectionName;
 
-    private GrantPrivilegeReqV2(Builder builder) {
+    private GrantPrivilegeReqV2(GrantPrivilegeReqV2Builder builder) {
         this.roleName = builder.roleName;
         this.privilege = builder.privilege;
         this.dbName = builder.dbName;
@@ -67,28 +65,6 @@ public class GrantPrivilegeReqV2 {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GrantPrivilegeReqV2 that = (GrantPrivilegeReqV2) obj;
-        return new EqualsBuilder()
-                .append(roleName, that.roleName)
-                .append(privilege, that.privilege)
-                .append(dbName, that.dbName)
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = roleName != null ? roleName.hashCode() : 0;
-        result = 31 * result + (privilege != null ? privilege.hashCode() : 0);
-        result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "GrantPrivilegeReqV2{" +
                 "roleName='" + roleName + '\'' +
@@ -98,34 +74,35 @@ public class GrantPrivilegeReqV2 {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GrantPrivilegeReqV2Builder builder() {
+        return new GrantPrivilegeReqV2Builder();
     }
 
-    public static class Builder {
+    public static class GrantPrivilegeReqV2Builder {
         private String roleName;
         private String privilege;
         private String dbName;
         private String collectionName;
 
-        private Builder() {}
+        private GrantPrivilegeReqV2Builder() {
+        }
 
-        public Builder roleName(String roleName) {
+        public GrantPrivilegeReqV2Builder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
-        public Builder privilege(String privilege) {
+        public GrantPrivilegeReqV2Builder privilege(String privilege) {
             this.privilege = privilege;
             return this;
         }
 
-        public Builder dbName(String dbName) {
+        public GrantPrivilegeReqV2Builder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GrantPrivilegeReqV2Builder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }

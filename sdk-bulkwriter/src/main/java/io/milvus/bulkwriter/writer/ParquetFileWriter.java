@@ -41,7 +41,7 @@ public class ParquetFileWriter implements FormatFileWriter {
     }
 
     private void initFilePath(String filePathPrefix) {
-        this.filePath = filePathPrefix +  ".parquet";
+        this.filePath = filePathPrefix + ".parquet";
     }
 
     private void initMessageType() {
@@ -116,29 +116,29 @@ public class ParquetFileWriter implements FormatFileWriter {
         switch (dataType) {
             case Int8:
             case Int16:
-                group.append(paramName, (Short)value);
+                group.append(paramName, (Short) value);
                 break;
             case Int32:
-                group.append(paramName, (Integer)value);
+                group.append(paramName, (Integer) value);
                 break;
             case Int64:
-                group.append(paramName, (Long)value);
+                group.append(paramName, (Long) value);
                 break;
             case Float:
-                group.append(paramName, (Float)value);
+                group.append(paramName, (Float) value);
                 break;
             case Double:
-                group.append(paramName, (Double)value);
+                group.append(paramName, (Double) value);
                 break;
             case Bool:
-                group.append(paramName, (Boolean)value);
+                group.append(paramName, (Boolean) value);
                 break;
             case VarChar:
             case String:
             case Geometry:
             case Timestamptz:
             case JSON:
-                group.append(paramName, (String)value);
+                group.append(paramName, (String) value);
                 break;
             case FloatVector:
                 addFloatArray(group, paramName, (List<Float>) value);

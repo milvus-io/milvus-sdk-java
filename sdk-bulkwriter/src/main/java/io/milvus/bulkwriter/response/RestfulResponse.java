@@ -19,23 +19,93 @@
 
 package io.milvus.bulkwriter.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 
-@Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class RestfulResponse<T> implements Serializable {
     private static final long serialVersionUID = -7162743560382861611L;
-
     private int code;
-
     private String message;
-
     private T data;
+
+    public RestfulResponse() {
+    }
+
+    public RestfulResponse(int code, String message, T data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+
+    private RestfulResponse(RestfulResponseBuilder<T> builder) {
+        this.code = builder.code;
+        this.message = builder.message;
+        this.data = builder.data;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setData(T data) {
+        this.data = data;
+    }
+
+    @Override
+    public String toString() {
+        return "RestfulResponse{" +
+                "code=" + code +
+                ", message='" + message + '\'' +
+                '}';
+    }
+
+    public static RestfulResponseBuilder<?> builder() {
+        return new RestfulResponseBuilder<>();
+    }
+
+    public static class RestfulResponseBuilder<T> {
+        private int code;
+        private String message;
+        private T data;
+
+        private RestfulResponseBuilder() {
+            this.code = 0;
+            this.message = "";
+            this.data = null;
+        }
+
+        public RestfulResponseBuilder<T> code(int code) {
+            this.code = code;
+            return this;
+        }
+
+        public RestfulResponseBuilder<T> message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        public RestfulResponseBuilder<T> data(T data) {
+            this.data = data;
+            return this;
+        }
+
+        public RestfulResponse<T> build() {
+            return new RestfulResponse<>(this);
+        }
+    }
 }

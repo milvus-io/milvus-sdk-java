@@ -19,15 +19,13 @@
 
 package io.milvus.v2.service.rbac.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class DescribeRoleResp {
     private List<GrantInfo> grantInfos;
 
-    private DescribeRoleResp(Builder builder) {
+    private DescribeRoleResp(DescribeRoleRespBuilder builder) {
         this.grantInfos = builder.grantInfos;
     }
 
@@ -40,37 +38,23 @@ public class DescribeRoleResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeRoleResp that = (DescribeRoleResp) obj;
-        return new EqualsBuilder()
-                .append(grantInfos, that.grantInfos)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return grantInfos != null ? grantInfos.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DescribeRoleResp{" +
                 "grantInfos=" + grantInfos +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeRoleRespBuilder builder() {
+        return new DescribeRoleRespBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeRoleRespBuilder {
         private List<GrantInfo> grantInfos = new ArrayList<>();
 
-        private Builder() {}
+        private DescribeRoleRespBuilder() {
+        }
 
-        public Builder grantInfos(List<GrantInfo> grantInfos) {
+        public DescribeRoleRespBuilder grantInfos(List<GrantInfo> grantInfos) {
             this.grantInfos = grantInfos;
             return this;
         }
@@ -88,7 +72,7 @@ public class DescribeRoleResp {
         private String privilege;
         private String dbName;
 
-        private GrantInfo(Builder builder) {
+        private GrantInfo(GrantInfoBuilder builder) {
             this.objectType = builder.objectType;
             this.objectName = builder.objectName;
             this.roleName = builder.roleName;
@@ -146,32 +130,6 @@ public class DescribeRoleResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            GrantInfo grantInfo = (GrantInfo) obj;
-            return new EqualsBuilder()
-                    .append(objectType, grantInfo.objectType)
-                    .append(objectName, grantInfo.objectName)
-                    .append(roleName, grantInfo.roleName)
-                    .append(grantor, grantInfo.grantor)
-                    .append(privilege, grantInfo.privilege)
-                    .append(dbName, grantInfo.dbName)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            int result = objectType != null ? objectType.hashCode() : 0;
-            result = 31 * result + (objectName != null ? objectName.hashCode() : 0);
-            result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
-            result = 31 * result + (grantor != null ? grantor.hashCode() : 0);
-            result = 31 * result + (privilege != null ? privilege.hashCode() : 0);
-            result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
-            return result;
-        }
-
-        @Override
         public String toString() {
             return "GrantInfo{" +
                     "objectType='" + objectType + '\'' +
@@ -183,11 +141,11 @@ public class DescribeRoleResp {
                     '}';
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static GrantInfoBuilder builder() {
+            return new GrantInfoBuilder();
         }
 
-        public static class Builder {
+        public static class GrantInfoBuilder {
             private String objectType;
             private String objectName;
             private String roleName;
@@ -195,34 +153,35 @@ public class DescribeRoleResp {
             private String privilege;
             private String dbName;
 
-            private Builder() {}
+            private GrantInfoBuilder() {
+            }
 
-            public Builder objectType(String objectType) {
+            public GrantInfoBuilder objectType(String objectType) {
                 this.objectType = objectType;
                 return this;
             }
 
-            public Builder objectName(String objectName) {
+            public GrantInfoBuilder objectName(String objectName) {
                 this.objectName = objectName;
                 return this;
             }
 
-            public Builder roleName(String roleName) {
+            public GrantInfoBuilder roleName(String roleName) {
                 this.roleName = roleName;
                 return this;
             }
 
-            public Builder grantor(String grantor) {
+            public GrantInfoBuilder grantor(String grantor) {
                 this.grantor = grantor;
                 return this;
             }
 
-            public Builder privilege(String privilege) {
+            public GrantInfoBuilder privilege(String privilege) {
                 this.privilege = privilege;
                 return this;
             }
 
-            public Builder dbName(String dbName) {
+            public GrantInfoBuilder dbName(String dbName) {
                 this.dbName = dbName;
                 return this;
             }

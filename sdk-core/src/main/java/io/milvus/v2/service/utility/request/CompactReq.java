@@ -19,22 +19,19 @@
 
 package io.milvus.v2.service.utility.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class CompactReq {
     private String databaseName;
     private String collectionName;
     private Boolean isClustering = Boolean.FALSE;
 
-    private CompactReq(Builder builder) {
+    private CompactReq(CompactReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.isClustering = builder.isClustering;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CompactReqBuilder builder() {
+        return new CompactReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -62,27 +59,6 @@ public class CompactReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CompactReq that = (CompactReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(isClustering, that.isClustering)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(isClustering)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "CompactReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -91,22 +67,22 @@ public class CompactReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class CompactReqBuilder {
         private String databaseName;
         private String collectionName;
         private Boolean isClustering = Boolean.FALSE;
 
-        public Builder databaseName(String databaseName) {
+        public CompactReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public CompactReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder isClustering(Boolean isClustering) {
+        public CompactReqBuilder isClustering(Boolean isClustering) {
             this.isClustering = isClustering;
             return this;
         }

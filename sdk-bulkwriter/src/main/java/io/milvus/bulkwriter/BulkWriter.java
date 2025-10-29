@@ -127,7 +127,7 @@ public abstract class BulkWriter implements AutoCloseable {
 
         switch (fileType) {
             case PARQUET:
-                this.fileWriter =  new ParquetFileWriter(collectionSchema, filePathPrefix.toString());
+                this.fileWriter = new ParquetFileWriter(collectionSchema, filePathPrefix.toString());
                 break;
             case JSON:
                 this.fileWriter = new JSONFileWriter(collectionSchema, filePathPrefix.toString());
@@ -223,7 +223,7 @@ public abstract class BulkWriter implements AutoCloseable {
             }
 
             JsonElement obj = row.get(fieldName);
-            if (obj == null ) {
+            if (obj == null) {
                 obj = JsonNull.INSTANCE;
             }
             if (outputFieldNames.contains(fieldName)) {
@@ -288,7 +288,7 @@ public abstract class BulkWriter implements AutoCloseable {
                 case Float16Vector:
                 case BFloat16Vector:
                 case SparseFloatVector:
-                case Int8Vector:{
+                case Int8Vector: {
                     Pair<Object, Integer> objectAndSize = verifyVector(obj, field);
                     rowValues.put(fieldName, objectAndSize.getLeft());
                     rowSize += objectAndSize.getRight();
@@ -369,21 +369,21 @@ public abstract class BulkWriter implements AutoCloseable {
                 return Pair.of(vector, ((List<?>) vector).size() * 4);
             case BinaryVector:
             case Int8Vector:
-                return Pair.of(vector, ((ByteBuffer)vector).limit());
+                return Pair.of(vector, ((ByteBuffer) vector).limit());
             case Float16Vector:
             case BFloat16Vector:
                 // for JSON and CSV, float16/bfloat16 vector is parsed as float values in text
                 if (this.fileType == BulkFileType.CSV || this.fileType == BulkFileType.JSON) {
-                    ByteBuffer bv = (ByteBuffer)vector;
+                    ByteBuffer bv = (ByteBuffer) vector;
                     bv.order(ByteOrder.LITTLE_ENDIAN); // ensure LITTLE_ENDIAN
                     List<Float> v = (dataType == DataType.Float16Vector) ?
                             Float16Utils.fp16BufferToVector(bv) : Float16Utils.bf16BufferToVector(bv);
                     return Pair.of(v, v.size() * 4);
                 }
                 // for PARQUET, float16/bfloat16 vector is parsed as binary
-                return Pair.of(vector, ((ByteBuffer)vector).limit() * 2);
+                return Pair.of(vector, ((ByteBuffer) vector).limit() * 2);
             case SparseFloatVector:
-                return Pair.of(vector, ((SortedMap<Long, Float>)vector).size() * 12);
+                return Pair.of(vector, ((SortedMap<Long, Float>) vector).size() * 12);
             default:
                 ExceptionUtils.throwUnExpectedException("Unknown vector type");
         }
@@ -417,7 +417,7 @@ public abstract class BulkWriter implements AutoCloseable {
         int rowSize = 0;
         DataType elementType = field.getElementType();
         if (TypeSize.contains(elementType)) {
-            rowSize = TypeSize.getSize(elementType) * ((List<?>)array).size();
+            rowSize = TypeSize.getSize(elementType) * ((List<?>) array).size();
         } else if (elementType == DataType.VarChar) {
             for (String str : (List<String>) array) {
                 rowSize += str.length();

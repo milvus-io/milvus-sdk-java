@@ -36,9 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.milvus.param.Constant.NO_CACHE_ID;
-import static io.milvus.param.Constant.MAX_BATCH_SIZE;
-import static io.milvus.param.Constant.UNLIMITED;
+import static io.milvus.param.Constant.*;
 
 public class QueryIterator {
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
@@ -200,7 +198,7 @@ public class QueryIterator {
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return " ( "+currentExpr+" ) " + " and " + filteredPKStr;
+        return " ( " + currentExpr + " ) " + " and " + filteredPKStr;
     }
 
     private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
@@ -247,7 +245,7 @@ public class QueryIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        QueryResults response = rpcUtils.retry(()->blockingStub.query(builder.build()));
+        QueryResults response = rpcUtils.retry(() -> blockingStub.query(builder.build()));
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;

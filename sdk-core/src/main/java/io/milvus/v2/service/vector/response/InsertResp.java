@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,13 +27,13 @@ public class InsertResp {
     private long InsertCnt;
     private List<Object> primaryKeys;
 
-    private InsertResp(Builder builder) {
+    private InsertResp(InsertRespBuilder builder) {
         this.InsertCnt = builder.InsertCnt;
         this.primaryKeys = builder.primaryKeys;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static InsertRespBuilder builder() {
+        return new InsertRespBuilder();
     }
 
     public long getInsertCnt() {
@@ -56,25 +53,6 @@ public class InsertResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        InsertResp that = (InsertResp) obj;
-        return new EqualsBuilder()
-                .append(InsertCnt, that.InsertCnt)
-                .append(primaryKeys, that.primaryKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(InsertCnt)
-                .append(primaryKeys)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "InsertResp{" +
                 "InsertCnt=" + InsertCnt +
@@ -82,16 +60,16 @@ public class InsertResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class InsertRespBuilder {
         private long InsertCnt;
         private List<Object> primaryKeys = new ArrayList<>();
 
-        public Builder InsertCnt(long insertCnt) {
+        public InsertRespBuilder InsertCnt(long insertCnt) {
             InsertCnt = insertCnt;
             return this;
         }
 
-        public Builder primaryKeys(List<Object> primaryKeys) {
+        public InsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
         }

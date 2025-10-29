@@ -31,6 +31,7 @@ import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
  */
 public class StageFileManagerExample {
     private static final StageFileManager stageFileManager;
+
     static {
         StageFileManagerParam stageFileManagerParam = StageFileManagerParam.newBuilder()
                 .withCloudEndpoint("https://api.cloud.zilliz.com")

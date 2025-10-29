@@ -19,16 +19,55 @@
 
 package io.milvus.bulkwriter.request.describe;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class MilvusDescribeImportRequest extends BaseDescribeImportRequest {
     private static final long serialVersionUID = 6123645882882199210L;
     private String jobId;
+
+    public MilvusDescribeImportRequest() {
+    }
+
+    public MilvusDescribeImportRequest(String jobId) {
+        this.jobId = jobId;
+    }
+
+    protected MilvusDescribeImportRequest(MilvusDescribeImportRequestBuilder builder) {
+        super(builder);
+        this.jobId = builder.jobId;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
+        this.jobId = jobId;
+    }
+
+    @Override
+    public String toString() {
+        return "MilvusDescribeImportRequest{" +
+                ", jobId='" + jobId + '\'' +
+                '}';
+    }
+
+    public static MilvusDescribeImportRequestBuilder builder() {
+        return new MilvusDescribeImportRequestBuilder();
+    }
+
+    public static class MilvusDescribeImportRequestBuilder extends BaseDescribeImportRequestBuilder<MilvusDescribeImportRequestBuilder> {
+        private String jobId;
+
+        private MilvusDescribeImportRequestBuilder() {
+            this.jobId = "";
+        }
+
+        public MilvusDescribeImportRequestBuilder jobId(String jobId) {
+            this.jobId = jobId;
+            return this;
+        }
+
+        public MilvusDescribeImportRequest build() {
+            return new MilvusDescribeImportRequest(this);
+        }
+    }
 }

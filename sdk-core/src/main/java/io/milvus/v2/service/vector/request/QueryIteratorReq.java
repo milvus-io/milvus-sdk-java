@@ -2,8 +2,6 @@ package io.milvus.v2.service.vector.request;
 
 import com.google.common.collect.Lists;
 import io.milvus.v2.common.ConsistencyLevel;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
@@ -20,7 +18,7 @@ public class QueryIteratorReq {
     private long batchSize;
     private boolean reduceStopForBest;
 
-    private QueryIteratorReq(Builder builder) {
+    private QueryIteratorReq(QueryIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -34,8 +32,8 @@ public class QueryIteratorReq {
         this.reduceStopForBest = builder.reduceStopForBest;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static QueryIteratorReqBuilder builder() {
+        return new QueryIteratorReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -127,43 +125,6 @@ public class QueryIteratorReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        QueryIteratorReq that = (QueryIteratorReq) obj;
-        return new EqualsBuilder()
-                .append(offset, that.offset)
-                .append(limit, that.limit)
-                .append(ignoreGrowing, that.ignoreGrowing)
-                .append(batchSize, that.batchSize)
-                .append(reduceStopForBest, that.reduceStopForBest)
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionNames, that.partitionNames)
-                .append(outputFields, that.outputFields)
-                .append(expr, that.expr)
-                .append(consistencyLevel, that.consistencyLevel)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionNames)
-                .append(outputFields)
-                .append(expr)
-                .append(consistencyLevel)
-                .append(offset)
-                .append(limit)
-                .append(ignoreGrowing)
-                .append(batchSize)
-                .append(reduceStopForBest)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "QueryIteratorReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -180,7 +141,7 @@ public class QueryIteratorReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class QueryIteratorReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
@@ -193,57 +154,57 @@ public class QueryIteratorReq {
         private long batchSize = 1000L;
         private boolean reduceStopForBest = false;
 
-        public Builder databaseName(String databaseName) {
+        public QueryIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public QueryIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public QueryIteratorReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder outputFields(List<String> outputFields) {
+        public QueryIteratorReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }
 
-        public Builder expr(String expr) {
+        public QueryIteratorReqBuilder expr(String expr) {
             this.expr = expr;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public QueryIteratorReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder offset(long offset) {
+        public QueryIteratorReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
-        public Builder limit(long limit) {
+        public QueryIteratorReqBuilder limit(long limit) {
             this.limit = limit;
             return this;
         }
 
-        public Builder ignoreGrowing(boolean ignoreGrowing) {
+        public QueryIteratorReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
 
-        public Builder batchSize(long batchSize) {
+        public QueryIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
-        public Builder reduceStopForBest(boolean reduceStopForBest) {
+        public QueryIteratorReqBuilder reduceStopForBest(boolean reduceStopForBest) {
             this.reduceStopForBest = reduceStopForBest;
             return this;
         }

@@ -21,7 +21,6 @@ package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class HybridSearchReq {
     // to use functionScore even you have only one ranker. Not allow to set both.
     private FunctionScore functionScore;
 
-    private HybridSearchReq(Builder builder) {
+    private HybridSearchReq(HybridSearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -188,50 +187,6 @@ public class HybridSearchReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        HybridSearchReq that = (HybridSearchReq) obj;
-        return new EqualsBuilder()
-                .append(topK, that.topK)
-                .append(limit, that.limit)
-                .append(offset, that.offset)
-                .append(roundDecimal, that.roundDecimal)
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionNames, that.partitionNames)
-                .append(searchRequests, that.searchRequests)
-                .append(ranker, that.ranker)
-                .append(functionScore, that.functionScore)
-                .append(outFields, that.outFields)
-                .append(consistencyLevel, that.consistencyLevel)
-                .append(groupByFieldName, that.groupByFieldName)
-                .append(groupSize, that.groupSize)
-                .append(strictGroupSize, that.strictGroupSize)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (partitionNames != null ? partitionNames.hashCode() : 0);
-        result = 31 * result + (searchRequests != null ? searchRequests.hashCode() : 0);
-        result = 31 * result + (ranker != null ? ranker.hashCode() : 0);
-        result = 31 * result + (functionScore != null ? functionScore.hashCode() : 0);
-        result = 31 * result + topK;
-        result = 31 * result + (int) (limit ^ (limit >>> 32));
-        result = 31 * result + (outFields != null ? outFields.hashCode() : 0);
-        result = 31 * result + (int) (offset ^ (offset >>> 32));
-        result = 31 * result + roundDecimal;
-        result = 31 * result + (consistencyLevel != null ? consistencyLevel.hashCode() : 0);
-        result = 31 * result + (groupByFieldName != null ? groupByFieldName.hashCode() : 0);
-        result = 31 * result + (groupSize != null ? groupSize.hashCode() : 0);
-        result = 31 * result + (strictGroupSize != null ? strictGroupSize.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "HybridSearchReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -252,11 +207,11 @@ public class HybridSearchReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static HybridSearchReqBuilder builder() {
+        return new HybridSearchReqBuilder();
     }
 
-    public static class Builder {
+    public static class HybridSearchReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames;
@@ -273,83 +228,84 @@ public class HybridSearchReq {
         private Integer groupSize;
         private Boolean strictGroupSize;
 
-        private Builder() {}
+        private HybridSearchReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public HybridSearchReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public HybridSearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public HybridSearchReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder searchRequests(List<AnnSearchReq> searchRequests) {
+        public HybridSearchReqBuilder searchRequests(List<AnnSearchReq> searchRequests) {
             this.searchRequests = searchRequests;
             return this;
         }
 
-        public Builder ranker(CreateCollectionReq.Function ranker) {
+        public HybridSearchReqBuilder ranker(CreateCollectionReq.Function ranker) {
             this.ranker = ranker;
             return this;
         }
 
-        public Builder functionScore(FunctionScore functionScore) {
+        public HybridSearchReqBuilder functionScore(FunctionScore functionScore) {
             this.functionScore = functionScore;
             return this;
         }
 
         // topK is deprecated, topK and limit must be the same value
         @Deprecated
-        public Builder topK(int topK) {
+        public HybridSearchReqBuilder topK(int topK) {
             this.topK = topK;
             this.limit = topK;
             return this;
         }
 
-        public Builder limit(long limit) {
+        public HybridSearchReqBuilder limit(long limit) {
             this.topK = (int) limit;
             this.limit = limit;
             return this;
         }
 
-        public Builder outFields(List<String> outFields) {
+        public HybridSearchReqBuilder outFields(List<String> outFields) {
             this.outFields = outFields;
             return this;
         }
 
-        public Builder offset(long offset) {
+        public HybridSearchReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
-        public Builder roundDecimal(int roundDecimal) {
+        public HybridSearchReqBuilder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public HybridSearchReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder groupByFieldName(String groupByFieldName) {
+        public HybridSearchReqBuilder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
         }
 
-        public Builder groupSize(Integer groupSize) {
+        public HybridSearchReqBuilder groupSize(Integer groupSize) {
             this.groupSize = groupSize;
             return this;
         }
 
-        public Builder strictGroupSize(Boolean strictGroupSize) {
+        public HybridSearchReqBuilder strictGroupSize(Boolean strictGroupSize) {
             this.strictGroupSize = strictGroupSize;
             return this;
         }

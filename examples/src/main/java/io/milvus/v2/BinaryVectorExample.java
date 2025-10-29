@@ -74,8 +74,8 @@ public class BinaryVectorExample {
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
-        Map<String,Object> extraParams = new HashMap<>();
-        extraParams.put("nlist",64);
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put("nlist", 64);
         indexes.add(IndexParam.builder()
                 .fieldName(VECTOR_FIELD)
                 .indexType(IndexParam.IndexType.BIN_IVF_FLAT)
@@ -117,7 +117,7 @@ public class BinaryVectorExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Pick some vectors from the inserted vectors to search
         // Ensure the returned top1 item's ID should be equal to target vector's ID
@@ -127,8 +127,8 @@ public class BinaryVectorExample {
             ByteBuffer targetVector = vectors.get(k);
             System.out.printf("\nANN search for vector ID=%d:\n", k);
             CommonUtils.printBinaryVector(targetVector);
-            Map<String,Object> params = new HashMap<>();
-            params.put("nprobe",16);
+            Map<String, Object> params = new HashMap<>();
+            params.put("nprobe", 16);
             SearchResp searchResp = client.search(SearchReq.builder()
                     .collectionName(COLLECTION_NAME)
                     .data(Collections.singletonList(new BinaryVec(targetVector)))
@@ -150,7 +150,7 @@ public class BinaryVectorExample {
             }
 
             SearchResp.SearchResult firstResult = results.get(0);
-            if ((long)firstResult.getId() != k) {
+            if ((long) firstResult.getId() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
                         firstResult.getId(), k));
             }

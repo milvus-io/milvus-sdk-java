@@ -6,8 +6,6 @@ import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.response.SearchResp;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,7 +32,7 @@ public class SearchIteratorReqV2 {
     private long batchSize;
     private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc;
 
-    private SearchIteratorReqV2(Builder builder) {
+    private SearchIteratorReqV2(SearchIteratorReqV2Builder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -54,8 +52,8 @@ public class SearchIteratorReqV2 {
         this.externalFilterFunc = builder.externalFilterFunc;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static SearchIteratorReqV2Builder builder() {
+        return new SearchIteratorReqV2Builder();
     }
 
     public String getDatabaseName() {
@@ -197,55 +195,6 @@ public class SearchIteratorReqV2 {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        SearchIteratorReqV2 that = (SearchIteratorReqV2) obj;
-        return new EqualsBuilder()
-                .append(topK, that.topK)
-                .append(limit, that.limit)
-                .append(roundDecimal, that.roundDecimal)
-                .append(ignoreGrowing, that.ignoreGrowing)
-                .append(batchSize, that.batchSize)
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionNames, that.partitionNames)
-                .append(metricType, that.metricType)
-                .append(vectorFieldName, that.vectorFieldName)
-                .append(filter, that.filter)
-                .append(outputFields, that.outputFields)
-                .append(vectors, that.vectors)
-                .append(searchParams, that.searchParams)
-                .append(consistencyLevel, that.consistencyLevel)
-                .append(groupByFieldName, that.groupByFieldName)
-                .append(externalFilterFunc, that.externalFilterFunc)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionNames)
-                .append(metricType)
-                .append(vectorFieldName)
-                .append(topK)
-                .append(limit)
-                .append(filter)
-                .append(outputFields)
-                .append(vectors)
-                .append(roundDecimal)
-                .append(searchParams)
-                .append(consistencyLevel)
-                .append(ignoreGrowing)
-                .append(groupByFieldName)
-                .append(batchSize)
-                .append(externalFilterFunc)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "SearchIteratorReqV2{" +
                 "databaseName='" + databaseName + '\'' +
@@ -268,7 +217,7 @@ public class SearchIteratorReqV2 {
                 '}';
     }
 
-    public static class Builder {
+    public static class SearchIteratorReqV2Builder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames = Lists.newArrayList();
@@ -287,91 +236,91 @@ public class SearchIteratorReqV2 {
         private long batchSize = 1000L;
         private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = null;
 
-        public Builder databaseName(String databaseName) {
+        public SearchIteratorReqV2Builder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public SearchIteratorReqV2Builder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public SearchIteratorReqV2Builder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder metricType(IndexParam.MetricType metricType) {
+        public SearchIteratorReqV2Builder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder vectorFieldName(String vectorFieldName) {
+        public SearchIteratorReqV2Builder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
         // topK is deprecated, topK and limit must be the same value
         @Deprecated
-        public Builder topK(int val) {
+        public SearchIteratorReqV2Builder topK(int val) {
             this.topK = val;
             this.limit = val;
             return this;
         }
 
-        public Builder limit(long val) {
+        public SearchIteratorReqV2Builder limit(long val) {
             this.topK = (int) val;
             this.limit = val;
             return this;
         }
 
-        public Builder filter(String filter) {
+        public SearchIteratorReqV2Builder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
-        public Builder outputFields(List<String> outputFields) {
+        public SearchIteratorReqV2Builder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }
 
-        public Builder vectors(List<BaseVector> vectors) {
+        public SearchIteratorReqV2Builder vectors(List<BaseVector> vectors) {
             this.vectors = vectors;
             return this;
         }
 
-        public Builder roundDecimal(int roundDecimal) {
+        public SearchIteratorReqV2Builder roundDecimal(int roundDecimal) {
             this.roundDecimal = roundDecimal;
             return this;
         }
 
-        public Builder searchParams(Map<String, Object> searchParams) {
+        public SearchIteratorReqV2Builder searchParams(Map<String, Object> searchParams) {
             this.searchParams = searchParams;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public SearchIteratorReqV2Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder ignoreGrowing(boolean ignoreGrowing) {
+        public SearchIteratorReqV2Builder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
 
-        public Builder groupByFieldName(String groupByFieldName) {
+        public SearchIteratorReqV2Builder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
         }
 
-        public Builder batchSize(long batchSize) {
+        public SearchIteratorReqV2Builder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
         }
 
-        public Builder externalFilterFunc(Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc) {
+        public SearchIteratorReqV2Builder externalFilterFunc(Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc) {
             this.externalFilterFunc = externalFilterFunc;
             return this;
         }

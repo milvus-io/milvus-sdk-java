@@ -19,15 +19,13 @@
 
 package io.milvus.v2.service.database.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListDatabasesResp {
     private List<String> databaseNames;
 
-    private ListDatabasesResp(Builder builder) {
+    private ListDatabasesResp(ListDatabasesRespBuilder builder) {
         this.databaseNames = builder.databaseNames;
     }
 
@@ -40,37 +38,23 @@ public class ListDatabasesResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        ListDatabasesResp that = (ListDatabasesResp) obj;
-        return new EqualsBuilder()
-                .append(databaseNames, that.databaseNames)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return databaseNames != null ? databaseNames.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "ListDatabasesResp{" +
                 "databaseNames=" + databaseNames +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListDatabasesRespBuilder builder() {
+        return new ListDatabasesRespBuilder();
     }
 
-    public static class Builder {
+    public static class ListDatabasesRespBuilder {
         private List<String> databaseNames = new ArrayList<>();
 
-        private Builder() {}
+        private ListDatabasesRespBuilder() {
+        }
 
-        public Builder databaseNames(List<String> databaseNames) {
+        public ListDatabasesRespBuilder databaseNames(List<String> databaseNames) {
             this.databaseNames = databaseNames;
             return this;
         }

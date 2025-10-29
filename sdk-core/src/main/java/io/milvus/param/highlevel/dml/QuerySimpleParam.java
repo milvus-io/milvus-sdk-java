@@ -22,7 +22,6 @@ package io.milvus.param.highlevel.dml;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import io.milvus.param.dml.QueryParam;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,10 +138,10 @@ public class QuerySimpleParam {
 
         /**
          * Sets the expression to query entities.
-         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param filter filtering expression
          * @return <code>Builder</code>
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
         public Builder withFilter(String filter) {
             // Replace @NonNull logic with explicit null check

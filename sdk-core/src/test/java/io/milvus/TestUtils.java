@@ -108,7 +108,7 @@ public class TestUtils {
             case Bool: {
                 List<Boolean> values = new ArrayList<>();
                 for (int i = 0; i < maxCapacity; i++) {
-                    values.add(i%10 == 0);
+                    values.add(i % 10 == 0);
                 }
                 return values;
             }
@@ -116,7 +116,7 @@ public class TestUtils {
             case Int16: {
                 List<Short> values = new ArrayList<>();
                 for (int i = 0; i < maxCapacity; i++) {
-                    values.add((short)RANDOM.nextInt(256));
+                    values.add((short) RANDOM.nextInt(256));
                 }
                 return values;
             }

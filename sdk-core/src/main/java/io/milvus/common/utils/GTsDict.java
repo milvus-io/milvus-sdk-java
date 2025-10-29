@@ -34,7 +34,8 @@ public class GTsDict {
     // be passed to construct a guarantee_ts to the server.
     private final static GTsDict TS_DICT = new GTsDict();
 
-    private GTsDict(){}
+    private GTsDict() {
+    }
 
     public static GTsDict getInstance() {
         return TS_DICT;

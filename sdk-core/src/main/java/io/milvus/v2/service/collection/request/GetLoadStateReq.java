@@ -19,15 +19,12 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class GetLoadStateReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
 
-    private GetLoadStateReq(Builder builder) {
+    private GetLoadStateReq(GetLoadStateReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -58,27 +55,6 @@ public class GetLoadStateReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetLoadStateReq that = (GetLoadStateReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetLoadStateReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -87,28 +63,29 @@ public class GetLoadStateReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetLoadStateReqBuilder builder() {
+        return new GetLoadStateReqBuilder();
     }
 
-    public static class Builder {
+    public static class GetLoadStateReqBuilder {
         private String databaseName;
         private String collectionName;
         private String partitionName;
 
-        private Builder() {}
+        private GetLoadStateReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public GetLoadStateReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public GetLoadStateReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public GetLoadStateReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }

@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,14 +29,14 @@ public class SearchResp {
     private long sessionTs; // default eventually ts
     private List<Float> recalls;
 
-    private SearchResp(Builder builder) {
+    private SearchResp(SearchRespBuilder builder) {
         this.searchResults = builder.searchResults;
         this.sessionTs = builder.sessionTs;
         this.recalls = builder.recalls;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static SearchRespBuilder builder() {
+        return new SearchRespBuilder();
     }
 
     public List<List<SearchResult>> getSearchResults() {
@@ -67,27 +64,6 @@ public class SearchResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        SearchResp that = (SearchResp) obj;
-        return new EqualsBuilder()
-                .append(sessionTs, that.sessionTs)
-                .append(searchResults, that.searchResults)
-                .append(recalls, that.recalls)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(searchResults)
-                .append(sessionTs)
-                .append(recalls)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "SearchResp{" +
                 "searchResults=" + searchResults +
@@ -96,22 +72,22 @@ public class SearchResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class SearchRespBuilder {
         private List<List<SearchResult>> searchResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
         private List<Float> recalls = new ArrayList<>();
 
-        public Builder searchResults(List<List<SearchResult>> searchResults) {
+        public SearchRespBuilder searchResults(List<List<SearchResult>> searchResults) {
             this.searchResults = searchResults;
             return this;
         }
 
-        public Builder sessionTs(long sessionTs) {
+        public SearchRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
             return this;
         }
 
-        public Builder recalls(List<Float> recalls) {
+        public SearchRespBuilder recalls(List<Float> recalls) {
             this.recalls = recalls;
             return this;
         }
@@ -127,15 +103,15 @@ public class SearchResp {
         private Object id;
         private String primaryKey;
 
-        private SearchResult(Builder builder) {
+        private SearchResult(SearchResultBuilder builder) {
             this.entity = builder.entity;
             this.score = builder.score;
             this.id = builder.id;
             this.primaryKey = builder.primaryKey;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static SearchResultBuilder builder() {
+            return new SearchResultBuilder();
         }
 
         public Map<String, Object> getEntity() {
@@ -171,55 +147,32 @@ public class SearchResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            SearchResult that = (SearchResult) obj;
-            return new EqualsBuilder()
-                    .append(entity, that.entity)
-                    .append(score, that.score)
-                    .append(id, that.id)
-                    .append(primaryKey, that.primaryKey)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(entity)
-                    .append(score)
-                    .append(id)
-                    .append(primaryKey)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "{" + getPrimaryKey() + ": " + getId() + ", Score: " + getScore() + ", OutputFields: " + entity + "}";
         }
 
-        public static class Builder {
+        public static class SearchResultBuilder {
             private Map<String, Object> entity = new HashMap<>();
             private Float score;
             private Object id;
             private String primaryKey = "id";
 
-            public Builder entity(Map<String, Object> entity) {
+            public SearchResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
                 return this;
             }
 
-            public Builder score(Float score) {
+            public SearchResultBuilder score(Float score) {
                 this.score = score;
                 return this;
             }
 
-            public Builder id(Object id) {
+            public SearchResultBuilder id(Object id) {
                 this.id = id;
                 return this;
             }
 
-            public Builder primaryKey(String primaryKey) {
+            public SearchResultBuilder primaryKey(String primaryKey) {
                 this.primaryKey = primaryKey;
                 return this;
             }

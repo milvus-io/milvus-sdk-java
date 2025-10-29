@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class CreatePrivilegeGroupReq {
     private String groupName;
 
-    private CreatePrivilegeGroupReq(Builder builder) {
+    private CreatePrivilegeGroupReq(CreatePrivilegeGroupReqBuilder builder) {
         this.groupName = builder.groupName;
     }
 
@@ -37,37 +35,23 @@ public class CreatePrivilegeGroupReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreatePrivilegeGroupReq that = (CreatePrivilegeGroupReq) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return groupName != null ? groupName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "CreatePrivilegeGroupReq{" +
                 "groupName='" + groupName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreatePrivilegeGroupReqBuilder builder() {
+        return new CreatePrivilegeGroupReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreatePrivilegeGroupReqBuilder {
         private String groupName;
 
-        private Builder() {}
+        private CreatePrivilegeGroupReqBuilder() {
+        }
 
-        public Builder groupName(String groupName) {
+        public CreatePrivilegeGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }

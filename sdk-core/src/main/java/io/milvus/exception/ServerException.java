@@ -20,13 +20,13 @@
 package io.milvus.exception;
 
 import io.milvus.grpc.ErrorCode;
-import io.milvus.param.R;
 
 /**
  * Exception for error response from server side.
  */
 public class ServerException extends MilvusException {
     protected ErrorCode compatibleCode;
+
     public ServerException(String msg, Integer code, ErrorCode compatibleCode) {
         super(msg, code);
         this.compatibleCode = compatibleCode;

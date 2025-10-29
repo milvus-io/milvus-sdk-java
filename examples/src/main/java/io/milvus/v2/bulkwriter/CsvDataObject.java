@@ -38,12 +38,15 @@ public class CsvDataObject {
     public String getVector() {
         return vector;
     }
+
     public String getPath() {
         return path;
     }
+
     public String getLabel() {
         return label;
     }
+
     public List<Float> toFloatArray() {
         return GSON_INSTANCE.fromJson(vector, new TypeToken<List<Float>>() {
         }.getType());

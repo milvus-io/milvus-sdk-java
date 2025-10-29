@@ -20,7 +20,6 @@
 package io.milvus.v2.service.cdc.request;
 
 import java.util.List;
-import java.util.Objects;
 
 public class ReplicateConfiguration {
     private List<MilvusCluster> clusters;
@@ -43,7 +42,7 @@ public class ReplicateConfiguration {
         return builder.build();
     }
 
-    private ReplicateConfiguration(Builder builder) {
+    private ReplicateConfiguration(ReplicateConfigurationBuilder builder) {
         this.clusters = builder.clusters;
         this.crossClusterTopologies = builder.crossClusterTopologies;
     }
@@ -65,18 +64,6 @@ public class ReplicateConfiguration {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        ReplicateConfiguration that = (ReplicateConfiguration) o;
-        return Objects.equals(clusters, that.clusters) && Objects.equals(crossClusterTopologies, that.crossClusterTopologies);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(clusters, crossClusterTopologies);
-    }
-
-    @Override
     public String toString() {
         return "ReplicateConfiguration{" +
                 "clusters=" + clusters +
@@ -84,20 +71,20 @@ public class ReplicateConfiguration {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ReplicateConfigurationBuilder builder() {
+        return new ReplicateConfigurationBuilder();
     }
 
-    public static class Builder {
+    public static class ReplicateConfigurationBuilder {
         private List<MilvusCluster> clusters;
         private List<CrossClusterTopology> crossClusterTopologies;
 
-        public Builder clusters(List<MilvusCluster> clusters) {
+        public ReplicateConfigurationBuilder clusters(List<MilvusCluster> clusters) {
             this.clusters = clusters;
             return this;
         }
 
-        public Builder crossClusterTopologies(List<CrossClusterTopology> crossClusterTopologies) {
+        public ReplicateConfigurationBuilder crossClusterTopologies(List<CrossClusterTopology> crossClusterTopologies) {
             this.crossClusterTopologies = crossClusterTopologies;
             return this;
         }

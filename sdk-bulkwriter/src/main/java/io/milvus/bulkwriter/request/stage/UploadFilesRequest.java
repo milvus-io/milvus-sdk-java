@@ -19,15 +19,6 @@
 
 package io.milvus.bulkwriter.request.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class UploadFilesRequest {
     /**
      * The full path of a local file or directory:
@@ -42,4 +33,69 @@ public class UploadFilesRequest {
      * To upload to a specific folder, end the path with a /, e.g., data/
      */
     private String targetStagePath;
+
+    public UploadFilesRequest() {
+    }
+
+    public UploadFilesRequest(String sourceFilePath, String targetStagePath) {
+        this.sourceFilePath = sourceFilePath;
+        this.targetStagePath = targetStagePath;
+    }
+
+    protected UploadFilesRequest(UploadFilesRequestBuilder builder) {
+        this.sourceFilePath = builder.sourceFilePath;
+        this.targetStagePath = builder.targetStagePath;
+    }
+
+    public String getSourceFilePath() {
+        return sourceFilePath;
+    }
+
+    public void setSourceFilePath(String sourceFilePath) {
+        this.sourceFilePath = sourceFilePath;
+    }
+
+    public String getTargetStagePath() {
+        return targetStagePath;
+    }
+
+    public void setTargetStagePath(String targetStagePath) {
+        this.targetStagePath = targetStagePath;
+    }
+
+    @Override
+    public String toString() {
+        return "UploadFilesRequest{" +
+                "sourceFilePath='" + sourceFilePath + '\'' +
+                ", targetStagePath='" + targetStagePath + '\'' +
+                '}';
+    }
+
+    public static UploadFilesRequestBuilder builder() {
+        return new UploadFilesRequestBuilder();
+    }
+
+    public static class UploadFilesRequestBuilder {
+        private String sourceFilePath;
+        private String targetStagePath;
+
+        private UploadFilesRequestBuilder() {
+            this.sourceFilePath = "";
+            this.targetStagePath = "";
+        }
+
+        public UploadFilesRequestBuilder sourceFilePath(String sourceFilePath) {
+            this.sourceFilePath = sourceFilePath;
+            return this;
+        }
+
+        public UploadFilesRequestBuilder targetStagePath(String targetStagePath) {
+            this.targetStagePath = targetStagePath;
+            return this;
+        }
+
+        public UploadFilesRequest build() {
+            return new UploadFilesRequest(this);
+        }
+    }
 }

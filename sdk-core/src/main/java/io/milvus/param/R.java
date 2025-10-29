@@ -42,7 +42,9 @@ public class R<T> {
         this.exception = exception;
     }
 
-    public String getMessage() { return exception.getMessage(); }
+    public String getMessage() {
+        return exception.getMessage();
+    }
 
     public Integer getStatus() {
         return status;
@@ -82,7 +84,7 @@ public class R<T> {
      * Wraps an error code and error message for failure.
      *
      * @param errorCode rpc error code
-     * @param msg error message
+     * @param msg       error message
      * @return <code>R</code>
      */
     public static <T> R<T> failed(ErrorCode errorCode, String msg) {
@@ -96,7 +98,7 @@ public class R<T> {
      * Wraps a status code and error message for failure.
      *
      * @param statusCode status code
-     * @param msg error message
+     * @param msg        error message
      * @return <code>R</code>
      */
     public static <T> R<T> failed(Status statusCode, String msg) {

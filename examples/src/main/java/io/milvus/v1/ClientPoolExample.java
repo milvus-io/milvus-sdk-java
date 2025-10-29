@@ -38,7 +38,10 @@ import io.milvus.pool.PoolConfig;
 import io.milvus.response.QueryResultsWrapper;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class ClientPoolExample {
     public static String serverUri = "http://localhost:19530";
@@ -51,6 +54,7 @@ public class ClientPoolExample {
         System.out.printf("Key '%s': %d idle clients and %d active clients%n",
                 key, pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
     }
+
     private static void printClientNumber(MilvusClientV1Pool pool) {
         System.out.println("======================================================================");
         System.out.printf("Total %d idle clients and %d active clients%n",
@@ -158,7 +162,7 @@ public class ClientPoolExample {
             Gson gson = new Gson();
             for (int i = 0; i < repeatRequests; i++) {
                 MilvusClient client = null;
-                while(client == null) {
+                while (client == null) {
                     try {
                         // getClient() might exceeds the borrowMaxWaitMillis and throw exception
                         // retry to call until it return a client
@@ -201,7 +205,7 @@ public class ClientPoolExample {
         Thread t = new Thread(() -> {
             for (int i = 0; i < repeatRequests; i++) {
                 MilvusClient client = null;
-                while(client == null) {
+                while (client == null) {
                     try {
                         // getClient() might exceeds the borrowMaxWaitMillis and throw exception
                         // retry to call until it return a client
@@ -253,7 +257,7 @@ public class ClientPoolExample {
                         .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
                         .build());
                 QueryResultsWrapper queryWrapper = new QueryResultsWrapper(queryRet.getData());
-                long rowCount = (long)queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0);
+                long rowCount = (long) queryWrapper.getFieldWrapper("count(*)").getFieldData().get(0);
                 System.out.printf("%d rows persisted in collection '%s' of database '%s'%n",
                         rowCount, CollectionName, dbName);
                 if (rowCount != expectedCount) {
@@ -359,7 +363,7 @@ public class ClientPoolExample {
         printClientNumber(pool);
 
         // check row count of each collection, there are threadCount*repeatRequests rows were inserted by multiple threads
-        verifyRowCount(pool, threadCount*repeatRequests);
+        verifyRowCount(pool, threadCount * repeatRequests);
         // drop collections
         dropCollections(pool);
         // drop databases, only after database is empty, it is able to be dropped
@@ -367,7 +371,7 @@ public class ClientPoolExample {
 
         long end = System.currentTimeMillis();
         System.out.printf("%d insert requests and %d search requests finished in %.3f seconds%n",
-                threadCount*repeatRequests*3, threadCount*repeatRequests*3, (end-start)*0.001);
+                threadCount * repeatRequests * 3, threadCount * repeatRequests * 3, (end - start) * 0.001);
 
         printClientNumber(pool);
         pool.clear(); // clear idle clients

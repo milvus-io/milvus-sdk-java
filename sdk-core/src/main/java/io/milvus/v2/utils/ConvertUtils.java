@@ -67,7 +67,7 @@ public class ConvertUtils {
     public List<QueryResp.QueryResult> getEntities(QueryResults response) {
         List<QueryResp.QueryResult> entities = new ArrayList<>();
         // count(*) ?
-        if(response.getFieldsDataList().stream().anyMatch(fieldData -> fieldData.getFieldName().equals("count(*)"))){
+        if (response.getFieldsDataList().stream().anyMatch(fieldData -> fieldData.getFieldName().equals("count(*)"))) {
             Map<String, Object> countField = new HashMap<>();
             long numOfEntities = response.getFieldsDataList().stream().filter(fieldData -> fieldData.getFieldName().equals("count(*)")).map(FieldData::getScalars).collect(Collectors.toList()).get(0).getLongData().getData(0);
             countField.put("count(*)", numOfEntities);
@@ -114,7 +114,7 @@ public class ConvertUtils {
             IndexParam.IndexType indexType = IndexParam.IndexType.None;
             IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
             Map<String, String> properties = new HashMap<>();
-            for(KeyValuePair param : params) {
+            for (KeyValuePair param : params) {
                 if (param.getKey().equals(Constant.INDEX_TYPE)) {
                     try {
                         indexType = IndexParam.IndexType.valueOf(param.getValue().toUpperCase());
@@ -136,7 +136,8 @@ public class ConvertUtils {
                     properties.put(param.getKey(), param.getValue()); // just for compatible with old versions
                     extraParams.put(param.getKey(), param.getValue());
                 } else if (param.getKey().equals(Constant.PARAMS)) {
-                    Map<String, String> tempParams = JsonUtils.fromJson(param.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    Map<String, String> tempParams = JsonUtils.fromJson(param.getValue(), new TypeToken<Map<String, String>>() {
+                    }.getType());
                     tempParams.remove(Constant.MMAP_ENABLED); // "mmap.enabled" in "params" is not processed by server
                     extraParams.putAll(tempParams);
                 } else {
@@ -176,7 +177,7 @@ public class ConvertUtils {
 
     public DescribeCollectionResp convertDescCollectionResp(DescribeCollectionResponse response) {
         Map<String, String> properties = new HashMap<>();
-        response.getPropertiesList().forEach(prop->properties.put(prop.getKey(), prop.getValue()));
+        response.getPropertiesList().forEach(prop -> properties.put(prop.getKey(), prop.getValue()));
 
         DescribeCollectionResp describeCollectionResp = DescribeCollectionResp.builder()
                 .collectionName(response.getCollectionName())

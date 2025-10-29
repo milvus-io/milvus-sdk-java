@@ -34,7 +34,7 @@ public class RpcStatus {
     public RpcStatus(String msg) {
         this.msg = msg;
     }
-    
+
     @Override
     public String toString() {
         return "RpcStatus(msg=" + msg + ")";

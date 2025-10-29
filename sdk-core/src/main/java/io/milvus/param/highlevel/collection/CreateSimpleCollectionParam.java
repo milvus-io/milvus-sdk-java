@@ -206,10 +206,10 @@ public class CreateSimpleCollectionParam {
 
         /**
          * Sets the consistency level. The default value is {@link ConsistencyLevelEnum#BOUNDED}.
-         * @see ConsistencyLevelEnum
          *
          * @param consistencyLevel consistency level
          * @return <code>Builder</code>
+         * @see ConsistencyLevelEnum
          */
         public Builder withConsistencyLevel(ConsistencyLevelEnum consistencyLevel) {
             if (consistencyLevel == null) {
@@ -244,7 +244,7 @@ public class CreateSimpleCollectionParam {
             if (maxLength == null) {
                 throw new IllegalArgumentException("maxLength cannot be null");
             }
-            this.maxLength =  maxLength;
+            this.maxLength = maxLength;
             return this;
         }
 

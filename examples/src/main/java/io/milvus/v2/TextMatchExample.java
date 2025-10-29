@@ -73,7 +73,7 @@ public class TextMatchExample {
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (List<SearchResp.SearchResult> results : searchResults) {
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
+                System.out.printf("ID: %d, Score: %f, %s\n", (long) result.getId(), result.getScore(), result.getEntity().toString());
             }
         }
         System.out.println("=============================================================");
@@ -162,7 +162,7 @@ public class TextMatchExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows in collection\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows in collection\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // TEXT_MATCH requires the data is persisted
         client.flush(FlushReq.builder().collectionNames(Collections.singletonList(COLLECTION_NAME)).build());

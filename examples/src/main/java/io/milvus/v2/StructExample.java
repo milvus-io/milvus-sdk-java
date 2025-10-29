@@ -47,6 +47,7 @@ import java.util.*;
 
 public class StructExample {
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
@@ -184,9 +185,10 @@ public class StructExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
     }
+
     private static List<QueryResp.QueryResult> query(String filter) {
         System.out.println("===================================================");
         System.out.println("Query with filter expression: " + filter);
@@ -244,10 +246,10 @@ public class StructExample {
             // in the insertData() method, we inserted 5 structures for each row
             // in query results, each struct is represented as a Map
             Map<String, Object> fetchedEntity = result.getEntity();
-            List<Map<String, Object>> structs = (List<Map<String, Object>>)fetchedEntity.get(STRUCT_FIELD);
+            List<Map<String, Object>> structs = (List<Map<String, Object>>) fetchedEntity.get(STRUCT_FIELD);
             EmbeddingList embList = new EmbeddingList();
             for (Map<String, Object> struct : structs) {
-                List<Float> vector = (List<Float>)struct.get(CLIP_VECTOR_FIELD);
+                List<Float> vector = (List<Float>) struct.get(CLIP_VECTOR_FIELD);
                 embList.add(new FloatVec(vector));
             }
             search(CLIP_VECTOR_FIELD, Collections.singletonList(embList));

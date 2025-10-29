@@ -29,6 +29,7 @@ public class Int8Vec implements BaseVector {
     public Int8Vec(ByteBuffer data) {
         this.data = data;
     }
+
     public Int8Vec(byte[] data) {
         this.data = ByteBuffer.wrap(data);
     }

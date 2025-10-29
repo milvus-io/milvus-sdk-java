@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +27,7 @@ public class DropCollectionPropertiesReq {
     private String databaseName;
     private List<String> propertyKeys = new ArrayList<>();
 
-    private DropCollectionPropertiesReq(Builder builder) {
+    private DropCollectionPropertiesReq(DropCollectionPropertiesReqBuilder builder) {
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.propertyKeys = builder.propertyKeys;
@@ -61,27 +58,6 @@ public class DropCollectionPropertiesReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DropCollectionPropertiesReq that = (DropCollectionPropertiesReq) obj;
-        return new EqualsBuilder()
-                .append(collectionName, that.collectionName)
-                .append(databaseName, that.databaseName)
-                .append(propertyKeys, that.propertyKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(collectionName)
-                .append(databaseName)
-                .append(propertyKeys)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DropCollectionPropertiesReq{" +
                 "collectionName='" + collectionName + '\'' +
@@ -90,28 +66,29 @@ public class DropCollectionPropertiesReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropCollectionPropertiesReqBuilder builder() {
+        return new DropCollectionPropertiesReqBuilder();
     }
 
-    public static class Builder {
+    public static class DropCollectionPropertiesReqBuilder {
         private String collectionName;
         private String databaseName;
         private List<String> propertyKeys = new ArrayList<>();
 
-        private Builder() {}
+        private DropCollectionPropertiesReqBuilder() {
+        }
 
-        public Builder collectionName(String collectionName) {
+        public DropCollectionPropertiesReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder databaseName(String databaseName) {
+        public DropCollectionPropertiesReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder propertyKeys(List<String> propertyKeys) {
+        public DropCollectionPropertiesReqBuilder propertyKeys(List<String> propertyKeys) {
             this.propertyKeys = propertyKeys;
             return this;
         }

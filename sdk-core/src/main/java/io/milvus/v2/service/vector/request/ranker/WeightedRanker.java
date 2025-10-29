@@ -25,8 +25,6 @@ import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,23 +33,23 @@ import java.util.Map;
  * The Average Weighted Scoring reranking strategy, which prioritizes vectors based on relevance,
  * averaging their significance.
  * Read the doc for more info: https://milvus.io/docs/weighted-ranker.md
- *
+ * <p>
  * Note: In v2.6, the Function and Rerank have been unified to support more rerank types: decay and model ranker
  * https://milvus.io/docs/decay-ranker-overview.md
  * https://milvus.io/docs/model-ranker-overview.md
  * So we have to inherit the BaseRanker from Function, this change will lead to uncomfortable issues with
  * RRFRanker/WeightedRanker in some users client code. We will mention it in release note.
  * In old client code, to declare a WeightedRanker:
- *   WeightedRanker ranker = new WeightedRanker(Arrays.asList(0.2f, 0.5f, 0.6f))
+ * WeightedRanker ranker = new WeightedRanker(Arrays.asList(0.2f, 0.5f, 0.6f))
  * After this change, the client code should be changed accordingly:
- *   WeightedRanker ranker = WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build()
- *
+ * WeightedRanker ranker = WeightedRanker.builder().weights(Arrays.asList(0.2f, 0.5f, 0.6f)).build()
+ * <p>
  * You also can declare a weighter ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
- *                 .functionType(FunctionType.RERANK)
- *                 .param("strategy", "weighted")
- *                 .param("params", "{\"weights\": [0.4, 0.6]}")
- *                 .build();
+ * .functionType(FunctionType.RERANK)
+ * .param("strategy", "weighted")
+ * .param("params", "{\"weights\": [0.4, 0.6]}")
+ * .build();
  */
 public class WeightedRanker extends CreateCollectionReq.Function {
     private List<Float> weights;
@@ -66,7 +64,7 @@ public class WeightedRanker extends CreateCollectionReq.Function {
         this.weights = weights;
     }
 
-    private WeightedRanker(FunctionBuilder builder) {
+    private WeightedRanker(WeightedRankerBuilder builder) {
         super(builder);
         this.weights = builder.weights;
     }
@@ -96,24 +94,6 @@ public class WeightedRanker extends CreateCollectionReq.Function {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        if (!super.equals(obj)) return false;
-        WeightedRanker that = (WeightedRanker) obj;
-        return new EqualsBuilder()
-                .append(weights, that.weights)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (weights != null ? weights.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "WeightedRanker{" +
                 "weights=" + weights +
@@ -126,62 +106,22 @@ public class WeightedRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
-    public static FunctionBuilder builder() {
-        return new FunctionBuilder();
+    public static WeightedRankerBuilder builder() {
+        return new WeightedRankerBuilder();
     }
 
-    public static class FunctionBuilder extends Function.FunctionBuilder {
+    public static class WeightedRankerBuilder extends Function.FunctionBuilder<WeightedRankerBuilder> {
         private List<Float> weights = new ArrayList<>();
 
-        private FunctionBuilder() {}
+        private WeightedRankerBuilder() {
+        }
 
-        public FunctionBuilder weights(List<Float> weights) {
+        public WeightedRankerBuilder weights(List<Float> weights) {
             this.weights = weights;
             return this;
         }
 
         @Override
-        public FunctionBuilder name(String name) {
-            super.name(name);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder description(String description) {
-            super.description(description);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder functionType(io.milvus.common.clientenum.FunctionType functionType) {
-            super.functionType(functionType);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder inputFieldNames(java.util.List<String> inputFieldNames) {
-            super.inputFieldNames(inputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder outputFieldNames(java.util.List<String> outputFieldNames) {
-            super.outputFieldNames(outputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder params(java.util.Map<String, String> params) {
-            super.params(params);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder param(String key, String value) {
-            super.param(key, value);
-            return this;
-        }
-
         public WeightedRanker build() {
             return new WeightedRanker(this);
         }

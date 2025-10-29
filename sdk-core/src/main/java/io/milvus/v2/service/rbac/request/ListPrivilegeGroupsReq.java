@@ -19,27 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class ListPrivilegeGroupsReq {
-
-    private ListPrivilegeGroupsReq(Builder builder) {
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        return new EqualsBuilder()
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .toHashCode();
+    private ListPrivilegeGroupsReq(ListPrivilegeGroupsReqBuilder builder) {
     }
 
     @Override
@@ -48,13 +31,14 @@ public class ListPrivilegeGroupsReq {
                 .toString();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ListPrivilegeGroupsReqBuilder builder() {
+        return new ListPrivilegeGroupsReqBuilder();
     }
 
-    public static class Builder {
+    public static class ListPrivilegeGroupsReqBuilder {
 
-        private Builder() {}
+        private ListPrivilegeGroupsReqBuilder() {
+        }
 
         public ListPrivilegeGroupsReq build() {
             return new ListPrivilegeGroupsReq(this);

@@ -20,10 +20,10 @@
 package io.milvus.param.dml.ranker;
 
 import com.google.gson.JsonObject;
+import io.milvus.exception.ParamException;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import io.milvus.exception.ParamException;
 
 /**
  * The RRF reranking strategy, which merges results from multiple searches, favoring items that consistently appear.

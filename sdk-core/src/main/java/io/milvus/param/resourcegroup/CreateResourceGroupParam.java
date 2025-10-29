@@ -82,7 +82,7 @@ public class CreateResourceGroupParam {
 
         /**
          * Sets the resource group config.
-         * 
+         *
          * @param config configuration of resource group
          * @return <code>Builder</code>
          */

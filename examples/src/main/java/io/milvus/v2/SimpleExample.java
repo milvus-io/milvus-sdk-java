@@ -19,14 +19,22 @@
 
 package io.milvus.v2;
 
-import com.google.gson.*;
-import io.milvus.v2.client.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import io.milvus.v2.client.ConnectConfig;
+import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.vector.request.*;
+import io.milvus.v2.service.vector.request.GetReq;
+import io.milvus.v2.service.vector.request.InsertReq;
+import io.milvus.v2.service.vector.request.QueryReq;
+import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.FloatVec;
-import io.milvus.v2.service.vector.response.*;
+import io.milvus.v2.service.vector.response.GetResp;
+import io.milvus.v2.service.vector.response.InsertResp;
+import io.milvus.v2.service.vector.response.QueryResp;
+import io.milvus.v2.service.vector.response.SearchResp;
 
 import java.util.*;
 
@@ -57,7 +65,7 @@ public class SimpleExample {
         for (int i = 0; i < 100; i++) {
             JsonObject row = new JsonObject();
             row.addProperty("id", i);
-            row.add("vector", gson.toJsonTree(new float[]{i, (float) i /2, (float) i /3, (float) i /4}));
+            row.add("vector", gson.toJsonTree(new float[]{i, (float) i / 2, (float) i / 3, (float) i / 4}));
             row.addProperty(String.format("dynamic_%d", i), "this is dynamic value"); // this value is stored in dynamic field
             rows.add(row);
         }
@@ -73,7 +81,7 @@ public class SimpleExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Retrieve
         List<Object> ids = Arrays.asList(1L, 50L);
@@ -99,7 +107,7 @@ public class SimpleExample {
         System.out.println("\nSearch results:");
         for (List<SearchResp.SearchResult> results : searchResults) {
             for (SearchResp.SearchResult result : results) {
-                System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
+                System.out.printf("ID: %d, Score: %f, %s\n", (long) result.getId(), result.getScore(), result.getEntity().toString());
             }
         }
 
@@ -128,7 +136,7 @@ public class SimpleExample {
             System.out.println("\nSearch with template results:");
             for (List<SearchResp.SearchResult> results : searchResults2) {
                 for (SearchResp.SearchResult result : results) {
-                    System.out.printf("ID: %d, Score: %f, %s\n", (long)result.getId(), result.getScore(), result.getEntity().toString());
+                    System.out.printf("ID: %d, Score: %f, %s\n", (long) result.getId(), result.getScore(), result.getEntity().toString());
                 }
             }
         });

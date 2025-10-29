@@ -126,7 +126,7 @@ public class ArrayFieldExample {
             List<String> strArray = new ArrayList<>();
             int capacity = random.nextInt(5) + 5;
             for (int k = 0; k < capacity; k++) {
-                intArray.add((i+k)%100);
+                intArray.add((i + k) % 100);
                 strArray.add(String.format("string-%d-%d", i, k));
             }
             row.add("array_int32", JsonUtils.toJsonTree(intArray).getAsJsonArray());
@@ -145,7 +145,7 @@ public class ArrayFieldExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows in collection\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows in collection\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Query by filtering expression
         queryWithExpr(client, "array_int32[0] == 99");

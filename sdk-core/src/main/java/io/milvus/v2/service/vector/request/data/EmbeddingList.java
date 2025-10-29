@@ -73,7 +73,7 @@ public class EmbeddingList implements BaseVector {
             case FloatVector:
                 List<Object> floats = new ArrayList<>();
                 for (BaseVector vec : data) {
-                    floats.addAll((List<Object>)vec.getData());
+                    floats.addAll((List<Object>) vec.getData());
                 }
                 return floats;
             default:

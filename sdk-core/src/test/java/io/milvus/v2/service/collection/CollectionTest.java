@@ -77,14 +77,14 @@ class CollectionTest extends BaseTest {
         Assertions.assertTrue(req.getEnableDynamicField());
         Assertions.assertTrue(req.getCollectionSchema().isEnableDynamicField());
 
-        assertThrows(MilvusClientException.class, () ->CreateCollectionReq.builder()
+        assertThrows(MilvusClientException.class, () -> CreateCollectionReq.builder()
                 .collectionName("test")
                 .enableDynamicField(false)
                 .collectionSchema(collectionSchema)
                 .build()
         );
 
-        assertThrows(MilvusClientException.class, () ->CreateCollectionReq.builder()
+        assertThrows(MilvusClientException.class, () -> CreateCollectionReq.builder()
                 .collectionName("test")
                 .collectionSchema(collectionSchema)
                 .enableDynamicField(false)
@@ -147,6 +147,7 @@ class CollectionTest extends BaseTest {
                 .build();
         Boolean resp = client_v2.hasCollection(req);
     }
+
     @Test
     void testDescribeCollection() {
         DescribeCollectionReq req = DescribeCollectionReq.builder()

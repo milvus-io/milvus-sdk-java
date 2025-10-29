@@ -19,20 +19,21 @@
 
 package io.milvus.response;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.ProtocolStringList;
+import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
-import io.milvus.exception.IllegalResponseException;
-
 import io.milvus.param.ParamUtils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.google.protobuf.ByteString;
 
 import static io.milvus.grpc.DataType.JSON;
 
@@ -85,19 +86,19 @@ public class FieldDataWrapper {
     // for float16 vector, each dimension 2 bytes
     private int checkDim(DataType dt, ByteString data, int dim) {
         if (dt == DataType.BinaryVector) {
-            if ((data.size()*8) % dim != 0) {
+            if ((data.size() * 8) % dim != 0) {
                 String msg = String.format("Returned binary vector data array size %d doesn't match dimension %d",
                         data.size(), dim);
                 throw new IllegalResponseException(msg);
             }
-            return dim/8;
+            return dim / 8;
         } else if (dt == DataType.Float16Vector || dt == DataType.BFloat16Vector) {
-            if (data.size() % (dim*2) != 0) {
+            if (data.size() % (dim * 2) != 0) {
                 String msg = String.format("Returned float16 vector data array size %d doesn't match dimension %d",
                         data.size(), dim);
                 throw new IllegalResponseException(msg);
             }
-            return dim*2;
+            return dim * 2;
         } else if (dt == DataType.Int8Vector) {
             if (data.size() % dim != 0) {
                 String msg = String.format("Returned int8 vector data array size %d doesn't match dimension %d",
@@ -145,7 +146,7 @@ public class FieldDataWrapper {
                     throw new IllegalResponseException(msg);
                 }
 
-                return data.size()/dim;
+                return data.size() / dim;
             }
             case BinaryVector:
             case Float16Vector:
@@ -155,7 +156,7 @@ public class FieldDataWrapper {
                 ByteString data = getVectorBytes(fieldData.getVectors(), dt);
                 int bytePerVec = checkDim(dt, data, dim);
 
-                return data.size()/bytePerVec;
+                return data.size() / bytePerVec;
             }
             case SparseFloatVector: {
                 // for sparse vector, each content is a vector
@@ -204,20 +205,20 @@ public class FieldDataWrapper {
 
     /**
      * Returns the field data according to its type:
-     *      FloatVector field returns List of List Float,
-     *      BinaryVector/Float16Vector/BFloat16Vector fields return List of ByteBuffer
-     *      SparseFloatVector field returns List of SortedMap[Long, Float]
-     *      Int64 field returns List of Long
-     *      Int32/Int16/Int8 fields return List of Integer
-     *      Bool field returns List of Boolean
-     *      Float field returns List of Float
-     *      Double field returns List of Double
-     *      Varchar field returns List of String
-     *      Array field returns List of List
-     *      JSON field returns List of String;
-     *      Struct field returns List of List<Map<String, Object>>
-     *      etc.
-     *
+     * FloatVector field returns List of List Float,
+     * BinaryVector/Float16Vector/BFloat16Vector fields return List of ByteBuffer
+     * SparseFloatVector field returns List of SortedMap[Long, Float]
+     * Int64 field returns List of Long
+     * Int32/Int16/Int8 fields return List of Integer
+     * Bool field returns List of Boolean
+     * Float field returns List of Float
+     * Double field returns List of Double
+     * Varchar field returns List of String
+     * Array field returns List of List
+     * JSON field returns List of String;
+     * Struct field returns List of List<Map<String, Object>>
+     * etc.
+     * <p>
      * Throws {@link IllegalResponseException} if the field type is illegal.
      *
      * @return <code>List</code>
@@ -435,7 +436,7 @@ public class FieldDataWrapper {
             for (int k = 0; k < elementCount; k++) {
                 Map<String, Object> struct = new HashMap<>();
                 int finalK = k;
-                rowColumn.forEach((key, val)->struct.put(key, val.get(finalK)));
+                rowColumn.forEach((key, val) -> struct.put(key, val.get(finalK)));
                 structs.add(struct);
             }
             packData.add(structs);
@@ -455,7 +456,7 @@ public class FieldDataWrapper {
         if (isJsonField()) {
             JsonElement jsonElement = parseObjectData(index);
             if (jsonElement instanceof JsonObject) {
-                return ((JsonObject)jsonElement).get(paramName).getAsString();
+                return ((JsonObject) jsonElement).get(paramName).getAsString();
             } else {
                 throw new IllegalResponseException("The JSON element is not a dict");
             }
@@ -482,10 +483,10 @@ public class FieldDataWrapper {
     /**
      * Gets a field's value by field name.
      *
-     * @param index which row
+     * @param index     which row
      * @param paramName which field
      * @return returns Long for integer value, returns Double for decimal value,
-     *   returns String for string value, returns JsonElement for JSON object and Array.
+     * returns String for string value, returns JsonElement for JSON object and Array.
      */
     public Object get(int index, String paramName) throws IllegalResponseException {
         if (!isJsonField()) {
@@ -497,7 +498,7 @@ public class FieldDataWrapper {
             throw new IllegalResponseException("The JSON element is not a dict");
         }
 
-        JsonElement element = ((JsonObject)jsonElement).get(paramName);
+        JsonElement element = ((JsonObject) jsonElement).get(paramName);
         return ValueOfJSONElement(element);
     }
 
@@ -519,7 +520,7 @@ public class FieldDataWrapper {
             throw new IllegalResponseException("Object cannot be null");
         }
         if (object instanceof String) {
-            return JsonParser.parseString((String)object);
+            return JsonParser.parseString((String) object);
         } else if (object instanceof byte[]) {
             return JsonParser.parseString(new String((byte[]) object));
         } else {

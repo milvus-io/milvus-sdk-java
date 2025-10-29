@@ -58,6 +58,7 @@ class IndexTest extends BaseTest {
                 .build();
         client_v2.createIndex(createIndexReq);
     }
+
     @Test
     void testDescribeIndex() {
         DescribeIndexReq describeIndexReq = DescribeIndexReq.builder()
@@ -67,6 +68,7 @@ class IndexTest extends BaseTest {
         DescribeIndexResp responseR = client_v2.describeIndex(describeIndexReq);
         logger.info(responseR.toString());
     }
+
     @Test
     void testDropIndex() {
         DropIndexReq dropIndexReq = DropIndexReq.builder()

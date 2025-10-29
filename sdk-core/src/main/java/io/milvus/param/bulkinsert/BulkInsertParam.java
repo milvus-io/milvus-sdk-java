@@ -95,6 +95,7 @@ public class BulkInsertParam {
         private String partitionName;
         private final List<String> files = new ArrayList<>();
         private final Map<String, String> options = new HashMap<>();
+
         private Builder() {
         }
 
@@ -167,7 +168,7 @@ public class BulkInsertParam {
         /**
          * Sets the options of the request
          *
-         * @param key a <code>List</code> of {@link String}
+         * @param key   a <code>List</code> of {@link String}
          * @param value a <code>List</code> of {@link String}
          * @return <code>Builder</code>
          */

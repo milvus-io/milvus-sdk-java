@@ -33,9 +33,11 @@ public class BulkImportUtils extends BaseRestful {
     public static String bulkImport(String url, BaseImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/create";
 
-        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
+        }.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
+        }.getType());
         handleResponse(requestURL, response);
         return body;
     }
@@ -43,9 +45,11 @@ public class BulkImportUtils extends BaseRestful {
     public static String getImportProgress(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/describe";
 
-        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
+        }.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
+        }.getType());
         handleResponse(requestURL, response);
         return body;
     }
@@ -53,9 +57,11 @@ public class BulkImportUtils extends BaseRestful {
     public static String listImportJobs(String url, BaseListImportJobsRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/list";
 
-        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
+        }.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>(){}.getType());
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
+        }.getType());
         handleResponse(requestURL, response);
         return body;
     }

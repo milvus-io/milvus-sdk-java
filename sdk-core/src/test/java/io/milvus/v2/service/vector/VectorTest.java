@@ -19,7 +19,7 @@
 
 package io.milvus.v2.service.vector;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.vector.request.*;
@@ -130,7 +130,7 @@ class VectorTest extends BaseTest {
                     .build();
             SearchResp statusR = client_v2.search(request);
             logger.info(statusR.toString());
-            System.out.println(statusR.toString());
+            System.out.println(statusR);
         });
     }
 
@@ -145,7 +145,7 @@ class VectorTest extends BaseTest {
     }
 
     @Test
-    void testDeleteById(){
+    void testDeleteById() {
         DeleteReq request = DeleteReq.builder()
                 .collectionName("test")
                 .ids(Collections.singletonList("0"))

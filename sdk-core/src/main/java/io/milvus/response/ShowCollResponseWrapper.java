@@ -49,7 +49,7 @@ public class ShowCollResponseWrapper {
      */
     public List<CollectionInfo> getCollectionsInfo() throws IllegalResponseException {
         if (response.getCollectionNamesCount() != response.getCollectionIdsCount()
-            || response.getCollectionNamesCount() != response.getCreatedUtcTimestampsCount()) {
+                || response.getCollectionNamesCount() != response.getCreatedUtcTimestampsCount()) {
             throw new IllegalResponseException("Collection information count doesn't match");
         }
 

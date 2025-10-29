@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class AddPrivilegesToGroupReq {
     private String groupName;
     private List<String> privileges = new ArrayList<>();
 
-    private AddPrivilegesToGroupReq(Builder builder) {
+    private AddPrivilegesToGroupReq(AddPrivilegesToGroupReqBuilder builder) {
         this.groupName = builder.groupName;
         this.privileges = builder.privileges;
     }
@@ -50,24 +48,6 @@ public class AddPrivilegesToGroupReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AddPrivilegesToGroupReq that = (AddPrivilegesToGroupReq) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .append(privileges, that.privileges)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = groupName != null ? groupName.hashCode() : 0;
-        result = 31 * result + (privileges != null ? privileges.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "AddPrivilegesToGroupReq{" +
                 "groupName='" + groupName + '\'' +
@@ -75,22 +55,23 @@ public class AddPrivilegesToGroupReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static AddPrivilegesToGroupReqBuilder builder() {
+        return new AddPrivilegesToGroupReqBuilder();
     }
 
-    public static class Builder {
+    public static class AddPrivilegesToGroupReqBuilder {
         private String groupName;
         private List<String> privileges = new ArrayList<>();
 
-        private Builder() {}
+        private AddPrivilegesToGroupReqBuilder() {
+        }
 
-        public Builder groupName(String groupName) {
+        public AddPrivilegesToGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
-        public Builder privileges(List<String> privileges) {
+        public AddPrivilegesToGroupReqBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
         }

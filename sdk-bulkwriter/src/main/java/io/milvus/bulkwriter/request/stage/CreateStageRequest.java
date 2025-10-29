@@ -19,17 +19,91 @@
 
 package io.milvus.bulkwriter.request.stage;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 public class CreateStageRequest {
     private String projectId;
     private String regionId;
     private String stageName;
+
+    public CreateStageRequest() {
+    }
+
+    public CreateStageRequest(String projectId, String regionId, String stageName) {
+        this.projectId = projectId;
+        this.regionId = regionId;
+        this.stageName = stageName;
+    }
+
+    protected CreateStageRequest(CreateStageRequestBuilder builder) {
+        this.projectId = builder.projectId;
+        this.regionId = builder.regionId;
+        this.stageName = builder.stageName;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    @Override
+    public String toString() {
+        return "CreateStageRequest{" +
+                "projectId='" + projectId + '\'' +
+                ", regionId='" + regionId + '\'' +
+                ", stageName='" + stageName + '\'' +
+                '}';
+    }
+
+    public static CreateStageRequestBuilder builder() {
+        return new CreateStageRequestBuilder();
+    }
+
+    public static class CreateStageRequestBuilder {
+        private String projectId;
+        private String regionId;
+        private String stageName;
+
+        private CreateStageRequestBuilder() {
+            this.projectId = "";
+            this.regionId = "";
+            this.stageName = "";
+        }
+
+        public CreateStageRequestBuilder projectId(String projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        public CreateStageRequestBuilder regionId(String regionId) {
+            this.regionId = regionId;
+            return this;
+        }
+
+        public CreateStageRequestBuilder stageName(String stageName) {
+            this.stageName = stageName;
+            return this;
+        }
+
+        public CreateStageRequest build() {
+            return new CreateStageRequest(this);
+        }
+    }
 }

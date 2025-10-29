@@ -82,10 +82,10 @@ public class CollectionSchemaParam {
 
         /**
          * Sets the fieldTypes of the schema. The fieldTypes cannot be empty or null.
-         * @see FieldType
          *
          * @param fieldTypes a <code>List</code> of {@link FieldType}
          * @return <code>Builder</code>
+         * @see FieldType
          */
         public Builder withFieldTypes(List<FieldType> fieldTypes) {
             if (fieldTypes == null) {
@@ -97,10 +97,10 @@ public class CollectionSchemaParam {
 
         /**
          * Adds a field.
-         * @see FieldType
          *
          * @param fieldType a {@link FieldType} object
          * @return <code>Builder</code>
+         * @see FieldType
          */
         public Builder addFieldType(FieldType fieldType) {
             if (fieldType == null) {

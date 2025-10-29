@@ -19,9 +19,6 @@
 
 package io.milvus.v2.common;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.Map;
 
 public class IndexParam {
@@ -32,7 +29,7 @@ public class IndexParam {
     private Map<String, Object> extraParams;
 
     // Constructor for builder
-    private IndexParam(Builder builder) {
+    private IndexParam(IndexParamBuilder builder) {
         if (builder.fieldName == null) {
             throw new NullPointerException("fieldName cannot be null");
         }
@@ -43,8 +40,8 @@ public class IndexParam {
         this.extraParams = builder.extraParams;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static IndexParamBuilder builder() {
+        return new IndexParamBuilder();
     }
 
     // Getters
@@ -93,33 +90,6 @@ public class IndexParam {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        IndexParam that = (IndexParam) o;
-
-        return new EqualsBuilder()
-                .append(fieldName, that.fieldName)
-                .append(indexName, that.indexName)
-                .append(indexType, that.indexType)
-                .append(metricType, that.metricType)
-                .append(extraParams, that.extraParams)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(fieldName)
-                .append(indexName)
-                .append(indexType)
-                .append(metricType)
-                .append(extraParams)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "IndexParam{" +
                 "fieldName='" + fieldName + '\'' +
@@ -131,14 +101,14 @@ public class IndexParam {
     }
 
     // Public Builder class
-    public static class Builder {
+    public static class IndexParamBuilder {
         private String fieldName;
         private String indexName;
         private IndexType indexType = IndexType.AUTOINDEX;
         private MetricType metricType;
         private Map<String, Object> extraParams;
 
-        public Builder fieldName(String fieldName) {
+        public IndexParamBuilder fieldName(String fieldName) {
             if (fieldName == null) {
                 throw new NullPointerException("fieldName cannot be null");
             }
@@ -146,22 +116,22 @@ public class IndexParam {
             return this;
         }
 
-        public Builder indexName(String indexName) {
+        public IndexParamBuilder indexName(String indexName) {
             this.indexName = indexName;
             return this;
         }
 
-        public Builder indexType(IndexType indexType) {
+        public IndexParamBuilder indexType(IndexType indexType) {
             this.indexType = indexType;
             return this;
         }
 
-        public Builder metricType(MetricType metricType) {
+        public IndexParamBuilder metricType(MetricType metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder extraParams(Map<String, Object> extraParams) {
+        public IndexParamBuilder extraParams(Map<String, Object> extraParams) {
             this.extraParams = extraParams;
             return this;
         }
@@ -248,17 +218,17 @@ public class IndexParam {
         private final String name;
         private final int code;
 
-        IndexType(){
+        IndexType() {
             this.name = this.toString();
             this.code = this.ordinal();
         }
 
-        IndexType(int code){
+        IndexType(int code) {
             this.name = this.toString();
             this.code = code;
         }
 
-        IndexType(String name, int code){
+        IndexType(String name, int code) {
             this.name = name;
             this.code = code;
         }

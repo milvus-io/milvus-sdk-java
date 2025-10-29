@@ -24,6 +24,8 @@ import java.io.File;
 
 public interface StorageClient {
     Long getObjectEntity(String bucketName, String objectKey) throws Exception;
+
     boolean checkBucketExist(String bucketName) throws Exception;
+
     void putObject(File file, String bucketName, String objectKey) throws Exception;
 }

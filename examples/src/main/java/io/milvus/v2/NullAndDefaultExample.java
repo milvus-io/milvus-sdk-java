@@ -35,7 +35,10 @@ import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class NullAndDefaultExample {
     private static final String COLLECTION_NAME = "java_sdk_example_nullable_v2";
@@ -144,7 +147,7 @@ public class NullAndDefaultExample {
             }
 
             // some values are default value
-            if (i%3==0) {
+            if (i % 3 == 0) {
                 row.addProperty("default_test", 1.0);
             }
 
@@ -172,7 +175,7 @@ public class NullAndDefaultExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows in collection\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows in collection\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Query by filtering expression
         queryWithExpr(client, "id >= 0"); // show all items

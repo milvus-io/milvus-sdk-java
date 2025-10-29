@@ -21,7 +21,6 @@ package io.milvus.v2;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.milvus.v1.CommonUtils;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
@@ -33,7 +32,6 @@ import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
-import io.milvus.v2.service.vector.request.data.BinaryVec;
 import io.milvus.v2.service.vector.request.data.Int8Vec;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
@@ -89,7 +87,7 @@ public class Int8VectorExample {
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
-        Map<String,Object> extraParams = new HashMap<>();
+        Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("M", 64);
         extraParams.put("efConstruction", 200);
         indexes.add(IndexParam.builder()
@@ -116,7 +114,7 @@ public class Int8VectorExample {
         for (long i = 0L; i < rowCount; ++i) {
             JsonObject row = new JsonObject();
             row.addProperty(ID_FIELD, i);
-            ByteBuffer vector = vectors.get((int)i);
+            ByteBuffer vector = vectors.get((int) i);
             row.add(VECTOR_FIELD, gson.toJsonTree(vector.array()));
             rows.add(row);
         }
@@ -132,7 +130,7 @@ public class Int8VectorExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Pick some vectors from the inserted vectors to search
         // Ensure the returned top1 item's ID should be equal to target vector's ID
@@ -160,9 +158,9 @@ public class Int8VectorExample {
             }
 
             SearchResp.SearchResult firstResult = results.get(0);
-            if ((long)firstResult.getId() != k) {
+            if ((long) firstResult.getId() != k) {
                 throw new RuntimeException(String.format("The top1 ID %d is not equal to target vector's ID %d",
-                        (long)firstResult.getId(), k));
+                        (long) firstResult.getId(), k));
             }
         }
         System.out.println("Search result is correct");

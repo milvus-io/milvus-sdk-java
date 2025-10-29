@@ -20,40 +20,41 @@
 package io.milvus.bulkwriter.common.clientenum;
 
 import io.milvus.exception.ParamException;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.util.Lists;
 
 import java.util.List;
 
 public enum CloudStorage {
-    MINIO("minio","%s", "minioAddress"),
-    AWS("aws","s3.amazonaws.com", null),
-    GCP("gcp" ,"storage.googleapis.com", null),
+    MINIO("minio", "%s", "minioAddress"),
+    AWS("aws", "s3.amazonaws.com", null),
+    GCP("gcp", "storage.googleapis.com", null),
 
-    AZ("az" ,"%s.blob.core.windows.net", "accountName"),
-    AZURE("azure" ,"%s.blob.core.windows.net", "accountName"),
+    AZ("az", "%s.blob.core.windows.net", "accountName"),
+    AZURE("azure", "%s.blob.core.windows.net", "accountName"),
 
-    ALI("ali","oss-%s.aliyuncs.com", "region"),
-    ALIYUN("aliyun","oss-%s.aliyuncs.com", "region"),
-    ALIBABA("alibaba","oss-%s.aliyuncs.com", "region"),
-    ALICLOU("alicloud","oss-%s.aliyuncs.com", "region"),
+    ALI("ali", "oss-%s.aliyuncs.com", "region"),
+    ALIYUN("aliyun", "oss-%s.aliyuncs.com", "region"),
+    ALIBABA("alibaba", "oss-%s.aliyuncs.com", "region"),
+    ALICLOU("alicloud", "oss-%s.aliyuncs.com", "region"),
 
-    TC("tc","cos.%s.myqcloud.com", "region"),
-    TENCENT("tencent","cos.%s.myqcloud.com", "region")
-    ;
+    TC("tc", "cos.%s.myqcloud.com", "region"),
+    TENCENT("tencent", "cos.%s.myqcloud.com", "region");
 
-    @Getter
-    private String cloudName;
+    private final String cloudName;
 
-    private String endpoint;
+    private final String endpoint;
 
-    private String replace;
+    private final String replace;
 
     CloudStorage(String cloudName, String endpoint, String replace) {
         this.cloudName = cloudName;
         this.endpoint = endpoint;
         this.replace = replace;
+    }
+
+    public String getCloudName() {
+        return cloudName;
     }
 
     public static boolean isAliCloud(String cloudName) {
@@ -87,7 +88,7 @@ public enum CloudStorage {
     }
 
     public String getEndpoint(String... replaceParams) {
-        if (StringUtils.isEmpty(replace))  {
+        if (StringUtils.isEmpty(replace)) {
             return endpoint;
         }
         if (replaceParams.length == 0) {

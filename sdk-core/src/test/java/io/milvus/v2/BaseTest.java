@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 public class BaseTest {
     @InjectMocks
-    public MilvusClientV2 client_v2 = new MilvusClientV2(null);;
+    public MilvusClientV2 client_v2 = new MilvusClientV2(null);
     @Mock
     protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
@@ -165,6 +165,7 @@ public class BaseTest {
         when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
         when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
     }
+
     @AfterEach
     public void tearDown() throws InterruptedException {
         client_v2.close(3);

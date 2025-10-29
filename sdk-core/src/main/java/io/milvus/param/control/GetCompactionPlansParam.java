@@ -20,8 +20,6 @@
 package io.milvus.param.control;
 
 import io.milvus.exception.ParamException;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parameters for <code>getCompactionStateWithPlans</code> interface.
@@ -41,23 +39,6 @@ public class GetCompactionPlansParam {
 
     public Long getCompactionID() {
         return compactionID;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetCompactionPlansParam that = (GetCompactionPlansParam) obj;
-        return new EqualsBuilder()
-                .append(compactionID, that.compactionID)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(compactionID)
-                .toHashCode();
     }
 
     @Override

@@ -1,8 +1,5 @@
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +13,7 @@ public class GetPersistentSegmentInfoResp {
         private String level;
         private Boolean isSorted;
 
-        private PersistentSegmentInfo(Builder builder) {
+        private PersistentSegmentInfo(PersistentSegmentInfoBuilder builder) {
             this.segmentID = builder.segmentID;
             this.collectionID = builder.collectionID;
             this.partitionID = builder.partitionID;
@@ -26,8 +23,8 @@ public class GetPersistentSegmentInfoResp {
             this.isSorted = builder.isSorted;
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static PersistentSegmentInfoBuilder builder() {
+            return new PersistentSegmentInfoBuilder();
         }
 
         public Long getSegmentID() {
@@ -87,35 +84,6 @@ public class GetPersistentSegmentInfoResp {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            PersistentSegmentInfo that = (PersistentSegmentInfo) obj;
-            return new EqualsBuilder()
-                    .append(segmentID, that.segmentID)
-                    .append(collectionID, that.collectionID)
-                    .append(partitionID, that.partitionID)
-                    .append(numOfRows, that.numOfRows)
-                    .append(state, that.state)
-                    .append(level, that.level)
-                    .append(isSorted, that.isSorted)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(segmentID)
-                    .append(collectionID)
-                    .append(partitionID)
-                    .append(numOfRows)
-                    .append(state)
-                    .append(level)
-                    .append(isSorted)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "PersistentSegmentInfo{" +
                     "segmentID=" + segmentID +
@@ -128,7 +96,7 @@ public class GetPersistentSegmentInfoResp {
                     '}';
         }
 
-        public static class Builder {
+        public static class PersistentSegmentInfoBuilder {
             private Long segmentID;
             private Long collectionID;
             private Long partitionID;
@@ -137,37 +105,37 @@ public class GetPersistentSegmentInfoResp {
             private String level;
             private Boolean isSorted;
 
-            public Builder segmentID(Long segmentID) {
+            public PersistentSegmentInfoBuilder segmentID(Long segmentID) {
                 this.segmentID = segmentID;
                 return this;
             }
 
-            public Builder collectionID(Long collectionID) {
+            public PersistentSegmentInfoBuilder collectionID(Long collectionID) {
                 this.collectionID = collectionID;
                 return this;
             }
 
-            public Builder partitionID(Long partitionID) {
+            public PersistentSegmentInfoBuilder partitionID(Long partitionID) {
                 this.partitionID = partitionID;
                 return this;
             }
 
-            public Builder numOfRows(Long numOfRows) {
+            public PersistentSegmentInfoBuilder numOfRows(Long numOfRows) {
                 this.numOfRows = numOfRows;
                 return this;
             }
 
-            public Builder state(String state) {
+            public PersistentSegmentInfoBuilder state(String state) {
                 this.state = state;
                 return this;
             }
 
-            public Builder level(String level) {
+            public PersistentSegmentInfoBuilder level(String level) {
                 this.level = level;
                 return this;
             }
 
-            public Builder isSorted(Boolean isSorted) {
+            public PersistentSegmentInfoBuilder isSorted(Boolean isSorted) {
                 this.isSorted = isSorted;
                 return this;
             }
@@ -180,12 +148,12 @@ public class GetPersistentSegmentInfoResp {
 
     private List<PersistentSegmentInfo> segmentInfos;
 
-    private GetPersistentSegmentInfoResp(Builder builder) {
+    private GetPersistentSegmentInfoResp(GetPersistentSegmentInfoRespBuilder builder) {
         this.segmentInfos = builder.segmentInfos;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetPersistentSegmentInfoRespBuilder builder() {
+        return new GetPersistentSegmentInfoRespBuilder();
     }
 
     public List<PersistentSegmentInfo> getSegmentInfos() {
@@ -197,33 +165,16 @@ public class GetPersistentSegmentInfoResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetPersistentSegmentInfoResp that = (GetPersistentSegmentInfoResp) obj;
-        return new EqualsBuilder()
-                .append(segmentInfos, that.segmentInfos)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(segmentInfos)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "GetPersistentSegmentInfoResp{" +
                 "segmentInfos=" + segmentInfos +
                 '}';
     }
 
-    public static class Builder {
+    public static class GetPersistentSegmentInfoRespBuilder {
         private List<PersistentSegmentInfo> segmentInfos = new ArrayList<>();
 
-        public Builder segmentInfos(List<PersistentSegmentInfo> segmentInfos) {
+        public GetPersistentSegmentInfoRespBuilder segmentInfos(List<PersistentSegmentInfo> segmentInfos) {
             this.segmentInfos = segmentInfos;
             return this;
         }

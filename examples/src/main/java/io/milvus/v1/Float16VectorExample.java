@@ -22,12 +22,19 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.MutationResult;
+import io.milvus.grpc.QueryResults;
+import io.milvus.grpc.SearchResults;
 import io.milvus.param.*;
 import io.milvus.param.collection.*;
-import io.milvus.param.dml.*;
-import io.milvus.param.index.*;
-import io.milvus.response.*;
+import io.milvus.param.dml.InsertParam;
+import io.milvus.param.dml.QueryParam;
+import io.milvus.param.dml.SearchParam;
+import io.milvus.param.index.CreateIndexParam;
+import io.milvus.response.FieldDataWrapper;
+import io.milvus.response.QueryResultsWrapper;
+import io.milvus.response.SearchResultsWrapper;
 import org.tensorflow.types.TBfloat16;
 import org.tensorflow.types.TFloat16;
 
@@ -42,6 +49,7 @@ public class Float16VectorExample {
     private static final Integer VECTOR_DIM = 128;
 
     private static final MilvusServiceClient milvusClient;
+
     static {
         // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
         milvusClient = new MilvusServiceClient(ConnectParam.newBuilder()
@@ -179,7 +187,7 @@ public class Float16VectorExample {
         // Ensure the returned top1 item's ID should be equal to target vector's ID
         for (int i = 0; i < 10; i++) {
             Random ran = new Random();
-            int k = ran.nextInt(batchRowCount*2);
+            int k = ran.nextInt(batchRowCount * 2);
             ByteBuffer targetVector = encodedVectors.get(k);
             SearchParam.Builder builder = SearchParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
@@ -208,7 +216,7 @@ public class Float16VectorExample {
                         firstScore.getLongID(), k));
             }
 
-            ByteBuffer outputBuf = (ByteBuffer)firstScore.get(VECTOR_FIELD);
+            ByteBuffer outputBuf = (ByteBuffer) firstScore.get(VECTOR_FIELD);
             if (!outputBuf.equals(targetVector)) {
                 throw new RuntimeException(String.format("The output vector is not equal to target vector: ID %d", k));
             }
@@ -229,7 +237,7 @@ public class Float16VectorExample {
         // Retrieve some data and verify the output
         for (int i = 0; i < 10; i++) {
             Random ran = new Random();
-            int k = ran.nextInt(batchRowCount*2);
+            int k = ran.nextInt(batchRowCount * 2);
             R<QueryResults> queryR = milvusClient.query(QueryParam.newBuilder()
                     .withCollectionName(COLLECTION_NAME)
                     .withExpr(String.format("id == %d", k))

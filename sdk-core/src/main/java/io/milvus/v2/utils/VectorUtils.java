@@ -26,27 +26,30 @@ import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.FunctionScore;
-import io.milvus.v2.service.vector.request.data.*;
+import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
 import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class VectorUtils {
 
-    public QueryRequest ConvertToGrpcQueryRequest(QueryReq request){
+    public QueryRequest ConvertToGrpcQueryRequest(QueryReq request) {
         if (request == null) {
             throw new NullPointerException("request cannot be null");
         }
@@ -65,7 +68,7 @@ public class VectorUtils {
 
         if (StringUtils.isNotEmpty(request.getFilter())) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
-            filterTemplateValues.forEach((key, value)->{
+            filterTemplateValues.forEach((key, value) -> {
                 builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
             });
         }
@@ -115,13 +118,13 @@ public class VectorUtils {
 
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String dbName, String collectionName){
-        if(consistencyLevel == null){
+    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String dbName, String collectionName) {
+        if (consistencyLevel == null) {
             String key = GTsDict.CombineCollectionName(dbName, collectionName);
             Long ts = GTsDict.getInstance().getCollectionTs(key);
-            return  (ts == null) ? 1L : ts;
+            return (ts == null) ? 1L : ts;
         }
-        switch (consistencyLevel){
+        switch (consistencyLevel) {
             case STRONG:
                 return 0L;
             case SESSION: {
@@ -140,7 +143,7 @@ public class VectorUtils {
         if (placeType == PlaceholderType.VarChar) {
             List<ByteString> byteStrings = new ArrayList<>();
             for (Object obj : data) {
-                byteStrings.add(ByteString.copyFrom(((String)obj).getBytes()));
+                byteStrings.add(ByteString.copyFrom(((String) obj).getBytes()));
             }
             PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
                     .setTag(Constant.VECTOR_TAG)
@@ -228,9 +231,9 @@ public class VectorUtils {
                                 .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
-                        .setKey(Constant.OFFSET)
-                        .setValue(String.valueOf(request.getOffset()))
-                        .build());
+                                .setKey(Constant.OFFSET)
+                                .setValue(String.valueOf(request.getOffset()))
+                                .build());
 
         if (null != request.getMetricType()) {
             builder.addSearchParams(
@@ -272,7 +275,7 @@ public class VectorUtils {
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             builder.setDsl(request.getFilter());
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
-            filterTemplateValues.forEach((key, value)->{
+            filterTemplateValues.forEach((key, value) -> {
                 builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
             });
         }
@@ -281,7 +284,7 @@ public class VectorUtils {
         if (request.getSearchParams().containsKey("iterator")) {
             long guaranteeTimestamp = 0;
             if (request.getSearchParams().containsKey("guarantee_timestamp")) {
-                guaranteeTimestamp = (long)request.getSearchParams().get("guarantee_timestamp");
+                guaranteeTimestamp = (long) request.getSearchParams().get("guarantee_timestamp");
             }
             builder.setGuaranteeTimestamp(guaranteeTimestamp);
         } else {
@@ -319,63 +322,63 @@ public class VectorUtils {
         Object firstObj = array.get(0);
         if (firstObj instanceof Boolean) {
             BoolArray.Builder builder = BoolArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof Boolean)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is Boolean, but some elements are not Boolean");
                 }
-                builder.addData((Boolean)val);
+                builder.addData((Boolean) val);
             });
             return TemplateArrayValue.newBuilder().setBoolData(builder.build()).build();
         } else if (firstObj instanceof Integer || firstObj instanceof Long) {
             LongArray.Builder builder = LongArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof Integer) && !(val instanceof Long)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is Integer/Long, but some elements are not Integer/Long");
                 }
-                builder.addData((val instanceof Integer) ? (Integer)val : (Long)val);
+                builder.addData((val instanceof Integer) ? (Integer) val : (Long) val);
             });
             return TemplateArrayValue.newBuilder().setLongData(builder.build()).build();
         } else if (firstObj instanceof Double) {
             DoubleArray.Builder builder = DoubleArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof Double)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is Double, but some elements are not Double");
                 }
-                builder.addData((Double)val);
+                builder.addData((Double) val);
             });
             return TemplateArrayValue.newBuilder().setDoubleData(builder.build()).build();
         } else if (firstObj instanceof String) {
             StringArray.Builder builder = StringArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof String)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is String, but some elements are not String");
                 }
-                builder.addData((String)val);
+                builder.addData((String) val);
             });
             return TemplateArrayValue.newBuilder().setStringData(builder.build()).build();
         } else if (firstObj instanceof JsonElement) {
             JSONArray.Builder builder = JSONArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof JsonElement)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is JsonElement, but some elements are not JsonElement");
                 }
-                String str = JsonUtils.toJson((JsonElement)val);
+                String str = JsonUtils.toJson((JsonElement) val);
                 builder.addData(ByteString.copyFromUtf8(str));
             });
             return TemplateArrayValue.newBuilder().setJsonData(builder.build()).build();
         } else if (firstObj instanceof List) {
             TemplateArrayValueArray.Builder builder = TemplateArrayValueArray.newBuilder();
-            array.forEach(val->{
+            array.forEach(val -> {
                 if (!(val instanceof List)) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "Filter expression template is a list, the first value is List, but some elements are not List");
                 }
-                List<?> subArrary = (List<?>)val;
+                List<?> subArrary = (List<?>) val;
                 builder.addData(deduceTemplateArray(subArrary));
             });
 
@@ -389,22 +392,22 @@ public class VectorUtils {
     public static TemplateValue deduceAndCreateTemplateValue(Object value) {
         if (value instanceof Boolean) {
             return TemplateValue.newBuilder()
-                    .setBoolVal((Boolean)value)
+                    .setBoolVal((Boolean) value)
                     .build();
         } else if (value instanceof Integer || value instanceof Long) {
-           return TemplateValue.newBuilder()
-                   .setInt64Val((value instanceof Integer) ? (Integer)value : (Long)value)
-                   .build();
+            return TemplateValue.newBuilder()
+                    .setInt64Val((value instanceof Integer) ? (Integer) value : (Long) value)
+                    .build();
         } else if (value instanceof Double) {
             return TemplateValue.newBuilder()
-                    .setFloatVal((Double)value)
+                    .setFloatVal((Double) value)
                     .build();
         } else if (value instanceof String) {
             return TemplateValue.newBuilder()
-                    .setStringVal((String)value)
+                    .setStringVal((String) value)
                     .build();
         } else if (value instanceof List) {
-            List<?> array = (List<?>)value;
+            List<?> array = (List<?>) value;
             TemplateArrayValue tav = deduceTemplateArray(array);
             return TemplateValue.newBuilder()
                     .setArrayVal(tav)
@@ -445,7 +448,8 @@ public class VectorUtils {
         // tries to fit the compatibility between v2.5.1 and older versions
         Map<String, Object> paramMap = new HashMap<>();
         if (null != annSearchReq.getParams() && !annSearchReq.getParams().isEmpty()) {
-            paramMap = JsonUtils.fromJson(annSearchReq.getParams(), new TypeToken<Map<String, Object>>() {}.getType());
+            paramMap = JsonUtils.fromJson(annSearchReq.getParams(), new TypeToken<Map<String, Object>>() {
+            }.getType());
         }
         ParamUtils.compatibleSearchParams(paramMap, builder);
 

@@ -74,8 +74,13 @@ public class CDCExample {
                 .build();
 
         ReplicateConfiguration configuration = ReplicateConfiguration.builder()
-                .clusters(new ArrayList<MilvusCluster>(){{ add(milvusClusterA); add(milvusClusterB); }})
-                .crossClusterTopologies(new ArrayList<CrossClusterTopology>(){{ add(topology); }} )
+                .clusters(new ArrayList<MilvusCluster>() {{
+                    add(milvusClusterA);
+                    add(milvusClusterB);
+                }})
+                .crossClusterTopologies(new ArrayList<CrossClusterTopology>() {{
+                    add(topology);
+                }})
                 .build();
 
         UpdateReplicateConfigurationReq updateReq = UpdateReplicateConfigurationReq.builder()

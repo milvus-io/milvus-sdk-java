@@ -129,10 +129,10 @@ public class DeleteParam {
 
         /**
          * Sets the expression to filter out entities to be deleted.
-         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
          * @return <code>Builder</code>
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check

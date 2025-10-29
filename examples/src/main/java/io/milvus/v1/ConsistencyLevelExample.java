@@ -137,7 +137,7 @@ public class ConsistencyLevelExample {
                 .withCollectionName(collectionName)
                 .withVectorFieldName("vector")
                 .withFloatVectors(Collections.singletonList(CommonUtils.generateFloatVector(VECTOR_DIM)))
-                .withLimit((long)topK)
+                .withLimit((long) topK)
                 .withMetricType(MetricType.L2)
                 .build());
         CommonUtils.handleResponseStatus(searchR);
@@ -187,7 +187,7 @@ public class ConsistencyLevelExample {
             row.add("vector", gson.toJsonTree(vector));
 
             // insert by a MilvusClient
-            String clientName1 = String.format("client_%d", i%10);
+            String clientName1 = String.format("client_%d", i % 10);
             MilvusClient client1 = pool.getClient(clientName1);
             client1.insert(InsertParam.newBuilder()
                     .withCollectionName(collectionName)
@@ -198,7 +198,7 @@ public class ConsistencyLevelExample {
 
             // search by another MilvusClient, use the just inserted vector to search
             // the returned item is expected to be the just inserted item
-            String clientName2 = String.format("client_%d", i%10+1);
+            String clientName2 = String.format("client_%d", i % 10 + 1);
             MilvusClient client2 = pool.getClient(clientName2);
             R<SearchResults> searchR = client2.search(SearchParam.newBuilder()
                     .withCollectionName(collectionName)

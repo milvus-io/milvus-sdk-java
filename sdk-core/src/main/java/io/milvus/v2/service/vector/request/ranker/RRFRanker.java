@@ -24,31 +24,28 @@ import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import java.util.List;
 import java.util.Map;
 
 /**
  * The RRF reranking strategy, which merges results from multiple searches, favoring items that consistently appear.
  * Read the doc for more info: https://milvus.io/docs/rrf-ranker.md
- *
+ * <p>
  * Note: In v2.6, the Function and Rerank have been unified to support more rerank types: decay and model ranker
  * https://milvus.io/docs/decay-ranker-overview.md
  * https://milvus.io/docs/model-ranker-overview.md
  * So we have to inherit the BaseRanker from Function, this change will lead to uncomfortable issues with
  * RRFRanker/WeightedRanker in some users client code. We will mention it in release note.
- *  * In old client code, to declare a WeightedRanker:
- *  *   RRFRanker ranker = new RRFRanker(20)
- *  * After this change, the client code should be changed accordingly:
- *  *   RRFRanker ranker = RRFRanker.builder().k(20).build()
- *
+ * * In old client code, to declare a WeightedRanker:
+ * *   RRFRanker ranker = new RRFRanker(20)
+ * * After this change, the client code should be changed accordingly:
+ * *   RRFRanker ranker = RRFRanker.builder().k(20).build()
+ * <p>
  * You also can declare a rrf ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
- *                 .functionType(FunctionType.RERANK)
- *                 .param("strategy", "rrf")
- *                 .param("params", "{\"k\": 60}")
- *                 .build();
+ * .functionType(FunctionType.RERANK)
+ * .param("strategy", "rrf")
+ * .param("params", "{\"k\": 60}")
+ * .build();
  */
 public class RRFRanker extends CreateCollectionReq.Function {
     private int k;
@@ -63,7 +60,7 @@ public class RRFRanker extends CreateCollectionReq.Function {
         this.k = k;
     }
 
-    private RRFRanker(FunctionBuilder builder) {
+    private RRFRanker(RRFRankerBuilder builder) {
         super(builder);
         this.k = builder.k;
     }
@@ -93,24 +90,6 @@ public class RRFRanker extends CreateCollectionReq.Function {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        if (!super.equals(obj)) return false;
-        RRFRanker rrfRanker = (RRFRanker) obj;
-        return new EqualsBuilder()
-                .append(k, rrfRanker.k)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + k;
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "RRFRanker{" +
                 "k=" + k +
@@ -123,62 +102,22 @@ public class RRFRanker extends CreateCollectionReq.Function {
                 '}';
     }
 
-    public static FunctionBuilder builder() {
-        return new FunctionBuilder();
+    public static RRFRankerBuilder builder() {
+        return new RRFRankerBuilder();
     }
 
-    public static class FunctionBuilder extends Function.FunctionBuilder {
+    public static class RRFRankerBuilder extends Function.FunctionBuilder<RRFRankerBuilder> {
         private int k = 60;
 
-        private FunctionBuilder() {}
+        private RRFRankerBuilder() {
+        }
 
-        public FunctionBuilder k(int k) {
+        public RRFRankerBuilder k(int k) {
             this.k = k;
             return this;
         }
 
         @Override
-        public FunctionBuilder name(String name) {
-            super.name(name);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder description(String description) {
-            super.description(description);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder functionType(FunctionType functionType) {
-            super.functionType(functionType);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder inputFieldNames(List<String> inputFieldNames) {
-            super.inputFieldNames(inputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder outputFieldNames(List<String> outputFieldNames) {
-            super.outputFieldNames(outputFieldNames);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder params(Map<String, String> params) {
-            super.params(params);
-            return this;
-        }
-
-        @Override
-        public FunctionBuilder param(String key, String value) {
-            super.param(key, value);
-            return this;
-        }
-
         public RRFRanker build() {
             return new RRFRanker(this);
         }

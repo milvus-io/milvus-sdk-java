@@ -171,10 +171,10 @@ public class AnnSearchParam {
 
         /**
          * Sets expression to filter out entities before searching (Optional).
-         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
          * @return <code>Builder</code>
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
@@ -273,7 +273,7 @@ public class AnnSearchParam {
 
         /**
          * Sets the search parameters specific to the index type.
-         *
+         * <p>
          * For example: IVF index, the search parameters can be "{\"nprobe\":10}"
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *
@@ -314,7 +314,6 @@ public class AnnSearchParam {
 
     /**
      *
-     * Warning: don't use lombok@ToString to annotate this class
      * because large number of vectors will waste time in toString() method.
      *
      */

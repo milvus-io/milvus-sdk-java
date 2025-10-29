@@ -19,9 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class RefreshLoadReq {
     private String databaseName;
     private String collectionName;
@@ -29,7 +26,7 @@ public class RefreshLoadReq {
     private Boolean sync = Boolean.TRUE; // wait the collection to be fully loaded. "async" is deprecated, use "sync" instead
     private Long timeout = 60000L; // timeout value for waiting the collection to be fully loaded
 
-    private RefreshLoadReq(Builder builder) {
+    private RefreshLoadReq(RefreshLoadReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.async = builder.async;
@@ -80,31 +77,6 @@ public class RefreshLoadReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RefreshLoadReq that = (RefreshLoadReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(async, that.async)
-                .append(sync, that.sync)
-                .append(timeout, that.timeout)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(async)
-                .append(sync)
-                .append(timeout)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "RefreshLoadReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -115,42 +87,43 @@ public class RefreshLoadReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RefreshLoadReqBuilder builder() {
+        return new RefreshLoadReqBuilder();
     }
 
-    public static class Builder {
+    public static class RefreshLoadReqBuilder {
         private String databaseName;
         private String collectionName;
         private Boolean async = Boolean.TRUE;
         private Boolean sync = Boolean.TRUE;
         private Long timeout = 60000L;
 
-        private Builder() {}
+        private RefreshLoadReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public RefreshLoadReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public RefreshLoadReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder async(Boolean async) {
+        public RefreshLoadReqBuilder async(Boolean async) {
             this.async = async;
             this.sync = !async;
             return this;
         }
 
-        public Builder sync(Boolean sync) {
+        public RefreshLoadReqBuilder sync(Boolean sync) {
             this.sync = sync;
             this.async = !sync;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public RefreshLoadReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }

@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DescribeUserReq {
     private String userName;
 
-    private DescribeUserReq(Builder builder) {
+    private DescribeUserReq(DescribeUserReqBuilder builder) {
         this.userName = builder.userName;
     }
 
@@ -37,37 +35,23 @@ public class DescribeUserReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeUserReq that = (DescribeUserReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return userName != null ? userName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DescribeUserReq{" +
                 "userName='" + userName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeUserReqBuilder builder() {
+        return new DescribeUserReqBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeUserReqBuilder {
         private String userName;
 
-        private Builder() {}
+        private DescribeUserReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public DescribeUserReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }

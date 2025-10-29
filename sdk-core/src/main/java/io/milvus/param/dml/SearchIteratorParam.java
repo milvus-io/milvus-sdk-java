@@ -82,7 +82,7 @@ public class SearchIteratorParam {
         this.ignoreGrowing = builder.ignoreGrowing;
         this.groupByFieldName = builder.groupByFieldName;
         this.plType = builder.plType;
-        
+
         this.batchSize = builder.batchSize;
     }
 
@@ -357,10 +357,10 @@ public class SearchIteratorParam {
 
         /**
          * Sets expression to filter out entities before searching (Optional).
-         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          *
          * @param expr filtering expression
          * @return <code>Builder</code>
+         * @see <a href="https://milvus.io/docs/v2.0.0/boolean.md">Boolean Expression Rules</a>
          */
         public Builder withExpr(String expr) {
             // Replace @NonNull logic with explicit null check
@@ -406,9 +406,9 @@ public class SearchIteratorParam {
         /**
          * Sets the target vectors.
          * Note: Deprecated in v2.4.0, for the reason that the sdk cannot know a ByteBuffer
-         *       is a BinarVector or Float16Vector/BFloat16Vector.
-         *       Replaced by withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors.
-         *       It still works for FloatVector/BinarVector/SparseVector, don't use it for Float16Vector/BFloat16Vector.
+         * is a BinarVector or Float16Vector/BFloat16Vector.
+         * Replaced by withFloatVectors/withBinaryVectors/withFloat16Vectors/withBFloat16Vectors/withSparseFloatVectors.
+         * It still works for FloatVector/BinarVector/SparseVector, don't use it for Float16Vector/BFloat16Vector.
          *
          * @param vectors list of target vectors:
          *                if vector type is FloatVector, vectors is List of List Float;
@@ -529,7 +529,7 @@ public class SearchIteratorParam {
 
         /**
          * Sets the search parameters specific to the index type.
-         *
+         * <p>
          * For example: IVF index, the search parameters can be "{\"nprobe\":10}"
          * For more information: @see <a href="https://milvus.io/docs/v2.0.0/index_selection.md">Index Selection</a>
          *

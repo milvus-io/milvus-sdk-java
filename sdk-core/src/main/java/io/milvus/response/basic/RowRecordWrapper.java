@@ -19,7 +19,8 @@
 
 package io.milvus.response.basic;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.FieldData;
 import io.milvus.response.FieldDataWrapper;
@@ -66,7 +67,7 @@ public abstract class RowRecordWrapper {
 
     /**
      * Gets a row record from result.
-     *  Throws {@link ParamException} if the index is illegal.
+     * Throws {@link ParamException} if the index is illegal.
      *
      * @return <code>RowRecord</code> a row record of the result
      */
@@ -78,7 +79,7 @@ public abstract class RowRecordWrapper {
             if (index < 0 || index >= wrapper.getRowCount()) {
                 throw new ParamException("Index out of range");
             }
-            Object value = wrapper.valueByIdx((int)index);
+            Object value = wrapper.valueByIdx((int) index);
             if (wrapper.isJsonField()) {
                 JsonElement jsonValue = FieldDataWrapper.ParseJSONObject(value);
                 if (!field.getIsDynamic()) {
@@ -91,11 +92,11 @@ public abstract class RowRecordWrapper {
                     throw new ParamException("The content of dynamic field is not a JSON dict");
                 }
 
-                JsonObject jsonDict = (JsonObject)jsonValue;
+                JsonObject jsonDict = (JsonObject) jsonValue;
                 // the outputFields of QueryRequest/SearchRequest contains a "$meta"
                 // put all key/value pairs of "$meta" into record
                 // else pick some key/value pairs according to the dynamicFields
-                for (String key: jsonDict.keySet()) {
+                for (String key : jsonDict.keySet()) {
                     if (dynamicFields.isEmpty() || dynamicFields.contains(key)) {
                         record.put(key, FieldDataWrapper.ValueOfJSONElement(jsonDict.get(key)));
                     }
@@ -141,5 +142,6 @@ public abstract class RowRecordWrapper {
     }
 
     protected abstract List<FieldData> getFieldDataList();
+
     protected abstract List<String> getOutputFields();
 }

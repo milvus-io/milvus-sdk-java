@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +30,7 @@ public class UpsertResp {
     // is created with this new pk. Here we return this new pk to user.
     private List<Object> primaryKeys;
 
-    private UpsertResp(Builder builder) {
+    private UpsertResp(UpsertRespBuilder builder) {
         this.upsertCnt = builder.upsertCnt;
         this.primaryKeys = builder.primaryKeys;
     }
@@ -55,24 +53,6 @@ public class UpsertResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        UpsertResp that = (UpsertResp) obj;
-        return new EqualsBuilder()
-                .append(upsertCnt, that.upsertCnt)
-                .append(primaryKeys, that.primaryKeys)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (upsertCnt ^ (upsertCnt >>> 32));
-        result = 31 * result + (primaryKeys != null ? primaryKeys.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "UpsertResp{" +
                 "upsertCnt=" + upsertCnt +
@@ -80,22 +60,23 @@ public class UpsertResp {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static UpsertRespBuilder builder() {
+        return new UpsertRespBuilder();
     }
 
-    public static class Builder {
+    public static class UpsertRespBuilder {
         private long upsertCnt;
         private List<Object> primaryKeys = new ArrayList<>(); // default value
 
-        private Builder() {}
+        private UpsertRespBuilder() {
+        }
 
-        public Builder upsertCnt(long upsertCnt) {
+        public UpsertRespBuilder upsertCnt(long upsertCnt) {
             this.upsertCnt = upsertCnt;
             return this;
         }
 
-        public Builder primaryKeys(List<Object> primaryKeys) {
+        public UpsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
             return this;
         }

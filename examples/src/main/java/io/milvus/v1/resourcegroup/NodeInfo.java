@@ -19,19 +19,27 @@
 
 package io.milvus.v1.resourcegroup;
 
-import lombok.Getter;
-import lombok.NonNull;
-
-@Getter
 public class NodeInfo {
-    private long nodeId;
-    private String address;
-    private String hostname;
+    private final long nodeId;
+    private final String address;
+    private final String hostname;
 
     private NodeInfo(Builder builder) {
         this.nodeId = builder.nodeId;
         this.address = builder.address;
         this.hostname = builder.hostname;
+    }
+
+    public long getNodeId() {
+        return nodeId;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getHostname() {
+        return hostname;
     }
 
     public static Builder newBuilder() {
@@ -48,12 +56,12 @@ public class NodeInfo {
             return this;
         }
 
-        public Builder withAddress(@NonNull String address) {
+        public Builder withAddress(String address) {
             this.address = address;
             return this;
         }
 
-        public Builder withHostname(@NonNull String hostname) {
+        public Builder withHostname(String hostname) {
             this.hostname = hostname;
             return this;
         }

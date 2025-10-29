@@ -19,8 +19,6 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +26,7 @@ public class RemovePrivilegesFromGroupReq {
     private String groupName;
     private List<String> privileges = new ArrayList<>();
 
-    private RemovePrivilegesFromGroupReq(Builder builder) {
+    private RemovePrivilegesFromGroupReq(RemovePrivilegesFromGroupReqBuilder builder) {
         this.groupName = builder.groupName;
         this.privileges = builder.privileges;
     }
@@ -50,24 +48,6 @@ public class RemovePrivilegesFromGroupReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        RemovePrivilegesFromGroupReq that = (RemovePrivilegesFromGroupReq) obj;
-        return new EqualsBuilder()
-                .append(groupName, that.groupName)
-                .append(privileges, that.privileges)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = groupName != null ? groupName.hashCode() : 0;
-        result = 31 * result + (privileges != null ? privileges.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "RemovePrivilegesFromGroupReq{" +
                 "groupName='" + groupName + '\'' +
@@ -75,22 +55,23 @@ public class RemovePrivilegesFromGroupReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static RemovePrivilegesFromGroupReqBuilder builder() {
+        return new RemovePrivilegesFromGroupReqBuilder();
     }
 
-    public static class Builder {
+    public static class RemovePrivilegesFromGroupReqBuilder {
         private String groupName;
         private List<String> privileges = new ArrayList<>();
 
-        private Builder() {}
+        private RemovePrivilegesFromGroupReqBuilder() {
+        }
 
-        public Builder groupName(String groupName) {
+        public RemovePrivilegesFromGroupReqBuilder groupName(String groupName) {
             this.groupName = groupName;
             return this;
         }
 
-        public Builder privileges(List<String> privileges) {
+        public RemovePrivilegesFromGroupReqBuilder privileges(List<String> privileges) {
             this.privileges = privileges;
             return this;
         }

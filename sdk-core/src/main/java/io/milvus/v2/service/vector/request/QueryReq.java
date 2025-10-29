@@ -20,8 +20,6 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.*;
 
@@ -52,7 +50,7 @@ public class QueryReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
 
-    private QueryReq(Builder builder) {
+    private QueryReq(QueryReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionNames = builder.partitionNames;
@@ -67,8 +65,8 @@ public class QueryReq {
         this.filterTemplateValues = builder.filterTemplateValues;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static QueryReqBuilder builder() {
+        return new QueryReqBuilder();
     }
 
     public String getDatabaseName() {
@@ -168,45 +166,6 @@ public class QueryReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        QueryReq that = (QueryReq) obj;
-        return new EqualsBuilder()
-                .append(offset, that.offset)
-                .append(limit, that.limit)
-                .append(ignoreGrowing, that.ignoreGrowing)
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionNames, that.partitionNames)
-                .append(outputFields, that.outputFields)
-                .append(ids, that.ids)
-                .append(filter, that.filter)
-                .append(consistencyLevel, that.consistencyLevel)
-                .append(queryParams, that.queryParams)
-                .append(filterTemplateValues, that.filterTemplateValues)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(partitionNames)
-                .append(outputFields)
-                .append(ids)
-                .append(filter)
-                .append(consistencyLevel)
-                .append(offset)
-                .append(limit)
-                .append(ignoreGrowing)
-                .append(queryParams)
-                .append(filterTemplateValues)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "QueryReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -224,7 +183,7 @@ public class QueryReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class QueryReqBuilder {
         private String databaseName;
         private String collectionName;
         private List<String> partitionNames = new ArrayList<>();
@@ -238,62 +197,62 @@ public class QueryReq {
         private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
-        public Builder databaseName(String databaseName) {
+        public QueryReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public QueryReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionNames(List<String> partitionNames) {
+        public QueryReqBuilder partitionNames(List<String> partitionNames) {
             this.partitionNames = partitionNames;
             return this;
         }
 
-        public Builder outputFields(List<String> outputFields) {
+        public QueryReqBuilder outputFields(List<String> outputFields) {
             this.outputFields = outputFields;
             return this;
         }
 
-        public Builder ids(List<Object> ids) {
+        public QueryReqBuilder ids(List<Object> ids) {
             this.ids = ids;
             return this;
         }
 
-        public Builder filter(String filter) {
+        public QueryReqBuilder filter(String filter) {
             this.filter = filter;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public QueryReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder offset(long offset) {
+        public QueryReqBuilder offset(long offset) {
             this.offset = offset;
             return this;
         }
 
-        public Builder limit(long limit) {
+        public QueryReqBuilder limit(long limit) {
             this.limit = limit;
             return this;
         }
 
-        public Builder ignoreGrowing(boolean ignoreGrowing) {
+        public QueryReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
             return this;
         }
 
-        public Builder queryParams(Map<String, Object> queryParams) {
+        public QueryReqBuilder queryParams(Map<String, Object> queryParams) {
             this.queryParams = queryParams;
             return this;
         }
 
-        public Builder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+        public QueryReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
             return this;
         }

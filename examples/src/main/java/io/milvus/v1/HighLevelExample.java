@@ -18,21 +18,26 @@
  */
 package io.milvus.v1;
 
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.common.collect.Lists;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.VectorUtils;
-import io.milvus.grpc.*;
-import io.milvus.param.*;
-import io.milvus.param.collection.*;
-import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.param.ConnectParam;
+import io.milvus.param.IndexType;
+import io.milvus.param.R;
+import io.milvus.param.RpcStatus;
+import io.milvus.param.collection.DescribeCollectionParam;
+import io.milvus.param.collection.FlushParam;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
+import io.milvus.param.highlevel.collection.response.ListCollectionsResponse;
 import io.milvus.param.highlevel.dml.*;
 import io.milvus.param.highlevel.dml.response.*;
-import io.milvus.response.*;
+import io.milvus.response.DescCollResponseWrapper;
+import io.milvus.response.QueryResultsWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +51,7 @@ public class HighLevelExample {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
                 .withPort(19530)
-                .withAuthorization("root","Milvus")
+                .withAuthorization("root", "Milvus")
                 .build();
         milvusClient = new MilvusServiceClient(connectParam);
     }
@@ -68,7 +73,7 @@ public class HighLevelExample {
     private static final String BOOL_FIELD_NAME = "bool";
     private static final String FLOAT_FIELD_NAME = "float";
     private static final String DOUBLE_FIELD_NAME = "double";
-    
+
 
     private R<DescribeCollectionResponse> describeCollection() {
         System.out.println("========== describeCollection() ==========");
