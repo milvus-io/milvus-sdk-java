@@ -20,8 +20,6 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,14 +31,14 @@ public class FunctionScore {
     private Map<String, String> params;
 
     // Private constructor for builder
-    private FunctionScore(Builder builder) {
+    private FunctionScore(FunctionScoreBuilder builder) {
         this.functions = builder.functions != null ? builder.functions : new ArrayList<>();
         this.params = builder.params != null ? builder.params : new HashMap<>();
     }
 
     // Static method to create builder
-    public static Builder builder() {
-        return new Builder();
+    public static FunctionScoreBuilder builder() {
+        return new FunctionScoreBuilder();
     }
 
     // Getter methods
@@ -62,27 +60,6 @@ public class FunctionScore {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        FunctionScore that = (FunctionScore) o;
-
-        return new EqualsBuilder()
-                .append(functions, that.functions)
-                .append(params, that.params)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(functions)
-                .append(params)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "FunctionScore{" +
                 "functions=" + functions +
@@ -91,26 +68,26 @@ public class FunctionScore {
     }
 
     // Builder class
-    public static class Builder {
+    public static class FunctionScoreBuilder {
         private List<CreateCollectionReq.Function> functions;
         private Map<String, String> params;
 
-        public Builder() {
+        public FunctionScoreBuilder() {
             this.functions = new ArrayList<>();
             this.params = new HashMap<>();
         }
 
-        public Builder functions(List<CreateCollectionReq.Function> functions) {
+        public FunctionScoreBuilder functions(List<CreateCollectionReq.Function> functions) {
             this.functions = functions;
             return this;
         }
 
-        public Builder params(Map<String, String> params) {
+        public FunctionScoreBuilder params(Map<String, String> params) {
             this.params = params;
             return this;
         }
 
-        public Builder addFunction(CreateCollectionReq.Function func) {
+        public FunctionScoreBuilder addFunction(CreateCollectionReq.Function func) {
             if (this.functions == null) {
                 this.functions = new ArrayList<>();
             }

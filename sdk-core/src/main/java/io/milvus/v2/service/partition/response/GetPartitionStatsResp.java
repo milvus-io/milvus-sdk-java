@@ -20,12 +20,10 @@
 
 package io.milvus.v2.service.partition.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class GetPartitionStatsResp {
     private Long numOfEntities;
 
-    private GetPartitionStatsResp(Builder builder) {
+    private GetPartitionStatsResp(GetPartitionStatsRespBuilder builder) {
         this.numOfEntities = builder.numOfEntities;
     }
 
@@ -38,37 +36,23 @@ public class GetPartitionStatsResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GetPartitionStatsResp that = (GetPartitionStatsResp) obj;
-        return new EqualsBuilder()
-                .append(numOfEntities, that.numOfEntities)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return numOfEntities != null ? numOfEntities.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "GetPartitionStatsResp{" +
                 "numOfEntities=" + numOfEntities +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GetPartitionStatsRespBuilder builder() {
+        return new GetPartitionStatsRespBuilder();
     }
 
-    public static class Builder {
+    public static class GetPartitionStatsRespBuilder {
         private Long numOfEntities;
 
-        private Builder() {}
+        private GetPartitionStatsRespBuilder() {
+        }
 
-        public Builder numOfEntities(Long numOfEntities) {
+        public GetPartitionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
             return this;
         }

@@ -21,7 +21,9 @@ package io.milvus.response;
 
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.*;
+import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.DescribeCollectionResponse;
+import io.milvus.grpc.FieldSchema;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
@@ -272,7 +274,6 @@ public class DescCollResponseWrapper {
                 .withEnableDynamicField(isDynamicFieldEnabled())
                 .build();
     }
-
 
 
     /**

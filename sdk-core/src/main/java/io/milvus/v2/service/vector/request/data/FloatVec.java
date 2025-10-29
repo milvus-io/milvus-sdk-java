@@ -31,6 +31,7 @@ public class FloatVec implements BaseVector {
     public FloatVec(List<Float> data) {
         this.data = data;
     }
+
     public FloatVec(float[] data) {
         this.data = new ArrayList<>();
         for (float f : data) {

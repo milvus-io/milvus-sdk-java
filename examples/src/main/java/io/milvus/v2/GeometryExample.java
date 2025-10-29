@@ -36,10 +36,13 @@ import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class GeometryExample {
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
@@ -120,7 +123,7 @@ public class GeometryExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
     }
 
     private static void query(String filter) {

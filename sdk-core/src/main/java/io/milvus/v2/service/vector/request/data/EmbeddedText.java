@@ -27,6 +27,7 @@ public class EmbeddedText implements BaseVector {
     public EmbeddedText(String data) {
         this.data = data;
     }
+
     @Override
     public PlaceholderType getPlaceholderType() {
         return PlaceholderType.VarChar;

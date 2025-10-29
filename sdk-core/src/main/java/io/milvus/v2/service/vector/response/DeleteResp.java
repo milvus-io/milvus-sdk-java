@@ -19,18 +19,15 @@
 
 package io.milvus.v2.service.vector.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class DeleteResp {
     private long deleteCnt;
 
-    private DeleteResp(Builder builder) {
+    private DeleteResp(DeleteRespBuilder builder) {
         this.deleteCnt = builder.deleteCnt;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DeleteRespBuilder builder() {
+        return new DeleteRespBuilder();
     }
 
     public long getDeleteCnt() {
@@ -42,33 +39,16 @@ public class DeleteResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DeleteResp that = (DeleteResp) obj;
-        return new EqualsBuilder()
-                .append(deleteCnt, that.deleteCnt)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(deleteCnt)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "DeleteResp{" +
                 "deleteCnt=" + deleteCnt +
                 '}';
     }
 
-    public static class Builder {
+    public static class DeleteRespBuilder {
         private long deleteCnt;
 
-        public Builder deleteCnt(long deleteCnt) {
+        public DeleteRespBuilder deleteCnt(long deleteCnt) {
             this.deleteCnt = deleteCnt;
             return this;
         }

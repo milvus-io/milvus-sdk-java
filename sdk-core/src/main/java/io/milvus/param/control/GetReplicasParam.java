@@ -78,7 +78,7 @@ public class GetReplicasParam {
 
         /**
          * Sets the database name. Database name cannot be empty or null.
-         * 
+         *
          * @param databaseName database name
          * @return <code>Builder</code>
          */

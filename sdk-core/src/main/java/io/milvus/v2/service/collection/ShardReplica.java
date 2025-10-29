@@ -1,10 +1,7 @@
 package io.milvus.v2.service.collection;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ShardReplica {
     private Long leaderID;
@@ -12,15 +9,15 @@ public class ShardReplica {
     private String channelName;
     private List<Long> nodeIDs;
 
-    private ShardReplica(Builder builder) {
+    private ShardReplica(ShardReplicaBuilder builder) {
         this.leaderID = builder.leaderID;
         this.leaderAddress = builder.leaderAddress;
         this.channelName = builder.channelName != null ? builder.channelName : "";
         this.nodeIDs = builder.nodeIDs != null ? builder.nodeIDs : new ArrayList<>();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ShardReplicaBuilder builder() {
+        return new ShardReplicaBuilder();
     }
 
     // Getters
@@ -58,26 +55,6 @@ public class ShardReplica {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        ShardReplica that = (ShardReplica) obj;
-        
-        return new EqualsBuilder()
-                .append(leaderID, that.leaderID)
-                .append(leaderAddress, that.leaderAddress)
-                .append(channelName, that.channelName)
-                .append(nodeIDs, that.nodeIDs)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(leaderID, leaderAddress, channelName, nodeIDs);
-    }
-
-    @Override
     public String toString() {
         return "ShardReplica{" +
                 "leaderID=" + leaderID +
@@ -87,28 +64,28 @@ public class ShardReplica {
                 '}';
     }
 
-    public static class Builder {
+    public static class ShardReplicaBuilder {
         private Long leaderID;
         private String leaderAddress;
         private String channelName = "";
         private List<Long> nodeIDs = new ArrayList<>();
 
-        public Builder leaderID(Long leaderID) {
+        public ShardReplicaBuilder leaderID(Long leaderID) {
             this.leaderID = leaderID;
             return this;
         }
 
-        public Builder leaderAddress(String leaderAddress) {
+        public ShardReplicaBuilder leaderAddress(String leaderAddress) {
             this.leaderAddress = leaderAddress;
             return this;
         }
 
-        public Builder channelName(String channelName) {
+        public ShardReplicaBuilder channelName(String channelName) {
             this.channelName = channelName;
             return this;
         }
 
-        public Builder nodeIDs(List<Long> nodeIDs) {
+        public ShardReplicaBuilder nodeIDs(List<Long> nodeIDs) {
             this.nodeIDs = nodeIDs;
             return this;
         }

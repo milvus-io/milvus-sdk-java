@@ -98,15 +98,15 @@ public class ParamUtils {
 
     public static int calculateBinVectorDim(DataType dataType, int byteCount) {
         if (dataType == DataType.BinaryVector) {
-            return byteCount*8; // for BinaryVector, each byte is 8 dimensions
+            return byteCount * 8; // for BinaryVector, each byte is 8 dimensions
         } else if (dataType == DataType.Int8Vector) {
             return byteCount; // for Int8Vector, each byte is one dimension
         } else {
-            if (byteCount%2 != 0) {
+            if (byteCount % 2 != 0) {
                 String msg = "Incorrect byte count for %s type field, byte count is %d, cannot be evenly divided by 2";
                 throw new ParamException(String.format(msg, dataType.name(), byteCount));
             }
-            return byteCount/2; // for float16/bfloat16, each dimension is 2 bytes
+            return byteCount / 2; // for float16/bfloat16, each dimension is 2 bytes
         }
     }
 
@@ -155,12 +155,12 @@ public class ParamUtils {
                 int dim = fieldSchema.getDimension();
                 for (int i = 0; i < values.size(); ++i) {
                     // is List<> ?
-                    Object value  = values.get(i);
+                    Object value = values.get(i);
                     if (!(value instanceof List)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
                     // is List<Float> ?
-                    List<?> temp = (List<?>)value;
+                    List<?> temp = (List<?>) value;
                     for (Object v : temp) {
                         if (!(v instanceof Float)) {
                             throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
@@ -180,14 +180,14 @@ public class ParamUtils {
             case BFloat16Vector: {
                 int dim = fieldSchema.getDimension();
                 for (int i = 0; i < values.size(); ++i) {
-                    Object value  = values.get(i);
+                    Object value = values.get(i);
                     // is ByteBuffer?
                     if (!(value instanceof ByteBuffer)) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
 
                     // check dimension
-                    ByteBuffer v = (ByteBuffer)value;
+                    ByteBuffer v = (ByteBuffer) value;
                     int real_dim = calculateBinVectorDim(dataType, v.limit());
                     if (real_dim != dim) {
                         String msg = "Incorrect dimension for field '%s': the no.%d vector's dimension: %d is not equal to field's dimension: %d";
@@ -203,7 +203,7 @@ public class ParamUtils {
                     }
 
                     // is SortedMap<Long, Float> ?
-                    SortedMap<?, ?> m = (SortedMap<?, ?>)value;
+                    SortedMap<?, ?> m = (SortedMap<?, ?>) value;
                     if (m.isEmpty()) { // not allow empty value for sparse vector
                         String msg = "Not allow empty SortedMap for sparse vector field '%s'";
                         throw new ParamException(String.format(msg, fieldSchema.getName()));
@@ -300,7 +300,7 @@ public class ParamUtils {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
 
-                    List<?> array = (List<?>)value;
+                    List<?> array = (List<?>) value;
                     if (array.size() > fieldSchema.getMaxCapacity()) {
                         throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
                     }
@@ -346,7 +346,8 @@ public class ParamUtils {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
                 }
                 try {
-                    List<Float> vector = JsonUtils.fromJson(value, new TypeToken<List<Float>>() {}.getType());
+                    List<Float> vector = JsonUtils.fromJson(value, new TypeToken<List<Float>>() {
+                    }.getType());
                     if (vector.size() != dim) {
                         String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
                         throw new ParamException(String.format(msg, fieldName, vector.size(), dim));
@@ -365,7 +366,8 @@ public class ParamUtils {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
                 }
                 try {
-                    byte[] v = JsonUtils.fromJson(value, new TypeToken<byte[]>() {}.getType());
+                    byte[] v = JsonUtils.fromJson(value, new TypeToken<byte[]>() {
+                    }.getType());
                     int real_dim = calculateBinVectorDim(dataType, v.length);
                     if (real_dim != dim) {
                         String msg = "Incorrect dimension for field '%s': dimension: %d is not equal to field's dimension: %d";
@@ -383,7 +385,8 @@ public class ParamUtils {
                 }
                 try {
                     // return SortedMap<Long, Float> for genFieldData()
-                    return JsonUtils.fromJson(value, new TypeToken<SortedMap<Long, Float>>() {}.getType());
+                    return JsonUtils.fromJson(value, new TypeToken<SortedMap<Long, Float>>() {
+                    }.getType());
                 } catch (JsonSyntaxException e) {
                     throw new ParamException(String.format("Unable to convert JsonObject to SortedMap<Long, Float> for field '%s'. Reason: %s",
                             fieldName, e.getCause().getMessage()));
@@ -453,19 +456,25 @@ public class ParamUtils {
         try {
             switch (elementType) {
                 case Int64:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Long>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Long>>() {
+                    }.getType());
                 case Int32:
                 case Int16:
                 case Int8:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Integer>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Integer>>() {
+                    }.getType());
                 case Bool:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Boolean>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Boolean>>() {
+                    }.getType());
                 case Float:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Float>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Float>>() {
+                    }.getType());
                 case Double:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<Double>>() {
+                    }.getType());
                 case VarChar:
-                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {}.getType());
+                    return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {
+                    }.getType());
                 default:
                     throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
             }
@@ -480,7 +489,7 @@ public class ParamUtils {
      * Throws {@link ParamException} if the string is empty of null.
      *
      * @param target target string
-     * @param name a name to describe this string
+     * @param name   a name to describe this string
      */
     public static void CheckNullEmptyString(String target, String name) throws ParamException {
         if (target == null || StringUtils.isBlank(target)) {
@@ -493,7 +502,7 @@ public class ParamUtils {
      * Throws {@link ParamException} if the string is null.
      *
      * @param target target string
-     * @param name a name to describe this string
+     * @param name   a name to describe this string
      */
     public static void CheckNullString(String target, String name) throws ParamException {
         if (target == null) {
@@ -640,11 +649,11 @@ public class ParamUtils {
 
             Map<String, InsertDataInfo> nameInsertInfo = new HashMap<>();
             InsertDataInfo insertDynamicDataInfo = InsertDataInfo.builder().fieldType(
-                    FieldType.newBuilder()
-                            .withName(Constant.DYNAMIC_FIELD_NAME)
-                            .withDataType(DataType.JSON)
-                            .withIsDynamic(true)
-                            .build())
+                            FieldType.newBuilder()
+                                    .withName(Constant.DYNAMIC_FIELD_NAME)
+                                    .withDataType(DataType.JSON)
+                                    .withIsDynamic(true)
+                                    .build())
                     .data(new LinkedList<>()).build();
             for (JsonObject row : rows) {
                 for (FieldType fieldType : fieldTypes) {
@@ -876,7 +885,8 @@ public class ParamUtils {
         if (null != requestParam.getParams() && !requestParam.getParams().isEmpty()) {
             try {
                 Map<String, Object> paramMap = JsonUtils.fromJson(requestParam.getParams(),
-                        new TypeToken<Map<String, Object>>() {}.getType());
+                        new TypeToken<Map<String, Object>>() {
+                        }.getType());
                 compatibleSearchParams(paramMap, builder);
 
                 String offset = paramMap.getOrDefault(Constant.OFFSET, 0).toString();
@@ -893,10 +903,10 @@ public class ParamUtils {
         // the following parameters are not changed
         // just note: if the searchParams already contains the same key, the following parameters will overwrite it
         builder.addSearchParams(
-                KeyValuePair.newBuilder()
-                        .setKey(Constant.VECTOR_FIELD)
-                        .setValue(requestParam.getVectorFieldName())
-                        .build())
+                        KeyValuePair.newBuilder()
+                                .setKey(Constant.VECTOR_FIELD)
+                                .setValue(requestParam.getVectorFieldName())
+                                .build())
                 .addSearchParams(
                         KeyValuePair.newBuilder()
                                 .setKey(Constant.TOP_K)
@@ -981,7 +991,8 @@ public class ParamUtils {
         // tries to fit the compatibility between v2.5.1 and older versions
         Map<String, Object> paramMap = new HashMap<>();
         if (null != annSearchParam.getParams() && !annSearchParam.getParams().isEmpty()) {
-            paramMap = JsonUtils.fromJson(annSearchParam.getParams(), new TypeToken<Map<String, Object>>() {}.getType());
+            paramMap = JsonUtils.fromJson(annSearchParam.getParams(), new TypeToken<Map<String, Object>>() {
+            }.getType());
         }
         ParamUtils.compatibleSearchParams(paramMap, builder);
 
@@ -1144,13 +1155,13 @@ public class ParamUtils {
         return builder.build();
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String dbName, String collectionName){
-        if(consistencyLevel == null){
+    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String dbName, String collectionName) {
+        if (consistencyLevel == null) {
             String key = GTsDict.CombineCollectionName(dbName, collectionName);
             Long ts = GTsDict.getInstance().getCollectionTs(key);
-            return  (ts == null) ? 1L : ts;
+            return (ts == null) ? 1L : ts;
         }
-        switch (consistencyLevel){
+        switch (consistencyLevel) {
             case STRONG:
                 return 0L;
             case SESSION: {
@@ -1263,7 +1274,7 @@ public class ParamUtils {
             } else {
                 return VectorField.newBuilder().setDim(dim).setInt8Vector(byteString).build();
             }
-        } else if  (dataType == DataType.SparseFloatVector) {
+        } else if (dataType == DataType.SparseFloatVector) {
             SparseFloatArray sparseArray = genSparseFloatArray(objects);
             return VectorField.newBuilder().setDim(sparseArray.getDim()).setSparseFloatVector(sparseArray).build();
         }
@@ -1277,7 +1288,7 @@ public class ParamUtils {
         buf.order(ByteOrder.LITTLE_ENDIAN);
         for (Map.Entry<Long, Float> entry : sparse.entrySet()) {
             long k = entry.getKey();
-            if (k < 0 || k >= (long)Math.pow(2.0, 32.0)-1) {
+            if (k < 0 || k >= (long) Math.pow(2.0, 32.0) - 1) {
                 throw new ParamException("Sparse vector index must be positive and less than 2^32-1");
             }
             // here we construct a binary from the long key
@@ -1301,13 +1312,13 @@ public class ParamUtils {
     public static SortedMap<Long, Float> decodeSparseFloatVector(ByteBuffer buf) {
         buf.order(ByteOrder.LITTLE_ENDIAN);
         SortedMap<Long, Float> sparse = new TreeMap<>();
-        long num = buf.limit()/8; // each uint+float pair is 8 bytes
+        long num = buf.limit() / 8; // each uint+float pair is 8 bytes
         for (long j = 0; j < num; j++) {
             // here we convert an uint 4-bytes to a long value
             // milvus server requires sparse vector to be transfered in little endian
             ByteBuffer pBuf = ByteBuffer.allocate(Long.BYTES);
             pBuf.order(ByteOrder.LITTLE_ENDIAN);
-            int offset = 8*(int)j;
+            int offset = 8 * (int) j;
             byte[] aa = buf.array();
             for (int k = offset; k < offset + 4; k++) {
                 pBuf.put(aa[k]); // fill the first 4 bytes with the unit bytes
@@ -1317,7 +1328,7 @@ public class ParamUtils {
             long k = pBuf.getLong(); // this is the long value converted from the uint
 
             // here we get the float value as normal
-            buf.position(offset+4); // position offsets 4 bytes since they were converted to long
+            buf.position(offset + 4); // position offsets 4 bytes since they were converted to long
             float v = buf.getFloat(); // this is the float value
             sparse.put(k, v);
         }
@@ -1346,7 +1357,7 @@ public class ParamUtils {
         if (dataType == DataType.Array) {
             ArrayArray.Builder builder = ArrayArray.newBuilder();
             for (Object object : objects) {
-                List<?> temp = (List<?>)object;
+                List<?> temp = (List<?>) object;
                 ScalarField arrayField = genScalarField(elementType, DataType.None, temp);
                 builder.addData(arrayField);
             }
@@ -1498,21 +1509,21 @@ public class ParamUtils {
             case Int8:
             case Int16:
                 if (obj instanceof Short) {
-                    return builder.setIntData(((Short)obj).intValue()).build();
+                    return builder.setIntData(((Short) obj).intValue()).build();
                 }
                 break;
             case Int32:
                 if (obj instanceof Short) {
-                    return builder.setIntData(((Short)obj).intValue()).build();
+                    return builder.setIntData(((Short) obj).intValue()).build();
                 } else if (obj instanceof Integer) {
                     return builder.setIntData((Integer) obj).build();
                 }
                 break;
             case Int64:
                 if (obj instanceof Short) {
-                    return builder.setLongData(((Short)obj).longValue()).build();
+                    return builder.setLongData(((Short) obj).longValue()).build();
                 } else if (obj instanceof Integer) {
-                    return builder.setLongData(((Integer)obj).longValue()).build();
+                    return builder.setLongData(((Integer) obj).longValue()).build();
                 } else if (obj instanceof Long) {
                     return builder.setLongData((Long) obj).build();
                 }
@@ -1524,7 +1535,7 @@ public class ParamUtils {
                 break;
             case Double:
                 if (obj instanceof Float) {
-                    return builder.setDoubleData(((Float)obj).doubleValue()).build();
+                    return builder.setDoubleData(((Float) obj).doubleValue()).build();
                 } else if (obj instanceof Double) {
                     return builder.setDoubleData((Double) obj).build();
                 }

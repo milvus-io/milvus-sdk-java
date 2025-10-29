@@ -57,23 +57,22 @@ public enum IndexType {
 
     // Only for sparse vectors
     SPARSE_INVERTED_INDEX(300),
-    SPARSE_WAND(301)
-    ;
+    SPARSE_WAND(301);
 
     private final String name;
     private final int code;
 
-    IndexType(){
+    IndexType() {
         this.name = this.name();
         this.code = this.ordinal();
     }
 
-    IndexType(int code){
+    IndexType(int code) {
         this.name = this.name();
         this.code = code;
     }
 
-    IndexType(String name, int code){
+    IndexType(String name, int code) {
         this.name = name;
         this.code = code;
     }

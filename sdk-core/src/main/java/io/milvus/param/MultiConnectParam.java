@@ -124,7 +124,7 @@ public class MultiConnectParam extends ConnectParam {
          * @param port port value
          * @return <code>Builder</code>
          */
-        public Builder withPort(int port)  {
+        public Builder withPort(int port) {
             super.withPort(port);
             return this;
         }
@@ -166,7 +166,7 @@ public class MultiConnectParam extends ConnectParam {
          * Sets the connection timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param connectTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit       timeout unit
          * @return <code>Builder</code>
          */
         public Builder withConnectTimeout(long connectTimeout, TimeUnit timeUnit) {
@@ -181,7 +181,7 @@ public class MultiConnectParam extends ConnectParam {
          * Sets the keep-alive time value of client channel. The keep-alive value must be greater than zero.
          *
          * @param keepAliveTime keep-alive value
-         * @param timeUnit keep-alive unit
+         * @param timeUnit      keep-alive unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTime(long keepAliveTime, TimeUnit timeUnit) {
@@ -196,7 +196,7 @@ public class MultiConnectParam extends ConnectParam {
          * Sets the keep-alive timeout value of client channel. The timeout value must be greater than zero.
          *
          * @param keepAliveTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit         timeout unit
          * @return <code>Builder</code>
          */
         public Builder withKeepAliveTimeout(long keepAliveTimeout, TimeUnit timeUnit) {
@@ -222,7 +222,7 @@ public class MultiConnectParam extends ConnectParam {
          * Sets the idle timeout value of client channel. The timeout value must be larger than zero.
          *
          * @param idleTimeout timeout value
-         * @param timeUnit timeout unit
+         * @param timeUnit    timeout unit
          * @return <code>Builder</code>
          */
         public Builder withIdleTimeout(long idleTimeout, TimeUnit timeUnit) {
@@ -252,6 +252,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Sets the username and password for this connection
+         *
          * @param username current user
          * @param password password
          * @return <code>Builder</code>
@@ -263,6 +264,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Sets secure the authorization for this connection, set to True to enable TLS
+         *
          * @param secure boolean
          * @return <code>Builder</code>
          */
@@ -273,6 +275,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Sets the secure for this connection
+         *
          * @param authorization the authorization info that has included the encoded username and password info
          * @return <code>Builder</code>
          */
@@ -286,6 +289,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Set the client.key path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param clientKeyPath path of client.key
          * @return <code>Builder</code>
          */
@@ -299,6 +303,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Set the client.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param clientPemPath path of client.pem
          * @return <code>Builder</code>
          */
@@ -312,6 +317,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Set the ca.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param caPemPath path of ca.pem
          * @return <code>Builder</code>
          */
@@ -325,6 +331,7 @@ public class MultiConnectParam extends ConnectParam {
 
         /**
          * Set the server.pem path for tls two-way authentication, only takes effect when "secure" is True.
+         *
          * @param serverPemPath path of server.pem
          * @return <code>Builder</code>
          */
@@ -339,6 +346,7 @@ public class MultiConnectParam extends ConnectParam {
         /**
          * Set target name override for SSL host name checking, only takes effect when "secure" is True.
          * Note: this value is passed to grpc.ssl_target_name_override
+         *
          * @param serverName path of server.pem
          * @return <code>Builder</code>
          */
@@ -366,10 +374,10 @@ public class MultiConnectParam extends ConnectParam {
             for (ServerAddress serverAddress : hosts) {
                 String host = serverAddress.getHost();
                 ParamUtils.CheckNullEmptyString(host, "Host name");
-                if(host.startsWith(HOST_HTTPS_PREFIX)){
+                if (host.startsWith(HOST_HTTPS_PREFIX)) {
                     host = host.replace(HOST_HTTPS_PREFIX, "");
                     this.secure = true;
-                }else if(host.startsWith(HOST_HTTP_PREFIX)){
+                } else if (host.startsWith(HOST_HTTP_PREFIX)) {
                     host = host.replace(HOST_HTTP_PREFIX, "");
                 }
                 hostAddress.add(ServerAddress.newBuilder()

@@ -29,8 +29,8 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq.Function;
+import io.milvus.v2.service.collection.request.DropCollectionReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
@@ -38,7 +38,10 @@ import io.milvus.v2.service.vector.request.data.EmbeddedText;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class FullTextSearchExample {
     private static final String COLLECTION_NAME = "java_sdk_example_text_match_v2";
@@ -146,7 +149,7 @@ public class FullTextSearchExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows in collection\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows in collection\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
 
         // Query by filtering expression
         searchByText(client, "moon and earth distance");

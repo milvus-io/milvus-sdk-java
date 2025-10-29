@@ -19,10 +19,6 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import java.util.Objects;
-
 public class DropCollectionReq {
     private String databaseName;
     private String collectionName;
@@ -30,15 +26,15 @@ public class DropCollectionReq {
     private Boolean async;
     private Long timeout;
 
-    private DropCollectionReq(Builder builder) {
+    private DropCollectionReq(DropCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.async = builder.async != null ? builder.async : Boolean.TRUE;
         this.timeout = builder.timeout != null ? builder.timeout : 60000L;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DropCollectionReqBuilder builder() {
+        return new DropCollectionReqBuilder();
     }
 
     // Getters
@@ -78,26 +74,6 @@ public class DropCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        DropCollectionReq that = (DropCollectionReq) obj;
-        
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(async, that.async)
-                .append(timeout, that.timeout)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(databaseName, collectionName, async, timeout);
-    }
-
-    @Override
     public String toString() {
         return "DropCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -107,31 +83,32 @@ public class DropCollectionReq {
                 '}';
     }
 
-    public static class Builder {
+    public static class DropCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
         private Boolean async;
         private Long timeout;
 
-        private Builder() {}
+        private DropCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DropCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public DropCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
         @Deprecated
-        public Builder async(Boolean async) {
+        public DropCollectionReqBuilder async(Boolean async) {
             this.async = async;
             return this;
         }
 
-        public Builder timeout(Long timeout) {
+        public DropCollectionReqBuilder timeout(Long timeout) {
             this.timeout = timeout;
             return this;
         }

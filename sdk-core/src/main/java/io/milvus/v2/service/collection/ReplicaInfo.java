@@ -1,12 +1,9 @@
 package io.milvus.v2.service.collection;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public class ReplicaInfo {
     private Long replicaID;
@@ -17,7 +14,7 @@ public class ReplicaInfo {
     private String resourceGroupName;
     private Map<String, Integer> numOutboundNode;
 
-    private ReplicaInfo(Builder builder) {
+    private ReplicaInfo(ReplicaInfoBuilder builder) {
         this.replicaID = builder.replicaID;
         this.collectionID = builder.collectionID;
         this.partitionIDs = builder.partitionIDs != null ? builder.partitionIDs : new ArrayList<>();
@@ -27,8 +24,8 @@ public class ReplicaInfo {
         this.numOutboundNode = builder.numOutboundNode != null ? builder.numOutboundNode : new HashMap<>();
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static ReplicaInfoBuilder builder() {
+        return new ReplicaInfoBuilder();
     }
 
     // Getters
@@ -90,30 +87,6 @@ public class ReplicaInfo {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        
-        ReplicaInfo that = (ReplicaInfo) obj;
-        
-        return new EqualsBuilder()
-                .append(replicaID, that.replicaID)
-                .append(collectionID, that.collectionID)
-                .append(partitionIDs, that.partitionIDs)
-                .append(shardReplicas, that.shardReplicas)
-                .append(nodeIDs, that.nodeIDs)
-                .append(resourceGroupName, that.resourceGroupName)
-                .append(numOutboundNode, that.numOutboundNode)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(replicaID, collectionID, partitionIDs, shardReplicas, 
-                nodeIDs, resourceGroupName, numOutboundNode);
-    }
-
-    @Override
     public String toString() {
         return "ReplicaInfo{" +
                 "replicaID=" + replicaID +
@@ -126,7 +99,7 @@ public class ReplicaInfo {
                 '}';
     }
 
-    public static class Builder {
+    public static class ReplicaInfoBuilder {
         private Long replicaID;
         private Long collectionID;
         private List<Long> partitionIDs;
@@ -135,37 +108,37 @@ public class ReplicaInfo {
         private String resourceGroupName;
         private Map<String, Integer> numOutboundNode;
 
-        public Builder replicaID(Long replicaID) {
+        public ReplicaInfoBuilder replicaID(Long replicaID) {
             this.replicaID = replicaID;
             return this;
         }
 
-        public Builder collectionID(Long collectionID) {
+        public ReplicaInfoBuilder collectionID(Long collectionID) {
             this.collectionID = collectionID;
             return this;
         }
 
-        public Builder partitionIDs(List<Long> partitionIDs) {
+        public ReplicaInfoBuilder partitionIDs(List<Long> partitionIDs) {
             this.partitionIDs = partitionIDs;
             return this;
         }
 
-        public Builder shardReplicas(List<ShardReplica> shardReplicas) {
+        public ReplicaInfoBuilder shardReplicas(List<ShardReplica> shardReplicas) {
             this.shardReplicas = shardReplicas;
             return this;
         }
 
-        public Builder nodeIDs(List<Long> nodeIDs) {
+        public ReplicaInfoBuilder nodeIDs(List<Long> nodeIDs) {
             this.nodeIDs = nodeIDs;
             return this;
         }
 
-        public Builder resourceGroupName(String resourceGroupName) {
+        public ReplicaInfoBuilder resourceGroupName(String resourceGroupName) {
             this.resourceGroupName = resourceGroupName;
             return this;
         }
 
-        public Builder numOutboundNode(Map<String, Integer> numOutboundNode) {
+        public ReplicaInfoBuilder numOutboundNode(Map<String, Integer> numOutboundNode) {
             this.numOutboundNode = numOutboundNode;
             return this;
         }

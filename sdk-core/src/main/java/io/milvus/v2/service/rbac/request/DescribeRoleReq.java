@@ -19,13 +19,11 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DescribeRoleReq {
     private String roleName;
     private String dbName;
 
-    private DescribeRoleReq(Builder builder) {
+    private DescribeRoleReq(DescribeRoleReqBuilder builder) {
         this.roleName = builder.roleName;
         this.dbName = builder.dbName;
     }
@@ -47,24 +45,6 @@ public class DescribeRoleReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeRoleReq that = (DescribeRoleReq) obj;
-        return new EqualsBuilder()
-                .append(roleName, that.roleName)
-                .append(dbName, that.dbName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = roleName != null ? roleName.hashCode() : 0;
-        result = 31 * result + (dbName != null ? dbName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "DescribeRoleReq{" +
                 "roleName='" + roleName + '\'' +
@@ -72,22 +52,23 @@ public class DescribeRoleReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeRoleReqBuilder builder() {
+        return new DescribeRoleReqBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeRoleReqBuilder {
         private String roleName;
         private String dbName;
 
-        private Builder() {}
+        private DescribeRoleReqBuilder() {
+        }
 
-        public Builder roleName(String roleName) {
+        public DescribeRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
-        public Builder dbName(String dbName) {
+        public DescribeRoleReqBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }

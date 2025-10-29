@@ -19,9 +19,6 @@
 
 package io.milvus.param.highlevel.dml.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.List;
 
 /**
@@ -49,23 +46,6 @@ public class DeleteResponse {
     @Deprecated
     public List<?> getDeleteIds() {
         return deleteIds;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DeleteResponse that = (DeleteResponse) obj;
-        return new EqualsBuilder()
-                .append(deleteIds, that.deleteIds)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(deleteIds)
-                .toHashCode();
     }
 
     @Override

@@ -41,6 +41,7 @@ import java.util.*;
 
 public class UpsertExample {
     private static final MilvusClientV2 client;
+
     static {
         client = new MilvusClientV2(ConnectConfig.builder()
                 .uri("http://localhost:19530")
@@ -159,7 +160,7 @@ public class UpsertExample {
         // Upsert, update all fields value
         // If autoID is true, the server will return a new primary key for the updated entity
         JsonObject row = new JsonObject();
-        row.addProperty(ID_FIELD, (Long)id); // primary key must be input so that it can know which entity to be updated
+        row.addProperty(ID_FIELD, (Long) id); // primary key must be input so that it can know which entity to be updated
         List<Float> vectorUpdated = Arrays.asList(1.0f, 1.0f, 1.0f, 1.0f);
         row.add(VECTOR_FIELD, gson.toJsonTree(vectorUpdated));
         String textUpdated = "this field has been updated";
@@ -285,7 +286,7 @@ public class UpsertExample {
                 if (entity.get(NULLABLE_FIELD) != null) {
                     throw new RuntimeException("Nullable field is not correctly updated for filter: " + filter);
                 }
-                JsonObject newJson = (JsonObject)entity.get(JSON_FIELD);
+                JsonObject newJson = (JsonObject) entity.get(JSON_FIELD);
                 if (!newJson.has("updated") && !newJson.get("updated").equals("yes")) {
                     throw new RuntimeException("JSON field is not correctly updated for filter: " + filter);
                 }
@@ -312,7 +313,7 @@ public class UpsertExample {
         List<Object> ids = createCollection(autoID);
 
         // Update the entire row of the No.2 entity
-        fullUpsert((Long)ids.get(1));
+        fullUpsert((Long) ids.get(1));
 
         // Partially update the vectors of No.5 and No.6 entities
         partialUpsert(ids.subList(4, 6), true);

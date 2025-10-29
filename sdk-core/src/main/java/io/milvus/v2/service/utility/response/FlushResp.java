@@ -19,24 +19,23 @@
 
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FlushResp {
     private String databaseName;
     private Map<String, List<Long>> collectionSegmentIDs;
     private Map<String, Long> collectionFlushTs;
 
-    private FlushResp(Builder builder) {
+    private FlushResp(FlushRespBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionSegmentIDs = builder.collectionSegmentIDs;
         this.collectionFlushTs = builder.collectionFlushTs;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static FlushRespBuilder builder() {
+        return new FlushRespBuilder();
     }
 
     public String getDatabaseName() {
@@ -64,27 +63,6 @@ public class FlushResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        FlushResp that = (FlushResp) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionSegmentIDs, that.collectionSegmentIDs)
-                .append(collectionFlushTs, that.collectionFlushTs)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionSegmentIDs)
-                .append(collectionFlushTs)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "FlushResp{" +
                 "databaseName='" + databaseName + '\'' +
@@ -93,22 +71,22 @@ public class FlushResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class FlushRespBuilder {
         private String databaseName = "";
         private Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
         private Map<String, Long> collectionFlushTs = new HashMap<>();
 
-        public Builder databaseName(String databaseName) {
+        public FlushRespBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionSegmentIDs(Map<String, List<Long>> collectionSegmentIDs) {
+        public FlushRespBuilder collectionSegmentIDs(Map<String, List<Long>> collectionSegmentIDs) {
             this.collectionSegmentIDs = collectionSegmentIDs;
             return this;
         }
 
-        public Builder collectionFlushTs(Map<String, Long> collectionFlushTs) {
+        public FlushRespBuilder collectionFlushTs(Map<String, Long> collectionFlushTs) {
             this.collectionFlushTs = collectionFlushTs;
             return this;
         }

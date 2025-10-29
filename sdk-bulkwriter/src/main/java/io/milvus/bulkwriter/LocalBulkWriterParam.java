@@ -25,9 +25,6 @@ import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.CollectionSchemaParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,8 +32,6 @@ import java.util.Map;
 /**
  * Parameters for <code>bulkWriter</code> interface.
  */
-@Getter
-@ToString
 public class LocalBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final String localPath;
@@ -44,12 +39,42 @@ public class LocalBulkWriterParam {
     private final BulkFileType fileType;
     private final Map<String, Object> config;
 
-    private LocalBulkWriterParam(@NonNull Builder builder) {
+    private LocalBulkWriterParam(Builder builder) {
         this.collectionSchema = builder.collectionSchema;
         this.localPath = builder.localPath;
         this.chunkSize = builder.chunkSize;
         this.fileType = builder.fileType;
         this.config = builder.config;
+    }
+
+    public CreateCollectionReq.CollectionSchema getCollectionSchema() {
+        return collectionSchema;
+    }
+
+    public String getLocalPath() {
+        return localPath;
+    }
+
+    public long getChunkSize() {
+        return chunkSize;
+    }
+
+    public BulkFileType getFileType() {
+        return fileType;
+    }
+
+    public Map<String, Object> getConfig() {
+        return config;
+    }
+
+    @Override
+    public String toString() {
+        return "LocalBulkWriterParam{" +
+                "collectionSchema=" + collectionSchema +
+                ", localPath='" + localPath + '\'' +
+                ", chunkSize=" + chunkSize +
+                ", fileType=" + fileType +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -64,7 +89,7 @@ public class LocalBulkWriterParam {
         private String localPath;
         private long chunkSize = 128 * 1024 * 1024;
         private BulkFileType fileType = BulkFileType.PARQUET;
-        private Map<String, Object> config = new HashMap<>();
+        private final Map<String, Object> config = new HashMap<>();
 
         private Builder() {
         }
@@ -75,7 +100,7 @@ public class LocalBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CollectionSchemaParam collectionSchema) {
+        public Builder withCollectionSchema(CollectionSchemaParam collectionSchema) {
             this.collectionSchema = V2AdapterUtils.convertV1Schema(collectionSchema);
             return this;
         }
@@ -86,7 +111,7 @@ public class LocalBulkWriterParam {
          * @param collectionSchema collection schema
          * @return <code>Builder</code>
          */
-        public Builder withCollectionSchema(@NonNull CreateCollectionReq.CollectionSchema collectionSchema) {
+        public Builder withCollectionSchema(CreateCollectionReq.CollectionSchema collectionSchema) {
             this.collectionSchema = collectionSchema;
             return this;
         }
@@ -97,7 +122,7 @@ public class LocalBulkWriterParam {
          * @param localPath collection name
          * @return <code>Builder</code>
          */
-        public Builder withLocalPath(@NonNull String localPath) {
+        public Builder withLocalPath(String localPath) {
             this.localPath = localPath;
             return this;
         }
@@ -132,5 +157,4 @@ public class LocalBulkWriterParam {
             return new LocalBulkWriterParam(this);
         }
     }
-
 }

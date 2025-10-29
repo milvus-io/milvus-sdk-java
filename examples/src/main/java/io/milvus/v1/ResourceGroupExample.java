@@ -20,10 +20,9 @@
 package io.milvus.v1;
 
 import com.google.gson.Gson;
-
 import io.milvus.client.MilvusServiceClient;
-import io.milvus.v1.resourcegroup.ResourceGroupManagement;
 import io.milvus.param.ConnectParam;
+import io.milvus.v1.resourcegroup.ResourceGroupManagement;
 
 public class ResourceGroupExample {
     private static final ResourceGroupManagement manager;

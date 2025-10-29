@@ -19,15 +19,13 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class GrantPrivilegeReq {
     private String roleName;
     private String objectType;
     private String privilege;
     private String objectName;
 
-    private GrantPrivilegeReq(Builder builder) {
+    private GrantPrivilegeReq(GrantPrivilegeReqBuilder builder) {
         this.roleName = builder.roleName;
         this.objectType = builder.objectType;
         this.privilege = builder.privilege;
@@ -67,28 +65,6 @@ public class GrantPrivilegeReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        GrantPrivilegeReq that = (GrantPrivilegeReq) obj;
-        return new EqualsBuilder()
-                .append(roleName, that.roleName)
-                .append(objectType, that.objectType)
-                .append(privilege, that.privilege)
-                .append(objectName, that.objectName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = roleName != null ? roleName.hashCode() : 0;
-        result = 31 * result + (objectType != null ? objectType.hashCode() : 0);
-        result = 31 * result + (privilege != null ? privilege.hashCode() : 0);
-        result = 31 * result + (objectName != null ? objectName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "GrantPrivilegeReq{" +
                 "roleName='" + roleName + '\'' +
@@ -98,34 +74,35 @@ public class GrantPrivilegeReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static GrantPrivilegeReqBuilder builder() {
+        return new GrantPrivilegeReqBuilder();
     }
 
-    public static class Builder {
+    public static class GrantPrivilegeReqBuilder {
         private String roleName;
         private String objectType;
         private String privilege;
         private String objectName;
 
-        private Builder() {}
+        private GrantPrivilegeReqBuilder() {
+        }
 
-        public Builder roleName(String roleName) {
+        public GrantPrivilegeReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
-        public Builder objectType(String objectType) {
+        public GrantPrivilegeReqBuilder objectType(String objectType) {
             this.objectType = objectType;
             return this;
         }
 
-        public Builder privilege(String privilege) {
+        public GrantPrivilegeReqBuilder privilege(String privilege) {
             this.privilege = privilege;
             return this;
         }
 
-        public Builder objectName(String objectName) {
+        public GrantPrivilegeReqBuilder objectName(String objectName) {
             this.objectName = objectName;
             return this;
         }

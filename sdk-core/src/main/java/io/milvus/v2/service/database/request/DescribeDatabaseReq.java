@@ -19,12 +19,10 @@
 
 package io.milvus.v2.service.database.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class DescribeDatabaseReq {
     private String databaseName;
 
-    private DescribeDatabaseReq(Builder builder) {
+    private DescribeDatabaseReq(DescribeDatabaseReqBuilder builder) {
         this.databaseName = builder.databaseName;
     }
 
@@ -37,37 +35,23 @@ public class DescribeDatabaseReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        DescribeDatabaseReq that = (DescribeDatabaseReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return databaseName != null ? databaseName.hashCode() : 0;
-    }
-
-    @Override
     public String toString() {
         return "DescribeDatabaseReq{" +
                 "databaseName='" + databaseName + '\'' +
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static DescribeDatabaseReqBuilder builder() {
+        return new DescribeDatabaseReqBuilder();
     }
 
-    public static class Builder {
+    public static class DescribeDatabaseReqBuilder {
         private String databaseName;
 
-        private Builder() {}
+        private DescribeDatabaseReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public DescribeDatabaseReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }

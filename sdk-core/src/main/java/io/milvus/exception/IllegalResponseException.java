@@ -23,7 +23,7 @@ package io.milvus.exception;
 import io.milvus.param.R;
 
 /**
- * Interfaces including <code>search</code>/<code>search</code>/<code>loadCollection</code> might 
+ * Interfaces including <code>search</code>/<code>search</code>/<code>loadCollection</code> might
  * throw this exception when server return illegal response. It may indicate a bug in server.
  */
 public class IllegalResponseException extends MilvusException {

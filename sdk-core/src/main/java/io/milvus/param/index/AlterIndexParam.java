@@ -145,7 +145,7 @@ public class AlterIndexParam {
         /**
          * Basic method to set a key-value property.
          *
-         * @param key the key
+         * @param key   the key
          * @param value the value
          * @return <code>Builder</code>
          */

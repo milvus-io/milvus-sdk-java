@@ -150,7 +150,7 @@ public class FlushParam {
         /**
          * Sets the flush function to sync mode.
          * With sync mode enabled, the client keeps waiting until all segments of the collection successfully flushed.
-         *
+         * <p>
          * If sync mode disabled, client returns at once after the flush() is called.
          *
          * @param syncFlush <code>Boolean.TRUE</code> is sync mode, <code>Boolean.FALSE</code> is not
@@ -167,10 +167,10 @@ public class FlushParam {
         /**
          * Sets waiting interval in sync mode. With sync mode enabled, the client will constantly check segments state by interval.
          * Interval must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_INTERVAL.
-         * @see Constant
          *
          * @param milliseconds interval
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncFlushWaitingInterval(Long milliseconds) {
             if (milliseconds == null) {
@@ -183,10 +183,10 @@ public class FlushParam {
         /**
          * Sets timeout value for sync mode.
          * Timeout value must be greater than zero, and cannot be greater than Constant.MAX_WAITING_FLUSHING_TIMEOUT.
-         * @see Constant
          *
          * @param seconds time out value for sync mode
          * @return <code>Builder</code>
+         * @see Constant
          */
         public Builder withSyncFlushWaitingTimeout(Long seconds) {
             if (seconds == null) {

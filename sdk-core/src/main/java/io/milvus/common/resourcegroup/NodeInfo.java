@@ -19,8 +19,6 @@
 
 package io.milvus.common.resourcegroup;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class NodeInfo {
     private Long nodeId;
     private String address;
@@ -57,26 +55,6 @@ public class NodeInfo {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        NodeInfo nodeInfo = (NodeInfo) obj;
-        return new EqualsBuilder()
-                .append(nodeId, nodeInfo.nodeId)
-                .append(address, nodeInfo.address)
-                .append(hostname, nodeInfo.hostname)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = nodeId != null ? nodeId.hashCode() : 0;
-        result = 31 * result + (address != null ? address.hashCode() : 0);
-        result = 31 * result + (hostname != null ? hostname.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "NodeInfo{" +
                 "nodeId=" + nodeId +
@@ -94,7 +72,8 @@ public class NodeInfo {
         private String address;
         private String hostname;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder nodeId(Long nodeId) {
             this.nodeId = nodeId;

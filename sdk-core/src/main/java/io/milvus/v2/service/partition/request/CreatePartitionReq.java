@@ -19,14 +19,12 @@
 
 package io.milvus.v2.service.partition.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class CreatePartitionReq {
     private String databaseName;
     private String collectionName;
     private String partitionName;
 
-    private CreatePartitionReq(Builder builder) {
+    private CreatePartitionReq(CreatePartitionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -57,26 +55,6 @@ public class CreatePartitionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreatePartitionReq that = (CreatePartitionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(partitionName, that.partitionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (partitionName != null ? partitionName.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "CreatePartitionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -85,28 +63,29 @@ public class CreatePartitionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreatePartitionReqBuilder builder() {
+        return new CreatePartitionReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreatePartitionReqBuilder {
         private String databaseName;
         private String collectionName;
         private String partitionName;
 
-        private Builder() {}
+        private CreatePartitionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public CreatePartitionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public CreatePartitionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public Builder partitionName(String partitionName) {
+        public CreatePartitionReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }

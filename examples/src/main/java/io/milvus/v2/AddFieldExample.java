@@ -35,7 +35,9 @@ import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class AddFieldExample {
     private static final MilvusClientV2 client;
@@ -46,6 +48,7 @@ public class AddFieldExample {
                 .build();
         client = new MilvusClientV2(config);
     }
+
     private static final String COLLECTION_NAME = "java_sdk_example_add_field_v2";
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";

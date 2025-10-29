@@ -25,8 +25,8 @@ import io.milvus.grpc.DataType;
 import io.milvus.grpc.PlaceholderType;
 import io.milvus.param.MetricType;
 import io.milvus.param.collection.FieldType;
-import io.milvus.param.dml.SearchIteratorParam;
 import io.milvus.param.dml.QueryIteratorParam;
+import io.milvus.param.dml.SearchIteratorParam;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.QueryIteratorReq;
@@ -58,6 +58,7 @@ public class IteratorAdapterV2 {
 
         return builder.build();
     }
+
     public static SearchIteratorParam convertV2Req(SearchIteratorReq searchIteratorReq) {
         MetricType metricType = MetricType.None;
         if (searchIteratorReq.getMetricType() != IndexParam.MetricType.INVALID) {
@@ -94,31 +95,31 @@ public class IteratorAdapterV2 {
         switch (plType) {
             case FloatVector: {
                 List<List<Float>> data = new ArrayList<>();
-                vectors.forEach(vector->data.add((List<Float>)vector.getData()));
+                vectors.forEach(vector -> data.add((List<Float>) vector.getData()));
                 builder.withFloatVectors(data);
                 break;
             }
             case BinaryVector: {
                 List<ByteBuffer> data = new ArrayList<>();
-                vectors.forEach(vector->data.add((ByteBuffer)vector.getData()));
+                vectors.forEach(vector -> data.add((ByteBuffer) vector.getData()));
                 builder.withBinaryVectors(data);
                 break;
             }
             case Float16Vector: {
                 List<ByteBuffer> data = new ArrayList<>();
-                vectors.forEach(vector -> data.add((ByteBuffer)vector.getData()));
+                vectors.forEach(vector -> data.add((ByteBuffer) vector.getData()));
                 builder.withFloat16Vectors(data);
                 break;
             }
             case BFloat16Vector: {
                 List<ByteBuffer> data = new ArrayList<>();
-                vectors.forEach(vector -> data.add((ByteBuffer)vector.getData()));
+                vectors.forEach(vector -> data.add((ByteBuffer) vector.getData()));
                 builder.withBFloat16Vectors(data);
                 break;
             }
             case SparseFloatVector: {
                 List<SortedMap<Long, Float>> data = new ArrayList<>();
-                vectors.forEach(vector -> data.add((SortedMap<Long, Float>)vector.getData()));
+                vectors.forEach(vector -> data.add((SortedMap<Long, Float>) vector.getData()));
                 builder.withSparseFloatVectors(data);
                 break;
             }

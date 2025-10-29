@@ -19,14 +19,12 @@
 
 package io.milvus.v2.service.rbac.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
 public class UpdatePasswordReq {
     private String userName;
     private String password;
     private String newPassword;
 
-    private UpdatePasswordReq(Builder builder) {
+    private UpdatePasswordReq(UpdatePasswordReqBuilder builder) {
         this.userName = builder.userName;
         this.password = builder.password;
         this.newPassword = builder.newPassword;
@@ -57,26 +55,6 @@ public class UpdatePasswordReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        UpdatePasswordReq that = (UpdatePasswordReq) obj;
-        return new EqualsBuilder()
-                .append(userName, that.userName)
-                .append(password, that.password)
-                .append(newPassword, that.newPassword)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = userName != null ? userName.hashCode() : 0;
-        result = 31 * result + (password != null ? password.hashCode() : 0);
-        result = 31 * result + (newPassword != null ? newPassword.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "UpdatePasswordReq{" +
                 "userName='" + userName + '\'' +
@@ -85,28 +63,29 @@ public class UpdatePasswordReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static UpdatePasswordReqBuilder builder() {
+        return new UpdatePasswordReqBuilder();
     }
 
-    public static class Builder {
+    public static class UpdatePasswordReqBuilder {
         private String userName;
         private String password;
         private String newPassword;
 
-        private Builder() {}
+        private UpdatePasswordReqBuilder() {
+        }
 
-        public Builder userName(String userName) {
+        public UpdatePasswordReqBuilder userName(String userName) {
             this.userName = userName;
             return this;
         }
 
-        public Builder password(String password) {
+        public UpdatePasswordReqBuilder password(String password) {
             this.password = password;
             return this;
         }
 
-        public Builder newPassword(String newPassword) {
+        public UpdatePasswordReqBuilder newPassword(String newPassword) {
             this.newPassword = newPassword;
             return this;
         }

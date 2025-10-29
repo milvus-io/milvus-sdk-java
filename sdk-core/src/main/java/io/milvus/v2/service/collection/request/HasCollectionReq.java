@@ -19,14 +19,11 @@
 
 package io.milvus.v2.service.collection.request;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 public class HasCollectionReq {
     private String databaseName;
     private String collectionName;
 
-    private HasCollectionReq(Builder builder) {
+    private HasCollectionReq(HasCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
     }
@@ -48,25 +45,6 @@ public class HasCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        HasCollectionReq that = (HasCollectionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "HasCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -74,22 +52,23 @@ public class HasCollectionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static HasCollectionReqBuilder builder() {
+        return new HasCollectionReqBuilder();
     }
 
-    public static class Builder {
+    public static class HasCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
 
-        private Builder() {}
+        private HasCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public HasCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public HasCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }

@@ -19,7 +19,7 @@
 
 package io.milvus.response;
 
-import com.google.gson.*;
+import com.google.gson.JsonObject;
 import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -71,7 +71,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
     /**
      * Note: this method only can return the first target vector's topk result
-     *       and its function is duplicated with getIDScore(), so we mark it as deprecated.
+     * and its function is duplicated with getIDScore(), so we mark it as deprecated.
      */
     @Deprecated
     @Override
@@ -99,7 +99,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             record.put("score", score.getScore()); // use score instead
-            buildRowRecord(record, indexOfTarget*topK + (long)i);
+            buildRowRecord(record, indexOfTarget * topK + (long) i);
             records.add(record);
         }
         return records;
@@ -119,7 +119,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
      * Throws {@link ParamException} if the field doesn't exist.
      * Throws {@link ParamException} if the indexOfTarget is illegal.
      *
-     * @param fieldName field name to get output data
+     * @param fieldName     field name to get output data
      * @param indexOfTarget which target vector the field data belongs to
      * @return {@link FieldDataWrapper}
      */
@@ -148,7 +148,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             throw new IllegalResponseException("Field data row count is wrong");
         }
 
-        return allData.subList((int)offset, (int)offset + (int)k);
+        return allData.subList((int) offset, (int) offset + (int) k);
     }
 
     /**
@@ -179,7 +179,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore(primaryKey, "", longIDs.getData((int)offset + n), results.getScores((int)offset + n)));
+                idScores.add(new IDScore(primaryKey, "", longIDs.getData((int) offset + n), results.getScores((int) offset + n)));
             }
         } else if (ids.hasStrId()) {
             StringArray strIDs = ids.getStrId();
@@ -188,7 +188,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             }
 
             for (int n = 0; n < k; ++n) {
-                idScores.add(new IDScore(primaryKey, strIDs.getData((int)offset + n), 0, results.getScores((int)offset + n)));
+                idScores.add(new IDScore(primaryKey, strIDs.getData((int) offset + n), 0, results.getScores((int) offset + n)));
             }
         } else {
             // in v2.3.3, return an empty list instead of throwing exception
@@ -218,7 +218,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
                             throw new ParamException("Illegal values length of output fields");
                         }
 
-                        Object value = wrapper.valueByIdx((int)offset + n);
+                        Object value = wrapper.valueByIdx((int) offset + n);
                         if (wrapper.isJsonField()) {
                             idScores.get(n).put(field.getFieldName(), FieldDataWrapper.ParseJSONObject(value));
                         } else {
@@ -234,7 +234,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             // if the output field is not a field name, fetch it from dynamic field
             if (!isField && dynamicField != null) {
                 for (int n = 0; n < k; ++n) {
-                    Object obj = dynamicField.get((int)offset + n, outputKey);
+                    Object obj = dynamicField.get((int) offset + n, outputKey);
                     if (obj != null) {
                         idScores.get(n).put(outputKey, obj);
                     }
@@ -246,6 +246,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
     /**
      * Gets how many nq are searched.
+     *
      * @return how many nq are searched
      */
     public long getNumQueries() {
@@ -269,6 +270,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
             return k;
         }
     }
+
     private Position getOffsetByIndex(int indexOfTarget) {
         List<Long> kList = results.getTopksList();
 
@@ -329,6 +331,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         /**
          * Get all field values as a map
+         *
          * @return Map containing all field values
          */
         public Map<String, Object> getFieldValues() {
@@ -337,8 +340,9 @@ public class SearchResultsWrapper extends RowRecordWrapper {
 
         /**
          * Add a field value to the existing values
+         *
          * @param keyName field name
-         * @param obj field value
+         * @param obj     field value
          * @return true if the value was added, false if the key already exists
          */
         public boolean put(String keyName, Object obj) {
@@ -368,7 +372,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
                 // find the value from dynamic field
                 Object meta = fieldValues.get(Constant.DYNAMIC_FIELD_NAME);
                 if (meta != null) {
-                    JsonObject jsonMeta = (JsonObject)meta;
+                    JsonObject jsonMeta = (JsonObject) meta;
                     Object innerObj = jsonMeta.get(keyName);
                     if (innerObj != null) {
                         return innerObj;

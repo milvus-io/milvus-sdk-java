@@ -22,9 +22,7 @@ package io.milvus.param.index;
 import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 /**
  * Parameters for <code>dropIndex</code> interface.
@@ -41,7 +39,7 @@ public class DropIndexParam {
         if (builder.indexName == null) {
             throw new IllegalArgumentException("Index name cannot be null");
         }
-        
+
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.indexName = builder.indexName;
@@ -70,30 +68,6 @@ public class DropIndexParam {
                 ", collectionName='" + collectionName + '\'' +
                 ", indexName='" + indexName + '\'' +
                 '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        DropIndexParam that = (DropIndexParam) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(indexName, that.indexName)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = databaseName != null ? databaseName.hashCode() : 0;
-        result = 31 * result + (collectionName != null ? collectionName.hashCode() : 0);
-        result = 31 * result + (indexName != null ? indexName.hashCode() : 0);
-        return result;
     }
 
     /**

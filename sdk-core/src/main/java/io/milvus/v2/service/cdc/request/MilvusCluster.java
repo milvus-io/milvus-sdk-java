@@ -20,7 +20,6 @@
 package io.milvus.v2.service.cdc.request;
 
 import java.util.List;
-import java.util.Objects;
 
 public class MilvusCluster {
     private String clusterId;
@@ -44,7 +43,7 @@ public class MilvusCluster {
         return builder.build();
     }
 
-    private MilvusCluster(Builder builder) {
+    private MilvusCluster(MilvusClusterBuilder builder) {
         this.clusterId = builder.clusterId;
         this.uri = builder.uri;
         this.token = builder.token;
@@ -84,18 +83,6 @@ public class MilvusCluster {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        MilvusCluster that = (MilvusCluster) o;
-        return Objects.equals(clusterId, that.clusterId) && Objects.equals(uri, that.uri) && Objects.equals(token, that.token) && Objects.equals(pchannels, that.pchannels);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(clusterId, uri, token, pchannels);
-    }
-
-    @Override
     public String toString() {
         return "MilvusCluster{" +
                 "clusterId='" + clusterId + '\'' +
@@ -105,32 +92,32 @@ public class MilvusCluster {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static MilvusClusterBuilder builder() {
+        return new MilvusClusterBuilder();
     }
 
-    public static class Builder {
+    public static class MilvusClusterBuilder {
         private String clusterId;
         private String uri;
         private String token;
         private List<String> pchannels;
 
-        public Builder clusterId(String clusterId) {
+        public MilvusClusterBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
 
-        public Builder uri(String uri) {
+        public MilvusClusterBuilder uri(String uri) {
             this.uri = uri;
             return this;
         }
 
-        public Builder token(String token) {
+        public MilvusClusterBuilder token(String token) {
             this.token = token;
             return this;
         }
 
-        public Builder pchannels(List<String> pchannels) {
+        public MilvusClusterBuilder pchannels(List<String> pchannels) {
             this.pchannels = pchannels;
             return this;
         }

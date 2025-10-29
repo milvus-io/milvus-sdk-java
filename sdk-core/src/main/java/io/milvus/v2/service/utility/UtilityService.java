@@ -28,7 +28,10 @@ import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class UtilityService extends BaseService {
@@ -51,7 +54,7 @@ public class UtilityService extends BaseService {
 
         Map<String, LongArray> rpcCollSegIDs = response.getCollSegIDsMap();
         Map<String, List<Long>> collectionSegmentIDs = new HashMap<>();
-        rpcCollSegIDs.forEach((key, value)->{
+        rpcCollSegIDs.forEach((key, value) -> {
             collectionSegmentIDs.put(key, value.getDataList());
         });
         Map<String, Long> collectionFlushTs = response.getCollFlushTsMap();
@@ -66,7 +69,7 @@ public class UtilityService extends BaseService {
     public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushResp flushResp) {
         Map<String, List<Long>> collectionSegmentIDs = flushResp.getCollectionSegmentIDs();
         Map<String, Long> collectionFlushTs = flushResp.getCollectionFlushTs();
-        collectionSegmentIDs.forEach((collectionName, segmentIDs)->{
+        collectionSegmentIDs.forEach((collectionName, segmentIDs) -> {
             if (collectionFlushTs.containsKey(collectionName)) {
                 Long flushTs = collectionFlushTs.get(collectionName);
                 boolean flushed = false;
@@ -223,7 +226,7 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         List<String> states = new ArrayList<>();
-        response.getQuotaStatesList().forEach(s->states.add(s.name()));
+        response.getQuotaStatesList().forEach(s -> states.add(s.name()));
         return CheckHealthResp.builder()
                 .isHealthy(response.getIsHealthy())
                 .reasons(response.getReasonsList().stream().collect(Collectors.toList()))
@@ -232,7 +235,7 @@ public class UtilityService extends BaseService {
     }
 
     public GetPersistentSegmentInfoResp getPersistentSegmentInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                    GetPersistentSegmentInfoReq request) {
+                                                                 GetPersistentSegmentInfoReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Get persistent segment info in collection: '%s' in database: '%s'", collectionName, dbName);
@@ -245,15 +248,17 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         List<GetPersistentSegmentInfoResp.PersistentSegmentInfo> segmentInfos = new ArrayList<>();
-        response.getInfosList().forEach(info->{segmentInfos.add(GetPersistentSegmentInfoResp.PersistentSegmentInfo.builder()
-                .segmentID(info.getSegmentID())
-                .collectionID(info.getCollectionID())
-                .partitionID(info.getPartitionID())
-                .numOfRows(info.getNumRows())
-                .state(info.getState().name())
-                .level(info.getLevel().name())
-                .isSorted(info.getIsSorted())
-                .build());});
+        response.getInfosList().forEach(info -> {
+            segmentInfos.add(GetPersistentSegmentInfoResp.PersistentSegmentInfo.builder()
+                    .segmentID(info.getSegmentID())
+                    .collectionID(info.getCollectionID())
+                    .partitionID(info.getPartitionID())
+                    .numOfRows(info.getNumRows())
+                    .state(info.getState().name())
+                    .level(info.getLevel().name())
+                    .isSorted(info.getIsSorted())
+                    .build());
+        });
         return GetPersistentSegmentInfoResp.builder()
                 .segmentInfos(segmentInfos)
                 .build();
@@ -273,19 +278,21 @@ public class UtilityService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         List<GetQuerySegmentInfoResp.QuerySegmentInfo> segmentInfos = new ArrayList<>();
-        response.getInfosList().forEach(info->{segmentInfos.add(GetQuerySegmentInfoResp.QuerySegmentInfo.builder()
-                .segmentID(info.getSegmentID())
-                .collectionID(info.getCollectionID())
-                .partitionID(info.getPartitionID())
-                .memSize(info.getMemSize())
-                .numOfRows(info.getNumRows())
-                .indexName(info.getIndexName())
-                .indexID(info.getIndexID())
-                .state(info.getState().name())
-                .level(info.getLevel().name())
-                .nodeIDs(info.getNodeIdsList())
-                .isSorted(info.getIsSorted())
-                .build());});
+        response.getInfosList().forEach(info -> {
+            segmentInfos.add(GetQuerySegmentInfoResp.QuerySegmentInfo.builder()
+                    .segmentID(info.getSegmentID())
+                    .collectionID(info.getCollectionID())
+                    .partitionID(info.getPartitionID())
+                    .memSize(info.getMemSize())
+                    .numOfRows(info.getNumRows())
+                    .indexName(info.getIndexName())
+                    .indexID(info.getIndexID())
+                    .state(info.getState().name())
+                    .level(info.getLevel().name())
+                    .nodeIDs(info.getNodeIdsList())
+                    .isSorted(info.getIsSorted())
+                    .build());
+        });
         return GetQuerySegmentInfoResp.builder()
                 .segmentInfos(segmentInfos)
                 .build();

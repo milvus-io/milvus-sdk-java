@@ -22,26 +22,47 @@ package io.milvus.bulkwriter.connect;
 import com.azure.core.credential.TokenCredential;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Parameters for <code>RemoteBulkWriter</code> interface.
  */
-@Getter
-@ToString
 public class AzureConnectParam extends StorageConnectParam {
     private final String containerName;
     private final String connStr;
     private final String accountUrl;
     private final TokenCredential credential;
 
-    private AzureConnectParam(@NonNull Builder builder) {
+    private AzureConnectParam(Builder builder) {
         this.containerName = builder.containerName;
         this.connStr = builder.connStr;
         this.accountUrl = builder.accountUrl;
         this.credential = builder.credential;
+    }
+
+    public String getContainerName() {
+        return containerName;
+    }
+
+    public String getConnStr() {
+        return connStr;
+    }
+
+    public String getAccountUrl() {
+        return accountUrl;
+    }
+
+    public TokenCredential getCredential() {
+        return credential;
+    }
+
+    @Override
+    public String toString() {
+        return "AzureConnectParam{" +
+                "containerName='" + containerName + '\'' +
+                ", connStr='" + connStr + '\'' +
+                ", accountUrl='" + accountUrl + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -64,7 +85,7 @@ public class AzureConnectParam extends StorageConnectParam {
          * @param containerName The target container name
          * @return <code>Builder</code>
          */
-        public Builder withContainerName(@NonNull String containerName) {
+        public Builder withContainerName(@NotNull String containerName) {
             this.containerName = containerName;
             return this;
         }
@@ -76,18 +97,18 @@ public class AzureConnectParam extends StorageConnectParam {
          *                <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-configure-connection-string">...</a>
          * @return <code>Builder</code>
          */
-        public Builder withConnStr(@NonNull String connStr) {
+        public Builder withConnStr(@NotNull String connStr) {
             this.connStr = connStr;
             return this;
         }
 
         /**
          * @param accountUrl A string in format like "https://[storage-account].blob.core.windows.net"
-         *                     Read this link for more info:
-         *                     <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview">...</a>
+         *                   Read this link for more info:
+         *                   <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-overview">...</a>
          * @return <code>Builder</code>
          */
-        public Builder withAccountUrl(@NonNull String accountUrl) {
+        public Builder withAccountUrl(@NotNull String accountUrl) {
             this.accountUrl = accountUrl;
             return this;
         }
@@ -95,10 +116,10 @@ public class AzureConnectParam extends StorageConnectParam {
         /**
          *
          * @param credential Account access key for the account, read this link for more info:
-         *                     <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys">...</a>
+         *                   <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal#view-account-access-keys">...</a>
          * @return <code>Builder</code>
          */
-        public Builder withCredential(@NonNull TokenCredential credential) {
+        public Builder withCredential(@NotNull TokenCredential credential) {
             this.credential = credential;
             return this;
         }

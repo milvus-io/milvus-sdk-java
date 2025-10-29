@@ -19,17 +19,7 @@
 
 package io.milvus.v2.service.index;
 
-import io.milvus.grpc.AllocTimestampRequest;
-import io.milvus.grpc.AllocTimestampResponse;
-import io.milvus.grpc.AlterIndexRequest;
-import io.milvus.grpc.CreateIndexRequest;
-import io.milvus.grpc.DescribeIndexRequest;
-import io.milvus.grpc.DescribeIndexResponse;
-import io.milvus.grpc.DropIndexRequest;
-import io.milvus.grpc.IndexDescription;
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.grpc.MilvusServiceGrpc;
-import io.milvus.grpc.Status;
+import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexBuildState;
@@ -37,12 +27,7 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
-import io.milvus.v2.service.index.request.AlterIndexPropertiesReq;
-import io.milvus.v2.service.index.request.CreateIndexReq;
-import io.milvus.v2.service.index.request.DescribeIndexReq;
-import io.milvus.v2.service.index.request.DropIndexPropertiesReq;
-import io.milvus.v2.service.index.request.DropIndexReq;
-import io.milvus.v2.service.index.request.ListIndexesReq;
+import io.milvus.v2.service.index.request.*;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -57,7 +42,7 @@ public class IndexService extends BaseService {
     public Void createIndex(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateIndexReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        for(IndexParam indexParam : request.getIndexParams()) {
+        for (IndexParam indexParam : request.getIndexParams()) {
             String fieldName = indexParam.getFieldName();
             String indexName = indexParam.getIndexName();
             String title = String.format("Create index for field: '%s' in collection: '%s' in database: '%s'",
@@ -76,7 +61,7 @@ public class IndexService extends BaseService {
                 builder.setDbName(dbName);
             }
 
-            if(indexParam.getMetricType()!= null){
+            if (indexParam.getMetricType() != null) {
                 // only vector field has a metric type
                 builder.addExtraParams(KeyValuePair.newBuilder()
                         .setKey(Constant.METRIC_TYPE)
@@ -123,7 +108,7 @@ public class IndexService extends BaseService {
 
         return null;
     }
-    
+
     public Void alterIndexProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterIndexPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();

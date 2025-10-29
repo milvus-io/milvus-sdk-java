@@ -19,12 +19,12 @@
 
 package io.milvus.bulkwriter.common.utils;
 
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.parquet.schema.LogicalTypeAnnotation;
 import org.apache.parquet.schema.MessageType;
 import org.apache.parquet.schema.PrimitiveType;
 import org.apache.parquet.schema.Types;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
 
 import java.util.List;
 

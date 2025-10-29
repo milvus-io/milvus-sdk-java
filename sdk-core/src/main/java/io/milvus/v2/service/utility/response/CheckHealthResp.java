@@ -1,8 +1,5 @@
 package io.milvus.v2.service.utility.response;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,14 +8,14 @@ public class CheckHealthResp {
     private List<String> reasons;
     private List<String> quotaStates;
 
-    private CheckHealthResp(Builder builder) {
+    private CheckHealthResp(CheckHealthRespBuilder builder) {
         this.isHealthy = builder.isHealthy;
         this.reasons = builder.reasons;
         this.quotaStates = builder.quotaStates;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CheckHealthRespBuilder builder() {
+        return new CheckHealthRespBuilder();
     }
 
     public Boolean getIsHealthy() {
@@ -46,27 +43,6 @@ public class CheckHealthResp {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CheckHealthResp that = (CheckHealthResp) obj;
-        return new EqualsBuilder()
-                .append(isHealthy, that.isHealthy)
-                .append(reasons, that.reasons)
-                .append(quotaStates, that.quotaStates)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(isHealthy)
-                .append(reasons)
-                .append(quotaStates)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "CheckHealthResp{" +
                 "isHealthy=" + isHealthy +
@@ -75,22 +51,22 @@ public class CheckHealthResp {
                 '}';
     }
 
-    public static class Builder {
+    public static class CheckHealthRespBuilder {
         private Boolean isHealthy = false;
         private List<String> reasons = new ArrayList<>();
         private List<String> quotaStates = new ArrayList<>();
 
-        public Builder isHealthy(Boolean isHealthy) {
+        public CheckHealthRespBuilder isHealthy(Boolean isHealthy) {
             this.isHealthy = isHealthy;
             return this;
         }
 
-        public Builder reasons(List<String> reasons) {
+        public CheckHealthRespBuilder reasons(List<String> reasons) {
             this.reasons = reasons;
             return this;
         }
 
-        public Builder quotaStates(List<String> quotaStates) {
+        public CheckHealthRespBuilder quotaStates(List<String> quotaStates) {
             this.quotaStates = quotaStates;
             return this;
         }

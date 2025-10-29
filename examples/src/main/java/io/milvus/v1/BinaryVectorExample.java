@@ -42,7 +42,7 @@ public class BinaryVectorExample {
     private static final String VECTOR_FIELD = "vector";
 
     private static final Integer VECTOR_DIM = 128;
-    
+
 
     public static void main(String[] args) {
         // Connect to Milvus server. Replace the "localhost" and port with your Milvus server address.
@@ -172,7 +172,7 @@ public class BinaryVectorExample {
             System.out.printf("The result of No.%d target vector:\n", i);
             for (SearchResultsWrapper.IDScore score : scores) {
                 System.out.println(score);
-                ByteBuffer vector = (ByteBuffer)score.get(VECTOR_FIELD);
+                ByteBuffer vector = (ByteBuffer) score.get(VECTOR_FIELD);
                 CommonUtils.printBinaryVector(vector);
             }
             if (scores.get(0).getLongID() != k) {

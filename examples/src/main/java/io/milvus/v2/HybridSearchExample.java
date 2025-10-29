@@ -21,20 +21,16 @@ package io.milvus.v2;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import io.milvus.v2.common.DataType;
 import io.milvus.v1.CommonUtils;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.vector.request.AnnSearchReq;
-import io.milvus.v2.service.vector.request.FunctionScore;
-import io.milvus.v2.service.vector.request.HybridSearchReq;
-import io.milvus.v2.service.vector.request.InsertReq;
-import io.milvus.v2.service.vector.request.QueryReq;
+import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.data.BinaryVec;
 import io.milvus.v2.service.vector.request.data.FloatVec;
@@ -107,10 +103,10 @@ public class HybridSearchExample {
                 .build());
 
         List<IndexParam> indexes = new ArrayList<>();
-        Map<String,Object> fvParams = new HashMap<>();
-        fvParams.put("nlist",128);
-        fvParams.put("m",16);
-        fvParams.put("nbits",8);
+        Map<String, Object> fvParams = new HashMap<>();
+        fvParams.put("nlist", 128);
+        fvParams.put("m", 16);
+        fvParams.put("nbits", 8);
         indexes.add(IndexParam.builder()
                 .fieldName(FLOAT_VECTOR_FIELD)
                 .indexType(IndexParam.IndexType.IVF_PQ)
@@ -122,9 +118,9 @@ public class HybridSearchExample {
                 .indexType(IndexParam.IndexType.BIN_FLAT)
                 .metricType(BINARY_VECTOR_METRIC)
                 .build());
-        Map<String,Object> fv16Params = new HashMap<>();
-        fv16Params.put("M",16);
-        fv16Params.put("efConstruction",64);
+        Map<String, Object> fv16Params = new HashMap<>();
+        fv16Params.put("M", 16);
+        fv16Params.put("efConstruction", 64);
         indexes.add(IndexParam.builder()
                 .fieldName(FLOAT16_VECTOR_FIELD)
                 .indexType(IndexParam.IndexType.HNSW)
@@ -177,7 +173,7 @@ public class HybridSearchExample {
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
-        System.out.printf("%d rows persisted\n", (long)countR.getQueryResults().get(0).getEntity().get("count(*)"));
+        System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
     }
 
     private static void hybridSearch() {

@@ -19,15 +19,13 @@
 
 package io.milvus.common.resourcegroup;
 
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.param.ParamUtils;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
-
-import io.milvus.grpc.KeyValuePair;
-import io.milvus.param.ParamUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public class ResourceGroupNodeFilter {
     private final Map<String, String> nodeLabels;
@@ -38,6 +36,7 @@ public class ResourceGroupNodeFilter {
 
     /**
      * Constructor from grpc
+     *
      * @param filter grpc filter object
      */
     public ResourceGroupNodeFilter(io.milvus.grpc.ResourceGroupNodeFilter filter) {
@@ -53,6 +52,7 @@ public class ResourceGroupNodeFilter {
 
     /**
      * Create ResourceGroupNodeFilter from grpc object
+     *
      * @param filter grpc filter object
      * @return ResourceGroupNodeFilter instance
      */
@@ -67,13 +67,14 @@ public class ResourceGroupNodeFilter {
 
     public static class Builder {
         private Map<String, String> nodeLabels = new HashMap<>();
-        
+
         private Builder() {
         }
 
         /**
          * Set the node label filter
-         * @param key label name
+         *
+         * @param key   label name
          * @param value label value
          * @return <code>Builder</code>
          */
@@ -96,6 +97,7 @@ public class ResourceGroupNodeFilter {
 
     /**
      * Transfer to grpc
+     *
      * @return io.milvus.grpc.ResourceGroupNodeFilter
      */
     public io.milvus.grpc.ResourceGroupNodeFilter toGRPC() {
@@ -103,31 +105,12 @@ public class ResourceGroupNodeFilter {
         io.milvus.grpc.ResourceGroupNodeFilter result = io.milvus.grpc.ResourceGroupNodeFilter.newBuilder()
                 .addAllNodeLabels(pair)
                 .build();
-        
+
         // Replace @NonNull logic with explicit null check
         if (result == null) {
             throw new IllegalStateException("Failed to create GRPC ResourceGroupNodeFilter");
         }
         return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        ResourceGroupNodeFilter that = (ResourceGroupNodeFilter) obj;
-        return new EqualsBuilder()
-                .append(nodeLabels, that.nodeLabels)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(nodeLabels);
     }
 
     @Override

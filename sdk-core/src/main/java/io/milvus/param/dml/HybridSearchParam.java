@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-
 import io.milvus.param.dml.ranker.BaseRanker;
 
 import java.util.List;

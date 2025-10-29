@@ -27,8 +27,6 @@ import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.utils.SchemaUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,7 +64,7 @@ public class CreateCollectionReq {
 
     private final Map<String, String> properties = new HashMap<>();
 
-    private CreateCollectionReq(Builder builder) {
+    private CreateCollectionReq(CreateCollectionReqBuilder builder) {
         if (builder.collectionName == null) {
             throw new IllegalArgumentException("Collection name cannot be null");
         }
@@ -229,55 +227,6 @@ public class CreateCollectionReq {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        CreateCollectionReq that = (CreateCollectionReq) obj;
-        return new EqualsBuilder()
-                .append(databaseName, that.databaseName)
-                .append(collectionName, that.collectionName)
-                .append(description, that.description)
-                .append(dimension, that.dimension)
-                .append(primaryFieldName, that.primaryFieldName)
-                .append(idType, that.idType)
-                .append(maxLength, that.maxLength)
-                .append(vectorFieldName, that.vectorFieldName)
-                .append(metricType, that.metricType)
-                .append(autoID, that.autoID)
-                .append(enableDynamicField, that.enableDynamicField)
-                .append(numShards, that.numShards)
-                .append(collectionSchema, that.collectionSchema)
-                .append(indexParams, that.indexParams)
-                .append(numPartitions, that.numPartitions)
-                .append(consistencyLevel, that.consistencyLevel)
-                .append(properties, that.properties)
-                .isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(databaseName)
-                .append(collectionName)
-                .append(description)
-                .append(dimension)
-                .append(primaryFieldName)
-                .append(idType)
-                .append(maxLength)
-                .append(vectorFieldName)
-                .append(metricType)
-                .append(autoID)
-                .append(enableDynamicField)
-                .append(numShards)
-                .append(collectionSchema)
-                .append(indexParams)
-                .append(numPartitions)
-                .append(consistencyLevel)
-                .append(properties)
-                .toHashCode();
-    }
-
-    @Override
     public String toString() {
         return "CreateCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
@@ -300,11 +249,11 @@ public class CreateCollectionReq {
                 '}';
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static CreateCollectionReqBuilder builder() {
+        return new CreateCollectionReqBuilder();
     }
 
-    public static class Builder {
+    public static class CreateCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
         private String description = "";
@@ -324,14 +273,15 @@ public class CreateCollectionReq {
         private Map<String, String> properties = new HashMap<>();
         private boolean enableDynamicFieldSet = false;
 
-        private Builder() {}
+        private CreateCollectionReqBuilder() {
+        }
 
-        public Builder databaseName(String databaseName) {
+        public CreateCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public Builder collectionName(String collectionName) {
+        public CreateCollectionReqBuilder collectionName(String collectionName) {
             if (collectionName == null) {
                 throw new IllegalArgumentException("Collection name cannot be null");
             }
@@ -339,67 +289,67 @@ public class CreateCollectionReq {
             return this;
         }
 
-        public Builder description(String description) {
+        public CreateCollectionReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public Builder dimension(Integer dimension) {
+        public CreateCollectionReqBuilder dimension(Integer dimension) {
             this.dimension = dimension;
             return this;
         }
 
-        public Builder primaryFieldName(String primaryFieldName) {
+        public CreateCollectionReqBuilder primaryFieldName(String primaryFieldName) {
             this.primaryFieldName = primaryFieldName;
             return this;
         }
 
-        public Builder idType(DataType idType) {
+        public CreateCollectionReqBuilder idType(DataType idType) {
             this.idType = idType;
             return this;
         }
 
-        public Builder maxLength(Integer maxLength) {
+        public CreateCollectionReqBuilder maxLength(Integer maxLength) {
             this.maxLength = maxLength;
             return this;
         }
 
-        public Builder vectorFieldName(String vectorFieldName) {
+        public CreateCollectionReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
             return this;
         }
 
-        public Builder metricType(String metricType) {
+        public CreateCollectionReqBuilder metricType(String metricType) {
             this.metricType = metricType;
             return this;
         }
 
-        public Builder autoID(Boolean autoID) {
+        public CreateCollectionReqBuilder autoID(Boolean autoID) {
             this.autoID = autoID;
             return this;
         }
 
-        public Builder numShards(Integer numShards) {
+        public CreateCollectionReqBuilder numShards(Integer numShards) {
             this.numShards = numShards;
             return this;
         }
 
-        public Builder indexParams(List<IndexParam> indexParams) {
+        public CreateCollectionReqBuilder indexParams(List<IndexParam> indexParams) {
             this.indexParams = indexParams;
             return this;
         }
 
-        public Builder numPartitions(Integer numPartitions) {
+        public CreateCollectionReqBuilder numPartitions(Integer numPartitions) {
             this.numPartitions = numPartitions;
             return this;
         }
 
-        public Builder consistencyLevel(ConsistencyLevel consistencyLevel) {
+        public CreateCollectionReqBuilder consistencyLevel(ConsistencyLevel consistencyLevel) {
             this.consistencyLevel = consistencyLevel;
             return this;
         }
 
-        public Builder indexParam(IndexParam indexParam) {
+        public CreateCollectionReqBuilder indexParam(IndexParam indexParam) {
             if (this.indexParams == null) {
                 this.indexParams = new ArrayList<>();
             }
@@ -412,7 +362,7 @@ public class CreateCollectionReq {
             return this;
         }
 
-        public Builder enableDynamicField(Boolean enableDynamicField) {
+        public CreateCollectionReqBuilder enableDynamicField(Boolean enableDynamicField) {
             if (this.collectionSchema != null && (this.collectionSchema.isEnableDynamicField() != enableDynamicField)) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                         "The enableDynamicField flag has been set by CollectionSchema, not allow to set different value by enableDynamicField().");
@@ -422,7 +372,7 @@ public class CreateCollectionReq {
             return this;
         }
 
-        public Builder collectionSchema(CollectionSchema collectionSchema) {
+        public CreateCollectionReqBuilder collectionSchema(CollectionSchema collectionSchema) {
             if (this.enableDynamicFieldSet && (collectionSchema.isEnableDynamicField() != this.enableDynamicField)) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                         "The enableDynamicField flag has been set by enableDynamicField(), not allow to set different value by collectionSchema.");
@@ -433,7 +383,7 @@ public class CreateCollectionReq {
             return this;
         }
 
-        public Builder property(String key, String value) {
+        public CreateCollectionReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
             }
@@ -453,7 +403,7 @@ public class CreateCollectionReq {
         private boolean enableDynamicField = false;
         private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
-        private CollectionSchema(Builder builder) {
+        private CollectionSchema(CollectionSchemaBuilder builder) {
             this.fieldSchemaList = builder.fieldSchemaList;
             this.structFields = builder.structFields;
             this.enableDynamicField = builder.enableDynamicField;
@@ -516,29 +466,6 @@ public class CreateCollectionReq {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            CollectionSchema that = (CollectionSchema) obj;
-            return new EqualsBuilder()
-                    .append(enableDynamicField, that.enableDynamicField)
-                    .append(fieldSchemaList, that.fieldSchemaList)
-                    .append(structFields, that.structFields)
-                    .append(functionList, that.functionList)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(fieldSchemaList)
-                    .append(structFields)
-                    .append(enableDynamicField)
-                    .append(functionList)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "CollectionSchema{" +
                     "fieldSchemaList=" + fieldSchemaList +
@@ -548,34 +475,35 @@ public class CreateCollectionReq {
                     '}';
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static CollectionSchemaBuilder builder() {
+            return new CollectionSchemaBuilder();
         }
 
-        public static class Builder {
+        public static class CollectionSchemaBuilder {
             private List<CreateCollectionReq.FieldSchema> fieldSchemaList = new ArrayList<>();
             private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
             private boolean enableDynamicField = false;
             private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
 
-            private Builder() {}
+            private CollectionSchemaBuilder() {
+            }
 
-            public Builder fieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
+            public CollectionSchemaBuilder fieldSchemaList(List<CreateCollectionReq.FieldSchema> fieldSchemaList) {
                 this.fieldSchemaList = fieldSchemaList;
                 return this;
             }
 
-            public Builder structFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
+            public CollectionSchemaBuilder structFields(List<CreateCollectionReq.StructFieldSchema> structFields) {
                 this.structFields = structFields;
                 return this;
             }
 
-            public Builder enableDynamicField(boolean enableDynamicField) {
+            public CollectionSchemaBuilder enableDynamicField(boolean enableDynamicField) {
                 this.enableDynamicField = enableDynamicField;
                 return this;
             }
 
-            public Builder functionList(List<CreateCollectionReq.Function> functionList) {
+            public CollectionSchemaBuilder functionList(List<CreateCollectionReq.Function> functionList) {
                 this.functionList = functionList;
                 return this;
             }
@@ -608,7 +536,7 @@ public class CreateCollectionReq {
         private Map<String, String> typeParams;
         private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
 
-        private FieldSchema(Builder builder) {
+        private FieldSchema(FieldSchemaBuilder builder) {
             this.name = builder.name;
             this.description = builder.description;
             this.dataType = builder.dataType;
@@ -775,57 +703,6 @@ public class CreateCollectionReq {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            FieldSchema that = (FieldSchema) obj;
-            return new EqualsBuilder()
-                    .append(name, that.name)
-                    .append(description, that.description)
-                    .append(dataType, that.dataType)
-                    .append(maxLength, that.maxLength)
-                    .append(dimension, that.dimension)
-                    .append(isPrimaryKey, that.isPrimaryKey)
-                    .append(isPartitionKey, that.isPartitionKey)
-                    .append(isClusteringKey, that.isClusteringKey)
-                    .append(autoID, that.autoID)
-                    .append(elementType, that.elementType)
-                    .append(maxCapacity, that.maxCapacity)
-                    .append(isNullable, that.isNullable)
-                    .append(defaultValue, that.defaultValue)
-                    .append(enableAnalyzer, that.enableAnalyzer)
-                    .append(analyzerParams, that.analyzerParams)
-                    .append(enableMatch, that.enableMatch)
-                    .append(typeParams, that.typeParams)
-                    .append(multiAnalyzerParams, that.multiAnalyzerParams)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(name)
-                    .append(description)
-                    .append(dataType)
-                    .append(maxLength)
-                    .append(dimension)
-                    .append(isPrimaryKey)
-                    .append(isPartitionKey)
-                    .append(isClusteringKey)
-                    .append(autoID)
-                    .append(elementType)
-                    .append(maxCapacity)
-                    .append(isNullable)
-                    .append(defaultValue)
-                    .append(enableAnalyzer)
-                    .append(analyzerParams)
-                    .append(enableMatch)
-                    .append(typeParams)
-                    .append(multiAnalyzerParams)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "FieldSchema{" +
                     "name='" + name + '\'' +
@@ -849,11 +726,11 @@ public class CreateCollectionReq {
                     '}';
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static FieldSchemaBuilder builder() {
+            return new FieldSchemaBuilder();
         }
 
-        public static class Builder {
+        public static class FieldSchemaBuilder {
             private String name;
             private String description = "";
             private DataType dataType;
@@ -873,94 +750,95 @@ public class CreateCollectionReq {
             private Map<String, String> typeParams;
             private Map<String, Object> multiAnalyzerParams;
 
-            private Builder() {}
+            private FieldSchemaBuilder() {
+            }
 
-            public Builder name(String name) {
+            public FieldSchemaBuilder name(String name) {
                 this.name = name;
                 return this;
             }
 
-            public Builder description(String description) {
+            public FieldSchemaBuilder description(String description) {
                 this.description = description;
                 return this;
             }
 
-            public Builder dataType(DataType dataType) {
+            public FieldSchemaBuilder dataType(DataType dataType) {
                 this.dataType = dataType;
                 return this;
             }
 
-            public Builder maxLength(Integer maxLength) {
+            public FieldSchemaBuilder maxLength(Integer maxLength) {
                 this.maxLength = maxLength;
                 return this;
             }
 
-            public Builder dimension(Integer dimension) {
+            public FieldSchemaBuilder dimension(Integer dimension) {
                 this.dimension = dimension;
                 return this;
             }
 
-            public Builder isPrimaryKey(Boolean isPrimaryKey) {
+            public FieldSchemaBuilder isPrimaryKey(Boolean isPrimaryKey) {
                 this.isPrimaryKey = isPrimaryKey;
                 return this;
             }
 
-            public Builder isPartitionKey(Boolean isPartitionKey) {
+            public FieldSchemaBuilder isPartitionKey(Boolean isPartitionKey) {
                 this.isPartitionKey = isPartitionKey;
                 return this;
             }
 
-            public Builder isClusteringKey(Boolean isClusteringKey) {
+            public FieldSchemaBuilder isClusteringKey(Boolean isClusteringKey) {
                 this.isClusteringKey = isClusteringKey;
                 return this;
             }
 
-            public Builder autoID(Boolean autoID) {
+            public FieldSchemaBuilder autoID(Boolean autoID) {
                 this.autoID = autoID;
                 return this;
             }
 
-            public Builder elementType(DataType elementType) {
+            public FieldSchemaBuilder elementType(DataType elementType) {
                 this.elementType = elementType;
                 return this;
             }
 
-            public Builder maxCapacity(Integer maxCapacity) {
+            public FieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
                 return this;
             }
 
-            public Builder isNullable(Boolean isNullable) {
+            public FieldSchemaBuilder isNullable(Boolean isNullable) {
                 this.isNullable = isNullable;
                 return this;
             }
 
-            public Builder defaultValue(Object defaultValue) {
+            public FieldSchemaBuilder defaultValue(Object defaultValue) {
                 this.defaultValue = defaultValue;
                 return this;
             }
 
-            public Builder enableAnalyzer(Boolean enableAnalyzer) {
+            public FieldSchemaBuilder enableAnalyzer(Boolean enableAnalyzer) {
                 this.enableAnalyzer = enableAnalyzer;
                 return this;
             }
 
-            public Builder analyzerParams(Map<String, Object> analyzerParams) {
+            public FieldSchemaBuilder analyzerParams(Map<String, Object> analyzerParams) {
                 this.analyzerParams = analyzerParams;
                 return this;
             }
 
-            public Builder enableMatch(Boolean enableMatch) {
+            public FieldSchemaBuilder enableMatch(Boolean enableMatch) {
                 this.enableMatch = enableMatch;
                 return this;
             }
 
-            public Builder typeParams(Map<String, String> typeParams) {
+            public FieldSchemaBuilder typeParams(Map<String, String> typeParams) {
                 this.typeParams = typeParams;
                 return this;
             }
 
-            public Builder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
+            public FieldSchemaBuilder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
                 this.multiAnalyzerParams = multiAnalyzerParams;
                 return this;
             }
@@ -979,7 +857,7 @@ public class CreateCollectionReq {
         private List<String> outputFieldNames = new ArrayList<>();
         private Map<String, String> params = new HashMap<>();
 
-        protected Function(FunctionBuilder builder) {
+        protected Function(FunctionBuilder<?> builder) {
             this.name = builder.name;
             this.description = builder.description;
             this.functionType = builder.functionType;
@@ -1037,33 +915,6 @@ public class CreateCollectionReq {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            Function function = (Function) obj;
-            return new EqualsBuilder()
-                    .append(name, function.name)
-                    .append(description, function.description)
-                    .append(functionType, function.functionType)
-                    .append(inputFieldNames, function.inputFieldNames)
-                    .append(outputFieldNames, function.outputFieldNames)
-                    .append(params, function.params)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(name)
-                    .append(description)
-                    .append(functionType)
-                    .append(inputFieldNames)
-                    .append(outputFieldNames)
-                    .append(params)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "Function{" +
                     "name='" + name + '\'' +
@@ -1075,11 +926,11 @@ public class CreateCollectionReq {
                     '}';
         }
 
-        public static FunctionBuilder builder() {
-            return new FunctionBuilder();
+        public static FunctionBuilder<?> builder() {
+            return new FunctionBuilder<>();
         }
 
-        public static class FunctionBuilder {
+        public static class FunctionBuilder<T extends FunctionBuilder<T>> {
             private String name = "";
             private String description = "";
             private FunctionType functionType = FunctionType.UNKNOWN;
@@ -1087,44 +938,45 @@ public class CreateCollectionReq {
             private List<String> outputFieldNames = new ArrayList<>();
             private Map<String, String> params = new HashMap<>();
 
-            protected FunctionBuilder() {}
+            protected FunctionBuilder() {
+            }
 
-            public FunctionBuilder name(String name) {
+            public T name(String name) {
                 this.name = name;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder description(String description) {
+            public T description(String description) {
                 this.description = description;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder functionType(FunctionType functionType) {
+            public T functionType(FunctionType functionType) {
                 this.functionType = functionType;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder inputFieldNames(List<String> inputFieldNames) {
+            public T inputFieldNames(List<String> inputFieldNames) {
                 this.inputFieldNames = inputFieldNames;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder outputFieldNames(List<String> outputFieldNames) {
+            public T outputFieldNames(List<String> outputFieldNames) {
                 this.outputFieldNames = outputFieldNames;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder params(Map<String, String> params) {
+            public T params(Map<String, String> params) {
                 this.params = params;
-                return this;
+                return (T) this;
             }
 
-            public FunctionBuilder param(String key, String value) {
+            public T param(String key, String value) {
                 if (this.params == null) {
                     this.params = new HashMap<>();
                 }
                 this.params.put(key, value);
-                return this;
+                return (T) this;
             }
 
             public Function build() {
@@ -1139,7 +991,7 @@ public class CreateCollectionReq {
         private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
         private Integer maxCapacity;
 
-        private StructFieldSchema(Builder builder) {
+        private StructFieldSchema(StructFieldSchemaBuilder builder) {
             this.name = builder.name;
             this.description = builder.description;
             this.fields = builder.fields;
@@ -1196,29 +1048,6 @@ public class CreateCollectionReq {
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            StructFieldSchema that = (StructFieldSchema) obj;
-            return new EqualsBuilder()
-                    .append(name, that.name)
-                    .append(description, that.description)
-                    .append(fields, that.fields)
-                    .append(maxCapacity, that.maxCapacity)
-                    .isEquals();
-        }
-
-        @Override
-        public int hashCode() {
-            return new HashCodeBuilder(17, 37)
-                    .append(name)
-                    .append(description)
-                    .append(fields)
-                    .append(maxCapacity)
-                    .toHashCode();
-        }
-
-        @Override
         public String toString() {
             return "StructFieldSchema{" +
                     "name='" + name + '\'' +
@@ -1228,34 +1057,35 @@ public class CreateCollectionReq {
                     '}';
         }
 
-        public static Builder builder() {
-            return new Builder();
+        public static StructFieldSchemaBuilder builder() {
+            return new StructFieldSchemaBuilder();
         }
 
-        public static class Builder {
+        public static class StructFieldSchemaBuilder {
             private String name;
             private String description = "";
             private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
             private Integer maxCapacity;
 
-            private Builder() {}
+            private StructFieldSchemaBuilder() {
+            }
 
-            public Builder name(String name) {
+            public StructFieldSchemaBuilder name(String name) {
                 this.name = name;
                 return this;
             }
 
-            public Builder description(String description) {
+            public StructFieldSchemaBuilder description(String description) {
                 this.description = description;
                 return this;
             }
 
-            public Builder fields(List<CreateCollectionReq.FieldSchema> fields) {
+            public StructFieldSchemaBuilder fields(List<CreateCollectionReq.FieldSchema> fields) {
                 this.fields = fields;
                 return this;
             }
 
-            public Builder maxCapacity(Integer maxCapacity) {
+            public StructFieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
                 return this;
             }

@@ -20,10 +20,7 @@
 package io.milvus.param.index;
 
 import io.milvus.exception.ParamException;
-import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
-
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Parameters for <code>describeIndex</code> interface.
@@ -118,6 +115,7 @@ public class DescribeIndexParam {
         /**
          * Sets the target index name. Index name can be empty or null.
          * If no index name is specified, then return all this collection indexes.
+         *
          * @param indexName field name
          * @return <code>Builder</code>
          */
@@ -130,6 +128,7 @@ public class DescribeIndexParam {
         /**
          * Sets the target field name. Field name can be empty or null.
          * If no field name is specified, then return all this collection indexes.
+         *
          * @param fieldName field name
          * @return <code>Builder</code>
          */

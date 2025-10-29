@@ -19,7 +19,10 @@
 
 package io.milvus.v2.utils;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
@@ -149,8 +152,8 @@ public class DataUtils {
             List<CreateCollectionReq.FieldSchema> normalFields = collectionSchema.getFieldSchemaList();
             List<CreateCollectionReq.StructFieldSchema> structFields = collectionSchema.getStructFields();
             List<String> allFieldNames = new ArrayList<>();
-            normalFields.forEach((schema)-> allFieldNames.add(schema.getName()));
-            structFields.forEach((schema)-> allFieldNames.add(schema.getName()));
+            normalFields.forEach((schema) -> allFieldNames.add(schema.getName()));
+            structFields.forEach((schema) -> allFieldNames.add(schema.getName()));
 
             // 1. for normal fields, InsertDataInfo is a list of object or list of list, for example:
             //      Int64Field, InsertDataInfo is a List<Long>
@@ -299,7 +302,7 @@ public class DataUtils {
                 String subFieldName = field.getName();
                 InsertDataInfo insertDataInfo = nameInsertInfo.get(subFieldName);
                 List<Object> columnData = new ArrayList<>();
-                structs.forEach((element)->{
+                structs.forEach((element) -> {
                     if (!element.isJsonObject()) {
                         String msg = String.format("The element of struct field: %s is not a JSON dict.", structName);
                         throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
@@ -420,7 +423,7 @@ public class DataUtils {
                 .setExpr(request.getFilter());
         if (request.getFilter() != null && !request.getFilter().isEmpty()) {
             Map<String, Object> filterTemplateValues = request.getFilterTemplateValues();
-            filterTemplateValues.forEach((key, value)->{
+            filterTemplateValues.forEach((key, value) -> {
                 builder.putExprTemplateValues(key, VectorUtils.deduceAndCreateTemplateValue(value));
             });
         }

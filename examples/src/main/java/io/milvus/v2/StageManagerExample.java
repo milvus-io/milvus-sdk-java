@@ -32,6 +32,7 @@ import io.milvus.bulkwriter.response.stage.ListStagesResponse;
  */
 public class StageManagerExample {
     private static final StageManager stageManager;
+
     static {
         StageManagerParam stageManagerParam = StageManagerParam.newBuilder()
                 .withCloudEndpoint("https://api.cloud.zilliz.com")

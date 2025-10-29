@@ -27,7 +27,7 @@ public class JSONFileWriter implements FormatFileWriter {
     }
 
     private void initFilePath(String filePathPrefix) {
-        this.filePath = filePathPrefix +  ".json";
+        this.filePath = filePathPrefix + ".json";
     }
 
     private void initWriter() throws IOException {
@@ -38,7 +38,7 @@ public class JSONFileWriter implements FormatFileWriter {
     public void appendRow(Map<String, Object> rowValues, boolean firstWrite) throws IOException {
         Gson gson = new GsonBuilder().serializeNulls().create();
         rowValues.keySet().removeIf(key -> key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField());
-        rowValues.replaceAll((key, value) -> value instanceof ByteBuffer ? ((ByteBuffer)value).array() : value);
+        rowValues.replaceAll((key, value) -> value instanceof ByteBuffer ? ((ByteBuffer) value).array() : value);
 
         try {
             if (firstWrite) {
