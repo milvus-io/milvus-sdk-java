@@ -98,6 +98,7 @@ public class SearchIteratorReq {
     @Deprecated
     public void setTopK(int topK) {
         this.topK = topK;
+        this.limit = topK;
     }
 
     public long getLimit() {
@@ -106,6 +107,7 @@ public class SearchIteratorReq {
 
     public void setLimit(long limit) {
         this.limit = limit;
+        this.topK = (int) limit;
     }
 
     public String getExpr() {
