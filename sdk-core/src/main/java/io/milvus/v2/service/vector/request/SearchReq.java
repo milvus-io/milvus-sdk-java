@@ -143,6 +143,7 @@ public class SearchReq {
     @Deprecated
     public void setTopK(int topK) {
         this.topK = topK;
+        this.limit = topK;
     }
 
     public String getFilter() {
@@ -183,6 +184,7 @@ public class SearchReq {
 
     public void setLimit(long limit) {
         this.limit = limit;
+        this.topK = (int) limit;
     }
 
     public int getRoundDecimal() {
