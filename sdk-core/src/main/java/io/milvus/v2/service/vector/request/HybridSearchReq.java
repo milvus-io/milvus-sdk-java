@@ -120,6 +120,7 @@ public class HybridSearchReq {
     @Deprecated
     public void setTopK(int topK) {
         this.topK = topK;
+        this.limit = topK;
     }
 
     public long getLimit() {
@@ -128,6 +129,7 @@ public class HybridSearchReq {
 
     public void setLimit(long limit) {
         this.limit = limit;
+        this.topK = (int) limit;
     }
 
     public List<String> getOutFields() {

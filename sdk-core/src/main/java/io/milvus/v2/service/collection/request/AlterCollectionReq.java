@@ -68,6 +68,11 @@ public class AlterCollectionReq {
             return this;
         }
 
+        public AlterCollectionReqBuilder properties(Map<String, String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
         public AlterCollectionReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();

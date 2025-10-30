@@ -385,6 +385,11 @@ public class AddFieldReq {
             return (T) this;
         }
 
+        public T structFields(List<CreateCollectionReq.FieldSchema> structFields) {
+            this.structFields = structFields;
+            return (T) this;
+        }
+
         public T addStructField(AddFieldReq addFieldReq) {
             if (this.structFields == null) {
                 this.structFields = new ArrayList<>();
