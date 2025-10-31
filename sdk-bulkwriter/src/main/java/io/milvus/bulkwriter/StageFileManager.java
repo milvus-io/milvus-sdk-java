@@ -142,7 +142,7 @@ public class StageFileManager {
     public void shutdownGracefully() {
         executor.shutdown();
         try {
-            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+            if (!executor.awaitTermination(2, TimeUnit.SECONDS)) {
                 logger.warn("Executor didn't terminate in time, forcing shutdown...");
                 executor.shutdownNow();
             }
