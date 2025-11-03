@@ -383,6 +383,11 @@ public class CreateCollectionReq {
             return this;
         }
 
+        public CreateCollectionReqBuilder properties(Map<String, String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
         public CreateCollectionReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
