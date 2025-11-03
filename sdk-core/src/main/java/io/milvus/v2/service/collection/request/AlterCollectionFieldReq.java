@@ -103,6 +103,11 @@ public class AlterCollectionFieldReq {
             return this;
         }
 
+        public AlterCollectionFieldReqBuilder properties(Map<String, String> properties) {
+            this.properties = properties;
+            return this;
+        }
+
         public AlterCollectionFieldReqBuilder property(String key, String value) {
             if (this.properties == null) {
                 this.properties = new HashMap<>();
