@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.6.7 (2025-11-03)
+### Improvement
+- Remove Lombok dependency
+
 ## milvus-sdk-java 2.6.6 (2025-10-17)
 ### Feature
 - Support NGRAM index
