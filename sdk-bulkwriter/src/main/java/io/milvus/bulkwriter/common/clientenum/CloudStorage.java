@@ -71,6 +71,13 @@ public enum CloudStorage {
         return tcCloudStorages.stream().anyMatch(e -> e.getCloudName().equalsIgnoreCase(cloudName));
     }
 
+    public static boolean isGcpCloud(String cloudName) {
+        List<CloudStorage> gcpCloudStorages = Lists.newArrayList(
+                CloudStorage.GCP
+        );
+        return gcpCloudStorages.stream().anyMatch(e -> e.getCloudName().equalsIgnoreCase(cloudName));
+    }
+
     public static boolean isAzCloud(String cloudName) {
         List<CloudStorage> azCloudStorages = Lists.newArrayList(
                 CloudStorage.AZ, CloudStorage.AZURE
