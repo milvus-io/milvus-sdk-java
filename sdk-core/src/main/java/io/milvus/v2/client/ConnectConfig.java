@@ -165,8 +165,8 @@ public class ConnectConfig {
     }
 
     public boolean isEnablePrecheck() {
-    return enablePrecheck;
-}
+        return enablePrecheck;
+    }
     // Setters
     public void setUri(String uri) {
         if (uri == null) {
