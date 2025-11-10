@@ -132,9 +132,11 @@ public class MilvusClientV2 {
      */
     private void connect(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
-        validateHostname(connectConfig);
-        validatePort(connectConfig);
-        validateCert(connectConfig);
+        if (connectConfig.isEnablePrecheck()) {
+            validateHostname(connectConfig);
+            validatePort(connectConfig);
+            validateCert(connectConfig);
+        }
         try {
             if (this.channel != null) {
                 // close channel first
