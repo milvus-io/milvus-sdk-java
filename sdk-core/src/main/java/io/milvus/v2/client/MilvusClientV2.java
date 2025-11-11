@@ -239,7 +239,7 @@ public class MilvusClientV2 {
         String host = connectConfig.getHost();
         
         if (StringUtils.isEmpty(host)) {
-            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, 
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, 
                 "Hostname cannot be null or empty");
         }
         
@@ -274,12 +274,12 @@ public class MilvusClientV2 {
                 port
             );
             logger.error(message);
-            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, message);
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, message);
         }
         
         // Test if port is reachable
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), 3000); // 3 second timeout
+            socket.connect(new InetSocketAddress(host, port), connectConfig.getConnectTimeoutMs());
             logger.debug("Successfully validated port: {}", port);
         } catch (IOException e) {
             String message = String.format(
@@ -303,7 +303,7 @@ public class MilvusClientV2 {
         }
         
         try (SSLSocket socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket()) {
-            socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), 5000);
+            socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), connectConfig.getConnectTimeoutMs());
             socket.startHandshake();
             logger.debug("SSL certificate validation passed");
         } catch (SSLException e) {
