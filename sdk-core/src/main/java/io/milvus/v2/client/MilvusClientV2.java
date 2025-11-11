@@ -279,7 +279,7 @@ public class MilvusClientV2 {
         
         // Test if port is reachable
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), connectConfig.getConnectTimeoutMs());
+            socket.connect(new InetSocketAddress(host, port), (int) connectConfig.getConnectTimeoutMs());
             logger.debug("Successfully validated port: {}", port);
         } catch (IOException e) {
             String message = String.format(
@@ -303,7 +303,7 @@ public class MilvusClientV2 {
         }
         
         try (SSLSocket socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket()) {
-            socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), connectConfig.getConnectTimeoutMs());
+            socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), (int) connectConfig.getConnectTimeoutMs());
             socket.startHandshake();
             logger.debug("SSL certificate validation passed");
         } catch (SSLException e) {
