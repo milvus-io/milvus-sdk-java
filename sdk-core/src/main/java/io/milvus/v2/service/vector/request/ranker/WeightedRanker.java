@@ -47,8 +47,8 @@ import java.util.Map;
  * You also can declare a weighter ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
  * .functionType(FunctionType.RERANK)
- * .param("strategy", "weighted")
- * .param("params", "{\"weights\": [0.4, 0.6]}")
+ * .param("reranker", "weighted")
+ * .param("weights", "[0.4, 0.6]")
  * .build();
  */
 public class WeightedRanker extends CreateCollectionReq.Function {
