@@ -77,6 +77,13 @@ import java.net.Socket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import javax.net.ssl.*;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.SecureRandom;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 
 public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
@@ -302,15 +309,42 @@ public class MilvusClientV2 {
             return;
         }
         
-        try (SSLSocket socket = (SSLSocket) SSLSocketFactory.getDefault().createSocket()) {
-            socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), (int) connectConfig.getConnectTimeoutMs());
-            socket.startHandshake();
-            logger.debug("SSL certificate validation passed");
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            TrustManagerFactory tmf = null;
+            
+            // Load server certificate (CA cert)
+            if (connectConfig.getServerPemPath() != null && !connectConfig.getServerPemPath().isEmpty()) {
+                try (InputStream certStream = new FileInputStream(connectConfig.getServerPemPath())) {
+                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                    X509Certificate caCert = (X509Certificate) cf.generateCertificate(certStream);
+                    
+                    KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                    trustStore.load(null, null);
+                    trustStore.setCertificateEntry("ca-cert", caCert);
+                    
+                    tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                    tmf.init(trustStore);
+                }
+            }
+            
+            // Initialize SSLContext with the server certificate
+            sslContext.init(null, tmf != null ? tmf.getTrustManagers() : null, new SecureRandom());
+            
+            // Validate connection
+            SSLSocketFactory socketFactory = sslContext.getSocketFactory();
+            try (SSLSocket socket = (SSLSocket) socketFactory.createSocket()) {
+                socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), 
+                            (int) connectConfig.getConnectTimeoutMs());
+                socket.startHandshake();
+                logger.debug("SSL certificate validation passed");
+            }
+            
         } catch (SSLException e) {
             throw new MilvusClientException(ErrorCode.RPC_ERROR, 
                 "SSL certificate validation failed: " + e.getMessage() + 
                 ". Please verify your certificates are correct.");
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new MilvusClientException(ErrorCode.RPC_ERROR, 
                 "Failed to connect with SSL: " + e.getMessage());
         }
