@@ -43,8 +43,8 @@ import java.util.Map;
  * You also can declare a rrf ranker by Function
  * CreateCollectionReq.Function rr = CreateCollectionReq.Function.builder()
  * .functionType(FunctionType.RERANK)
- * .param("strategy", "rrf")
- * .param("params", "{\"k\": 60}")
+ * .param("reranker", "rrf")
+ * .param("k", "60")
  * .build();
  */
 public class RRFRanker extends CreateCollectionReq.Function {
