@@ -48,6 +48,7 @@ public class ConnectConfig {
     private String proxyAddress;
     private Boolean secure = false;
     private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
+    private boolean enablePrecheck = false;  // default value is false
 
     private SSLContext sslContext;
     // clientRequestId maintains a map for different threads, each thread can assign a specific id.
@@ -79,6 +80,7 @@ public class ConnectConfig {
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
         this.clientRequestId = builder.clientRequestId;
+        this.enablePrecheck = builder.enablePrecheck;
     }
 
     public static ConnectConfigBuilder builder() {
@@ -162,6 +164,9 @@ public class ConnectConfig {
         return proxyAddress;
     }
 
+    public boolean isEnablePrecheck() {
+        return enablePrecheck;
+    }
     // Setters
     public void setUri(String uri) {
         if (uri == null) {
@@ -234,6 +239,10 @@ public class ConnectConfig {
         this.secure = secure;
     }
 
+    public void setEnablePrecheck(boolean enablePrecheck) {
+        this.enablePrecheck = enablePrecheck;
+    }
+
     public void setIdleTimeoutMs(long idleTimeoutMs) {
         this.idleTimeoutMs = idleTimeoutMs;
     }
@@ -301,6 +310,7 @@ public class ConnectConfig {
                 ", serverName='" + serverName + '\'' +
                 ", proxyAddress='" + proxyAddress + '\'' +
                 ", secure=" + secure +
+                ", enablePrecheck=" + enablePrecheck +
                 ", idleTimeoutMs=" + idleTimeoutMs +
                 ", sslContext=" + sslContext +
                 ", clientRequestId=" + clientRequestId +
@@ -328,6 +338,7 @@ public class ConnectConfig {
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
         private ThreadLocal<String> clientRequestId;
+        private boolean enablePrecheck = false;
 
         public ConnectConfigBuilder uri(String uri) {
             if (uri == null) {
@@ -414,6 +425,11 @@ public class ConnectConfig {
 
         public ConnectConfigBuilder secure(Boolean secure) {
             this.secure = secure;
+            return this;
+        }
+
+        public ConnectConfigBuilder enablePrecheck(boolean enablePrecheck) {
+            this.enablePrecheck = enablePrecheck;
             return this;
         }
 
