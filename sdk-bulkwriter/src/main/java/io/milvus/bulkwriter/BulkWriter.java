@@ -20,10 +20,7 @@
 package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.clientenum.TypeSize;
 import io.milvus.bulkwriter.common.utils.V2AdapterUtils;
@@ -281,54 +278,54 @@ public abstract class BulkWriter implements AutoCloseable {
                 }
             }
 
-            DataType dataType = field.getDataType();
-            switch (dataType) {
-                case BinaryVector:
-                case FloatVector:
-                case Float16Vector:
-                case BFloat16Vector:
-                case SparseFloatVector:
-                case Int8Vector: {
-                    Pair<Object, Integer> objectAndSize = verifyVector(obj, field);
-                    rowValues.put(fieldName, objectAndSize.getLeft());
-                    rowSize += objectAndSize.getRight();
-                    break;
-                }
-                case VarChar:
-                case Geometry:
-                case Timestamptz: {
-                    Pair<Object, Integer> objectAndSize = verifyVarchar(obj, field);
-                    rowValues.put(fieldName, objectAndSize.getLeft());
-                    rowSize += objectAndSize.getRight();
-                    break;
-                }
-                case JSON: {
-                    Pair<Object, Integer> objectAndSize = verifyJSON(obj, field);
-                    rowValues.put(fieldName, objectAndSize.getLeft());
-                    rowSize += objectAndSize.getRight();
-                    break;
-                }
-                case Array: {
-                    Pair<Object, Integer> objectAndSize = verifyArray(obj, field);
-                    rowValues.put(fieldName, objectAndSize.getLeft());
-                    rowSize += objectAndSize.getRight();
-                    break;
-                }
-                case Bool:
-                case Int8:
-                case Int16:
-                case Int32:
-                case Int64:
-                case Float:
-                case Double:
-                    Pair<Object, Integer> objectAndSize = verifyScalar(obj, field);
-                    rowValues.put(fieldName, objectAndSize.getLeft());
-                    rowSize += objectAndSize.getRight();
-                    break;
-                default:
-                    String msg = String.format("Unsupported data type of field '%s', not implemented in BulkWriter.", fieldName);
-                    ExceptionUtils.throwUnExpectedException(msg);
+            Pair<Object, Integer> objectAndSize = verifyByDatatype(field, obj);
+            if (objectAndSize != null) {
+                rowValues.put(fieldName, objectAndSize.getLeft());
+                rowSize += objectAndSize.getRight();
             }
+        }
+
+        for (CreateCollectionReq.StructFieldSchema struct : collectionSchema.getStructFields()) {
+            String structName = struct.getName();
+            JsonArray structList = row.getAsJsonArray(structName);
+            if (structList == null) {
+                String msg = String.format("Value of struct field '%s' is not provided.", structName);
+                ExceptionUtils.throwUnExpectedException(msg);
+            }
+
+            List<Map<String, Object>> validList = new ArrayList<>();
+            for (JsonElement st : structList.asList()) {
+                if (!st.isJsonObject()) {
+                    String msg = String.format("Element of struct field '%s' must be JSON dict.", structName);
+                    ExceptionUtils.throwUnExpectedException(msg);
+                }
+
+                JsonObject dict = st.getAsJsonObject();
+                Map<String, Object> validStruct = new HashMap<>();
+                for (CreateCollectionReq.FieldSchema subField : struct.getFields()) {
+                    String subFieldName = subField.getName();
+                    String combineName = String.format("%s[%s]", structName, subFieldName);
+                    boolean provided = dict.has(subFieldName);
+                    boolean isFunctionOutput = outputFieldNames.contains(combineName);
+                    if (provided && isFunctionOutput) {
+                        String msg = String.format("The field '%s'  is function output, no need to provide", combineName);
+                        ExceptionUtils.throwUnExpectedException(msg);
+                    }
+                    if (!isFunctionOutput && !provided) {
+                        String msg = String.format("Value of field '%s' is not provided.", combineName);
+                        ExceptionUtils.throwUnExpectedException(msg);
+                    }
+
+                    Pair<Object, Integer> objectAndSize = verifyByDatatype(subField, dict.get(subFieldName));
+                    if (objectAndSize != null) {
+                        validStruct.put(subFieldName, objectAndSize.getLeft());
+                        rowSize += objectAndSize.getRight();
+                    }
+                }
+                validList.add(validStruct);
+            }
+
+            rowValues.put(structName, validList);
         }
 
         // process dynamic values
@@ -359,6 +356,44 @@ public abstract class BulkWriter implements AutoCloseable {
         appendLock.unlock();
 
         return rowValues;
+    }
+
+    private Pair<Object, Integer> verifyByDatatype(CreateCollectionReq.FieldSchema field, JsonElement obj) {
+        DataType dataType = field.getDataType();
+        String fieldName = field.getName();
+        switch (dataType) {
+            case BinaryVector:
+            case FloatVector:
+            case Float16Vector:
+            case BFloat16Vector:
+            case SparseFloatVector:
+            case Int8Vector: {
+                return verifyVector(obj, field);
+            }
+            case VarChar:
+            case Geometry:
+            case Timestamptz: {
+                return verifyVarchar(obj, field);
+            }
+            case JSON: {
+                return verifyJSON(obj, field);
+            }
+            case Array: {
+                return verifyArray(obj, field);
+            }
+            case Bool:
+            case Int8:
+            case Int16:
+            case Int32:
+            case Int64:
+            case Float:
+            case Double:
+                return verifyScalar(obj, field);
+            default:
+                String msg = String.format("Unsupported data type of field '%s', not implemented in BulkWriter.", fieldName);
+                ExceptionUtils.throwUnExpectedException(msg);
+        }
+        return null;
     }
 
     private Pair<Object, Integer> verifyVector(JsonElement object, CreateCollectionReq.FieldSchema field) {
