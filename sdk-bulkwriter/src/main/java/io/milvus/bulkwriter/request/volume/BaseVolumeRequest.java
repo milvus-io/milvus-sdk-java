@@ -17,31 +17,29 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.import_;
+package io.milvus.bulkwriter.request.volume;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseImportRequest implements Serializable {
+public class BaseVolumeRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
-     * If you are calling the cloud API, this parameter should be set to your API_KEY.
-     * If you are using Milvus directly, this parameter should be set to your userName:password.
+     * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
      */
     private String apiKey;
-
     private Map<String, Object> options;
 
-    public BaseImportRequest() {
+    protected BaseVolumeRequest() {
     }
 
-    public BaseImportRequest(String apiKey, Map<String, Object> options) {
+    protected BaseVolumeRequest(String apiKey, Map<String, Object> options) {
         this.apiKey = apiKey;
         this.options = options;
     }
 
-    protected BaseImportRequest(BaseImportRequestBuilder<?> builder) {
+    protected BaseVolumeRequest(BaseVolumeRequestBuilder<?> builder) {
         this.apiKey = builder.apiKey;
         this.options = builder.options;
     }
@@ -64,21 +62,21 @@ public class BaseImportRequest implements Serializable {
 
     @Override
     public String toString() {
-        return "BaseImportRequest{" +
+        return "BaseVolumeRequest{" +
                 "apiKey='" + apiKey + '\'' +
                 "options=" + options +
                 '}';
     }
 
-    public static BaseImportRequestBuilder<?> builder() {
-        return new BaseImportRequestBuilder<>();
+    public static BaseVolumeRequestBuilder<?> builder() {
+        return new BaseVolumeRequestBuilder<>();
     }
 
-    public static class BaseImportRequestBuilder<T extends BaseImportRequestBuilder<T>> {
-        private String apiKey = "";
+    public static class BaseVolumeRequestBuilder<T extends BaseVolumeRequestBuilder<T>> {
+        private String apiKey;
         private Map<String, Object> options;
 
-        protected BaseImportRequestBuilder() {
+        protected BaseVolumeRequestBuilder() {
             this.apiKey = "";
             this.options = new HashMap<>();
         }
@@ -93,8 +91,8 @@ public class BaseImportRequest implements Serializable {
             return (T) this;
         }
 
-        public BaseImportRequest build() {
-            return new BaseImportRequest(this);
+        public BaseVolumeRequest build() {
+            return new BaseVolumeRequest(this);
         }
     }
 }

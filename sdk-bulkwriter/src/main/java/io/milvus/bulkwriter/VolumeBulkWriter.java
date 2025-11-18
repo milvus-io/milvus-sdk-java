@@ -23,7 +23,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.model.UploadFilesResult;
-import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
+import io.milvus.bulkwriter.request.volume.UploadFilesRequest;
 import io.milvus.common.utils.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,15 +36,15 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StageBulkWriter extends LocalBulkWriter {
-    private static final Logger logger = LoggerFactory.getLogger(StageBulkWriter.class);
+public class VolumeBulkWriter extends LocalBulkWriter {
+    private static final Logger logger = LoggerFactory.getLogger(VolumeBulkWriter.class);
 
-    private String remotePath;
-    private List<List<String>> remoteFiles;
-    private StageFileManager stageFileManager;
-    private StageBulkWriterParam stageBulkWriterParam;
+    private final String remotePath;
+    private final List<List<String>> remoteFiles;
+    private final VolumeFileManager volumeFileManager;
+    private final VolumeBulkWriterParam volumeBulkWriterParam;
 
-    public StageBulkWriter(StageBulkWriterParam bulkWriterParam) throws IOException {
+    public VolumeBulkWriter(VolumeBulkWriterParam bulkWriterParam) throws IOException {
         super(bulkWriterParam.getCollectionSchema(),
                 bulkWriterParam.getChunkSize(),
                 bulkWriterParam.getFileType(),
@@ -53,20 +53,20 @@ public class StageBulkWriter extends LocalBulkWriter {
         Path path = Paths.get(bulkWriterParam.getRemotePath());
         Path remoteDirPath = path.resolve(getUUID());
         this.remotePath = remoteDirPath + "/";
-        this.stageFileManager = initStageFileManagerParams(bulkWriterParam);
-        this.stageBulkWriterParam = bulkWriterParam;
+        this.volumeFileManager = initVolumeFileManagerParams(bulkWriterParam);
+        this.volumeBulkWriterParam = bulkWriterParam;
 
         this.remoteFiles = Lists.newArrayList();
         logger.info("Remote buffer writer initialized, target path: {}", remotePath);
 
     }
 
-    private StageFileManager initStageFileManagerParams(StageBulkWriterParam bulkWriterParam) throws IOException {
-        StageFileManagerParam stageFileManagerParam = StageFileManagerParam.newBuilder()
+    private VolumeFileManager initVolumeFileManagerParams(VolumeBulkWriterParam bulkWriterParam) throws IOException {
+        VolumeFileManagerParam volumeFileManagerParam = VolumeFileManagerParam.newBuilder()
                 .withCloudEndpoint(bulkWriterParam.getCloudEndpoint()).withApiKey(bulkWriterParam.getApiKey())
-                .withStageName(bulkWriterParam.getStageName()).withConnectType(ConnectType.AUTO)
+                .withVolumeName(bulkWriterParam.getVolumeName()).withConnectType(ConnectType.AUTO)
                 .build();
-        return new StageFileManager(stageFileManagerParam);
+        return new VolumeFileManager(volumeFileManagerParam);
     }
 
     @Override
@@ -89,9 +89,9 @@ public class StageBulkWriter extends LocalBulkWriter {
         return remoteFiles;
     }
 
-    public UploadFilesResult getStageUploadResult() {
+    public UploadFilesResult getVolumeUploadResult() {
         return UploadFilesResult.builder()
-                .stageName(stageBulkWriterParam.getStageName())
+                .volumeName(volumeBulkWriterParam.getVolumeName())
                 .path(remotePath)
                 .build();
     }
@@ -178,10 +178,10 @@ public class StageBulkWriter extends LocalBulkWriter {
         logger.info(String.format("Prepare to upload %s to %s", filePath, objectName));
 
         UploadFilesRequest uploadFilesRequest = UploadFilesRequest.builder()
-                .sourceFilePath(filePath).targetStagePath(remotePath)
+                .sourceFilePath(filePath).targetVolumePath(remotePath)
                 .build();
 
-        stageFileManager.uploadFilesAsync(uploadFilesRequest).get();
+        volumeFileManager.uploadFilesAsync(uploadFilesRequest).get();
         logger.info(String.format("Upload file %s to %s", filePath, objectName));
 
     }

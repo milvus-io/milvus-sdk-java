@@ -23,13 +23,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import io.milvus.bulkwriter.StageBulkWriter;
-import io.milvus.bulkwriter.StageBulkWriterParam;
+import io.milvus.bulkwriter.VolumeBulkWriter;
+import io.milvus.bulkwriter.VolumeBulkWriterParam;
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.describe.CloudDescribeImportRequest;
-import io.milvus.bulkwriter.request.import_.StageImportRequest;
+import io.milvus.bulkwriter.request.import_.VolumeImportRequest;
 import io.milvus.bulkwriter.request.list.CloudListImportJobsRequest;
 import io.milvus.bulkwriter.restful.BulkImportUtils;
 import io.milvus.v1.CommonUtils;
@@ -59,7 +59,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-public class BulkWriterStageExample {
+public class BulkWriterVolumeExample {
     private static final Gson GSON_INSTANCE = new Gson();
 
     // milvus
@@ -76,11 +76,7 @@ public class BulkWriterStageExample {
     public static final String CLOUD_ENDPOINT = "https://api.cloud.zilliz.com";
     public static final String API_KEY = "_api_key_for_cluster_org_";
 
-
-    /**
-     * This is currently a private preview feature. If you need to use it, please submit a request and contact us.
-     */
-    public static final String STAGE_NAME = "_stage_name_for_project_";
+    public static final String VOLUME_NAME = "_volume_name_for_project_";
 
     public static final String CLUSTER_ID = "_your_cloud_cluster_id_";
     // If db_name is not specified, use ""
@@ -95,7 +91,7 @@ public class BulkWriterStageExample {
 
     public static void main(String[] args) throws Exception {
         createConnection();
-        exampleCollectionRemoteStage(BulkFileType.PARQUET);
+        exampleCollectionRemoteVolume(BulkFileType.PARQUET);
     }
 
     private static void createConnection() {
@@ -109,7 +105,7 @@ public class BulkWriterStageExample {
         System.out.println("\nConnected");
     }
 
-    private static void exampleCollectionRemoteStage(BulkFileType fileType) throws Exception {
+    private static void exampleCollectionRemoteVolume(BulkFileType fileType) throws Exception {
         List<Map<String, Object>> originalData = genOriginalData(5);
         List<JsonObject> rows = genImportData(originalData, true);
 
@@ -118,19 +114,19 @@ public class BulkWriterStageExample {
         CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
         createCollection(COLLECTION_NAME, collectionSchema, false);
 
-        UploadFilesResult stageUploadResult = stageRemoteWriter(collectionSchema, fileType, rows);
-        callStageImport(stageUploadResult.getStageName(), stageUploadResult.getPath());
+        UploadFilesResult uploadFilesResult = volumeRemoteWriter(collectionSchema, fileType, rows);
+        callVolumeImport(uploadFilesResult.getVolumeName(), uploadFilesResult.getPath());
         verifyImportData(collectionSchema, originalData);
     }
 
-    private static void callStageImport(String stageName, String path) throws InterruptedException {
+    private static void callVolumeImport(String volumeName, String path) throws InterruptedException {
         List<String> importDataPath = Lists.newArrayList(path);
-        StageImportRequest stageImportRequest = StageImportRequest.builder()
+        VolumeImportRequest volumeImportRequest = VolumeImportRequest.builder()
                 .apiKey(API_KEY)
-                .stageName(stageName).dataPaths(Lists.newArrayList(Collections.singleton(importDataPath)))
+                .volumeName(volumeName).dataPaths(Lists.newArrayList(Collections.singleton(importDataPath)))
                 .clusterId(CLUSTER_ID).dbName(DB_NAME).collectionName(COLLECTION_NAME).partitionName(PARTITION_NAME)
                 .build();
-        String bulkImportResult = BulkImportUtils.bulkImport(CLOUD_ENDPOINT, stageImportRequest);
+        String bulkImportResult = BulkImportUtils.bulkImport(CLOUD_ENDPOINT, volumeImportRequest);
         System.out.println(bulkImportResult);
 
         JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
@@ -284,30 +280,30 @@ public class BulkWriterStageExample {
         return data;
     }
 
-    private static UploadFilesResult stageRemoteWriter(CreateCollectionReq.CollectionSchema collectionSchema,
-                                                       BulkFileType fileType,
-                                                       List<JsonObject> data) throws Exception {
+    private static UploadFilesResult volumeRemoteWriter(CreateCollectionReq.CollectionSchema collectionSchema,
+                                                        BulkFileType fileType,
+                                                        List<JsonObject> data) throws Exception {
         System.out.printf("\n===================== all field types (%s) ====================%n", fileType.name());
 
-        try (StageBulkWriter stageBulkWriter = buildStageBulkWriter(collectionSchema, fileType)) {
+        try (VolumeBulkWriter volumeBulkWriter = buildVolumeBulkWriter(collectionSchema, fileType)) {
             for (JsonObject rowObject : data) {
-                stageBulkWriter.appendRow(rowObject);
+                volumeBulkWriter.appendRow(rowObject);
             }
-            System.out.printf("%s rows appends%n", stageBulkWriter.getTotalRowCount());
+            System.out.printf("%s rows appends%n", volumeBulkWriter.getTotalRowCount());
             System.out.println("Generate data files...");
-            stageBulkWriter.commit(false);
+            volumeBulkWriter.commit(false);
 
-            UploadFilesResult stageUploadResult = stageBulkWriter.getStageUploadResult();
-            System.out.printf("Data files have been uploaded: %s%n", stageUploadResult);
-            return stageUploadResult;
+            UploadFilesResult uploadResult = volumeBulkWriter.getVolumeUploadResult();
+            System.out.printf("Data files have been uploaded: %s%n", uploadResult);
+            return uploadResult;
         } catch (Exception e) {
             System.out.println("allTypesRemoteWriter catch exception: " + e);
             throw e;
         }
     }
 
-    private static StageBulkWriter buildStageBulkWriter(CreateCollectionReq.CollectionSchema collectionSchema, BulkFileType fileType) throws IOException {
-        StageBulkWriterParam bulkWriterParam = StageBulkWriterParam.newBuilder()
+    private static VolumeBulkWriter buildVolumeBulkWriter(CreateCollectionReq.CollectionSchema collectionSchema, BulkFileType fileType) throws IOException {
+        VolumeBulkWriterParam bulkWriterParam = VolumeBulkWriterParam.newBuilder()
                 .withCollectionSchema(collectionSchema)
                 .withRemotePath("bulk_data")
                 .withFileType(fileType)
@@ -315,9 +311,9 @@ public class BulkWriterStageExample {
                 .withConfig("sep", "|") // only take effect for CSV file
                 .withCloudEndpoint(CLOUD_ENDPOINT)
                 .withApiKey(API_KEY)
-                .withStageName(STAGE_NAME)
+                .withVolumeName(VOLUME_NAME)
                 .build();
-        return new StageBulkWriter(bulkWriterParam);
+        return new VolumeBulkWriter(bulkWriterParam);
     }
 
     /**

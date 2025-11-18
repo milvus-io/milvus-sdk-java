@@ -19,26 +19,24 @@
 package io.milvus.v2;
 
 import com.google.gson.Gson;
-import io.milvus.bulkwriter.StageFileManager;
-import io.milvus.bulkwriter.StageFileManagerParam;
+import io.milvus.bulkwriter.VolumeFileManager;
+import io.milvus.bulkwriter.VolumeFileManagerParam;
 import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.model.UploadFilesResult;
-import io.milvus.bulkwriter.request.stage.UploadFilesRequest;
+import io.milvus.bulkwriter.request.volume.UploadFilesRequest;
 
 
-/**
- * This is currently a private preview feature. If you need to use it, please submit a request and contact us.
- */
-public class StageFileManagerExample {
-    private static final StageFileManager stageFileManager;
+public class VolumeFileManagerExample {
+    private static final VolumeFileManager volumeFileManager;
+
     static {
-        StageFileManagerParam stageFileManagerParam = StageFileManagerParam.newBuilder()
+        VolumeFileManagerParam volumeFileManagerParam = VolumeFileManagerParam.newBuilder()
                 .withCloudEndpoint("https://api.cloud.zilliz.com")
                 .withApiKey("_api_key_for_cluster_org_")
-                .withStageName("_stage_name_for_project_")
+                .withVolumeName("_volume_name_for_project_")
                 .withConnectType(ConnectType.AUTO)
                 .build();
-        stageFileManager = new StageFileManager(stageFileManagerParam);
+        volumeFileManager = new VolumeFileManager(volumeFileManagerParam);
     }
 
     public static void main(String[] args) throws Exception {
@@ -49,13 +47,13 @@ public class StageFileManagerExample {
     private static void uploadFiles() throws Exception {
         UploadFilesRequest request = UploadFilesRequest.builder()
                 .sourceFilePath("/Users/zilliz/data/")
-                .targetStagePath("data/")
+                .targetVolumePath("data/")
                 .build();
-        UploadFilesResult result = stageFileManager.uploadFilesAsync(request).get();
+        UploadFilesResult result = volumeFileManager.uploadFilesAsync(request).get();
         System.out.println("\nuploadFiles results: " + new Gson().toJson(result));
     }
 
     private static void shutdown() {
-        stageFileManager.shutdownGracefully();
+        volumeFileManager.shutdownGracefully();
     }
 }

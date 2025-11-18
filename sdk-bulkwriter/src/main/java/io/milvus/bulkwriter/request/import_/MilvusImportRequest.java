@@ -19,17 +19,9 @@
 
 package io.milvus.bulkwriter.request.import_;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
-
+import java.util.ArrayList;
 import java.util.List;
 
-@Data
-@SuperBuilder
-@AllArgsConstructor
-@NoArgsConstructor
 /*
   If you want to import data into open-source Milvus,
   you can use this method to import the data files stored in the bucket where Milvus resides.
@@ -45,10 +37,10 @@ public class MilvusImportRequest extends BaseImportRequest {
 
     /**
      * If the collection has partitionKey enabled:
-     *     - The partitionName parameter cannot be specified for import.
+     * - The partitionName parameter cannot be specified for import.
      * If the collection does not have partitionKey enabled:
-     *     - You may specify partitionName for the import.
-     *     - Defaults to the "default" partition if not specified.
+     * - You may specify partitionName for the import.
+     * - Defaults to the "default" partition if not specified.
      */
     private String partitionName;
 
@@ -56,16 +48,118 @@ public class MilvusImportRequest extends BaseImportRequest {
      * Data import can be configured in multiple ways using `files`:
      * <p>
      * 1. Multi-path import (multiple files):
-     *    "files": [
-     *        ["parquet-folder-1/1.parquet"],
-     *        ["parquet-folder-2/1.parquet"],
-     *        ["parquet-folder-3/1.parquet"]
-     *    ]
+     * "files": [
+     * ["parquet-folder-1/1.parquet"],
+     * ["parquet-folder-2/1.parquet"],
+     * ["parquet-folder-3/1.parquet"]
+     * ]
      * <p>
      * 2. Single file import:
-     *    "files": [
-     *        ["parquet-folder/1.parquet"]
-     *    ]
+     * "files": [
+     * ["parquet-folder/1.parquet"]
+     * ]
      */
     private List<List<String>> files;
+
+    public MilvusImportRequest() {
+    }
+
+    public MilvusImportRequest(String dbName, String collectionName, String partitionName, List<List<String>> files) {
+        this.dbName = dbName;
+        this.collectionName = collectionName;
+        this.partitionName = partitionName;
+        this.files = files;
+    }
+
+    protected MilvusImportRequest(MilvusImportRequestBuilder builder) {
+        super(builder);
+        this.dbName = builder.dbName;
+        this.collectionName = builder.collectionName;
+        this.partitionName = builder.partitionName;
+        this.files = builder.files;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
+    public String getCollectionName() {
+        return collectionName;
+    }
+
+    public void setCollectionName(String collectionName) {
+        this.collectionName = collectionName;
+    }
+
+    public String getPartitionName() {
+        return partitionName;
+    }
+
+    public void setPartitionName(String partitionName) {
+        this.partitionName = partitionName;
+    }
+
+    public List<List<String>> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<List<String>> files) {
+        this.files = files;
+    }
+
+    @Override
+    public String toString() {
+        return "MilvusImportRequest{" +
+                "dbName='" + dbName + '\'' +
+                ", collectionName='" + collectionName + '\'' +
+                ", partitionName='" + partitionName + '\'' +
+                ", files=" + files +
+                '}';
+    }
+
+    public static MilvusImportRequestBuilder builder() {
+        return new MilvusImportRequestBuilder();
+    }
+
+    public static class MilvusImportRequestBuilder extends BaseImportRequestBuilder<MilvusImportRequestBuilder> {
+        private String dbName;
+        private String collectionName;
+        private String partitionName;
+        private List<List<String>> files;
+
+        private MilvusImportRequestBuilder() {
+            this.dbName = "";
+            this.collectionName = "";
+            this.partitionName = "";
+            this.files = new ArrayList<>();
+        }
+
+        public MilvusImportRequestBuilder dbName(String dbName) {
+            this.dbName = dbName;
+            return this;
+        }
+
+        public MilvusImportRequestBuilder collectionName(String collectionName) {
+            this.collectionName = collectionName;
+            return this;
+        }
+
+        public MilvusImportRequestBuilder partitionName(String partitionName) {
+            this.partitionName = partitionName;
+            return this;
+        }
+
+        public MilvusImportRequestBuilder files(List<List<String>> files) {
+            this.files = files;
+            return this;
+        }
+
+        public MilvusImportRequest build() {
+            return new MilvusImportRequest(this);
+        }
+    }
 }
