@@ -3,7 +3,7 @@ package io.milvus.bulkwriter.response;
 import java.io.Serializable;
 
 
-public class ApplyStageResponse implements Serializable {
+public class ApplyVolumeResponse implements Serializable {
     private String endpoint;
     private String cloud;
     private String region;
@@ -11,14 +11,14 @@ public class ApplyStageResponse implements Serializable {
     private String uploadPath;
     private Credentials credentials;
     private Condition condition;
-    private String stageName;
-    private String stagePrefix;
+    private String volumeName;
+    private String volumePrefix;
 
-    public ApplyStageResponse() {
+    public ApplyVolumeResponse() {
     }
 
-    public ApplyStageResponse(String endpoint, String cloud, String region, String bucketName, String uploadPath,
-                              Credentials credentials, Condition condition, String stageName, String stagePrefix) {
+    public ApplyVolumeResponse(String endpoint, String cloud, String region, String bucketName, String uploadPath,
+                               Credentials credentials, Condition condition, String volumeName, String volumePrefix) {
         this.endpoint = endpoint;
         this.cloud = cloud;
         this.region = region;
@@ -26,11 +26,11 @@ public class ApplyStageResponse implements Serializable {
         this.uploadPath = uploadPath;
         this.credentials = credentials;
         this.condition = condition;
-        this.stageName = stageName;
-        this.stagePrefix = stagePrefix;
+        this.volumeName = volumeName;
+        this.volumePrefix = volumePrefix;
     }
 
-    private ApplyStageResponse(ApplyStageResponseBuilder builder) {
+    private ApplyVolumeResponse(ApplyVolumeResponseBuilder builder) {
         this.endpoint = builder.endpoint;
         this.cloud = builder.cloud;
         this.region = builder.region;
@@ -38,8 +38,8 @@ public class ApplyStageResponse implements Serializable {
         this.uploadPath = builder.uploadPath;
         this.credentials = builder.credentials;
         this.condition = builder.condition;
-        this.stageName = builder.stageName;
-        this.stagePrefix = builder.stagePrefix;
+        this.volumeName = builder.volumeName;
+        this.volumePrefix = builder.volumePrefix;
     }
 
     public String getEndpoint() {
@@ -98,25 +98,25 @@ public class ApplyStageResponse implements Serializable {
         this.condition = condition;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setVolumeName(String volumeName) {
+        this.volumeName = volumeName;
     }
 
-    public String getStagePrefix() {
-        return stagePrefix;
+    public String getVolumePrefix() {
+        return volumePrefix;
     }
 
-    public void setStagePrefix(String stagePrefix) {
-        this.stagePrefix = stagePrefix;
+    public void setVolumePrefix(String volumePrefix) {
+        this.volumePrefix = volumePrefix;
     }
 
     @Override
     public String toString() {
-        return "ApplyStageResponse{" +
+        return "ApplyVolumeResponse{" +
                 ", endpoint='" + endpoint + '\'' +
                 ", cloud='" + cloud + '\'' +
                 ", region='" + region + '\'' +
@@ -124,16 +124,16 @@ public class ApplyStageResponse implements Serializable {
                 ", uploadPath='" + uploadPath + '\'' +
                 ", credentials=" + credentials +
                 ", condition=" + condition +
-                ", stageName='" + stageName + '\'' +
-                ", stagePrefix='" + stagePrefix + '\'' +
+                ", volumeName='" + volumeName + '\'' +
+                ", volumePrefix='" + volumePrefix + '\'' +
                 '}';
     }
 
-    public static ApplyStageResponseBuilder builder() {
-        return new ApplyStageResponseBuilder();
+    public static ApplyVolumeResponseBuilder builder() {
+        return new ApplyVolumeResponseBuilder();
     }
 
-    public static class ApplyStageResponseBuilder {
+    public static class ApplyVolumeResponseBuilder {
         private String endpoint;
         private String cloud;
         private String region;
@@ -141,10 +141,10 @@ public class ApplyStageResponse implements Serializable {
         private String uploadPath;
         private Credentials credentials;
         private Condition condition;
-        private String stageName;
-        private String stagePrefix;
+        private String volumeName;
+        private String volumePrefix;
 
-        private ApplyStageResponseBuilder() {
+        private ApplyVolumeResponseBuilder() {
             this.endpoint = "";
             this.cloud = "";
             this.region = "";
@@ -152,57 +152,57 @@ public class ApplyStageResponse implements Serializable {
             this.uploadPath = "";
             this.credentials = new Credentials();
             this.condition = new Condition();
-            this.stageName = "";
-            this.stagePrefix = "";
+            this.volumeName = "";
+            this.volumePrefix = "";
         }
 
-        public ApplyStageResponseBuilder endpoint(String endpoint) {
+        public ApplyVolumeResponseBuilder endpoint(String endpoint) {
             this.endpoint = endpoint;
             return this;
         }
 
-        public ApplyStageResponseBuilder cloud(String cloud) {
+        public ApplyVolumeResponseBuilder cloud(String cloud) {
             this.cloud = cloud;
             return this;
         }
 
-        public ApplyStageResponseBuilder region(String region) {
+        public ApplyVolumeResponseBuilder region(String region) {
             this.region = region;
             return this;
         }
 
-        public ApplyStageResponseBuilder bucketName(String bucketName) {
+        public ApplyVolumeResponseBuilder bucketName(String bucketName) {
             this.bucketName = bucketName;
             return this;
         }
 
-        public ApplyStageResponseBuilder uploadPath(String uploadPath) {
+        public ApplyVolumeResponseBuilder uploadPath(String uploadPath) {
             this.uploadPath = uploadPath;
             return this;
         }
 
-        public ApplyStageResponseBuilder credentials(Credentials credentials) {
+        public ApplyVolumeResponseBuilder credentials(Credentials credentials) {
             this.credentials = credentials;
             return this;
         }
 
-        public ApplyStageResponseBuilder condition(Condition condition) {
+        public ApplyVolumeResponseBuilder condition(Condition condition) {
             this.condition = condition;
             return this;
         }
 
-        public ApplyStageResponseBuilder stageName(String stageName) {
-            this.stageName = stageName;
+        public ApplyVolumeResponseBuilder volumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 
-        public ApplyStageResponseBuilder stagePrefix(String stagePrefix) {
-            this.stagePrefix = stagePrefix;
+        public ApplyVolumeResponseBuilder volumePrefix(String volumePrefix) {
+            this.volumePrefix = volumePrefix;
             return this;
         }
 
-        public ApplyStageResponse build() {
-            return new ApplyStageResponse(this);
+        public ApplyVolumeResponse build() {
+            return new ApplyVolumeResponse(this);
         }
     }
 
@@ -316,6 +316,7 @@ public class ApplyStageResponse implements Serializable {
     public static class Condition implements Serializable {
         private static final long serialVersionUID = -2613029991242322109L;
         private Long maxContentLength;
+        private Long maxFileNumber;
 
         public Condition() {
         }
@@ -332,6 +333,10 @@ public class ApplyStageResponse implements Serializable {
             return maxContentLength;
         }
 
+        public Long getMaxFileNumber() {
+            return maxFileNumber;
+        }
+
         public void setMaxContentLength(Long maxContentLength) {
             this.maxContentLength = maxContentLength;
         }
@@ -340,6 +345,7 @@ public class ApplyStageResponse implements Serializable {
         public String toString() {
             return "Condition{" +
                     ", maxContentLength=" + maxContentLength +
+                    ", maxFileNumber=" + maxFileNumber +
                     '}';
         }
 

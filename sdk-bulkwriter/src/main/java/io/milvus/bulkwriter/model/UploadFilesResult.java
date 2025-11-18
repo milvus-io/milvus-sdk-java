@@ -1,28 +1,28 @@
 package io.milvus.bulkwriter.model;
 
 public class UploadFilesResult {
-    private String stageName;
+    private String volumeName;
     private String path;
 
     public UploadFilesResult() {
     }
 
-    public UploadFilesResult(String stageName, String path) {
-        this.stageName = stageName;
+    public UploadFilesResult(String volumeName, String path) {
+        this.volumeName = volumeName;
         this.path = path;
     }
 
     private UploadFilesResult(UploadFilesResultBuilder builder) {
-        this.stageName = builder.stageName;
+        this.volumeName = builder.volumeName;
         this.path = builder.path;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setVolumeName(String volumeName) {
+        this.volumeName = volumeName;
     }
 
     public String getPath() {
@@ -36,7 +36,7 @@ public class UploadFilesResult {
     @Override
     public String toString() {
         return "UploadFilesResult{" +
-                "stageName='" + stageName + '\'' +
+                "volumeName='" + volumeName + '\'' +
                 ", path='" + path + '\'' +
                 '}';
     }
@@ -46,16 +46,16 @@ public class UploadFilesResult {
     }
 
     public static class UploadFilesResultBuilder {
-        private String stageName;
+        private String volumeName;
         private String path;
 
         private UploadFilesResultBuilder() {
-            this.stageName = "";
+            this.volumeName = "";
             this.path = "";
         }
 
-        public UploadFilesResultBuilder stageName(String stageName) {
-            this.stageName = stageName;
+        public UploadFilesResultBuilder volumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 

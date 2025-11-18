@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
-  If you want to import data into a Zilliz cloud instance and your data is stored in a Zilliz stage,
-  you can use this method to import the data from the stage.
+  If you want to import data into a Zilliz cloud instance and your data is stored in a Zilliz volume,
+  you can use this method to import the data from the volume.
  */
-public class StageImportRequest extends BaseImportRequest {
+public class VolumeImportRequest extends BaseImportRequest {
     private String clusterId;
 
     /**
@@ -45,7 +45,7 @@ public class StageImportRequest extends BaseImportRequest {
      */
     private String partitionName;
 
-    private String stageName;
+    private String volumeName;
 
     /**
      * Data import can be configured in multiple ways using `dataPaths`:
@@ -69,26 +69,26 @@ public class StageImportRequest extends BaseImportRequest {
      */
     private List<List<String>> dataPaths;
 
-    public StageImportRequest() {
+    public VolumeImportRequest() {
     }
 
-    public StageImportRequest(String clusterId, String dbName, String collectionName, String partitionName,
-                              String stageName, List<List<String>> dataPaths) {
+    public VolumeImportRequest(String clusterId, String dbName, String collectionName, String partitionName,
+                               String volumeName, List<List<String>> dataPaths) {
         this.clusterId = clusterId;
         this.dbName = dbName;
         this.collectionName = collectionName;
         this.partitionName = partitionName;
-        this.stageName = stageName;
+        this.volumeName = volumeName;
         this.dataPaths = dataPaths;
     }
 
-    protected StageImportRequest(StageImportRequestBuilder builder) {
+    protected VolumeImportRequest(VolumeImportRequestBuilder builder) {
         super(builder);
         this.clusterId = builder.clusterId;
         this.dbName = builder.dbName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
-        this.stageName = builder.stageName;
+        this.volumeName = builder.volumeName;
         this.dataPaths = builder.dataPaths;
     }
 
@@ -124,12 +124,12 @@ public class StageImportRequest extends BaseImportRequest {
         this.partitionName = partitionName;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setVolumeName(String volumeName) {
+        this.volumeName = volumeName;
     }
 
     public List<List<String>> getDataPaths() {
@@ -142,69 +142,69 @@ public class StageImportRequest extends BaseImportRequest {
 
     @Override
     public String toString() {
-        return "StageImportRequest{" +
+        return "VolumeImportRequest{" +
                 "clusterId='" + clusterId + '\'' +
                 ", dbName='" + dbName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
-                ", stageName='" + stageName + '\'' +
+                ", volumeName='" + volumeName + '\'' +
                 ", dataPaths=" + dataPaths +
                 '}';
     }
 
-    public static StageImportRequestBuilder builder() {
-        return new StageImportRequestBuilder();
+    public static VolumeImportRequestBuilder builder() {
+        return new VolumeImportRequestBuilder();
     }
 
-    public static class StageImportRequestBuilder extends BaseImportRequestBuilder<StageImportRequestBuilder> {
+    public static class VolumeImportRequestBuilder extends BaseImportRequestBuilder<VolumeImportRequestBuilder> {
         private String clusterId;
         private String dbName;
         private String collectionName;
         private String partitionName;
-        private String stageName;
+        private String volumeName;
         private List<List<String>> dataPaths;
 
-        private StageImportRequestBuilder() {
+        private VolumeImportRequestBuilder() {
             this.clusterId = "";
             this.dbName = "";
             this.collectionName = "";
             this.partitionName = "";
-            this.stageName = "";
+            this.volumeName = "";
             this.dataPaths = new ArrayList<>();
         }
 
-        public StageImportRequestBuilder clusterId(String clusterId) {
+        public VolumeImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
         }
 
-        public StageImportRequestBuilder dbName(String dbName) {
+        public VolumeImportRequestBuilder dbName(String dbName) {
             this.dbName = dbName;
             return this;
         }
 
-        public StageImportRequestBuilder collectionName(String collectionName) {
+        public VolumeImportRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public StageImportRequestBuilder partitionName(String partitionName) {
+        public VolumeImportRequestBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
             return this;
         }
 
-        public StageImportRequestBuilder stageName(String stageName) {
-            this.stageName = stageName;
+        public VolumeImportRequestBuilder volumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 
-        public StageImportRequestBuilder dataPaths(List<List<String>> dataPaths) {
+        public VolumeImportRequestBuilder dataPaths(List<List<String>> dataPaths) {
             this.dataPaths = dataPaths;
             return this;
         }
 
-        public StageImportRequest build() {
-            return new StageImportRequest(this);
+        public VolumeImportRequest build() {
+            return new VolumeImportRequest(this);
         }
     }
 }
