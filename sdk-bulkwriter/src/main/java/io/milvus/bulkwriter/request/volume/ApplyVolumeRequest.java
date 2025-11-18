@@ -17,32 +17,32 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.request.volume;
 
-public class ApplyStageRequest extends BaseStageRequest {
-    private String stageName;
+public class ApplyVolumeRequest extends BaseVolumeRequest {
+    private String volumeName;
     private String path;
 
-    protected ApplyStageRequest() {
+    protected ApplyVolumeRequest() {
     }
 
-    protected ApplyStageRequest(String stageName, String path) {
-        this.stageName = stageName;
+    protected ApplyVolumeRequest(String volumeName, String path) {
+        this.volumeName = volumeName;
         this.path = path;
     }
 
-    protected ApplyStageRequest(ApplyStageRequestBuilder builder) {
+    protected ApplyVolumeRequest(ApplyVolumeRequestBuilder builder) {
         super(builder);
-        this.stageName = builder.stageName;
+        this.volumeName = builder.volumeName;
         this.path = builder.path;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setVolumeName(String volumeName) {
+        this.volumeName = volumeName;
     }
 
     public String getPath() {
@@ -55,37 +55,37 @@ public class ApplyStageRequest extends BaseStageRequest {
 
     @Override
     public String toString() {
-        return "ApplyStageRequest{" +
-                "stageName='" + stageName + '\'' +
+        return "ApplyVolumeRequest{" +
+                "volumeName='" + volumeName + '\'' +
                 ", path='" + path + '\'' +
                 '}';
     }
 
-    public static ApplyStageRequestBuilder builder() {
-        return new ApplyStageRequestBuilder();
+    public static ApplyVolumeRequestBuilder builder() {
+        return new ApplyVolumeRequestBuilder();
     }
 
-    public static class ApplyStageRequestBuilder extends BaseStageRequestBuilder<ApplyStageRequestBuilder> {
-        private String stageName;
+    public static class ApplyVolumeRequestBuilder extends BaseVolumeRequestBuilder<ApplyVolumeRequestBuilder> {
+        private String volumeName;
         private String path;
 
-        private ApplyStageRequestBuilder() {
-            this.stageName = "";
+        private ApplyVolumeRequestBuilder() {
+            this.volumeName = "";
             this.path = "";
         }
 
-        public ApplyStageRequestBuilder stageName(String stageName) {
-            this.stageName = stageName;
+        public ApplyVolumeRequestBuilder volumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 
-        public ApplyStageRequestBuilder path(String path) {
+        public ApplyVolumeRequestBuilder path(String path) {
             this.path = path;
             return this;
         }
 
-        public ApplyStageRequest build() {
-            return new ApplyStageRequest(this);
+        public ApplyVolumeRequest build() {
+            return new ApplyVolumeRequest(this);
         }
     }
 }
