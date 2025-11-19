@@ -185,6 +185,8 @@ public class SearchIteratorV2 {
             }
         }
 
+        // Exception handling: toIndex=
+        targetLen = if (cache.size() < targetLen)?cache.size():targetLen;
         // create a list with elements from 0 to targetLen, and remove the elements from cache
         List<SearchResp.SearchResult> subList = cache.subList(0, targetLen);
         List<SearchResp.SearchResult> ret = new ArrayList<>(subList);
