@@ -31,7 +31,7 @@ import java.util.List;
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
 
 public class ParquetUtils {
-    private static void setMessageType(Types.MessageTypeBuilder builder,
+    private static void setMessageType(Types.BaseGroupBuilder<?, ?> builder,
                                        PrimitiveType.PrimitiveTypeName primitiveName,
                                        LogicalTypeAnnotation logicType,
                                        CreateCollectionReq.FieldSchema field,
@@ -75,6 +75,29 @@ public class ParquetUtils {
             }
 
             switch (field.getDataType()) {
+                case Bool:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, false);
+                    break;
+                case Int8:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), field, false);
+                    break;
+                case Int16:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), field, false);
+                    break;
+                case Int32:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, field, false);
+                    break;
+                case Int64:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, false);
+                    break;
+                case Float:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, false);
+                    break;
+                case Double:
+                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, false);
+                    break;
                 case FloatVector:
                     setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, true);
                     break;
@@ -89,10 +112,6 @@ public class ParquetUtils {
                 case Array:
                     fillArrayType(messageTypeBuilder, field);
                     break;
-
-                case Int64:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, false);
-                    break;
                 case VarChar:
                 case Geometry:
                 case Timestamptz:
@@ -101,28 +120,12 @@ public class ParquetUtils {
                     setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
                             LogicalTypeAnnotation.stringType(), field, false);
                     break;
-                case Int8:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
-                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), field, false);
-                    break;
-                case Int16:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
-                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), field, false);
-                    break;
-                case Int32:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, field, false);
-                    break;
-                case Float:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, false);
-                    break;
-                case Double:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, false);
-                    break;
-                case Bool:
-                    setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, false);
-                    break;
-
             }
+        }
+
+        List<CreateCollectionReq.StructFieldSchema> structFields = collectionSchema.getStructFields();
+        for (CreateCollectionReq.StructFieldSchema struct : structFields) {
+            fillStructType(messageTypeBuilder, struct);
         }
 
         if (collectionSchema.isEnableDynamicField()) {
@@ -134,12 +137,8 @@ public class ParquetUtils {
 
     private static void fillArrayType(Types.MessageTypeBuilder messageTypeBuilder, CreateCollectionReq.FieldSchema field) {
         switch (field.getElementType()) {
-            case Int64:
-                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, true);
-                break;
-            case VarChar:
-                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
-                        LogicalTypeAnnotation.stringType(), field, true);
+            case Bool:
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, true);
                 break;
             case Int8:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32,
@@ -152,16 +151,61 @@ public class ParquetUtils {
             case Int32:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, field, true);
                 break;
+            case Int64:
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, field, true);
+                break;
             case Float:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, field, true);
                 break;
             case Double:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, true);
                 break;
-            case Bool:
-                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, field, true);
+            case VarChar:
+                setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
+                        LogicalTypeAnnotation.stringType(), field, true);
                 break;
         }
+    }
+
+    private static void fillStructType(Types.MessageTypeBuilder messageTypeBuilder, CreateCollectionReq.StructFieldSchema struct) {
+        Types.BaseListBuilder.GroupElementBuilder<?, ?> groupBuilder = messageTypeBuilder.optionalList().optionalGroupElement();
+        for (CreateCollectionReq.FieldSchema subField : struct.getFields()) {
+            switch (subField.getDataType()) {
+                case Bool:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.BOOLEAN, null, subField, false);
+                    break;
+                case Int8:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, true), subField, false);
+                    break;
+                case Int16:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(16, true), subField, false);
+                    break;
+                case Int32:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32, null, subField, false);
+                    break;
+                case Int64:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT64, null, subField, false);
+                    break;
+                case Float:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, subField, false);
+                    break;
+                case Double:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, subField, false);
+                    break;
+                case VarChar:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
+                            LogicalTypeAnnotation.stringType(), subField, false);
+                    break;
+                case FloatVector:
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, subField, true);
+                    break;
+                default:
+                    break;
+            }
+        }
+        groupBuilder.named(struct.getName());
     }
 
     public static Configuration getParquetConfiguration() {
