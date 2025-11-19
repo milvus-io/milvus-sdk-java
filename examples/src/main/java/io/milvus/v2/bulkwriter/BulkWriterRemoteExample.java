@@ -167,7 +167,7 @@ public class BulkWriterRemoteExample {
 
     private static void exampleSimpleCollection(List<BulkFileType> fileTypes) throws Exception {
         CreateCollectionReq.CollectionSchema collectionSchema = buildSimpleSchema();
-        createCollection(SIMPLE_COLLECTION_NAME, collectionSchema, false);
+        createCollection(SIMPLE_COLLECTION_NAME, collectionSchema);
 
         for (BulkFileType fileType : fileTypes) {
             remoteWriter(collectionSchema, fileType);
@@ -182,7 +182,7 @@ public class BulkWriterRemoteExample {
         for (BulkFileType fileType : fileTypes) {
             CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
             List<List<String>> batchFiles = allTypesRemoteWriter(collectionSchema, fileType, rows);
-            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
+            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema);
             callBulkInsert(batchFiles);
             verifyImportData(collectionSchema, originalData);
         }
@@ -192,7 +192,7 @@ public class BulkWriterRemoteExample {
 //        for (BulkFileType fileType : fileTypes) {
 //            CreateCollectionReq.CollectionSchema collectionSchema = buildAllTypesSchema();
 //            List<List<String>> batchFiles = allTypesRemoteWriter(collectionSchema, fileType, rows);
-//            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema, false);
+//            createCollection(ALL_TYPES_COLLECTION_NAME, collectionSchema);
 //            callCloudImport(batchFiles, ALL_TYPES_COLLECTION_NAME, "");
 //            verifyImportData(collectionSchema, originalData);
 //        }
@@ -227,6 +227,20 @@ public class BulkWriterRemoteExample {
         }
     }
 
+    private static Map<String, Object> genOriginStruct(int seed) {
+        Map<String, Object> st = new HashMap<>();
+        st.put("st_bool", seed % 3 == 0);
+        st.put("st_int8", seed % 128);
+        st.put("st_int16", seed % 16384);
+        st.put("st_int32", seed % 65536);
+        st.put("st_int64", seed);
+        st.put("st_float", (float) seed / 4);
+        st.put("st_double", seed / 3);
+        st.put("st_string", String.format("dummy_%d", seed));
+        st.put("st_float_vector", CommonUtils.generateFloatVector(DIM));
+        return st;
+    }
+
     private static List<Map<String, Object>> genOriginalData(int count) {
         List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < count; ++i) {
@@ -241,11 +255,12 @@ public class BulkWriterRemoteExample {
             row.put("double", (double) i / 7);
             row.put("varchar", "varchar_" + i);
             row.put("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
+            row.put("geometry", String.format("POINT (%d %d)", i, i));
 
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
             row.put("binary_vector", CommonUtils.generateBinaryVector(DIM).array());
-            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
+//            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
             row.put("sparse_vector", CommonUtils.generateSparseVector());
 
             // array field
@@ -257,6 +272,13 @@ public class BulkWriterRemoteExample {
             row.put("array_varchar", GeneratorUtils.generatorVarcharValue(8, 10));
             row.put("array_float", GeneratorUtils.generatorFloatValue(9));
             row.put("array_double", GeneratorUtils.generatorDoubleValue(10));
+
+            // struct field
+            List<Map<String, Object>> structList = new ArrayList<>();
+            for (int k = 0; k < i % 4 + 1; k++) {
+                structList.add(genOriginStruct(i + k));
+            }
+            row.put("struct_field", structList);
 
             data.add(row);
         }
@@ -273,11 +295,12 @@ public class BulkWriterRemoteExample {
             row.put("double", null);
             row.put("varchar", null);
             row.put("json", null);
+            row.put("geometry", null);
 
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
             row.put("binary_vector", CommonUtils.generateBinaryVector(DIM).array());
-            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
+//            row.put("int8_vector", CommonUtils.generateInt8Vector(DIM).array());
             row.put("sparse_vector", CommonUtils.generateSparseVector());
 
             // array field
@@ -289,6 +312,9 @@ public class BulkWriterRemoteExample {
             row.put("array_varchar", GeneratorUtils.generatorVarcharValue(5, 10));
             row.put("array_float", GeneratorUtils.generatorFloatValue(4));
             row.put("array_double", null);
+
+            // struct field
+            row.put("struct_field", Collections.singletonList(genOriginStruct(0)));
 
             data.add(row);
         }
@@ -313,6 +339,7 @@ public class BulkWriterRemoteExample {
                 rowObject.addProperty("double", (Number) row.get("double"));
             }
             rowObject.addProperty("varchar", row.get("varchar") == null ? null : (String) row.get("varchar"));
+            rowObject.addProperty("geometry", row.get("geometry") == null ? null : (String) row.get("geometry"));
 
             // Note: for JSON field, use gson.fromJson() to construct a real JsonObject
             // don't use rowObject.addProperty("json", jsonContent) since the value is treated as a string, not a JsonObject
@@ -322,7 +349,7 @@ public class BulkWriterRemoteExample {
             // vector field
             rowObject.add("float_vector", GSON_INSTANCE.toJsonTree(row.get("float_vector")));
             rowObject.add("binary_vector", GSON_INSTANCE.toJsonTree(row.get("binary_vector")));
-            rowObject.add("int8_vector", GSON_INSTANCE.toJsonTree(row.get("int8_vector")));
+//            rowObject.add("int8_vector", GSON_INSTANCE.toJsonTree(row.get("int8_vector")));
             rowObject.add("sparse_vector", GSON_INSTANCE.toJsonTree(row.get("sparse_vector")));
 
             // array field
@@ -334,6 +361,9 @@ public class BulkWriterRemoteExample {
             rowObject.add("array_varchar", GSON_INSTANCE.toJsonTree(row.get("array_varchar")));
             rowObject.add("array_float", GSON_INSTANCE.toJsonTree(row.get("array_float")));
             rowObject.add("array_double", GSON_INSTANCE.toJsonTree(row.get("array_double")));
+
+            // struct field
+            rowObject.add("struct_field", GSON_INSTANCE.toJsonTree(row.get("struct_field")));
 
             // dynamic fields
             if (isEnableDynamicField) {
@@ -462,11 +492,10 @@ public class BulkWriterRemoteExample {
             JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
             String state = getImportProgressObject.getAsJsonObject("data").get("state").getAsString();
             String progress = getImportProgressObject.getAsJsonObject("data").get("progress").getAsString();
-            if ("Failed".equals(state)) {
+            if ("Failed" .equals(state)) {
                 String reason = getImportProgressObject.getAsJsonObject("data").get("reason").getAsString();
-                System.out.printf("The job %s failed, reason: %s%n", jobId, reason);
-                break;
-            } else if ("Completed".equals(state)) {
+                throw new RuntimeException(String.format("The job %s failed, reason: %s", jobId, reason));
+            } else if ("Completed" .equals(state)) {
                 System.out.printf("The job %s completed%n", jobId);
                 break;
             } else {
@@ -475,11 +504,57 @@ public class BulkWriterRemoteExample {
         }
     }
 
+//    private static void callCloudImport(List<List<String>> batchFiles, String collectionName, String partitionName) throws InterruptedException {
+//        String objectUrl = StorageConsts.cloudStorage == CloudStorage.AZURE
+//                ? StorageConsts.cloudStorage.getAzureObjectUrl(StorageConsts.AZURE_ACCOUNT_NAME, StorageConsts.AZURE_CONTAINER_NAME, ImportUtils.getCommonPrefix(batchFiles))
+//                : StorageConsts.cloudStorage.getS3ObjectUrl(StorageConsts.STORAGE_BUCKET, ImportUtils.getCommonPrefix(batchFiles), StorageConsts.STORAGE_REGION);
+//        String accessKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_NAME : StorageConsts.STORAGE_ACCESS_KEY;
+//        String secretKey = StorageConsts.cloudStorage == CloudStorage.AZURE ? StorageConsts.AZURE_ACCOUNT_KEY : StorageConsts.STORAGE_SECRET_KEY;
+//
+//        System.out.println("\n===================== call cloudImport ====================");
+//        CloudImportRequest bulkImportRequest = CloudImportRequest.builder()
+//                .objectUrl(objectUrl).accessKey(accessKey).secretKey(secretKey)
+//                .clusterId(CloudImportConsts.CLUSTER_ID).collectionName(collectionName).partitionName(partitionName)
+//                .apiKey(CloudImportConsts.API_KEY)
+//                .build();
+//        String bulkImportResult = BulkImportUtils.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, bulkImportRequest);
+//        JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
+//
+//        String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
+//        System.out.println("Create a cloudImport job, job id: " + jobId);
+//
+//        System.out.println("\n===================== call cloudListImportJobs ====================");
+//        CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
+//        String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
+//        System.out.println(listImportJobsResult);
+//        while (true) {
+//            System.out.println("Wait 5 second to check bulkInsert job state...");
+//            TimeUnit.SECONDS.sleep(5);
+//
+//            System.out.println("\n===================== call cloudGetProgress ====================");
+//            CloudDescribeImportRequest request = CloudDescribeImportRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
+//            String getImportProgressResult = BulkImportUtils.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, request);
+//            JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
+//            String importProgressState = getImportProgressObject.getAsJsonObject("data").get("state").getAsString();
+//            String progress = getImportProgressObject.getAsJsonObject("data").get("progress").getAsString();
+//
+//            if ("Failed" .equals(importProgressState)) {
+//                String reason = getImportProgressObject.getAsJsonObject("data").get("reason").getAsString();
+//                System.out.printf("The job %s failed, reason: %s%n", jobId, reason);
+//                break;
+//            } else if ("Completed" .equals(importProgressState)) {
+//                System.out.printf("The job %s completed%n", jobId);
+//                break;
+//            } else {
+//                System.out.printf("The job %s is running, state:%s progress:%s%n", jobId, importProgressState, progress);
+//            }
+//        }
+//    }
+
     /**
      * @param collectionSchema collection info
-     * @param dropIfExist      if collection already exist, will drop firstly and then create again
      */
-    private static void createCollection(String collectionName, CreateCollectionReq.CollectionSchema collectionSchema, boolean dropIfExist) {
+    private static void createCollection(String collectionName, CreateCollectionReq.CollectionSchema collectionSchema) {
         System.out.println("\n===================== create collection ====================");
         checkMilvusClientIfExist();
 
@@ -489,15 +564,8 @@ public class BulkWriterRemoteExample {
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
 
-        Boolean has = milvusClient.hasCollection(HasCollectionReq.builder().collectionName(collectionName).build());
-        if (has) {
-            if (dropIfExist) {
-                milvusClient.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
-                milvusClient.createCollection(requestCreate);
-            }
-        } else {
-            milvusClient.createCollection(requestCreate);
-        }
+        milvusClient.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+        milvusClient.createCollection(requestCreate);
 
         System.out.printf("Collection %s created%n", collectionName);
     }
@@ -558,13 +626,40 @@ public class BulkWriterRemoteExample {
         }
     }
 
-    private static void verifyImportData(CreateCollectionReq.CollectionSchema collectionSchema, List<Map<String, Object>> rows) {
-        createIndex();
+    private static void compareStruct(CreateCollectionReq.CollectionSchema collectionSchema,
+                                      Map<String, Object> expectedData, Map<String, Object> fetchedData,
+                                      String fieldName) {
+        CreateCollectionReq.StructFieldSchema field = collectionSchema.getStructField(fieldName);
+        Object expectedValue = expectedData.get(fieldName);
+        Object fetchedValue = fetchedData.get(fieldName);
+        if (fetchedValue == null) {
+            throw new RuntimeException(String.format("Struct field '%s' missed in fetched data", fieldName));
+        }
 
+        List<Map<String, Object>> expectedList = (List<Map<String, Object>>) expectedValue;
+        if (!(fetchedValue instanceof List<?>)) {
+            throw new RuntimeException(String.format("Struct field '%s' value should be a list", fieldName));
+        }
+
+        List<Map<String, Object>> fetchedList = (List<Map<String, Object>>) fetchedValue;
+        if (expectedList.size() != fetchedList.size()) {
+            throw new RuntimeException(String.format("Struct field '%s' list count unmatched", fieldName));
+        }
+
+        for (int i = 0; i < expectedList.size(); i++) {
+            Map<String, Object> expectedStruct = expectedList.get(i);
+            Map<String, Object> fetchedStruct = fetchedList.get(i);
+            if (expectedStruct.equals(fetchedStruct)) {
+                throw new RuntimeException(String.format("Struct field '%s' value unmatched", fieldName));
+            }
+        }
+    }
+
+    private static void verifyImportData(CreateCollectionReq.CollectionSchema collectionSchema, List<Map<String, Object>> rows) {
         List<Long> QUERY_IDS = Lists.newArrayList(1L, (long) rows.get(rows.size() - 1).get("id"));
         System.out.printf("Load collection and query items %s%n", QUERY_IDS);
+        createIndex(collectionSchema);
         loadCollection();
-
         String expr = String.format("id in %s", QUERY_IDS);
         System.out.println(expr);
 
@@ -597,40 +692,74 @@ public class BulkWriterRemoteExample {
 
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "float_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "binary_vector");
-            comparePrint(collectionSchema, originalEntity, fetchedEntity, "int8_vector");
+//            comparePrint(collectionSchema, originalEntity, fetchedEntity, "int8_vector");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "sparse_vector");
+
+            compareStruct(collectionSchema, originalEntity, fetchedEntity, "struct_field");
 
             System.out.println(fetchedEntity);
         }
         System.out.println("Result is correct!");
     }
 
-    private static void createIndex() {
+    private static void createIndex(CreateCollectionReq.CollectionSchema collectionSchema) {
         System.out.println("Create index...");
         checkMilvusClientIfExist();
 
         List<IndexParam> indexes = new ArrayList<>();
-        indexes.add(IndexParam.builder()
-                .fieldName("float_vector")
-                .indexType(IndexParam.IndexType.FLAT)
-                .metricType(IndexParam.MetricType.L2)
-                .build());
-        indexes.add(IndexParam.builder()
-                .fieldName("binary_vector")
-                .indexType(IndexParam.IndexType.BIN_FLAT)
-                .metricType(IndexParam.MetricType.HAMMING)
-                .build());
-        indexes.add(IndexParam.builder()
-                .fieldName("int8_vector")
-                .indexType(IndexParam.IndexType.AUTOINDEX)
-                .metricType(IndexParam.MetricType.L2)
-                .build());
-        indexes.add(IndexParam.builder()
-                .fieldName("sparse_vector")
-                .indexType(IndexParam.IndexType.SPARSE_WAND)
-                .metricType(IndexParam.MetricType.IP)
-                .build());
+        for (CreateCollectionReq.FieldSchema field : collectionSchema.getFieldSchemaList()) {
+            IndexParam.IndexType indexType;
+            IndexParam.MetricType metricType;
+            switch (field.getDataType()) {
+                case FloatVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                    indexType = IndexParam.IndexType.IVF_FLAT;
+                    metricType = IndexParam.MetricType.L2;
+                    break;
+                case BinaryVector:
+                    indexType = IndexParam.IndexType.BIN_FLAT;
+                    metricType = IndexParam.MetricType.HAMMING;
+                    break;
+                case Int8Vector:
+                    indexType = IndexParam.IndexType.AUTOINDEX;
+                    metricType = IndexParam.MetricType.L2;
+                    break;
+                case SparseFloatVector:
+                    indexType = IndexParam.IndexType.SPARSE_WAND;
+                    metricType = IndexParam.MetricType.IP;
+                    break;
+                default:
+                    continue;
+            }
+            indexes.add(IndexParam.builder()
+                    .fieldName(field.getName())
+                    .indexName(String.format("index_%s", field.getName()))
+                    .indexType(indexType)
+                    .metricType(metricType)
+                    .build());
+        }
 
+        for (CreateCollectionReq.StructFieldSchema struct : collectionSchema.getStructFields()) {
+            for (CreateCollectionReq.FieldSchema subField : struct.getFields()) {
+                IndexParam.IndexType indexType;
+                IndexParam.MetricType metricType;
+                switch (subField.getDataType()) {
+                    case FloatVector:
+                        indexType = IndexParam.IndexType.HNSW;
+                        metricType = IndexParam.MetricType.MAX_SIM_COSINE;
+                        break;
+                    default:
+                        continue;
+                }
+                indexes.add(IndexParam.builder()
+                        .fieldName(String.format("%s[%s]", struct.getName(), subField.getName()))
+                        .indexName(String.format("index_%s", subField.getName()))
+                        .indexType(indexType)
+                        .metricType(metricType)
+                        .build());
+            }
+        }
         milvusClient.createIndex(CreateIndexReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .indexParams(indexes)
@@ -660,6 +789,7 @@ public class BulkWriterRemoteExample {
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
                 .filter(expr)
                 .outputFields(outputFields)
+                .consistencyLevel(ConsistencyLevel.STRONG)
                 .build();
         QueryResp response = milvusClient.query(test);
         return response.getQueryResults();
@@ -786,6 +916,11 @@ public class BulkWriterRemoteExample {
                 .dataType(DataType.JSON)
                 .isNullable(true)
                 .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("geometry")
+                .dataType(DataType.Geometry)
+                .isNullable(true)
+                .build());
 
         // vector fields
         schemaV2.addField(AddFieldReq.builder()
@@ -798,11 +933,11 @@ public class BulkWriterRemoteExample {
                 .dataType(DataType.BinaryVector)
                 .dimension(DIM)
                 .build());
-        schemaV2.addField(AddFieldReq.builder()
-                .fieldName("int8_vector")
-                .dataType(DataType.Int8Vector)
-                .dimension(DIM)
-                .build());
+//        schemaV2.addField(AddFieldReq.builder()
+//                .fieldName("int8_vector")
+//                .dataType(DataType.Int8Vector)
+//                .dimension(DIM)
+//                .build());
         schemaV2.addField(AddFieldReq.builder()
                 .fieldName("sparse_vector")
                 .dataType(DataType.SparseFloatVector)
@@ -859,6 +994,50 @@ public class BulkWriterRemoteExample {
                 .maxCapacity(ARRAY_CAPACITY)
                 .elementType(DataType.Double)
                 .isNullable(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("struct_field")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(100)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_bool")
+                        .dataType(DataType.Bool)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_int8")
+                        .dataType(DataType.Int8)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_int16")
+                        .dataType(DataType.Int16)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_int32")
+                        .dataType(DataType.Int32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_int64")
+                        .dataType(DataType.Int64)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_float")
+                        .dataType(DataType.Float)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_double")
+                        .dataType(DataType.Double)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_string")
+                        .dataType(DataType.VarChar)
+                        .maxLength(100)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_float_vector")
+                        .dataType(DataType.FloatVector)
+                        .dimension(DIM)
+                        .build())
                 .build());
 
         return schemaV2;

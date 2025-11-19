@@ -108,6 +108,9 @@ public class BaseRestful {
     private static void setDefaultOptionsIfCallCloud(Map<String, Object> params, String apiKey) {
         if (StringUtils.isNotEmpty(apiKey)) {
             Map<String, Object> options = new HashMap<>();
+            if (params.containsKey("options")) {
+                options = (Map<String, Object>) params.get("options");
+            }
             options.put("sdk", "java");
             options.put("scene", "bulkWriter");
 
