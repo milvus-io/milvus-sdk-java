@@ -27,8 +27,6 @@ import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
-import io.milvus.v2.exception.ErrorCode;
-import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.cdc.CDCService;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
@@ -71,19 +69,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.net.Socket;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import javax.net.ssl.*;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.security.KeyStore;
-import java.security.PrivateKey;
-import java.security.SecureRandom;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 
 public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
@@ -140,9 +125,9 @@ public class MilvusClientV2 {
     private void connect(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
         if (connectConfig.isEnablePrecheck()) {
-            validateHostname(connectConfig);
-            validatePort(connectConfig);
-            validateCert(connectConfig);
+            clientUtils.validateHostname(connectConfig);
+            clientUtils.validatePort(connectConfig);
+            clientUtils.validateCert(connectConfig);
         }
         try {
             if (this.channel != null) {
@@ -235,120 +220,6 @@ public class MilvusClientV2 {
         return dbName;
     }
 
-    /**
-     * Validates that the hostname can be resolved before attempting connection.
-     * This provides early failure with clear error messages for DNS issues.
-     *
-     * @param connectConfig Connection configuration containing the host to validate
-     * @throws MilvusClientException if hostname cannot be resolved
-     */
-    public void validateHostname(ConnectConfig connectConfig) {
-        String host = connectConfig.getHost();
-        
-        if (StringUtils.isEmpty(host)) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, 
-                "Hostname cannot be null or empty");
-        }
-        
-        try {
-            // Attempt DNS resolution
-            InetAddress.getByName(host);
-            logger.debug("Successfully resolved hostname: {}", host);
-        } catch (UnknownHostException e) {
-            String message = String.format(
-                "Failed to resolve hostname '%s'. Please verify the hostname is correct and DNS is configured properly.",
-                host
-            );
-            logger.error(message, e);
-            throw new MilvusClientException(ErrorCode.RPC_ERROR, message);
-        }
-    }
-
-    /**
-     * Validates port number and tests connectivity.
-     *
-     * @param connectConfig Connection configuration containing the port to validate
-     * @throws MilvusClientException if port is invalid or unreachable
-     */
-    public void validatePort(ConnectConfig connectConfig) {
-        int port = connectConfig.getPort();
-        String host = connectConfig.getHost();
-        
-        // Check valid range
-        if (port < 1 || port > 65535) {
-            String message = String.format(
-                "Invalid port number '%d'. Port must be between 1 and 65535.",
-                port
-            );
-            logger.error(message);
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, message);
-        }
-        
-        // Test if port is reachable
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress(host, port), (int) connectConfig.getConnectTimeoutMs());
-            logger.debug("Successfully validated port: {}", port);
-        } catch (IOException e) {
-            String message = String.format(
-                "Cannot connect to '%s:%d'. Please verify the port number is correct and server is running.",
-                host, port
-            );
-            logger.error(message, e);
-            throw new MilvusClientException(ErrorCode.RPC_ERROR, message);
-        }
-    }
-    
-    /**
-     * Validates SSL connection with certificates.
-     *
-     * @param connectConfig Connection configuration
-     * @throws MilvusClientException if SSL connection fails
-     */
-    public void validateCert(ConnectConfig connectConfig) {
-        if (!connectConfig.isSecure()) {
-            return;
-        }
-        
-        try {
-            SSLContext sslContext = SSLContext.getInstance("TLS");
-            TrustManagerFactory tmf = null;
-            
-            // Load server certificate (CA cert)
-            if (connectConfig.getServerPemPath() != null && !connectConfig.getServerPemPath().isEmpty()) {
-                try (InputStream certStream = new FileInputStream(connectConfig.getServerPemPath())) {
-                    CertificateFactory cf = CertificateFactory.getInstance("X.509");
-                    X509Certificate caCert = (X509Certificate) cf.generateCertificate(certStream);
-                    
-                    KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-                    trustStore.load(null, null);
-                    trustStore.setCertificateEntry("ca-cert", caCert);
-                    
-                    tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                    tmf.init(trustStore);
-                }
-            }
-            
-            // Initialize SSLContext with the server certificate
-            sslContext.init(null, tmf != null ? tmf.getTrustManagers() : null, new SecureRandom());
-            
-            // Validate connection
-            SSLSocketFactory socketFactory = sslContext.getSocketFactory();
-            try (SSLSocket socket = (SSLSocket) socketFactory.createSocket()) {
-                socket.connect(new InetSocketAddress(connectConfig.getHost(), connectConfig.getPort()), 
-                            (int) connectConfig.getConnectTimeoutMs());
-                socket.startHandshake();
-                logger.debug("SSL certificate validation passed");
-            }
-            
-        } catch (SSLException e) {
-            throw new MilvusClientException(ErrorCode.RPC_ERROR, 
-                "SSL certificate validation failed: " + e.getMessage() + 
-                ". Please verify your certificates are correct.");
-        } catch (Exception e) {
-            throw new MilvusClientException(ErrorCode.RPC_ERROR, 
-                "Failed to connect with SSL: " + e.getMessage());
-        }
-    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Database Operations
