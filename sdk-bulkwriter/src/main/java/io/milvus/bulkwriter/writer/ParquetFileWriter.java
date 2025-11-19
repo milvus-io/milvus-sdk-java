@@ -31,6 +31,7 @@ public class ParquetFileWriter implements FormatFileWriter {
     private String filePath;
     private MessageType messageType;
     private Map<String, CreateCollectionReq.FieldSchema> nameFieldType;
+    private Map<String, CreateCollectionReq.StructFieldSchema> nameStructFieldType;
 
     public ParquetFileWriter(CreateCollectionReq.CollectionSchema collectionSchema, String filePathPrefix) throws IOException {
         this.collectionSchema = collectionSchema;
@@ -79,6 +80,9 @@ public class ParquetFileWriter implements FormatFileWriter {
                     .build());
         }
         this.nameFieldType = nameFieldType;
+
+        this.nameStructFieldType = collectionSchema.getStructFields().stream()
+                .collect(Collectors.toMap(CreateCollectionReq.StructFieldSchema::getName, e -> e));
     }
 
     @Override
@@ -92,7 +96,11 @@ public class ParquetFileWriter implements FormatFileWriter {
                 if (value == null) {
                     continue;
                 }
-                appendGroup(group, fieldName, value, nameFieldType.get(fieldName));
+                if (nameFieldType.containsKey(fieldName)) {
+                    appendGroup(group, value, nameFieldType.get(fieldName));
+                } else if (nameStructFieldType.containsKey(fieldName)) {
+                    appendStructGroup(group, value, nameStructFieldType.get(fieldName));
+                }
             }
             writer.write(group);
         } catch (IOException e) {
@@ -111,46 +119,47 @@ public class ParquetFileWriter implements FormatFileWriter {
         this.writer.close();
     }
 
-    private void appendGroup(Group group, String paramName, Object value, CreateCollectionReq.FieldSchema field) {
+    private void appendGroup(Group group, Object value, CreateCollectionReq.FieldSchema field) {
         io.milvus.v2.common.DataType dataType = field.getDataType();
+        String fieldName = field.getName();
         switch (dataType) {
             case Int8:
             case Int16:
-                group.append(paramName, (Short) value);
+                group.append(fieldName, (Short) value);
                 break;
             case Int32:
-                group.append(paramName, (Integer) value);
+                group.append(fieldName, (Integer) value);
                 break;
             case Int64:
-                group.append(paramName, (Long) value);
+                group.append(fieldName, (Long) value);
                 break;
             case Float:
-                group.append(paramName, (Float) value);
+                group.append(fieldName, (Float) value);
                 break;
             case Double:
-                group.append(paramName, (Double) value);
+                group.append(fieldName, (Double) value);
                 break;
             case Bool:
-                group.append(paramName, (Boolean) value);
+                group.append(fieldName, (Boolean) value);
                 break;
             case VarChar:
             case String:
             case Geometry:
             case Timestamptz:
             case JSON:
-                group.append(paramName, (String) value);
+                group.append(fieldName, (String) value);
                 break;
             case FloatVector:
-                addFloatArray(group, paramName, (List<Float>) value);
+                addFloatArray(group, fieldName, (List<Float>) value);
                 break;
             case BinaryVector:
             case Float16Vector:
             case BFloat16Vector:
             case Int8Vector:
-                addBinaryVector(group, paramName, (ByteBuffer) value);
+                addBinaryVector(group, fieldName, (ByteBuffer) value);
                 break;
             case SparseFloatVector:
-                addSparseVector(group, paramName, (SortedMap<Long, Float>) value);
+                addSparseVector(group, fieldName, (SortedMap<Long, Float>) value);
                 break;
             case Array:
                 io.milvus.v2.common.DataType elementType = field.getElementType();
@@ -158,25 +167,40 @@ public class ParquetFileWriter implements FormatFileWriter {
                     case Int8:
                     case Int16:
                     case Int32:
-                        addIntArray(group, paramName, (List<Integer>) value);
+                        addIntArray(group, fieldName, (List<Integer>) value);
                         break;
                     case Int64:
-                        addLongArray(group, paramName, (List<Long>) value);
+                        addLongArray(group, fieldName, (List<Long>) value);
                         break;
                     case Float:
-                        addFloatArray(group, paramName, (List<Float>) value);
+                        addFloatArray(group, fieldName, (List<Float>) value);
                         break;
                     case Double:
-                        addDoubleArray(group, paramName, (List<Double>) value);
+                        addDoubleArray(group, fieldName, (List<Double>) value);
                         break;
                     case String:
                     case VarChar:
-                        addStringArray(group, paramName, (List<String>) value);
+                        addStringArray(group, fieldName, (List<String>) value);
                         break;
                     case Bool:
-                        addBooleanArray(group, paramName, (List<Boolean>) value);
+                        addBooleanArray(group, fieldName, (List<Boolean>) value);
                         break;
                 }
+        }
+    }
+
+    private void appendStructGroup(Group group, Object value, CreateCollectionReq.StructFieldSchema field) {
+        Group arrayGroup = group.addGroup(field.getName());
+        Group listGroup = arrayGroup.addGroup(0);
+        List<Map<String, Object>> structs = (List<Map<String, Object>>) value;
+        for (Map<String, Object> struct : structs) {
+            Group dict = listGroup.addGroup(0);
+            for (CreateCollectionReq.FieldSchema subField : field.getFields()) {
+                if (struct.containsKey(subField.getName())) {
+                    Object val = struct.get(subField.getName());
+                    appendGroup(dict, val, subField);
+                }
+            }
         }
     }
 

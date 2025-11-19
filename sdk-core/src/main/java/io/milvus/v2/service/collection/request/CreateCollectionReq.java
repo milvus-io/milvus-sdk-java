@@ -446,6 +446,15 @@ public class CreateCollectionReq {
             this.fieldSchemaList = fieldSchemaList;
         }
 
+        public CreateCollectionReq.StructFieldSchema getStructField(String fieldName) {
+            for (CreateCollectionReq.StructFieldSchema field : structFields) {
+                if (field.getName().equals(fieldName)) {
+                    return field;
+                }
+            }
+            return null;
+        }
+
         public List<CreateCollectionReq.StructFieldSchema> getStructFields() {
             return structFields;
         }
