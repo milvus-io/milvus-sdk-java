@@ -55,4 +55,16 @@ public class MilvusClientException extends RuntimeException {
     public int getLegacyServerCode() {
         return legacyServerCode;
     }
+
+    @Override
+    public String toString() {
+        String s = super.toString();
+        String codeMsg = " ErrorCode: " + errorCode.name();
+        if (serverErrCode > 0) {
+            codeMsg += (", ServerCode: " + serverErrCode);
+        } else if (legacyServerCode > 0) {
+            codeMsg += (", ServerCode: " + legacyServerCode);
+        }
+        return s + codeMsg;
+    }
 }
