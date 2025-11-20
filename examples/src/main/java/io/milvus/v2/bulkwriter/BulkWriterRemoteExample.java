@@ -48,6 +48,8 @@ import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.database.request.CreateDatabaseReq;
+import io.milvus.v2.service.database.response.ListDatabasesResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
@@ -132,6 +134,7 @@ public class BulkWriterRemoteExample {
         public static final String OBJECT_SECRET_KEY = "_your_storage_secret_key_";
     }
 
+    private static final String DATABASE_NAME = "java_sdk_db";
     private static final String SIMPLE_COLLECTION_NAME = "java_sdk_bulkwriter_simple_v2";
     private static final String ALL_TYPES_COLLECTION_NAME = "java_sdk_bulkwriter_all_v2";
     private static final Integer DIM = 512;
@@ -163,6 +166,18 @@ public class BulkWriterRemoteExample {
                 .password(PASSWORD)
                 .build());
         System.out.println("\nConnected");
+
+        ListDatabasesResp dbs = milvusClient.listDatabases();
+        if (!dbs.getDatabaseNames().contains(DATABASE_NAME)) {
+            milvusClient.createDatabase(CreateDatabaseReq.builder()
+                    .databaseName(DATABASE_NAME)
+                    .build());
+            try {
+                milvusClient.useDatabase(DATABASE_NAME);
+            } catch (Exception e) {
+                System.out.println("Unable to switch database, error: " + e);
+            }
+        }
     }
 
     private static void exampleSimpleCollection(List<BulkFileType> fileTypes) throws Exception {
@@ -460,6 +475,7 @@ public class BulkWriterRemoteExample {
         options.put("sep", "|"); // this option only take effect for CSV
         MilvusImportRequest milvusImportRequest = MilvusImportRequest.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .dbName(DATABASE_NAME)
                 .files(batchFiles)
                 .apiKey(USER_NAME + ":" + PASSWORD)
                 .options(options)
@@ -472,7 +488,9 @@ public class BulkWriterRemoteExample {
         System.out.println("Create a bulkInert task, job id: " + jobId);
 
         System.out.println("\n===================== listBulkInsertJobs() ====================");
-        MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder().collectionName(ALL_TYPES_COLLECTION_NAME)
+        MilvusListImportJobsRequest listImportJobsRequest = MilvusListImportJobsRequest.builder()
+                .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .dbName(DATABASE_NAME)
                 .apiKey(USER_NAME + ":" + PASSWORD)
                 .build();
         String listImportJobsResult = BulkImportUtils.listImportJobs(url, listImportJobsRequest);
@@ -560,11 +578,15 @@ public class BulkWriterRemoteExample {
 
         CreateCollectionReq requestCreate = CreateCollectionReq.builder()
                 .collectionName(collectionName)
+                .databaseName(DATABASE_NAME)
                 .collectionSchema(collectionSchema)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .build();
 
-        milvusClient.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+        milvusClient.dropCollection(DropCollectionReq.builder()
+                .collectionName(collectionName)
+                .databaseName(DATABASE_NAME)
+                .build());
         milvusClient.createCollection(requestCreate);
 
         System.out.printf("Collection %s created%n", collectionName);
@@ -762,11 +784,13 @@ public class BulkWriterRemoteExample {
         }
         milvusClient.createIndex(CreateIndexReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .databaseName(DATABASE_NAME)
                 .indexParams(indexes)
                 .build());
 
         milvusClient.loadCollection(LoadCollectionReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .databaseName(DATABASE_NAME)
                 .build());
     }
 
@@ -778,6 +802,7 @@ public class BulkWriterRemoteExample {
         // force the new segments to be loaded into memory.
         milvusClient.refreshLoad(RefreshLoadReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .databaseName(DATABASE_NAME)
                 .build());
         System.out.println("Collection row number: " + getCollectionRowCount());
     }
@@ -787,6 +812,7 @@ public class BulkWriterRemoteExample {
         checkMilvusClientIfExist();
         QueryReq test = QueryReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .databaseName(DATABASE_NAME)
                 .filter(expr)
                 .outputFields(outputFields)
                 .consistencyLevel(ConsistencyLevel.STRONG)
@@ -802,6 +828,7 @@ public class BulkWriterRemoteExample {
         // Get row count, set ConsistencyLevel.STRONG to sync the data to query node so that data is visible
         QueryResp countR = milvusClient.query(QueryReq.builder()
                 .collectionName(ALL_TYPES_COLLECTION_NAME)
+                .databaseName(DATABASE_NAME)
                 .filter("")
                 .outputFields(Collections.singletonList("count(*)"))
                 .consistencyLevel(ConsistencyLevel.STRONG)

@@ -22,6 +22,9 @@ package io.milvus.bulkwriter.request.list;
 public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
     private static final long serialVersionUID = 8957739122547766268L;
     private String collectionName;
+    // this parameter "dbName" will be converted to JSON and passed to server
+    // milvus http server requires "dbName", not "databaseName"
+    private String dbName;
 
     protected MilvusListImportJobsRequest() {
     }
@@ -33,6 +36,7 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
     protected MilvusListImportJobsRequest(MilvusListImportJobsRequestBuilder builder) {
         super(builder);
         this.collectionName = builder.collectionName;
+        this.dbName = builder.dbName;
     }
 
     public String getCollectionName() {
@@ -43,10 +47,19 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
         this.collectionName = collectionName;
     }
 
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
     @Override
     public String toString() {
         return "MilvusListImportJobsRequest{" +
                 "collectionName='" + collectionName + '\'' +
+                "dbName='" + dbName + '\'' +
                 '}';
     }
 
@@ -56,13 +69,20 @@ public class MilvusListImportJobsRequest extends BaseListImportJobsRequest {
 
     public static class MilvusListImportJobsRequestBuilder extends BaseListImportJobsRequestBuilder<MilvusListImportJobsRequestBuilder> {
         private String collectionName;
+        private String dbName;
 
         private MilvusListImportJobsRequestBuilder() {
             this.collectionName = "";
+            this.dbName = "";
         }
 
         public MilvusListImportJobsRequestBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public MilvusListImportJobsRequestBuilder dbName(String dbName) {
+            this.dbName = dbName;
             return this;
         }
 
