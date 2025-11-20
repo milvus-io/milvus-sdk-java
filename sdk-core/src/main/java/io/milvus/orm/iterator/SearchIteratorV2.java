@@ -186,6 +186,7 @@ public class SearchIteratorV2 {
         }
 
         // create a list with elements from 0 to targetLen, and remove the elements from cache
+        targetLen = Math.min(cache.size(), targetLen);
         List<SearchResp.SearchResult> subList = cache.subList(0, targetLen);
         List<SearchResp.SearchResult> ret = new ArrayList<>(subList);
         subList.clear();
