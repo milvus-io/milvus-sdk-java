@@ -17,26 +17,26 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.request.volume;
 
-public class CreateStageRequest {
+public class CreateVolumeRequest {
     private String projectId;
     private String regionId;
-    private String stageName;
+    private String volumeName;
 
-    public CreateStageRequest() {
+    public CreateVolumeRequest() {
     }
 
-    public CreateStageRequest(String projectId, String regionId, String stageName) {
+    public CreateVolumeRequest(String projectId, String regionId, String volumeName) {
         this.projectId = projectId;
         this.regionId = regionId;
-        this.stageName = stageName;
+        this.volumeName = volumeName;
     }
 
-    protected CreateStageRequest(CreateStageRequestBuilder builder) {
+    protected CreateVolumeRequest(CreateVolumeRequestBuilder builder) {
         this.projectId = builder.projectId;
         this.regionId = builder.regionId;
-        this.stageName = builder.stageName;
+        this.volumeName = builder.volumeName;
     }
 
     public String getProjectId() {
@@ -55,55 +55,55 @@ public class CreateStageRequest {
         this.regionId = regionId;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
+    public void setVolumeName(String volumeName) {
+        this.volumeName = volumeName;
     }
 
     @Override
     public String toString() {
-        return "CreateStageRequest{" +
+        return "CreateVolumeRequest{" +
                 "projectId='" + projectId + '\'' +
                 ", regionId='" + regionId + '\'' +
-                ", stageName='" + stageName + '\'' +
+                ", volumeName='" + volumeName + '\'' +
                 '}';
     }
 
-    public static CreateStageRequestBuilder builder() {
-        return new CreateStageRequestBuilder();
+    public static CreateVolumeRequestBuilder builder() {
+        return new CreateVolumeRequestBuilder();
     }
 
-    public static class CreateStageRequestBuilder {
+    public static class CreateVolumeRequestBuilder {
         private String projectId;
         private String regionId;
-        private String stageName;
+        private String volumeName;
 
-        private CreateStageRequestBuilder() {
+        private CreateVolumeRequestBuilder() {
             this.projectId = "";
             this.regionId = "";
-            this.stageName = "";
+            this.volumeName = "";
         }
 
-        public CreateStageRequestBuilder projectId(String projectId) {
+        public CreateVolumeRequestBuilder projectId(String projectId) {
             this.projectId = projectId;
             return this;
         }
 
-        public CreateStageRequestBuilder regionId(String regionId) {
+        public CreateVolumeRequestBuilder regionId(String regionId) {
             this.regionId = regionId;
             return this;
         }
 
-        public CreateStageRequestBuilder stageName(String stageName) {
-            this.stageName = stageName;
+        public CreateVolumeRequestBuilder volumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 
-        public CreateStageRequest build() {
-            return new CreateStageRequest(this);
+        public CreateVolumeRequest build() {
+            return new CreateVolumeRequest(this);
         }
     }
 }

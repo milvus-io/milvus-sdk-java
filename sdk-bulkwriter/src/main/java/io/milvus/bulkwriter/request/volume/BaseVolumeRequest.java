@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.request.volume;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BaseStageRequest implements Serializable {
+public class BaseVolumeRequest implements Serializable {
     private static final long serialVersionUID = 8192049841043084620L;
     /**
      * If you are calling the cloud API, this parameter needs to be filled in; otherwise, you can ignore it.
@@ -31,15 +31,15 @@ public class BaseStageRequest implements Serializable {
     private String apiKey;
     private Map<String, Object> options;
 
-    protected BaseStageRequest() {
+    protected BaseVolumeRequest() {
     }
 
-    protected BaseStageRequest(String apiKey, Map<String, Object> options) {
+    protected BaseVolumeRequest(String apiKey, Map<String, Object> options) {
         this.apiKey = apiKey;
         this.options = options;
     }
 
-    protected BaseStageRequest(BaseStageRequestBuilder<?> builder) {
+    protected BaseVolumeRequest(BaseVolumeRequestBuilder<?> builder) {
         this.apiKey = builder.apiKey;
         this.options = builder.options;
     }
@@ -62,21 +62,21 @@ public class BaseStageRequest implements Serializable {
 
     @Override
     public String toString() {
-        return "BaseStageRequest{" +
+        return "BaseVolumeRequest{" +
                 "apiKey='" + apiKey + '\'' +
                 "options=" + options +
                 '}';
     }
 
-    public static BaseStageRequestBuilder<?> builder() {
-        return new BaseStageRequestBuilder<>();
+    public static BaseVolumeRequestBuilder<?> builder() {
+        return new BaseVolumeRequestBuilder<>();
     }
 
-    public static class BaseStageRequestBuilder<T extends BaseStageRequestBuilder<T>> {
+    public static class BaseVolumeRequestBuilder<T extends BaseVolumeRequestBuilder<T>> {
         private String apiKey;
         private Map<String, Object> options;
 
-        protected BaseStageRequestBuilder() {
+        protected BaseVolumeRequestBuilder() {
             this.apiKey = "";
             this.options = new HashMap<>();
         }
@@ -91,8 +91,8 @@ public class BaseStageRequest implements Serializable {
             return (T) this;
         }
 
-        public BaseStageRequest build() {
-            return new BaseStageRequest(this);
+        public BaseVolumeRequest build() {
+            return new BaseVolumeRequest(this);
         }
     }
 }

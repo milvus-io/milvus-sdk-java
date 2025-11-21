@@ -30,9 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parameters for <code>stageBulkWriter</code> interface.
+ * Parameters for <code>volumeBulkWriter</code> interface.
  */
-public class StageBulkWriterParam {
+public class VolumeBulkWriterParam {
     private final CreateCollectionReq.CollectionSchema collectionSchema;
     private final String remotePath;
     private final long chunkSize;
@@ -41,9 +41,9 @@ public class StageBulkWriterParam {
 
     private final String cloudEndpoint;
     private final String apiKey;
-    private final String stageName;
+    private final String volumeName;
 
-    private StageBulkWriterParam(Builder builder) {
+    private VolumeBulkWriterParam(Builder builder) {
         this.collectionSchema = builder.collectionSchema;
         this.remotePath = builder.remotePath;
         this.chunkSize = builder.chunkSize;
@@ -52,7 +52,7 @@ public class StageBulkWriterParam {
 
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
-        this.stageName = builder.stageName;
+        this.volumeName = builder.volumeName;
     }
 
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
@@ -83,19 +83,19 @@ public class StageBulkWriterParam {
         return apiKey;
     }
 
-    public String getStageName() {
-        return stageName;
+    public String getVolumeName() {
+        return volumeName;
     }
 
     @Override
     public String toString() {
-        return "StageBulkWriterParam{" +
+        return "VolumeBulkWriterParam{" +
                 "collectionSchema=" + collectionSchema +
                 ", remotePath='" + remotePath + '\'' +
                 ", chunkSize=" + chunkSize +
                 ", fileType=" + fileType +
                 ", cloudEndpoint='" + cloudEndpoint + '\'' +
-                ", stageName='" + stageName + '\'' +
+                ", volumeName='" + volumeName + '\'' +
                 '}';
     }
 
@@ -104,7 +104,7 @@ public class StageBulkWriterParam {
     }
 
     /**
-     * Builder for {@link StageBulkWriterParam} class.
+     * Builder for {@link VolumeBulkWriterParam} class.
      */
     public static final class Builder {
         private CreateCollectionReq.CollectionSchema collectionSchema;
@@ -116,7 +116,7 @@ public class StageBulkWriterParam {
         private String cloudEndpoint;
         private String apiKey;
 
-        private String stageName;
+        private String volumeName;
 
         private Builder() {
         }
@@ -179,24 +179,24 @@ public class StageBulkWriterParam {
             return this;
         }
 
-        public Builder withStageName(String stageName) {
-            this.stageName = stageName;
+        public Builder withVolumeName(String volumeName) {
+            this.volumeName = volumeName;
             return this;
         }
 
         /**
-         * Verifies parameters and creates a new {@link StageBulkWriterParam} instance.
+         * Verifies parameters and creates a new {@link VolumeBulkWriterParam} instance.
          *
-         * @return {@link StageBulkWriterParam}
+         * @return {@link VolumeBulkWriterParam}
          */
-        public StageBulkWriterParam build() throws ParamException {
+        public VolumeBulkWriterParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(remotePath, "localPath");
 
             if (collectionSchema == null) {
                 throw new ParamException("collectionSchema cannot be null");
             }
 
-            return new StageBulkWriterParam(this);
+            return new VolumeBulkWriterParam(this);
         }
     }
 

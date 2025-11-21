@@ -17,32 +17,32 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.response.stage;
+package io.milvus.bulkwriter.response.volume;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListStagesResponse {
+public class ListVolumesResponse {
     private Integer count;
     private Integer currentPage;
     private Integer pageSize;
-    private List<StageInfo> stages;
+    private List<VolumeInfo> volumes;
 
-    public ListStagesResponse() {
+    public ListVolumesResponse() {
     }
 
-    public ListStagesResponse(Integer count, Integer currentPage, Integer pageSize, List<StageInfo> stages) {
+    public ListVolumesResponse(Integer count, Integer currentPage, Integer pageSize, List<VolumeInfo> volumes) {
         this.count = count;
         this.currentPage = currentPage;
         this.pageSize = pageSize;
-        this.stages = stages;
+        this.volumes = volumes;
     }
 
-    private ListStagesResponse(ListStagesResponseBuilder builder) {
+    private ListVolumesResponse(ListVolumesResponseBuilder builder) {
         this.count = builder.count;
         this.currentPage = builder.currentPage;
         this.pageSize = builder.pageSize;
-        this.stages = builder.stages;
+        this.volumes = builder.volumes;
     }
 
     public Integer getCount() {
@@ -69,62 +69,62 @@ public class ListStagesResponse {
         this.pageSize = pageSize;
     }
 
-    public List<StageInfo> getStages() {
-        return stages;
+    public List<VolumeInfo> getVolumes() {
+        return volumes;
     }
 
-    public void setStages(List<StageInfo> stages) {
-        this.stages = stages;
+    public void setVolumes(List<VolumeInfo> volumes) {
+        this.volumes = volumes;
     }
 
     @Override
     public String toString() {
-        return "ListStagesResponse{" +
+        return "ListVolumesResponse{" +
                 ", count=" + count +
                 ", currentPage=" + currentPage +
                 ", pageSize=" + pageSize +
                 '}';
     }
 
-    public static ListStagesResponseBuilder builder() {
-        return new ListStagesResponseBuilder();
+    public static ListVolumesResponseBuilder builder() {
+        return new ListVolumesResponseBuilder();
     }
 
-    public static class ListStagesResponseBuilder {
+    public static class ListVolumesResponseBuilder {
         private Integer count;
         private Integer currentPage;
         private Integer pageSize;
-        private List<StageInfo> stages;
+        private List<VolumeInfo> volumes;
 
-        private ListStagesResponseBuilder() {
+        private ListVolumesResponseBuilder() {
             this.count = 0;
             this.currentPage = 0;
             this.pageSize = 0;
-            this.stages = new ArrayList<>();
+            this.volumes = new ArrayList<>();
         }
 
-        public ListStagesResponseBuilder count(Integer count) {
+        public ListVolumesResponseBuilder count(Integer count) {
             this.count = count;
             return this;
         }
 
-        public ListStagesResponseBuilder currentPage(Integer currentPage) {
+        public ListVolumesResponseBuilder currentPage(Integer currentPage) {
             this.currentPage = currentPage;
             return this;
         }
 
-        public ListStagesResponseBuilder pageSize(Integer pageSize) {
+        public ListVolumesResponseBuilder pageSize(Integer pageSize) {
             this.pageSize = pageSize;
             return this;
         }
 
-        public ListStagesResponseBuilder stages(List<StageInfo> stages) {
-            this.stages = stages;
+        public ListVolumesResponseBuilder volumes(List<VolumeInfo> volumes) {
+            this.volumes = volumes;
             return this;
         }
 
-        public ListStagesResponse build() {
-            return new ListStagesResponse(this);
+        public ListVolumesResponse build() {
+            return new ListVolumesResponse(this);
         }
     }
 }
