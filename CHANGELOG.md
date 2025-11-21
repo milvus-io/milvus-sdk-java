@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.6.8 (2025-11-21)
+### Improvement
+- Adding exception handling on connection for MilvusClientV2
+- BulkWriter supports Struct/Geometry field
+- Add db_name parameter for listImportJobs()
+
+### Bug
+- Fox a OutOfBound bug for SearchIteratorV2
+
 ## milvus-sdk-java 2.6.7 (2025-11-03)
 ### Improvement
 - Remove Lombok dependency
