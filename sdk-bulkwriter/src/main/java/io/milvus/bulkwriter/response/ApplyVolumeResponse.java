@@ -316,6 +316,7 @@ public class ApplyVolumeResponse implements Serializable {
     public static class Condition implements Serializable {
         private static final long serialVersionUID = -2613029991242322109L;
         private Long maxContentLength;
+        private Long maxFileNumber;
 
         public Condition() {
         }
@@ -332,6 +333,10 @@ public class ApplyVolumeResponse implements Serializable {
             return maxContentLength;
         }
 
+        public Long getMaxFileNumber() {
+            return maxFileNumber;
+        }
+
         public void setMaxContentLength(Long maxContentLength) {
             this.maxContentLength = maxContentLength;
         }
@@ -340,6 +345,7 @@ public class ApplyVolumeResponse implements Serializable {
         public String toString() {
             return "Condition{" +
                     ", maxContentLength=" + maxContentLength +
+                    ", maxFileNumber=" + maxFileNumber +
                     '}';
         }
 

@@ -149,10 +149,26 @@ public class VolumeFileManager {
     }
 
     private void initValidator(Pair<List<String>, Long> localPathPair) {
-        if (localPathPair.getValue() > applyVolumeResponse.getCondition().getMaxContentLength()) {
-            String msg = String.format("localFileTotalSize %s exceeds the maximum contentLength limit %s defined in the condition. If you want to upload larger files, please contact us to lift the restriction", localPathPair.getValue(), applyVolumeResponse.getCondition().getMaxContentLength());
+        Long maxContentLength = applyVolumeResponse.getCondition().getMaxContentLength();
+        Long uploadFileContentLength = localPathPair.getValue();
+        if (uploadFileContentLength > maxContentLength) {
+            String msg = String.format("localFileTotalSize %s exceeds the maximum contentLength limit %s defined in the condition. If you are using the free tier, you may switch to the pay-as-you-go volume plan to support uploading larger files.",
+                    uploadFileContentLength, maxContentLength);
             logger.error(msg);
             throw new ParamException(msg);
+        }
+
+        Long maxFileNumber = applyVolumeResponse.getCondition().getMaxFileNumber();
+        int uploadFileNumber = localPathPair.getKey().size();
+        if (maxFileNumber != null) {
+            if (uploadFileNumber > maxFileNumber) {
+                String msg = String.format(
+                        "localFileTotalNumber %s exceeds the maximum fileNumber limit %s defined in the condition. If you are using the free tier, you may switch to the pay-as-you-go volume plan to support uploading more files.",
+                        uploadFileNumber, maxFileNumber
+                );
+                logger.error(msg);
+                throw new ParamException(msg);
+            }
         }
     }
 
