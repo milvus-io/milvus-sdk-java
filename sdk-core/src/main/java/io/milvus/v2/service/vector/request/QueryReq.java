@@ -186,7 +186,7 @@ public class QueryReq {
                 ", ignoreGrowing=" + ignoreGrowing +
                 ", timezone='" + timezone + '\'' +
                 ", queryParams=" + queryParams +
-                ", filterTemplateValues=" + filterTemplateValues +
+//                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
 

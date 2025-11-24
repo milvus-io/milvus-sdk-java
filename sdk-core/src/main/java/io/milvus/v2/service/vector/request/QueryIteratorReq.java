@@ -3,7 +3,9 @@ package io.milvus.v2.service.vector.request;
 import com.google.common.collect.Lists;
 import io.milvus.v2.common.ConsistencyLevel;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class QueryIteratorReq {
     private String databaseName;
@@ -15,8 +17,19 @@ public class QueryIteratorReq {
     private long offset;
     private long limit;
     private boolean ignoreGrowing;
+    private String timezone;
     private long batchSize;
     private boolean reduceStopForBest;
+
+    // Expression template, to improve expression parsing performance in complicated list
+    // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
+    // The long list of city will increase the time cost to parse this expression.
+    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    //     filter = "pk > {age} and city in {city}"
+    //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
+    // Valid value of this map can be:
+    //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
+    private Map<String, Object> filterTemplateValues;
 
     private QueryIteratorReq(QueryIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
@@ -28,8 +41,10 @@ public class QueryIteratorReq {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.timezone = builder.timezone;
         this.batchSize = builder.batchSize;
         this.reduceStopForBest = builder.reduceStopForBest;
+        this.filterTemplateValues = builder.filterTemplateValues;
     }
 
     public static QueryIteratorReqBuilder builder() {
@@ -108,6 +123,10 @@ public class QueryIteratorReq {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     public long getBatchSize() {
         return batchSize;
     }
@@ -124,6 +143,10 @@ public class QueryIteratorReq {
         this.reduceStopForBest = reduceStopForBest;
     }
 
+    public Map<String, Object> getFilterTemplateValues() {
+        return filterTemplateValues;
+    }
+
     @Override
     public String toString() {
         return "QueryIteratorReq{" +
@@ -136,6 +159,7 @@ public class QueryIteratorReq {
                 ", offset=" + offset +
                 ", limit=" + limit +
                 ", ignoreGrowing=" + ignoreGrowing +
+                ", timezone='" + timezone + '\'' +
                 ", batchSize=" + batchSize +
                 ", reduceStopForBest=" + reduceStopForBest +
                 '}';
@@ -151,8 +175,10 @@ public class QueryIteratorReq {
         private long offset = 0;
         private long limit = -1;
         private boolean ignoreGrowing = false;
+        private String timezone = "";
         private long batchSize = 1000L;
         private boolean reduceStopForBest = false;
+        private Map<String, Object> filterTemplateValues = new HashMap<>();
 
         public QueryIteratorReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -199,6 +225,11 @@ public class QueryIteratorReq {
             return this;
         }
 
+        public QueryIteratorReqBuilder timezone(String timezone) {
+            this.timezone = timezone;
+            return this;
+        }
+
         public QueryIteratorReqBuilder batchSize(long batchSize) {
             this.batchSize = batchSize;
             return this;
@@ -206,6 +237,11 @@ public class QueryIteratorReq {
 
         public QueryIteratorReqBuilder reduceStopForBest(boolean reduceStopForBest) {
             this.reduceStopForBest = reduceStopForBest;
+            return this;
+        }
+
+        public QueryIteratorReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+            this.filterTemplateValues = filterTemplateValues;
             return this;
         }
 

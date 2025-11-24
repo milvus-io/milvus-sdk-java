@@ -501,6 +501,10 @@ public class VectorUtils {
         builder.setDslType(DslType.BoolExprV1);
         if (annSearchReq.getExpr() != null && !annSearchReq.getExpr().isEmpty()) {
             builder.setDsl(annSearchReq.getExpr());
+            Map<String, Object> filterTemplateValues = annSearchReq.getFilterTemplateValues();
+            filterTemplateValues.forEach((key, value) -> {
+                builder.putExprTemplateValues(key, deduceAndCreateTemplateValue(value));
+            });
         }
 
         if (consistencyLevel == null) {
