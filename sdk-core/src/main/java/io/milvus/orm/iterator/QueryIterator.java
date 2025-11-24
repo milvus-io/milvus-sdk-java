@@ -21,14 +21,14 @@ package io.milvus.orm.iterator;
 
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
-import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.QueryIteratorParam;
-import io.milvus.param.dml.QueryParam;
 import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.QueryIteratorReq;
+import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.utils.RpcUtils;
+import io.milvus.v2.utils.VectorUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class QueryIterator {
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
     private final FieldType primaryField;
 
-    private final QueryIteratorParam queryIteratorParam;
+    private final QueryIteratorReq queryIteratorReq;
     private final int batchSize;
     private final long limit;
     private final String expr;
@@ -61,7 +61,7 @@ public class QueryIterator {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         this.primaryField = primaryField;
-        this.queryIteratorParam = queryIteratorParam;
+        this.queryIteratorReq = IteratorAdapterV2.convertV1Param(queryIteratorParam);
 
         this.batchSize = (int) queryIteratorParam.getBatchSize();
         this.expr = queryIteratorParam.getExpr();
@@ -78,15 +78,14 @@ public class QueryIterator {
                          CreateCollectionReq.FieldSchema primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
-        IteratorAdapterV2 adapter = new IteratorAdapterV2();
-        this.queryIteratorParam = adapter.convertV2Req(queryIteratorReq);
-        this.primaryField = adapter.convertV2Field(primaryField);
+        this.queryIteratorReq = queryIteratorReq;
+        this.primaryField = IteratorAdapterV2.convertV2Field(primaryField);
 
 
-        this.batchSize = (int) queryIteratorParam.getBatchSize();
-        this.expr = queryIteratorParam.getExpr();
-        this.limit = queryIteratorParam.getLimit();
-        this.offset = queryIteratorParam.getOffset();
+        this.batchSize = (int) queryIteratorReq.getBatchSize();
+        this.expr = queryIteratorReq.getExpr();
+        this.limit = queryIteratorReq.getLimit();
+        this.offset = queryIteratorReq.getOffset();
         this.rpcUtils = new RpcUtils();
 
         setupTsByRequest();
@@ -208,24 +207,27 @@ public class QueryIterator {
     private QueryResults executeQuery(String expr, long offset, long limit, long ts, boolean isSeek) {
         // for seeking offset, no need to return output fields
         List<String> outputFields = new ArrayList<>();
-        boolean reduceStopForBest = queryIteratorParam.isReduceStopForBest();
+        boolean reduceStopForBest = queryIteratorReq.isReduceStopForBest();
         if (!isSeek) {
-            outputFields = queryIteratorParam.getOutFields();
+            outputFields = queryIteratorReq.getOutputFields();
             reduceStopForBest = false;
         }
-        QueryParam queryParam = QueryParam.newBuilder()
-                .withDatabaseName(queryIteratorParam.getDatabaseName())
-                .withCollectionName(queryIteratorParam.getCollectionName())
-                .withConsistencyLevel(queryIteratorParam.getConsistencyLevel())
-                .withPartitionNames(queryIteratorParam.getPartitionNames())
-                .withOutFields(outputFields)
-                .withExpr(expr)
-                .withOffset(offset)
-                .withLimit(limit)
-                .withIgnoreGrowing(queryIteratorParam.isIgnoreGrowing())
+        QueryReq queryReq = QueryReq.builder()
+                .databaseName(queryIteratorReq.getDatabaseName())
+                .collectionName(queryIteratorReq.getCollectionName())
+                .partitionNames(queryIteratorReq.getPartitionNames())
+                .consistencyLevel(queryIteratorReq.getConsistencyLevel())
+                .outputFields(outputFields)
+                .filter(expr)
+                .offset(offset)
+                .limit(limit)
+                .ignoreGrowing(queryIteratorReq.isIgnoreGrowing())
+                .timezone(queryIteratorReq.getTimezone())
+                .filterTemplateValues(queryIteratorReq.getFilterTemplateValues())
                 .build();
 
-        QueryRequest queryRequest = ParamUtils.convertQueryParam(queryParam);
+        VectorUtils vectorUtils = new VectorUtils();
+        QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(queryReq);
         QueryRequest.Builder builder = queryRequest.toBuilder();
         // reduce stop for best
         builder.addQueryParams(KeyValuePair.newBuilder()
@@ -246,7 +248,7 @@ public class QueryIterator {
         builder.setUseDefaultConsistency(true);
 
         QueryResults response = rpcUtils.retry(() -> blockingStub.query(builder.build()));
-        String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
+        String title = String.format("QueryRequest collectionName:%s", queryIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
     }
