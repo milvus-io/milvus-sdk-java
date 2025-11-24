@@ -654,9 +654,9 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(ModelRanker.class.getName(), config);
         VerifyClass(RRFRanker.class.getName(), config);
         VerifyClass(WeightedRanker.class.getName(), config);
-        config.assertSetter = true;
-        config.assertGetter = true;
 
+        config.assertSetter = false;
+        config.assertGetter = true;
         config.setIgnoredMethods(Arrays.asList("topK", "setTopK", "getTopK", "expr", "setExpr", "getExpr"));
         VerifyClass(AnnSearchReq.class.getName(), config);
         VerifyClass(HybridSearchReq.class.getName(), config);

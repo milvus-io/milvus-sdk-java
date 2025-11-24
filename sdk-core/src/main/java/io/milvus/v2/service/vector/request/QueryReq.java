@@ -34,6 +34,7 @@ public class QueryReq {
     private long offset;
     private long limit;
     private boolean ignoreGrowing;
+    private String timezone;
 
     // Extra parameters for query, timezone, time_fields, etc.
     // Make sure the value can be converted to String by String.valueOf().
@@ -63,6 +64,7 @@ public class QueryReq {
         this.ignoreGrowing = builder.ignoreGrowing;
         this.queryParams = builder.queryParams;
         this.filterTemplateValues = builder.filterTemplateValues;
+        this.timezone = builder.timezone;
     }
 
     public static QueryReqBuilder builder() {
@@ -149,6 +151,10 @@ public class QueryReq {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     public Map<String, Object> getQueryParams() {
         return queryParams;
     }
@@ -178,6 +184,7 @@ public class QueryReq {
                 ", offset=" + offset +
                 ", limit=" + limit +
                 ", ignoreGrowing=" + ignoreGrowing +
+                ", timezone='" + timezone + '\'' +
                 ", queryParams=" + queryParams +
                 ", filterTemplateValues=" + filterTemplateValues +
                 '}';
@@ -194,6 +201,7 @@ public class QueryReq {
         private long offset;
         private long limit;
         private boolean ignoreGrowing;
+        private String timezone = "";
         private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
@@ -244,6 +252,11 @@ public class QueryReq {
 
         public QueryReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        public QueryReqBuilder timezone(String timezone) {
+            this.timezone = timezone;
             return this;
         }
 

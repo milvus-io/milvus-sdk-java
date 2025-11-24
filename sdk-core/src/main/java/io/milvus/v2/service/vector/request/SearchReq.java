@@ -48,6 +48,7 @@ public class SearchReq {
     private Long gracefulTime; // deprecated
     private ConsistencyLevel consistencyLevel;
     private boolean ignoreGrowing;
+    private String timezone;
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
@@ -92,6 +93,7 @@ public class SearchReq {
         this.ranker = builder.ranker;
         this.functionScore = builder.functionScore;
         this.filterTemplateValues = builder.filterTemplateValues;
+        this.timezone = builder.timezone;
     }
 
     // Getters and Setters
@@ -235,6 +237,10 @@ public class SearchReq {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -303,6 +309,7 @@ public class SearchReq {
                 ", gracefulTime=" + gracefulTime +
                 ", consistencyLevel=" + consistencyLevel +
                 ", ignoreGrowing=" + ignoreGrowing +
+                ", timezone='" + timezone + '\'' +
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", groupSize=" + groupSize +
                 ", strictGroupSize=" + strictGroupSize +
@@ -334,6 +341,7 @@ public class SearchReq {
         private Long gracefulTime = 5000L; // default value, deprecated
         private ConsistencyLevel consistencyLevel = null; // default value
         private boolean ignoreGrowing;
+        private String timezone = "";
         private String groupByFieldName;
         private Integer groupSize;
         private Boolean strictGroupSize;
@@ -430,6 +438,11 @@ public class SearchReq {
 
         public SearchReqBuilder ignoreGrowing(boolean ignoreGrowing) {
             this.ignoreGrowing = ignoreGrowing;
+            return this;
+        }
+
+        public SearchReqBuilder timezone(String timezone) {
+            this.timezone = timezone;
             return this;
         }
 

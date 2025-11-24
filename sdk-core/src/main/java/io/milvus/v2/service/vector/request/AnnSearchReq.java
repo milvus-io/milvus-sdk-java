@@ -35,6 +35,7 @@ public class AnnSearchReq {
     private List<BaseVector> vectors;
     private String params;
     private IndexParam.MetricType metricType;
+    private String timezone;
 
     private AnnSearchReq(AnnSearchReqBuilder builder) {
         this.vectorFieldName = builder.vectorFieldName;
@@ -45,6 +46,7 @@ public class AnnSearchReq {
         this.vectors = builder.vectors;
         this.params = builder.params;
         this.metricType = builder.metricType;
+        this.timezone = builder.timezone;
     }
 
     public static AnnSearchReqBuilder builder() {
@@ -123,6 +125,10 @@ public class AnnSearchReq {
         this.metricType = metricType;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     @Override
     public String toString() {
         return "AnnSearchReq{" +
@@ -134,6 +140,7 @@ public class AnnSearchReq {
                 ", vectors=" + vectors +
                 ", params='" + params + '\'' +
                 ", metricType=" + metricType +
+                ", timezone='" + timezone + '\'' +
                 '}';
     }
 
@@ -146,6 +153,7 @@ public class AnnSearchReq {
         private List<BaseVector> vectors;
         private String params;
         private IndexParam.MetricType metricType = null;
+        private String timezone = "";
 
         public AnnSearchReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
@@ -192,6 +200,11 @@ public class AnnSearchReq {
 
         public AnnSearchReqBuilder metricType(IndexParam.MetricType metricType) {
             this.metricType = metricType;
+            return this;
+        }
+
+        public AnnSearchReqBuilder timezone(String timezone) {
+            this.timezone = timezone;
             return this;
         }
 
