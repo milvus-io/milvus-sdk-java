@@ -28,9 +28,20 @@ public class SearchIteratorReqV2 {
     private Map<String, Object> searchParams;
     private ConsistencyLevel consistencyLevel;
     private boolean ignoreGrowing;
+    private String timezone;
     private String groupByFieldName;
     private long batchSize;
     private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc;
+
+    // Expression template, to improve expression parsing performance in complicated list
+    // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
+    // The long list of city will increase the time cost to parse this expression.
+    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    //     filter = "pk > {age} and city in {city}"
+    //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
+    // Valid value of this map can be:
+    //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
+    private Map<String, Object> filterTemplateValues;
 
     private SearchIteratorReqV2(SearchIteratorReqV2Builder builder) {
         this.databaseName = builder.databaseName;
@@ -47,9 +58,11 @@ public class SearchIteratorReqV2 {
         this.searchParams = builder.searchParams;
         this.consistencyLevel = builder.consistencyLevel;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.timezone = builder.timezone;
         this.groupByFieldName = builder.groupByFieldName;
         this.batchSize = builder.batchSize;
         this.externalFilterFunc = builder.externalFilterFunc;
+        this.filterTemplateValues = builder.filterTemplateValues;
     }
 
     public static SearchIteratorReqV2Builder builder() {
@@ -172,6 +185,10 @@ public class SearchIteratorReqV2 {
         this.ignoreGrowing = ignoreGrowing;
     }
 
+    public String getTimezone() {
+        return timezone;
+    }
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -196,6 +213,10 @@ public class SearchIteratorReqV2 {
         this.externalFilterFunc = externalFilterFunc;
     }
 
+    public Map<String, Object> getFilterTemplateValues() {
+        return filterTemplateValues;
+    }
+
     @Override
     public String toString() {
         return "SearchIteratorReqV2{" +
@@ -213,6 +234,7 @@ public class SearchIteratorReqV2 {
                 ", searchParams=" + searchParams +
                 ", consistencyLevel=" + consistencyLevel +
                 ", ignoreGrowing=" + ignoreGrowing +
+                ", timezone='" + timezone + '\'' +
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", batchSize=" + batchSize +
                 ", externalFilterFunc=" + externalFilterFunc +
@@ -234,9 +256,11 @@ public class SearchIteratorReqV2 {
         private Map<String, Object> searchParams = new HashMap<>();
         private ConsistencyLevel consistencyLevel = null;
         private boolean ignoreGrowing = false;
+        private String timezone = "";
         private String groupByFieldName = "";
         private long batchSize = 1000L;
         private Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = null;
+        private Map<String, Object> filterTemplateValues = new HashMap<>();
 
         public SearchIteratorReqV2Builder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -312,6 +336,11 @@ public class SearchIteratorReqV2 {
             return this;
         }
 
+        public SearchIteratorReqV2Builder timezone(String timezone) {
+            this.timezone = timezone;
+            return this;
+        }
+
         public SearchIteratorReqV2Builder groupByFieldName(String groupByFieldName) {
             this.groupByFieldName = groupByFieldName;
             return this;
@@ -324,6 +353,11 @@ public class SearchIteratorReqV2 {
 
         public SearchIteratorReqV2Builder externalFilterFunc(Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc) {
             this.externalFilterFunc = externalFilterFunc;
+            return this;
+        }
+
+        public SearchIteratorReqV2Builder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+            this.filterTemplateValues = filterTemplateValues;
             return this;
         }
 

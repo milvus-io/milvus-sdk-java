@@ -22,7 +22,9 @@ package io.milvus.v2.service.vector.request;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AnnSearchReq {
     private String vectorFieldName;
@@ -37,6 +39,16 @@ public class AnnSearchReq {
     private IndexParam.MetricType metricType;
     private String timezone;
 
+    // Expression template, to improve expression parsing performance in complicated list
+    // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
+    // The long list of city will increase the time cost to parse this expression.
+    // So, we provide exprTemplateValues for this purpose, user can set filter like this:
+    //     filter = "pk > {age} and city in {city}"
+    //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
+    // Valid value of this map can be:
+    //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
+    private Map<String, Object> filterTemplateValues;
+
     private AnnSearchReq(AnnSearchReqBuilder builder) {
         this.vectorFieldName = builder.vectorFieldName;
         this.topK = builder.topK;
@@ -47,6 +59,7 @@ public class AnnSearchReq {
         this.params = builder.params;
         this.metricType = builder.metricType;
         this.timezone = builder.timezone;
+        this.filterTemplateValues = builder.filterTemplateValues;
     }
 
     public static AnnSearchReqBuilder builder() {
@@ -129,6 +142,10 @@ public class AnnSearchReq {
         return timezone;
     }
 
+    public Map<String, Object> getFilterTemplateValues() {
+        return filterTemplateValues;
+    }
+
     @Override
     public String toString() {
         return "AnnSearchReq{" +
@@ -141,6 +158,7 @@ public class AnnSearchReq {
                 ", params='" + params + '\'' +
                 ", metricType=" + metricType +
                 ", timezone='" + timezone + '\'' +
+//                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
 
@@ -154,6 +172,7 @@ public class AnnSearchReq {
         private String params;
         private IndexParam.MetricType metricType = null;
         private String timezone = "";
+        private Map<String, Object> filterTemplateValues = new HashMap<>();
 
         public AnnSearchReqBuilder vectorFieldName(String vectorFieldName) {
             this.vectorFieldName = vectorFieldName;
@@ -205,6 +224,11 @@ public class AnnSearchReq {
 
         public AnnSearchReqBuilder timezone(String timezone) {
             this.timezone = timezone;
+            return this;
+        }
+
+        public AnnSearchReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
+            this.filterTemplateValues = filterTemplateValues;
             return this;
         }
 

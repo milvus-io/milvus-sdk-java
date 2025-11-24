@@ -27,11 +27,13 @@ import io.milvus.param.MetricType;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.QueryIteratorParam;
 import io.milvus.param.dml.SearchIteratorParam;
+import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.QueryIteratorReq;
 import io.milvus.v2.service.vector.request.SearchIteratorReq;
-import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -57,6 +59,27 @@ public class IteratorAdapterV2 {
         }
 
         return builder.build();
+    }
+
+    public static QueryIteratorReq convertV1Param(QueryIteratorParam param) {
+        ConsistencyLevel level = null;
+        if (param.getConsistencyLevel() != null) {
+            level = ConsistencyLevel.valueOf(param.getConsistencyLevel().name());
+        }
+
+        return QueryIteratorReq.builder()
+                .databaseName(param.getDatabaseName())
+                .collectionName(param.getCollectionName())
+                .partitionNames(param.getPartitionNames())
+                .expr(param.getExpr())
+                .outputFields(param.getOutFields())
+                .offset(param.getOffset())
+                .limit(param.getLimit())
+                .ignoreGrowing(param.isIgnoreGrowing())
+                .batchSize(param.getBatchSize())
+                .reduceStopForBest(param.isReduceStopForBest())
+                .consistencyLevel(level)
+                .build();
     }
 
     public static SearchIteratorParam convertV2Req(SearchIteratorReq searchIteratorReq) {
@@ -128,6 +151,67 @@ public class IteratorAdapterV2 {
         }
 
         return builder.build();
+    }
+
+    public static SearchIteratorReq convertV1Param(SearchIteratorParam param) {
+        ConsistencyLevel level = null;
+        if (param.getConsistencyLevel() != null) {
+            level = ConsistencyLevel.valueOf(param.getConsistencyLevel().name());
+        }
+
+        IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
+        if (StringUtils.isEmpty(param.getMetricType())) {
+            metricType = IndexParam.MetricType.valueOf(param.getMetricType());
+        }
+
+        List<BaseVector> vectors = new ArrayList<>();
+        switch (param.getPlType()) {
+            case FloatVector: {
+                List<List<Float>> data = (List<List<Float>>) param.getVectors();
+                data.forEach(vector -> vectors.add(new FloatVec(vector)));
+                break;
+            }
+            case BinaryVector: {
+                List<ByteBuffer> data = (List<ByteBuffer>) param.getVectors();
+                data.forEach(vector -> vectors.add(new BinaryVec(vector)));
+                break;
+            }
+            case Float16Vector: {
+                List<ByteBuffer> data = (List<ByteBuffer>) param.getVectors();
+                data.forEach(vector -> vectors.add(new Float16Vec(vector)));
+                break;
+            }
+            case BFloat16Vector: {
+                List<ByteBuffer> data = (List<ByteBuffer>) param.getVectors();
+                data.forEach(vector -> vectors.add(new BFloat16Vec(vector)));
+                break;
+            }
+            case SparseFloatVector: {
+                List<SortedMap<Long, Float>> data = (List<SortedMap<Long, Float>>) param.getVectors();
+                data.forEach(vector -> vectors.add(new SparseFloatVec(vector)));
+                break;
+            }
+            default:
+                throw new ParamException("Unsupported vector type.");
+        }
+
+        return SearchIteratorReq.builder()
+                .databaseName(param.getDatabaseName())
+                .collectionName(param.getCollectionName())
+                .partitionNames(param.getPartitionNames())
+                .vectorFieldName(param.getVectorFieldName())
+                .vectors(vectors)
+                .consistencyLevel(level)
+                .metricType(metricType)
+                .limit(param.getTopK())
+                .expr(param.getExpr())
+                .outputFields(param.getOutFields())
+                .roundDecimal(param.getRoundDecimal())
+                .params(param.getParams())
+                .groupByFieldName(param.getGroupByFieldName())
+                .ignoreGrowing(param.isIgnoreGrowing())
+                .batchSize(param.getBatchSize())
+                .build();
     }
 
     public static FieldType convertV2Field(CreateCollectionReq.FieldSchema schema) {

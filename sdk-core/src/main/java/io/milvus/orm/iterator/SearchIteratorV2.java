@@ -42,7 +42,7 @@ import static io.milvus.param.Constant.MAX_BATCH_SIZE;
 import static io.milvus.param.Constant.UNLIMITED;
 
 public class SearchIteratorV2 {
-    private static final Logger logger = LoggerFactory.getLogger(SearchIterator.class);
+    private static final Logger logger = LoggerFactory.getLogger(SearchIteratorV2.class);
     private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
 
     private final SearchIteratorReqV2 searchIteratorReq;
@@ -86,12 +86,12 @@ public class SearchIteratorV2 {
         int rows = searchIteratorReq.getVectors().size();
         if (rows > 1) {
             ExceptionUtils.throwUnExpectedException("SearchIterator does not support processing multiple vectors simultaneously");
-        } else if (rows <= 0) {
+        } else if (rows == 0) {
             ExceptionUtils.throwUnExpectedException("The vector data for search cannot be empty");
         }
 
-        if (searchIteratorReq.getTopK() != UNLIMITED) {
-            this.leftResCnt = searchIteratorReq.getTopK();
+        if (searchIteratorReq.getLimit() != UNLIMITED) {
+            this.leftResCnt = (int) searchIteratorReq.getLimit();
         }
     }
 
@@ -117,15 +117,17 @@ public class SearchIteratorV2 {
                 .databaseName(searchIteratorReq.getDatabaseName())
                 .annsField(searchIteratorReq.getVectorFieldName())
                 .data(searchIteratorReq.getVectors())
-                .topK(limit)
+                .limit(limit)
                 .filter(searchIteratorReq.getFilter())
                 .consistencyLevel(searchIteratorReq.getConsistencyLevel())
                 .outputFields(searchIteratorReq.getOutputFields())
                 .roundDecimal(searchIteratorReq.getRoundDecimal())
                 .searchParams(searchParams)
                 .metricType(searchIteratorReq.getMetricType())
+                .timezone(searchIteratorReq.getTimezone())
                 .ignoreGrowing(searchIteratorReq.isIgnoreGrowing())
                 .groupByFieldName(searchIteratorReq.getGroupByFieldName())
+                .filterTemplateValues(searchIteratorReq.getFilterTemplateValues())
                 .build();
         SearchRequest searchRequest = new VectorUtils().ConvertToGrpcSearchRequest(request);
         SearchResults response = rpcUtils.retry(() -> this.blockingStub.search(searchRequest));

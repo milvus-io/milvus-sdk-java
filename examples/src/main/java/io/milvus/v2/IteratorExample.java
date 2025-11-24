@@ -160,6 +160,44 @@ public class IteratorExample {
         System.out.printf("%d query results returned%n", counter);
     }
 
+    private static void queryIteratorWithTemplate(int batchSize) {
+        System.out.println("\n========== queryIterator() ==========");
+        List<Long> ids = new ArrayList<>();
+        for (long i = 500L; i < 600L; i++) {
+            ids.add(i);
+        }
+        Map<String, Object> template = new HashMap<>();
+        template.put("my_ids", ids);
+
+        String filter = ID_FIELD + " in {my_ids}";
+        QueryIterator queryIterator = client.queryIterator(QueryIteratorReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .expr(filter)
+                .outputFields(Lists.newArrayList(ID_FIELD, AGE_FIELD))
+                .batchSize(batchSize)
+                .filterTemplateValues(template)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+
+        System.out.println("QueryIterator with filter template results:");
+        int counter = 0;
+        while (true) {
+            List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
+            if (res.isEmpty()) {
+                System.out.println("query iteration finished, close");
+                queryIterator.close();
+                break;
+            }
+
+            for (QueryResultsWrapper.RowRecord record : res) {
+                System.out.println(record);
+                counter++;
+            }
+        }
+        System.out.printf("%d query results returned%n", counter);
+    }
+
+
     // Search iterator V1
     private static void searchIteratorV1(String expr, String params, int batchSize, int topK) {
         System.out.println("\n========== searchIteratorV1() ==========");
@@ -235,9 +273,51 @@ public class IteratorExample {
         System.out.printf("%d search results returned\n%n", counter);
     }
 
+    private static void searchIteratorV2WithTemplate(int batchSize) {
+        System.out.println("\n========== searchIteratorV2() ==========");
+        List<Long> ids = new ArrayList<>();
+        for (long i = 500L; i < 600L; i++) {
+            ids.add(i);
+        }
+        Map<String, Object> template = new HashMap<>();
+        template.put("my_ids", ids);
+
+        String filter = ID_FIELD + " in {my_ids}";
+        SearchIteratorV2 searchIterator = client.searchIteratorV2(SearchIteratorReqV2.builder()
+                .collectionName(COLLECTION_NAME)
+                .outputFields(Lists.newArrayList(AGE_FIELD))
+                .batchSize(batchSize)
+                .vectorFieldName(VECTOR_FIELD)
+                .vectors(Collections.singletonList(new FloatVec(CommonUtils.generateFloatVector(VECTOR_DIM))))
+                .filter(filter)
+                .filterTemplateValues(template)
+                .metricType(IndexParam.MetricType.L2)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .build());
+
+        System.out.println("SearchIteratorV2 with filter template results:");
+        int counter = 0;
+        while (true) {
+            List<SearchResp.SearchResult> res = searchIterator.next();
+            if (res.isEmpty()) {
+                System.out.println("Search iteration finished, close");
+                searchIterator.close();
+                break;
+            }
+
+            for (SearchResp.SearchResult record : res) {
+                System.out.println(record);
+                counter++;
+            }
+        }
+        System.out.printf("%d search results returned\n%n", counter);
+    }
+
     public static void main(String[] args) {
         buildCollection();
         queryIterator("userID < 300", 50, 5, 400);
+        queryIteratorWithTemplate(80);
+
         searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
         searchIteratorV1("", "", 10, 99);
         searchIteratorV2("userAge > 10 &&userAge < 20", null, 50, 120, null);
@@ -245,6 +325,7 @@ public class IteratorExample {
         Map<String, Object> extraParams = new HashMap<>();
         extraParams.put("radius", 15.0);
         searchIteratorV2("", extraParams, 50, 100, null);
+        searchIteratorV2WithTemplate(80);
 
         // use external function to filter the result
         Function<List<SearchResp.SearchResult>, List<SearchResp.SearchResult>> externalFilterFunc = (List<SearchResp.SearchResult> src) -> {

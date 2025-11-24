@@ -66,7 +66,6 @@ public class SearchReq {
     //     filterTemplateValues = Map{"age": 3, "city": List<String>{"beijing", "shanghai", ......}}
     // Valid value of this map can be:
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
-
     private Map<String, Object> filterTemplateValues;
 
     private SearchReq(SearchReqBuilder builder) {
@@ -315,7 +314,7 @@ public class SearchReq {
                 ", strictGroupSize=" + strictGroupSize +
                 ", ranker=" + ranker +
                 ", functionScore=" + functionScore +
-                ", filterTemplateValues=" + filterTemplateValues +
+//                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
 
