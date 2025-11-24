@@ -109,7 +109,7 @@ public class DeleteReq {
                 ", partitionName='" + partitionName + '\'' +
                 ", filter='" + filter + '\'' +
                 ", ids=" + ids +
-                ", filterTemplateValues=" + filterTemplateValues +
+//                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
 
