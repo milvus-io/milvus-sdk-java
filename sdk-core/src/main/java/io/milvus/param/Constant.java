@@ -31,6 +31,7 @@ public class Constant {
     public static final String ARRAY_MAX_CAPACITY = "max_capacity";
     public static final String TOP_K = "topk";
     public static final String IGNORE_GROWING = "ignore_growing";
+    public static final String TIMEZONE = "timezone";
     public static final String REDUCE_STOP_FOR_BEST = "reduce_stop_for_best";
     public static final String ITERATOR_FIELD = "iterator";
     public static final String GROUP_BY_FIELD = "group_by_field";

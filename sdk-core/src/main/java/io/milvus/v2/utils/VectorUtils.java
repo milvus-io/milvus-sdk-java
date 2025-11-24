@@ -114,6 +114,14 @@ public class VectorUtils {
                 .setValue(String.valueOf(request.isIgnoreGrowing()))
                 .build());
 
+        // timezone
+        if (StringUtils.isNotEmpty(request.getTimezone())) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.TIMEZONE)
+                    .setValue(request.getTimezone())
+                    .build());
+        }
+
         return builder.build();
 
     }
@@ -240,6 +248,15 @@ public class VectorUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(request.getMetricType().name())
+                            .build());
+        }
+
+        // timezone
+        if (StringUtils.isNotEmpty(request.getTimezone())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.TIMEZONE)
+                            .setValue(request.getTimezone())
                             .build());
         }
 
@@ -468,6 +485,15 @@ public class VectorUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(annSearchReq.getMetricType().name())
+                            .build());
+        }
+
+        // timezone
+        if (StringUtils.isNotEmpty(annSearchReq.getTimezone())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.TIMEZONE)
+                            .setValue(annSearchReq.getTimezone())
                             .build());
         }
 
