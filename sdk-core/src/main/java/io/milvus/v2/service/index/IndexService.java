@@ -163,7 +163,8 @@ public class IndexService extends BaseService {
         DescribeIndexRequest.Builder builder = DescribeIndexRequest.newBuilder()
                 .setCollectionName(collectionName)
                 .setFieldName(fieldName == null ? "" : fieldName)
-                .setIndexName(indexName == null ? "" : indexName);
+                .setIndexName(indexName == null ? "" : indexName)
+                .setTimestamp(request.getTimestamp());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
