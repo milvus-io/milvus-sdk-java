@@ -1123,6 +1123,16 @@ public class MilvusClientV2 {
     }
 
     /**
+     * get plans of a compact task by its ID
+     *
+     * @param request get compact plans request
+     * @return GetCompactPlansResp
+     */
+    public GetCompactionPlansResp getCompactionPlans(GetCompactionPlansReq request) {
+        return rpcUtils.retry(() -> utilityService.getCompactionPlans(this.getRpcStub(), request));
+    }
+
+    /**
      * Get server version
      *
      * @return String
