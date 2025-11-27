@@ -20,6 +20,7 @@
 package io.milvus.v2.service.utility;
 
 import io.milvus.grpc.*;
+import io.milvus.v2.common.CompactionPlan;
 import io.milvus.v2.common.CompactionState;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class UtilityService extends BaseService {
@@ -81,6 +83,12 @@ public class UtilityService extends BaseService {
                             .build());
 
                     flushed = flushResponse.getFlushed();
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                    } catch (InterruptedException t) {
+                        System.out.println("Interrupted: " + t.getMessage());
+                        break;
+                    }
                 }
             }
         });
@@ -129,6 +137,30 @@ public class UtilityService extends BaseService {
                 .executingPlanNo(response.getExecutingPlanNo())
                 .timeoutPlanNo(response.getTimeoutPlanNo())
                 .completedPlanNo(response.getCompletedPlanNo())
+                .build();
+    }
+
+    public GetCompactionPlansResp getCompactionPlans(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                     GetCompactionPlansReq request) {
+        String title = "Get compaction plans";
+        GetCompactionPlansRequest getRequest = GetCompactionPlansRequest.newBuilder()
+                .setCompactionID(request.getCompactionID())
+                .build();
+        GetCompactionPlansResponse response = blockingStub.getCompactionStateWithPlans(getRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<CompactionPlan> plans = new ArrayList<>();
+        List<CompactionMergeInfo> infos = response.getMergeInfosList();
+        infos.forEach(info -> {
+            plans.add(CompactionPlan.builder()
+                    .target(info.getTarget())
+                    .sources(info.getSourcesList())
+                    .build());
+        });
+
+        return GetCompactionPlansResp.builder()
+                .state(CompactionState.valueOf(response.getState().name()))
+                .plans(plans)
                 .build();
     }
 
