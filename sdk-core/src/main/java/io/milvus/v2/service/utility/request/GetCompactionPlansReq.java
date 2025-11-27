@@ -17,44 +17,44 @@
  * under the License.
  */
 
-package io.milvus.v2.service.resourcegroup.request;
+package io.milvus.v2.service.utility.request;
 
-public class DescribeResourceGroupReq {
-    private String groupName;
+public class GetCompactionPlansReq {
+    private Long compactionID;
 
-    private DescribeResourceGroupReq(DescribeResourceGroupReqBuilder builder) {
-        this.groupName = builder.groupName;
+    private GetCompactionPlansReq(GetCompactionPlansReqBuilder builder) {
+        this.compactionID = builder.compactionID;
     }
 
-    public static DescribeResourceGroupReqBuilder builder() {
-        return new DescribeResourceGroupReqBuilder();
+    public static GetCompactionPlansReqBuilder builder() {
+        return new GetCompactionPlansReqBuilder();
     }
 
-    public String getGroupName() {
-        return groupName;
+    public Long getCompactionID() {
+        return compactionID;
     }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setCompactionID(Long compactionID) {
+        this.compactionID = compactionID;
     }
 
     @Override
     public String toString() {
-        return "DescribeResourceGroupReq{" +
-                "groupName='" + groupName + '\'' +
+        return "GetCompactionPlansReq{" +
+                "compactionID=" + compactionID +
                 '}';
     }
 
-    public static class DescribeResourceGroupReqBuilder {
-        private String groupName;
+    public static class GetCompactionPlansReqBuilder {
+        private Long compactionID;
 
-        public DescribeResourceGroupReqBuilder groupName(String groupName) {
-            this.groupName = groupName;
+        public GetCompactionPlansReqBuilder compactionID(Long compactionID) {
+            this.compactionID = compactionID;
             return this;
         }
 
-        public DescribeResourceGroupReq build() {
-            return new DescribeResourceGroupReq(this);
+        public GetCompactionPlansReq build() {
+            return new GetCompactionPlansReq(this);
         }
     }
 }
