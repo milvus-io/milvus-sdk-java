@@ -109,6 +109,21 @@ public class StructExample {
                         .build())
                 .build());
 
+        // define another struct field schema, note that it has a same name subfield to the STRUCT_FIELD
+        collectionSchema.addField(AddFieldReq.builder()
+                        .fieldName("simplify_clips")
+                        .description("simplify clips")
+                        .dataType(DataType.Array)
+                        .elementType(DataType.Struct)
+                        .maxCapacity(100)
+                        .addStructField(AddFieldReq.builder()
+                                .fieldName(CLIP_VECTOR_FIELD)
+                                .description("clip has been simplified")
+                                .dataType(DataType.FloatVector)
+                                .dimension(32)
+                                .build())
+                        .build());
+
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .build());
@@ -132,6 +147,12 @@ public class StructExample {
                 .indexName("index_2")
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.MAX_SIM_IP)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(String.format("simplify_clips[%s]", CLIP_VECTOR_FIELD))
+                .indexName("index_3")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
                 .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -169,6 +190,16 @@ public class StructExample {
                     structArr.add(struct);
                 }
                 row.add(STRUCT_FIELD, structArr);
+
+                // for the "simplify_clips"
+                structArr = new JsonArray();
+                for (int k = 0; k < 2; k++) {
+                    JsonObject struct = new JsonObject();
+                    struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
+                    structArr.add(struct);
+                }
+                row.add("simplify_clips", structArr);
+
                 rows.add(row);
             }
 
@@ -196,7 +227,7 @@ public class StructExample {
                 .collectionName(COLLECTION_NAME)
                 .filter(filter)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
-                .outputFields(Collections.singletonList(STRUCT_FIELD))
+                .outputFields(Arrays.asList(STRUCT_FIELD, "simplify_clips"))
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         for (QueryResp.QueryResult result : queryResults) {
@@ -222,7 +253,8 @@ public class StructExample {
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .outputFields(Arrays.asList(NAME_FIELD,
                         String.format("%s[%s]", STRUCT_FIELD, FRAME_FIELD),
-                        String.format("%s[%s]", STRUCT_FIELD, DESC_FIELD)))
+                        String.format("%s[%s]", STRUCT_FIELD, DESC_FIELD),
+                        String.format("simplify_clips[%s]", CLIP_VECTOR_FIELD)))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (int i = 0; i < searchResults.size(); i++) {

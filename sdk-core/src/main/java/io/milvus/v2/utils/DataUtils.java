@@ -141,6 +141,10 @@ public class DataUtils {
             checkAndSetRowData(descColl, rowFields, false);
         }
 
+        private static String combineStructFieldName(String structName, String subFieldName) {
+            return String.format("%s[%s]", structName, subFieldName);
+        }
+
         private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows, boolean partialUpdate) {
             CreateCollectionReq.CollectionSchema collectionSchema = descColl.getCollectionSchema();
             List<CreateCollectionReq.Function> functionsList = collectionSchema.getFunctionList();
@@ -216,7 +220,8 @@ public class DataUtils {
             for (CreateCollectionReq.StructFieldSchema structField : structFields) {
                 StructArrayField.Builder structBuilder = StructArrayField.newBuilder();
                 for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
-                    InsertDataInfo insertDataInfo = structInsertData.get(field.getName());
+                    String combineName = combineStructFieldName(structField.getName(), field.getName());
+                    InsertDataInfo insertDataInfo = structInsertData.get(combineName);
                     FieldData grpcField = DataUtils.genStructSubFieldData(field, insertDataInfo.data);
                     structBuilder.addFields(grpcField);
                 }
@@ -293,14 +298,15 @@ public class DataUtils {
             }
 
             for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
-                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(field.getName(), new InsertDataInfo(field, new LinkedList<>()));
-                nameInsertInfo.put(field.getName(), insertDataInfo);
+                String combineName = combineStructFieldName(structName, field.getName());
+                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(combineName, new InsertDataInfo(field, new LinkedList<>()));
+                nameInsertInfo.put(combineName, insertDataInfo);
             }
 
             JsonArray structs = rowFieldData.getAsJsonArray();
             for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
                 String subFieldName = field.getName();
-                InsertDataInfo insertDataInfo = nameInsertInfo.get(subFieldName);
+                InsertDataInfo insertDataInfo = nameInsertInfo.get(combineStructFieldName(structName, subFieldName));
                 List<Object> columnData = new ArrayList<>();
                 structs.forEach((element) -> {
                     if (!element.isJsonObject()) {
