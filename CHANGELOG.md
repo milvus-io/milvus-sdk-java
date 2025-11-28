@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.6.9 (2025-11-28)
+### Improvement
+- Add timezone parameter for query/search/QueryIterator/SearchIterator
+- Add filterTemplate for QueryIterator/SearchIterator
+- Add GetCompactionPlans interface
+- Avoid frequent calls of getFlushState() in the flush() loop
+
+### Bug
+- Add missed parameter "timestamp" for describeIndex()
+- Fix a struct filed bug that fail to insert if two struct fields have the same name subfield
+
 ## milvus-sdk-java 2.6.8 (2025-11-21)
 ### Improvement
 - Adding exception handling on connection for MilvusClientV2
