@@ -111,18 +111,18 @@ public class StructExample {
 
         // define another struct field schema, note that it has a same name subfield to the STRUCT_FIELD
         collectionSchema.addField(AddFieldReq.builder()
-                        .fieldName("simplify_clips")
-                        .description("simplify clips")
-                        .dataType(DataType.Array)
-                        .elementType(DataType.Struct)
-                        .maxCapacity(100)
-                        .addStructField(AddFieldReq.builder()
-                                .fieldName(CLIP_VECTOR_FIELD)
-                                .description("clip has been simplified")
-                                .dataType(DataType.FloatVector)
-                                .dimension(32)
-                                .build())
-                        .build());
+                .fieldName("simplify_clips")
+                .description("simplify clips")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(100)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(CLIP_VECTOR_FIELD)
+                        .description("clip has been simplified")
+                        .dataType(DataType.FloatVector)
+                        .dimension(32)
+                        .build())
+                .build());
 
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)

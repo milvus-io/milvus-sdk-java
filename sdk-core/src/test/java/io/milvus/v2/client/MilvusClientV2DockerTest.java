@@ -1198,7 +1198,7 @@ class MilvusClientV2DockerTest {
             JsonArray structArr1 = new JsonArray();
             JsonArray structArr2 = new JsonArray();
             for (int k = 0; k < 8; k++) {
-                if (k <5) {
+                if (k < 5) {
                     JsonObject struct = new JsonObject();
                     struct.addProperty("aaa", "No." + k);
                     struct.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
