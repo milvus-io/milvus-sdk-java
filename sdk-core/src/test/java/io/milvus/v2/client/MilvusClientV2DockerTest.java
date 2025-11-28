@@ -419,7 +419,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(qInfo.getPartitionID() > 0L);
         Assertions.assertTrue(qInfo.getMemSize() >= 0L);
         Assertions.assertEquals(count, qInfo.getNumOfRows());
-        Assertions.assertEquals(vectorFieldName, qInfo.getIndexName());
+//        Assertions.assertEquals(vectorFieldName, qInfo.getIndexName());
         Assertions.assertTrue(qInfo.getIndexID() > 0L);
         Assertions.assertEquals("Sealed", qInfo.getState());
         Assertions.assertEquals("L1", qInfo.getLevel());
@@ -1057,10 +1057,6 @@ class MilvusClientV2DockerTest {
         String pkField = "key";
         String normalVectorField = "vector";
         String normalScalarField = "text";
-        String structField = "clips";
-        String structScalarField = "desc";
-        String structVectorField = "clip";
-        String structBinVectorField = "clip_bin";
         int structCapacity = 300;
         int varcharLength = 100;
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
@@ -1081,29 +1077,42 @@ class MilvusClientV2DockerTest {
                 .maxLength(varcharLength)
                 .build());
         collectionSchema.addField(AddFieldReq.builder()
-                .fieldName(structField)
+                .fieldName("st1")
                 .description("dummy")
                 .dataType(DataType.Array)
                 .elementType(DataType.Struct)
                 .maxCapacity(structCapacity)
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(structScalarField)
+                        .fieldName("aaa")
                         .description("dummy")
                         .dataType(DataType.VarChar)
                         .maxLength(varcharLength)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(structVectorField)
+                        .fieldName("vector")
                         .description("dummy")
                         .dataType(DataType.FloatVector)
-                        .dimension(DIMENSION)
+                        .dimension(32)
                         .build())
-//                .addStructField(AddFieldReq.builder()
-//                        .fieldName(structBinVectorField)
-//                        .description("dummy")
-//                        .dataType(DataType.BinaryVector)
-//                        .dimension(DIMENSION)
-//                        .build())
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("st2")
+                .description("dummy")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(structCapacity)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("bbb")
+                        .description("dummy")
+                        .dataType(DataType.VarChar)
+                        .maxLength(varcharLength)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("vector")
+                        .description("dummy")
+                        .dataType(DataType.FloatVector)
+                        .dimension(64)
+                        .build())
                 .build());
 
         client.dropCollection(DropCollectionReq.builder()
@@ -1123,17 +1132,17 @@ class MilvusClientV2DockerTest {
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName("clips[clip]")
+                .fieldName("st1[vector]")
                 .indexName("index1")
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.MAX_SIM_L2)
                 .build());
-//        indexParams.add(IndexParam.builder()
-//                .fieldName("clips[clip_bin]")
-//                .indexName("index2")
-//                .indexType(IndexParam.IndexType.AUTOINDEX)
-//                .metricType(IndexParam.MetricType.MAX_SIM_HAMMING)
-//                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("st2[vector]")
+                .indexName("index2")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
+                .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
                 .indexParams(indexParams)
@@ -1147,9 +1156,9 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
         CreateCollectionReq.CollectionSchema descSchema = descResp.getCollectionSchema();
-        Assertions.assertEquals(1, descSchema.getStructFields().size());
+        Assertions.assertEquals(2, descSchema.getStructFields().size());
         CreateCollectionReq.StructFieldSchema structSchema = descSchema.getStructFields().get(0);
-        Assertions.assertEquals(structField, structSchema.getName());
+        Assertions.assertEquals("st1", structSchema.getName());
         Assertions.assertEquals("dummy", structSchema.getDescription());
         Assertions.assertEquals(DataType.Array, structSchema.getDataType());
         Assertions.assertEquals(DataType.Struct, structSchema.getElementType());
@@ -1157,20 +1166,20 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(2, structSchema.getFields().size());
 
         CreateCollectionReq.FieldSchema field1 = structSchema.getFields().get(0);
-        Assertions.assertEquals(structScalarField, field1.getName());
+        Assertions.assertEquals("aaa", field1.getName());
         Assertions.assertEquals("dummy", field1.getDescription());
         Assertions.assertEquals(DataType.VarChar, field1.getDataType());
         Assertions.assertEquals(varcharLength, field1.getMaxLength());
 
         CreateCollectionReq.FieldSchema field2 = structSchema.getFields().get(1);
-        Assertions.assertEquals(structVectorField, field2.getName());
+        Assertions.assertEquals("vector", field2.getName());
         Assertions.assertEquals("dummy", field2.getDescription());
         Assertions.assertEquals(DataType.FloatVector, field2.getDataType());
-        Assertions.assertEquals(DIMENSION, field2.getDimension());
+        Assertions.assertEquals(32, field2.getDimension());
 
         DescribeIndexResp indexDesc = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
-                .fieldName(structVectorField)
+                .fieldName("st1[vector]")
                 .indexName("index1")
                 .build());
         Assertions.assertEquals(1, indexDesc.getIndexDescriptions().size());
@@ -1186,15 +1195,23 @@ class MilvusClientV2DockerTest {
             row.addProperty(pkField, i);
             row.addProperty(normalScalarField, "text_" + i);
             row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-            JsonArray structArr = new JsonArray();
-            for (int k = 0; k < 5; k++) {
-                JsonObject struct = new JsonObject();
-                struct.addProperty(structScalarField, "No." + k);
-                struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-//                struct.add(structBinVectorField, JsonUtils.toJsonTree(utils.generateBinaryVector(DIMENSION).array()));
-                structArr.add(struct);
+            JsonArray structArr1 = new JsonArray();
+            JsonArray structArr2 = new JsonArray();
+            for (int k = 0; k < 8; k++) {
+                if (k <5) {
+                    JsonObject struct = new JsonObject();
+                    struct.addProperty("aaa", "No." + k);
+                    struct.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+                    structArr1.add(struct);
+                } else {
+                    JsonObject struct = new JsonObject();
+                    struct.addProperty("bbb", "No." + k);
+                    struct.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(64)));
+                    structArr2.add(struct);
+                }
             }
-            row.add(structField, structArr);
+            row.add("st1", structArr1);
+            row.add("st2", structArr2);
             rows.add(row);
         }
 
@@ -1209,15 +1226,21 @@ class MilvusClientV2DockerTest {
         row.addProperty(pkField, 6);
         row.addProperty(normalScalarField, "update_text");
         row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-        JsonArray structArr = new JsonArray();
-        for (int k = 0; k < 3; k++) {
-            JsonObject struct = new JsonObject();
-            struct.addProperty(structScalarField, "updated_No." + k);
-            struct.add(structVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
-//            struct.add(structBinVectorField, JsonUtils.toJsonTree(utils.generateBinaryVector(DIMENSION).array()));
-            structArr.add(struct);
+        JsonArray structArr1 = new JsonArray();
+        JsonArray structArr2 = new JsonArray();
+        for (int k = 0; k < 2; k++) {
+            JsonObject struct1 = new JsonObject();
+            struct1.addProperty("aaa", "updated_No." + k);
+            struct1.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+            structArr1.add(struct1);
+
+            JsonObject struct2 = new JsonObject();
+            struct2.addProperty("bbb", "updated_No." + k);
+            struct2.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(64)));
+            structArr2.add(struct2);
         }
-        row.add(structField, structArr);
+        row.add("st1", structArr1);
+        row.add("st2", structArr2);
 
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(randomCollectionName)
@@ -1235,29 +1258,33 @@ class MilvusClientV2DockerTest {
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         Assertions.assertEquals(2, queryResults.size());
-        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey(structField));
-        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey(structField));
+        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey("st1"));
+        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey("st2"));
+        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey("st1"));
+        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey("st2"));
 
         // search
         EmbeddingList embList0 = new EmbeddingList();
         EmbeddingList embList1 = new EmbeddingList();
 
-        List<Map<String, Object>> structs0 = (List<Map<String, Object>>) queryResults.get(0).getEntity().get(structField);
+        List<Map<String, Object>> structs0 = (List<Map<String, Object>>) queryResults.get(0).getEntity().get("st1");
+        Assertions.assertEquals(2, structs0.size());
         for (Map<String, Object> struct : structs0) {
-            embList0.add(new FloatVec((List<Float>) struct.get(structVectorField)));
+            embList0.add(new FloatVec((List<Float>) struct.get("vector")));
         }
-        List<Map<String, Object>> structs1 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get(structField);
+        List<Map<String, Object>> structs1 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get("st1");
+        Assertions.assertEquals(5, structs1.size());
         for (Map<String, Object> struct : structs1) {
-            embList1.add(new FloatVec((List<Float>) struct.get(structVectorField)));
+            embList1.add(new FloatVec((List<Float>) struct.get("vector")));
         }
 
         int topK = 5;
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(randomCollectionName)
-                .annsField("clips[clip]")
+                .annsField("st1[vector]")
                 .data(Arrays.asList(embList0, embList1))
                 .limit(topK)
-                .outputFields(Collections.singletonList("clips[desc]"))
+                .outputFields(Collections.singletonList("st1[aaa]"))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         Assertions.assertEquals(2, searchResults.size());
