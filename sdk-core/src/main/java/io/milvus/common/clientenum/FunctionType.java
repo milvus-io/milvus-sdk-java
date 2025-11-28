@@ -44,7 +44,7 @@ public enum FunctionType {
 
     public static FunctionType fromName(String name) {
         for (FunctionType type : FunctionType.values()) {
-            if (type.name().equals(name)) {
+            if (type.getName().equals(name)) {
                 return type;
             }
         }
