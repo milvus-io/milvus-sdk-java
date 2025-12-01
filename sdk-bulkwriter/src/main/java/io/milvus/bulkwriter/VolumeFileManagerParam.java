@@ -19,19 +19,24 @@
 
 package io.milvus.bulkwriter;
 
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
 /**
- * Parameters for <code>stageManager</code> interface.
+ * Parameters for <code>volumeFileManager</code> interface.
  */
-public class StageManagerParam {
+public class VolumeFileManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
+    private final String volumeName;
+    private final ConnectType connectType;
 
-    private StageManagerParam(Builder builder) {
+    private VolumeFileManagerParam(Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
+        this.volumeName = builder.volumeName;
+        this.connectType = builder.connectType;
     }
 
     public String getCloudEndpoint() {
@@ -42,10 +47,20 @@ public class StageManagerParam {
         return apiKey;
     }
 
+    public String getVolumeName() {
+        return volumeName;
+    }
+
+    public ConnectType getConnectType() {
+        return connectType;
+    }
+
     @Override
     public String toString() {
-        return "StageManagerParam{" +
+        return "VolumeFileManagerParam{" +
                 "cloudEndpoint='" + cloudEndpoint + '\'' +
+                ", volumeName='" + volumeName + '\'' +
+                ", connectType=" + connectType +
                 '}';
     }
 
@@ -54,12 +69,16 @@ public class StageManagerParam {
     }
 
     /**
-     * Builder for {@link StageManagerParam} class.
+     * Builder for {@link VolumeFileManagerParam} class.
      */
     public static final class Builder {
         private String cloudEndpoint;
 
         private String apiKey;
+
+        private String volumeName;
+
+        private ConnectType connectType = ConnectType.AUTO;
 
         private Builder() {
         }
@@ -79,16 +98,33 @@ public class StageManagerParam {
             return this;
         }
 
+        public Builder withVolumeName(String volumeName) {
+            this.volumeName = volumeName;
+            return this;
+        }
+
         /**
-         * Verifies parameters and creates a new {@link StageManagerParam} instance.
-         *
-         * @return {@link StageManagerParam}
+         * Current value is mainly for Aliyun OSS buckets, default is Auto.
+         * In the default case, if the OSS bucket is reachable via the internal endpoint, the internal endpoint will be used;
+         * otherwise, the public endpoint will be used.
+         * You can also force the use of either the internal or public endpoint.
          */
-        public StageManagerParam build() throws ParamException {
+        public Builder withConnectType(ConnectType connectType) {
+            this.connectType = connectType;
+            return this;
+        }
+
+        /**
+         * Verifies parameters and creates a new {@link VolumeFileManagerParam} instance.
+         *
+         * @return {@link VolumeFileManagerParam}
+         */
+        public VolumeFileManagerParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
             ParamUtils.CheckNullEmptyString(apiKey, "apiKey");
+            ParamUtils.CheckNullEmptyString(volumeName, "volumeName");
 
-            return new StageManagerParam(this);
+            return new VolumeFileManagerParam(this);
         }
     }
 
