@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.5.15 (2025-12-01)
+### Breaking Change
+- Rename "Stage" to "Volume" for BulkWriter
+
 ## milvus-sdk-java 2.5.14 (2025-09-30)
 ### Improvement
 - Add parameter "databaseName" for the following requests: GetCollectionStatsReq, GetLoadStateReq, HasCollectionReq, ListCollectionsReq, ReleaseCollectionReq, RenameCollectionReq, DropIndexReq, ListIndexesReq, CreatePartitionReq, DropPartitionReq, GetPartitinStatsReq, HasPartitionReq, ListPartitionsReq, LoadPartitionsReq, ReleasePartitionsReq, CompactReq, FlushReq, GetPErsistentSegmentInfoReq, GetQuerySegmentInfoReq,
