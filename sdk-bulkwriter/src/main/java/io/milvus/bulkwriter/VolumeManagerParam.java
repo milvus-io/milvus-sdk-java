@@ -21,23 +21,32 @@ package io.milvus.bulkwriter;
 
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 /**
- * Parameters for <code>stageManager</code> interface.
+ * Parameters for <code>volumeManager</code> interface.
  */
-@Getter
-@ToString
-public class StageManagerParam {
+public class VolumeManagerParam {
     private final String cloudEndpoint;
     private final String apiKey;
 
-    private StageManagerParam(@NonNull Builder builder) {
+    private VolumeManagerParam(Builder builder) {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
+    }
+
+    public String getCloudEndpoint() {
+        return cloudEndpoint;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    @Override
+    public String toString() {
+        return "VolumeManagerParam{" +
+                "cloudEndpoint='" + cloudEndpoint + '\'' +
+                '}';
     }
 
     public static Builder newBuilder() {
@@ -45,7 +54,7 @@ public class StageManagerParam {
     }
 
     /**
-     * Builder for {@link StageManagerParam} class.
+     * Builder for {@link VolumeManagerParam} class.
      */
     public static final class Builder {
         private String cloudEndpoint;
@@ -60,26 +69,26 @@ public class StageManagerParam {
          * For overseas regions, it is: https://api.cloud.zilliz.com
          * For regions in China, it is: https://api.cloud.zilliz.com.cn
          */
-        public Builder withCloudEndpoint(@NotNull String cloudEndpoint) {
+        public Builder withCloudEndpoint(String cloudEndpoint) {
             this.cloudEndpoint = cloudEndpoint;
             return this;
         }
 
-        public Builder withApiKey(@NotNull String apiKey) {
+        public Builder withApiKey(String apiKey) {
             this.apiKey = apiKey;
             return this;
         }
 
         /**
-         * Verifies parameters and creates a new {@link StageManagerParam} instance.
+         * Verifies parameters and creates a new {@link VolumeManagerParam} instance.
          *
-         * @return {@link StageManagerParam}
+         * @return {@link VolumeManagerParam}
          */
-        public StageManagerParam build() throws ParamException {
+        public VolumeManagerParam build() throws ParamException {
             ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
             ParamUtils.CheckNullEmptyString(apiKey, "apiKey");
 
-            return new StageManagerParam(this);
+            return new VolumeManagerParam(this);
         }
     }
 

@@ -21,18 +21,18 @@ package io.milvus.bulkwriter.restful;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.milvus.bulkwriter.request.stage.BaseStageRequest;
-import io.milvus.bulkwriter.request.stage.CreateStageRequest;
-import io.milvus.bulkwriter.request.stage.DeleteStageRequest;
-import io.milvus.bulkwriter.request.stage.ListStagesRequest;
+import io.milvus.bulkwriter.request.volume.BaseVolumeRequest;
+import io.milvus.bulkwriter.request.volume.CreateVolumeRequest;
+import io.milvus.bulkwriter.request.volume.DeleteVolumeRequest;
+import io.milvus.bulkwriter.request.volume.ListVolumesRequest;
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.JsonUtils;
 
 import java.util.Map;
 
-public class DataStageUtils extends BaseRestful {
-    public static String applyStage(String url, BaseStageRequest request) {
-        String requestURL = url + "/v2/stages/apply";
+public class DataVolumeUtils extends BaseRestful {
+    public static String applyVolume(String url, BaseVolumeRequest request) {
+        String requestURL = url + "/v2/volumes/apply";
 
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
@@ -41,8 +41,8 @@ public class DataStageUtils extends BaseRestful {
         return new Gson().toJson(response.getData());
     }
 
-    public static String listStages(String url, String apiKey, ListStagesRequest request) {
-        String requestURL = url + "/v2/stages";
+    public static String listVolumes(String url, String apiKey, ListVolumesRequest request) {
+        String requestURL = url + "/v2/volumes";
 
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = getRequest(requestURL, apiKey, params, 60 * 1000);
@@ -51,8 +51,8 @@ public class DataStageUtils extends BaseRestful {
         return new Gson().toJson(response.getData());
     }
 
-    public static void createStage(String url, String apiKey, CreateStageRequest request) {
-        String requestURL = url + "/v2/stages/create";
+    public static void createVolume(String url, String apiKey, CreateVolumeRequest request) {
+        String requestURL = url + "/v2/volumes/create";
 
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = postRequest(requestURL, apiKey, params, 60 * 1000);
@@ -60,8 +60,8 @@ public class DataStageUtils extends BaseRestful {
         handleResponse(requestURL, response);
     }
 
-    public static void deleteStage(String url, String apiKey, DeleteStageRequest request) {
-        String requestURL = url + "/v2/stages/" + request.getStageName();
+    public static void deleteVolume(String url, String apiKey, DeleteVolumeRequest request) {
+        String requestURL = url + "/v2/volumes/" + request.getVolumeName();
 
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {}.getType());
         String body = deleteRequest(requestURL, apiKey, params, 60 * 1000);
