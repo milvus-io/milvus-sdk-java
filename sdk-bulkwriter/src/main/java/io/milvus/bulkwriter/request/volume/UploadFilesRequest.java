@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.request.volume;
 
 public class UploadFilesRequest {
     /**
@@ -28,23 +28,23 @@ public class UploadFilesRequest {
     private String sourceFilePath;
 
     /**
-     * The target stage directory path:
+     * The target volume directory path:
      * Leave it empty to upload to the root directory.
      * To upload to a specific folder, end the path with a /, e.g., data/
      */
-    private String targetStagePath;
+    private String targetVolumePath;
 
     public UploadFilesRequest() {
     }
 
-    public UploadFilesRequest(String sourceFilePath, String targetStagePath) {
+    public UploadFilesRequest(String sourceFilePath, String targetVolumePath) {
         this.sourceFilePath = sourceFilePath;
-        this.targetStagePath = targetStagePath;
+        this.targetVolumePath = targetVolumePath;
     }
 
     protected UploadFilesRequest(UploadFilesRequestBuilder builder) {
         this.sourceFilePath = builder.sourceFilePath;
-        this.targetStagePath = builder.targetStagePath;
+        this.targetVolumePath = builder.targetVolumePath;
     }
 
     public String getSourceFilePath() {
@@ -55,19 +55,19 @@ public class UploadFilesRequest {
         this.sourceFilePath = sourceFilePath;
     }
 
-    public String getTargetStagePath() {
-        return targetStagePath;
+    public String getTargetVolumePath() {
+        return targetVolumePath;
     }
 
-    public void setTargetStagePath(String targetStagePath) {
-        this.targetStagePath = targetStagePath;
+    public void setTargetVolumePath(String targetVolumePath) {
+        this.targetVolumePath = targetVolumePath;
     }
 
     @Override
     public String toString() {
         return "UploadFilesRequest{" +
                 "sourceFilePath='" + sourceFilePath + '\'' +
-                ", targetStagePath='" + targetStagePath + '\'' +
+                ", targetVolumePath='" + targetVolumePath + '\'' +
                 '}';
     }
 
@@ -77,11 +77,11 @@ public class UploadFilesRequest {
 
     public static class UploadFilesRequestBuilder {
         private String sourceFilePath;
-        private String targetStagePath;
+        private String targetVolumePath;
 
         private UploadFilesRequestBuilder() {
             this.sourceFilePath = "";
-            this.targetStagePath = "";
+            this.targetVolumePath = "";
         }
 
         public UploadFilesRequestBuilder sourceFilePath(String sourceFilePath) {
@@ -89,8 +89,8 @@ public class UploadFilesRequest {
             return this;
         }
 
-        public UploadFilesRequestBuilder targetStagePath(String targetStagePath) {
-            this.targetStagePath = targetStagePath;
+        public UploadFilesRequestBuilder targetVolumePath(String targetVolumePath) {
+            this.targetVolumePath = targetVolumePath;
             return this;
         }
 

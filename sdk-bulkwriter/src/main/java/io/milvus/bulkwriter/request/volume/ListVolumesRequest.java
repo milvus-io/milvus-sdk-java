@@ -17,24 +17,24 @@
  * under the License.
  */
 
-package io.milvus.bulkwriter.request.stage;
+package io.milvus.bulkwriter.request.volume;
 
 
-public class ListStagesRequest {
+public class ListVolumesRequest {
     private String projectId;
     private Integer pageSize;
     private Integer currentPage;
 
-    public ListStagesRequest() {
+    public ListVolumesRequest() {
     }
 
-    public ListStagesRequest(String projectId, Integer pageSize, Integer currentPage) {
+    public ListVolumesRequest(String projectId, Integer pageSize, Integer currentPage) {
         this.projectId = projectId;
         this.pageSize = pageSize;
         this.currentPage = currentPage;
     }
 
-    protected ListStagesRequest(ListStagesRequestBuilder builder) {
+    protected ListVolumesRequest(ListVolumesRequestBuilder builder) {
         this.projectId = builder.projectId;
         this.pageSize = builder.pageSize;
         this.currentPage = builder.currentPage;
@@ -66,45 +66,45 @@ public class ListStagesRequest {
 
     @Override
     public String toString() {
-        return "ListStagesRequest{" +
+        return "ListVolumesRequest{" +
                 "projectId='" + projectId + '\'' +
                 ", pageSize=" + pageSize +
                 ", currentPage=" + currentPage +
                 '}';
     }
 
-    public static ListStagesRequestBuilder builder() {
-        return new ListStagesRequestBuilder();
+    public static ListVolumesRequestBuilder builder() {
+        return new ListVolumesRequestBuilder();
     }
 
-    public static class ListStagesRequestBuilder {
+    public static class ListVolumesRequestBuilder {
         private String projectId;
         private Integer pageSize;
         private Integer currentPage;
 
-        private ListStagesRequestBuilder() {
+        private ListVolumesRequestBuilder() {
             this.projectId = "";
             this.pageSize = 0;
             this.currentPage = 0;
         }
 
-        public ListStagesRequestBuilder projectId(String projectId) {
+        public ListVolumesRequestBuilder projectId(String projectId) {
             this.projectId = projectId;
             return this;
         }
 
-        public ListStagesRequestBuilder pageSize(Integer pageSize) {
+        public ListVolumesRequestBuilder pageSize(Integer pageSize) {
             this.pageSize = pageSize;
             return this;
         }
 
-        public ListStagesRequestBuilder currentPage(Integer currentPage) {
+        public ListVolumesRequestBuilder currentPage(Integer currentPage) {
             this.currentPage = currentPage;
             return this;
         }
 
-        public ListStagesRequest build() {
-            return new ListStagesRequest(this);
+        public ListVolumesRequest build() {
+            return new ListVolumesRequest(this);
         }
     }
 }
