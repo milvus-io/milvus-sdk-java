@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.6.10 (2025-12-01)
+### Breaking Change
+- Rename "Stage" to "Volume" for BulkWriter
+
+### Bug
+- Fix a bug that FunctionType.TextEmbedding is not correctly converted for describeCollection()
+
+## milvus-sdk-java 2.5.15 (2025-12-01)
+### Breaking Change
+- Rename "Stage" to "Volume" for BulkWriter
+
 ## milvus-sdk-java 2.6.9 (2025-11-28)
 ### Improvement
 - Add timezone parameter for query/search/QueryIterator/SearchIterator
