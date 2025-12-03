@@ -94,7 +94,7 @@ public class TimestampExample {
         int rowCount = 10;
         ZoneId zone = ZoneId.of("Asia/Shanghai");
         DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
-        System.out.printf("\n================= Insert with timezone: %s =================", zone);
+        System.out.printf("\n================= Insert with timezone: %s =================\n", zone);
 
         // Insert entities by rows
         List<JsonObject> rows = new ArrayList<>();
@@ -195,7 +195,7 @@ public class TimestampExample {
         createCollection();
         insertData();
 
-        List<String> timezones = Arrays.asList("America/Havana", "Africa/Bangui", "Australia/Sydney");
+        List<String> timezones = Arrays.asList("Asia/Shanghai", "America/Havana", "Africa/Bangui", "Australia/Sydney");
 
         for (String timezone : timezones) {
             System.out.printf("\n================= Query with timezone: %s =================", timezone);
