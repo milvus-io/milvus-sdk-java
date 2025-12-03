@@ -58,6 +58,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -139,6 +143,8 @@ public class BulkWriterRemoteExample {
     private static final String ALL_TYPES_COLLECTION_NAME = "java_sdk_bulkwriter_all_v2";
     private static final Integer DIM = 512;
     private static final Integer ARRAY_CAPACITY = 10;
+    private static final String TIME_ZONE = "Asia/Shanghai";
+
     private static MilvusClientV2 milvusClient;
 
     public static void main(String[] args) throws Exception {
@@ -256,6 +262,15 @@ public class BulkWriterRemoteExample {
         return st;
     }
 
+    private static String genTimestamptz(int i) {
+        ZoneId zone = ZoneId.of(TIME_ZONE);
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        LocalDateTime tt = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+        tt = tt.plusDays(i);
+        ZonedDateTime zt = tt.atZone(zone);
+        return zt.format(formatter);
+    }
+
     private static List<Map<String, Object>> genOriginalData(int count) {
         List<Map<String, Object>> data = new ArrayList<>();
         for (int i = 0; i < count; ++i) {
@@ -271,6 +286,10 @@ public class BulkWriterRemoteExample {
             row.put("varchar", "varchar_" + i);
             row.put("json", String.format("{\"dummy\": %s, \"ok\": \"name_%s\"}", i, i));
             row.put("geometry", String.format("POINT (%d %d)", i, i));
+
+            // timestamptz field
+
+            row.put("timestamp", genTimestamptz(i));
 
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
@@ -311,6 +330,7 @@ public class BulkWriterRemoteExample {
             row.put("varchar", null);
             row.put("json", null);
             row.put("geometry", null);
+            row.put("timestamp", null);
 
             // vector field
             row.put("float_vector", CommonUtils.generateFloatVector(DIM));
@@ -355,6 +375,7 @@ public class BulkWriterRemoteExample {
             }
             rowObject.addProperty("varchar", row.get("varchar") == null ? null : (String) row.get("varchar"));
             rowObject.addProperty("geometry", row.get("geometry") == null ? null : (String) row.get("geometry"));
+            rowObject.addProperty("timestamp", row.get("timestamp") == null ? null : (String) row.get("timestamp"));
 
             // Note: for JSON field, use gson.fromJson() to construct a real JsonObject
             // don't use rowObject.addProperty("json", jsonContent) since the value is treated as a string, not a JsonObject
@@ -510,10 +531,10 @@ public class BulkWriterRemoteExample {
             JsonObject getImportProgressObject = convertJsonObject(getImportProgressResult);
             String state = getImportProgressObject.getAsJsonObject("data").get("state").getAsString();
             String progress = getImportProgressObject.getAsJsonObject("data").get("progress").getAsString();
-            if ("Failed" .equals(state)) {
+            if ("Failed".equals(state)) {
                 String reason = getImportProgressObject.getAsJsonObject("data").get("reason").getAsString();
                 throw new RuntimeException(String.format("The job %s failed, reason: %s", jobId, reason));
-            } else if ("Completed" .equals(state)) {
+            } else if ("Completed".equals(state)) {
                 System.out.printf("The job %s completed%n", jobId);
                 break;
             } else {
@@ -702,6 +723,8 @@ public class BulkWriterRemoteExample {
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "double");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "varchar");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "json");
+            comparePrint(collectionSchema, originalEntity, fetchedEntity, "geometry");
+            comparePrint(collectionSchema, originalEntity, fetchedEntity, "timestamp");
 
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "array_bool");
             comparePrint(collectionSchema, originalEntity, fetchedEntity, "array_int8");
@@ -816,6 +839,7 @@ public class BulkWriterRemoteExample {
                 .filter(expr)
                 .outputFields(outputFields)
                 .consistencyLevel(ConsistencyLevel.STRONG)
+                .timezone(TIME_ZONE)
                 .build();
         QueryResp response = milvusClient.query(test);
         return response.getQueryResults();
@@ -946,6 +970,11 @@ public class BulkWriterRemoteExample {
         schemaV2.addField(AddFieldReq.builder()
                 .fieldName("geometry")
                 .dataType(DataType.Geometry)
+                .isNullable(true)
+                .build());
+        schemaV2.addField(AddFieldReq.builder()
+                .fieldName("timestamp")
+                .dataType(DataType.Timestamptz)
                 .isNullable(true)
                 .build());
 
