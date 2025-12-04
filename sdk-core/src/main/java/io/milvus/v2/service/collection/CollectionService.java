@@ -553,6 +553,70 @@ public class CollectionService extends BaseService {
                 .build();
     }
 
+    public Void addCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                      AddCollectionFunctionReq request) {
+        if (request.getFunction() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function cannot be null.");
+        }
+
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Add function to collection: '%s' in database: '%s'", collectionName, dbName);
+        AddCollectionFunctionRequest.Builder builder = AddCollectionFunctionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setFunctionSchema(SchemaUtils.convertToGrpcFunction(request.getFunction()));
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.addCollectionFunction(builder.build());
+        rpcUtils.handleResponse(title, status);
+
+        return null;
+    }
+
+    public Void alterCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                        AlterCollectionFunctionReq request) {
+        if (request.getFunction() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function cannot be null.");
+        }
+
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Alter function of collection: '%s' in database: '%s'", collectionName, dbName);
+        AlterCollectionFunctionRequest.Builder builder = AlterCollectionFunctionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setFunctionName(request.getFunction().getName())
+                .setFunctionSchema(SchemaUtils.convertToGrpcFunction(request.getFunction()));
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.alterCollectionFunction(builder.build());
+        rpcUtils.handleResponse(title, status);
+
+        return null;
+    }
+
+    public Void dropCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                       DropCollectionFunctionReq request) {
+        if (StringUtils.isEmpty(request.getFunctionName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function name cannot be empty.");
+        }
+
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Drop function to collection: '%s' in database: '%s'", collectionName, dbName);
+        DropCollectionFunctionRequest.Builder builder = DropCollectionFunctionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setFunctionName(request.getFunctionName());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.dropCollectionFunction(builder.build());
+        rpcUtils.handleResponse(title, status);
+
+        return null;
+    }
+
     private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String databaseName,
                                        String collectionName, long timeoutMs) {
         long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)

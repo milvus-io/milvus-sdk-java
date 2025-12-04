@@ -533,6 +533,33 @@ public class MilvusClientV2 {
         return rpcUtils.retry(() -> collectionService.describeReplicas(this.getRpcStub(), request));
     }
 
+    /**
+     * Add a function to collection.
+     *
+     * @param request add function request
+     */
+    public void addCollectionFunction(AddCollectionFunctionReq request) {
+        rpcUtils.retry(() -> collectionService.addCollectionFunction(this.getRpcStub(), request));
+    }
+
+    /**
+     * Alter a function of collection.
+     *
+     * @param request alter function request
+     */
+    public void alterCollectionFunction(AlterCollectionFunctionReq request) {
+        rpcUtils.retry(() -> collectionService.alterCollectionFunction(this.getRpcStub(), request));
+    }
+
+    /**
+     * Drop a function of collection.
+     *
+     * @param request drop function request
+     */
+    public void dropCollectionFunction(DropCollectionFunctionReq request) {
+        rpcUtils.retry(() -> collectionService.dropCollectionFunction(this.getRpcStub(), request));
+    }
+
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Index Operations
     /////////////////////////////////////////////////////////////////////////////////////////////
