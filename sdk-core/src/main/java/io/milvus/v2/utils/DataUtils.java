@@ -273,10 +273,12 @@ public class DataUtils {
             }
 
             // from v2.4.10, milvus allows upsert for auto-id pk, no need to check for upsert action
-            if (field.getAutoID() == Boolean.TRUE && insertBuilder != null) {
-                String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
-            }
+            // from v2.6.3, user can insert pk value even when auto-id is true if the collection
+            // has "allow_insert_auto_id" property, no need to check for insert/upsert action.
+//            if (field.getAutoID() == Boolean.TRUE && insertBuilder != null) {
+//                String msg = String.format("The primary key: %s is auto generated, no need to input.", fieldName);
+//                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+//            }
 
             // store the value into InsertDataInfo
             Object fieldValue = DataUtils.checkFieldValue(field, fieldData);
