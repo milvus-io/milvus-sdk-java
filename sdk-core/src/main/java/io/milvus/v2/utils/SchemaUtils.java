@@ -325,6 +325,9 @@ public class SchemaUtils {
             }
             fieldSchema.setElementType(addFieldReq.getElementType());
             fieldSchema.setMaxCapacity(addFieldReq.getMaxCapacity());
+            if (addFieldReq.getElementType().equals(io.milvus.v2.common.DataType.VarChar)) {
+                fieldSchema.setMaxLength(addFieldReq.getMaxLength());
+            }
         } else if (addFieldReq.getDataType().equals(io.milvus.v2.common.DataType.VarChar)) {
             fieldSchema.setMaxLength(addFieldReq.getMaxLength());
         } else if (ParamUtils.isDenseVectorDataType(io.milvus.grpc.DataType.valueOf(addFieldReq.getDataType().name()))) {
