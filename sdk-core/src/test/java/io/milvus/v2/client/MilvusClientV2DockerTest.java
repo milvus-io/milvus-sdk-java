@@ -70,7 +70,6 @@ import io.milvus.v2.service.utility.response.GetPersistentSegmentInfoResp;
 import io.milvus.v2.service.utility.response.GetQuerySegmentInfoResp;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
-import io.milvus.v2.service.vector.request.ranker.BoostRanker;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
 import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import io.milvus.v2.service.vector.response.*;
@@ -312,18 +311,6 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(1, queryResults.size());
         return (long) queryResults.get(0).getEntity().get("count(*)");
     }
-
-    @Test
-    void testAAAA() {
-        CreateCollectionReq.Function func = CreateCollectionReq.Function.builder()
-                .name("XXX")
-                .build();
-        BoostRanker ranker = BoostRanker.builder()
-                .name("AAA")
-                .weight(2.5f)
-                .build();
-    }
-
 
     @Test
     void testFloatVectors() {
@@ -1049,6 +1036,104 @@ class MilvusClientV2DockerTest {
             ByteBuffer getVec = (ByteBuffer) entity.get(vectorFieldName);
             Assertions.assertEquals(originVec, getVec);
         }
+    }
+
+    @Test
+    void testArray() {
+        String randomCollectionName = generator.generate(10);
+        String pkField = "key";
+        String vectorField = "vector";
+        String arrayField = "array";
+        int capacity = 10;
+        int varcharLength = 88;
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(pkField)
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .autoID(true)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(vectorField)
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(arrayField)
+                .description("dummy")
+                .dataType(DataType.Array)
+                .elementType(DataType.VarChar)
+                .maxCapacity(capacity)
+                .maxLength(varcharLength)
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName(vectorField)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build());
+
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+
+        // describe
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        CreateCollectionReq.CollectionSchema descSchema = descResp.getCollectionSchema();
+        Assertions.assertEquals(3, descSchema.getFieldSchemaList().size());
+        CreateCollectionReq.FieldSchema arraySchema = descSchema.getFieldSchemaList().get(2);
+        Assertions.assertEquals(arrayField, arraySchema.getName());
+        Assertions.assertEquals("dummy", arraySchema.getDescription());
+        Assertions.assertEquals(DataType.Array, arraySchema.getDataType());
+        Assertions.assertEquals(DataType.VarChar, arraySchema.getElementType());
+        Assertions.assertEquals(capacity, arraySchema.getMaxCapacity());
+        Assertions.assertEquals(varcharLength, arraySchema.getMaxLength());
+
+        // insert
+        List<JsonObject> rows = new ArrayList<>();
+        int count = 20;
+        for (int i = 0; i < count; i++) {
+            JsonObject row = new JsonObject();
+            row.add(vectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
+            List<String> strArray = new ArrayList<>();
+            for (int k = i; k < capacity; k++) {
+                strArray.add(String.format("string-%d-%d", i, k));
+            }
+            row.add(arrayField, JsonUtils.toJsonTree(strArray).getAsJsonArray());
+            rows.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(rows)
+                .build());
+        Assertions.assertEquals(count, insertResp.getInsertCnt());
+
+        // query
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter(String.format("ARRAY_CONTAINS(%s, \"string-0-9\")", arrayField))
+                .limit(5)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Collections.singletonList(arrayField))
+                .build());
+        List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
+        Assertions.assertEquals(1, queryResults.size());
+        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey(arrayField));
+        Assertions.assertInstanceOf(List.class, queryResults.get(0).getEntity().get(arrayField));
+        List<String> arr = (List<String>) queryResults.get(0).getEntity().get(arrayField);
+        Assertions.assertEquals(capacity, arr.size());
     }
 
     @Test
