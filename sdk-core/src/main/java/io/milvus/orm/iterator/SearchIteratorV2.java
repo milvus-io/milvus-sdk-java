@@ -43,7 +43,7 @@ import static io.milvus.param.Constant.UNLIMITED;
 
 public class SearchIteratorV2 {
     private static final Logger logger = LoggerFactory.getLogger(SearchIteratorV2.class);
-    private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private final RpcStubWrapper blockingStub;
 
     private final SearchIteratorReqV2 searchIteratorReq;
     private final int batchSize;
@@ -58,7 +58,7 @@ public class SearchIteratorV2 {
 
     // to support V2
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
-                            MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+                            RpcStubWrapper blockingStub) {
         this.blockingStub = blockingStub;
         this.searchIteratorReq = searchIteratorReq;
 
@@ -101,7 +101,7 @@ public class SearchIteratorV2 {
         if (StringUtils.isNotEmpty(searchIteratorReq.getDatabaseName())) {
             builder.setDbName(searchIteratorReq.getDatabaseName());
         }
-        DescribeCollectionResponse response = rpcUtils.retry(() -> this.blockingStub.describeCollection(builder.build()));
+        DescribeCollectionResponse response = rpcUtils.retry(() -> blockingStub.get().describeCollection(builder.build()));
         String title = String.format("DescribeCollectionRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 
@@ -130,7 +130,7 @@ public class SearchIteratorV2 {
                 .filterTemplateValues(searchIteratorReq.getFilterTemplateValues())
                 .build();
         SearchRequest searchRequest = new VectorUtils().ConvertToGrpcSearchRequest(request);
-        SearchResults response = rpcUtils.retry(() -> this.blockingStub.search(searchRequest));
+        SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(searchRequest));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 

@@ -150,7 +150,7 @@ public class IteratorExample {
             List<Long> ages = new ArrayList<>();
             List<Long> ids = new ArrayList<>();
             for (long i = 0L; i < NUM_ENTITIES; ++i) {
-                ages.add((long) batch * NUM_ENTITIES + i);
+                ages.add(((long) batch * NUM_ENTITIES + i) % 100);
                 ids.add((long) batch * NUM_ENTITIES + i);
             }
 
@@ -199,20 +199,20 @@ public class IteratorExample {
     }
 
     private void queryIterateCollectionNoOffset() {
-        String expr = String.format("10 <= %s <= 100", AGE_FIELD);
+        String expr = String.format("10 <= %s <= 30", AGE_FIELD);
 
-        QueryIterator queryIterator = getQueryIterator(expr, 0L, 5L, null);
+        QueryIterator queryIterator = getQueryIterator(expr, 0L, 1L, null);
         iterateQueryResult(queryIterator);
     }
 
     private void queryIterateCollectionWithOffset() {
-        String expr = String.format("10 <= %s <= 100", AGE_FIELD);
+        String expr = String.format("10 <= %s <= 100", ID_FIELD);
         QueryIterator queryIterator = getQueryIterator(expr, 10L, 50L, null);
         iterateQueryResult(queryIterator);
     }
 
     private void queryIterateCollectionWithLimit() {
-        String expr = String.format("10 <= %s <= 100", AGE_FIELD);
+        String expr = String.format("10 <= %s <= 100", ID_FIELD);
         QueryIterator queryIterator = getQueryIterator(expr, null, 80L, 530L);
         iterateQueryResult(queryIterator);
     }
@@ -232,6 +232,7 @@ public class IteratorExample {
     }
 
     private void iterateQueryResult(QueryIterator queryIterator) {
+        System.out.println("\n========== queryIterator() ==========");
         int pageIdx = 0;
         int iterateCount = 0;
         while (true) {
@@ -252,6 +253,7 @@ public class IteratorExample {
     }
 
     private void iterateSearchResult(SearchIterator searchIterator) {
+        System.out.println("\n========== searchIterator() ==========");
         int pageIdx = 0;
         int iterateCount = 0;
         while (true) {
@@ -320,6 +322,10 @@ public class IteratorExample {
         if (!skipDataPeriod) {
             example.prepareData();
         }
+
+        // set rpcTimeoutMs, just to verify it works for each call of query/search inside the iterator
+        // in versions older than 2.5.16/2.6.11, iterator.next() will timeout after several calls if the rpcTimeoutMs is greater than 0
+        milvusClient.withTimeout(200, TimeUnit.MILLISECONDS);
 
         example.queryIterateCollectionNoOffset();
         example.queryIterateCollectionWithOffset();
