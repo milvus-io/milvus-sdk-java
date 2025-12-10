@@ -159,7 +159,7 @@ public class VectorUtils {
 
         // prepare target, the input could be vectors or string list for doc-in-doc-out
         List<BaseVector> vectors = request.getData();
-        if (vectors.isEmpty()) {
+        if (vectors == null || vectors.isEmpty()) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Target data list of search request is empty.");
         }
 
