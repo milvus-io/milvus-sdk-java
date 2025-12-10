@@ -25,6 +25,7 @@ import io.milvus.grpc.ConnectRequest;
 import io.milvus.grpc.ConnectResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.v2.service.cdc.CDCService;
@@ -716,7 +717,7 @@ public class MilvusClientV2 {
      * @return QueryIterator
      */
     public QueryIterator queryIterator(QueryIteratorReq request) {
-        return rpcUtils.retry(() -> vectorService.queryIterator(this.getRpcStub(), request));
+        return rpcUtils.retry(() -> vectorService.queryIterator(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
     }
 
     /**
@@ -726,7 +727,7 @@ public class MilvusClientV2 {
      * @return SearchIterator
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
-        return rpcUtils.retry(() -> vectorService.searchIterator(this.getRpcStub(), request));
+        return rpcUtils.retry(() -> vectorService.searchIterator(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
     }
 
     /**
@@ -736,7 +737,7 @@ public class MilvusClientV2 {
      * @return SearchIteratorV2
      */
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
-        return rpcUtils.retry(() -> vectorService.searchIteratorV2(this.getRpcStub(), request));
+        return rpcUtils.retry(() -> vectorService.searchIteratorV2(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
     }
 
     /**
