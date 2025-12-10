@@ -20,22 +20,36 @@
 package io.milvus.client;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.reflect.TypeToken;
 import io.grpc.StatusRuntimeException;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.VectorUtils;
-import io.milvus.exception.*;
+import io.milvus.exception.ClientNotConnectedException;
+import io.milvus.exception.IllegalResponseException;
+import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
-import io.milvus.param.alias.*;
-import io.milvus.param.bulkinsert.*;
+import io.milvus.param.alias.AlterAliasParam;
+import io.milvus.param.alias.CreateAliasParam;
+import io.milvus.param.alias.DropAliasParam;
+import io.milvus.param.alias.ListAliasesParam;
+import io.milvus.param.bulkinsert.BulkInsertParam;
+import io.milvus.param.bulkinsert.GetBulkInsertStateParam;
+import io.milvus.param.bulkinsert.ListBulkInsertTasksParam;
 import io.milvus.param.collection.*;
 import io.milvus.param.control.*;
-import io.milvus.param.credential.*;
+import io.milvus.param.credential.CreateCredentialParam;
+import io.milvus.param.credential.DeleteCredentialParam;
+import io.milvus.param.credential.ListCredUsersParam;
+import io.milvus.param.credential.UpdateCredentialParam;
 import io.milvus.param.dml.*;
 import io.milvus.param.highlevel.collection.CreateSimpleCollectionParam;
 import io.milvus.param.highlevel.collection.ListCollectionsParam;
@@ -413,7 +427,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         logDebug("{} successfully!", requestInfo);
     }
 
-    ///////////////////// API implementation //////////////////////
+    /// ////////////////// API implementation //////////////////////
     @Override
     public R<Boolean> hasCollection(@NonNull HasCollectionParam requestParam) {
         if (!clientIsReady()) {
@@ -541,9 +555,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             List<KeyValuePair> propertiesList = ParamUtils.AssembleKvPair(requestParam.getProperties());
             AlterDatabaseRequest alterDatabaseRequest = AlterDatabaseRequest.newBuilder()
-                .setDbName(requestParam.getDatabaseName())
-                .addAllProperties(propertiesList)
-                .build();
+                    .setDbName(requestParam.getDatabaseName())
+                    .addAllProperties(propertiesList)
+                    .build();
 
             Status response = blockingStub().alterDatabase(alterDatabaseRequest);
             handleResponse(title, response);
@@ -567,8 +581,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         String title = String.format("DescribeDatabaseRequest databaseName:%s", requestParam.getDatabaseName());
         try {
             DescribeDatabaseRequest describeDatabaseRequest = DescribeDatabaseRequest.newBuilder()
-                .setDbName(requestParam.getDatabaseName())
-                .build();
+                    .setDbName(requestParam.getDatabaseName())
+                    .build();
 
             DescribeDatabaseResponse response = blockingStub().describeDatabase(describeDatabaseRequest);
             handleResponse(title, response.getStatus());
@@ -1351,7 +1365,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             Map<String, String> extraParams = requestParam.getExtraParam();
             for (Map.Entry<String, String> entry : extraParams.entrySet()) {
                 if (entry.getKey().equals(Constant.PARAMS)) {
-                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {}.getType());
+                    Map<String, String> tempParams = JsonUtils.fromJson(entry.getValue(), new TypeToken<Map<String, String>>() {
+                    }.getType());
                     for (String key : tempParams.keySet()) {
                         createIndexRequestBuilder.addExtraParams(KeyValuePair.newBuilder()
                                 .setKey(key)
@@ -3185,7 +3200,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
     }
 
-    ///////////////////// High Level API//////////////////////
+    /// ////////////////// High Level API//////////////////////
     @Override
     public R<RpcStatus> createCollection(CreateSimpleCollectionParam requestParam) {
         if (!clientIsReady()) {
@@ -3197,21 +3212,21 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             // step1: create collection
             R<RpcStatus> createCollectionStatus = createCollection(requestParam.getCreateCollectionParam());
-            if(!Objects.equals(createCollectionStatus.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(createCollectionStatus.getStatus(), R.success().getStatus())) {
                 logError("CreateCollection failed: {}", createCollectionStatus.getException().getMessage());
                 return R.failed(createCollectionStatus.getException());
             }
 
             // step2: create index
             R<RpcStatus> createIndexStatus = createIndex(requestParam.getCreateIndexParam());
-            if(!Objects.equals(createIndexStatus.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(createIndexStatus.getStatus(), R.success().getStatus())) {
                 logError("CreateIndex failed: {}", createIndexStatus.getException().getMessage());
                 return R.failed(createIndexStatus.getException());
             }
 
             // step3: load collection
             R<RpcStatus> loadCollectionStatus = loadCollection(requestParam.getLoadCollectionParam());
-            if(!Objects.equals(loadCollectionStatus.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(loadCollectionStatus.getStatus(), R.success().getStatus())) {
                 logError("LoadCollection failed: {}", loadCollectionStatus.getException().getMessage());
                 return R.failed(loadCollectionStatus.getException());
             }
@@ -3234,10 +3249,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         logDebug(requestParam.toString());
         String title = "ListCollectionsRequest";
-        
+
         try {
             R<ShowCollectionsResponse> response = showCollections(requestParam.getShowCollectionsParam());
-            if(!Objects.equals(response.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(response.getStatus(), R.success().getStatus())) {
                 logError("ListCollections failed: {}", response.getException().getMessage());
                 return R.failed(response.getException());
             }
@@ -3261,10 +3276,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         logDebug(requestParam.toString());
         String title = "InsertRowsRequest";
-        
+
         try {
             R<MutationResult> response = insert(requestParam.getInsertParam());
-            if(!Objects.equals(response.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(response.getStatus(), R.success().getStatus())) {
                 logError("Insert failed: {}", response.getException().getMessage());
                 return R.failed(response.getException());
             }
@@ -3394,7 +3409,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                     .withConsistencyLevel(requestParam.getConsistencyLevel())
                     .build();
             R<QueryResults> response = query(queryParam);
-            if(!Objects.equals(response.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(response.getStatus(), R.success().getStatus())) {
                 logError("Query failed: {}", response.getException().getMessage());
                 return R.failed(response.getException());
             }
@@ -3452,7 +3467,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             // search
             R<SearchResults> response = search(searchParam);
-            if(!Objects.equals(response.getStatus(), R.success().getStatus())){
+            if (!Objects.equals(response.getStatus(), R.success().getStatus())) {
                 logError("Search failed: {}", response.getException().getMessage());
                 return R.failed(response.getException());
             }
@@ -3483,7 +3498,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(descResp.getException());
         }
         DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
-        QueryIterator queryIterator = new QueryIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        // for MilvusClientV1, we don't support to set rpcDeadlineMs for iterator, rpcDeadlineMs is always 0(no deadline)
+        QueryIterator queryIterator = new QueryIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L), descCollResponseWrapper.getPrimaryField());
         return R.success(queryIterator);
     }
 
@@ -3498,11 +3514,12 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(descResp.getException());
         }
         DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
-        SearchIterator searchIterator = new SearchIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        // for MilvusClientV1, we don't support to set rpcDeadlineMs for iterator, rpcDeadlineMs is always 0(no deadline)
+        SearchIterator searchIterator = new SearchIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L), descCollResponseWrapper.getPrimaryField());
         return R.success(searchIterator);
     }
 
-    ///////////////////// Log Functions//////////////////////
+    /// ////////////////// Log Functions//////////////////////
     protected void logDebug(String msg, Object... params) {
         if (logLevel.ordinal() <= LogLevel.Debug.ordinal()) {
             logger.debug(msg, params);

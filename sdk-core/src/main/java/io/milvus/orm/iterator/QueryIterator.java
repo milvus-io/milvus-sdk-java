@@ -19,7 +19,10 @@
 
 package io.milvus.orm.iterator;
 
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.QueryRequest;
+import io.milvus.grpc.QueryResults;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.param.collection.FieldType;
@@ -36,14 +39,12 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.milvus.param.Constant.NO_CACHE_ID;
-import static io.milvus.param.Constant.MAX_BATCH_SIZE;
-import static io.milvus.param.Constant.UNLIMITED;
+import static io.milvus.param.Constant.*;
 
 public class QueryIterator {
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private final IteratorCache iteratorCache;
-    private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private final RpcStubWrapper blockingStub;
     private final FieldType primaryField;
 
     private final QueryIteratorParam queryIteratorParam;
@@ -58,7 +59,7 @@ public class QueryIterator {
     private long sessionTs = 0;
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
-                         MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                         RpcStubWrapper blockingStub,
                          FieldType primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
@@ -76,7 +77,7 @@ public class QueryIterator {
     }
 
     public QueryIterator(QueryIteratorReq queryIteratorReq,
-                         MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                         RpcStubWrapper blockingStub,
                          CreateCollectionReq.FieldSchema primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
@@ -200,7 +201,7 @@ public class QueryIterator {
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return " ( "+currentExpr+" ) " + " and " + filteredPKStr;
+        return " ( " + currentExpr + " ) " + " and " + filteredPKStr;
     }
 
     private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
@@ -245,7 +246,7 @@ public class QueryIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        QueryResults response = rpcUtils.retry(()->blockingStub.query(builder.build()));
+        QueryResults response = rpcUtils.retry(() -> blockingStub.get().query(builder.build()));
         String title = String.format("QueryRequest collectionName:%s", queryIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
