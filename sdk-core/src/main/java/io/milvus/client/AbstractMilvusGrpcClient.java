@@ -35,6 +35,7 @@ import io.milvus.exception.IllegalResponseException;
 import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
 import io.milvus.param.alias.AlterAliasParam;
@@ -3528,7 +3529,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(descResp.getException());
         }
         DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
-        QueryIterator queryIterator = new QueryIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        // for MilvusClientV1, we don't support to set rpcDeadlineMs for iterator, rpcDeadlineMs is always 0(no deadline)
+        QueryIterator queryIterator = new QueryIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L), descCollResponseWrapper.getPrimaryField());
         return R.success(queryIterator);
     }
 
@@ -3543,7 +3545,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             return R.failed(descResp.getException());
         }
         DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
-        SearchIterator searchIterator = new SearchIterator(requestParam, this.blockingStub(), descCollResponseWrapper.getPrimaryField());
+        // for MilvusClientV1, we don't support to set rpcDeadlineMs for iterator, rpcDeadlineMs is always 0(no deadline)
+        SearchIterator searchIterator = new SearchIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L), descCollResponseWrapper.getPrimaryField());
         return R.success(searchIterator);
     }
 

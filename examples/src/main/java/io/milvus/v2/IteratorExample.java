@@ -43,6 +43,7 @@ import io.milvus.v2.service.vector.response.SearchResp;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public class IteratorExample {
@@ -315,11 +316,16 @@ public class IteratorExample {
 
     public static void main(String[] args) {
         buildCollection();
-        queryIterator("userID < 300", 50, 5, 400);
+
+        // set rpcTimeoutMs, just to verify it works for each call of query/search inside the iterator
+        // in versions older than 2.5.16/2.6.11, iterator.next() will timeout after several calls if the rpcTimeoutMs is greater than 0
+        client.withTimeout(200, TimeUnit.MILLISECONDS);
+
+        queryIterator("userID < 3000", 1, 5, 10000);
         queryIteratorWithTemplate(80);
 
         searchIteratorV1("userAge > 50 &&userAge < 100", "{\"range_filter\": 15.0, \"radius\": 20.0}", 100, 500);
-        searchIteratorV1("", "", 10, 99);
+        searchIteratorV1("", "", 1, 3000);
         searchIteratorV2("userAge > 10 &&userAge < 20", null, 50, 120, null);
 
         Map<String, Object> extraParams = new HashMap<>();

@@ -25,7 +25,10 @@ import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.SearchRequest;
+import io.milvus.grpc.SearchResults;
 import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.ParamUtils;
@@ -54,7 +57,7 @@ import static io.milvus.param.Constant.*;
 public class SearchIterator {
     private static final Logger logger = LoggerFactory.getLogger(SearchIterator.class);
     private final IteratorCache iteratorCache;
-    private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private final RpcStubWrapper blockingStub;
     private final FieldType primaryField;
 
     private final SearchIteratorParam searchIteratorParam;
@@ -76,7 +79,7 @@ public class SearchIterator {
     private long sessionTs = 0;
 
     public SearchIterator(SearchIteratorParam searchIteratorParam,
-                          MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                          RpcStubWrapper blockingStub,
                           FieldType primaryField) {
         this.iteratorCache = new IteratorCache();
         this.searchIteratorParam = searchIteratorParam;
@@ -97,7 +100,7 @@ public class SearchIterator {
 
     // to support V2
     public SearchIterator(SearchIteratorReq searchIteratorReq,
-                          MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                          RpcStubWrapper blockingStub,
                           CreateCollectionReq.FieldSchema primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
@@ -296,7 +299,7 @@ public class SearchIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        SearchResults response = rpcUtils.retry(() -> blockingStub.search(builder.build()));
+        SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(builder.build()));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorParam.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
