@@ -19,7 +19,10 @@
 
 package io.milvus.orm.iterator;
 
-import io.milvus.grpc.*;
+import io.milvus.grpc.DataType;
+import io.milvus.grpc.KeyValuePair;
+import io.milvus.grpc.QueryRequest;
+import io.milvus.grpc.QueryResults;
 import io.milvus.param.Constant;
 import io.milvus.param.collection.FieldType;
 import io.milvus.param.dml.QueryIteratorParam;
@@ -41,7 +44,7 @@ import static io.milvus.param.Constant.*;
 public class QueryIterator {
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private final IteratorCache iteratorCache;
-    private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private final RpcStubWrapper blockingStub;
     private final FieldType primaryField;
 
     private final QueryIteratorReq queryIteratorReq;
@@ -56,7 +59,7 @@ public class QueryIterator {
     private long sessionTs = 0;
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
-                         MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                         RpcStubWrapper blockingStub,
                          FieldType primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
@@ -74,13 +77,12 @@ public class QueryIterator {
     }
 
     public QueryIterator(QueryIteratorReq queryIteratorReq,
-                         MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                         RpcStubWrapper blockingStub,
                          CreateCollectionReq.FieldSchema primaryField) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         this.queryIteratorReq = queryIteratorReq;
         this.primaryField = IteratorAdapterV2.convertV2Field(primaryField);
-
 
         this.batchSize = (int) queryIteratorReq.getBatchSize();
         this.expr = queryIteratorReq.getExpr();
@@ -247,7 +249,7 @@ public class QueryIterator {
         // set default consistency level
         builder.setUseDefaultConsistency(true);
 
-        QueryResults response = rpcUtils.retry(() -> blockingStub.query(builder.build()));
+        QueryResults response = rpcUtils.retry(() -> blockingStub.get().query(builder.build()));
         String title = String.format("QueryRequest collectionName:%s", queryIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;

@@ -2456,11 +2456,14 @@ class MilvusClientV2DockerTest {
         long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
 
+        // set rpc timeout for each call
+        client.withTimeout(1000, TimeUnit.MILLISECONDS);
+
         // search iterator
         SearchIterator searchIterator = client.searchIterator(SearchIteratorReq.builder()
                 .collectionName(randomCollectionName)
                 .outputFields(Lists.newArrayList("*"))
-                .batchSize(20L)
+                .batchSize(1L)
                 .vectorFieldName("float_vector")
                 .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
                 .expr("int64_field > 500 && int64_field < 1000")
@@ -2536,7 +2539,7 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .expr("int64_field < " + to)
                 .outputFields(Lists.newArrayList("*"))
-                .batchSize(50L)
+                .batchSize(1L)
                 .offset(from)
                 .limit(4000)
                 .consistencyLevel(ConsistencyLevel.EVENTUALLY)
@@ -2546,7 +2549,7 @@ class MilvusClientV2DockerTest {
         while (true) {
             List<QueryResultsWrapper.RowRecord> res = queryIterator.next();
             if (res.isEmpty()) {
-                System.out.println("query iteration finished, close");
+                System.out.printf("query iteration finished, close, %d items fetched%n", counter);
                 queryIterator.close();
                 break;
             }
@@ -2602,7 +2605,7 @@ class MilvusClientV2DockerTest {
         SearchIteratorV2 searchIteratorV2 = client.searchIteratorV2(SearchIteratorReqV2.builder()
                 .collectionName(randomCollectionName)
                 .outputFields(Lists.newArrayList("*"))
-                .batchSize(1000L)
+                .batchSize(100L)
                 .vectorFieldName("float_vector")
                 .filter("id >= 50")
                 .vectors(Collections.singletonList(new FloatVec(utils.generateFloatVector())))
@@ -2613,7 +2616,7 @@ class MilvusClientV2DockerTest {
         while (true) {
             List<SearchResp.SearchResult> res = searchIteratorV2.next();
             if (res.isEmpty()) {
-                System.out.println("search iteration finished, close");
+                System.out.printf("search iteration finished, close, %d items fetched%n", counter);
                 searchIteratorV2.close();
                 break;
             }
@@ -2664,6 +2667,9 @@ class MilvusClientV2DockerTest {
         // search iterator could not ensure that all the entities can be retrieved
         // expect count is 9950, but sometimes it returns 9949 or 9948
         Assertions.assertTrue(counter > ((int) count - 55) && counter <= ((int) count - 50));
+
+        // reset rpc timeout to unlimited
+        client.withTimeout(0, TimeUnit.MILLISECONDS);
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }

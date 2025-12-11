@@ -24,6 +24,7 @@ import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
+import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.v2.exception.ErrorCode;
@@ -291,25 +292,25 @@ public class VectorService extends BaseService {
                 .build();
     }
 
-    public QueryIterator queryIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+    public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request) {
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new QueryIterator(request, blockingStub, pkField);
     }
 
-    public SearchIterator searchIterator(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+    public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request) {
-        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, request.getDatabaseName(),
+        DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
         return new SearchIterator(request, blockingStub, pkField);
     }
 
-    public SearchIteratorV2 searchIteratorV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+    public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request) {
         return new SearchIteratorV2(request, blockingStub);
     }

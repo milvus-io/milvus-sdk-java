@@ -331,7 +331,7 @@ public class SearchReq {
         private int topK = 0; // default value
         private String filter;
         private List<String> outputFields = new ArrayList<>(); // default value
-        private List<BaseVector> data;
+        private List<BaseVector> data = new ArrayList<>(); // default value
         private long offset;
         private long limit = 0L; // default value
         private int roundDecimal = -1; // default value
