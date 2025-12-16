@@ -350,7 +350,7 @@ public class DataUtils {
         FieldData.Builder builder = FieldData.newBuilder().setFieldName(fieldName);
 
         if (ParamUtils.isVectorDataType(dataType)) {
-            VectorArray vectorArr = genVectorArray(dataType, objects);
+            VectorArray vectorArr = genVectorArray(dataType, objects, fieldSchema.getDimension());
             if (vectorArr.getDim() > 0 && vectorArr.getDim() != fieldSchema.getDimension()) {
                 String msg = String.format("Dimension mismatch for field %s, expected: %d, actual: %d",
                         fieldName, fieldSchema.getDimension(), vectorArr.getDim());
@@ -380,8 +380,8 @@ public class DataUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static VectorArray genVectorArray(DataType dataType, List<?> objects) {
-        VectorArray.Builder builder = VectorArray.newBuilder().setElementType(dataType);
+    public static VectorArray genVectorArray(DataType dataType, List<?> objects, int dim) {
+        VectorArray.Builder builder = VectorArray.newBuilder().setElementType(dataType).setDim(dim);
         switch (dataType) {
             case FloatVector:
             case BinaryVector:
@@ -398,19 +398,21 @@ public class DataUtils {
                     List<?> listOfList = (List<?>) object;
                     if (listOfList.isEmpty()) {
                         // struct field value is empty, fill the VectorArray with zero-dim vectors?
-                        builder.addData(VectorField.newBuilder().build());
+                        VectorField.Builder vfBuilder = VectorField.newBuilder().setDim(dim);
+                        if (dataType == DataType.FloatVector) {
+                            vfBuilder.setFloatVector(FloatArray.newBuilder().build());
+                        } else {
+                            // not supported yet
+                            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Unsupported type: " + dataType.name());
+                        }
+                        builder.addData(vfBuilder.build());
                         continue;
                     }
 
                     VectorField vf = ParamUtils.genVectorField(dataType, listOfList);
-                    if (vf.getDim() == 0) {
-                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Vector cannot be empty list");
-                    }
-                    if (builder.getDataCount() == 0) {
-                        builder.setDim(vf.getDim());
-                    } else if (builder.getDim() != vf.getDim()) {
-                        String msg = String.format("Dimension mismatch for vector field, the first dimension: %d, mismatched: %d",
-                                builder.getDim(), vf.getDim());
+                    if (vf.getDim() != dim) {
+                        String msg = String.format("Dimension mismatch for vector field, schema dimension: %d, actual dimension: %d",
+                                dim, vf.getDim());
                         throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
                     }
                     builder.addData(vf);
