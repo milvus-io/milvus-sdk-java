@@ -1282,7 +1282,7 @@ class MilvusClientV2DockerTest {
             row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
             JsonArray structArr1 = new JsonArray();
             JsonArray structArr2 = new JsonArray();
-            for (int k = 0; k < 8; k++) {
+            for (int k = 0; k < i; k++) {
                 if (k < 5) {
                     JsonObject struct = new JsonObject();
                     struct.addProperty("aaa", "No." + k);
@@ -1308,7 +1308,7 @@ class MilvusClientV2DockerTest {
 
         // upsert
         JsonObject row = new JsonObject();
-        row.addProperty(pkField, 6);
+        row.addProperty(pkField, 0);
         row.addProperty(normalScalarField, "update_text");
         row.add(normalVectorField, JsonUtils.toJsonTree(utils.generateFloatVector()));
         JsonArray structArr1 = new JsonArray();
@@ -1318,11 +1318,6 @@ class MilvusClientV2DockerTest {
             struct1.addProperty("aaa", "updated_No." + k);
             struct1.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
             structArr1.add(struct1);
-
-            JsonObject struct2 = new JsonObject();
-            struct2.addProperty("bbb", "updated_No." + k);
-            struct2.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(64)));
-            structArr2.add(struct2);
         }
         row.add("st1", structArr1);
         row.add("st2", structArr2);
@@ -1336,7 +1331,7 @@ class MilvusClientV2DockerTest {
         // query
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(randomCollectionName)
-                .filter(String.format("%s == 6 or %s == 9", pkField, pkField))
+                .filter(String.format("%s == 0 or %s == 9", pkField, pkField))
                 .limit(3)
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .outputFields(Collections.singletonList("*"))
@@ -1376,7 +1371,7 @@ class MilvusClientV2DockerTest {
         for (List<SearchResp.SearchResult> oneResults : searchResults) {
             Assertions.assertEquals(topK, oneResults.size());
         }
-        Assertions.assertEquals(6L, (long) searchResults.get(0).get(0).getId());
+        Assertions.assertEquals(0L, (long) searchResults.get(0).get(0).getId());
         Assertions.assertEquals(9L, (long) searchResults.get(1).get(0).getId());
     }
 
