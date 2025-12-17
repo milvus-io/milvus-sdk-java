@@ -199,7 +199,7 @@ public class QueryIterator {
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return " ( " + currentExpr + " ) " + " and " + filteredPKStr;
+        return filteredPKStr + " and ( " + currentExpr + " )";
     }
 
     private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
