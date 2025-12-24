@@ -208,7 +208,6 @@ public class TestUtils {
             this.output = output;
         }
     }
-
     public TestUtils(int dimension) {
         this.dimension = dimension;
     }

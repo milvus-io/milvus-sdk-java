@@ -398,6 +398,10 @@ public abstract class BulkWriter implements AutoCloseable {
 
     private Pair<Object, Integer> verifyVector(JsonElement object, CreateCollectionReq.FieldSchema field) {
         Object vector = DataUtils.checkFieldValue(field, object);
+        if (vector == null) {
+            return Pair.of(null, 0);
+        }
+
         io.milvus.v2.common.DataType dataType = field.getDataType();
         switch (dataType) {
             case FloatVector:

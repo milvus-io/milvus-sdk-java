@@ -505,7 +505,8 @@ public class DataUtils {
         DataType elementType = ConvertUtils.toProtoDataType(field.getElementType());
         boolean isNullable = field.getIsNullable();
         Object defaultVal = field.getDefaultValue();
-        return ParamUtils.genFieldData(fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic);
+        int dimension = field.getDimension() == null ? 0 : field.getDimension();
+        return ParamUtils.genFieldData(fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, dimension);
     }
 
     public static Object checkFieldValue(CreateCollectionReq.FieldSchema field, JsonElement fieldData) {
