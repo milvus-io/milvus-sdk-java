@@ -36,8 +36,8 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
         }
     }
 
-    public C configForKey(String key, C config) {
-        return configForKeys.put(key, config);
+    public void configForKey(String key, C config) {
+        configForKeys.put(key, config);
     }
 
     public C removeConfig(String key) {
@@ -55,6 +55,9 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
     @Override
     public T create(String key) throws Exception {
         try {
+            if (logger.isDebugEnabled()) {
+                logger.info("PoolClientFactory key: {} creates a client", key);
+            }
             C keyConfig = configForKeys.get(key);
             if (keyConfig == null) {
                 return (T) constructor.newInstance(this.configDefault);
@@ -74,6 +77,9 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
 
     @Override
     public void destroyObject(String key, PooledObject<T> p) throws Exception {
+        if (logger.isDebugEnabled()) {
+            logger.info("PoolClientFactory key: {} closes a client", key);
+        }
         T client = p.getObject();
         closeMethod.invoke(client, 3L);
     }
@@ -84,7 +90,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
             T client = p.getObject();
             return (boolean) verifyMethod.invoke(client);
         } catch (Exception e) {
-            logger.error("Failed to validate client, exception: " + e);
+            logger.error("Failed to validate client, exception: ", e);
             throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
     }

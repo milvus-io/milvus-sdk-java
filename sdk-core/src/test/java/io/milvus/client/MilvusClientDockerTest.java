@@ -3138,22 +3138,38 @@ class MilvusClientDockerTest {
             ConnectParam connectParam = ConnectParam.newBuilder()
                     .withUri(milvus.getEndpoint())
                     .build();
+            int minIdlePerKey = 1;
+            int maxIdlePerKey = 2;
+            int maxTotalPerKey = 4;
             PoolConfig poolConfig = PoolConfig.builder()
+                    .minIdlePerKey(minIdlePerKey)
+                    .maxIdlePerKey(maxIdlePerKey)
+                    .maxTotalPerKey(maxTotalPerKey)
                     .build();
             MilvusClientV1Pool pool = new MilvusClientV1Pool(poolConfig, connectParam);
 
+            String key = "dummy";
+            pool.preparePool(key);
+            Assertions.assertEquals(minIdlePerKey, pool.getActiveClientNumber(key));
+
             List<Thread> threadList = new ArrayList<>();
-            int threadCount = 10;
-            int requestPerThread = 10;
-            String key = "192.168.1.1";
+            int threadCount = 20;
+            int requestPerThread = 1000;
             for (int k = 0; k < threadCount; k++) {
                 Thread t = new Thread(() -> {
                     for (int i = 0; i < requestPerThread; i++) {
-                        MilvusClient client = pool.getClient(key);
-                        R<GetVersionResponse> resp = client.getVersion();
-//                            System.out.printf("%d, %s%n", i, resp.getData().getVersion());
-                        System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
-                        pool.returnClient(key, client);
+                        MilvusClient client = null;
+                        try {
+                            client = pool.getClient(key);
+                            R<GetVersionResponse> resp = client.getVersion();
+                            Assertions.assertEquals(R.Status.Success.getCode(), resp.getStatus().intValue());
+//                        System.out.printf("%d, %s%n", i, resp.getData().getVersion());
+//                        System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+                        } catch (Exception e) {
+                            System.out.printf("request failed: %s%n", e);
+                        } finally {
+                            pool.returnClient(key, client);
+                        }
                     }
                     System.out.printf("Thread %s finished%n", Thread.currentThread().getName());
                 });
@@ -3164,8 +3180,18 @@ class MilvusClientDockerTest {
             for (Thread t : threadList) {
                 t.join();
             }
+            Assertions.assertEquals(maxTotalPerKey, pool.getActiveClientNumber(key));
+            Assertions.assertEquals(maxTotalPerKey, pool.getTotalActiveClientNumber());
+            System.out.printf("qps: %.2f%n", pool.fetchClientPerSecond(key));
 
-            System.out.printf("idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+            while (pool.getActiveClientNumber(key) > 1) {
+                TimeUnit.SECONDS.sleep(1);
+                System.out.printf("waiting idle %d, active %d%n", pool.getIdleClientNumber(key), pool.getActiveClientNumber(key));
+            }
+            Assertions.assertEquals(maxIdlePerKey, pool.getIdleClientNumber(key));
+            Assertions.assertEquals(maxIdlePerKey, pool.getTotalIdleClientNumber());
+            Assertions.assertEquals(1, pool.getActiveClientNumber(key));
+            Assertions.assertEquals(1, pool.getTotalActiveClientNumber());
             pool.close();
         } catch (Exception e) {
             System.out.println(e.getMessage());
