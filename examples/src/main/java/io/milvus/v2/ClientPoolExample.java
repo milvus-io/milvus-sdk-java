@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class ClientPoolExample {
-    public static String serverUri = "http://localhost:19530";
+    public static String ServerUri = "http://localhost:19530";
     public static String CollectionName = "java_sdk_example_pool_v2";
     public static String VectorFieldName = "vector";
     public static int DIM = 128;
@@ -95,7 +95,7 @@ public class ClientPoolExample {
         // the ClientPool will use different config to create client to connect to specific database
         for (String dbName : dbNames) {
             ConnectConfig config = ConnectConfig.builder()
-                    .uri(serverUri)
+                    .uri(ServerUri)
                     .dbName(dbName)
                     .build();
             pool.configForKey(dbName, config);
@@ -288,13 +288,13 @@ public class ClientPoolExample {
 
     public static void main(String[] args) throws InterruptedException {
         ConnectConfig defaultConfig = ConnectConfig.builder()
-                .uri(serverUri)
+                .uri(ServerUri)
                 .build();
         // read this issue for more details about the pool configurations:
         // https://github.com/milvus-io/milvus-sdk-java/issues/1577
         PoolConfig poolConfig = PoolConfig.builder()
-                .maxIdlePerKey(10) // max idle clients per key
-                .maxTotalPerKey(50) // max total(idle + active) clients per key
+                .maxIdlePerKey(1) // max idle clients per key
+                .maxTotalPerKey(5) // max total(idle + active) clients per key
                 .maxTotal(1000) // max total clients for all keys
                 .maxBlockWaitDuration(Duration.ofSeconds(5L)) // getClient() will wait 5 seconds if no idle client available
                 .minEvictableIdleDuration(Duration.ofSeconds(10L)) // if number of idle clients is larger than maxIdlePerKey, redundant idle clients will be evicted after 10 seconds
@@ -340,7 +340,7 @@ public class ClientPoolExample {
 
         long end = System.currentTimeMillis();
         System.out.printf("%d insert requests and %d search requests finished in %.3f seconds%n",
-                threadCount * repeatRequests * 3, threadCount * repeatRequests * 3, (end - start) * 0.001);
+                threadCount * repeatRequests * dbNames.size(), threadCount * repeatRequests * dbNames.size(), (end - start) * 0.001);
 
         printClientNumber(pool);
         pool.clear(); // clear idle clients

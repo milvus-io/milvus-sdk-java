@@ -130,9 +130,9 @@ public class PoolConfig {
     }
 
     public static class Builder {
-        private int maxIdlePerKey = 10;
-        private int minIdlePerKey = 0;
-        private int maxTotalPerKey = 50;
+        private int minIdlePerKey = 1;
+        private int maxIdlePerKey = 2;
+        private int maxTotalPerKey = 5;
         private int maxTotal = 1000;
         private boolean blockWhenExhausted = true;
         private Duration maxBlockWaitDuration = Duration.ofSeconds(3L);
