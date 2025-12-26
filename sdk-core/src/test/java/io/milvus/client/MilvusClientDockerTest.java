@@ -3154,7 +3154,7 @@ class MilvusClientDockerTest {
 
             List<Thread> threadList = new ArrayList<>();
             int threadCount = 20;
-            int requestPerThread = 1000;
+            int requestPerThread = 10000;
             for (int k = 0; k < threadCount; k++) {
                 Thread t = new Thread(() -> {
                     for (int i = 0; i < requestPerThread; i++) {
