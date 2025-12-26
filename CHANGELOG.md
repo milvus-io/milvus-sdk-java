@@ -1,5 +1,17 @@
 # Changelog
 
+## milvus-sdk-java 2.6.11 (2025-12-26)
+### Improvement
+- Optimize MilvusClientV2Pool/MilvusClientPool to reuse client objects
+- Allow to insert pk even when auto-id is true, milvus v2.6.3 supports
+- Support AddCollectionFunction/AlterCollectionFunction/DropCollectionFunction milvus v2.6.8 supports
+
+### Bug
+- Fix a bug of QueryIterator that query failed when filter expression contains RANDOM_SAMPLE
+- Fix a bug that insert() cannot handle empty struct list
+- Fix a bug that rpcDeadline incorrectly work for iterator
+- Fix a bug that max_lenth of Array/Varchar field missed
+
 ## milvus-sdk-java 2.6.10 (2025-12-01)
 ### Breaking Change
 - Rename "Stage" to "Volume" for BulkWriter
