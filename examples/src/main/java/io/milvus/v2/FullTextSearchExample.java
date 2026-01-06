@@ -47,6 +47,7 @@ public class FullTextSearchExample {
     private static final String COLLECTION_NAME = "java_sdk_example_text_match_v2";
     private static final String ID_FIELD = "id";
     private static final String VECTOR_FIELD = "vector";
+    private static final String TEXT_FIELD = "text";
 
     private static void searchByText(MilvusClientV2 client, String text) {
         // The text is tokenized inside server and turned into a sparse embedding to compare with the vector field
@@ -54,7 +55,7 @@ public class FullTextSearchExample {
                 .collectionName(COLLECTION_NAME)
                 .data(Collections.singletonList(new EmbeddedText(text)))
                 .limit(3)
-                .outputFields(Collections.singletonList("text"))
+                .outputFields(Collections.singletonList(TEXT_FIELD))
                 .build());
         System.out.println("\nSearch by text: " + text);
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
@@ -87,7 +88,7 @@ public class FullTextSearchExample {
                 .autoID(false)
                 .build());
         schema.addField(AddFieldReq.builder()
-                .fieldName("text")
+                .fieldName(TEXT_FIELD)
                 .dataType(DataType.VarChar)
                 .maxLength(65535)
                 .enableAnalyzer(true) // must enable this if you use Function
@@ -103,7 +104,7 @@ public class FullTextSearchExample {
         schema.addFunction(Function.builder()
                 .functionType(FunctionType.BM25)
                 .name("function_bm25")
-                .inputFieldNames(Collections.singletonList("text"))
+                .inputFieldNames(Collections.singletonList(TEXT_FIELD))
                 .outputFieldNames(Collections.singletonList(VECTOR_FIELD))
                 .build());
 
