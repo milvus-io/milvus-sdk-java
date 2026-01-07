@@ -354,6 +354,9 @@ public class ConnectConfig {
         }
 
         public ConnectConfigBuilder username(String username) {
+            if (username == null || username.trim().isEmpty()) {
+                throw new IllegalArgumentException("Username cannot be null or blank");
+            }
             this.username = username;
             return this;
         }
