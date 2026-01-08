@@ -491,6 +491,9 @@ public class ConnectParam {
          * @return <code>Builder</code>
          */
         public Builder withAuthorization(String username, String password) {
+            if (username == null || username.trim().isEmpty()) {
+                throw new IllegalArgumentException("Username cannot be null or blank");
+            }
             this.authorization = Base64.getEncoder().encodeToString(String.format("%s:%s", username, password).getBytes(StandardCharsets.UTF_8));
             this.userName = username;
             return this;
