@@ -184,17 +184,28 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         }
 
         assert channel != null;
-        blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
-        futureStub = MilvusServiceGrpc.newFutureStub(channel);
 
-        // calls a RPC Connect() to the remote server, and sends the client info to the server
-        // so that the server knows which client is interacting, especially for accesses log.
-        this.timeoutMs = connectParam.getConnectTimeoutMs(); // set this value to connectTimeoutMs to control the retry()
-        R<ConnectResponse> resp = this.retry(() -> connect(connectParam));
-        if (resp.getStatus() != R.Status.Success.getCode()) {
-            String msg = "Failed to initialize connection. Error: " + resp.getMessage();
-            logError(msg);
-            throw new RuntimeException(msg);
+        try {
+            blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
+            futureStub = MilvusServiceGrpc.newFutureStub(channel);
+
+            // calls a RPC Connect() to the remote server, and sends the client info to the server
+            // so that the server knows which client is interacting, especially for accesses log.
+            this.timeoutMs = connectParam.getConnectTimeoutMs(); // set this value to connectTimeoutMs to control the retry()
+            R<ConnectResponse> resp = this.retry(() -> connect(connectParam));
+            if (resp.getStatus() != R.Status.Success.getCode()) {
+                String msg = "Failed to initialize connection. Error: " + resp.getMessage();
+                logError(msg);
+                throw new RuntimeException(msg);
+            }
+        } catch (Exception e) {
+            // close the channel if connect() throws exception, avoid leakage
+            try {
+                close(3);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            throw e;
         }
         this.timeoutMs = 0; // reset the timeout value to default
     }
