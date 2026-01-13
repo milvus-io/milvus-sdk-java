@@ -1204,6 +1204,16 @@ public class ParamUtils {
 
         FieldData.Builder builder = FieldData.newBuilder();
         if (isVectorDataType(dataType)) {
+            if (isNullable) {
+                List<Object> tempObjects = new ArrayList<>();
+                for (Object obj : objects) {
+                    builder.addValidData(obj != null);
+                    if (obj != null) {
+                        tempObjects.add(obj);
+                    }
+                }
+                objects = tempObjects;
+            }
             VectorField vectorField = genVectorField(dataType, objects);
             return builder.setFieldName(fieldName).setType(dataType).setVectors(vectorField).build();
         } else {
@@ -1228,6 +1238,22 @@ public class ParamUtils {
 
     @SuppressWarnings("unchecked")
     public static VectorField genVectorField(DataType dataType, List<?> objects) {
+        if (objects.isEmpty()) {
+            if (dataType == DataType.FloatVector) {
+                return VectorField.newBuilder().setDim(0).setFloatVector(FloatArray.newBuilder().build()).build();
+            } else if (dataType == DataType.BinaryVector) {
+                return VectorField.newBuilder().setDim(0).setBinaryVector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.Float16Vector) {
+                return VectorField.newBuilder().setDim(0).setFloat16Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.BFloat16Vector) {
+                return VectorField.newBuilder().setDim(0).setBfloat16Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.Int8Vector) {
+                return VectorField.newBuilder().setDim(0).setInt8Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.SparseFloatVector) {
+                return VectorField.newBuilder().setDim(0).setSparseFloatVector(SparseFloatArray.newBuilder().build()).build();
+            }
+        }
+
         if (dataType == DataType.FloatVector) {
             List<Float> floats = new ArrayList<>();
             // each object is List<Float>
