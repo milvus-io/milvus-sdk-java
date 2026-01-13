@@ -1,5 +1,10 @@
 # Changelog
 
+## milvus-sdk-java 2.6.12 (2026-01-13)
+### Improvement
+- Not allow empty username to connect milvus
+- Close rpc channel when MilvusClientV1/MilvusClientV2 fails to initialize
+
 ## milvus-sdk-java 2.6.11 (2025-12-26)
 ### Improvement
 - Optimize MilvusClientV2Pool/MilvusClientPool to reuse client objects
@@ -858,3 +863,4 @@
 - \#23 - Format code with Google-java-style and add Apache 2.0 license header
 - \#28 - add examples
 - \#29 - add README
+
