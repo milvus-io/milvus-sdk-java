@@ -136,16 +136,27 @@ public class MilvusClientV2 {
                 close(3);
             }
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
         channel = clientUtils.getChannel(connectConfig);
 
-        blockingStub = MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
-        connect(connectConfig, blockingStub);
+        try {
+            blockingStub = MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
+            connect(connectConfig, blockingStub);
 
-        if (connectConfig.getDbName() != null) {
-            // check if database exists
-            clientUtils.checkDatabaseExist(this.blockingStub, connectConfig.getDbName());
+            if (connectConfig.getDbName() != null) {
+                // check if database exists
+                clientUtils.checkDatabaseExist(this.blockingStub, connectConfig.getDbName());
+            }
+        } catch (Exception e) {
+            // close the channel if connect() and checkDatabaseExist() throws exception, avoid leakage
+            try {
+                close(3);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
+            throw e;
         }
     }
 
