@@ -40,6 +40,7 @@ public class SearchReq {
     private String filter;
     private List<String> outputFields;
     private List<BaseVector> data;
+    private List<Object> ids;
     private long offset;
     private long limit;
     private int roundDecimal;
@@ -78,6 +79,7 @@ public class SearchReq {
         this.filter = builder.filter;
         this.outputFields = builder.outputFields;
         this.data = builder.data;
+        this.ids = builder.ids;
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.roundDecimal = builder.roundDecimal;
@@ -169,6 +171,10 @@ public class SearchReq {
 
     public void setData(List<BaseVector> data) {
         this.data = data;
+    }
+
+    public List<Object> getIds() {
+        return ids;
     }
 
     public long getOffset() {
@@ -299,7 +305,7 @@ public class SearchReq {
                 ", topK=" + topK +
                 ", filter='" + filter + '\'' +
                 ", outputFields=" + outputFields +
-                ", data=" + data +
+                (ids == null || ids.isEmpty() ? ", data=" + data : ", ids=" + ids) +
                 ", offset=" + offset +
                 ", limit=" + limit +
                 ", roundDecimal=" + roundDecimal +
@@ -332,6 +338,7 @@ public class SearchReq {
         private String filter;
         private List<String> outputFields = new ArrayList<>(); // default value
         private List<BaseVector> data = new ArrayList<>(); // default value
+        private List<Object> ids = new ArrayList<>();
         private long offset;
         private long limit = 0L; // default value
         private int roundDecimal = -1; // default value
@@ -396,6 +403,11 @@ public class SearchReq {
 
         public SearchReqBuilder data(List<BaseVector> data) {
             this.data = data;
+            return this;
+        }
+
+        public SearchReqBuilder ids(List<Object> ids) {
+            this.ids = ids;
             return this;
         }
 

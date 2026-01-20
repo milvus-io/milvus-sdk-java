@@ -827,6 +827,27 @@ class MilvusClientV2DockerTest {
 //            System.out.println("Output bfloat16 vector: " + outputVector);
         }
 
+        // search by ids
+        {
+            List<Object> ids = Arrays.asList(5L, 88L, 100L);
+            SearchResp searchResp = client.search(SearchReq.builder()
+                    .collectionName(randomCollectionName)
+                    .annsField(bfloat16Field)
+                    .ids(ids)
+                    .limit(topk)
+                    .consistencyLevel(ConsistencyLevel.STRONG)
+                    .outputFields(Collections.singletonList(bfloat16Field))
+                    .build());
+            List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+            Assertions.assertEquals(3, searchResults.size());
+            for (int i = 0; i < searchResults.size(); i++) {
+                List<SearchResp.SearchResult> results = searchResults.get(i);
+                Assertions.assertEquals(topk, results.size());
+                SearchResp.SearchResult firstResult = results.get(0);
+                Assertions.assertEquals(ids.get(i), firstResult.getId());
+            }
+        }
+
         // get row count
         long rowCount = getRowCount("", randomCollectionName);
         Assertions.assertEquals(count, rowCount);
