@@ -253,7 +253,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         return results.getNumQueries();
     }
 
-    private static final class Position {
+    public static final class Position {
         private final long offset;
         private final long k;
 
@@ -271,7 +271,7 @@ public class SearchResultsWrapper extends RowRecordWrapper {
         }
     }
 
-    private Position getOffsetByIndex(int indexOfTarget) {
+    public Position getOffsetByIndex(int indexOfTarget) {
         List<Long> kList = results.getTopksList();
 
         // if the server didn't return separate topK, use same topK value "0"
