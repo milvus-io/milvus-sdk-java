@@ -172,6 +172,65 @@ public class VectorUtils {
         }
     }
 
+    private static void convertSearchTarget(SearchReq request, SearchRequest.Builder builder) {
+        // prepare target, the input could be:
+        // 1. vectors or string list for doc-in-doc-out
+        // 2. ids list for search by primary keys
+        List<BaseVector> vectors = request.getData();
+        List<Object> ids = request.getIds();
+        boolean vectorsIsEmpty = CollectionUtils.isEmpty(vectors);
+        boolean idsIsEmpty = CollectionUtils.isEmpty(ids);
+        if (vectorsIsEmpty && idsIsEmpty) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Require either ids or vectors, but both are empty");
+        }
+        if (!vectorsIsEmpty && !idsIsEmpty) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Require either ids or vectors, but both are provided");
+        }
+
+        if (!vectorsIsEmpty) {
+            // the elements must be all-vector or all-string
+            PlaceholderType plType = vectors.get(0).getPlaceholderType();
+            List<Object> data = new ArrayList<>();
+            for (BaseVector vector : vectors) {
+                if (vector.getPlaceholderType() != plType) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Different types of target vectors in a search request is not allowed.");
+                }
+                data.add(vector.getData());
+            }
+
+            ByteString byteStr = convertPlaceholder(data, plType);
+            builder.setPlaceholderGroup(byteStr);
+            builder.setNq(vectors.size());
+        } else {
+            Object val = ids.get(0);
+            if (val instanceof String) {
+                StringArray.Builder strBuilder = StringArray.newBuilder();
+                for (Object obj : ids) {
+                    if (!(obj instanceof String)) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "All IDs must be of type String if the first ID is a String.");
+                    }
+                    strBuilder.addData((String) obj);
+                }
+                builder.setIds(IDs.newBuilder().setStrId(strBuilder.build()).build());
+            } else if (val instanceof Long) {
+                LongArray.Builder longBuilder = LongArray.newBuilder();
+                for (Object obj : ids) {
+                    if (!(obj instanceof Long)) {
+                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                                "All IDs must be of type Long if the first ID is a Long.");
+                    }
+                    longBuilder.addData((Long) obj);
+                }
+                builder.setIds(IDs.newBuilder().setIntId(longBuilder.build()).build());
+            } else {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "ID type must be String or Long.");
+            }
+            builder.setNq(ids.size());
+        }
+    }
+
     public SearchRequest ConvertToGrpcSearchRequest(SearchReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -185,26 +244,8 @@ public class VectorUtils {
             builder.setDbName(dbName);
         }
 
-        // prepare target, the input could be vectors or string list for doc-in-doc-out
-        List<BaseVector> vectors = request.getData();
-        if (vectors == null || vectors.isEmpty()) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Target data list of search request is empty.");
-        }
-
-        // the elements must be all-vector or all-string
-        PlaceholderType plType = vectors.get(0).getPlaceholderType();
-        List<Object> data = new ArrayList<>();
-        for (BaseVector vector : vectors) {
-            if (vector.getPlaceholderType() != plType) {
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                        "Different types of target vectors in a search request is not allowed.");
-            }
-            data.add(vector.getData());
-        }
-
-        ByteString byteStr = convertPlaceholder(data, plType);
-        builder.setPlaceholderGroup(byteStr);
-        builder.setNq(vectors.size());
+        // target vectors or ids
+        convertSearchTarget(request, builder);
 
         // search parameters
         // tries to fit the compatibility between v2.5.1 and older versions
