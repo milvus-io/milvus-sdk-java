@@ -37,6 +37,7 @@ import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.FunctionScore;
 import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.highlighter.Highlighter;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
 import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import org.apache.commons.collections4.CollectionUtils;
@@ -367,6 +368,22 @@ public class VectorUtils {
             builder.setFunctionScore(convertFunctionScore(functionScore));
         } else if (ranker != null) {
             builder.setFunctionScore(convertOneFunction(ranker));
+        }
+
+        // set highlighter
+        Highlighter highlighter = request.getHighlighter();
+        if (highlighter != null) {
+            io.milvus.grpc.Highlighter.Builder hlBuilder = io.milvus.grpc.Highlighter.newBuilder()
+                    .setType(HighlightType.valueOf(highlighter.highlightType()));
+            Map<String, String> hlParams = highlighter.getParams();
+            hlParams.forEach((key, value) -> {
+                hlBuilder.addParams(
+                        KeyValuePair.newBuilder()
+                                .setKey(key)
+                                .setValue(value)
+                                .build());
+            });
+            builder.setHighlighter(hlBuilder.build());
         }
 
         return builder.build();

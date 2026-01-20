@@ -23,6 +23,7 @@ import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.highlighter.Highlighter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -69,6 +70,9 @@ public class SearchReq {
     //     Boolean, Long, Double, String, List<Boolean>, List<Long>, List<Double>, List<String>
     private Map<String, Object> filterTemplateValues;
 
+    // milvus v2.6.9 supports highlighter for search results
+    private Highlighter highlighter;
+
     private SearchReq(SearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -95,6 +99,7 @@ public class SearchReq {
         this.functionScore = builder.functionScore;
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
+        this.highlighter = builder.highlighter;
     }
 
     // Getters and Setters
@@ -294,6 +299,10 @@ public class SearchReq {
         this.filterTemplateValues = filterTemplateValues;
     }
 
+    public Highlighter getHighlighter() {
+        return highlighter;
+    }
+
     @Override
     public String toString() {
         return "SearchReq{" +
@@ -319,6 +328,7 @@ public class SearchReq {
                 ", groupSize=" + groupSize +
                 ", strictGroupSize=" + strictGroupSize +
                 ", ranker=" + ranker +
+                ", highlighter=" + (highlighter == null ? "null" : (highlighter.highlightType() + ":" + highlighter.getParams())) +
                 ", functionScore=" + functionScore +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
@@ -354,6 +364,7 @@ public class SearchReq {
         private CreateCollectionReq.Function ranker;
         private FunctionScore functionScore;
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
+        private Highlighter highlighter;
 
         private SearchReqBuilder() {
         }
@@ -484,6 +495,11 @@ public class SearchReq {
 
         public SearchReqBuilder filterTemplateValues(Map<String, Object> filterTemplateValues) {
             this.filterTemplateValues = filterTemplateValues;
+            return this;
+        }
+
+        public SearchReqBuilder highlighter(Highlighter highlighter) {
+            this.highlighter = highlighter;
             return this;
         }
 
