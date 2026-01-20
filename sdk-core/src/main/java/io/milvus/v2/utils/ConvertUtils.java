@@ -96,12 +96,38 @@ public class ConvertUtils {
         long numQueries = response.getResults().getNumQueries();
         List<List<SearchResp.SearchResult>> searchResults = new ArrayList<>();
         for (int i = 0; i < numQueries; i++) {
-            searchResults.add(searchResultsWrapper.getIDScore(i).stream().map(idScore -> SearchResp.SearchResult.builder()
-                    .entity(idScore.getFieldValues())
-                    .score(idScore.getScore())
-                    .primaryKey(idScore.getPrimaryKey())
-                    .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
-                    .build()).collect(Collectors.toList()));
+            List<SearchResp.SearchResult> singleResults = new ArrayList<>();
+            for (SearchResultsWrapper.IDScore idScore : searchResultsWrapper.getIDScore(i)) {
+                singleResults.add(SearchResp.SearchResult.builder()
+                        .entity(idScore.getFieldValues())
+                        .score(idScore.getScore())
+                        .primaryKey(idScore.getPrimaryKey())
+                        .id(idScore.getStrID().isEmpty() ? idScore.getLongID() : idScore.getStrID())
+                        .build());
+            }
+
+            // set highlight
+            SearchResultsWrapper.Position position = searchResultsWrapper.getOffsetByIndex(i);
+            long offset = position.getOffset();
+            long k = position.getK();
+            List<HighlightResult> highlightResults = response.getResults().getHighlightResultsList();
+            for (HighlightResult highlightResult : highlightResults) {
+                String fieldName = highlightResult.getFieldName();
+                List<HighlightData> highlightDatas = highlightResult.getDatasList();
+                for (long j = 0; j < k; j++) {
+                    HighlightData highlightData = highlightDatas.get((int) (offset + j));
+                    List<String> fragments = highlightData.getFragmentsList();
+                    List<Float> scores = highlightData.getScoresList();
+                    SearchResp.HighlightResult highlightResultObj = SearchResp.HighlightResult.builder()
+                            .fieldName(fieldName)
+                            .fragments(fragments)
+                            .scores(scores)
+                            .build();
+                    singleResults.get((int) j).addHighlightResult(fieldName, highlightResultObj);
+                }
+            }
+
+            searchResults.add(singleResults);
         }
         return searchResults;
     }
