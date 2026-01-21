@@ -1,5 +1,10 @@
 # Changelog
 
+## milvus-sdk-java 2.6.13 (2026-01-21)
+### Feature
+- Support search by id
+- Support highlighter for search results
+
 ## milvus-sdk-java 2.6.12 (2026-01-13)
 ### Improvement
 - Not allow empty username to connect milvus
