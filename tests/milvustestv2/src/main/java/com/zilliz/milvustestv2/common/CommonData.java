@@ -40,6 +40,16 @@ public class CommonData {
     public static String fieldSparseVector = "fieldSparseVector";
     public static int addMaxLength = 99;
 
+    // Struct related fields
+    public static String defaultStructCollection = "StructCollection";
+    public static String fieldStruct = "fieldStruct";
+    public static String structFieldInt32 = "structInt32";
+    public static String structFieldVarchar = "structVarchar";
+    public static String structFieldFloatVector1 = "structFloatVector1";
+    public static String structFieldFloatVector2 = "structFloatVector2";
+    public static int structVectorDim = 128;
+    public static int structMaxCapacity = 100;
+
 
     public static String partitionName = "partitionName";
     // 快速创建时候的默认向量filed
