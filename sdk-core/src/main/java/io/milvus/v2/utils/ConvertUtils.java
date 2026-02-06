@@ -106,7 +106,7 @@ public class ConvertUtils {
                         .build());
             }
 
-            // set highlight
+            // set highlight and element offset
             SearchResultsWrapper.Position position = searchResultsWrapper.getOffsetByIndex(i);
             long offset = position.getOffset();
             long k = position.getK();
@@ -124,6 +124,14 @@ public class ConvertUtils {
                             .scores(scores)
                             .build();
                     singleResults.get((int) j).addHighlightResult(fieldName, highlightResultObj);
+                }
+            }
+
+            // set element offset
+            if (response.getResults().hasElementIndices()) {
+                LongArray elementIndices = response.getResults().getElementIndices();
+                for (long j = 0; j < k; j++) {
+                    singleResults.get((int) j).setElementOffset(elementIndices.getData((int) (offset + j)));
                 }
             }
 

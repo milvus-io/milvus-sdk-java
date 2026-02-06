@@ -148,7 +148,7 @@ public class VectorUtils {
         }
     }
 
-    private static ByteString convertPlaceholder(List<Object> data, PlaceholderType placeType) {
+    private static ByteString convertPlaceholder(List<Object> data, PlaceholderType placeType, boolean elementLevel) {
         if (placeType == PlaceholderType.VarChar) {
             List<ByteString> byteStrings = new ArrayList<>();
             for (Object obj : data) {
@@ -156,7 +156,8 @@ public class VectorUtils {
             }
             PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
                     .setTag(Constant.VECTOR_TAG)
-                    .setType(placeType);
+                    .setType(placeType)
+                    .setElementLevel(elementLevel);
             byteStrings.forEach(pldBuilder::addValues);
 
             PlaceholderValue plv = pldBuilder.build();
@@ -166,14 +167,14 @@ public class VectorUtils {
             return placeholderGroup.toByteString();
         } else {
             try {
-                return ParamUtils.convertPlaceholder(data, placeType);
+                return ParamUtils.convertPlaceholder(data, placeType, elementLevel);
             } catch (ParamException e) {
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS, e.getMessage());
             }
         }
     }
 
-    private static void convertSearchTarget(SearchReq request, SearchRequest.Builder builder) {
+    private static void convertSearchTarget(SearchReq request, SearchRequest.Builder builder, boolean elementLevel) {
         // prepare target, the input could be:
         // 1. vectors or string list for doc-in-doc-out
         // 2. ids list for search by primary keys
@@ -200,7 +201,7 @@ public class VectorUtils {
                 data.add(vector.getData());
             }
 
-            ByteString byteStr = convertPlaceholder(data, plType);
+            ByteString byteStr = convertPlaceholder(data, plType, elementLevel);
             builder.setPlaceholderGroup(byteStr);
             builder.setNq(vectors.size());
         } else {
@@ -246,7 +247,9 @@ public class VectorUtils {
         }
 
         // target vectors or ids
-        convertSearchTarget(request, builder);
+        String filter = request.getFilter();
+        boolean elementLevel = filter != null && filter.contains("element_filter");
+        convertSearchTarget(request, builder, elementLevel);
 
         // search parameters
         // tries to fit the compatibility between v2.5.1 and older versions
@@ -515,7 +518,7 @@ public class VectorUtils {
             data.add(vector.getData());
         }
 
-        ByteString byteStr = convertPlaceholder(data, plType);
+        ByteString byteStr = convertPlaceholder(data, plType, false);
         builder.setPlaceholderGroup(byteStr);
         builder.setNq(vectors.size());
 
