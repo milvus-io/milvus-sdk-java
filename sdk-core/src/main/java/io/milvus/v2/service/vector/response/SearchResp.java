@@ -103,6 +103,7 @@ public class SearchResp {
         private Object id;
         private String primaryKey;
         private Map<String, HighlightResult> highlightResults;
+        private Long elementOffset;
 
         private SearchResult(SearchResultBuilder builder) {
             this.entity = builder.entity;
@@ -110,6 +111,7 @@ public class SearchResp {
             this.id = builder.id;
             this.primaryKey = builder.primaryKey;
             this.highlightResults = builder.highlightResults == null ? new HashMap<>() : builder.highlightResults;
+            this.elementOffset = builder.elementOffset;
         }
 
         public static SearchResultBuilder builder() {
@@ -161,10 +163,19 @@ public class SearchResp {
             this.highlightResults.put(fieldName, highlightResult);
         }
 
+        public Long getElementOffset() {
+            return elementOffset;
+        }
+
+        public void setElementOffset(Long elementOffset) {
+            this.elementOffset = elementOffset;
+        }
+
         @Override
         public String toString() {
             return "{" + getPrimaryKey() + ": " + getId() + ", Score: " + getScore() + ", OutputFields: " + entity +
-                    (MapUtils.isEmpty(highlightResults) ? "" : (", HighlightResults: " + highlightResults)) + "}";
+                    (MapUtils.isEmpty(highlightResults) ? "" : (", HighlightResults: " + highlightResults)) +
+                    (elementOffset == null ? "" : (", ElementOffset: " + elementOffset)) + "}";
         }
 
         public static class SearchResultBuilder {
@@ -173,6 +184,7 @@ public class SearchResp {
             private Object id;
             private String primaryKey = "id";
             private Map<String, HighlightResult> highlightResults = new HashMap<>();
+            private Long elementOffset;
 
             public SearchResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
@@ -202,6 +214,11 @@ public class SearchResp {
             public SearchResultBuilder addHighlightResult(String fieldName, HighlightResult highlightResult) {
                 if (this.highlightResults == null) this.highlightResults = new HashMap<>();
                 this.highlightResults.put(fieldName, highlightResult);
+                return this;
+            }
+
+            public SearchResultBuilder elementOffset(Long elementOffset) {
+                this.elementOffset = elementOffset;
                 return this;
             }
 
