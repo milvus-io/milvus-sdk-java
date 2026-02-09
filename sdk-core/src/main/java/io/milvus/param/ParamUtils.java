@@ -727,6 +727,10 @@ public class ParamUtils {
 
     @SuppressWarnings("unchecked")
     public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType) throws ParamException {
+        return convertPlaceholder(vectors, placeType, false);
+    }
+
+    public static ByteString convertPlaceholder(List<?> vectors, PlaceholderType placeType, boolean elementLevel) throws ParamException {
         PlaceholderType plType = PlaceholderType.None;
         List<ByteString> byteStrings = new ArrayList<>();
         for (Object vector : vectors) {
@@ -771,7 +775,8 @@ public class ParamUtils {
 
         PlaceholderValue.Builder pldBuilder = PlaceholderValue.newBuilder()
                 .setTag(Constant.VECTOR_TAG)
-                .setType(plType);
+                .setType(plType)
+                .setElementLevel(elementLevel);
         byteStrings.forEach(pldBuilder::addValues);
 
         PlaceholderValue plv = pldBuilder.build();
