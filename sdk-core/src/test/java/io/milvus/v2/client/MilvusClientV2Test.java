@@ -486,6 +486,16 @@ public class MilvusClientV2Test extends BaseTest {
     }
 
     @Test
+    void connectConfigDefaults() {
+        ConnectConfig config = ConnectConfig.builder()
+                .uri("http://dummyHost:19530")
+                .build();
+        Assertions.assertEquals(10000, config.getKeepAliveTimeMs());
+        Assertions.assertEquals(5000, config.getKeepAliveTimeoutMs());
+        Assertions.assertTrue(config.isKeepAliveWithoutCalls());
+    }
+
+    @Test
     void testV2BuilderClasses() {
         CheckConfig config = new CheckConfig();
 
