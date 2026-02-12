@@ -56,7 +56,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
     public T create(String key) throws Exception {
         try {
             if (logger.isDebugEnabled()) {
-                logger.info("PoolClientFactory key: {} creates a client", key);
+                logger.debug("PoolClientFactory key: {} creates a client", key);
             }
             C keyConfig = configForKeys.get(key);
             if (keyConfig == null) {
@@ -78,7 +78,7 @@ public class PoolClientFactory<C, T> extends BaseKeyedPooledObjectFactory<String
     @Override
     public void destroyObject(String key, PooledObject<T> p) throws Exception {
         if (logger.isDebugEnabled()) {
-            logger.info("PoolClientFactory key: {} closes a client", key);
+            logger.debug("PoolClientFactory key: {} closes a client", key);
         }
         T client = p.getObject();
         closeMethod.invoke(client, 3L);
