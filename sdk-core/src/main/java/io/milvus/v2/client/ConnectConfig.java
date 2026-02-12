@@ -35,9 +35,9 @@ public class ConnectConfig {
     private String password;
     private String dbName;
     private long connectTimeoutMs = 10000;
-    private long keepAliveTimeMs = 55000;
-    private long keepAliveTimeoutMs = 20000;
-    private boolean keepAliveWithoutCalls = false;
+    private long keepAliveTimeMs = 10000;
+    private long keepAliveTimeoutMs = 5000;
+    private boolean keepAliveWithoutCalls = true;
     private long rpcDeadlineMs = 0; // Disabling deadline
 
     private String clientKeyPath;
@@ -324,9 +324,9 @@ public class ConnectConfig {
         private String password;
         private String dbName;
         private long connectTimeoutMs = 10000;
-        private long keepAliveTimeMs = 55000;
-        private long keepAliveTimeoutMs = 20000;
-        private boolean keepAliveWithoutCalls = false;
+        private long keepAliveTimeMs = 10000;
+        private long keepAliveTimeoutMs = 5000;
+        private boolean keepAliveWithoutCalls = true;
         private long rpcDeadlineMs = 0;
         private String clientKeyPath;
         private String clientPemPath;
