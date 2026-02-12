@@ -284,6 +284,17 @@ class MilvusServiceClientTest {
     }
 
     @Test
+    void connectParamDefaults() {
+        ConnectParam connectParam = ConnectParam.newBuilder()
+                .withHost("dummyHost")
+                .withPort(19530)
+                .build();
+        assertEquals(10000, connectParam.getKeepAliveTimeMs());
+        assertEquals(5000, connectParam.getKeepAliveTimeoutMs());
+        assertTrue(connectParam.isKeepAliveWithoutCalls());
+    }
+
+    @Test
     void testConnect() {
         ConnectParam connectParam = ConnectParam.newBuilder()
                 .withHost("localhost")
