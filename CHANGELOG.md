@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 2.6.14 (2026-02-12)
+### Feature
+- Support AISAQ index type
+- Support element_filter for struct field
+
+### Improvement
+- Change keepAliveTimeMs from 55s to 10s, keepAliveTimeoutMs from 20s to 5s, and enable keepAliveWithoutCalls by default in both ConnectParam (V1) and ConnectConfig (V2).
+
+### Bug
+- Fix a bug in ClientPool where the RPC channel was not properly closed
+
 ## milvus-sdk-java 2.6.13 (2026-01-21)
 ### Feature
 - Support search by id
