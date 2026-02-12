@@ -5,6 +5,9 @@ import org.apache.commons.pool2.impl.GenericKeyedObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -19,6 +22,7 @@ public class ClientPool<C, T> {
     protected PoolClientFactory<C, T> clientFactory;
     private final ConcurrentMap<String, ClientCache<T>> clientsCache = new ConcurrentHashMap<>();
     private final Lock cacheMapLock = new ReentrantLock(true);
+    private volatile boolean closed = false;
 
     protected ClientPool() {
 
@@ -87,6 +91,9 @@ public class ClientPool<C, T> {
      * @return MilvusClient or MilvusClientV2
      */
     public T getClient(String key) {
+        if (closed) {
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "Client pool is closed");
+        }
         ClientCache<T> cache = getCache(key);
         if (cache == null) {
             logger.error("Not able to create a client cache for key: {}", key);
@@ -141,6 +148,7 @@ public class ClientPool<C, T> {
      *
      */
     public void close() {
+        closed = true;
         if (clientPool != null && !clientPool.isClosed()) {
             // how about if clientPool and clientsCache are cleared but some clients are not returned?
             // after clear(), all the milvus clients will be closed, if user continue to use the unreturned client

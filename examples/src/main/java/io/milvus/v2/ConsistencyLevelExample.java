@@ -136,47 +136,51 @@ public class ConsistencyLevelExample {
                 .build();
         MilvusClientV2Pool pool = new MilvusClientV2Pool(poolConfig, connectConfig);
 
-        // The same process, different MilvusClient object, insert and search with Session level.
-        // The Session level ensure that the newly inserted data instantaneously become searchable.
-        Gson gson = new Gson();
-        for (int i = 0; i < 100; i++) {
-            List<Float> vector = CommonUtils.generateFloatVector(VECTOR_DIM);
-            JsonObject row = new JsonObject();
-            row.addProperty("id", i);
-            row.add("vector", gson.toJsonTree(vector));
+        try {
+            // The same process, different MilvusClient object, insert and search with Session level.
+            // The Session level ensures that the newly inserted data instantaneously become searchable.
+            Gson gson = new Gson();
+            for (int i = 0; i < 100; i++) {
+                List<Float> vector = CommonUtils.generateFloatVector(VECTOR_DIM);
+                JsonObject row = new JsonObject();
+                row.addProperty("id", i);
+                row.add("vector", gson.toJsonTree(vector));
 
-            // insert by a MilvusClient
-            String clientName1 = String.format("client_%d", i % 10);
-            MilvusClientV2 client1 = pool.getClient(clientName1);
-            client1.insert(InsertReq.builder()
-                    .collectionName(collectionName)
-                    .data(Collections.singletonList(row))
-                    .build());
-            pool.returnClient(clientName1, client1); // don't forget to return the client to pool
-            System.out.println("insert");
+                // insert by a MilvusClient
+                String clientName1 = String.format("client_%d", i % 10);
+                MilvusClientV2 client1 = pool.getClient(clientName1);
+                client1.insert(InsertReq.builder()
+                        .collectionName(collectionName)
+                        .data(Collections.singletonList(row))
+                        .build());
+                pool.returnClient(clientName1, client1); // don't forget to return the client to pool
+                System.out.println("insert");
 
-            // search by another MilvusClient, use the just inserted vector to search
-            // the returned item is expected to be the just inserted item
-            String clientName2 = String.format("client_%d", i % 10 + 1);
-            MilvusClientV2 client2 = pool.getClient(clientName2);
-            SearchResp searchR = client2.search(SearchReq.builder()
-                    .collectionName(collectionName)
-                    .data(Collections.singletonList(new FloatVec(vector)))
-                    .limit(1)
-                    .build());
-            pool.returnClient(clientName2, client2); // don't forget to return the client to pool
-            List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();
-            List<SearchResp.SearchResult> results = searchResults.get(0);
-            if (results.size() != 1) {
-                throw new RuntimeException("Search result is empty");
+                // search by another MilvusClient, use the just inserted vector to search
+                // the returned item is expected to be the just inserted item
+                String clientName2 = String.format("client_%d", i % 10 + 1);
+                MilvusClientV2 client2 = pool.getClient(clientName2);
+                SearchResp searchR = client2.search(SearchReq.builder()
+                        .collectionName(collectionName)
+                        .data(Collections.singletonList(new FloatVec(vector)))
+                        .limit(1)
+                        .build());
+                pool.returnClient(clientName2, client2); // don't forget to return the client to pool
+                List<List<SearchResp.SearchResult>> searchResults = searchR.getSearchResults();
+                List<SearchResp.SearchResult> results = searchResults.get(0);
+                if (results.size() != 1) {
+                    throw new RuntimeException("Search result is empty");
+                }
+                if (i != (Long) results.get(0).getId()) {
+                    throw new RuntimeException("The just inserted entity is not found");
+                }
+                System.out.println("search");
             }
-            if (i != (Long) results.get(0).getId()) {
-                throw new RuntimeException("The just inserted entity is not found");
-            }
-            System.out.println("search");
+
+            System.out.println("Session level is working fine");
+        } finally {
+            pool.close();
         }
-
-        System.out.println("Session level is working fine");
     }
 
     private static void testBoundedLevel() {
@@ -207,5 +211,7 @@ public class ConsistencyLevelExample {
         testBoundedLevel();
         System.out.println("==============================================================");
         testEventuallyLevel();
+
+        client.close();
     }
 }

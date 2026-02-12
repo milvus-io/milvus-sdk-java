@@ -38,6 +38,7 @@ public class ClientCache<T> {
             @Override
             public Thread newThread(@NotNull Runnable r) {
                 Thread t = new Thread(r);
+                t.setDaemon(true);
                 t.setPriority(Thread.MAX_PRIORITY); // set the highest priority for the timer
                 return t;
             }
@@ -49,24 +50,38 @@ public class ClientCache<T> {
 
     public void preparePool() {
         try {
-            // preparePool() will create minIdlePerKey MilvusClient objects in advance, put the pre-created clients
-            // into activeClientList
+            // preparePool() will create minIdlePerKey MilvusClient objects in advance
             clientPool.preparePool(this.key);
-            int minIdlePerKey = clientPool.getMinIdlePerKey();
-            for (int i = 0; i < minIdlePerKey; i++) {
-                activeClientList.add(new ClientWrapper<>(clientPool.borrowObject(this.key)));
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("ClientCache key: {} cache clients: {} ", key, activeClientList.size());
-                logger.debug("Pool initialize idle: {} active: {} ", clientPool.getNumIdle(key), clientPool.getNumActive(key));
-            }
-//            System.out.printf("Key: %s, cache client: %d%n", key, activeClientList.size());
-//            System.out.printf("Pool idle %d, active %d%n", clientPool.getNumIdle(key), clientPool.getNumActive(key));
         } catch (Exception e) {
             logger.error("Failed to prepare pool {}, exception: ", key, e);
             throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
         }
+
+        // Put the pre-created clients into activeClientList
+        // avoid borrow client from pool multiple times when multiple threads call preparePool() at the same time,
+        // add a lock here since preparePool() is called only one time in practice, doesn't affect major performance
+        int minIdlePerKey = clientPool.getMinIdlePerKey();
+
+        clientListLock.lock();
+        try {
+            if (activeClientList.isEmpty()) {
+                for (int i = 0; i < minIdlePerKey; i++) {
+                    activeClientList.add(new ClientWrapper<>(clientPool.borrowObject(this.key)));
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to borrow client from pool {}, exception: ", key, e);
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e);
+        } finally {
+            clientListLock.unlock();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("ClientCache key: {} cache clients: {} ", key, activeClientList.size());
+            logger.debug("Pool initialize idle: {} active: {} ", clientPool.getNumIdle(key), clientPool.getNumActive(key));
+        }
+//        System.out.printf("Key: %s, cache client: %d%n", key, activeClientList.size());
+//        System.out.printf("Pool idle %d, active %d%n", clientPool.getNumIdle(key), clientPool.getNumActive(key));
     }
 
     // this method is called in an interval, it does the following tasks:
@@ -161,7 +176,7 @@ public class ClientCache<T> {
     private void returnRetiredClients() {
         retireClientList.removeIf(wrapper -> {
             if (wrapper.getRefCount() <= 0) {
-                returnToPool(wrapper.getClient());
+                returnToPool(wrapper.getRawClient());
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("ClientCache key: {} returns a client", key);
@@ -188,7 +203,23 @@ public class ClientCache<T> {
     }
 
     public void stopTimer() {
-        scheduler.shutdown();
+        // Stop scheduled tasks and wait for any in-flight checkQPS() execution to finish
+        scheduler.shutdownNow();
+        try {
+            scheduler.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Return all active and retired clients to the pool so they can be properly destroyed
+        for (ClientWrapper<T> wrapper : activeClientList) {
+            returnToPool(wrapper.getRawClient());
+        }
+        activeClientList.clear();
+        for (ClientWrapper<T> wrapper : retireClientList) {
+            returnToPool(wrapper.getRawClient());
+        }
+        retireClientList.clear();
     }
 
     public T getClient() {
@@ -320,6 +351,10 @@ public class ClientCache<T> {
 
         public T getClient() {
             this.refCount.incrementAndGet();
+            return this.client;
+        }
+
+        public T getRawClient() {
             return this.client;
         }
 
