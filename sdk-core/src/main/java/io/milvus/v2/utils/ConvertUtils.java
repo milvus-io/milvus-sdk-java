@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ConvertUtils {
     public static DataType toProtoDataType(io.milvus.v2.common.DataType dt) {
@@ -222,7 +223,11 @@ public class ConvertUtils {
                 .collectionSchema(SchemaUtils.convertFromGrpcCollectionSchema(response.getSchema()))
                 .autoID(response.getSchema().getFieldsList().stream().anyMatch(FieldSchema::getAutoID))
                 .enableDynamicField(response.getSchema().getEnableDynamicField())
-                .fieldNames(response.getSchema().getFieldsList().stream().map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
+                .fieldNames(Stream.concat(
+                                response.getSchema().getFieldsList().stream().map(FieldSchema::getName),
+                                response.getSchema().getStructArrayFieldsList().stream().map(StructArrayFieldSchema::getName))
+                        .distinct()
+                        .collect(Collectors.toList()))
                 .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
