@@ -40,6 +40,11 @@ public class ConvertUtilsTest {
                 .setIsPrimaryKey(true)
                 .build();
 
+        FieldSchema vectorField = FieldSchema.newBuilder()
+                .setName("vector")
+                .setDataType(DataType.FloatVector)
+                .build();
+
         CreateCollectionReq.StructFieldSchema structFieldSchema = CreateCollectionReq.StructFieldSchema.builder()
                 .name("clips")
                 .maxCapacity(10)
@@ -55,6 +60,7 @@ public class ConvertUtilsTest {
         CollectionSchema schema = CollectionSchema.newBuilder()
                 .setEnableDynamicField(false)
                 .addFields(idField)
+                .addFields(vectorField)
                 .addStructArrayFields(rpcStructFieldSchema)
                 .build();
 
@@ -72,7 +78,9 @@ public class ConvertUtilsTest {
 
         DescribeCollectionResp resp = new ConvertUtils().convertDescCollectionResp(response);
         Assertions.assertTrue(resp.getFieldNames().contains("id"));
+        Assertions.assertTrue(resp.getFieldNames().contains("vector"));
         Assertions.assertTrue(resp.getFieldNames().contains("clips"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("vector"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[vec]"));
     }
 }
-
