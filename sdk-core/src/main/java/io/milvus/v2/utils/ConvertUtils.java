@@ -228,7 +228,16 @@ public class ConvertUtils {
                                 response.getSchema().getStructArrayFieldsList().stream().map(StructArrayFieldSchema::getName))
                         .distinct()
                         .collect(Collectors.toList()))
-                .vectorFieldNames(response.getSchema().getFieldsList().stream().filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType())).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()))
+                .vectorFieldNames(Stream.concat(
+                                response.getSchema().getFieldsList().stream()
+                                        .filter(fieldSchema -> ParamUtils.isVectorDataType(fieldSchema.getDataType()))
+                                        .map(FieldSchema::getName),
+                                response.getSchema().getStructArrayFieldsList().stream()
+                                        .flatMap(structField -> structField.getFieldsList().stream()
+                                                .filter(subField -> ParamUtils.isVectorDataType(subField.getElementType()))
+                                                .map(subField -> structField.getName() + "[" + subField.getName() + "]")))
+                        .distinct()
+                        .collect(Collectors.toList()))
                 .primaryFieldName(response.getSchema().getFieldsList().stream().filter(FieldSchema::getIsPrimaryKey).map(FieldSchema::getName).collect(java.util.stream.Collectors.toList()).get(0))
                 .createTime(response.getCreatedTimestamp())
                 .createUtcTime(response.getCreatedUtcTimestamp())
