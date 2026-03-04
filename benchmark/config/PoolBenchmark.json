@@ -1,0 +1,12 @@
+{
+  "vectorDim": 128,
+  "rowCount": 100000,
+  "threadCount": 32,
+  "requestCount": 10000,
+  "topK": 10,
+  "rounds": 10,
+  "maxIdlePerKey": 10,
+  "maxTotalPerKey": 20,
+  "maxTotal": 100,
+  "maxBlockWaitSeconds": 30
+}

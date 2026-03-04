@@ -1,0 +1,7 @@
+{
+  "floatVectorDim": 768,
+  "binaryVectorDim": 2048,
+  "float16VectorDim": 768,
+  "rowCount": 100000,
+  "repeat": 10
+}
