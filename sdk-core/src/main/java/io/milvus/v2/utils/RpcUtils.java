@@ -34,9 +34,14 @@ public class RpcUtils {
 
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private RetryConfig retryConfig = RetryConfig.builder().build();
+    private Runnable globalRefreshTrigger;
 
     public void retryConfig(RetryConfig retryConfig) {
         this.retryConfig = retryConfig;
+    }
+
+    public void setGlobalRefreshTrigger(Runnable trigger) {
+        this.globalRefreshTrigger = trigger;
     }
 
     public void handleResponse(String requestInfo, Status status) {
@@ -112,6 +117,15 @@ public class RpcUtils {
                     String msg = String.format("Encounter rpc error that cannot be retried, reason: %s", e);
                     logger.error(msg);
                     throw new MilvusClientException(ErrorCode.RPC_ERROR, msg); // throw rpc error
+                }
+
+                // For UNAVAILABLE errors, trigger global topology refresh if configured
+                if (code == io.grpc.Status.UNAVAILABLE.getCode() && globalRefreshTrigger != null) {
+                    try {
+                        globalRefreshTrigger.run();
+                    } catch (Exception ex) {
+                        logger.warn("Failed to trigger global topology refresh: {}", ex.getMessage());
+                    }
                 }
 
                 try {
