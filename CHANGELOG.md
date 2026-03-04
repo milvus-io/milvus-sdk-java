@@ -4,7 +4,7 @@
 ### Feature
 - Support AISAQ index type
 - Support element_filter for struct field
-
+ 
 ### Improvement
 - Change keepAliveTimeMs from 55s to 10s, keepAliveTimeoutMs from 20s to 5s, and enable keepAliveWithoutCalls by default in both ConnectParam (V1) and ConnectConfig (V2).
 
