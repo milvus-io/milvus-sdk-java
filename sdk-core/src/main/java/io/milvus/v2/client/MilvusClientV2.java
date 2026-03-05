@@ -62,6 +62,8 @@ import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.VectorService;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.response.*;
+import io.milvus.v2.client.globalcluster.GlobalClusterUtils;
+import io.milvus.v2.client.globalcluster.GlobalStub;
 import io.milvus.v2.utils.ClientUtils;
 import io.milvus.v2.utils.RpcUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -87,6 +89,7 @@ public class MilvusClientV2 {
     private final CDCService cdcService = new CDCService();
     private RpcUtils rpcUtils = new RpcUtils();
     private ConnectConfig connectConfig;
+    private GlobalStub globalStub;
 
     /**
      * Creates a Milvus client instance.
@@ -125,6 +128,21 @@ public class MilvusClientV2 {
      */
     private void connect(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
+
+        // Check if this is a global cluster endpoint
+        if (GlobalClusterUtils.isGlobalEndpoint(connectConfig.getUri())) {
+            logger.info("Detected global cluster endpoint: {}", connectConfig.getUri());
+            this.globalStub = new GlobalStub(connectConfig.getUri(), connectConfig, this::updatePrimaryConnection);
+            updatePrimaryConnection(this.globalStub.getPrimaryClient());
+            // Set up the global refresh trigger on RpcUtils for UNAVAILABLE errors
+            this.rpcUtils.setGlobalRefreshTrigger(() -> {
+                if (globalStub != null) {
+                    globalStub.triggerRefresh();
+                }
+            });
+            return;
+        }
+
         if (connectConfig.isEnablePrecheck()) {
             clientUtils.validateHostname(connectConfig);
             clientUtils.validatePort(connectConfig);
@@ -158,6 +176,11 @@ public class MilvusClientV2 {
             }
             throw e;
         }
+    }
+
+    private synchronized void updatePrimaryConnection(MilvusClientV2 primaryClient) {
+        this.channel = primaryClient.channel;
+        this.blockingStub = primaryClient.blockingStub;
     }
 
     // The withDeadlineAfter() need to be reset for each RPC call.
@@ -1200,6 +1223,14 @@ public class MilvusClientV2 {
      * @throws InterruptedException throws InterruptedException if the client failed to close connection
      */
     public void close(long maxWaitSeconds) throws InterruptedException {
+        if (globalStub != null) {
+            globalStub.close();
+            globalStub = null;
+            // channel is owned by the inner client, already closed by globalStub.close()
+            channel = null;
+            blockingStub = null;
+            return;
+        }
         if (channel != null) {
             channel.shutdownNow();
             channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
@@ -1219,6 +1250,10 @@ public class MilvusClientV2 {
     }
 
     public boolean clientIsReady() {
+        if (globalStub != null) {
+            MilvusClientV2 primaryClient = globalStub.getPrimaryClient();
+            return primaryClient != null && primaryClient.clientIsReady();
+        }
         return channel != null && !channel.isShutdown() && !channel.isTerminated();
     }
 }
