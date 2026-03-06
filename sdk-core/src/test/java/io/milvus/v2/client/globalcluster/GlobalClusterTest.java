@@ -321,9 +321,76 @@ public class GlobalClusterTest {
         AtomicReference<Boolean> triggered = new AtomicReference<>(false);
         rpcUtils.setGlobalRefreshTrigger(() -> triggered.set(true));
 
-        // The trigger is set but only called internally on UNAVAILABLE errors.
-        // Just verify it can be set without error.
+        // The trigger is set but only called internally on UNAVAILABLE errors
+        // or STREAMING_CODE_REPLICATE_VIOLATION. Just verify it can be set without error.
         assertFalse(triggered.get());
+    }
+
+    @Test
+    public void testRpcUtils_replicateViolationTriggersRefresh() {
+        io.milvus.v2.utils.RpcUtils rpcUtils = new io.milvus.v2.utils.RpcUtils();
+        // Use default retry config (maxRetryTimes=75)
+
+        AtomicReference<Boolean> refreshTriggered = new AtomicReference<>(false);
+        rpcUtils.setGlobalRefreshTrigger(() -> refreshTriggered.set(true));
+
+        final int[] callCount = {0};
+        // First call throws STREAMING_CODE_REPLICATE_VIOLATION, second call succeeds
+        try {
+            rpcUtils.retry(() -> {
+                callCount[0]++;
+                if (callCount[0] == 1) {
+                    throw new io.milvus.v2.exception.MilvusClientException(
+                            io.milvus.v2.exception.ErrorCode.SERVER_ERROR,
+                            "error: STREAMING_CODE_REPLICATE_VIOLATION occurred");
+                }
+                return "success";
+            });
+        } catch (Exception e) {
+            // Should not reach here since second call succeeds
+            fail("Should not throw: " + e.getMessage());
+        }
+
+        assertTrue(refreshTriggered.get(), "Global refresh should have been triggered");
+        assertEquals(2, callCount[0], "Should have retried after routing error");
+    }
+
+    @Test
+    public void testRpcUtils_normalServerErrorNotTriggersRefresh() {
+        io.milvus.v2.utils.RpcUtils rpcUtils = new io.milvus.v2.utils.RpcUtils();
+
+        AtomicReference<Boolean> refreshTriggered = new AtomicReference<>(false);
+        rpcUtils.setGlobalRefreshTrigger(() -> refreshTriggered.set(true));
+
+        // A normal server error without the routing violation string should NOT trigger refresh
+        try {
+            rpcUtils.retry(() -> {
+                throw new io.milvus.v2.exception.MilvusClientException(
+                        io.milvus.v2.exception.ErrorCode.SERVER_ERROR,
+                        "some normal error");
+            });
+        } catch (Exception e) {
+            // Expected to throw
+        }
+
+        assertFalse(refreshTriggered.get(), "Global refresh should NOT have been triggered for normal errors");
+    }
+
+    @Test
+    public void testRpcUtils_noRefreshTriggerSet() {
+        io.milvus.v2.utils.RpcUtils rpcUtils = new io.milvus.v2.utils.RpcUtils();
+        // No globalRefreshTrigger set
+
+        // Should not throw NPE even with routing violation error
+        try {
+            rpcUtils.retry(() -> {
+                throw new io.milvus.v2.exception.MilvusClientException(
+                        io.milvus.v2.exception.ErrorCode.SERVER_ERROR,
+                        "error: STREAMING_CODE_REPLICATE_VIOLATION occurred");
+            });
+        } catch (Exception e) {
+            // Expected to throw since no refresh trigger means no retry for this error
+        }
     }
 
     // ==================== End-to-end parse + getPrimary test ====================

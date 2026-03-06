@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class RpcUtils {
 
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
+    private static final String GLOBAL_ROUTING_ERROR = "STREAMING_CODE_REPLICATE_VIOLATION";
     private RetryConfig retryConfig = RetryConfig.builder().build();
     private Runnable globalRefreshTrigger;
 
@@ -42,6 +43,37 @@ public class RpcUtils {
 
     public void setGlobalRefreshTrigger(Runnable trigger) {
         this.globalRefreshTrigger = trigger;
+    }
+
+    private void handleGlobalConnectionError(StatusRuntimeException e) {
+        if (globalRefreshTrigger == null) {
+            return;
+        }
+        if (e.getStatus().getCode() == io.grpc.Status.UNAVAILABLE.getCode()) {
+            logger.info("Connection unavailable, triggering global topology refresh: {}", e.getMessage());
+            try {
+                globalRefreshTrigger.run();
+            } catch (Exception ex) {
+                logger.warn("Failed to trigger global topology refresh: {}", ex.getMessage());
+            }
+        }
+    }
+
+    private boolean handleGlobalRoutingError(Exception e) {
+        if (globalRefreshTrigger == null) {
+            return false;
+        }
+        String message = e.getMessage();
+        if (message != null && message.contains(GLOBAL_ROUTING_ERROR)) {
+            logger.info("Detected {}, triggering global topology refresh", GLOBAL_ROUTING_ERROR);
+            try {
+                globalRefreshTrigger.run();
+            } catch (Exception ex) {
+                logger.warn("Failed to trigger global topology refresh: {}", ex.getMessage());
+            }
+            return true;
+        }
+        return false;
     }
 
     public void handleResponse(String requestInfo, Status status) {
@@ -119,14 +151,8 @@ public class RpcUtils {
                     throw new MilvusClientException(ErrorCode.RPC_ERROR, msg); // throw rpc error
                 }
 
-                // For UNAVAILABLE errors, trigger global topology refresh if configured
-                if (code == io.grpc.Status.UNAVAILABLE.getCode() && globalRefreshTrigger != null) {
-                    try {
-                        globalRefreshTrigger.run();
-                    } catch (Exception ex) {
-                        logger.warn("Failed to trigger global topology refresh: {}", ex.getMessage());
-                    }
-                }
+                // trigger topology refresh if connection is unavailable, and continue to retry
+                handleGlobalConnectionError(e);
 
                 try {
                     if (timeoutChecker.call() == Boolean.TRUE) {
@@ -148,12 +174,13 @@ public class RpcUtils {
                 } catch (Exception ignored) {
                 }
 
-                // for server-side returned error, only retry for rate limit
-                // in new error codes of v2.3, rate limit error value is 8
                 if (retryConfig.isRetryOnRateLimit() &&
                         (e.getLegacyServerCode() == io.milvus.grpc.ErrorCode.RateLimit.getNumber() ||
                                 e.getServerErrCode() == 8)) {
-                    // cannot be retried
+                    // for server-side returned error, only retry for rate limit
+                    // in new error codes of v2.3, rate limit error value is 8
+                } else if (handleGlobalRoutingError(e)) {
+                    // for global cluster routing errors, immediately trigger topology refresh and continue to retry
                 } else {
                     throw e; // exit retry, throw the error
                 }
