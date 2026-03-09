@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.6.15 (2026-03-09)
+### Feature
+- Add client support for global cluster
+
+### Bug
+- Fix a bug that Struct field name is missed in response of describeCollection()
+
 ## milvus-sdk-java 2.6.14 (2026-02-12)
 ### Feature
 - Support AISAQ index type
