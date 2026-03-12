@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -37,6 +38,7 @@ public class TopologyRefresher {
     private final Consumer<GlobalTopology> onTopologyChange;
     private final ScheduledExecutorService scheduler;
     private final AtomicLong currentVersion;
+    private final AtomicBoolean refreshing = new AtomicBoolean(false);
 
     public TopologyRefresher(String globalEndpoint, String token, long initialVersion,
                              Consumer<GlobalTopology> onTopologyChange) {
@@ -59,12 +61,29 @@ public class TopologyRefresher {
     }
 
     public void triggerRefresh() {
-        scheduler.submit(this::refresh);
+        if (refreshing.getAndSet(true)) {
+            logger.debug("Topology refresh already in progress, skipping");
+            return;
+        }
+        try {
+            scheduler.submit(this::refreshWithCleanup);
+        } catch (Exception e) {
+            refreshing.set(false);
+            logger.warn("Failed to submit topology refresh task: {}", e.getMessage());
+        }
     }
 
     public void stop() {
         scheduler.shutdownNow();
         logger.info("Global topology refresher stopped for endpoint: {}", globalEndpoint);
+    }
+
+    private void refreshWithCleanup() {
+        try {
+            refresh();
+        } finally {
+            refreshing.set(false);
+        }
     }
 
     private void refresh() {
