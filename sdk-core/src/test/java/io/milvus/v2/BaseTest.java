@@ -111,6 +111,7 @@ public class BaseTest {
         when(blockingStub.releaseCollection(any())).thenReturn(successStatus);
         when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setState(LoadState.LoadStateLoaded).setStatus(successStatus).build());
         when(blockingStub.dropCollection(any())).thenReturn(successStatus);
+        when(blockingStub.truncateCollection(any())).thenReturn(TruncateCollectionResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.hasCollection(any())).thenReturn(trueResponse);
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
         when(blockingStub.renameCollection(any())).thenReturn(successStatus);

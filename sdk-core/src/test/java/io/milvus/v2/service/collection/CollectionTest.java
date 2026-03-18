@@ -141,6 +141,14 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
+    void testTruncateCollection() {
+        TruncateCollectionReq req = TruncateCollectionReq.builder()
+                .collectionName("test")
+                .build();
+        client_v2.truncateCollection(req);
+    }
+
+    @Test
     void testHasCollection() {
         HasCollectionReq req = HasCollectionReq.builder()
                 .collectionName("test")
