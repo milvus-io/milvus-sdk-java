@@ -412,6 +412,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Truncates a collection in Milvus, removing all data while preserving the collection schema.
+     *
+     * @param request truncate collection request
+     */
+    public void truncateCollection(TruncateCollectionReq request) {
+        rpcUtils.retry(() -> collectionService.truncateCollection(this.getRpcStub(), request));
+    }
+
+    /**
      * Alter a collection in Milvus.
      * Deprecated, replaced by alterCollectionProperties from SDK v2.5.3, to keep consistence with other SDKs
      *
