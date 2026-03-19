@@ -37,6 +37,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.*;
@@ -1329,11 +1330,11 @@ public class ParamUtils {
                 pBuf.put(aa[k]); // fill the first 4 bytes with the unit bytes
             }
             pBuf.putInt(0); // fill the last 4 bytes to zero
-            pBuf.rewind(); // reset position to head
+            ((Buffer) pBuf).rewind(); // reset position to head
             long k = pBuf.getLong(); // this is the long value converted from the uint
 
             // here we get the float value as normal
-            buf.position(offset + 4); // position offsets 4 bytes since they were converted to long
+            ((Buffer) buf).position(offset + 4); // position offsets 4 bytes since they were converted to long
             float v = buf.getFloat(); // this is the float value
             sparse.put(k, v);
         }
