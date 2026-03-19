@@ -238,6 +238,24 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void truncateCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, TruncateCollectionReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Truncate collection: '%s' in database: '%s'", collectionName, dbName);
+        TruncateCollectionRequest.Builder builder = TruncateCollectionRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        Status status = blockingStub.truncateCollection(builder.build()).getStatus();
+        rpcUtils.handleResponse(title, status);
+
+        // remove the last write timestamp since all data has been cleared
+        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
+        GTsDict.getInstance().removeCollectionTs(key);
+        return null;
+    }
+
     public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
