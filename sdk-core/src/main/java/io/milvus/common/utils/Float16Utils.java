@@ -1,5 +1,6 @@
 package io.milvus.common.utils;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -161,7 +162,7 @@ public class Float16Utils {
      * @return List of Float a float32 vector
      */
     public static List<Float> fp16BufferToVector(ByteBuffer buf) {
-        buf.rewind(); // reset the read position
+        ((Buffer) buf).rewind(); // reset the read position
         List<Float> vector = new ArrayList<>();
         ShortBuffer sbuf = buf.asShortBuffer();
         for (int i = 0; i < sbuf.limit(); i++) {
@@ -198,7 +199,7 @@ public class Float16Utils {
      * @return List of Float the vector is converted to float32 values
      */
     public static List<Float> bf16BufferToVector(ByteBuffer buf) {
-        buf.rewind(); // reset the read position
+        ((Buffer) buf).rewind(); // reset the read position
         List<Float> vector = new ArrayList<>();
         ShortBuffer sbuf = buf.asShortBuffer();
         for (int i = 0; i < sbuf.limit(); i++) {
@@ -234,7 +235,7 @@ public class Float16Utils {
      * @return List of Short the vector is converted to a list of Short, each Short value is a float16 value
      */
     public static List<Short> bufferToF16Vector(ByteBuffer buf) {
-        buf.rewind(); // reset the read position
+        ((Buffer) buf).rewind(); // reset the read position
         List<Short> vector = new ArrayList<>();
         ShortBuffer sbuf = buf.asShortBuffer();
         for (int i = 0; i < sbuf.limit(); i++) {
