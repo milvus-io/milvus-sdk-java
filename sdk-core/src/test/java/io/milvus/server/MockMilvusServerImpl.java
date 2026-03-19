@@ -135,6 +135,21 @@ public class MockMilvusServerImpl extends MilvusServiceGrpc.MilvusServiceImplBas
         respDropCollection = resp;
     }
 
+    private io.milvus.grpc.TruncateCollectionResponse respTruncateCollection;
+
+    @Override
+    public void truncateCollection(io.milvus.grpc.TruncateCollectionRequest request,
+                                   io.grpc.stub.StreamObserver<io.milvus.grpc.TruncateCollectionResponse> responseObserver) {
+        logger.info("MockServer receive truncateCollection() call");
+
+        responseObserver.onNext(respTruncateCollection);
+        responseObserver.onCompleted();
+    }
+
+    public void setTruncateCollectionResponse(io.milvus.grpc.TruncateCollectionResponse resp) {
+        respTruncateCollection = resp;
+    }
+
     @Override
     public void getCollectionStatistics(io.milvus.grpc.GetCollectionStatisticsRequest request,
                                         io.grpc.stub.StreamObserver<io.milvus.grpc.GetCollectionStatisticsResponse> responseObserver) {
