@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.6.16 (2026-03-19)
+### Feature
+- Add truncateCollection() interface for MilvusClientV2
+
+### Bug
+- Fix a potential risk to send multiple http requests to global cluster endpoint in short time
+- Fix NoSuchMethodError on Java 8 for java.nio.ByteBuffer when querying with sparse vector field
+
 ## milvus-sdk-java 2.6.15 (2026-03-09)
 ### Feature
 - Add client support for global cluster
