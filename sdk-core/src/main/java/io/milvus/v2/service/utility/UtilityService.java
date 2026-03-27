@@ -115,6 +115,9 @@ public class UtilityService extends BaseService {
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
+        if (request.getTargetSize() != null) {
+            builder.setTargetSize(request.getTargetSize());
+        }
         ManualCompactionResponse response = blockingStub.manualCompaction(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
 
