@@ -21,9 +21,11 @@ package io.milvus.v2.service.rbac.request;
 
 public class DropRoleReq {
     private String roleName;
+    private boolean forceDrop;
 
     private DropRoleReq(DropRoleReqBuilder builder) {
         this.roleName = builder.roleName;
+        this.forceDrop = builder.forceDrop;
     }
 
     public String getRoleName() {
@@ -34,10 +36,19 @@ public class DropRoleReq {
         this.roleName = roleName;
     }
 
+    public boolean isForceDrop() {
+        return forceDrop;
+    }
+
+    public void setForceDrop(boolean forceDrop) {
+        this.forceDrop = forceDrop;
+    }
+
     @Override
     public String toString() {
         return "DropRoleReq{" +
                 "roleName='" + roleName + '\'' +
+                ", forceDrop=" + forceDrop +
                 '}';
     }
 
@@ -47,12 +58,18 @@ public class DropRoleReq {
 
     public static class DropRoleReqBuilder {
         private String roleName;
+        private boolean forceDrop;
 
         private DropRoleReqBuilder() {
         }
 
         public DropRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
+            return this;
+        }
+
+        public DropRoleReqBuilder forceDrop(boolean forceDrop) {
+            this.forceDrop = forceDrop;
             return this;
         }
 

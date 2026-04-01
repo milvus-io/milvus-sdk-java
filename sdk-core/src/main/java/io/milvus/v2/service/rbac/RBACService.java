@@ -88,6 +88,7 @@ public class RBACService extends BaseService {
         String title = String.format("Drop role: '%s'", request.getRoleName());
         DropRoleRequest dropRoleRequest = DropRoleRequest.newBuilder()
                 .setRoleName(request.getRoleName())
+                .setForceDrop(request.isForceDrop())
                 .build();
         Status status = blockingStub.dropRole(dropRoleRequest);
         rpcUtils.handleResponse(title, status);

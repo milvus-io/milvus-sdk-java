@@ -25,12 +25,14 @@ import io.milvus.param.ParamUtils;
 public class DropRoleParam {
 
     private final String roleName;
+    private final boolean forceDrop;
 
     private DropRoleParam(DropRoleParam.Builder builder) {
         if (builder == null) {
             throw new IllegalArgumentException("Builder cannot be null");
         }
         this.roleName = builder.roleName;
+        this.forceDrop = builder.forceDrop;
     }
 
     public static DropRoleParam.Builder newBuilder() {
@@ -41,10 +43,15 @@ public class DropRoleParam {
         return roleName;
     }
 
+    public boolean isForceDrop() {
+        return forceDrop;
+    }
+
     @Override
     public String toString() {
         return "DropRoleParam{" +
                 "roleName='" + roleName + '\'' +
+                ", forceDrop=" + forceDrop +
                 '}';
     }
 
@@ -53,6 +60,7 @@ public class DropRoleParam {
      */
     public static final class Builder {
         private String roleName;
+        private boolean forceDrop;
 
         private Builder() {
         }
@@ -68,6 +76,17 @@ public class DropRoleParam {
                 throw new IllegalArgumentException("Role name cannot be null");
             }
             this.roleName = roleName;
+            return this;
+        }
+
+        /**
+         * Sets the forceDrop flag. If true, the role will be force dropped.
+         *
+         * @param forceDrop forceDrop
+         * @return <code>Builder</code>
+         */
+        public DropRoleParam.Builder withForceDrop(boolean forceDrop) {
+            this.forceDrop = forceDrop;
             return this;
         }
 

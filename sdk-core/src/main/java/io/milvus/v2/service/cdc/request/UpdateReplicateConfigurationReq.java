@@ -21,6 +21,7 @@ package io.milvus.v2.service.cdc.request;
 
 public class UpdateReplicateConfigurationReq {
     private ReplicateConfiguration replicateConfiguration;
+    private boolean forcePromote;
 
     public static UpdateReplicateConfigurationReqBuilder builder() {
         return new UpdateReplicateConfigurationReqBuilder();
@@ -28,6 +29,7 @@ public class UpdateReplicateConfigurationReq {
 
     private UpdateReplicateConfigurationReq(UpdateReplicateConfigurationReqBuilder builder) {
         this.replicateConfiguration = builder.replicateConfiguration;
+        this.forcePromote = builder.forcePromote;
     }
 
     public ReplicateConfiguration getReplicateConfiguration() {
@@ -38,18 +40,33 @@ public class UpdateReplicateConfigurationReq {
         this.replicateConfiguration = replicateConfiguration;
     }
 
+    public boolean isForcePromote() {
+        return forcePromote;
+    }
+
+    public void setForcePromote(boolean forcePromote) {
+        this.forcePromote = forcePromote;
+    }
+
     @Override
     public String toString() {
         return "UpdateReplicateConfigurationReq{" +
                 "replicateConfiguration=" + replicateConfiguration +
+                ", forcePromote=" + forcePromote +
                 '}';
     }
 
     public static class UpdateReplicateConfigurationReqBuilder {
         private ReplicateConfiguration replicateConfiguration;
+        private boolean forcePromote;
 
         public UpdateReplicateConfigurationReqBuilder replicateConfiguration(ReplicateConfiguration replicateConfiguration) {
             this.replicateConfiguration = replicateConfiguration;
+            return this;
+        }
+
+        public UpdateReplicateConfigurationReqBuilder forcePromote(boolean forcePromote) {
+            this.forcePromote = forcePromote;
             return this;
         }
 
