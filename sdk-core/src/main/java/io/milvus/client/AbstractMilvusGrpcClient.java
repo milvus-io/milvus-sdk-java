@@ -2634,6 +2634,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             DropRoleRequest request = DropRoleRequest.newBuilder()
                     .setRoleName(requestParam.getRoleName())
+                    .setForceDrop(requestParam.isForceDrop())
                     .build();
 
             Status response = blockingStub().dropRole(request);
