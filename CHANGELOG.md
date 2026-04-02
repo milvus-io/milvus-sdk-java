@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.6.17 (2026-04-02)
+### Feature
+- Add optimize() interface for MilvusClientV2
+
+### Improvement
+- Add forceDrop flag for dropRole() interface
+
 ## milvus-sdk-java 2.6.16 (2026-03-19)
 ### Feature
 - Add truncateCollection() interface for MilvusClientV2
