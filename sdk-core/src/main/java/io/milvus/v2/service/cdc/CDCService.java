@@ -30,6 +30,7 @@ public class CDCService extends BaseService {
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
         UpdateReplicateConfigurationRequest request = UpdateReplicateConfigurationRequest.newBuilder()
                 .setReplicateConfiguration(requestParam.getReplicateConfiguration().toGRPC())
+                .setForcePromote(requestParam.isForcePromote())
                 .build();
 
         String title = "UpdateReplicateConfiguration";
