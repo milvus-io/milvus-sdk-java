@@ -56,6 +56,7 @@ import io.milvus.v2.service.resourcegroup.ResourceGroupService;
 import io.milvus.v2.service.resourcegroup.request.*;
 import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
 import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
+import io.milvus.v2.service.utility.OptimizeTask;
 import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
@@ -70,6 +71,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.milvus.v2.common.CompactionState;
+import io.milvus.v2.common.IndexBuildState;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -1201,6 +1208,202 @@ public class MilvusClientV2 {
      */
     public GetCompactionPlansResp getCompactionPlans(GetCompactionPlansReq request) {
         return rpcUtils.retry(() -> utilityService.getCompactionPlans(this.getRpcStub(), request));
+    }
+
+    /**
+     * Optimize collection to adjust segment sizes for better query performance.
+     *
+     * This method performs the following operations:
+     * 1. Waits for all indexes to complete building
+     * 2. Triggers force merge compaction with optional target size
+     * 3. Waits for compaction to complete
+     * 4. Waits for index rebuild to complete
+     * 5. Refreshes collection load if collection is loaded
+     *
+     * @param request optimize request
+     * @return OptimizeTask for tracking progress and getting result
+     */
+    public OptimizeTask optimize(OptimizeReq request) {
+        OptimizeTask task = new OptimizeTask(
+                request.getCollectionName(),
+                request.getDatabaseName(),
+                request.getTargetSize(),
+                request.getTimeout(),
+                this::executeOptimize
+        );
+        task.start();
+
+        if (!request.isAsync()) {
+            task.getResult(request.getTimeout());
+        }
+
+        return task;
+    }
+
+    private OptimizeResp executeOptimize(OptimizeTask task, String collectionName,
+                                         String databaseName, Long sizeMb, Long timeout) {
+        long startMs = System.currentTimeMillis();
+
+        task.checkCancelled();
+        List<String> vectorIndexNames = listVectorIndexes(collectionName, databaseName);
+
+        task.checkCancelled();
+        task.setProgress(OptimizeTask.ProgressStage.WAITING_FOR_INDEXES);
+        waitForIndexes(task, collectionName, databaseName, vectorIndexNames, startMs, timeout);
+
+        task.checkCancelled();
+        task.setProgress(OptimizeTask.ProgressStage.COMPACTING);
+        CompactReq.CompactReqBuilder compactBuilder = CompactReq.builder()
+                .collectionName(collectionName);
+        if (databaseName != null) {
+            compactBuilder.databaseName(databaseName);
+        }
+        if (sizeMb != null) {
+            compactBuilder.targetSize(sizeMb);
+        }
+        CompactResp compactResp = compact(compactBuilder.build());
+        long compactionId = compactResp.getCompactionID();
+
+        task.checkCancelled();
+        task.setProgress(OptimizeTask.ProgressStage.WAITING_FOR_COMPACTION);
+        waitForCompaction(task, compactionId, startMs, timeout);
+
+        task.checkCancelled();
+        task.setProgress(OptimizeTask.ProgressStage.WAITING_FOR_INDEX_REBUILD);
+        waitForIndexes(task, collectionName, databaseName, vectorIndexNames, startMs, timeout);
+
+        task.checkCancelled();
+        GetLoadStateReq.GetLoadStateReqBuilder loadStateBuilder = GetLoadStateReq.builder()
+                .collectionName(collectionName);
+        if (databaseName != null) {
+            loadStateBuilder.databaseName(databaseName);
+        }
+        Boolean loaded = getLoadState(loadStateBuilder.build());
+        if (Boolean.TRUE.equals(loaded)) {
+            task.setProgress(OptimizeTask.ProgressStage.REFRESHING_LOAD);
+            RefreshLoadReq.RefreshLoadReqBuilder refreshBuilder = RefreshLoadReq.builder()
+                    .collectionName(collectionName);
+            if (databaseName != null) {
+                refreshBuilder.databaseName(databaseName);
+            }
+            refreshLoad(refreshBuilder.build());
+        }
+
+        return OptimizeResp.builder()
+                .status("success")
+                .collectionName(collectionName)
+                .compactionId(compactionId)
+                .targetSize(sizeMb != null ? sizeMb + "MB" : null)
+                .progress(task.getProgressHistoryAsStrings())
+                .build();
+    }
+
+    private List<String> listVectorIndexes(String collectionName, String databaseName) {
+        DescribeCollectionReq.DescribeCollectionReqBuilder descBuilder = DescribeCollectionReq.builder()
+                .collectionName(collectionName);
+        if (databaseName != null) {
+            descBuilder.databaseName(databaseName);
+        }
+        DescribeCollectionResp collResp = describeCollection(descBuilder.build());
+        List<String> vectorFieldNames = collResp.getVectorFieldNames();
+
+        if (vectorFieldNames == null || vectorFieldNames.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        ListIndexesReq.ListIndexesReqBuilder listBuilder = ListIndexesReq.builder()
+                .collectionName(collectionName);
+        if (databaseName != null) {
+            listBuilder.databaseName(databaseName);
+        }
+        List<String> allIndexes = listIndexes(listBuilder.build());
+
+        List<String> vectorIndexes = new ArrayList<>();
+        for (String indexName : allIndexes) {
+            DescribeIndexReq.DescribeIndexReqBuilder idxBuilder = DescribeIndexReq.builder()
+                    .collectionName(collectionName)
+                    .indexName(indexName);
+            if (databaseName != null) {
+                idxBuilder.databaseName(databaseName);
+            }
+            DescribeIndexResp indexResp = describeIndex(idxBuilder.build());
+            DescribeIndexResp.IndexDesc desc = indexResp.getIndexDescByIndexName(indexName);
+            if (desc != null && vectorFieldNames.contains(desc.getFieldName())) {
+                vectorIndexes.add(indexName);
+            }
+        }
+
+        return vectorIndexes;
+    }
+
+    private void waitForIndexes(OptimizeTask task, String collectionName, String databaseName,
+                                List<String> indexNames, long startMs, Long timeout) {
+        if (indexNames == null || indexNames.isEmpty()) {
+            return;
+        }
+
+        for (String indexName : indexNames) {
+            task.checkCancelled();
+
+            while (true) {
+                task.checkCancelled();
+                checkTimeout(startMs, timeout, "Timeout waiting for indexes to complete on collection " + collectionName);
+
+                DescribeIndexReq.DescribeIndexReqBuilder builder = DescribeIndexReq.builder()
+                        .collectionName(collectionName)
+                        .indexName(indexName);
+                if (databaseName != null) {
+                    builder.databaseName(databaseName);
+                }
+                DescribeIndexResp indexResp = describeIndex(builder.build());
+                DescribeIndexResp.IndexDesc desc = indexResp.getIndexDescByIndexName(indexName);
+
+                if (desc != null && desc.getIndexState() == IndexBuildState.Finished) {
+                    break;
+                }
+                if (desc != null && desc.getIndexState() == IndexBuildState.Failed) {
+                    throw new MilvusClientException(ErrorCode.SERVER_ERROR,
+                            "Index build failed for '" + indexName + "': " + desc.getIndexFailedReason());
+                }
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "Interrupted while waiting for indexes");
+                }
+            }
+        }
+    }
+
+    private void waitForCompaction(OptimizeTask task, long compactionId, long startMs, Long timeout) {
+        while (true) {
+            task.checkCancelled();
+            checkTimeout(startMs, timeout, "Timeout waiting for compaction " + compactionId + " to complete");
+
+            GetCompactionStateResp state = getCompactionState(
+                    GetCompactionStateReq.builder().compactionID(compactionId).build());
+
+            if (state.getState() == CompactionState.Completed) {
+                break;
+            }
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "Interrupted while waiting for compaction");
+            }
+        }
+    }
+
+    private void checkTimeout(long startMs, Long timeout, String message) {
+        if (timeout != null) {
+            long elapsed = System.currentTimeMillis() - startMs;
+            if (elapsed >= timeout) {
+                throw new MilvusClientException(ErrorCode.CLIENT_ERROR, message);
+            }
+        }
     }
 
     /**

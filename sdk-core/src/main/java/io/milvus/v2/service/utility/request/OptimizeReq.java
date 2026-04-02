@@ -19,93 +19,93 @@
 
 package io.milvus.v2.service.utility.request;
 
-public class CompactReq {
+public class OptimizeReq {
     private String databaseName;
     private String collectionName;
-    private Boolean isClustering = Boolean.FALSE;
-    private Long targetSize; // in MB, null means server default
+    private String targetSize; // e.g. "512MB", "1GB", null for server default
+    private boolean async = false; // false = block until done (default), true = return task immediately
+    private Long timeout; // ms, null = no timeout
 
-    private CompactReq(CompactReqBuilder builder) {
+    private OptimizeReq(OptimizeReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
-        this.isClustering = builder.isClustering;
         this.targetSize = builder.targetSize;
+        this.async = builder.async;
+        this.timeout = builder.timeout;
     }
 
-    public static CompactReqBuilder builder() {
-        return new CompactReqBuilder();
+    public static OptimizeReqBuilder builder() {
+        return new OptimizeReqBuilder();
     }
 
     public String getDatabaseName() {
         return databaseName;
     }
 
-    public void setDatabaseName(String databaseName) {
-        this.databaseName = databaseName;
-    }
-
     public String getCollectionName() {
         return collectionName;
     }
 
-    public void setCollectionName(String collectionName) {
-        this.collectionName = collectionName;
-    }
-
-    public Boolean getIsClustering() {
-        return isClustering;
-    }
-
-    public void setIsClustering(Boolean isClustering) {
-        this.isClustering = isClustering;
-    }
-
-    public Long getTargetSize() {
+    public String getTargetSize() {
         return targetSize;
     }
 
-    public void setTargetSize(Long targetSize) {
-        this.targetSize = targetSize;
+    public boolean isAsync() {
+        return async;
+    }
+
+    public Long getTimeout() {
+        return timeout;
     }
 
     @Override
     public String toString() {
-        return "CompactReq{" +
+        return "OptimizeReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
-                ", isClustering=" + isClustering +
-                ", targetSize=" + targetSize +
+                ", targetSize='" + targetSize + '\'' +
+                ", async=" + async +
+                ", timeout=" + timeout +
                 '}';
     }
 
-    public static class CompactReqBuilder {
+    public static class OptimizeReqBuilder {
         private String databaseName;
         private String collectionName;
-        private Boolean isClustering = Boolean.FALSE;
-        private Long targetSize;
+        private String targetSize;
+        private boolean async = false;
+        private Long timeout;
 
-        public CompactReqBuilder databaseName(String databaseName) {
+        public OptimizeReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
             return this;
         }
 
-        public CompactReqBuilder collectionName(String collectionName) {
+        public OptimizeReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
             return this;
         }
 
-        public CompactReqBuilder isClustering(Boolean isClustering) {
-            this.isClustering = isClustering;
-            return this;
-        }
-
-        public CompactReqBuilder targetSize(Long targetSize) {
+        public OptimizeReqBuilder targetSize(String targetSize) {
             this.targetSize = targetSize;
             return this;
         }
 
-        public CompactReq build() {
-            return new CompactReq(this);
+        public OptimizeReqBuilder async(boolean async) {
+            this.async = async;
+            return this;
+        }
+
+        public OptimizeReqBuilder timeout(Long timeout) {
+            this.timeout = timeout;
+            return this;
+        }
+
+        public OptimizeReq build() {
+            if (collectionName == null || collectionName.isEmpty()) {
+                throw new IllegalArgumentException("collectionName cannot be null or empty");
+            }
+            return new OptimizeReq(this);
         }
     }
 }
