@@ -31,6 +31,8 @@ target/
 volumes/
 *.iml
 .flattened-pom.xml
+dependency-reduced-pom.xml
+META-INF/
 
 # Example files
 examples/bulk_writer
