@@ -1562,6 +1562,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 if (obj instanceof String) {
                     return builder.setStringData((String) obj).build();
                 }
@@ -1600,6 +1601,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 return value.getStringData();
             case JSON:
                 return JsonUtils.fromJson(value.getStringData(), JsonObject.class);

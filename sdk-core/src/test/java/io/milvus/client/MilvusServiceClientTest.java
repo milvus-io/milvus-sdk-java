@@ -2866,6 +2866,13 @@ class MilvusServiceClientTest {
         }
         testScalarField(ScalarField.newBuilder().setStringData(strBuilder).build(),
                 DataType.VarChar, dim);
+
+        MolSmilesArray.Builder molBuilder = MolSmilesArray.newBuilder();
+        for (long i = 0; i < dim; ++i) {
+            molBuilder.addData("C" + i);
+        }
+        testScalarField(ScalarField.newBuilder().setMolSmilesData(molBuilder).build(),
+                DataType.Mol, dim);
     }
 
     @Test
