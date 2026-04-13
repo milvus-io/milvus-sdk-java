@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection;
 
 import io.milvus.common.utils.GTsDict;
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
@@ -130,7 +131,9 @@ public class CollectionService extends BaseService {
         CollectionSchema.Builder grpcSchemaBuilder = CollectionSchema.newBuilder()
                 .setName(collectionName)
                 .setDescription(request.getDescription())
-                .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField());
+                .setEnableDynamicField(request.getCollectionSchema().isEnableDynamicField())
+                .setExternalSource(request.getCollectionSchema().getExternalSource())
+                .setExternalSpec(JsonUtils.toJsonString(request.getCollectionSchema().getExternalSpec()));
         List<String> outputFields = new ArrayList<>();
         for (CreateCollectionReq.Function function : request.getCollectionSchema().getFunctionList()) {
             grpcSchemaBuilder.addFunctions(SchemaUtils.convertToGrpcFunction(function)).build();

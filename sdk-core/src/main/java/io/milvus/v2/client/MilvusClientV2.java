@@ -1211,6 +1211,36 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Refresh an external collection from its external data source.
+     *
+     * @param request refresh external collection request
+     * @return RefreshExternalCollectionResp containing the job ID
+     */
+    public RefreshExternalCollectionResp refreshExternalCollection(RefreshExternalCollectionReq request) {
+        return rpcUtils.retry(() -> utilityService.refreshExternalCollection(this.getRpcStub(), request));
+    }
+
+    /**
+     * Get the progress of a refresh external collection job.
+     *
+     * @param request get refresh progress request containing the job ID
+     * @return GetRefreshExternalCollectionProgressResp containing the job info
+     */
+    public GetRefreshExternalCollectionProgressResp getRefreshExternalCollectionProgress(GetRefreshExternalCollectionProgressReq request) {
+        return rpcUtils.retry(() -> utilityService.getRefreshExternalCollectionProgress(this.getRpcStub(), request));
+    }
+
+    /**
+     * List refresh external collection jobs.
+     *
+     * @param request list refresh jobs request
+     * @return ListRefreshExternalCollectionJobsResp containing the list of job infos
+     */
+    public ListRefreshExternalCollectionJobsResp listRefreshExternalCollectionJobs(ListRefreshExternalCollectionJobsReq request) {
+        return rpcUtils.retry(() -> utilityService.listRefreshExternalCollectionJobs(this.getRpcStub(), request));
+    }
+
+    /**
      * Optimize collection to adjust segment sizes for better query performance.
      *
      * This method performs the following operations:

@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.utility;
 
+import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.v2.common.CompactionPlan;
 import io.milvus.v2.common.CompactionState;
@@ -330,6 +331,81 @@ public class UtilityService extends BaseService {
         });
         return GetQuerySegmentInfoResp.builder()
                 .segmentInfos(segmentInfos)
+                .build();
+    }
+
+    public RefreshExternalCollectionResp refreshExternalCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                                    RefreshExternalCollectionReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("RefreshExternalCollection '%s' in database: '%s'", collectionName, dbName);
+
+        RefreshExternalCollectionRequest.Builder builder = RefreshExternalCollectionRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setExternalSource(request.getExternalSource())
+                .setExternalSpec(JsonUtils.toJsonString(request.getExternalSpec()));
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        RefreshExternalCollectionResponse response = blockingStub.refreshExternalCollection(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+        return RefreshExternalCollectionResp.builder()
+                .jobId(response.getJobId())
+                .build();
+    }
+
+    public GetRefreshExternalCollectionProgressResp getRefreshExternalCollectionProgress(
+            MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+            GetRefreshExternalCollectionProgressReq request) {
+        String title = String.format("GetRefreshExternalCollectionProgress jobId: %d", request.getJobId());
+
+        GetRefreshExternalCollectionProgressRequest grpcRequest = GetRefreshExternalCollectionProgressRequest.newBuilder()
+                .setJobId(request.getJobId())
+                .build();
+
+        GetRefreshExternalCollectionProgressResponse response = blockingStub.getRefreshExternalCollectionProgress(grpcRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+        return GetRefreshExternalCollectionProgressResp.builder()
+                .jobInfo(convertJobInfo(response.getJobInfo()))
+                .build();
+    }
+
+    public ListRefreshExternalCollectionJobsResp listRefreshExternalCollectionJobs(
+            MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+            ListRefreshExternalCollectionJobsReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("ListRefreshExternalCollectionJobs '%s' in database: '%s'", collectionName, dbName);
+
+        ListRefreshExternalCollectionJobsRequest.Builder builder = ListRefreshExternalCollectionJobsRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        ListRefreshExternalCollectionJobsResponse response = blockingStub.listRefreshExternalCollectionJobs(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<io.milvus.v2.service.utility.response.RefreshExternalCollectionJobInfo> jobs = new ArrayList<>();
+        for (io.milvus.grpc.RefreshExternalCollectionJobInfo job : response.getJobsList()) {
+            jobs.add(convertJobInfo(job));
+        }
+        return ListRefreshExternalCollectionJobsResp.builder()
+                .jobs(jobs)
+                .build();
+    }
+
+    private io.milvus.v2.service.utility.response.RefreshExternalCollectionJobInfo convertJobInfo(io.milvus.grpc.RefreshExternalCollectionJobInfo info) {
+        return io.milvus.v2.service.utility.response.RefreshExternalCollectionJobInfo.builder()
+                .jobId(info.getJobId())
+                .collectionName(info.getCollectionName())
+                .state(info.getState().name())
+                .progress((int) info.getProgress())
+                .reason(info.getReason())
+                .externalSource(info.getExternalSource())
+                .startTime(info.getStartTime())
+                .endTime(info.getEndTime())
                 .build();
     }
 }

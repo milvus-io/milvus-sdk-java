@@ -19,6 +19,7 @@
 
 package io.milvus.v2.client;
 
+import com.google.gson.JsonObject;
 import io.milvus.common.resourcegroup.*;
 import io.milvus.param.*;
 import io.milvus.param.alias.AlterAliasParam;
@@ -314,6 +315,8 @@ public class MilvusClientV2Test extends BaseTest {
         } else if (fieldType == Map.class) {
             Map<?, ?> obj = new HashMap<>();
             randomValues.put(field.getName(), obj);
+        } else if (fieldType == JsonObject.class) {
+            randomValues.put(field.getName(), new JsonObject());
         } else if (fieldType.isEnum()) {
             randomValues.put(field.getName(), fieldType.getEnumConstants()[1]);
         } else if (!fieldType.isInterface() && !fieldType.isArray()) {
