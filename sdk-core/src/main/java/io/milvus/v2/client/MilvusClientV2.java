@@ -1241,6 +1241,34 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Add a file resource to Milvus.
+     *
+     * @param request add file resource request containing name and path
+     */
+    public void addFileResource(AddFileResourceReq request) {
+        rpcUtils.retry(() -> utilityService.addFileResource(this.getRpcStub(), request));
+    }
+
+    /**
+     * Remove a file resource from Milvus.
+     *
+     * @param request remove file resource request containing name
+     */
+    public void removeFileResource(RemoveFileResourceReq request) {
+        rpcUtils.retry(() -> utilityService.removeFileResource(this.getRpcStub(), request));
+    }
+
+    /**
+     * List all file resources in Milvus.
+     *
+     * @param request list file resources request
+     * @return ListFileResourcesResp containing the list of file resources
+     */
+    public ListFileResourcesResp listFileResources(ListFileResourcesReq request) {
+        return rpcUtils.retry(() -> utilityService.listFileResources(this.getRpcStub(), request));
+    }
+
+    /**
      * Optimize collection to adjust segment sizes for better query performance.
      *
      * This method performs the following operations:

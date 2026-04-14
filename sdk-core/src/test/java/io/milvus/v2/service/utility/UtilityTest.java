@@ -27,7 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class UtilityTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UtilityTest.class);
@@ -146,5 +147,38 @@ class UtilityTest extends BaseTest {
         ListRefreshExternalCollectionJobsResp resp = client_v2.listRefreshExternalCollectionJobs(req);
         assertNotNull(resp.getJobs());
         assertEquals(2, resp.getJobs().size());
+    }
+
+    @Test
+    void testAddFileResource() {
+        AddFileResourceReq req = AddFileResourceReq.builder()
+                .name("test_resource")
+                .path("/data/test.parquet")
+                .build();
+        client_v2.addFileResource(req);
+    }
+
+    @Test
+    void testRemoveFileResource() {
+        RemoveFileResourceReq req = RemoveFileResourceReq.builder()
+                .name("test_resource")
+                .build();
+        client_v2.removeFileResource(req);
+    }
+
+    @Test
+    void testListFileResources() {
+        ListFileResourcesReq req = ListFileResourcesReq.builder().build();
+        ListFileResourcesResp resp = client_v2.listFileResources(req);
+        assertNotNull(resp.getResources());
+        assertEquals(2, resp.getResources().size());
+
+        FileResourceInfo info1 = resp.getResources().get(0);
+        assertEquals("test_resource", info1.getName());
+        assertEquals("/data/test.parquet", info1.getPath());
+
+        FileResourceInfo info2 = resp.getResources().get(1);
+        assertEquals("test_resource_2", info2.getName());
+        assertEquals("/data/test2.parquet", info2.getPath());
     }
 }

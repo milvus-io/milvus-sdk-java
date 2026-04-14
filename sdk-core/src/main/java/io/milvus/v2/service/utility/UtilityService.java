@@ -408,4 +408,61 @@ public class UtilityService extends BaseService {
                 .endTime(info.getEndTime())
                 .build();
     }
+
+    public Void addFileResource(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                AddFileResourceReq request) {
+        if (StringUtils.isEmpty(request.getName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "File resource name cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(request.getPath())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "File resource path cannot be null or empty");
+        }
+        String title = String.format("AddFileResource name: '%s', path: '%s'", request.getName(), request.getPath());
+
+        AddFileResourceRequest grpcRequest = AddFileResourceRequest.newBuilder()
+                .setName(request.getName())
+                .setPath(request.getPath())
+                .build();
+
+        Status status = blockingStub.addFileResource(grpcRequest);
+        rpcUtils.handleResponse(title, status);
+        return null;
+    }
+
+    public Void removeFileResource(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                   RemoveFileResourceReq request) {
+        if (StringUtils.isEmpty(request.getName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "File resource name cannot be null or empty");
+        }
+        String title = String.format("RemoveFileResource name: '%s'", request.getName());
+
+        RemoveFileResourceRequest grpcRequest = RemoveFileResourceRequest.newBuilder()
+                .setName(request.getName())
+                .build();
+
+        Status status = blockingStub.removeFileResource(grpcRequest);
+        rpcUtils.handleResponse(title, status);
+        return null;
+    }
+
+    public ListFileResourcesResp listFileResources(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                   ListFileResourcesReq request) {
+        String title = "ListFileResources";
+
+        ListFileResourcesRequest grpcRequest = ListFileResourcesRequest.newBuilder().build();
+
+        ListFileResourcesResponse response = blockingStub.listFileResources(grpcRequest);
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        List<io.milvus.v2.service.utility.response.FileResourceInfo> resources = new ArrayList<>();
+        for (io.milvus.grpc.FileResourceInfo info : response.getResourcesList()) {
+            resources.add(io.milvus.v2.service.utility.response.FileResourceInfo.builder()
+                    .name(info.getName())
+                    .path(info.getPath())
+                    .build());
+        }
+        return ListFileResourcesResp.builder()
+                .resources(resources)
+                .build();
+    }
 }
