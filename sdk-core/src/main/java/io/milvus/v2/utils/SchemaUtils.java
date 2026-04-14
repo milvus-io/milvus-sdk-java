@@ -19,6 +19,7 @@
 
 package io.milvus.v2.utils;
 
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
@@ -61,7 +62,8 @@ public class SchemaUtils {
                 .setIsPartitionKey(fieldSchema.getIsPartitionKey())
                 .setIsClusteringKey(fieldSchema.getIsClusteringKey())
                 .setAutoID(fieldSchema.getAutoID())
-                .setNullable(fieldSchema.getIsNullable());
+                .setNullable(fieldSchema.getIsNullable())
+                .setExternalField(fieldSchema.getExternalField());
         if (!ParamUtils.isVectorDataType(dType) && !fieldSchema.getIsPrimaryKey()) {
             ValueField value = ParamUtils.objectToValueField(fieldSchema.getDefaultValue(), dType);
             if (value != null) {
@@ -169,8 +171,17 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.CollectionSchema convertFromGrpcCollectionSchema(CollectionSchema schema) {
+        JsonObject externalSpec;
+        try {
+            externalSpec = JsonUtils.parseFromString(schema.getExternalSpec());
+        } catch (Exception e) {
+            logger.warn("Failed to parse externalSpec: {}", schema.getExternalSpec(), e);
+            externalSpec = new JsonObject();
+        }
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
                 .enableDynamicField(schema.getEnableDynamicField())
+                .externalSource(schema.getExternalSource())
+                .externalSpec(externalSpec)
                 .build();
 
         // normal fields
@@ -221,6 +232,7 @@ public class SchemaUtils {
                 .elementType(actualElementType)
                 .isNullable(fieldSchema.getNullable())
                 .defaultValue(ParamUtils.valueFieldToObject(fieldSchema.getDefaultValue(), fieldSchema.getDataType()))
+                .externalField(fieldSchema.getExternalField())
                 .build();
 
         Map<String, String> typeParams = new HashMap<>();
@@ -318,6 +330,7 @@ public class SchemaUtils {
                 .analyzerParams(addFieldReq.getAnalyzerParams())
                 .typeParams(addFieldReq.getTypeParams())
                 .multiAnalyzerParams(addFieldReq.getMultiAnalyzerParams())
+                .externalField(addFieldReq.getExternalField())
                 .build();
         if (addFieldReq.getDataType().equals(io.milvus.v2.common.DataType.Array)) {
             if (addFieldReq.getElementType() == null) {
@@ -387,4 +400,5 @@ public class SchemaUtils {
                 .maxCapacity(addFieldReq.getMaxCapacity())
                 .build();
     }
+
 }
