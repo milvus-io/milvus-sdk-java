@@ -205,6 +205,24 @@ public class BaseTest {
                                 .setEndTime(0L)
                                 .build())
                         .build());
+
+        // file resource api
+        when(blockingStub.addFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.removeFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.listFileResources(any())).thenReturn(
+                ListFileResourcesResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(1L)
+                                .setName("test_resource")
+                                .setPath("/data/test.parquet")
+                                .build())
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(2L)
+                                .setName("test_resource_2")
+                                .setPath("/data/test2.parquet")
+                                .build())
+                        .build());
     }
 
     @AfterEach
