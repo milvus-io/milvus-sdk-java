@@ -50,6 +50,8 @@ public class AddFieldReq {
     private Map<String, String> typeParams;
     private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
 
+    private String externalField; // external field name mapping
+
     private List<FieldSchema> structFields;
 
     AddFieldReq(AddFieldReqBuilder<?> builder) {
@@ -72,6 +74,7 @@ public class AddFieldReq {
         this.enableMatch = builder.enableMatch;
         this.typeParams = builder.typeParams;
         this.multiAnalyzerParams = builder.multiAnalyzerParams;
+        this.externalField = builder.externalField != null ? builder.externalField : "";
         this.structFields = builder.structFields != null ? builder.structFields : new ArrayList<>();
     }
 
@@ -156,6 +159,10 @@ public class AddFieldReq {
         return multiAnalyzerParams;
     }
 
+    public String getExternalField() {
+        return externalField;
+    }
+
     public List<FieldSchema> getStructFields() {
         return structFields;
     }
@@ -237,6 +244,10 @@ public class AddFieldReq {
         this.multiAnalyzerParams = multiAnalyzerParams;
     }
 
+    public void setExternalField(String externalField) {
+        this.externalField = externalField;
+    }
+
     public void setStructFields(List<FieldSchema> structFields) {
         this.structFields = structFields;
     }
@@ -263,6 +274,7 @@ public class AddFieldReq {
                 ", enableMatch=" + enableMatch +
                 ", typeParams=" + typeParams +
                 ", multiAnalyzerParams=" + multiAnalyzerParams +
+                ", externalField='" + externalField + '\'' +
                 ", structFields=" + structFields +
                 '}';
     }
@@ -287,6 +299,7 @@ public class AddFieldReq {
         private Boolean enableMatch;
         private Map<String, String> typeParams;
         private Map<String, Object> multiAnalyzerParams;
+        private String externalField;
         private List<FieldSchema> structFields;
 
         public T fieldName(String fieldName) {
@@ -382,6 +395,11 @@ public class AddFieldReq {
 
         public T multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
             this.multiAnalyzerParams = multiAnalyzerParams;
+            return (T) this;
+        }
+
+        public T externalField(String externalField) {
+            this.externalField = externalField;
             return (T) this;
         }
 

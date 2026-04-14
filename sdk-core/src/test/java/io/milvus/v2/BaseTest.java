@@ -165,6 +165,64 @@ public class BaseTest {
         when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
         when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
+
+        // external collection api
+        when(blockingStub.refreshExternalCollection(any())).thenReturn(
+                RefreshExternalCollectionResponse.newBuilder().setStatus(successStatus).setJobId(12345L).build());
+        when(blockingStub.getRefreshExternalCollectionProgress(any())).thenReturn(
+                GetRefreshExternalCollectionProgressResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setJobInfo(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setExternalSource("s3://bucket/path")
+                                .setStartTime(1000L)
+                                .setEndTime(2000L)
+                                .build())
+                        .build());
+        when(blockingStub.listRefreshExternalCollectionJobs(any())).thenReturn(
+                ListRefreshExternalCollectionJobsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addJobs(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshCompleted)
+                                .setProgress(100)
+                                .setExternalSource("s3://bucket/path")
+                                .setStartTime(1000L)
+                                .setEndTime(2000L)
+                                .build())
+                        .addJobs(io.milvus.grpc.RefreshExternalCollectionJobInfo.newBuilder()
+                                .setJobId(12346L)
+                                .setCollectionName("ext_coll")
+                                .setState(RefreshExternalCollectionState.RefreshInProgress)
+                                .setProgress(50)
+                                .setExternalSource("s3://bucket/path2")
+                                .setStartTime(3000L)
+                                .setEndTime(0L)
+                                .build())
+                        .build());
+
+        // file resource api
+        when(blockingStub.addFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.removeFileResource(any())).thenReturn(successStatus);
+        when(blockingStub.listFileResources(any())).thenReturn(
+                ListFileResourcesResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(1L)
+                                .setName("test_resource")
+                                .setPath("/data/test.parquet")
+                                .build())
+                        .addResources(io.milvus.grpc.FileResourceInfo.newBuilder()
+                                .setId(2L)
+                                .setName("test_resource_2")
+                                .setPath("/data/test2.parquet")
+                                .build())
+                        .build());
     }
 
     @AfterEach

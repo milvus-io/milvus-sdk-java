@@ -19,13 +19,16 @@
 
 package io.milvus.v2.service.utility;
 
+import com.google.gson.JsonObject;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.utility.request.*;
-import io.milvus.v2.service.utility.response.DescribeAliasResp;
-import io.milvus.v2.service.utility.response.ListAliasResp;
+import io.milvus.v2.service.utility.response.*;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class UtilityTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UtilityTest.class);
@@ -70,5 +73,112 @@ class UtilityTest extends BaseTest {
                 .collectionName("test")
                 .build();
         ListAliasResp statusR = client_v2.listAliases(req);
+    }
+
+    @Test
+    void testRefreshExternalCollection() {
+        JsonObject spec = new JsonObject();
+        spec.addProperty("format", "parquet");
+        RefreshExternalCollectionReq req = RefreshExternalCollectionReq.builder()
+                .collectionName("ext_coll")
+                .externalSource("s3://bucket/path")
+                .externalSpec(spec)
+                .build();
+        RefreshExternalCollectionResp resp = client_v2.refreshExternalCollection(req);
+        assertEquals(12345L, resp.getJobId());
+    }
+
+    @Test
+    void testRefreshExternalCollectionWithDatabase() {
+        RefreshExternalCollectionReq req = RefreshExternalCollectionReq.builder()
+                .databaseName("my_db")
+                .collectionName("ext_coll")
+                .build();
+        RefreshExternalCollectionResp resp = client_v2.refreshExternalCollection(req);
+        assertEquals(12345L, resp.getJobId());
+    }
+
+    @Test
+    void testGetRefreshExternalCollectionProgress() {
+        GetRefreshExternalCollectionProgressReq req = GetRefreshExternalCollectionProgressReq.builder()
+                .jobId(12345L)
+                .build();
+        GetRefreshExternalCollectionProgressResp resp = client_v2.getRefreshExternalCollectionProgress(req);
+        RefreshExternalCollectionJobInfo jobInfo = resp.getJobInfo();
+        assertNotNull(jobInfo);
+        assertEquals(12345L, jobInfo.getJobId());
+        assertEquals("ext_coll", jobInfo.getCollectionName());
+        assertEquals("RefreshCompleted", jobInfo.getState());
+        assertEquals(100, jobInfo.getProgress());
+        assertEquals("", jobInfo.getReason());
+        assertEquals("s3://bucket/path", jobInfo.getExternalSource());
+        assertEquals(1000L, jobInfo.getStartTime());
+        assertEquals(2000L, jobInfo.getEndTime());
+    }
+
+    @Test
+    void testListRefreshExternalCollectionJobs() {
+        ListRefreshExternalCollectionJobsReq req = ListRefreshExternalCollectionJobsReq.builder()
+                .collectionName("ext_coll")
+                .build();
+        ListRefreshExternalCollectionJobsResp resp = client_v2.listRefreshExternalCollectionJobs(req);
+        assertNotNull(resp.getJobs());
+        assertEquals(2, resp.getJobs().size());
+
+        RefreshExternalCollectionJobInfo job1 = resp.getJobs().get(0);
+        assertEquals(12345L, job1.getJobId());
+        assertEquals("RefreshCompleted", job1.getState());
+        assertEquals(100, job1.getProgress());
+
+        RefreshExternalCollectionJobInfo job2 = resp.getJobs().get(1);
+        assertEquals(12346L, job2.getJobId());
+        assertEquals("RefreshInProgress", job2.getState());
+        assertEquals(50, job2.getProgress());
+        assertEquals("s3://bucket/path2", job2.getExternalSource());
+        assertEquals(0L, job2.getEndTime());
+    }
+
+    @Test
+    void testListRefreshExternalCollectionJobsWithDatabase() {
+        ListRefreshExternalCollectionJobsReq req = ListRefreshExternalCollectionJobsReq.builder()
+                .databaseName("my_db")
+                .collectionName("ext_coll")
+                .build();
+        ListRefreshExternalCollectionJobsResp resp = client_v2.listRefreshExternalCollectionJobs(req);
+        assertNotNull(resp.getJobs());
+        assertEquals(2, resp.getJobs().size());
+    }
+
+    @Test
+    void testAddFileResource() {
+        AddFileResourceReq req = AddFileResourceReq.builder()
+                .name("test_resource")
+                .path("/data/test.parquet")
+                .build();
+        client_v2.addFileResource(req);
+    }
+
+    @Test
+    void testRemoveFileResource() {
+        RemoveFileResourceReq req = RemoveFileResourceReq.builder()
+                .name("test_resource")
+                .build();
+        client_v2.removeFileResource(req);
+    }
+
+    @Test
+    void testListFileResources() {
+        ListFileResourcesReq req = ListFileResourcesReq.builder().build();
+        ListFileResourcesResp resp = client_v2.listFileResources(req);
+        assertNotNull(resp.getResources());
+        assertEquals(2, resp.getResources().size());
+
+        FileResourceInfo info1 = resp.getResources().get(0);
+        assertEquals("test_resource", info1.getName());
+        assertEquals("/data/test.parquet", info1.getPath());
+
+        FileResourceInfo info2 = resp.getResources().get(1);
+        assertEquals("test_resource_2", info2.getName());
+        assertEquals("/data/test2.parquet", info2.getPath());
     }
 }

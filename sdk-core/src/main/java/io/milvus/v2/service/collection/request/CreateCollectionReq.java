@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection.request;
 
+import com.google.gson.JsonObject;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.exception.ParamException;
 import io.milvus.v2.common.ConsistencyLevel;
@@ -407,12 +408,16 @@ public class CreateCollectionReq {
 
         private boolean enableDynamicField = false;
         private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
+        private String externalSource = "";
+        private JsonObject externalSpec;
 
         private CollectionSchema(CollectionSchemaBuilder builder) {
             this.fieldSchemaList = builder.fieldSchemaList;
             this.structFields = builder.structFields;
             this.enableDynamicField = builder.enableDynamicField;
             this.functionList = builder.functionList;
+            this.externalSource = builder.externalSource;
+            this.externalSpec = builder.externalSpec;
         }
 
         public CollectionSchema addField(AddFieldReq addFieldReq) {
@@ -479,6 +484,22 @@ public class CreateCollectionReq {
             this.functionList = functionList;
         }
 
+        public String getExternalSource() {
+            return externalSource;
+        }
+
+        public void setExternalSource(String externalSource) {
+            this.externalSource = externalSource;
+        }
+
+        public JsonObject getExternalSpec() {
+            return externalSpec;
+        }
+
+        public void setExternalSpec(JsonObject externalSpec) {
+            this.externalSpec = externalSpec;
+        }
+
         @Override
         public String toString() {
             return "CollectionSchema{" +
@@ -486,6 +507,8 @@ public class CreateCollectionReq {
                     ", structFields=" + structFields +
                     ", enableDynamicField=" + enableDynamicField +
                     ", functionList=" + functionList +
+                    ", externalSource='" + externalSource + '\'' +
+                    ", externalSpec=" + externalSpec +
                     '}';
         }
 
@@ -498,6 +521,8 @@ public class CreateCollectionReq {
             private List<CreateCollectionReq.StructFieldSchema> structFields = new ArrayList<>();
             private boolean enableDynamicField = false;
             private List<CreateCollectionReq.Function> functionList = new ArrayList<>();
+            private String externalSource = "";
+            private JsonObject externalSpec;
 
             private CollectionSchemaBuilder() {
             }
@@ -519,6 +544,16 @@ public class CreateCollectionReq {
 
             public CollectionSchemaBuilder functionList(List<CreateCollectionReq.Function> functionList) {
                 this.functionList = functionList;
+                return this;
+            }
+
+            public CollectionSchemaBuilder externalSource(String externalSource) {
+                this.externalSource = externalSource;
+                return this;
+            }
+
+            public CollectionSchemaBuilder externalSpec(JsonObject externalSpec) {
+                this.externalSpec = externalSpec;
                 return this;
             }
 
@@ -549,6 +584,7 @@ public class CreateCollectionReq {
         // If a specific field, such as maxLength, has been specified, it will override the corresponding key's value in typeParams.
         private Map<String, String> typeParams;
         private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
+        private String externalField = ""; // external field name mapping
 
         private FieldSchema(FieldSchemaBuilder builder) {
             this.name = builder.name;
@@ -569,6 +605,7 @@ public class CreateCollectionReq {
             this.enableMatch = builder.enableMatch;
             this.typeParams = builder.typeParams;
             this.multiAnalyzerParams = builder.multiAnalyzerParams;
+            this.externalField = builder.externalField;
         }
 
         // Getters and Setters
@@ -716,6 +753,14 @@ public class CreateCollectionReq {
             this.multiAnalyzerParams = multiAnalyzerParams;
         }
 
+        public String getExternalField() {
+            return externalField;
+        }
+
+        public void setExternalField(String externalField) {
+            this.externalField = externalField;
+        }
+
         @Override
         public String toString() {
             return "FieldSchema{" +
@@ -737,6 +782,7 @@ public class CreateCollectionReq {
                     ", enableMatch=" + enableMatch +
                     ", typeParams=" + typeParams +
                     ", multiAnalyzerParams=" + multiAnalyzerParams +
+                    ", externalField='" + externalField + '\'' +
                     '}';
         }
 
@@ -763,6 +809,7 @@ public class CreateCollectionReq {
             private Boolean enableMatch;
             private Map<String, String> typeParams;
             private Map<String, Object> multiAnalyzerParams;
+            private String externalField = "";
 
             private FieldSchemaBuilder() {
             }
@@ -854,6 +901,11 @@ public class CreateCollectionReq {
 
             public FieldSchemaBuilder multiAnalyzerParams(Map<String, Object> multiAnalyzerParams) {
                 this.multiAnalyzerParams = multiAnalyzerParams;
+                return this;
+            }
+
+            public FieldSchemaBuilder externalField(String externalField) {
+                this.externalField = externalField;
                 return this;
             }
 
