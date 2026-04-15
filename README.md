@@ -79,10 +79,6 @@ To use BulkWriter, import milvus-sdk-java-bulkwriter to your project.
 
 Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/master/examples) folder for Java SDK examples.
 
-### Documentation
-
-
-
 ### Troubleshooting
 
 - If you encounter the following error when running your application:
@@ -99,19 +95,19 @@ Please refer to [examples](https://github.com/milvus-io/milvus-sdk-java/tree/mas
          <dependency>
              <groupId>org.slf4j</groupId>
              <artifactId>slf4j-api</artifactId>
-             <version>1.7.30</version>
+             <version>1.7.36</version>
          </dependency>
         ```
     
     - Gradle/Groovy
     
          ```groovy
-         compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
+         implementation 'org.slf4j:slf4j-api:1.7.36'
          ```
     - Gradle/Kotlin
     
         ```kotlin
-        implementation("org.slf4j:slf4j-api:1.7.30")
+        implementation("org.slf4j:slf4j-api:1.7.36")
         ```
 
 ### Development
