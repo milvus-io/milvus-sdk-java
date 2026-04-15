@@ -81,6 +81,60 @@
         </repository>
     </repositories>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.grpc</groupId>
+                <artifactId>grpc-bom</artifactId>
+                <version>${grpc.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>${errorprone.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib-common</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.xerial.snappy</groupId>
+                <artifactId>snappy-java</artifactId>
+                <version>${snappy.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <properties>
         <revision>2.6.17</revision>
         <maven.compiler.source>8</maven.compiler.source>
@@ -93,8 +147,6 @@
         <protobuf.version>3.25.5</protobuf.version>
         <protoc.version>3.25.5</protoc.version>
         <commons-collections4.version>4.3</commons-collections4.version>
-        <versio.maven.deploy.plugin>2.8.2</versio.maven.deploy.plugin>
-        <versio.maven.source.plugin>3.2.1</versio.maven.source.plugin>
         <javax.annotation.version>1.2</javax.annotation.version>
         <commons.text.version>1.10.0</commons.text.version>
         <slf4j.api.version>1.7.36</slf4j.api.version>
@@ -121,14 +173,12 @@
         <errorprone.version>2.38.0</errorprone.version>
 
         <!--for BulkWriter-->
-        <plexus.version>3.0.24</plexus.version>
         <hadoop.version>3.3.6</hadoop.version>
-        <hbase.version>1.2.0</hbase.version>
         <parquet.version>1.13.1</parquet.version>
         <unirest.version>3.13.10</unirest.version>
         <snappy.version>1.1.10.5</snappy.version>
         <aws-java-sdk-s3.version>1.12.687</aws-java-sdk-s3.version>
-        <minio-java-sdk.veresion>8.5.7</minio-java-sdk.veresion>
+        <minio-java-sdk.version>8.5.7</minio-java-sdk.version>
         <azure-java-blob-sdk.version>12.25.3</azure-java-blob-sdk.version>
         <azure-java-identity-sdk.version>1.10.1</azure-java-identity-sdk.version>
     </properties>
@@ -156,8 +206,6 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven.javadoc.plugin.version}</version>
                         <configuration>
-                            <javadocExecutable>/usr/bin/javadoc</javadocExecutable>
-                            <!--                            <additionalOptions>-Xdoclint:none</additionalOptions>-->
                             <additionalJOption>-Xdoclint:none</additionalJOption>
                         </configuration>
                         <executions>

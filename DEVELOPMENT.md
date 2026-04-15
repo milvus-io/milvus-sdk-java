@@ -21,8 +21,6 @@ $ git submodule update --init
 
 If you are using Idea, go to Project Root in Idea, right click on `milvus-sdk-java` and select `Maven` -> `Reload Project`
 
-Note: For now, current project do not support JDK 21+. The minimal Lombok version compatible with JDK 21 is 1.18.30.
-
 ## Building Milvus java SDK
 
 Call the following command to generate protobuf related code
@@ -30,23 +28,8 @@ Call the following command to generate protobuf related code
 $  mvn install
 ```
 
-## Update Milvus proto files
-Milvus proto files are managed by a submodule project under the directory: sdk-core/src/main/milvus-proto
-Before developing new interfaces, you need to get the latest proto files by the following command:
-```shell
-$ git submodule update --remote
-```
-
-## Building Milvus
-See detailed information at:
-https://github.com/milvus-io/milvus/blob/master/DEVELOPMENT.md
-
-## Start a Milvus cluster
-You need to start a latest milvus cluster to test the java SDK, see instructions at:
-https://milvus.io/docs/v2.0.0/install_standalone-docker.md
-
 ### Unit Tests
-All unit test is under director src/test
+Unit tests are under sdk-core/src/test and sdk-bulkwriter/src/test
 
 ## GitHub Flow
 Milvus SDK repo follows the same git work flow as milvus main repo, see
