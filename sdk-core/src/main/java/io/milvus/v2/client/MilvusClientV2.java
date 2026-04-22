@@ -219,13 +219,16 @@ public class MilvusClientV2 {
             userName = ""; // ClientInfo.setUser() requires non-null value
         }
 
-        ClientInfo info = ClientInfo.newBuilder()
+        ClientInfo.Builder infoBuilder = ClientInfo.newBuilder()
                 .setSdkType("Java")
                 .setSdkVersion(clientUtils.getSDKVersion())
                 .setUser(userName)
                 .setHost(clientUtils.getHostName())
-                .setLocalTime(clientUtils.getLocalTimeStr())
-                .build();
+                .setLocalTime(clientUtils.getLocalTimeStr());
+        if (connectConfig.getOption() != null && !connectConfig.getOption().isEmpty()) {
+            infoBuilder.putAllReserved(connectConfig.getOption());
+        }
+        ClientInfo info = infoBuilder.build();
         ConnectRequest req = ConnectRequest.newBuilder().setClientInfo(info).build();
         ConnectResponse resp = blockingStub.withDeadlineAfter(connectConfig.getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
                 .connect(req);
