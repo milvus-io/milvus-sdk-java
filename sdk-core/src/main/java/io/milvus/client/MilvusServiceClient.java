@@ -434,13 +434,16 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
      */
     private R<ConnectResponse> connect(ConnectParam connectParam) {
         ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
-        ClientInfo info = ClientInfo.newBuilder()
+        ClientInfo.Builder infoBuilder = ClientInfo.newBuilder()
                 .setSdkType("Java")
                 .setSdkVersion(getSDKVersion())
                 .setUser(connectParam.getUserName())
                 .setHost(getHostName())
-                .setLocalTime(getLocalTimeStr())
-                .build();
+                .setLocalTime(getLocalTimeStr());
+        if (connectParam.getOption() != null && !connectParam.getOption().isEmpty()) {
+            infoBuilder.putAllReserved(connectParam.getOption());
+        }
+        ClientInfo info = infoBuilder.build();
         ConnectRequest req = ConnectRequest.newBuilder().setClientInfo(info).build();
         ConnectResponse resp = this.blockingStub.withWaitForReady()
                 .withDeadlineAfter(connectParam.getConnectTimeoutMs(), TimeUnit.MILLISECONDS)
