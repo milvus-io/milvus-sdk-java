@@ -25,6 +25,7 @@ import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
 import io.grpc.stub.MetadataUtils;
+import io.milvus.common.interceptor.IdentifierInterceptor;
 import io.milvus.common.utils.ExceptionUtils;
 import io.milvus.exception.MilvusException;
 import io.milvus.exception.ServerException;
@@ -71,8 +72,8 @@ import java.util.concurrent.TimeUnit;
 public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     private ManagedChannel channel;
-    private final MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
-    private final MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
+    private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
     private final long rpcDeadlineMs;
     private long timeoutMs = 0;
     private RetryParam retryParam = RetryParam.newBuilder().build();
@@ -186,6 +187,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         assert channel != null;
 
         try {
+            // Use a temporary stub to call Connect RPC and obtain the server-assigned identifier
             blockingStub = MilvusServiceGrpc.newBlockingStub(channel);
             futureStub = MilvusServiceGrpc.newFutureStub(channel);
 
@@ -198,6 +200,14 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 logError(msg);
                 throw new RuntimeException(msg);
             }
+
+            // Wrap channel with identifier interceptor so that every subsequent RPC
+            // carries the identifier in gRPC metadata, aligning with pymilvus behavior.
+            long identifier = resp.getData().getIdentifier();
+            Channel interceptedChannel = ClientInterceptors.intercept(channel,
+                    new IdentifierInterceptor(identifier));
+            blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel);
+            futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel);
         } catch (Exception e) {
             // close the channel if connect() throws exception, avoid leakage
             try {

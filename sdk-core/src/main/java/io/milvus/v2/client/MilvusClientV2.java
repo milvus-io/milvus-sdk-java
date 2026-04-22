@@ -19,7 +19,10 @@
 
 package io.milvus.v2.client;
 
+import io.grpc.Channel;
+import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
+import io.milvus.common.interceptor.IdentifierInterceptor;
 import io.milvus.grpc.ClientInfo;
 import io.milvus.grpc.ConnectRequest;
 import io.milvus.grpc.ConnectResponse;
@@ -168,7 +171,13 @@ public class MilvusClientV2 {
 
         try {
             blockingStub = MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
-            connect(connectConfig, blockingStub);
+            long identifier = connect(connectConfig, blockingStub);
+
+            // Wrap channel with identifier interceptor so that every subsequent RPC
+            // carries the identifier in gRPC metadata, aligning with pymilvus behavior.
+            Channel interceptedChannel = ClientInterceptors.intercept(channel,
+                    new IdentifierInterceptor(identifier));
+            blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -213,7 +222,7 @@ public class MilvusClientV2 {
      * 3. sdk language type and version
      * 4. the client's local time
      */
-    private void connect(ConnectConfig connectConfig, MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+    private long connect(ConnectConfig connectConfig, MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         String userName = connectConfig.getUsername();
         if (userName == null) {
             userName = ""; // ClientInfo.setUser() requires non-null value
@@ -235,6 +244,7 @@ public class MilvusClientV2 {
         if (resp.getStatus().getCode() != 0 || !resp.getStatus().getErrorCode().equals(io.milvus.grpc.ErrorCode.Success)) {
             throw new RuntimeException("Failed to initialize connection. Error: " + resp.getStatus().getReason());
         }
+        return resp.getIdentifier();
     }
 
     public void retryConfig(RetryConfig retryConfig) {
