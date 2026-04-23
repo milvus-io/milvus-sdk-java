@@ -1,5 +1,13 @@
 # Changelog
 
+## milvus-sdk-java 2.6.18 (2026-04-23)
+### Feature
+- Add external collection API support for MilvusClientV2
+- Add file resource interfaces for MilvusClientV2
+
+### Improvement
+- Shade grpc to avoid version conflicts with user dependencies
+
 ## milvus-sdk-java 2.6.17 (2026-04-02)
 ### Feature
 - Add optimize() interface for MilvusClientV2
