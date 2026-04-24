@@ -33,6 +33,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -163,6 +165,53 @@ class CollectionTest extends BaseTest {
                 .build();
         DescribeCollectionResp resp = client_v2.describeCollection(req);
         logger.info("resp: {}", resp);
+    }
+
+    @Test
+    void testDescribeCollectionById() {
+        DescribeCollectionReq req = DescribeCollectionReq.builder()
+                .collectionId(123456L)
+                .build();
+        DescribeCollectionResp resp = client_v2.describeCollection(req);
+        logger.info("resp: {}", resp);
+    }
+
+    @Test
+    void testDescribeCollectionByNameAndId() {
+        DescribeCollectionReq req = DescribeCollectionReq.builder()
+                .collectionName("test2")
+                .collectionId(123456L)
+                .build();
+        DescribeCollectionResp resp = client_v2.describeCollection(req);
+        logger.info("resp: {}", resp);
+    }
+
+    @Test
+    void testBatchDescribeCollectionsByNames() {
+        BatchDescribeCollectionReq req = BatchDescribeCollectionReq.builder()
+                .collectionNames(Arrays.asList("test", "test2"))
+                .build();
+        List<DescribeCollectionResp> resps = client_v2.batchDescribeCollection(req);
+        logger.info("resp: {}", resps);
+    }
+
+    @Test
+    void testBatchDescribeCollectionsByIds() {
+        BatchDescribeCollectionReq req = BatchDescribeCollectionReq.builder()
+                .collectionIds(Arrays.asList(123456L, 789012L))
+                .build();
+        List<DescribeCollectionResp> resps = client_v2.batchDescribeCollection(req);
+        logger.info("resp: {}", resps);
+    }
+
+    @Test
+    void testBatchDescribeCollectionsByNamesAndIds() {
+        BatchDescribeCollectionReq req = BatchDescribeCollectionReq.builder()
+                .collectionNames(Collections.singletonList("test"))
+                .collectionIds(Collections.singletonList(789012L))
+                .build();
+        List<DescribeCollectionResp> resps = client_v2.batchDescribeCollection(req);
+        logger.info("resp: {}", resps);
     }
 
     @Test

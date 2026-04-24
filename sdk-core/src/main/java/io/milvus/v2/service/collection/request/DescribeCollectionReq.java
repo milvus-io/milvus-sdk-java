@@ -22,10 +22,12 @@ package io.milvus.v2.service.collection.request;
 public class DescribeCollectionReq {
     private String databaseName;
     private String collectionName;
+    private Long collectionId;
 
     private DescribeCollectionReq(DescribeCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.collectionId = builder.collectionId;
     }
 
     public String getDatabaseName() {
@@ -44,11 +46,20 @@ public class DescribeCollectionReq {
         this.collectionName = collectionName;
     }
 
+    public Long getCollectionId() {
+        return collectionId;
+    }
+
+    public void setCollectionId(Long collectionId) {
+        this.collectionId = collectionId;
+    }
+
     @Override
     public String toString() {
         return "DescribeCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", collectionId=" + collectionId +
                 '}';
     }
 
@@ -59,6 +70,7 @@ public class DescribeCollectionReq {
     public static class DescribeCollectionReqBuilder {
         private String databaseName;
         private String collectionName;
+        private Long collectionId;
 
         private DescribeCollectionReqBuilder() {
         }
@@ -70,6 +82,11 @@ public class DescribeCollectionReq {
 
         public DescribeCollectionReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public DescribeCollectionReqBuilder collectionId(Long collectionId) {
+            this.collectionId = collectionId;
             return this;
         }
 
