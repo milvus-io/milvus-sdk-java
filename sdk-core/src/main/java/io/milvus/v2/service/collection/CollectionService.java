@@ -375,9 +375,15 @@ public class CollectionService extends BaseService {
     public DescribeCollectionResp describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("Describe collection: '%s' in database: '%s'", collectionName, dbName);
-        DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
-                .setCollectionName(collectionName);
+        Long collectionId = request.getCollectionId();
+        String title = String.format("Describe collection: '%s'(id: %s) in database: '%s'", collectionName, collectionId, dbName);
+        DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder();
+        if (StringUtils.isNotEmpty(collectionName)) {
+            builder.setCollectionName(collectionName);
+        }
+        if (collectionId != null) {
+            builder.setCollectionID(collectionId);
+        }
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
@@ -390,9 +396,15 @@ public class CollectionService extends BaseService {
     public List<DescribeCollectionResp> batchDescribeCollections(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, BatchDescribeCollectionReq request) {
         String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();
-        String title = String.format("Batch describe collections: '%s' in database: '%s'", collectionNames, dbName);
-        BatchDescribeCollectionRequest.Builder builder = BatchDescribeCollectionRequest.newBuilder()
-                .addAllCollectionName(collectionNames);
+        List<Long> collectionIds = request.getCollectionIds();
+        String title = String.format("Batch describe collections: '%s'(ids: %s) in database: '%s'", collectionNames, collectionIds, dbName);
+        BatchDescribeCollectionRequest.Builder builder = BatchDescribeCollectionRequest.newBuilder();
+        if (CollectionUtils.isNotEmpty(collectionNames)) {
+            builder.addAllCollectionName(collectionNames);
+        }
+        if (CollectionUtils.isNotEmpty(collectionIds)) {
+            builder.addAllCollectionID(collectionIds);
+        }
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }

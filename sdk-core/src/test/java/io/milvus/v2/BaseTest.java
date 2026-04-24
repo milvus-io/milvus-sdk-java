@@ -114,6 +114,10 @@ public class BaseTest {
         when(blockingStub.truncateCollection(any())).thenReturn(TruncateCollectionResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.hasCollection(any())).thenReturn(trueResponse);
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
+        when(blockingStub.batchDescribeCollection(any())).thenReturn(BatchDescribeCollectionResponse.newBuilder()
+                .setStatus(successStatus)
+                .addResponses(describeCollectionResponse)
+                .build());
         when(blockingStub.renameCollection(any())).thenReturn(successStatus);
         when(blockingStub.getCollectionStatistics(any())).thenReturn(GetCollectionStatisticsResponse.newBuilder().addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build()).setStatus(successStatus).build());
         when(blockingStub.getLoadingProgress(any())).thenReturn(GetLoadingProgressResponse.newBuilder().setStatus(successStatus).setProgress(100).build());
