@@ -25,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -56,6 +58,7 @@ public class ConnectParam {
     private final String userName;
     private final ThreadLocal<String> clientRequestId;
     private final String proxyAddress;
+    private final Map<String, String> option;
 
     protected ConnectParam(Builder builder) {
         if (builder == null) {
@@ -82,6 +85,7 @@ public class ConnectParam {
         this.userName = builder.userName;
         this.clientRequestId = builder.clientRequestId;
         this.proxyAddress = builder.proxyAddress;
+        this.option = builder.option;
     }
 
     public static Builder newBuilder() {
@@ -172,6 +176,10 @@ public class ConnectParam {
         return proxyAddress;
     }
 
+    public Map<String, String> getOption() {
+        return option;
+    }
+
     @Override
     public String toString() {
         return "ConnectParam{" +
@@ -233,6 +241,7 @@ public class ConnectParam {
         private ThreadLocal<String> clientRequestId;
 
         private String proxyAddress;
+        private Map<String, String> option = new HashMap<>();
 
         protected Builder() {
         }
@@ -319,6 +328,10 @@ public class ConnectParam {
 
         public String getProxyAddress() {
             return proxyAddress;
+        }
+
+        public Map<String, String> getOption() {
+            return option;
         }
 
         /**
@@ -614,6 +627,17 @@ public class ConnectParam {
          */
         public Builder withProxyAddress(String proxyAddress) {
             this.proxyAddress = proxyAddress;
+            return this;
+        }
+
+        /**
+         * Sets the option map that will be forwarded to the server via ClientInfo.reserved field.
+         *
+         * @param option a map of key-value pairs
+         * @return <code>Builder</code>
+         */
+        public Builder withOption(Map<String, String> option) {
+            this.option = option;
             return this;
         }
 
