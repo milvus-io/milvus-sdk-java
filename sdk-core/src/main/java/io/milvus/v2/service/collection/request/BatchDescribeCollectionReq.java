@@ -24,11 +24,13 @@ import java.util.List;
 public class BatchDescribeCollectionReq {
     private String databaseName;
     private List<String> collectionNames;
+    private List<Long> collectionIds;
 
     // Private constructor for builder
     private BatchDescribeCollectionReq(BatchDescribeCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionNames = builder.collectionNames;
+        this.collectionIds = builder.collectionIds;
     }
 
     // Static method to create builder
@@ -45,6 +47,10 @@ public class BatchDescribeCollectionReq {
         return collectionNames;
     }
 
+    public List<Long> getCollectionIds() {
+        return collectionIds;
+    }
+
     // Setter methods
     public void setDatabaseName(String databaseName) {
         this.databaseName = databaseName;
@@ -54,11 +60,16 @@ public class BatchDescribeCollectionReq {
         this.collectionNames = collectionNames;
     }
 
+    public void setCollectionIds(List<Long> collectionIds) {
+        this.collectionIds = collectionIds;
+    }
+
     @Override
     public String toString() {
         return "BatchDescribeCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionNames=" + collectionNames +
+                ", collectionIds=" + collectionIds +
                 '}';
     }
 
@@ -66,6 +77,7 @@ public class BatchDescribeCollectionReq {
     public static class BatchDescribeCollectionReqBuilder {
         private String databaseName;
         private List<String> collectionNames;
+        private List<Long> collectionIds;
 
         public BatchDescribeCollectionReqBuilder databaseName(String databaseName) {
             this.databaseName = databaseName;
@@ -74,6 +86,11 @@ public class BatchDescribeCollectionReq {
 
         public BatchDescribeCollectionReqBuilder collectionNames(List<String> collectionNames) {
             this.collectionNames = collectionNames;
+            return this;
+        }
+
+        public BatchDescribeCollectionReqBuilder collectionIds(List<Long> collectionIds) {
+            this.collectionIds = collectionIds;
             return this;
         }
 
