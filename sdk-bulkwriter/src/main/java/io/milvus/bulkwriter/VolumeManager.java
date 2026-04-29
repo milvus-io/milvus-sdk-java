@@ -22,8 +22,10 @@ package io.milvus.bulkwriter;
 import com.google.gson.Gson;
 import io.milvus.bulkwriter.request.volume.CreateVolumeRequest;
 import io.milvus.bulkwriter.request.volume.DeleteVolumeRequest;
+import io.milvus.bulkwriter.request.volume.DescribeVolumeRequest;
 import io.milvus.bulkwriter.request.volume.ListVolumesRequest;
 import io.milvus.bulkwriter.response.volume.ListVolumesResponse;
+import io.milvus.bulkwriter.response.volume.VolumeInfo;
 import io.milvus.bulkwriter.restful.DataVolumeUtils;
 
 public class VolumeManager {
@@ -40,6 +42,14 @@ public class VolumeManager {
      */
     public void createVolume(CreateVolumeRequest request) {
         DataVolumeUtils.createVolume(cloudEndpoint, apiKey, request);
+    }
+
+    /**
+     * Get detailed information about a specific volume.
+     */
+    public VolumeInfo describeVolume(DescribeVolumeRequest request) {
+        String result = DataVolumeUtils.describeVolume(cloudEndpoint, apiKey, request);
+        return new Gson().fromJson(result, VolumeInfo.class);
     }
 
     /**
