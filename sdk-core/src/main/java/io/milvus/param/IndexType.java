@@ -50,6 +50,10 @@ public enum IndexType {
 
     // Only for varchar type field
     TRIE("Trie", 100),
+    // Only for geometry type field
+    RTREE(120),
+    // Only for mol type field
+    PATTERN(121),
     // Only for scalar type field
     STL_SORT(200), // only for numeric type field
     INVERTED(201), // works for all scalar fields except JSON type field

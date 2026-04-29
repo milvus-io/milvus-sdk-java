@@ -23,7 +23,8 @@ public enum FunctionType {
     UNKNOWN("Unknown", 0), // in milvus-proto, the name is "Unknown"
     BM25("BM25", 1), // Added missing name parameter
     TEXTEMBEDDING("TextEmbedding", 2), // in milvus-proto, the name is "TextEmbedding"
-    RERANK("RERANK", 3); // Added missing name parameter
+    RERANK("RERANK", 3), // Added missing name parameter
+    MOL_FINGERPRINT("MolFingerprint", 5);
 
     private final String name;
     private final int code;

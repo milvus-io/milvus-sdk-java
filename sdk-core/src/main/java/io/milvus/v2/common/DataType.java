@@ -38,6 +38,7 @@ public enum DataType {
     JSON(23),
     Geometry(24),
     Timestamptz(26),
+    Mol(27),
 
     BinaryVector(100),
     FloatVector(101),
