@@ -24,10 +24,12 @@ import com.google.gson.reflect.TypeToken;
 import io.milvus.bulkwriter.request.volume.BaseVolumeRequest;
 import io.milvus.bulkwriter.request.volume.CreateVolumeRequest;
 import io.milvus.bulkwriter.request.volume.DeleteVolumeRequest;
+import io.milvus.bulkwriter.request.volume.DescribeVolumeRequest;
 import io.milvus.bulkwriter.request.volume.ListVolumesRequest;
 import io.milvus.bulkwriter.response.RestfulResponse;
 import io.milvus.common.utils.JsonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class DataVolumeUtils extends BaseRestful {
@@ -64,6 +66,17 @@ public class DataVolumeUtils extends BaseRestful {
         RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
         }.getType());
         handleResponse(requestURL, response);
+    }
+
+    public static String describeVolume(String url, String apiKey, DescribeVolumeRequest request) {
+        String requestURL = url + "/v2/volumes/" + request.getVolumeName();
+
+        Map<String, Object> params = new HashMap<>();
+        String body = getRequest(requestURL, apiKey, params, 60 * 1000);
+        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
+        }.getType());
+        handleResponse(requestURL, response);
+        return new Gson().toJson(response.getData());
     }
 
     public static void deleteVolume(String url, String apiKey, DeleteVolumeRequest request) {
