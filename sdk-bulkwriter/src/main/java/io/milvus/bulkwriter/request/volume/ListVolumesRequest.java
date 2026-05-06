@@ -24,6 +24,8 @@ public class ListVolumesRequest {
     private String projectId;
     private Integer pageSize;
     private Integer currentPage;
+    // Volume type filter, available values: MANAGED or EXTERNAL.
+    private String type;
 
     public ListVolumesRequest() {
     }
@@ -38,6 +40,7 @@ public class ListVolumesRequest {
         this.projectId = builder.projectId;
         this.pageSize = builder.pageSize;
         this.currentPage = builder.currentPage;
+        this.type = builder.type;
     }
 
     public String getProjectId() {
@@ -64,12 +67,21 @@ public class ListVolumesRequest {
         this.currentPage = currentPage;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     @Override
     public String toString() {
         return "ListVolumesRequest{" +
                 "projectId='" + projectId + '\'' +
                 ", pageSize=" + pageSize +
                 ", currentPage=" + currentPage +
+                ", type='" + type + '\'' +
                 '}';
     }
 
@@ -81,6 +93,7 @@ public class ListVolumesRequest {
         private String projectId;
         private Integer pageSize;
         private Integer currentPage;
+        private String type;
 
         private ListVolumesRequestBuilder() {
             this.projectId = "";
@@ -100,6 +113,15 @@ public class ListVolumesRequest {
 
         public ListVolumesRequestBuilder currentPage(Integer currentPage) {
             this.currentPage = currentPage;
+            return this;
+        }
+
+        /**
+         * Set volume type filter.
+         * Available values: MANAGED or EXTERNAL.
+         */
+        public ListVolumesRequestBuilder type(String type) {
+            this.type = type;
             return this;
         }
 
