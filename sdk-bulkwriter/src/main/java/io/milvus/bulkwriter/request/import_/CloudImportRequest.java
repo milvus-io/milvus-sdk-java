@@ -31,6 +31,16 @@ public class CloudImportRequest extends BaseImportRequest {
     private String clusterId;
 
     /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String projectId;
+
+    /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String regionId;
+
+    /**
      * For Free & Serverless deployments: specifying this parameter is not supported.
      * For Dedicated deployments: this parameter can be specified; defaults to the "default" database.
      */
@@ -110,9 +120,25 @@ public class CloudImportRequest extends BaseImportRequest {
         this.token = token;
     }
 
+    public CloudImportRequest(String clusterId, String projectId, String regionId, String dbName, String collectionName, String partitionName,
+                              List<List<String>> objectUrls, String accessKey, String secretKey, String token) {
+        this.clusterId = clusterId;
+        this.projectId = projectId;
+        this.regionId = regionId;
+        this.dbName = dbName;
+        this.collectionName = collectionName;
+        this.partitionName = partitionName;
+        this.objectUrls = objectUrls;
+        this.accessKey = accessKey;
+        this.secretKey = secretKey;
+        this.token = token;
+    }
+
     protected CloudImportRequest(CloudImportRequestBuilder builder) {
         super(builder);
         this.clusterId = builder.clusterId;
+        this.projectId = builder.projectId;
+        this.regionId = builder.regionId;
         this.dbName = builder.dbName;
         this.collectionName = builder.collectionName;
         this.partitionName = builder.partitionName;
@@ -129,6 +155,22 @@ public class CloudImportRequest extends BaseImportRequest {
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
     }
 
     public String getDbName() {
@@ -199,6 +241,8 @@ public class CloudImportRequest extends BaseImportRequest {
     public String toString() {
         return "CloudImportRequest{" +
                 "clusterId='" + clusterId + '\'' +
+                ", projectId='" + projectId + '\'' +
+                ", regionId='" + regionId + '\'' +
                 ", dbName='" + dbName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
@@ -216,6 +260,8 @@ public class CloudImportRequest extends BaseImportRequest {
 
     public static class CloudImportRequestBuilder extends BaseImportRequestBuilder<CloudImportRequestBuilder> {
         private String clusterId;
+        private String projectId;
+        private String regionId;
         private String dbName;
         private String collectionName;
         private String partitionName;
@@ -227,6 +273,8 @@ public class CloudImportRequest extends BaseImportRequest {
 
         private CloudImportRequestBuilder() {
             this.clusterId = "";
+            this.projectId = "";
+            this.regionId = "";
             this.dbName = "";
             this.collectionName = "";
             this.partitionName = "";
@@ -239,6 +287,16 @@ public class CloudImportRequest extends BaseImportRequest {
 
         public CloudImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
+            return this;
+        }
+
+        public CloudImportRequestBuilder projectId(String projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        public CloudImportRequestBuilder regionId(String regionId) {
+            this.regionId = regionId;
             return this;
         }
 
