@@ -23,6 +23,12 @@ public class CreateVolumeRequest {
     private String projectId;
     private String regionId;
     private String volumeName;
+    // Volume type, available values: MANAGED or EXTERNAL. Defaults to MANAGED when not set.
+    private String type;
+    private String storageIntegrationId;
+    // For EXTERNAL volume: if not set, defaults to the root directory of storage integration;
+    // if set, the path must end with '/'.
+    private String path;
 
     public CreateVolumeRequest() {
     }
@@ -37,6 +43,9 @@ public class CreateVolumeRequest {
         this.projectId = builder.projectId;
         this.regionId = builder.regionId;
         this.volumeName = builder.volumeName;
+        this.type = builder.type;
+        this.storageIntegrationId = builder.storageIntegrationId;
+        this.path = builder.path;
     }
 
     public String getProjectId() {
@@ -63,12 +72,39 @@ public class CreateVolumeRequest {
         this.volumeName = volumeName;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getStorageIntegrationId() {
+        return storageIntegrationId;
+    }
+
+    public void setStorageIntegrationId(String storageIntegrationId) {
+        this.storageIntegrationId = storageIntegrationId;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
     @Override
     public String toString() {
         return "CreateVolumeRequest{" +
                 "projectId='" + projectId + '\'' +
                 ", regionId='" + regionId + '\'' +
                 ", volumeName='" + volumeName + '\'' +
+                ", type='" + type + '\'' +
+                ", storageIntegrationId='" + storageIntegrationId + '\'' +
+                ", path='" + path + '\'' +
                 '}';
     }
 
@@ -80,6 +116,9 @@ public class CreateVolumeRequest {
         private String projectId;
         private String regionId;
         private String volumeName;
+        private String type;
+        private String storageIntegrationId;
+        private String path;
 
         private CreateVolumeRequestBuilder() {
             this.projectId = "";
@@ -99,6 +138,30 @@ public class CreateVolumeRequest {
 
         public CreateVolumeRequestBuilder volumeName(String volumeName) {
             this.volumeName = volumeName;
+            return this;
+        }
+
+        /**
+         * Set volume type.
+         * Available values: MANAGED or EXTERNAL. Defaults to MANAGED when not set.
+         */
+        public CreateVolumeRequestBuilder type(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public CreateVolumeRequestBuilder storageIntegrationId(String storageIntegrationId) {
+            this.storageIntegrationId = storageIntegrationId;
+            return this;
+        }
+
+        /**
+         * Set storage path for EXTERNAL volume.
+         * If not set, defaults to the root directory of storage integration.
+         * If set, the path must end with '/'.
+         */
+        public CreateVolumeRequestBuilder path(String path) {
+            this.path = path;
             return this;
         }
 

@@ -23,8 +23,10 @@ import io.milvus.bulkwriter.VolumeManager;
 import io.milvus.bulkwriter.VolumeManagerParam;
 import io.milvus.bulkwriter.request.volume.CreateVolumeRequest;
 import io.milvus.bulkwriter.request.volume.DeleteVolumeRequest;
+import io.milvus.bulkwriter.request.volume.DescribeVolumeRequest;
 import io.milvus.bulkwriter.request.volume.ListVolumesRequest;
 import io.milvus.bulkwriter.response.volume.ListVolumesResponse;
+import io.milvus.bulkwriter.response.volume.VolumeInfo;
 
 
 public class VolumeManagerExample {
@@ -44,6 +46,8 @@ public class VolumeManagerExample {
 
     public static void main(String[] args) throws Exception {
         createVolume();
+        // createExternalVolume();
+        describeVolume();
         listVolumes();
         deleteVolume();
     }
@@ -56,12 +60,39 @@ public class VolumeManagerExample {
         System.out.printf("\nVolume %s created%n", VOLUME_NAME);
     }
 
+    private static void createExternalVolume() {
+        CreateVolumeRequest request = CreateVolumeRequest.builder()
+                .projectId(PROJECT_ID).regionId(REGION_ID).volumeName("ext-volume")
+                .type("EXTERNAL")
+                .storageIntegrationId("integ-xxxx")
+                .path("data/")
+                .build();
+        volumeManager.createVolume(request);
+        System.out.printf("\nExternal volume %s created%n", "ext-volume");
+    }
+
+    private static void describeVolume() {
+        DescribeVolumeRequest request = DescribeVolumeRequest.builder()
+                .volumeName(VOLUME_NAME)
+                .build();
+        VolumeInfo volumeInfo = volumeManager.describeVolume(request);
+        System.out.println("\ndescribeVolume result: " + new Gson().toJson(volumeInfo));
+    }
+
     private static void listVolumes() {
         ListVolumesRequest request = ListVolumesRequest.builder()
                 .projectId(PROJECT_ID).currentPage(1).pageSize(10)
                 .build();
         ListVolumesResponse response = volumeManager.listVolumes(request);
         System.out.println("\nlistVolumes results: " + new Gson().toJson(response));
+
+        // List volumes filtered by type
+        ListVolumesRequest filteredRequest = ListVolumesRequest.builder()
+                .projectId(PROJECT_ID).currentPage(1).pageSize(10)
+                .type("EXTERNAL")
+                .build();
+        ListVolumesResponse filteredResponse = volumeManager.listVolumes(filteredRequest);
+        System.out.println("\nlistVolumes (EXTERNAL) results: " + new Gson().toJson(filteredResponse));
     }
 
     private static void deleteVolume() {
