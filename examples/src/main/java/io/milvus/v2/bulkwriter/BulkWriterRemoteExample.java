@@ -125,6 +125,8 @@ public class BulkWriterRemoteExample {
         public static final String CLOUD_ENDPOINT = "https://api.cloud.zilliz.com";
         public static final String API_KEY = "_api_key_for_cluster_org_";
         public static final String CLUSTER_ID = "_your_cloud_cluster_id_";
+        public static final String PROJECT_ID = "_your_cloud_project_id_";
+        public static final String REGION_ID = "_your_cloud_region_id_";
         public static final String COLLECTION_NAME = "_collection_name_on_the_cluster_id_";
         // If partition_name is not specified, use ""
         public static final String PARTITION_NAME = "_partition_name_on_the_collection_";
@@ -881,6 +883,31 @@ public class BulkWriterRemoteExample {
 
         System.out.println("\n===================== list import jobs ====================");
         CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().clusterId(CloudImportConsts.CLUSTER_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
+        String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
+        System.out.println(listImportJobsResult);
+    }
+
+    private static void exampleCloudImportPdb() {
+        System.out.println("\n===================== import files to cloud project database ====================");
+        List<String> objectUrls = Lists.newArrayList(CloudImportConsts.OBJECT_URL);
+        CloudImportRequest request = CloudImportRequest.builder()
+                .objectUrls(Lists.newArrayList(Collections.singleton(objectUrls))).accessKey(CloudImportConsts.OBJECT_ACCESS_KEY).secretKey(CloudImportConsts.OBJECT_SECRET_KEY)
+                .projectId(CloudImportConsts.PROJECT_ID).regionId(CloudImportConsts.REGION_ID).collectionName(CloudImportConsts.COLLECTION_NAME).partitionName(CloudImportConsts.PARTITION_NAME)
+                .apiKey(CloudImportConsts.API_KEY)
+                .build();
+        String bulkImportResult = BulkImportUtils.bulkImport(CloudImportConsts.CLOUD_ENDPOINT, request);
+        System.out.println(bulkImportResult);
+
+        System.out.println("\n===================== get import job progress ====================");
+
+        JsonObject bulkImportObject = convertJsonObject(bulkImportResult);
+        String jobId = bulkImportObject.getAsJsonObject("data").get("jobId").getAsString();
+        CloudDescribeImportRequest getImportProgressRequest = CloudDescribeImportRequest.builder().projectId(CloudImportConsts.PROJECT_ID).regionId(CloudImportConsts.REGION_ID).jobId(jobId).apiKey(CloudImportConsts.API_KEY).build();
+        String getImportProgressResult = BulkImportUtils.getImportProgress(CloudImportConsts.CLOUD_ENDPOINT, getImportProgressRequest);
+        System.out.println(getImportProgressResult);
+
+        System.out.println("\n===================== list import jobs ====================");
+        CloudListImportJobsRequest listImportJobsRequest = CloudListImportJobsRequest.builder().projectId(CloudImportConsts.PROJECT_ID).regionId(CloudImportConsts.REGION_ID).currentPage(1).pageSize(10).apiKey(CloudImportConsts.API_KEY).build();
         String listImportJobsResult = BulkImportUtils.listImportJobs(CloudImportConsts.CLOUD_ENDPOINT, listImportJobsRequest);
         System.out.println(listImportJobsResult);
     }
