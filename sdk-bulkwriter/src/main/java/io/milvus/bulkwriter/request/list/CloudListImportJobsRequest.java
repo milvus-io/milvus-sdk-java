@@ -22,6 +22,16 @@ package io.milvus.bulkwriter.request.list;
 public class CloudListImportJobsRequest extends BaseListImportJobsRequest {
     private static final long serialVersionUID = -3380786382584854649L;
     private String clusterId;
+
+    /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String projectId;
+
+    /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String regionId;
     private Integer pageSize;
     private Integer currentPage;
 
@@ -37,6 +47,8 @@ public class CloudListImportJobsRequest extends BaseListImportJobsRequest {
     protected CloudListImportJobsRequest(CloudListImportJobsRequestBuilder builder) {
         super(builder);
         this.clusterId = builder.clusterId;
+        this.projectId = builder.projectId;
+        this.regionId = builder.regionId;
         this.pageSize = builder.pageSize;
         this.currentPage = builder.currentPage;
     }
@@ -47,6 +59,22 @@ public class CloudListImportJobsRequest extends BaseListImportJobsRequest {
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
     }
 
     public Integer getPageSize() {
@@ -69,8 +97,10 @@ public class CloudListImportJobsRequest extends BaseListImportJobsRequest {
     public String toString() {
         return "CloudListImportJobsRequest{" +
                 "clusterId='" + clusterId + '\'' +
-                "pageSize=" + pageSize +
-                "currentPage=" + currentPage +
+                ", projectId='" + projectId + '\'' +
+                ", regionId='" + regionId + '\'' +
+                ", pageSize=" + pageSize +
+                ", currentPage=" + currentPage +
                 '}';
     }
 
@@ -80,17 +110,31 @@ public class CloudListImportJobsRequest extends BaseListImportJobsRequest {
 
     public static class CloudListImportJobsRequestBuilder extends BaseListImportJobsRequestBuilder<CloudListImportJobsRequestBuilder> {
         private String clusterId;
+        private String projectId;
+        private String regionId;
         private Integer pageSize;
         private Integer currentPage;
 
         private CloudListImportJobsRequestBuilder() {
             this.clusterId = "";
+            this.projectId = "";
+            this.regionId = "";
             this.pageSize = 0;
             this.currentPage = 0;
         }
 
         public CloudListImportJobsRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
+            return this;
+        }
+
+        public CloudListImportJobsRequestBuilder projectId(String projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        public CloudListImportJobsRequestBuilder regionId(String regionId) {
+            this.regionId = regionId;
             return this;
         }
 

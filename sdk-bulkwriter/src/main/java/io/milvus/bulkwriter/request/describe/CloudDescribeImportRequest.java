@@ -22,6 +22,16 @@ package io.milvus.bulkwriter.request.describe;
 public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
     private static final long serialVersionUID = -6479634844757426430L;
     private String clusterId;
+
+    /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String projectId;
+
+    /**
+     * For project database deployments: use projectId and regionId instead of clusterId.
+     */
+    private String regionId;
     private String jobId;
 
     public CloudDescribeImportRequest() {
@@ -32,9 +42,18 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
         this.jobId = jobId;
     }
 
+    public CloudDescribeImportRequest(String clusterId, String projectId, String regionId, String jobId) {
+        this.clusterId = clusterId;
+        this.projectId = projectId;
+        this.regionId = regionId;
+        this.jobId = jobId;
+    }
+
     protected CloudDescribeImportRequest(CloudDescribeImportRequestBuilder builder) {
         super(builder);
         this.clusterId = builder.clusterId;
+        this.projectId = builder.projectId;
+        this.regionId = builder.regionId;
         this.jobId = builder.jobId;
     }
 
@@ -44,6 +63,22 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
 
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(String projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getRegionId() {
+        return regionId;
+    }
+
+    public void setRegionId(String regionId) {
+        this.regionId = regionId;
     }
 
     public String getJobId() {
@@ -58,6 +93,8 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
     public String toString() {
         return "CloudDescribeImportRequest{" +
                 "clusterId='" + clusterId + '\'' +
+                ", projectId='" + projectId + '\'' +
+                ", regionId='" + regionId + '\'' +
                 ", jobId='" + jobId + '\'' +
                 '}';
     }
@@ -68,15 +105,29 @@ public class CloudDescribeImportRequest extends BaseDescribeImportRequest {
 
     public static class CloudDescribeImportRequestBuilder extends BaseDescribeImportRequestBuilder<CloudDescribeImportRequestBuilder> {
         private String clusterId;
+        private String projectId;
+        private String regionId;
         private String jobId;
 
         private CloudDescribeImportRequestBuilder() {
             this.clusterId = "";
+            this.projectId = "";
+            this.regionId = "";
             this.jobId = "";
         }
 
         public CloudDescribeImportRequestBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
+            return this;
+        }
+
+        public CloudDescribeImportRequestBuilder projectId(String projectId) {
+            this.projectId = projectId;
+            return this;
+        }
+
+        public CloudDescribeImportRequestBuilder regionId(String regionId) {
+            this.regionId = regionId;
             return this;
         }
 
