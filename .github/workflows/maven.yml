@@ -5,6 +5,13 @@ name: Java CI with Maven
 
 on:
   pull_request:
+    paths-ignore:
+      - '**/*.md'
+      - 'doc/**'
+      - 'benchmark/**'
+      - 'examples/**'
+      - '**/OWNERS'
+      - 'LICENSE'
 
 jobs:
   build:
