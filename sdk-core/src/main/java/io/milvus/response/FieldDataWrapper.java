@@ -138,6 +138,10 @@ public class FieldDataWrapper {
         DataType dt = fieldData.getType();
         switch (dt) {
             case FloatVector: {
+                List<Boolean> validData = fieldData.getValidDataList();
+                if (validData != null && !validData.isEmpty()) {
+                    return validData.size();
+                }
                 int dim = getDim();
                 List<Float> data = fieldData.getVectors().getFloatVector().getDataList();
                 if (data.size() % dim != 0) {
@@ -152,6 +156,10 @@ public class FieldDataWrapper {
             case Float16Vector:
             case BFloat16Vector:
             case Int8Vector: {
+                List<Boolean> validData = fieldData.getValidDataList();
+                if (validData != null && !validData.isEmpty()) {
+                    return validData.size();
+                }
                 int dim = getDim();
                 ByteString data = getVectorBytes(fieldData.getVectors(), dt);
                 int bytePerVec = checkDim(dt, data, dim);
@@ -159,6 +167,10 @@ public class FieldDataWrapper {
                 return data.size() / bytePerVec;
             }
             case SparseFloatVector: {
+                List<Boolean> validData = fieldData.getValidDataList();
+                if (validData != null && !validData.isEmpty()) {
+                    return validData.size();
+                }
                 // for sparse vector, each content is a vector
                 return fieldData.getVectors().getSparseFloatVector().getContentsCount();
             }
@@ -241,7 +253,7 @@ public class FieldDataWrapper {
             case BFloat16Vector:
             case Int8Vector:
             case SparseFloatVector:
-                return getVectorData(dt, fieldData.getVectors());
+                return getVectorData(dt, fieldData.getVectors(), fieldData.getValidDataList());
             case Array:
             case Int64:
             case Int32:
@@ -276,23 +288,26 @@ public class FieldDataWrapper {
         return data;
     }
 
-    private List<?> getVectorData(DataType dt, VectorField vector) {
+    private List<?> getVectorData(DataType dt, VectorField vector, List<Boolean> validData) {
+        List<?> packData;
         switch (dt) {
             case FloatVector: {
                 int dim = getDimInternal(vector);
                 List<Float> data = vector.getFloatVector().getDataList();
-                if (data.size() % dim != 0) {
-                    String msg = String.format("Returned float vector data array size %d doesn't match dimension %d",
-                            data.size(), dim);
-                    throw new IllegalResponseException(msg);
+                List<List<Float>> floatPackData = new ArrayList<>();
+                if (dim > 0) {
+                    if (data.size() % dim != 0) {
+                        String msg = String.format("Returned float vector data array size %d doesn't match dimension %d",
+                                data.size(), dim);
+                        throw new IllegalResponseException(msg);
+                    }
+                    int count = data.size() / dim;
+                    for (int i = 0; i < count; ++i) {
+                        floatPackData.add(data.subList(i * dim, (i + 1) * dim));
+                    }
                 }
-
-                List<List<Float>> packData = new ArrayList<>();
-                int count = data.size() / dim;
-                for (int i = 0; i < count; ++i) {
-                    packData.add(data.subList(i * dim, (i + 1) * dim));
-                }
-                return packData;
+                packData = floatPackData;
+                break;
             }
             case BinaryVector:
             case Float16Vector:
@@ -300,37 +315,57 @@ public class FieldDataWrapper {
             case Int8Vector: {
                 int dim = getDimInternal(vector);
                 ByteString data = getVectorBytes(vector, dt);
-                int bytePerVec = checkDim(dt, data, dim);
-                int count = data.size() / bytePerVec;
-                List<ByteBuffer> packData = new ArrayList<>();
-                for (int i = 0; i < count; ++i) {
-                    ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
-                    // binary vector doesn't care endian since each byte is independent
-                    // fp16/bf16/int8 vector is sensitive to endian because each dim occupies 1~2 bytes,
-                    // milvus server stores fp16/bf16/int8 vector as little endian
-                    bf.order(ByteOrder.LITTLE_ENDIAN);
-                    bf.put(data.substring(i * bytePerVec, (i + 1) * bytePerVec).toByteArray());
-                    packData.add(bf);
+                List<ByteBuffer> bytePackData = new ArrayList<>();
+                if (dim > 0) {
+                    int bytePerVec = checkDim(dt, data, dim);
+                    int count = data.size() / bytePerVec;
+                    for (int i = 0; i < count; ++i) {
+                        ByteBuffer bf = ByteBuffer.allocate(bytePerVec);
+                        // binary vector doesn't care endian since each byte is independent
+                        // fp16/bf16/int8 vector is sensitive to endian because each dim occupies 1~2 bytes,
+                        // milvus server stores fp16/bf16/int8 vector as little endian
+                        bf.order(ByteOrder.LITTLE_ENDIAN);
+                        bf.put(data.substring(i * bytePerVec, (i + 1) * bytePerVec).toByteArray());
+                        bytePackData.add(bf);
+                    }
                 }
-                return packData;
+                packData = bytePackData;
+                break;
             }
             case SparseFloatVector: {
                 // in Java sdk, each sparse vector is pairs of long+float
                 // in server side, each sparse vector is stored as uint+float (8 bytes)
                 // don't use sparseArray.getDim() because the dim is the max index of each rows
                 SparseFloatArray sparseArray = vector.getSparseFloatVector();
-                List<SortedMap<Long, Float>> packData = new ArrayList<>();
+                List<SortedMap<Long, Float>> sparsePackData = new ArrayList<>();
                 for (int i = 0; i < sparseArray.getContentsCount(); ++i) {
                     ByteString bs = sparseArray.getContents(i);
                     ByteBuffer bf = ByteBuffer.wrap(bs.toByteArray());
                     SortedMap<Long, Float> sparse = ParamUtils.decodeSparseFloatVector(bf);
-                    packData.add(sparse);
+                    sparsePackData.add(sparse);
                 }
-                return packData;
+                packData = sparsePackData;
+                break;
             }
             default:
                 return new ArrayList<>();
         }
+
+        // Handle nullable vectors - insert null values at positions where validData is false
+        if (validData != null && !validData.isEmpty()) {
+            List<Object> result = new ArrayList<>();
+            int dataIdx = 0;
+            for (Boolean valid : validData) {
+                if (valid) {
+                    result.add(packData.get(dataIdx++));
+                } else {
+                    result.add(null);
+                }
+            }
+            return result;
+        }
+
+        return packData;
     }
 
     private List<?> getScalarData(DataType dt, ScalarField scalar, List<Boolean> validData) {
@@ -404,7 +439,7 @@ public class FieldDataWrapper {
             } else if (fd.getType() == DataType.ArrayOfVector) {
                 VectorArray vecArr = fd.getVectors().getVectorArray();
                 for (VectorField vf : vecArr.getDataList()) {
-                    List<?> vector = getVectorData(vecArr.getElementType(), vf);
+                    List<?> vector = getVectorData(vecArr.getElementType(), vf, null);
                     column.add(vector);
                 }
                 rowCount = column.size();
