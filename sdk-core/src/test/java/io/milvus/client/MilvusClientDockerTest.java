@@ -56,17 +56,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.milvus.MilvusContainer;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-@Testcontainers(disabledWithoutDocker = true)
 class MilvusClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
@@ -77,6 +74,9 @@ class MilvusClientDockerTest {
     private static final float BFLOAT16_PRECISION = 0.01f;
 
     private static final TestUtils utils = new TestUtils(DIMENSION);
+    private static final File DockerComposeFile = TestUtils.dockerComposeFile("docker-compose.yml");
+    private static final File DockerComposeVolumeDirectory = new File("target/milvus-compose");
+    private static final List<String> DockerComposeContainerNames = Arrays.asList("milvus-javasdk-etcd", "milvus-javasdk-minio", "milvus-javasdk-standalone");
 
     // this class is for testing the behavior of AbstractMilvusGrpcClient
     // to expose some internal methods
@@ -91,16 +91,9 @@ class MilvusClientDockerTest {
         }
     }
 
-    @Container
-    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
-            .withEnv("DEPLOY_MODE", "STANDALONE");
-
     @BeforeAll
     public static void setUp() {
-        try {
-            Thread.sleep(3000); // Sleep for few seconds since the master branch milvus healthz check is bug
-        } catch (InterruptedException ignored) {
-        }
+        TestUtils.startMilvusStandalone(DockerComposeFile, DockerComposeVolumeDirectory, DockerComposeContainerNames);
 
         ConnectParam connectParam = connectParamBuilder()
                 .withAuthorization("root", "Milvus")
@@ -114,13 +107,17 @@ class MilvusClientDockerTest {
 
     @AfterAll
     public static void tearDown() {
-        if (client != null) {
-            client.close();
+        try {
+            if (client != null) {
+                client.close();
+            }
+        } finally {
+            TestUtils.stopMilvusStandalone();
         }
     }
 
     protected static ConnectParam.Builder connectParamBuilder() {
-        return connectParamBuilder(milvus.getEndpoint());
+        return connectParamBuilder(TestUtils.MilvusStandaloneUri);
     }
 
     private static ConnectParam.Builder connectParamBuilder(String milvusUri) {
@@ -2878,8 +2875,7 @@ class MilvusClientDockerTest {
         String dbName = "test_database";
         CreateDatabaseParam createDatabaseParam = CreateDatabaseParam.newBuilder()
                 .withDatabaseName(dbName)
-                .withReplicaNumber(1)
-                .withResourceGroups(Collections.singletonList("rg1"))
+                .withReplicaNumber(5)
                 .build();
         R<RpcStatus> createResponse = client.createDatabase(createDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), createResponse.getStatus().intValue());
@@ -2890,15 +2886,12 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), describeResponse.getStatus().intValue());
         DescDBResponseWrapper describeDBWrapper = new DescDBResponseWrapper(describeResponse.getData());
         Assertions.assertEquals(dbName, describeDBWrapper.getDatabaseName());
-        Assertions.assertEquals(1, describeDBWrapper.getReplicaNumber());
-        Assertions.assertEquals(1, describeDBWrapper.getResourceGroups().size());
+        Assertions.assertEquals(5, describeDBWrapper.getReplicaNumber());
 
         // alter database props
         AlterDatabaseParam alterDatabaseParam = AlterDatabaseParam.newBuilder()
                 .withDatabaseName(dbName)
                 .withReplicaNumber(3)
-                // fix W is UpperCase
-                .withResourceGroups(Arrays.asList("rg1", "rg2", "rg3"))
                 .build();
         R<RpcStatus> alterDatabaseResponse = client.alterDatabase(alterDatabaseParam);
         Assertions.assertEquals(R.Status.Success.getCode(), alterDatabaseResponse.getStatus().intValue());
@@ -2909,7 +2902,6 @@ class MilvusClientDockerTest {
         describeDBWrapper = new DescDBResponseWrapper(describeResponse.getData());
         Assertions.assertEquals(dbName, describeDBWrapper.getDatabaseName());
         Assertions.assertEquals(3, describeDBWrapper.getReplicaNumber());
-        Assertions.assertEquals(3, describeDBWrapper.getResourceGroups().size());
 
 
         DropDatabaseParam dropDatabaseParam = DropDatabaseParam.newBuilder().withDatabaseName(dbName).build();
@@ -3136,7 +3128,7 @@ class MilvusClientDockerTest {
     void testClientPool() {
         try {
             ConnectParam connectParam = ConnectParam.newBuilder()
-                    .withUri(milvus.getEndpoint())
+                    .withUri(TestUtils.MilvusStandaloneUri)
                     .build();
             int minIdlePerKey = 1;
             int maxIdlePerKey = 2;
