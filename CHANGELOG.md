@@ -1,5 +1,16 @@
 # Changelog
 
+## milvus-sdk-java 3.0.0 (2026-05-09)
+### Feature
+- Add Snapshot APIs for MilvusClientV2
+- Add volume describe API and external volume support
+- Add projectId and regionId support for cloud import interfaces
+- Add collection ID support for describeCollection() and batchDescribeCollection()
+
+### Improvement
+- Add option parameters to ConnectConfig and ConnectParam
+- Align request identifier behavior with PyMilvus
+
 ## milvus-sdk-java 2.6.18 (2026-04-23)
 ### Feature
 - Add external collection API support for MilvusClientV2
