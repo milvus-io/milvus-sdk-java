@@ -74,6 +74,8 @@ import io.milvus.v2.service.rbac.response.ListPrivilegeGroupsResp;
 import io.milvus.v2.service.resourcegroup.request.*;
 import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
 import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
+import io.milvus.v2.service.snapshot.request.*;
+import io.milvus.v2.service.snapshot.response.*;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
@@ -635,6 +637,24 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(DescribeResourceGroupResp.class.getName(), config);
         config.clearIgnoredMethods();
         VerifyClass(ListResourceGroupsResp.class.getName(), config);
+
+        // io.milvus/v2/service/snapshot
+        VerifyClass(CreateSnapshotReq.class.getName(), config);
+        VerifyClass(DropSnapshotReq.class.getName(), config);
+        VerifyClass(ListSnapshotsReq.class.getName(), config);
+        VerifyClass(DescribeSnapshotReq.class.getName(), config);
+        VerifyClass(RestoreSnapshotReq.class.getName(), config);
+        VerifyClass(GetRestoreSnapshotStateReq.class.getName(), config);
+        VerifyClass(ListRestoreSnapshotJobsReq.class.getName(), config);
+        VerifyClass(PinSnapshotDataReq.class.getName(), config);
+        VerifyClass(UnpinSnapshotDataReq.class.getName(), config);
+        VerifyClass(ListSnapshotsResp.class.getName(), config);
+        VerifyClass(DescribeSnapshotResp.class.getName(), config);
+        VerifyClass(RestoreSnapshotResp.class.getName(), config);
+        VerifyClass(RestoreSnapshotJobInfo.class.getName(), config);
+        VerifyClass(GetRestoreSnapshotStateResp.class.getName(), config);
+        VerifyClass(ListRestoreSnapshotJobsResp.class.getName(), config);
+        VerifyClass(PinSnapshotDataResp.class.getName(), config);
 
         // io.milvus/v2/service/utility
         VerifyClass(AlterAliasReq.class.getName(), config);
