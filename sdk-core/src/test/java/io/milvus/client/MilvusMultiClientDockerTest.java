@@ -37,9 +37,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,117 +53,31 @@ class MilvusMultiClientDockerTest {
     private static MilvusClient client;
     private static RandomStringGenerator generator;
     private static final int DIMENSION = 128;
-    private static final Boolean useDockerCompose = Boolean.TRUE;
     private static final TestUtils utils = new TestUtils(DIMENSION);
-
-    private static void waitMilvusServerReady(String host, int port) {
-        ConnectParam connectParam = connectParamBuilder(host, port)
-                .withAuthorization("root", "Milvus")
-                .build();
-        long waitTime = 0;
-        while (true) {
-            // although milvus container is alive, it is still in initializing,
-            // connection will fail and get error "proxy not health".
-            // check health state for every few seconds, until the server is ready.
-            long checkInterval = 3;
-            try {
-                TimeUnit.SECONDS.sleep(checkInterval);
-            } catch (InterruptedException t) {
-                System.out.println("Interrupted: " + t.getMessage());
-                break;
-            }
-
-            try {
-                MilvusServiceClient tempClient = new MilvusServiceClient(connectParam);
-                R<CheckHealthResponse> resp = tempClient.checkHealth();
-                if (resp.getData().getIsHealthy()) {
-                    System.out.printf("Milvus service is ready after %d seconds%n", waitTime);
-                    break;
-                }
-                System.out.println("Milvus service is not ready, waiting...");
-            } catch (Throwable t) {
-                System.out.println("Milvus service is in initialize, not able to connect: " + t.getMessage());
-            }
-
-            waitTime += checkInterval;
-            if (waitTime > 120) {
-                System.out.printf("Milvus service failed to start within %d seconds%n", waitTime);
-                break;
-            }
-        }
-    }
-
-    private static void runCommand(String command) {
-        System.out.println(command);
-        try {
-            Runtime runtime = Runtime.getRuntime();
-            Process proc = runtime.exec(command);
-            InputStream inputStream = proc.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-
-            boolean ok = proc.waitFor(10, TimeUnit.MINUTES);
-            if (!ok) {
-                System.out.println("Failed to run command in time: " + command);
-            }
-            System.out.println("Command done: " + command);
-        } catch (Throwable t) {
-            System.out.println("Failed to run command: " + command + ", error: " + t.getMessage());
-        }
-    }
-
-    private static void startDockerContainer() {
-        if (!useDockerCompose) {
-            return;
-        }
-
-        runCommand("docker compose version");
-        runCommand("docker compose up -d");
-
-        MultiConnectParam connectParam = multiConnectParamBuilder()
-                .withAuthorization("root", "Milvus")
-                .build();
-        List<ServerAddress> hosts = connectParam.getHosts();
-        for (ServerAddress host : hosts) {
-            waitMilvusServerReady(host.getHost(), host.getPort());
-        }
-    }
-
-    private static void stopDockerContainer() {
-        if (!useDockerCompose) {
-            return;
-        }
-
-        runCommand("docker compose down");
-        runCommand("docker compose rm");
-    }
+    private static final File DockerComposeFile = TestUtils.dockerComposeFile("docker-compose-multi.yml");
+    private static final File DockerComposeVolumeDirectory = new File("target/milvus-compose-multi");
+    private static final List<String> DockerComposeContainerNames = Arrays.asList("milvus-javasdk-standalone-1", "milvus-javasdk-standalone-2");
 
     @BeforeAll
     public static void setUp() {
-        startDockerContainer();
+        TestUtils.startMilvusStandalone(DockerComposeFile, DockerComposeVolumeDirectory, DockerComposeContainerNames);
 
         MultiConnectParam connectParam = multiConnectParamBuilder()
                 .withAuthorization("root", "Milvus")
                 .build();
         client = new MilvusMultiServiceClient(connectParam);
-//        TimeUnit.SECONDS.sleep(10);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
     }
 
     @AfterAll
     public static void tearDown() {
-        if (client != null) {
-            client.close();
+        try {
+            if (client != null) {
+                client.close();
+            }
+        } finally {
+            TestUtils.stopMilvusStandalone();
         }
-
-        stopDockerContainer();
-    }
-
-    private static ConnectParam.Builder connectParamBuilder(String host, int port) {
-        return ConnectParam.newBuilder().withHost(host).withPort(port);
     }
 
     private static MultiConnectParam.Builder multiConnectParamBuilder() {

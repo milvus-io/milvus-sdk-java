@@ -79,10 +79,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.milvus.MilvusContainer;
 
+import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -90,27 +88,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-@Testcontainers(disabledWithoutDocker = true)
 class MilvusClientV2DockerTest {
     private static MilvusClientV2 client;
     private static RandomStringGenerator generator;
     private static final int DIMENSION = 256;
     private static final Random RANDOM = new Random();
     private static final TestUtils utils = new TestUtils(DIMENSION);
-
-    @Container
-    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
-            .withEnv("DEPLOY_MODE", "STANDALONE");
+    private static final File DockerComposeFile = TestUtils.dockerComposeFile("docker-compose.yml");
+    private static final File DockerComposeVolumeDirectory = new File("target/milvus-compose");
+    private static final List<String> DockerComposeContainerNames = Arrays.asList("milvus-javasdk-etcd", "milvus-javasdk-minio", "milvus-javasdk-standalone");
 
     @BeforeAll
     public static void setUp() {
-        try {
-            Thread.sleep(3000); // Sleep for few seconds since the master branch milvus healthz check is bug
-        } catch (InterruptedException ignored) {
-        }
+        TestUtils.startMilvusStandalone(DockerComposeFile, DockerComposeVolumeDirectory, DockerComposeContainerNames);
 
         ConnectConfig config = ConnectConfig.builder()
-                .uri(milvus.getEndpoint())
+                .uri(TestUtils.MilvusStandaloneUri)
                 .build();
         client = new MilvusClientV2(config);
         generator = new RandomStringGenerator.Builder().withinRange('a', 'z').build();
@@ -118,8 +111,12 @@ class MilvusClientV2DockerTest {
 
     @AfterAll
     public static void tearDown() throws InterruptedException {
-        if (client != null) {
-            client.close(5L);
+        try {
+            if (client != null) {
+                client.close(5L);
+            }
+        } finally {
+            TestUtils.stopMilvusStandalone();
         }
     }
 
@@ -2298,7 +2295,7 @@ class MilvusClientV2DockerTest {
 
         // a temp client connect to the new db
         ConnectConfig config = ConnectConfig.builder()
-                .uri(milvus.getEndpoint())
+                .uri(TestUtils.MilvusStandaloneUri)
                 .dbName(testDbName)
                 .build();
         // fix tempClient not close
@@ -3020,7 +3017,7 @@ class MilvusClientV2DockerTest {
         try {
             // the default connection config will connect to default db
             ConnectConfig connectConfig = ConnectConfig.builder()
-                    .uri(milvus.getEndpoint())
+                    .uri(TestUtils.MilvusStandaloneUri)
                     .build();
             int minIdlePerKey = 1;
             int maxIdlePerKey = 2;
@@ -3034,7 +3031,7 @@ class MilvusClientV2DockerTest {
 
             // clients of the key "dummy_db" will connect to this db
             pool.configForKey(dummyDb, ConnectConfig.builder()
-                    .uri(milvus.getEndpoint())
+                    .uri(TestUtils.MilvusStandaloneUri)
                     .dbName(dummyDb)
                     .rpcDeadlineMs(100L)
                     .build());
@@ -3856,7 +3853,7 @@ class MilvusClientV2DockerTest {
                 dbName -> {
                     // a client use the temp database
                     ConnectConfig config = ConnectConfig.builder()
-                            .uri(milvus.getEndpoint())
+                            .uri(TestUtils.MilvusStandaloneUri)
                             .dbName(tempDbName)
                             .build();
                     MilvusClientV2 tempClient = null;
