@@ -99,8 +99,13 @@ class MilvusClientV2DockerTest {
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     @Container
-    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID)
-            .withEnv("DEPLOY_MODE", "STANDALONE");
+    private static final MilvusContainer milvus = new MilvusContainer(TestUtils.MilvusDockerImageID) {
+        @Override
+        protected void configure() {
+            super.configure();
+            getEnvMap().remove("ETCD_CONFIG_PATH");
+        }
+    }.withEnv("DEPLOY_MODE", "STANDALONE");
 
     @BeforeAll
     public static void setUp() {

@@ -3,15 +3,13 @@ version: '3.5'
 services:
   standalone:
     container_name: milvus-javasdk-standalone-1
-    image: milvusdb/milvus:v2.6.9
+    image: milvusdb/milvus:v3.0-beta-amd64
     command: [ "milvus", "run", "standalone" ]
     environment:
       - COMMON_STORAGETYPE=local
       - DEPLOY_MODE=STANDALONE
       - ETCD_USE_EMBED=true
       - ETCD_DATA_DIR=/var/lib/milvus/etcd
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus-1:/var/lib/milvus
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s
@@ -24,15 +22,13 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-standalone-2
-    image: milvusdb/milvus:v2.6.9
+    image: milvusdb/milvus:v3.0-beta-amd64
     command: [ "milvus", "run", "standalone" ]
     environment:
       - COMMON_STORAGETYPE=local
       - DEPLOY_MODE=STANDALONE
       - ETCD_USE_EMBED=true
       - ETCD_DATA_DIR=/var/lib/milvus/etcd
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus-2:/var/lib/milvus
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9091/healthz" ]
       interval: 30s
