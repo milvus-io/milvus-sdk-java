@@ -59,6 +59,9 @@ import io.milvus.v2.service.resourcegroup.ResourceGroupService;
 import io.milvus.v2.service.resourcegroup.request.*;
 import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
 import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
+import io.milvus.v2.service.snapshot.SnapshotService;
+import io.milvus.v2.service.snapshot.request.*;
+import io.milvus.v2.service.snapshot.response.*;
 import io.milvus.v2.service.utility.OptimizeTask;
 import io.milvus.v2.service.utility.UtilityService;
 import io.milvus.v2.service.utility.request.*;
@@ -95,6 +98,7 @@ public class MilvusClientV2 {
     private final PartitionService partitionService = new PartitionService();
     private final RBACService rbacService = new RBACService();
     private final ResourceGroupService rgroupService = new ResourceGroupService();
+    private final SnapshotService snapshotService = new SnapshotService();
     private final UtilityService utilityService = new UtilityService();
     private final CDCService cdcService = new CDCService();
     private RpcUtils rpcUtils = new RpcUtils();
@@ -128,6 +132,7 @@ public class MilvusClientV2 {
         this.partitionService.setCurrentDbName(dbName);
         this.rbacService.setCurrentDbName(dbName);
         this.rgroupService.setCurrentDbName(dbName);
+        this.snapshotService.setCurrentDbName(dbName);
         this.utilityService.setCurrentDbName(dbName);
     }
 
@@ -1100,6 +1105,96 @@ public class MilvusClientV2 {
      */
     public void transferReplica(TransferReplicaReq request) {
         rpcUtils.retry(() -> rgroupService.transferReplica(this.getRpcStub(), request));
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    // Snapshot Operations
+    /////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Create a snapshot for a collection.
+     *
+     * @param request create snapshot request
+     */
+    public void createSnapshot(CreateSnapshotReq request) {
+        rpcUtils.retry(() -> snapshotService.createSnapshot(this.getRpcStub(), request));
+    }
+
+    /**
+     * Delete a snapshot permanently.
+     *
+     * @param request drop snapshot request
+     */
+    public void dropSnapshot(DropSnapshotReq request) {
+        rpcUtils.retry(() -> snapshotService.dropSnapshot(this.getRpcStub(), request));
+    }
+
+    /**
+     * List existing snapshots.
+     *
+     * @param request list snapshots request
+     * @return ListSnapshotsResp
+     */
+    public ListSnapshotsResp listSnapshots(ListSnapshotsReq request) {
+        return rpcUtils.retry(() -> snapshotService.listSnapshots(this.getRpcStub(), request));
+    }
+
+    /**
+     * Get detailed information about a specific snapshot.
+     *
+     * @param request describe snapshot request
+     * @return DescribeSnapshotResp
+     */
+    public DescribeSnapshotResp describeSnapshot(DescribeSnapshotReq request) {
+        return rpcUtils.retry(() -> snapshotService.describeSnapshot(this.getRpcStub(), request));
+    }
+
+    /**
+     * Restore a snapshot to a new collection.
+     *
+     * @param request restore snapshot request
+     * @return RestoreSnapshotResp containing the restore job ID
+     */
+    public RestoreSnapshotResp restoreSnapshot(RestoreSnapshotReq request) {
+        return rpcUtils.retry(() -> snapshotService.restoreSnapshot(this.getRpcStub(), request));
+    }
+
+    /**
+     * Query the status and progress of a restore snapshot job.
+     *
+     * @param request get restore snapshot state request
+     * @return GetRestoreSnapshotStateResp
+     */
+    public GetRestoreSnapshotStateResp getRestoreSnapshotState(GetRestoreSnapshotStateReq request) {
+        return rpcUtils.retry(() -> snapshotService.getRestoreSnapshotState(this.getRpcStub(), request));
+    }
+
+    /**
+     * List restore snapshot jobs.
+     *
+     * @param request list restore snapshot jobs request
+     * @return ListRestoreSnapshotJobsResp
+     */
+    public ListRestoreSnapshotJobsResp listRestoreSnapshotJobs(ListRestoreSnapshotJobsReq request) {
+        return rpcUtils.retry(() -> snapshotService.listRestoreSnapshotJobs(this.getRpcStub(), request));
+    }
+
+    /**
+     * Pin snapshot data to prevent garbage collection while copying it out.
+     *
+     * @param request pin snapshot data request
+     * @return PinSnapshotDataResp containing the pin ID
+     */
+    public PinSnapshotDataResp pinSnapshotData(PinSnapshotDataReq request) {
+        return rpcUtils.retry(() -> snapshotService.pinSnapshotData(this.getRpcStub(), request));
+    }
+
+    /**
+     * Release a pin created by pinSnapshotData.
+     *
+     * @param request unpin snapshot data request
+     */
+    public void unpinSnapshotData(UnpinSnapshotDataReq request) {
+        rpcUtils.retry(() -> snapshotService.unpinSnapshotData(this.getRpcStub(), request));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

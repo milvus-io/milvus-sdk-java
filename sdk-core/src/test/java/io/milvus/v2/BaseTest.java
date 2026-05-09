@@ -227,6 +227,78 @@ public class BaseTest {
                                 .setPath("/data/test2.parquet")
                                 .build())
                         .build());
+
+        // snapshot api
+        when(blockingStub.createSnapshot(any())).thenReturn(successStatus);
+        when(blockingStub.dropSnapshot(any())).thenReturn(successStatus);
+        when(blockingStub.listSnapshots(any())).thenReturn(
+                ListSnapshotsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addSnapshots("snapshot_1")
+                        .addSnapshots("snapshot_2")
+                        .build());
+        when(blockingStub.describeSnapshot(any())).thenReturn(
+                DescribeSnapshotResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setName("snapshot_1")
+                        .setDescription("test snapshot")
+                        .setCollectionName("test")
+                        .addPartitionNames("_default")
+                        .setCreateTs(1000L)
+                        .setS3Location("s3://bucket/snapshot_1")
+                        .build());
+        when(blockingStub.restoreSnapshot(any())).thenReturn(
+                RestoreSnapshotResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setJobId(12345L)
+                        .build());
+        when(blockingStub.getRestoreSnapshotState(any())).thenReturn(
+                GetRestoreSnapshotStateResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setInfo(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setSnapshotName("snapshot_1")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection")
+                                .setState(RestoreSnapshotState.RestoreSnapshotCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setStartTime(1000L)
+                                .setTimeCost(2000L)
+                                .build())
+                        .build());
+        when(blockingStub.listRestoreSnapshotJobs(any())).thenReturn(
+                ListRestoreSnapshotJobsResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .addJobs(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12345L)
+                                .setSnapshotName("snapshot_1")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection")
+                                .setState(RestoreSnapshotState.RestoreSnapshotCompleted)
+                                .setProgress(100)
+                                .setReason("")
+                                .setStartTime(1000L)
+                                .setTimeCost(2000L)
+                                .build())
+                        .addJobs(RestoreSnapshotInfo.newBuilder()
+                                .setJobId(12346L)
+                                .setSnapshotName("snapshot_2")
+                                .setDbName("default")
+                                .setCollectionName("restored_collection_2")
+                                .setState(RestoreSnapshotState.RestoreSnapshotExecuting)
+                                .setProgress(50)
+                                .setReason("")
+                                .setStartTime(3000L)
+                                .setTimeCost(0L)
+                                .build())
+                        .build());
+        when(blockingStub.pinSnapshotData(any())).thenReturn(
+                PinSnapshotDataResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setPinId(54321L)
+                        .build());
+        when(blockingStub.unpinSnapshotData(any())).thenReturn(successStatus);
     }
 
     @AfterEach
