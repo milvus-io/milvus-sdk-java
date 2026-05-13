@@ -22,7 +22,7 @@ The following table shows compatibilities between Milvus and Java SDK.
 |     2.3.x      |      2.3.11      |
 |     2.4.x      |      2.4.11      |
 |     2.5.x      |      2.5.15      |
-|     2.6.x      |      2.6.18      |
+|     2.6.x      |      2.6.19      |
 |     3.0.x      |      3.0.0       |
 
 ### Install Java SDK

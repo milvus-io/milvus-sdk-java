@@ -1,10 +1,16 @@
 # Changelog
 
-## milvus-sdk-java 3.0.0 (2026-05-09)
+## milvus-sdk-java 3.0.0 (2026-05-13)
 ### Feature
-- Add Snapshot APIs for MilvusClientV2
-- Add volume describe API and external volume support
+- Support Snapshot APIs for Milvus v3.x
+- Support External Collection APIs for Milvus v3.x
+- Support File Resource APIs for Milvus v3.x
+- Support Force Merge(compact with targetSize) for Milvus v3.x
+
+## milvus-sdk-java 2.6.19 (2026-05-13)
+### Feature
 - Add projectId and regionId support for cloud import interfaces
+- Add volume describe API and external volume support
 - Add collection ID support for describeCollection() and batchDescribeCollection()
 
 ### Improvement
