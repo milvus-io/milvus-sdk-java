@@ -95,14 +95,13 @@ public class ExternalTableExample {
 
     public static void main(String[] args) throws Exception {
         // Step 1: Generate Parquet file and upload to MinIO
-        generateAndUploadParquet();
+        String externalSource = generateAndUploadParquet();
 
         // Step 2: Create external collection
         MilvusClientV2 client = new MilvusClientV2(ConnectConfig.builder()
                 .uri(MILVUS_URI)
                 .build());
 
-        String externalSource = "external_table_example_data";
         try {
             createExternalCollection(client, externalSource);
 
@@ -203,8 +202,9 @@ public class ExternalTableExample {
                 .build());
         System.out.printf("Uploaded to MinIO: %s/%s%n", MINIO_BUCKET, objectName);
 
-        // externalSource is a path relative to the Milvus-configured MinIO bucket root
-        String externalSource = EXTERNAL_DATA_PREFIX + "/";
+        // externalSource is a absolute path to the Milvus-configured object storage service
+        // typical format: "s3://<minio-endpoint>/<bucket-name>/<prefix>/"
+        String externalSource = "s3://minio:9000/" + MINIO_BUCKET + "/" + EXTERNAL_DATA_PREFIX + "/";
         System.out.printf("External source path: %s%n", externalSource);
         return externalSource;
     }
@@ -216,10 +216,28 @@ public class ExternalTableExample {
         System.out.println("\n=== Step 2: Create External Collection ===");
 
         // Build external spec as JSON
-//        JsonObject externalSpec = new JsonObject();
-//        externalSpec.addProperty("format", "parquet");
+        // A typical spec:
+        //        {
+        //            "format": "parquet",
+        //            "extfs": {
+        //                    "access_key_id": "minioadmin",
+        //                    "access_key_value": "minioadmin",
+        //                    "region": "none",
+        //                    "use_ssl": "false",
+        //                    "use_virtual_host": "false",
+        //                    "cloud_provider": "minio"
+        //            }
+        //        }
         JsonObject externalSpec = new JsonObject();
         externalSpec.addProperty("format", "parquet");
+        JsonObject extfs = new JsonObject();
+        extfs.addProperty("access_key_id", MINIO_ACCESS_KEY);
+        extfs.addProperty("access_key_value", MINIO_SECRET_KEY);
+        extfs.addProperty("region", "us-east-1");
+        extfs.addProperty("use_ssl", "false");
+        extfs.addProperty("use_virtual_host", "false");
+        extfs.addProperty("cloud_provider", "minio");
+        externalSpec.add("extfs", extfs);
 
         // Build collection schema with external source
         // Use externalField to map collection fields to Parquet columns
