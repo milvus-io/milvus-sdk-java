@@ -21,15 +21,20 @@ package io.milvus.v2.service.vector;
 
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.grpc.UpsertRequest;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+
+import static org.mockito.Mockito.verify;
 
 class VectorTest extends BaseTest {
 
@@ -73,6 +78,34 @@ class VectorTest extends BaseTest {
 
         UpsertResp statusR = client_v2.upsert(request);
         logger.info(statusR.toString());
+    }
+
+    @Test
+    void testUpsertWithFieldOps() {
+        JsonObject jsonObject = new JsonObject();
+        List<Float> vectorList = new ArrayList<>();
+        vectorList.add(2.0f);
+        vectorList.add(3.0f);
+        jsonObject.add("vector", JsonUtils.toJsonTree(vectorList));
+        jsonObject.addProperty("id", 0L);
+        UpsertReq request = UpsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(jsonObject))
+                .fieldOps(Collections.singletonList(UpsertReq.FieldPartialUpdateOp.builder()
+                        .fieldName("vector")
+                        .opType(UpsertReq.FieldPartialUpdateOp.OpType.ARRAY_APPEND)
+                        .build()))
+                .build();
+
+        client_v2.upsert(request);
+
+        ArgumentCaptor<UpsertRequest> captor = ArgumentCaptor.forClass(UpsertRequest.class);
+        verify(blockingStub).upsert(captor.capture());
+        UpsertRequest rpcRequest = captor.getValue();
+        Assertions.assertTrue(rpcRequest.getPartialUpdate());
+        Assertions.assertEquals(1, rpcRequest.getFieldOpsCount());
+        Assertions.assertEquals("vector", rpcRequest.getFieldOps(0).getFieldName());
+        Assertions.assertEquals(io.milvus.grpc.FieldPartialUpdateOp.OpType.ARRAY_APPEND, rpcRequest.getFieldOps(0).getOp());
     }
 
     @Test
