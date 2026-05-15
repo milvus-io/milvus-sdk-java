@@ -55,6 +55,7 @@ public class AddFieldExample {
     private static final Integer VECTOR_DIM = 8;
 
     private static void createCollection() {
+        System.out.println("Creating collection...");
         // Drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
