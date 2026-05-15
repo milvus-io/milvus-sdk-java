@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.6.20 (2026-05-15)
+### Feature
+- Support field-level operations for upsert
+
 ## milvus-sdk-java 2.6.19 (2026-05-13)
 ### Feature
 - Add projectId and regionId support for cloud import interfaces
