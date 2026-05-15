@@ -66,11 +66,13 @@ public class DataUtils {
             String collectionName = requestParam.getCollectionName();
 
             // generate upsert request builder
+            List<FieldPartialUpdateOp> fieldOps = convertFieldOps(requestParam.getFieldOps());
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Upsert).build();
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
-                    .setPartialUpdate(requestParam.isPartialUpdate())
+                    .setPartialUpdate(requestParam.isPartialUpdate() || hasNonReplaceFieldOps(fieldOps))
+                    .addAllFieldOps(fieldOps)
                     .setNumRows(requestParam.getData().size());
             if (StringUtils.isNotEmpty(dbName)) {
                 upsertBuilder.setDbName(dbName);
@@ -78,6 +80,52 @@ public class DataUtils {
             insertBuilder = null;
             fillFieldsData(requestParam, descColl);
             return upsertBuilder.build();
+        }
+
+        private static List<FieldPartialUpdateOp> convertFieldOps(List<UpsertReq.FieldPartialUpdateOp> requestFieldOps) {
+            if (requestFieldOps == null) {
+                return Collections.emptyList();
+            }
+
+            List<FieldPartialUpdateOp> fieldOps = new ArrayList<>();
+            for (UpsertReq.FieldPartialUpdateOp fieldOp : requestFieldOps) {
+                if (fieldOp == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field op cannot be null");
+                }
+                if (StringUtils.isEmpty(fieldOp.getFieldName())) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field op field name cannot be empty");
+                }
+                if (fieldOp.getOpType() == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Field op type cannot be null");
+                }
+                fieldOps.add(FieldPartialUpdateOp.newBuilder()
+                        .setFieldName(fieldOp.getFieldName())
+                        .setOp(convertFieldOpType(fieldOp.getOpType()))
+                        .build());
+            }
+            return fieldOps;
+        }
+
+        private static FieldPartialUpdateOp.OpType convertFieldOpType(UpsertReq.FieldPartialUpdateOp.OpType opType) {
+            switch (opType) {
+                case REPLACE:
+                    return FieldPartialUpdateOp.OpType.REPLACE;
+                case ARRAY_APPEND:
+                    return FieldPartialUpdateOp.OpType.ARRAY_APPEND;
+                case ARRAY_REMOVE:
+                    return FieldPartialUpdateOp.OpType.ARRAY_REMOVE;
+                default:
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Unsupported field op type: " + opType);
+            }
+        }
+
+        private static boolean hasNonReplaceFieldOps(List<FieldPartialUpdateOp> fieldOps) {
+            for (FieldPartialUpdateOp fieldOp : fieldOps) {
+                if (fieldOp.getOp() != FieldPartialUpdateOp.OpType.REPLACE) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void addFieldsData(FieldData value) {
