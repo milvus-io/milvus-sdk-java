@@ -68,10 +68,17 @@ public class DataUtils {
             // generate upsert request builder
             List<FieldPartialUpdateOp> fieldOps = convertFieldOps(requestParam.getFieldOps());
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Upsert).build();
+
+            // Non-REPLACE ops imply partialUpdate semantics; auto-promote so checkAndSetRowData
+            // can get a correct partialUpdate flag to validate field presence accordingly.
+            if (hasNonReplaceFieldOps(fieldOps)) {
+                requestParam.setPartialUpdate(true);
+            }
+
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
                     .setBase(msgBase)
-                    .setPartialUpdate(requestParam.isPartialUpdate() || hasNonReplaceFieldOps(fieldOps))
+                    .setPartialUpdate(requestParam.isPartialUpdate())
                     .addAllFieldOps(fieldOps)
                     .setNumRows(requestParam.getData().size());
             if (StringUtils.isNotEmpty(dbName)) {
