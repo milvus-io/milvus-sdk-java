@@ -38,6 +38,7 @@ import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.UpsertResp;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UpsertExample {
     private static final MilvusClientV2 client;
@@ -53,10 +54,11 @@ public class UpsertExample {
     private static final String VECTOR_FIELD = "vector";
     private static final String TEXT_FIELD = "text_field";
     private static final String JSON_FIELD = "json_field";
+    private static final String ARRAY_FIELD = "array_field";
     private static final String NULLABLE_FIELD = "nullable_field";
     private static final Integer VECTOR_DIM = 4;
 
-    private static List<Object> createCollection(boolean autoID) {
+    private static List<Long> createCollection(boolean autoID) {
         // Drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -91,6 +93,13 @@ public class UpsertExample {
                 .dataType(DataType.Int32)
                 .isNullable(true)
                 .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName(ARRAY_FIELD)
+                .dataType(DataType.Array)
+                .elementType(DataType.VarChar)
+                .maxCapacity(8)
+                .maxLength(32)
+                .build());
 
         List<IndexParam> indexes = new ArrayList<>();
         indexes.add(IndexParam.builder()
@@ -123,6 +132,7 @@ public class UpsertExample {
             metadata.addProperty("foo", i);
             metadata.addProperty("bar", i);
             row.add(JSON_FIELD, metadata);
+            row.add(ARRAY_FIELD, gson.toJsonTree(Arrays.asList("element_1", "element_2")));
             row.addProperty(NULLABLE_FIELD, i);
             row.addProperty("dynamic", String.format("dynamic_%d", i)); // this is dynamic field
             rows.add(row);
@@ -131,7 +141,8 @@ public class UpsertExample {
                 .collectionName(COLLECTION_NAME)
                 .data(rows)
                 .build());
-        return resp.getPrimaryKeys();
+        List<Object> ids = resp.getPrimaryKeys();
+        return ids.stream().map(Long.class::cast).collect(Collectors.toList());
     }
 
     private static List<QueryResp.QueryResult> queryWithExpr(String expr) {
@@ -150,7 +161,7 @@ public class UpsertExample {
     }
 
     // update the entire row
-    private static void fullUpsert(Object id) {
+    private static void fullUpsert(Long id) {
         System.out.println("------------------------------ full upsert ------------------------------");
         Gson gson = new Gson();
         // Query before upsert, get the No.2 primary key
@@ -160,7 +171,7 @@ public class UpsertExample {
         // Upsert, update all fields value
         // If autoID is true, the server will return a new primary key for the updated entity
         JsonObject row = new JsonObject();
-        row.addProperty(ID_FIELD, (Long) id); // primary key must be input so that it can know which entity to be updated
+        row.addProperty(ID_FIELD, id); // primary key must be input so that it can know which entity to be updated
         List<Float> vectorUpdated = Arrays.asList(1.0f, 1.0f, 1.0f, 1.0f);
         row.add(VECTOR_FIELD, gson.toJsonTree(vectorUpdated));
         String textUpdated = "this field has been updated";
@@ -168,6 +179,7 @@ public class UpsertExample {
         JsonObject metadata = new JsonObject();
         metadata.addProperty("updated", "yes");
         row.add(JSON_FIELD, metadata); // the json field will be overridden
+        row.add(ARRAY_FIELD, gson.toJsonTree(Collections.singletonList("element_1"))); // the array field will be overridden
         row.add(NULLABLE_FIELD, null); // update nullable field to null
         UpsertResp upsertResp = client.upsert(UpsertReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -196,6 +208,11 @@ public class UpsertExample {
         if (!entity.get(JSON_FIELD).equals(metadata)) {
             throw new RuntimeException("JSON field is not correctly updated for filter: " + filter);
         }
+        // In full upsert, Array field is overridden
+        List<?> newArray = (List<?>) entity.get(ARRAY_FIELD);
+        if (newArray.size() != 1) {
+            throw new RuntimeException("Array field is not correctly updated for filter: " + filter);
+        }
         if (entity.get(NULLABLE_FIELD) != null) {
             throw new RuntimeException("Nullable field is not correctly updated for filter: " + filter);
         }
@@ -206,7 +223,7 @@ public class UpsertExample {
     }
 
     // update the specified field, other fields will keep old values
-    private static void partialUpsert(List<Object> ids, boolean updateVector) {
+    private static void partialUpsert(List<Long> ids, boolean updateVector) {
         System.out.printf("\n------------------------------ partial upsert %s ------------------------------%n",
                 updateVector ? "vector" : "scalars");
         Gson gson = new Gson();
@@ -225,9 +242,9 @@ public class UpsertExample {
         List<Float> vectorUpdated = Arrays.asList(1.0f, 1.0f, 1.0f, 1.0f);
         String textUpdated = "this row has been partially updated";
         List<JsonObject> rows = new ArrayList<>();
-        for (Object id : ids) {
+        for (Long id : ids) {
             JsonObject row = new JsonObject();
-            row.addProperty(ID_FIELD, (Long) id); // primary key must be input so that it can know which entity to be updated
+            row.addProperty(ID_FIELD, id); // primary key must be input so that it can know which entity to be updated
             if (updateVector) {
                 row.add(VECTOR_FIELD, gson.toJsonTree(vectorUpdated));
             } else {
@@ -236,6 +253,9 @@ public class UpsertExample {
                 JsonObject metadata = new JsonObject();
                 metadata.addProperty("updated", "yes");
                 row.add(JSON_FIELD, metadata); // the json field will be merged in partial upsert
+
+                // the array field will be merged in partial upsert
+                row.add(ARRAY_FIELD, gson.toJsonTree(Collections.singletonList("element_updated")));
             }
             row.addProperty("new_dynamic", "new"); // add a new dynamic field
             rows.add(row);
@@ -275,6 +295,9 @@ public class UpsertExample {
                 if (!entity.get(JSON_FIELD).equals(oldEntity.get(JSON_FIELD))) {
                     throw new RuntimeException("JSON field should not be updated for filter: " + filter);
                 }
+                if (!entity.get(ARRAY_FIELD).equals(oldEntity.get(ARRAY_FIELD))) {
+                    throw new RuntimeException("Array field should not be updated for filter: " + filter);
+                }
                 if (!entity.get(NULLABLE_FIELD).equals(oldEntity.get(NULLABLE_FIELD))) {
                     throw new RuntimeException("Nullable field should not be updated for filter: " + filter);
                 }
@@ -287,8 +310,13 @@ public class UpsertExample {
                     throw new RuntimeException("Nullable field is not correctly updated for filter: " + filter);
                 }
                 JsonObject newJson = (JsonObject) entity.get(JSON_FIELD);
-                if (!newJson.has("updated") && !newJson.get("updated").equals("yes")) {
+                if (!newJson.has("updated") || !newJson.get("updated").getAsString().equals("yes")) {
                     throw new RuntimeException("JSON field is not correctly updated for filter: " + filter);
+                }
+
+                List<?> newArray = (List<?>) entity.get(ARRAY_FIELD);
+                if (newArray.size() != 1 || !newArray.get(0).equals("element_updated")) {
+                    throw new RuntimeException("Array field is not correctly updated for filter: " + filter);
                 }
 
                 // vector field keep old value
@@ -307,25 +335,170 @@ public class UpsertExample {
         }
     }
 
+    // update the specified field, other fields will keep old values
+    private static void upsertArrayFieldWithOperation(Long id) {
+        System.out.println("------------------------------ upsert array field ------------------------------");
+        Gson gson = new Gson();
+        // Query before upsert
+        String filter = String.format("%s == %s", ID_FIELD, id);
+        List<QueryResp.QueryResult> oldResults = queryWithExpr(filter);
+
+        // FieldPartialUpdateOp to control how the update is performed on the specified field.
+        // Currently, it has three types of operations:
+        // REPLACE overwrites the field with the new values. Default behavior
+        // when no op targets a field. Applicable to all field types.
+        //
+        // ARRAY_APPEND appends the new values to the tail of the existing
+        // array. Requires DataType_Array. The resulting length must not
+        // exceed the field's max_capacity.
+        //
+        // ARRAY_REMOVE removes every occurrence of each provided value from
+        // the existing array. Requires DataType_Array. No-op when the base
+        // array is empty or no element matches.
+
+        // ARRAY_APPEND upsert for array field, only append a new element to the existing array field value
+        List<JsonObject> rows = new ArrayList<>();
+        JsonObject row = new JsonObject();
+        row.addProperty(ID_FIELD, id); // primary key must be input so that it can know which entity to be updated
+        row.add(ARRAY_FIELD, gson.toJsonTree(Collections.singletonList("element_appended")));
+        rows.add(row);
+
+        UpsertResp upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .data(rows)
+                .partialUpdate(true)
+                .fieldOps(Collections.singletonList(
+                        UpsertReq.FieldPartialUpdateOp.builder()
+                                .fieldName(ARRAY_FIELD)
+                                .opType(UpsertReq.FieldPartialUpdateOp.OpType.ARRAY_APPEND)
+                                .build()))
+                .build());
+        List<Object> newIds = upsertResp.getPrimaryKeys();
+        System.out.printf("\nPartial upsert done, primary key %s has been updated to %s%n", id, newIds);
+
+        // query after ARRAY_APPEND upsert
+        Long newID = (Long) newIds.get(0); // if autoID is true, newID will be different from the original id, but it still updates the same entity
+        filter = String.format("%s == %s", ID_FIELD, newID);
+        List<QueryResp.QueryResult> results = queryWithExpr(filter);
+
+        // Verify the result
+        if (results.size() != 1) {
+            throw new RuntimeException("Incorrect query result for filter: " + filter);
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            Map<String, Object> oldEntity = oldResults.get(i).getEntity();
+            Map<String, Object> entity = results.get(i).getEntity();
+
+            // only array field is updated, the new element is appended to the existing array field value
+            List<?> oldArray = (List<?>) oldEntity.get(ARRAY_FIELD);
+            List<?> newArray = (List<?>) entity.get(ARRAY_FIELD);
+            if (newArray.size() != oldArray.size() + 1 || !newArray.get(newArray.size() - 1).equals("element_appended")) {
+                throw new RuntimeException("Array field element is not correctly appended: " + filter);
+            }
+
+            // the other fields keep old values
+            if (!entity.get(VECTOR_FIELD).equals(oldEntity.get(VECTOR_FIELD))) {
+                throw new RuntimeException("Vector field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(TEXT_FIELD).equals(oldEntity.get(TEXT_FIELD))) {
+                throw new RuntimeException("Text field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(JSON_FIELD).equals(oldEntity.get(JSON_FIELD))) {
+                throw new RuntimeException("JSON field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(NULLABLE_FIELD).equals(oldEntity.get(NULLABLE_FIELD))) {
+                throw new RuntimeException("Nullable field should not be updated for filter: " + filter);
+            }
+            if (!entity.get("dynamic").equals(oldEntity.get("dynamic"))) {
+                throw new RuntimeException("Dynamic field should not be updated for filter: " + filter);
+            }
+        }
+
+        // ARRAY_REMOVE upsert for array field, only remove the "element_appended" from the existing array field value
+        newID = (Long) newIds.get(0); // if autoID is true, newID will be different from the original id, but it still updates the same entity
+        rows.clear();
+        row = new JsonObject();
+        row.addProperty(ID_FIELD, newID); // primary key must be input so that it can know which entity to be updated
+        row.add(ARRAY_FIELD, gson.toJsonTree(Collections.singletonList("element_appended")));
+        rows.add(row);
+
+        upsertResp = client.upsert(UpsertReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .data(rows)
+                .partialUpdate(true)
+                .fieldOps(Collections.singletonList(
+                        UpsertReq.FieldPartialUpdateOp.builder()
+                                .fieldName(ARRAY_FIELD)
+                                .opType(UpsertReq.FieldPartialUpdateOp.OpType.ARRAY_REMOVE)
+                                .build()))
+                .build());
+        newIds = upsertResp.getPrimaryKeys();
+        System.out.printf("\nPartial upsert done, primary key %s has been updated to %s%n", newID, newIds);
+
+        // the other fields keep old values
+        filter = String.format("%s == %s", ID_FIELD, newIds.get(0));
+        results = queryWithExpr(filter);
+
+        // Verify the result
+        if (results.size() != 1) {
+            throw new RuntimeException("Incorrect query result for filter: " + filter);
+        }
+
+        for (int i = 0; i < results.size(); i++) {
+            Map<String, Object> oldEntity = oldResults.get(i).getEntity();
+            Map<String, Object> entity = results.get(i).getEntity();
+
+            // only array field is updated, the "element_appended" is removed from the existing array field value
+            List<?> oldArray = (List<?>) oldEntity.get(ARRAY_FIELD);
+            List<?> newArray = (List<?>) entity.get(ARRAY_FIELD);
+            if (newArray.size() != oldArray.size()) {
+                throw new RuntimeException("Array field element is not correctly removed: " + filter);
+            }
+
+            // the other fields keep old values
+            if (!entity.get(VECTOR_FIELD).equals(oldEntity.get(VECTOR_FIELD))) {
+                throw new RuntimeException("Vector field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(TEXT_FIELD).equals(oldEntity.get(TEXT_FIELD))) {
+                throw new RuntimeException("Text field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(JSON_FIELD).equals(oldEntity.get(JSON_FIELD))) {
+                throw new RuntimeException("JSON field should not be updated for filter: " + filter);
+            }
+            if (!entity.get(NULLABLE_FIELD).equals(oldEntity.get(NULLABLE_FIELD))) {
+                throw new RuntimeException("Nullable field should not be updated for filter: " + filter);
+            }
+            if (!entity.get("dynamic").equals(oldEntity.get("dynamic"))) {
+                throw new RuntimeException("Dynamic field should not be updated for filter: " + filter);
+            }
+        }
+    }
+
     private static void doUpsert(boolean autoID) {
         System.out.printf("\n================================== autoID = %s ==================================", autoID ? "true" : "false");
         // If autoID is true, the collection primary key is auto-generated by server
-        List<Object> ids = createCollection(autoID);
+        List<Long> ids = createCollection(autoID);
 
         // Update the entire row of the No.2 entity
-        fullUpsert((Long) ids.get(1));
+        fullUpsert(ids.get(1));
 
         // Partially update the vectors of No.5 and No.6 entities
         partialUpsert(ids.subList(4, 6), true);
 
         // Partially update the scalar fields of No.10 entity
         partialUpsert(ids.subList(9, 10), false);
+
+        // Upsert with array field operation
+        upsertArrayFieldWithOperation(ids.get(20));
     }
 
     public static void main(String[] args) {
-        doUpsert(true);
-        doUpsert(false);
-
-        client.close();
+        try {
+            doUpsert(true);
+            doUpsert(false);
+        } finally {
+            client.close();
+        }
     }
 }
