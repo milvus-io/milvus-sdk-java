@@ -51,9 +51,20 @@ public class SchemaUtils {
     }
 
     public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema) {
+        return convertToGrpcFieldSchema(fieldSchema, false);
+    }
+
+    public static FieldSchema convertToGrpcFieldSchema(CreateCollectionReq.FieldSchema fieldSchema, boolean forAddField) {
         checkNullEmptyString(fieldSchema.getName(), "Field name");
 
         DataType dType = DataType.valueOf(fieldSchema.getDataType().name());
+        boolean isNullable = Boolean.TRUE.equals(fieldSchema.getIsNullable());
+
+        // Vector field must be nullable when adding to existing collection
+        if (forAddField && ParamUtils.isVectorDataType(dType) && !isNullable) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Vector field must be nullable when adding to existing collection, field name: " + fieldSchema.getName());
+        }
         FieldSchema.Builder builder = FieldSchema.newBuilder()
                 .setName(fieldSchema.getName())
                 .setDescription(fieldSchema.getDescription())
@@ -62,7 +73,7 @@ public class SchemaUtils {
                 .setIsPartitionKey(fieldSchema.getIsPartitionKey())
                 .setIsClusteringKey(fieldSchema.getIsClusteringKey())
                 .setAutoID(fieldSchema.getAutoID())
-                .setNullable(fieldSchema.getIsNullable())
+                .setNullable(isNullable)
                 .setExternalField(fieldSchema.getExternalField());
         if (!ParamUtils.isVectorDataType(dType) && !fieldSchema.getIsPrimaryKey()) {
             ValueField value = ParamUtils.objectToValueField(fieldSchema.getDefaultValue(), dType);
