@@ -21,6 +21,8 @@ package io.milvus.v2.utils;
 
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.junit.jupiter.api.Assertions;
@@ -236,6 +238,21 @@ public class SchemaUtilsTest {
                 Assertions.assertTrue(keys.contains("multi_analyzer_params"));
             }
         }
+    }
+
+    @Test
+    void testConvertToGrpcFieldSchemaTreatsNullNullableAsFalseForAddVectorField() {
+        CreateCollectionReq.FieldSchema fieldSchema = CreateCollectionReq.FieldSchema.builder()
+                .name("nullable_vector")
+                .dataType(io.milvus.v2.common.DataType.FloatVector)
+                .dimension(128)
+                .isNullable(null)
+                .build();
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertTrue(exception.getMessage().contains("Vector field must be nullable"));
     }
 
     @Test
