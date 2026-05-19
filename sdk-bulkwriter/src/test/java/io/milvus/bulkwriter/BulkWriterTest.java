@@ -25,6 +25,7 @@ import io.milvus.bulkwriter.common.clientenum.BulkFileType;
 import io.milvus.bulkwriter.common.utils.GeneratorUtils;
 import io.milvus.bulkwriter.common.utils.ParquetReaderUtils;
 import io.milvus.bulkwriter.common.utils.V2AdapterUtils;
+import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.MilvusException;
 import io.milvus.param.Constant;
@@ -49,6 +50,14 @@ import java.util.*;
 
 public class BulkWriterTest {
     private static final int DIMENSION = 32;
+    private static final List<String> NULLABLE_VECTOR_FIELDS = Arrays.asList(
+            "float_vector",
+            "binary_vector",
+            "sparse_vector",
+            "float16_vector",
+            "bfloat16_vector",
+            "int8_vector"
+    );
     private static final TestUtils utils = new TestUtils(DIMENSION);
 
     private static CollectionSchemaParam buildV1Schema(boolean enableDynamicField) {
@@ -728,6 +737,156 @@ public class BulkWriterTest {
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
         }
+    }
+
+    @Test
+    void testWriteCSVNullableVectorsUseDefaultNullKey() {
+        try {
+            LocalBulkWriter localBulkWriter = newNullableVectorCsvWriter(null);
+            JsonObject nullRow = buildNullableVectorRow(1, true);
+            JsonObject valueRow = buildNullableVectorRow(2, false);
+            localBulkWriter.appendRow(nullRow);
+            localBulkWriter.appendRow(valueRow);
+            localBulkWriter.commit(false);
+
+            List<String> lines = Files.readAllLines(Paths.get(localBulkWriter.getBatchFiles().get(0).get(0)), StandardCharsets.UTF_8);
+            Assertions.assertEquals(3, lines.size());
+            Map<String, String> nullValues = readPipeDelimitedRow(lines.get(0), lines.get(1));
+            Map<String, String> valueValues = readPipeDelimitedRow(lines.get(0), lines.get(2));
+
+            for (String field : NULLABLE_VECTOR_FIELDS) {
+                Assertions.assertEquals("", nullValues.get(field));
+                Assertions.assertNotEquals("null", stripCsvQuotes(valueValues.get(field)));
+                Assertions.assertNotEquals("\"null\"", valueValues.get(field));
+            }
+            Assertions.assertEquals("[1.0,2.0,3.0,4.0]", stripCsvQuotes(valueValues.get("float_vector")));
+            Assertions.assertEquals("[1]", stripCsvQuotes(valueValues.get("binary_vector")));
+            Assertions.assertEquals("{\"1\":0.5}", stripCsvQuotes(valueValues.get("sparse_vector")));
+            Assertions.assertEquals("[1.0,2.0,3.0,4.0]", stripCsvQuotes(valueValues.get("float16_vector")));
+            Assertions.assertEquals("[1.0,2.0,3.0,4.0]", stripCsvQuotes(valueValues.get("bfloat16_vector")));
+            Assertions.assertEquals("[1, 2, 3, 4]", stripCsvQuotes(valueValues.get("int8_vector")));
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    void testWriteCSVNullableVectorsUseCustomNullKey() {
+        try {
+            final String nullKey = "NULL";
+            LocalBulkWriter localBulkWriter = newNullableVectorCsvWriter(nullKey);
+            localBulkWriter.appendRow(buildNullableVectorRow(1, true));
+            localBulkWriter.commit(false);
+
+            List<String> lines = Files.readAllLines(Paths.get(localBulkWriter.getBatchFiles().get(0).get(0)), StandardCharsets.UTF_8);
+            Assertions.assertEquals(2, lines.size());
+            Map<String, String> nullValues = readPipeDelimitedRow(lines.get(0), lines.get(1));
+
+            for (String field : NULLABLE_VECTOR_FIELDS) {
+                Assertions.assertEquals(String.format("\"%s\"", nullKey), nullValues.get(field));
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
+    private static LocalBulkWriter newNullableVectorCsvWriter(String nullKey) throws IOException {
+        LocalBulkWriterParam.Builder builder = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(buildNullableVectorSchema())
+                .withLocalPath("/tmp/bulk_writer")
+                .withFileType(BulkFileType.CSV)
+                .withConfig("sep", "|");
+        if (nullKey != null) {
+            builder.withConfig("nullkey", nullKey);
+        }
+        return new LocalBulkWriter(builder.build());
+    }
+
+    private static CreateCollectionReq.CollectionSchema buildNullableVectorSchema() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("float_vector")
+                .dataType(DataType.FloatVector)
+                .dimension(4)
+                .isNullable(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("binary_vector")
+                .dataType(DataType.BinaryVector)
+                .dimension(8)
+                .isNullable(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("sparse_vector")
+                .dataType(DataType.SparseFloatVector)
+                .isNullable(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("float16_vector")
+                .dataType(DataType.Float16Vector)
+                .dimension(4)
+                .isNullable(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("bfloat16_vector")
+                .dataType(DataType.BFloat16Vector)
+                .dimension(4)
+                .isNullable(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("int8_vector")
+                .dataType(DataType.Int8Vector)
+                .dimension(4)
+                .isNullable(true)
+                .build());
+        return schema;
+    }
+
+    private static JsonObject buildNullableVectorRow(long id, boolean allNull) {
+        JsonObject row = new JsonObject();
+        row.addProperty("id", id);
+        if (allNull) {
+            for (String field : NULLABLE_VECTOR_FIELDS) {
+                row.add(field, JsonNull.INSTANCE);
+            }
+            return row;
+        }
+
+        List<Float> vector = Arrays.asList(1.0f, 2.0f, 3.0f, 4.0f);
+        SortedMap<Long, Float> sparse = new TreeMap<>();
+        sparse.put(1L, 0.5f);
+        row.add("float_vector", JsonUtils.toJsonTree(vector));
+        row.add("binary_vector", JsonUtils.toJsonTree(new byte[]{1}));
+        row.add("sparse_vector", JsonUtils.toJsonTree(sparse));
+        row.add("float16_vector", JsonUtils.toJsonTree(Float16Utils.f32VectorToFp16Buffer(vector).array()));
+        row.add("bfloat16_vector", JsonUtils.toJsonTree(Float16Utils.f32VectorToBf16Buffer(vector).array()));
+        row.add("int8_vector", JsonUtils.toJsonTree(new byte[]{1, 2, 3, 4}));
+        return row;
+    }
+
+    private static Map<String, String> readPipeDelimitedRow(String headerLine, String rowLine) {
+        String[] headers = headerLine.split("\\|", -1);
+        String[] values = rowLine.split("\\|", -1);
+        Assertions.assertEquals(headers.length, values.length);
+
+        Map<String, String> row = new HashMap<>();
+        for (int i = 0; i < headers.length; i++) {
+            row.put(headers[i], values[i]);
+        }
+        return row;
+    }
+
+    private static String stripCsvQuotes(String value) {
+        if (value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1).replace("\"\"", "\"");
+        }
+        return value;
     }
 
     private static void verifyJsonString(String s1, String s2) {
