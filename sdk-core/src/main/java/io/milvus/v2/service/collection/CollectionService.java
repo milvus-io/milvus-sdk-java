@@ -280,6 +280,7 @@ public class CollectionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Add field to collection: '%s' in database: '%s'", collectionName, dbName);
+
         AddCollectionFieldRequest.Builder builder = AddCollectionFieldRequest.newBuilder()
                 .setCollectionName(collectionName);
         if (StringUtils.isNotEmpty(dbName)) {
@@ -287,7 +288,7 @@ public class CollectionService extends BaseService {
         }
 
         CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
-        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema);
+        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true);
         builder.setSchema(grpcFieldSchema.toByteString());
 
         Status response = blockingStub.addCollectionField(builder.build());
@@ -675,4 +676,5 @@ public class CollectionService extends BaseService {
             }
         }
     }
+
 }

@@ -1199,18 +1199,38 @@ public class ParamUtils {
 
     private static FieldData genFieldData(FieldType fieldType, List<?> objects, boolean isDynamic) {
         return genFieldData(fieldType.getName(), fieldType.getDataType(), fieldType.getElementType(),
-                fieldType.isNullable(), fieldType.getDefaultValue(), objects, isDynamic);
+                fieldType.isNullable(), fieldType.getDefaultValue(), objects, isDynamic, fieldType.getDimension());
     }
 
     public static FieldData genFieldData(String fieldName, DataType dataType, DataType elementType, boolean isNullable,
                                          Object defaultVal, List<?> objects, boolean isDynamic) {
+        return genFieldData(fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, 0);
+    }
+
+    public static FieldData genFieldData(String fieldName, DataType dataType, DataType elementType, boolean isNullable,
+                                         Object defaultVal, List<?> objects, boolean isDynamic, int dimension) {
         if (objects == null) {
             throw new ParamException("Cannot generate FieldData from null object");
         }
 
         FieldData.Builder builder = FieldData.newBuilder();
         if (isVectorDataType(dataType)) {
+            boolean allVectorValuesNull = false;
+            if (isNullable) {
+                List<Object> tempObjects = new ArrayList<>();
+                for (Object obj : objects) {
+                    builder.addValidData(obj != null);
+                    if (obj != null) {
+                        tempObjects.add(obj);
+                    }
+                }
+                objects = tempObjects;
+                allVectorValuesNull = objects.isEmpty();
+            }
             VectorField vectorField = genVectorField(dataType, objects);
+            if (allVectorValuesNull && dimension > 0 && vectorField.getDim() == 0) {
+                vectorField = vectorField.toBuilder().setDim(dimension).build();
+            }
             return builder.setFieldName(fieldName).setType(dataType).setVectors(vectorField).build();
         } else {
             if (isNullable || defaultVal != null) {
@@ -1234,6 +1254,22 @@ public class ParamUtils {
 
     @SuppressWarnings("unchecked")
     public static VectorField genVectorField(DataType dataType, List<?> objects) {
+        if (objects.isEmpty()) {
+            if (dataType == DataType.FloatVector) {
+                return VectorField.newBuilder().setDim(0).setFloatVector(FloatArray.newBuilder().build()).build();
+            } else if (dataType == DataType.BinaryVector) {
+                return VectorField.newBuilder().setDim(0).setBinaryVector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.Float16Vector) {
+                return VectorField.newBuilder().setDim(0).setFloat16Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.BFloat16Vector) {
+                return VectorField.newBuilder().setDim(0).setBfloat16Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.Int8Vector) {
+                return VectorField.newBuilder().setDim(0).setInt8Vector(ByteString.EMPTY).build();
+            } else if (dataType == DataType.SparseFloatVector) {
+                return VectorField.newBuilder().setDim(0).setSparseFloatVector(SparseFloatArray.newBuilder().build()).build();
+            }
+        }
+
         if (dataType == DataType.FloatVector) {
             List<Float> floats = new ArrayList<>();
             // each object is List<Float>
