@@ -1,5 +1,9 @@
 # Changelog
 
+## milvus-sdk-java 2.6.21 (2026-05-18)
+### Feature
+- Support nullable vectors
+
 ## milvus-sdk-java 2.6.20 (2026-05-15)
 ### Feature
 - Support field-level operations for upsert
