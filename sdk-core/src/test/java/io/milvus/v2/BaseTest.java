@@ -228,6 +228,36 @@ public class BaseTest {
                                 .build())
                         .build());
 
+        // cdc api
+        ReplicateConfiguration replicateConfiguration = ReplicateConfiguration.newBuilder()
+                .addClusters(MilvusCluster.newBuilder()
+                        .setClusterId("source_cluster")
+                        .setConnectionParam(ConnectionParam.newBuilder()
+                                .setUri("http://source.example.com:19530")
+                                .setToken("source-token")
+                                .build())
+                        .addPchannels("by-dev-rootcoord-dml_0")
+                        .build())
+                .addClusters(MilvusCluster.newBuilder()
+                        .setClusterId("target_cluster")
+                        .setConnectionParam(ConnectionParam.newBuilder()
+                                .setUri("http://target.example.com:19530")
+                                .setToken("target-token")
+                                .build())
+                        .addPchannels("by-dev-rootcoord-dml_1")
+                        .build())
+                .addCrossClusterTopology(CrossClusterTopology.newBuilder()
+                        .setSourceClusterId("source_cluster")
+                        .setTargetClusterId("target_cluster")
+                        .build())
+                .build();
+        when(blockingStub.getReplicateConfiguration(any())).thenReturn(
+                GetReplicateConfigurationResponse.newBuilder()
+                        .setStatus(successStatus)
+                        .setConfiguration(replicateConfiguration)
+                        .build());
+        when(blockingStub.updateReplicateConfiguration(any())).thenReturn(successStatus);
+
         // snapshot api
         when(blockingStub.createSnapshot(any())).thenReturn(successStatus);
         when(blockingStub.dropSnapshot(any())).thenReturn(successStatus);
