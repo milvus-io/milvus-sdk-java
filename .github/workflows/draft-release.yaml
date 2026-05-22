@@ -1,0 +1,51 @@
+name: Create draft release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  draft-release:
+    name: Create draft release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare release metadata
+        id: release-info
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          if ! echo "$RELEASE_TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Tag $RELEASE_TAG is not an exact release tag in vX.Y.Z format. Skipping draft release."
+            echo "is_release_tag=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          version="${RELEASE_TAG#v}"
+          release_date="$(date -u +%F)"
+          milvus_minor="$(echo "$version" | cut -d. -f1,2)"
+          echo "is_release_tag=true" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "release_date=${release_date}" >> "$GITHUB_OUTPUT"
+          echo "milvus_minor=${milvus_minor}" >> "$GITHUB_OUTPUT"
+      - name: Create draft release
+        if: steps.release-info.outputs.is_release_tag == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: milvus-sdk-java-${{ steps.release-info.outputs.version }}
+          body: |
+            Release date: ${{ steps.release-info.outputs.release_date }}
+            Compatible with Milvus v${{ steps.release-info.outputs.milvus_minor }}.x
+          draft: true
+          allowUpdates: true
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
