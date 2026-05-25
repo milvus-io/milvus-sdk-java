@@ -24,6 +24,13 @@ public class CrossClusterTopology {
     private String sourceClusterId;
     private String targetClusterId;
 
+    public static CrossClusterTopology fromGRPC(io.milvus.grpc.CrossClusterTopology topology) {
+        return CrossClusterTopology.builder()
+                .sourceClusterId(topology.getSourceClusterId())
+                .targetClusterId(topology.getTargetClusterId())
+                .build();
+    }
+
     public io.milvus.grpc.CrossClusterTopology toGRPC() {
         return io.milvus.grpc.CrossClusterTopology.newBuilder()
                 .setSourceClusterId(this.sourceClusterId)
