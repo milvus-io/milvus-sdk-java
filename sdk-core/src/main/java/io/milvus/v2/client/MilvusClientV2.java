@@ -1173,6 +1173,34 @@ public class MilvusClientV2 {
     }
 
     /**
+     * trigger a flush action for all collections in server side
+     *
+     * @param request flush all request
+     * @return FlushAllResp
+     */
+    public FlushAllResp flushAll(FlushAllReq request) {
+        FlushAllResp response = rpcUtils.retry(() -> utilityService.flushAll(this.getRpcStub(), request));
+
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub =
+                MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
+        if (request.getWaitFlushedTimeoutMs() > 0L) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getWaitFlushedTimeoutMs(), TimeUnit.MILLISECONDS);
+        }
+        utilityService.waitFlushAll(tempBlockingStub, response, request);
+        return response;
+    }
+
+    /**
+     * Gets the flush all state.
+     *
+     * @param request get flush all state request
+     * @return GetFlushAllStateResp
+     */
+    public GetFlushAllStateResp getFlushAllState(GetFlushAllStateReq request) {
+        return rpcUtils.retry(() -> utilityService.getFlushAllState(this.getRpcStub(), request));
+    }
+
+    /**
      * Gets the information of persistent segments from data node, including row count,
      * persistence state(growing or flushed), etc.
      *
