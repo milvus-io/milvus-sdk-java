@@ -37,6 +37,28 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class UtilityService extends BaseService {
+    public GetServerVersionResp getServerVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                 GetServerVersionReq request) {
+        if (Boolean.TRUE.equals(request.getDetail())) {
+            ConnectResponse response = blockingStub.connect(ConnectRequest.newBuilder().build());
+            rpcUtils.handleResponse("Get server version", response.getStatus());
+            ServerInfo info = response.getServerInfo();
+            return GetServerVersionResp.builder()
+                    .version(info.getBuildTags())
+                    .buildTime(info.getBuildTime())
+                    .gitCommit(info.getGitCommit())
+                    .goVersion(info.getGoVersion())
+                    .deployMode(info.getDeployMode())
+                    .build();
+        }
+
+        GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
+        rpcUtils.handleResponse("Get server version", response.getStatus());
+        return GetServerVersionResp.builder()
+                .version(response.getVersion())
+                .build();
+    }
+
     public FlushResp flush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushReq request) {
         String dbName = request.getDatabaseName();
         List<String> collectionNames = request.getCollectionNames();

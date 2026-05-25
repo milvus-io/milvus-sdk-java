@@ -232,12 +232,6 @@ public class ClientUtils {
         }
     }
 
-    public String getServerVersion(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
-        GetVersionResponse response = blockingStub.getVersion(GetVersionRequest.newBuilder().build());
-        rpcUtils.handleResponse("Get server version", response.getStatus());
-        return response.getVersion();
-    }
-
     public String getHostName() {
         try {
             InetAddress address = InetAddress.getLocalHost();
