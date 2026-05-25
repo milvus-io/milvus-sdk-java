@@ -26,6 +26,8 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.utility.request.GetServerVersionReq;
+import io.milvus.v2.service.utility.response.GetServerVersionResp;
 import io.milvus.v2.service.vector.request.GetReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -46,6 +48,14 @@ public class SimpleExample {
                 .build();
         MilvusClientV2 client = new MilvusClientV2(config);
 
+        GetServerVersionResp verResp = client.getServerVersionV2(GetServerVersionReq.builder()
+                .detail(true).build());
+        System.out.println("Server version: " + verResp.getVersion());
+        System.out.println("Server build time: " + verResp.getBuildTime());
+        System.out.println("Server git commit: " + verResp.getGitCommit());
+        System.out.println("Server go version: " + verResp.getGoVersion());
+        System.out.println("Server deploy mode: " + verResp.getDeployMode());
+
         String collectionName = "java_sdk_example_simple_v2";
         // Drop collection if exists
         client.dropCollection(DropCollectionReq.builder()
@@ -57,7 +67,7 @@ public class SimpleExample {
                 .collectionName(collectionName)
                 .dimension(4)
                 .build());
-        System.out.printf("Collection '%s' created\n", collectionName);
+        System.out.printf("\nCollection '%s' created\n", collectionName);
 
         // Insert some data
         List<JsonObject> rows = new ArrayList<>();
