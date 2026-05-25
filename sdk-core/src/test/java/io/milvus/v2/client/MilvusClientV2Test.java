@@ -52,6 +52,7 @@ import io.milvus.v2.service.cdc.request.CrossClusterTopology;
 import io.milvus.v2.service.cdc.request.MilvusCluster;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
+import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
@@ -515,6 +516,7 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(ReplicateConfiguration.class.getName(), config);
         VerifyClass(UpdateReplicateConfigurationReq.class.getName(), config);
 
+        VerifyClass(GetReplicateConfigurationResp.class.getName(), config);
         VerifyClass(UpdateReplicateConfigurationResp.class.getName(), config);
 
         // io.milvus/v2/service/collection

@@ -19,14 +19,30 @@
 
 package io.milvus.v2.service.cdc;
 
+import io.milvus.grpc.GetReplicateConfigurationRequest;
+import io.milvus.grpc.GetReplicateConfigurationResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.Status;
 import io.milvus.grpc.UpdateReplicateConfigurationRequest;
 import io.milvus.v2.service.BaseService;
+import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
+import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
 
 public class CDCService extends BaseService {
+    public GetReplicateConfigurationResp getReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
+        GetReplicateConfigurationRequest request = GetReplicateConfigurationRequest.newBuilder().build();
+
+        String title = "GetReplicateConfiguration";
+
+        GetReplicateConfigurationResponse response = blockingStub.getReplicateConfiguration(request);
+        rpcUtils.handleResponse(title, response.getStatus());
+        return GetReplicateConfigurationResp.builder()
+                .replicateConfiguration(ReplicateConfiguration.fromGRPC(response.getConfiguration()))
+                .build();
+    }
+
     public UpdateReplicateConfigurationResp updateReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateReplicateConfigurationReq requestParam) {
         UpdateReplicateConfigurationRequest request = UpdateReplicateConfigurationRequest.newBuilder()
                 .setReplicateConfiguration(requestParam.getReplicateConfiguration().toGRPC())
