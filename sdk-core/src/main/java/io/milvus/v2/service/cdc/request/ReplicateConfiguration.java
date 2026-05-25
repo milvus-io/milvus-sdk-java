@@ -19,11 +19,26 @@
 
 package io.milvus.v2.service.cdc.request;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReplicateConfiguration {
     private List<MilvusCluster> clusters;
     private List<CrossClusterTopology> crossClusterTopologies;
+
+    public static ReplicateConfiguration fromGRPC(io.milvus.grpc.ReplicateConfiguration configuration) {
+        List<MilvusCluster> clusters = new ArrayList<>();
+        configuration.getClustersList().forEach(cluster -> clusters.add(MilvusCluster.fromGRPC(cluster)));
+
+        List<CrossClusterTopology> crossClusterTopologies = new ArrayList<>();
+        configuration.getCrossClusterTopologyList().forEach(topology ->
+                crossClusterTopologies.add(CrossClusterTopology.fromGRPC(topology)));
+
+        return ReplicateConfiguration.builder()
+                .clusters(clusters)
+                .crossClusterTopologies(crossClusterTopologies)
+                .build();
+    }
 
     public io.milvus.grpc.ReplicateConfiguration toGRPC() {
         io.milvus.grpc.ReplicateConfiguration.Builder builder = io.milvus.grpc.ReplicateConfiguration.newBuilder();

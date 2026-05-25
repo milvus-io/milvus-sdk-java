@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.cdc.request;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MilvusCluster {
@@ -26,6 +27,16 @@ public class MilvusCluster {
     private String uri;
     private String token;
     private List<String> pchannels;
+
+    public static MilvusCluster fromGRPC(io.milvus.grpc.MilvusCluster cluster) {
+        io.milvus.grpc.ConnectionParam connectionParam = cluster.getConnectionParam();
+        return MilvusCluster.builder()
+                .clusterId(cluster.getClusterId())
+                .uri(connectionParam.getUri())
+                .token(connectionParam.getToken())
+                .pchannels(new ArrayList<>(cluster.getPchannelsList()))
+                .build();
+    }
 
     public io.milvus.grpc.MilvusCluster toGRPC() {
         io.milvus.grpc.ConnectionParam.Builder connectionParamBuilder = io.milvus.grpc.ConnectionParam.newBuilder()
