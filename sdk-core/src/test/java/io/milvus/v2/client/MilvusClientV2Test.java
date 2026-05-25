@@ -666,6 +666,7 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(DropAliasReq.class.getName(), config);
         VerifyClass(FlushReq.class.getName(), config);
         VerifyClass(GetCompactionStateReq.class.getName(), config);
+        VerifyClass(GetServerVersionReq.class.getName(), config);
         VerifyClass(GetPersistentSegmentInfoReq.class.getName(), config);
         VerifyClass(GetQuerySegmentInfoReq.class.getName(), config);
         VerifyClass(ListAliasesReq.class.getName(), config);
@@ -675,6 +676,7 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(DescribeAliasResp.class.getName(), config);
         VerifyClass(FlushResp.class.getName(), config);
         VerifyClass(GetCompactionStateResp.class.getName(), config);
+        VerifyClass(GetServerVersionResp.class.getName(), config);
         VerifyClass(GetPersistentSegmentInfoResp.class.getName(), config);
         VerifyClass(GetPersistentSegmentInfoResp.PersistentSegmentInfo.class.getName(), config);
         VerifyClass(GetQuerySegmentInfoResp.class.getName(), config);
