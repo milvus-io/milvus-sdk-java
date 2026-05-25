@@ -64,10 +64,7 @@ import io.milvus.v2.service.resourcegroup.request.*;
 import io.milvus.v2.service.resourcegroup.response.DescribeResourceGroupResp;
 import io.milvus.v2.service.resourcegroup.response.ListResourceGroupsResp;
 import io.milvus.v2.service.utility.request.*;
-import io.milvus.v2.service.utility.response.CheckHealthResp;
-import io.milvus.v2.service.utility.response.CompactResp;
-import io.milvus.v2.service.utility.response.GetPersistentSegmentInfoResp;
-import io.milvus.v2.service.utility.response.GetQuerySegmentInfoResp;
+import io.milvus.v2.service.utility.response.*;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
@@ -309,6 +306,25 @@ class MilvusClientV2DockerTest {
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         Assertions.assertEquals(1, queryResults.size());
         return (long) queryResults.get(0).getEntity().get("count(*)");
+    }
+
+    @Test
+    void testGetServerVersion() {
+        GetServerVersionResp simpleResp = client.getServerVersionV2(GetServerVersionReq.builder().build());
+        Assertions.assertTrue(StringUtils.isNotBlank(simpleResp.getVersion()));
+        Assertions.assertNull(simpleResp.getBuildTime());
+        Assertions.assertNull(simpleResp.getGitCommit());
+        Assertions.assertNull(simpleResp.getGoVersion());
+        Assertions.assertNull(simpleResp.getDeployMode());
+
+        GetServerVersionResp detailResp = client.getServerVersionV2(GetServerVersionReq.builder()
+                .detail(true)
+                .build());
+        Assertions.assertTrue(StringUtils.isNotBlank(detailResp.getVersion()));
+        Assertions.assertTrue(StringUtils.isNotBlank(detailResp.getBuildTime()));
+        Assertions.assertTrue(StringUtils.isNotBlank(detailResp.getGitCommit()));
+        Assertions.assertTrue(StringUtils.isNotBlank(detailResp.getGoVersion()));
+        Assertions.assertEquals("STANDALONE", detailResp.getDeployMode());
     }
 
     @Test
