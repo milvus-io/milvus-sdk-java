@@ -43,6 +43,7 @@ import java.util.*;
 
 @Testcontainers(disabledWithoutDocker = true)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@Disabled("Milvus 2.6 server does not support nullable vector yet")
 class NullableVectorTest {
 
     private static MilvusClientV2 client;

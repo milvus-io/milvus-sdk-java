@@ -1426,7 +1426,18 @@ public class MilvusClientV2 {
      * @return String
      */
     public String getServerVersion() {
-        return rpcUtils.retry(() -> clientUtils.getServerVersion(this.getRpcStub()));
+        return rpcUtils.retry(() -> utilityService.getServerVersion(this.getRpcStub(),
+                GetServerVersionReq.builder().build()).getVersion());
+    }
+
+    /**
+     * Get server version information
+     *
+     * @param request get server version request
+     * @return GetServerVersionResp
+     */
+    public GetServerVersionResp getServerVersionV2(GetServerVersionReq request) {
+        return rpcUtils.retry(() -> utilityService.getServerVersion(this.getRpcStub(), request));
     }
 
     /**
