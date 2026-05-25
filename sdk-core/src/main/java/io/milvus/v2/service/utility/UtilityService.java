@@ -89,6 +89,40 @@ public class UtilityService extends BaseService {
                 .build();
     }
 
+    public FlushAllResp flushAll(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushAllReq request) {
+        String dbName = request.getDatabaseName();
+        String title = String.format("Flush all in database: '%s'", dbName);
+
+        FlushAllRequest.Builder builder = FlushAllRequest.newBuilder();
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        FlushAllResponse response = blockingStub.flushAll(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return FlushAllResp.builder()
+                .flushAllTs(response.getFlushAllTs())
+                .build();
+    }
+
+    public GetFlushAllStateResp getFlushAllState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                 GetFlushAllStateReq request) {
+        String dbName = request.getDatabaseName();
+        String title = String.format("Get flush all state in database: '%s'", dbName);
+
+        GetFlushAllStateRequest.Builder builder = GetFlushAllStateRequest.newBuilder()
+                .setFlushAllTs(request.getFlushAllTs());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        GetFlushAllStateResponse response = blockingStub.getFlushAllState(builder.build());
+        rpcUtils.handleResponse(title, response.getStatus());
+
+        return GetFlushAllStateResp.builder()
+                .flushed(response.getFlushed())
+                .build();
+    }
+
     // this method is internal use, not expose to user
     public Void waitFlush(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushResp flushResp) {
         Map<String, List<Long>> collectionSegmentIDs = flushResp.getCollectionSegmentIDs();
@@ -108,12 +142,43 @@ public class UtilityService extends BaseService {
                     try {
                         TimeUnit.SECONDS.sleep(1);
                     } catch (InterruptedException t) {
-                        System.out.println("Interrupted: " + t.getMessage());
+                        Thread.currentThread().interrupt();
+                        logger.warn("Interrupted while waiting for flush", t);
                         break;
                     }
                 }
             }
         });
+
+        return null;
+    }
+
+    // this method is internal use, not expose to user
+    public Void waitFlushAll(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, FlushAllResp flushAllResp,
+                             FlushAllReq request) {
+        boolean flushed = false;
+        long start = System.currentTimeMillis();
+        while (!flushed) {
+            GetFlushAllStateResp flushAllStateResp = getFlushAllState(blockingStub, GetFlushAllStateReq.builder()
+                    .databaseName(request.getDatabaseName())
+                    .flushAllTs(flushAllResp.getFlushAllTs())
+                    .build());
+
+            flushed = Boolean.TRUE.equals(flushAllStateResp.getFlushed());
+            if (!flushed) {
+                Long timeout = request.getWaitFlushedTimeoutMs();
+                if (timeout != null && timeout > 0L && System.currentTimeMillis() - start > timeout) {
+                    throw new MilvusClientException(ErrorCode.CLIENT_ERROR,
+                            "wait for flush all timeout, flush_all_ts: " + flushAllResp.getFlushAllTs());
+                }
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException t) {
+                    Thread.currentThread().interrupt();
+                    throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "Interrupted while waiting for flush all");
+                }
+            }
+        }
 
         return null;
     }
