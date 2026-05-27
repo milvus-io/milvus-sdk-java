@@ -23,11 +23,13 @@ public class RenameCollectionReq {
     private String databaseName;
     private String collectionName;
     private String newCollectionName;
+    private String targetDbName;
 
     private RenameCollectionReq(RenameCollectionReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.newCollectionName = builder.newCollectionName;
+        this.targetDbName = builder.targetDbName;
     }
 
     public String getDatabaseName() {
@@ -54,12 +56,21 @@ public class RenameCollectionReq {
         this.newCollectionName = newCollectionName;
     }
 
+    public String getTargetDbName() {
+        return targetDbName;
+    }
+
+    public void setTargetDbName(String targetDbName) {
+        this.targetDbName = targetDbName;
+    }
+
     @Override
     public String toString() {
         return "RenameCollectionReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", newCollectionName='" + newCollectionName + '\'' +
+                ", targetDbName='" + targetDbName + '\'' +
                 '}';
     }
 
@@ -71,6 +82,7 @@ public class RenameCollectionReq {
         private String databaseName;
         private String collectionName;
         private String newCollectionName;
+        private String targetDbName;
 
         private RenameCollectionReqBuilder() {
         }
@@ -87,6 +99,11 @@ public class RenameCollectionReq {
 
         public RenameCollectionReqBuilder newCollectionName(String newCollectionName) {
             this.newCollectionName = newCollectionName;
+            return this;
+        }
+
+        public RenameCollectionReqBuilder targetDbName(String targetDbName) {
+            this.targetDbName = targetDbName;
             return this;
         }
 
