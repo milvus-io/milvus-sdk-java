@@ -58,6 +58,7 @@ import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.DescribeReplicasResp;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.collection.response.GetLoadStateResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.database.request.*;
 import io.milvus.v2.service.database.response.DescribeDatabaseResp;
@@ -542,6 +543,7 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(DropCollectionReq.class.getName(), config);
         VerifyClass(GetCollectionStatsReq.class.getName(), config);
         VerifyClass(GetLoadStateReq.class.getName(), config);
+        VerifyClass(GetLoadStateResp.class.getName(), config);
         VerifyClass(HasCollectionReq.class.getName(), config);
         VerifyClass(ListCollectionsReq.class.getName(), config);
         config.setIgnoredMethods(Collections.singletonList("getAsync"));

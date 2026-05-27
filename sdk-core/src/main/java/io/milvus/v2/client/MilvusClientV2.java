@@ -40,6 +40,7 @@ import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.DescribeReplicasResp;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.collection.response.GetLoadStateResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.database.DatabaseService;
 import io.milvus.v2.service.database.request.*;
@@ -587,6 +588,16 @@ public class MilvusClientV2 {
      */
     public Boolean getLoadState(GetLoadStateReq request) {
         return rpcUtils.retry(() -> collectionService.getLoadState(this.getRpcStub(), request));
+    }
+
+    /**
+     * Gets detailed load state information for a collection or partition in Milvus.
+     *
+     * @param request get load state request
+     * @return GetLoadStateResp
+     */
+    public GetLoadStateResp getLoadStateV2(GetLoadStateReq request) {
+        return rpcUtils.retry(() -> collectionService.getLoadStateV2(this.getRpcStub(), request));
     }
 
     /**
