@@ -938,6 +938,13 @@ public class MilvusClientV2 {
      */
     public void updatePassword(UpdatePasswordReq request) {
         rpcUtils.retry(() -> rbacService.updatePassword(this.getRpcStub(), request));
+        if (Boolean.TRUE.equals(request.getResetConnection()) && connectConfig != null) {
+            connectConfig.setUsername(request.getUserName());
+            connectConfig.setPassword(request.getNewPassword());
+            connectConfig.setToken(null);
+            connect(connectConfig);
+            initServices(connectConfig.getDbName());
+        }
     }
 
     /**
