@@ -199,7 +199,8 @@ public class UtilityService extends BaseService {
 
         ManualCompactionRequest.Builder builder = ManualCompactionRequest.newBuilder()
                 .setCollectionID(descResponse.getCollectionID())
-                .setMajorCompaction(request.getIsClustering());
+                .setMajorCompaction(request.getIsClustering())
+                .setL0Compaction(request.getIsL0());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }

@@ -23,12 +23,14 @@ public class CompactReq {
     private String databaseName;
     private String collectionName;
     private Boolean isClustering = Boolean.FALSE;
+    private Boolean isL0 = Boolean.FALSE;
     private Long targetSize; // in MB, null means server default
 
     private CompactReq(CompactReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
         this.isClustering = builder.isClustering;
+        this.isL0 = builder.isL0;
         this.targetSize = builder.targetSize;
     }
 
@@ -60,6 +62,14 @@ public class CompactReq {
         this.isClustering = isClustering;
     }
 
+    public Boolean getIsL0() {
+        return isL0;
+    }
+
+    public void setIsL0(Boolean isL0) {
+        this.isL0 = isL0;
+    }
+
     public Long getTargetSize() {
         return targetSize;
     }
@@ -74,6 +84,7 @@ public class CompactReq {
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", isClustering=" + isClustering +
+                ", isL0=" + isL0 +
                 ", targetSize=" + targetSize +
                 '}';
     }
@@ -82,6 +93,7 @@ public class CompactReq {
         private String databaseName;
         private String collectionName;
         private Boolean isClustering = Boolean.FALSE;
+        private Boolean isL0 = Boolean.FALSE;
         private Long targetSize;
 
         public CompactReqBuilder databaseName(String databaseName) {
@@ -96,6 +108,11 @@ public class CompactReq {
 
         public CompactReqBuilder isClustering(Boolean isClustering) {
             this.isClustering = isClustering;
+            return this;
+        }
+
+        public CompactReqBuilder isL0(Boolean isL0) {
+            this.isL0 = isL0;
             return this;
         }
 
