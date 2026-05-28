@@ -21,16 +21,43 @@ package io.milvus.v2.service.cdc;
 
 import io.milvus.grpc.GetReplicateConfigurationRequest;
 import io.milvus.grpc.GetReplicateConfigurationResponse;
+import io.milvus.grpc.GetReplicateInfoRequest;
+import io.milvus.grpc.GetReplicateInfoResponse;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.Status;
 import io.milvus.grpc.UpdateReplicateConfigurationRequest;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
+import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
+import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
+import org.apache.commons.lang3.StringUtils;
 
 public class CDCService extends BaseService {
+    public GetReplicateInfoResp getReplicateInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReplicateInfoReq requestParam) {
+        if (StringUtils.isEmpty(requestParam.getSourceClusterId())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "sourceClusterId cannot be null or empty");
+        }
+        if (StringUtils.isEmpty(requestParam.getTargetPchannel())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "targetPchannel cannot be null or empty");
+        }
+
+        GetReplicateInfoRequest request = GetReplicateInfoRequest.newBuilder()
+                .setSourceClusterId(requestParam.getSourceClusterId())
+                .setTargetPchannel(requestParam.getTargetPchannel())
+                .build();
+
+        GetReplicateInfoResponse response = blockingStub.getReplicateInfo(request);
+        return GetReplicateInfoResp.builder()
+                .checkpoint(response.hasCheckpoint() ? GetReplicateInfoResp.ReplicateCheckpoint.fromGRPC(response.getCheckpoint()) : null)
+                .salvageCheckpoint(response.hasSalvageCheckpoint() ? GetReplicateInfoResp.ReplicateCheckpoint.fromGRPC(response.getSalvageCheckpoint()) : null)
+                .build();
+    }
+
     public GetReplicateConfigurationResp getReplicateConfiguration(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         GetReplicateConfigurationRequest request = GetReplicateConfigurationRequest.newBuilder().build();
 
