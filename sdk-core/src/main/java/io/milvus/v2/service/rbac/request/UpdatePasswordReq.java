@@ -23,11 +23,13 @@ public class UpdatePasswordReq {
     private String userName;
     private String password;
     private String newPassword;
+    private Boolean resetConnection;
 
     private UpdatePasswordReq(UpdatePasswordReqBuilder builder) {
         this.userName = builder.userName;
         this.password = builder.password;
         this.newPassword = builder.newPassword;
+        this.resetConnection = builder.resetConnection;
     }
 
     public String getUserName() {
@@ -54,12 +56,21 @@ public class UpdatePasswordReq {
         this.newPassword = newPassword;
     }
 
+    public Boolean getResetConnection() {
+        return resetConnection;
+    }
+
+    public void setResetConnection(Boolean resetConnection) {
+        this.resetConnection = resetConnection;
+    }
+
     @Override
     public String toString() {
         return "UpdatePasswordReq{" +
                 "userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", newPassword='" + newPassword + '\'' +
+                ", resetConnection=" + resetConnection +
                 '}';
     }
 
@@ -71,6 +82,7 @@ public class UpdatePasswordReq {
         private String userName;
         private String password;
         private String newPassword;
+        private Boolean resetConnection = Boolean.FALSE;
 
         private UpdatePasswordReqBuilder() {
         }
@@ -87,6 +99,11 @@ public class UpdatePasswordReq {
 
         public UpdatePasswordReqBuilder newPassword(String newPassword) {
             this.newPassword = newPassword;
+            return this;
+        }
+
+        public UpdatePasswordReqBuilder resetConnection(Boolean resetConnection) {
+            this.resetConnection = resetConnection;
             return this;
         }
 
