@@ -20,14 +20,63 @@
 package io.milvus.v2.service.cdc;
 
 import io.milvus.v2.BaseTest;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
+import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CDCServiceTest extends BaseTest {
+    @Test
+    void testGetReplicateInfo() {
+        GetReplicateInfoResp resp = client_v2.getReplicateInfo(GetReplicateInfoReq.builder()
+                .sourceClusterId("source_cluster")
+                .targetPchannel("by-dev-rootcoord-dml_0")
+                .build());
+
+        GetReplicateInfoResp.ReplicateCheckpoint checkpoint = resp.getCheckpoint();
+        assertNotNull(checkpoint);
+        assertEquals("source_cluster", checkpoint.getClusterId());
+        assertEquals("by-dev-rootcoord-dml_0", checkpoint.getPchannel());
+        assertEquals(1000L, checkpoint.getTimeTick());
+        assertNotNull(checkpoint.getMessageID());
+        assertEquals("message-id-1", checkpoint.getMessageID().getId());
+        assertEquals("RocksMQ", checkpoint.getMessageID().getWalName());
+
+        GetReplicateInfoResp.ReplicateCheckpoint salvageCheckpoint = resp.getSalvageCheckpoint();
+        assertNotNull(salvageCheckpoint);
+        assertEquals("source_cluster", salvageCheckpoint.getClusterId());
+        assertEquals("by-dev-rootcoord-dml_0", salvageCheckpoint.getPchannel());
+        assertEquals(2000L, salvageCheckpoint.getTimeTick());
+        assertNotNull(salvageCheckpoint.getMessageID());
+        assertEquals("message-id-2", salvageCheckpoint.getMessageID().getId());
+        assertEquals("Kafka", salvageCheckpoint.getMessageID().getWalName());
+    }
+
+    @Test
+    void testGetReplicateInfoValidatesSourceClusterId() {
+        MilvusClientException exception = assertThrows(MilvusClientException.class, () -> client_v2.getReplicateInfo(GetReplicateInfoReq.builder()
+                .sourceClusterId("")
+                .targetPchannel("by-dev-rootcoord-dml_0")
+                .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testGetReplicateInfoValidatesTargetPchannel() {
+        MilvusClientException exception = assertThrows(MilvusClientException.class, () -> client_v2.getReplicateInfo(GetReplicateInfoReq.builder()
+                .sourceClusterId("source_cluster")
+                .targetPchannel("")
+                .build()));
+        assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
     @Test
     void testGetReplicateConfiguration() {
         GetReplicateConfigurationResp resp = client_v2.getReplicateConfiguration();

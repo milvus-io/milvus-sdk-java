@@ -32,8 +32,10 @@ import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.v2.service.cdc.CDCService;
+import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
+import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
 import io.milvus.v2.service.collection.CollectionService;
 import io.milvus.v2.service.collection.request.*;
@@ -1493,6 +1495,10 @@ public class MilvusClientV2 {
      */
     public CheckHealthResp checkHealth() {
         return rpcUtils.retry(() -> utilityService.checkHealth(this.getRpcStub()));
+    }
+
+    public GetReplicateInfoResp getReplicateInfo(GetReplicateInfoReq request) {
+        return rpcUtils.retry(() -> cdcService.getReplicateInfo(this.getRpcStub(), request));
     }
 
     public GetReplicateConfigurationResp getReplicateConfiguration() {
