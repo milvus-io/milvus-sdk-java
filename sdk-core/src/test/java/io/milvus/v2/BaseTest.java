@@ -251,6 +251,29 @@ public class BaseTest {
                         .setTargetClusterId("target_cluster")
                         .build())
                 .build();
+        ReplicateCheckpoint replicateCheckpoint = ReplicateCheckpoint.newBuilder()
+                .setClusterId("source_cluster")
+                .setPchannel("by-dev-rootcoord-dml_0")
+                .setMessageId(MessageID.newBuilder()
+                        .setId("message-id-1")
+                        .setWALName(WALName.RocksMQ)
+                        .build())
+                .setTimeTick(1000L)
+                .build();
+        ReplicateCheckpoint salvageReplicateCheckpoint = ReplicateCheckpoint.newBuilder()
+                .setClusterId("source_cluster")
+                .setPchannel("by-dev-rootcoord-dml_0")
+                .setMessageId(MessageID.newBuilder()
+                        .setId("message-id-2")
+                        .setWALName(WALName.Kafka)
+                        .build())
+                .setTimeTick(2000L)
+                .build();
+        when(blockingStub.getReplicateInfo(any())).thenReturn(
+                GetReplicateInfoResponse.newBuilder()
+                        .setCheckpoint(replicateCheckpoint)
+                        .setSalvageCheckpoint(salvageReplicateCheckpoint)
+                        .build());
         when(blockingStub.getReplicateConfiguration(any())).thenReturn(
                 GetReplicateConfigurationResponse.newBuilder()
                         .setStatus(successStatus)
