@@ -26,6 +26,7 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.TestUtils;
+import io.milvus.grpc.LoadState;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.resourcegroup.NodeInfo;
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
@@ -48,6 +49,7 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.DescribeReplicasResp;
+import io.milvus.v2.service.collection.response.GetLoadStateResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.database.request.*;
 import io.milvus.v2.service.database.response.DescribeDatabaseResp;
@@ -2958,12 +2960,16 @@ class MilvusClientV2DockerTest {
                 .sync(true)
                 .build());
 
-        // specify the temp database name to get load state of partition
-        Assertions.assertTrue(client.getLoadState(GetLoadStateReq.builder()
+        // specify the temp database name to get detailed load state of partition
+        GetLoadStateResp loadStateResp = client.getLoadStateV2(GetLoadStateReq.builder()
                 .databaseName(tempDatabaseName)
                 .collectionName(randomCollectionName)
                 .partitionName(partitionName)
-                .build()));
+                .build());
+        Assertions.assertEquals(LoadState.LoadStateLoaded, loadStateResp.getState());
+        Assertions.assertEquals(LoadState.LoadStateLoaded.name(), loadStateResp.getStateName());
+        Assertions.assertNull(loadStateResp.getProgress());
+        Assertions.assertNull(loadStateResp.getRefreshProgress());
 
         // specify the temp database name to release partition
         client.releasePartitions(ReleasePartitionsReq.builder()
@@ -2986,19 +2992,37 @@ class MilvusClientV2DockerTest {
                 .fieldName(vectorFieldName)
                 .build());
 
-        // specify the temp database name to rename collection
+        // set target database name to rename collection
+        // the renamed collection will be moved to the target database, and the source collection will be deleted
         String newCollName = "new_name";
         client.renameCollection(RenameCollectionReq.builder()
                 .databaseName(tempDatabaseName)
                 .collectionName(randomCollectionName)
                 .newCollectionName(newCollName)
+                .targetDbName("default")
                 .build());
 
-        // specify the temp database name to drop collection
-        client.dropCollection(DropCollectionReq.builder()
+        Boolean has = client.hasCollection(HasCollectionReq.builder()
                 .databaseName(tempDatabaseName)
                 .collectionName(newCollName)
                 .build());
+        Assertions.assertFalse(has);
+
+        has = client.hasCollection(HasCollectionReq.builder()
+                .databaseName("default")
+                .collectionName(newCollName)
+                .build());
+        Assertions.assertTrue(has);
+
+        // since the renamed collection is in default db, no need to specify databaseName
+        client.dropCollection(DropCollectionReq.builder()
+                .collectionName(newCollName)
+                .build());
+
+        has = client.hasCollection(HasCollectionReq.builder()
+                .collectionName(newCollName)
+                .build());
+        Assertions.assertFalse(has);
     }
 
     @Test

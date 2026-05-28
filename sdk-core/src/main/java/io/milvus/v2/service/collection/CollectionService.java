@@ -30,6 +30,7 @@ import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.collection.response.DescribeReplicasResp;
 import io.milvus.v2.service.collection.response.GetCollectionStatsResp;
+import io.milvus.v2.service.collection.response.GetLoadStateResp;
 import io.milvus.v2.service.collection.response.ListCollectionsResp;
 import io.milvus.v2.service.index.IndexService;
 import io.milvus.v2.service.index.request.CreateIndexReq;
@@ -416,12 +417,16 @@ public class CollectionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String newName = request.getNewCollectionName();
+        String targetDbName = request.getTargetDbName();
         String title = String.format("Rename collection: '%s' to '%s' in database: '%s'", collectionName, newName, dbName);
         RenameCollectionRequest.Builder builder = RenameCollectionRequest.newBuilder()
                 .setOldName(collectionName)
                 .setNewName(newName);
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
+        }
+        if (StringUtils.isNotEmpty(targetDbName)) {
+            builder.setNewDBName(targetDbName);
         }
         Status status = blockingStub.renameCollection(builder.build());
         rpcUtils.handleResponse(title, status);
@@ -487,6 +492,24 @@ public class CollectionService extends BaseService {
     }
 
     public Boolean getLoadState(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
+        return getLoadStateResponse(blockingStub, request).getState() == LoadState.LoadStateLoaded;
+    }
+
+    public GetLoadStateResp getLoadStateV2(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetLoadStateReq request) {
+        GetLoadStateResponse response = getLoadStateResponse(blockingStub, request);
+        GetLoadStateResp.GetLoadStateRespBuilder respBuilder = GetLoadStateResp.builder()
+                .state(response.getState());
+        if (response.getState() == LoadState.LoadStateLoading) {
+            GetLoadingProgressResponse progressResponse = getLoadingProgressResponse(blockingStub, request);
+            respBuilder.progress(progressResponse.getProgress())
+                    .refreshProgress(progressResponse.getRefreshProgress());
+        }
+
+        return respBuilder.build();
+    }
+
+    private GetLoadStateResponse getLoadStateResponse(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                      GetLoadStateReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String partitionName = request.getPartitionName();
@@ -509,7 +532,26 @@ public class CollectionService extends BaseService {
             }
             throw new MilvusClientException(ErrorCode.SERVER_ERROR, msg);
         }
-        return response.getState() == LoadState.LoadStateLoaded;
+        return response;
+    }
+
+    private GetLoadingProgressResponse getLoadingProgressResponse(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                                  GetLoadStateReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String partitionName = request.getPartitionName();
+        GetLoadingProgressRequest.Builder builder = GetLoadingProgressRequest.newBuilder()
+                .setCollectionName(collectionName);
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+        if (StringUtils.isNotEmpty(partitionName)) {
+            builder.addPartitionNames(partitionName);
+        }
+        GetLoadingProgressResponse response = blockingStub.getLoadingProgress(builder.build());
+        String title = String.format("Get loading progress of collection: '%s' in database: '%s'", collectionName, dbName);
+        rpcUtils.handleResponse(title, response.getStatus());
+        return response;
     }
 
     public GetCollectionStatsResp getCollectionStats(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetCollectionStatsReq request) {
