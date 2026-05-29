@@ -366,25 +366,35 @@ class MilvusClientV2DockerTest {
                 .build());
 
         // master branch, getPersistentSegmentInfo cannot ensure the segment is returned after flush()
-        while (true) {
-            // get persistent segment info
-            GetPersistentSegmentInfoResp pSegInfo = client.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
+        long deadline = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(30);
+        GetPersistentSegmentInfoResp pSegInfo = null;
+        while (System.currentTimeMillis() < deadline) {
+            pSegInfo = client.getPersistentSegmentInfo(GetPersistentSegmentInfoReq.builder()
                     .collectionName(randomCollectionName)
                     .build());
-            if (pSegInfo.getSegmentInfos().size() == 0) {
-                continue;
+            if (!pSegInfo.getSegmentInfos().isEmpty()) {
+                break;
             }
-            Assertions.assertEquals(1, pSegInfo.getSegmentInfos().size());
-            GetPersistentSegmentInfoResp.PersistentSegmentInfo pInfo = pSegInfo.getSegmentInfos().get(0);
-            Assertions.assertTrue(pInfo.getSegmentID() > 0L);
-            Assertions.assertTrue(pInfo.getCollectionID() > 0L);
-            Assertions.assertTrue(pInfo.getPartitionID() > 0L);
-            Assertions.assertEquals(count, pInfo.getNumOfRows());
-            Assertions.assertEquals("Flushed", pInfo.getState());
-            Assertions.assertEquals("L1", pInfo.getLevel());
-//            Assertions.assertFalse(pInfo.getIsSorted());
-            break;
+            try {
+                TimeUnit.MILLISECONDS.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Assertions.fail("Interrupted while waiting for persistent segment info in collection: " + randomCollectionName);
+            }
         }
+        Assertions.assertNotNull(pSegInfo, "Timed out waiting for persistent segment info response");
+        Assertions.assertFalse(pSegInfo.getSegmentInfos().isEmpty(), "Timed out waiting for persistent segment info in collection: " + randomCollectionName);
+        Assertions.assertEquals(1, pSegInfo.getSegmentInfos().size());
+        GetPersistentSegmentInfoResp.PersistentSegmentInfo pInfo = pSegInfo.getSegmentInfos().get(0);
+        Assertions.assertTrue(pInfo.getSegmentID() > 0L);
+        Assertions.assertTrue(pInfo.getCollectionID() > 0L);
+        Assertions.assertTrue(pInfo.getPartitionID() > 0L);
+        Assertions.assertEquals(count, pInfo.getNumOfRows());
+        Assertions.assertEquals(randomCollectionName, pInfo.getCollectionName());
+        Assertions.assertEquals("Flushed", pInfo.getState());
+        Assertions.assertEquals("L1", pInfo.getLevel());
+        Assertions.assertNotNull(pInfo.getStorageVersion());
+//        Assertions.assertFalse(pInfo.getIsSorted());
 
         // compact
         CompactResp compactResp = client.compact(CompactReq.builder()
@@ -429,6 +439,7 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("L1", qInfo.getLevel());
         Assertions.assertEquals(1, qInfo.getNodeIDs().size());
         Assertions.assertTrue(qInfo.getNodeIDs().get(0) > 0L);
+        Assertions.assertNotNull(qInfo.getStorageVersion());
         Assertions.assertTrue(qInfo.getIsSorted());
 
         // create partition, upsert one row to the partition

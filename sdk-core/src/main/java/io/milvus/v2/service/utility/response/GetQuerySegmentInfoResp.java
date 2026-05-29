@@ -34,6 +34,7 @@ public class GetQuerySegmentInfoResp {
         private String state;
         private String level;
         private List<Long> nodeIDs;
+        private Long storageVersion;
         private Boolean isSorted;
 
         private QuerySegmentInfo(QuerySegmentInfoBuilder builder) {
@@ -47,6 +48,7 @@ public class GetQuerySegmentInfoResp {
             this.state = builder.state;
             this.level = builder.level;
             this.nodeIDs = builder.nodeIDs;
+            this.storageVersion = builder.storageVersion;
             this.isSorted = builder.isSorted;
         }
 
@@ -134,6 +136,14 @@ public class GetQuerySegmentInfoResp {
             this.nodeIDs = nodeIDs;
         }
 
+        public Long getStorageVersion() {
+            return storageVersion;
+        }
+
+        public void setStorageVersion(Long storageVersion) {
+            this.storageVersion = storageVersion;
+        }
+
         public Boolean getIsSorted() {
             return isSorted;
         }
@@ -155,6 +165,7 @@ public class GetQuerySegmentInfoResp {
                     ", state='" + state + '\'' +
                     ", level='" + level + '\'' +
                     ", nodeIDs=" + nodeIDs +
+                    ", storageVersion=" + storageVersion +
                     ", isSorted=" + isSorted +
                     '}';
         }
@@ -170,6 +181,7 @@ public class GetQuerySegmentInfoResp {
             private String state;
             private String level;
             private List<Long> nodeIDs = new ArrayList<>();
+            private Long storageVersion;
             private Boolean isSorted;
 
             public QuerySegmentInfoBuilder segmentID(Long segmentID) {
@@ -219,6 +231,11 @@ public class GetQuerySegmentInfoResp {
 
             public QuerySegmentInfoBuilder nodeIDs(List<Long> nodeIDs) {
                 this.nodeIDs = nodeIDs;
+                return this;
+            }
+
+            public QuerySegmentInfoBuilder storageVersion(Long storageVersion) {
+                this.storageVersion = storageVersion;
                 return this;
             }
 
