@@ -271,7 +271,7 @@ public class MilvusClientV2Test extends BaseTest {
             String obj = randomStr.generate(10);
             randomValues.put(field.getName(), obj);
         } else if (fieldType == Long.class || fieldType.getName().equals("long")) {
-            Long obj = (long) random.nextInt(RANDOM_BOUND);
+            Long obj = (long) random.nextInt(RANDOM_BOUND) + 1;
             randomValues.put(field.getName(), obj);
         } else if (fieldType == Integer.class || fieldType.getName().equals("int")) {
             Integer obj = random.nextInt(RANDOM_BOUND);
