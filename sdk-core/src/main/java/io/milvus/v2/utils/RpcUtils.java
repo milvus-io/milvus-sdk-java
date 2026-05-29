@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 public class RpcUtils {
 
@@ -123,9 +124,8 @@ public class RpcUtils {
         // method to check timeout
         long begin = System.currentTimeMillis();
         long maxRetryTimeoutMs = retryConfig.getMaxRetryTimeoutMs();
-        Callable<Boolean> timeoutChecker = () -> {
-            long current = System.currentTimeMillis();
-            long cost = (current - begin);
+        Function<Long, Boolean> timeoutChecker = (timePoint) -> {
+            long cost = (timePoint - begin);
             if (maxRetryTimeoutMs > 0 && cost >= maxRetryTimeoutMs) {
                 return Boolean.TRUE;
             }
@@ -154,24 +154,18 @@ public class RpcUtils {
                 // trigger topology refresh if connection is unavailable, and continue to retry
                 handleGlobalConnectionError(e);
 
-                try {
-                    if (timeoutChecker.call() == Boolean.TRUE) {
-                        String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
-                                maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
-                        logger.warn(msg);
-                        throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
-                    }
-                } catch (Exception ignored) {
+                if (timeoutChecker.apply(System.currentTimeMillis()) == Boolean.TRUE) {
+                    String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
+                            maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
+                    logger.warn(msg);
+                    throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
                 }
             } catch (MilvusClientException e) {
-                try {
-                    if (timeoutChecker.call() == Boolean.TRUE) {
-                        String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
-                                maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
-                        logger.warn(msg);
-                        throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
-                    }
-                } catch (Exception ignored) {
+                if (timeoutChecker.apply(System.currentTimeMillis()) == Boolean.TRUE) {
+                    String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, reason: %s",
+                            maxRetryTimeoutMs, maxRetryTimes, k, e.getMessage());
+                    logger.warn(msg);
+                    throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exit retry for timeout
                 }
 
                 if (retryConfig.isRetryOnRateLimit() &&
@@ -188,27 +182,37 @@ public class RpcUtils {
                 throw new MilvusClientException(ErrorCode.CLIENT_ERROR, e); // others error treated as client error
             }
 
-            try {
-                if (k >= maxRetryTimes) {
-                    // finish retry loop, return the response of the last retry
-                    String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
+            if (k >= maxRetryTimes) {
+                // finish retry loop, return the response of the last retry
+                String msg = String.format("Finish %d retry times, stop retry", maxRetryTimes);
+                logger.warn(msg);
+                throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exceed max time, exit retry
+            } else {
+                // check if sleep would exceed maxRetryTimeoutMs, if so, directly throw timeout
+                long futureTimePoint = System.currentTimeMillis() + retryIntervalMs;
+                if (timeoutChecker.apply(futureTimePoint) == Boolean.TRUE) {
+                    String msg = String.format("Retry timeout: %dms, maxRetry:%d, retries: %d, "
+                                    + "elapsed time + next interval %dms would exceed timeout",
+                            maxRetryTimeoutMs, maxRetryTimes, k, retryIntervalMs);
                     logger.warn(msg);
-                    throw new MilvusClientException(ErrorCode.TIMEOUT, msg); // exceed max time, exit retry
-                } else {
-                    // sleep for interval
-                    // print log, follow the pymilvus logic
-                    if (k > 3) {
-                        logger.warn(String.format("Retry(%d) with interval %dms", k, retryIntervalMs));
-                    }
-                    TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
+                    throw new MilvusClientException(ErrorCode.TIMEOUT, msg);
                 }
 
-                // reset the next interval value
-                retryIntervalMs = retryIntervalMs * retryConfig.getBackOffMultiplier();
-                if (retryIntervalMs > retryConfig.getMaxBackOffMs()) {
-                    retryIntervalMs = retryConfig.getMaxBackOffMs();
+                // sleep for interval
+                // print log, follow the pymilvus logic
+                if (k > 3) {
+                    logger.warn(String.format("Retry(%d) with interval %dms", k, retryIntervalMs));
                 }
-            } catch (Exception ignored) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
+                } catch (InterruptedException ignored) {
+                }
+            }
+
+            // reset the next interval value
+            retryIntervalMs = retryIntervalMs * retryConfig.getBackOffMultiplier();
+            if (retryIntervalMs > retryConfig.getMaxBackOffMs()) {
+                retryIntervalMs = retryConfig.getMaxBackOffMs();
             }
         }
 
