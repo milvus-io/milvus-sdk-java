@@ -376,9 +376,11 @@ public class UtilityService extends BaseService {
                     .segmentID(info.getSegmentID())
                     .collectionID(info.getCollectionID())
                     .partitionID(info.getPartitionID())
+                    .collectionName(collectionName)
                     .numOfRows(info.getNumRows())
                     .state(info.getState().name())
                     .level(info.getLevel().name())
+                    .storageVersion(info.getStorageVersion())
                     .isSorted(info.getIsSorted())
                     .build());
         });
@@ -413,6 +415,7 @@ public class UtilityService extends BaseService {
                     .state(info.getState().name())
                     .level(info.getLevel().name())
                     .nodeIDs(info.getNodeIdsList())
+                    .storageVersion(info.getStorageVersion())
                     .isSorted(info.getIsSorted())
                     .build());
         });

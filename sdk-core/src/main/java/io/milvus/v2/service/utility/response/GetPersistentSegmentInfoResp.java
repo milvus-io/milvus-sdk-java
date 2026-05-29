@@ -27,18 +27,22 @@ public class GetPersistentSegmentInfoResp {
         private Long segmentID;
         private Long collectionID;
         private Long partitionID;
+        private String collectionName;
         private Long numOfRows;
         private String state;
         private String level;
+        private Long storageVersion;
         private Boolean isSorted;
 
         private PersistentSegmentInfo(PersistentSegmentInfoBuilder builder) {
             this.segmentID = builder.segmentID;
             this.collectionID = builder.collectionID;
             this.partitionID = builder.partitionID;
+            this.collectionName = builder.collectionName;
             this.numOfRows = builder.numOfRows;
             this.state = builder.state;
             this.level = builder.level;
+            this.storageVersion = builder.storageVersion;
             this.isSorted = builder.isSorted;
         }
 
@@ -70,6 +74,14 @@ public class GetPersistentSegmentInfoResp {
             this.partitionID = partitionID;
         }
 
+        public String getCollectionName() {
+            return collectionName;
+        }
+
+        public void setCollectionName(String collectionName) {
+            this.collectionName = collectionName;
+        }
+
         public Long getNumOfRows() {
             return numOfRows;
         }
@@ -94,6 +106,14 @@ public class GetPersistentSegmentInfoResp {
             this.level = level;
         }
 
+        public Long getStorageVersion() {
+            return storageVersion;
+        }
+
+        public void setStorageVersion(Long storageVersion) {
+            this.storageVersion = storageVersion;
+        }
+
         public Boolean getIsSorted() {
             return isSorted;
         }
@@ -108,9 +128,11 @@ public class GetPersistentSegmentInfoResp {
                     "segmentID=" + segmentID +
                     ", collectionID=" + collectionID +
                     ", partitionID=" + partitionID +
+                    ", collectionName='" + collectionName + '\'' +
                     ", numOfRows=" + numOfRows +
                     ", state='" + state + '\'' +
                     ", level='" + level + '\'' +
+                    ", storageVersion=" + storageVersion +
                     ", isSorted=" + isSorted +
                     '}';
         }
@@ -119,9 +141,11 @@ public class GetPersistentSegmentInfoResp {
             private Long segmentID;
             private Long collectionID;
             private Long partitionID;
+            private String collectionName;
             private Long numOfRows;
             private String state;
             private String level;
+            private Long storageVersion;
             private Boolean isSorted;
 
             public PersistentSegmentInfoBuilder segmentID(Long segmentID) {
@@ -139,6 +163,11 @@ public class GetPersistentSegmentInfoResp {
                 return this;
             }
 
+            public PersistentSegmentInfoBuilder collectionName(String collectionName) {
+                this.collectionName = collectionName;
+                return this;
+            }
+
             public PersistentSegmentInfoBuilder numOfRows(Long numOfRows) {
                 this.numOfRows = numOfRows;
                 return this;
@@ -151,6 +180,11 @@ public class GetPersistentSegmentInfoResp {
 
             public PersistentSegmentInfoBuilder level(String level) {
                 this.level = level;
+                return this;
+            }
+
+            public PersistentSegmentInfoBuilder storageVersion(Long storageVersion) {
+                this.storageVersion = storageVersion;
                 return this;
             }
 

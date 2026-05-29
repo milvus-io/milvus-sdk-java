@@ -163,6 +163,36 @@ public class BaseTest {
 
         // utility api
         when(blockingStub.flush(any())).thenReturn(FlushResponse.newBuilder().setStatus(successStatus).build());
+        when(blockingStub.getPersistentSegmentInfo(any())).thenReturn(GetPersistentSegmentInfoResponse.newBuilder()
+                .setStatus(successStatus)
+                .addInfos(PersistentSegmentInfo.newBuilder()
+                        .setSegmentID(1L)
+                        .setCollectionID(2L)
+                        .setPartitionID(3L)
+                        .setNumRows(4L)
+                        .setState(SegmentState.Flushed)
+                        .setLevel(SegmentLevel.L1)
+                        .setStorageVersion(5L)
+                        .setIsSorted(true)
+                        .build())
+                .build());
+        when(blockingStub.getQuerySegmentInfo(any())).thenReturn(GetQuerySegmentInfoResponse.newBuilder()
+                .setStatus(successStatus)
+                .addInfos(QuerySegmentInfo.newBuilder()
+                        .setSegmentID(6L)
+                        .setCollectionID(7L)
+                        .setPartitionID(8L)
+                        .setMemSize(9L)
+                        .setNumRows(10L)
+                        .setIndexName("test_index")
+                        .setIndexID(11L)
+                        .setState(SegmentState.Sealed)
+                        .setLevel(SegmentLevel.L1)
+                        .addNodeIds(12L)
+                        .setStorageVersion(13L)
+                        .setIsSorted(true)
+                        .build())
+                .build());
         when(blockingStub.createAlias(any())).thenReturn(successStatus);
         when(blockingStub.dropAlias(any())).thenReturn(successStatus);
         when(blockingStub.alterAlias(any())).thenReturn(successStatus);
