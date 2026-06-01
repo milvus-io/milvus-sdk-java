@@ -11,6 +11,7 @@ import java.util.List;
 public class SearchIteratorReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private List<String> partitionNames;
     private IndexParam.MetricType metricType;
     private String vectorFieldName;
@@ -30,6 +31,7 @@ public class SearchIteratorReq {
     private SearchIteratorReq(SearchIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionNames = builder.partitionNames;
         this.metricType = builder.metricType;
         this.vectorFieldName = builder.vectorFieldName;
@@ -64,6 +66,14 @@ public class SearchIteratorReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public List<String> getPartitionNames() {
@@ -187,6 +197,7 @@ public class SearchIteratorReq {
         return "SearchIteratorReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", metricType=" + metricType +
                 ", vectorFieldName='" + vectorFieldName + '\'' +
@@ -207,6 +218,7 @@ public class SearchIteratorReq {
     public static class SearchIteratorReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private List<String> partitionNames = Lists.newArrayList();
         private IndexParam.MetricType metricType = IndexParam.MetricType.INVALID;
         private String vectorFieldName;
@@ -229,6 +241,11 @@ public class SearchIteratorReq {
 
         public SearchIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public SearchIteratorReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

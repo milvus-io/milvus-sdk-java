@@ -284,6 +284,13 @@ public class MilvusClientV2 {
         return dbName;
     }
 
+    public MilvusClientV2Session session(String clusterId) {
+        if (StringUtils.isEmpty(clusterId)) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "clusterId cannot be null or empty");
+        }
+        return new MilvusClientV2Session(this, clusterId);
+    }
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // Database Operations

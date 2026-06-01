@@ -76,6 +76,7 @@ public class SearchIterator {
     private Float filteredDistance = null;
     private Map<String, Object> params;
     private final RpcUtils rpcUtils;
+    private String clusterId = "";
     private long sessionTs = 0;
 
     public SearchIterator(SearchIteratorParam searchIteratorParam,
@@ -113,6 +114,7 @@ public class SearchIterator {
         this.expr = this.searchIteratorParam.getExpr();
         this.topK = this.searchIteratorParam.getTopK();
         this.rpcUtils = new RpcUtils();
+        this.clusterId = searchIteratorReq.getClusterId();
 
         initParams();
         checkForSpecialIndexParam();
@@ -292,6 +294,13 @@ public class SearchIterator {
                         .setKey(Constant.ITERATOR_FIELD)
                         .setValue(String.valueOf(Boolean.TRUE))
                         .build());
+        if (StringUtils.isNotEmpty(clusterId)) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.CLUSTER_ID)
+                            .setValue(clusterId)
+                            .build());
+        }
 
         // pass the session ts to search interface
         builder.setGuaranteeTimestamp(ts).build();
