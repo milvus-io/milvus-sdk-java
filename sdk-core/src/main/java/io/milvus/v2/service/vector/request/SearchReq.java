@@ -33,6 +33,7 @@ import java.util.Map;
 public class SearchReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private List<String> partitionNames;
     private String annsField;
     private IndexParam.MetricType metricType;
@@ -76,6 +77,7 @@ public class SearchReq {
     private SearchReq(SearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionNames = builder.partitionNames;
         this.annsField = builder.annsField;
         this.metricType = builder.metricType;
@@ -117,6 +119,14 @@ public class SearchReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public List<String> getPartitionNames() {
@@ -308,6 +318,7 @@ public class SearchReq {
         return "SearchReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", annsField='" + annsField + '\'' +
                 ", metricType=" + metricType +
@@ -341,6 +352,7 @@ public class SearchReq {
     public static class SearchReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private List<String> partitionNames = new ArrayList<>(); // default value
         private String annsField = ""; // default value
         private IndexParam.MetricType metricType;
@@ -376,6 +388,11 @@ public class SearchReq {
 
         public SearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public SearchReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

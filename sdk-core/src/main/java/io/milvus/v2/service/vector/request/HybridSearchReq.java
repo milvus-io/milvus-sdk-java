@@ -27,6 +27,7 @@ import java.util.List;
 public class HybridSearchReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private List<String> partitionNames;
     private List<AnnSearchReq> searchRequests;
     @Deprecated
@@ -48,6 +49,7 @@ public class HybridSearchReq {
     private HybridSearchReq(HybridSearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionNames = builder.partitionNames;
         this.searchRequests = builder.searchRequests;
         this.ranker = builder.ranker;
@@ -78,6 +80,14 @@ public class HybridSearchReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public List<String> getPartitionNames() {
@@ -193,6 +203,7 @@ public class HybridSearchReq {
         return "HybridSearchReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", searchRequests=" + searchRequests +
                 ", ranker=" + ranker +
@@ -216,6 +227,7 @@ public class HybridSearchReq {
     public static class HybridSearchReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private List<String> partitionNames;
         private List<AnnSearchReq> searchRequests;
         private CreateCollectionReq.Function ranker;
@@ -240,6 +252,11 @@ public class HybridSearchReq {
 
         public HybridSearchReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public HybridSearchReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

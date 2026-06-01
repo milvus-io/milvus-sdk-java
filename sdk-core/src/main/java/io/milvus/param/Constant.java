@@ -34,6 +34,7 @@ public class Constant {
     public static final String TIMEZONE = "timezone";
     public static final String REDUCE_STOP_FOR_BEST = "reduce_stop_for_best";
     public static final String ITERATOR_FIELD = "iterator";
+    public static final String CLUSTER_ID = "cluster_id";
     public static final String GROUP_BY_FIELD = "group_by_field";
     public static final String GROUP_SIZE = "group_size";
     public static final String STRICT_GROUP_SIZE = "strict_group_size";
