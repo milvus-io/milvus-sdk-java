@@ -24,6 +24,7 @@ import java.util.List;
 public class GetReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private String partitionName = "";
     private List<Object> ids;
     private List<String> outputFields;
@@ -31,6 +32,7 @@ public class GetReq {
     private GetReq(GetReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionName = builder.partitionName;
         this.ids = builder.ids;
         this.outputFields = builder.outputFields;
@@ -54,6 +56,14 @@ public class GetReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public String getPartitionName() {
@@ -85,6 +95,7 @@ public class GetReq {
         return "GetReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionName='" + partitionName + '\'' +
                 ", ids=" + ids +
                 ", outputFields=" + outputFields +
@@ -94,6 +105,7 @@ public class GetReq {
     public static class GetReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private String partitionName = "";
         private List<Object> ids;
         private List<String> outputFields;
@@ -105,6 +117,11 @@ public class GetReq {
 
         public GetReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public GetReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

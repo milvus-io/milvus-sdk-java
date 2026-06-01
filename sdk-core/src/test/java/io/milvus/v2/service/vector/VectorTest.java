@@ -21,8 +21,11 @@ package io.milvus.v2.service.vector;
 
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
-import io.milvus.grpc.UpsertRequest;
+import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.data.FloatVec;
 import io.milvus.v2.service.vector.response.*;
@@ -195,5 +198,107 @@ class VectorTest extends BaseTest {
                 .build();
         GetResp statusR = client_v2.get(request);
         logger.info(statusR.toString());
+    }
+
+    @Test
+    void testSessionSearchPassesClusterId() {
+        List<Float> vectorList = Arrays.asList(1.0f, 2.0f);
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(vectorList)))
+                .limit(10)
+                .build();
+
+        client_v2.session("cluster-a").search(request);
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(blockingStub).search(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertNull(request.getClusterId());
+    }
+
+    @Test
+    void testSessionQueryPassesClusterId() {
+        QueryReq request = QueryReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+
+        client_v2.session("cluster-a").query(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertNull(request.getClusterId());
+    }
+
+    @Test
+    void testSessionGetPassesClusterId() {
+        GetReq request = GetReq.builder()
+                .collectionName("test")
+                .ids(Collections.singletonList(1L))
+                .build();
+
+        client_v2.session("cluster-a").get(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertNull(request.getClusterId());
+    }
+
+    @Test
+    void testSessionHybridSearchPassesClusterId() {
+        List<Float> vectorList = Arrays.asList(1.0f, 2.0f);
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(vectorList)))
+                .limit(10)
+                .build();
+        HybridSearchReq request = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+
+        client_v2.session("cluster-a").hybridSearch(request);
+
+        ArgumentCaptor<HybridSearchRequest> captor = ArgumentCaptor.forClass(HybridSearchRequest.class);
+        verify(blockingStub).hybridSearch(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertNull(request.getClusterId());
+    }
+
+    @Test
+    void testSessionRejectsClosedAndConflictingClusterId() {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .clusterId("cluster-b")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        MilvusClientException conflictException = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.session("cluster-a").search(request));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, conflictException.getErrorCode());
+
+        io.milvus.v2.client.MilvusClientV2Session session = client_v2.session("cluster-a");
+        session.close();
+        SearchReq closedRequest = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        MilvusClientException closedException = Assertions.assertThrows(MilvusClientException.class,
+                () -> session.search(closedRequest));
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, closedException.getErrorCode());
+    }
+
+    private String getParam(List<KeyValuePair> params, String key) {
+        return params.stream()
+                .filter(param -> key.equals(param.getKey()))
+                .map(KeyValuePair::getValue)
+                .findFirst()
+                .orElse(null);
     }
 }
