@@ -205,7 +205,11 @@ public class RpcUtils {
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(retryIntervalMs);
-                } catch (InterruptedException ignored) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    String msg = String.format("Retry sleep interrupted, aborting retry after %d attempts", k);
+                    logger.warn(msg);
+                    throw new MilvusClientException(ErrorCode.CLIENT_ERROR, msg);
                 }
             }
 

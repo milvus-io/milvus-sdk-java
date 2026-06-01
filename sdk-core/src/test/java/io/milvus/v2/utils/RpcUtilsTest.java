@@ -114,7 +114,7 @@ public class RpcUtilsTest {
         MilvusClientException thrown = Assertions.assertThrows(MilvusClientException.class, () -> {
             rpcUtils.retry(() -> {
                 callCount.incrementAndGet();
-                // Simulate a slow RPC call that takes 400ms each time
+                // Simulate a slow RPC call that takes 500ms each time
                 Thread.sleep(500);
                 throw new StatusRuntimeException(
                         io.grpc.Status.UNAVAILABLE.withDescription("server unavailable"));
