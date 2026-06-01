@@ -115,6 +115,7 @@ public class SearchIteratorV2 {
                 .collectionName(searchIteratorReq.getCollectionName())
                 .partitionNames(searchIteratorReq.getPartitionNames())
                 .databaseName(searchIteratorReq.getDatabaseName())
+                .clusterId(searchIteratorReq.getClusterId())
                 .annsField(searchIteratorReq.getVectorFieldName())
                 .data(searchIteratorReq.getVectors())
                 .limit(limit)

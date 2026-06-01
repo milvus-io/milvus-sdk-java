@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -350,11 +351,15 @@ public class VectorService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
         logger.debug(title);
-        QueryReq queryReq = QueryReq.builder()
+        QueryReq.QueryReqBuilder queryReqBuilder = QueryReq.builder()
                 .databaseName(dbName)
                 .collectionName(collectionName)
-                .ids(request.getIds())
-                .build();
+                .clusterId(request.getClusterId())
+                .ids(request.getIds());
+        if (StringUtils.isNotEmpty(request.getPartitionName())) {
+            queryReqBuilder.partitionNames(Collections.singletonList(request.getPartitionName()));
+        }
+        QueryReq queryReq = queryReqBuilder.build();
         if (request.getOutputFields() != null) {
             queryReq.setOutputFields(request.getOutputFields());
         }

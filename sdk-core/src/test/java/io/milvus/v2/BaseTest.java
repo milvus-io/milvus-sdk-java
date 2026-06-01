@@ -136,6 +136,7 @@ public class BaseTest {
                 .setResults(SearchResultData.newBuilder().addScores(1L).addTopks(0L).build())
                 .build();
         when(blockingStub.search(any())).thenReturn(searchResults);
+        when(blockingStub.hybridSearch(any())).thenReturn(searchResults);
 
         // partition api
         when(blockingStub.createPartition(any())).thenReturn(successStatus);

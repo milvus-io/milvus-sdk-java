@@ -10,6 +10,7 @@ import java.util.Map;
 public class QueryIteratorReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private List<String> partitionNames;
     private List<String> outputFields;
     private String expr;
@@ -34,6 +35,7 @@ public class QueryIteratorReq {
     private QueryIteratorReq(QueryIteratorReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionNames = builder.partitionNames;
         this.outputFields = builder.outputFields;
         this.expr = builder.expr;
@@ -65,6 +67,14 @@ public class QueryIteratorReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public List<String> getPartitionNames() {
@@ -152,6 +162,7 @@ public class QueryIteratorReq {
         return "QueryIteratorReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", outputFields=" + outputFields +
                 ", expr='" + expr + '\'' +
@@ -168,6 +179,7 @@ public class QueryIteratorReq {
     public static class QueryIteratorReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private List<String> partitionNames = Lists.newArrayList();
         private List<String> outputFields = Lists.newArrayList();
         private String expr = "";
@@ -187,6 +199,11 @@ public class QueryIteratorReq {
 
         public QueryIteratorReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public QueryIteratorReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

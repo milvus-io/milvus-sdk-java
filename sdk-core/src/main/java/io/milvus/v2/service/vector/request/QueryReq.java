@@ -26,6 +26,7 @@ import java.util.*;
 public class QueryReq {
     private String databaseName;
     private String collectionName;
+    private String clusterId;
     private List<String> partitionNames;
     private List<String> outputFields;
     private List<Object> ids;
@@ -54,6 +55,7 @@ public class QueryReq {
     private QueryReq(QueryReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
+        this.clusterId = builder.clusterId;
         this.partitionNames = builder.partitionNames;
         this.outputFields = builder.outputFields;
         this.ids = builder.ids;
@@ -85,6 +87,14 @@ public class QueryReq {
 
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
+    }
+
+    public String getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(String clusterId) {
+        this.clusterId = clusterId;
     }
 
     public List<String> getPartitionNames() {
@@ -176,6 +186,7 @@ public class QueryReq {
         return "QueryReq{" +
                 "databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
+                ", clusterId='" + clusterId + '\'' +
                 ", partitionNames=" + partitionNames +
                 ", outputFields=" + outputFields +
                 ", ids=" + ids +
@@ -193,6 +204,7 @@ public class QueryReq {
     public static class QueryReqBuilder {
         private String databaseName;
         private String collectionName;
+        private String clusterId;
         private List<String> partitionNames = new ArrayList<>();
         private List<String> outputFields = Collections.singletonList("*");
         private List<Object> ids;
@@ -212,6 +224,11 @@ public class QueryReq {
 
         public QueryReqBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
+            return this;
+        }
+
+        public QueryReqBuilder clusterId(String clusterId) {
+            this.clusterId = clusterId;
             return this;
         }
 

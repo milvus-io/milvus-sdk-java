@@ -217,6 +217,7 @@ public class QueryIterator {
         QueryReq queryReq = QueryReq.builder()
                 .databaseName(queryIteratorReq.getDatabaseName())
                 .collectionName(queryIteratorReq.getCollectionName())
+                .clusterId(queryIteratorReq.getClusterId())
                 .partitionNames(queryIteratorReq.getPartitionNames())
                 .consistencyLevel(queryIteratorReq.getConsistencyLevel())
                 .outputFields(outputFields)
