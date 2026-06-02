@@ -1056,12 +1056,16 @@ public class CreateCollectionReq {
         private String description = "";
         private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
         private Integer maxCapacity;
+        private Boolean nullable = Boolean.FALSE;
+        private Map<String, String> typeParams = new HashMap<>();
 
         private StructFieldSchema(StructFieldSchemaBuilder builder) {
             this.name = builder.name;
             this.description = builder.description;
             this.fields = builder.fields;
             this.maxCapacity = builder.maxCapacity;
+            this.nullable = Boolean.TRUE.equals(builder.nullable);
+            this.typeParams = builder.typeParams;
         }
 
         public StructFieldSchema addField(AddFieldReq addFieldReq) {
@@ -1113,6 +1117,22 @@ public class CreateCollectionReq {
             this.maxCapacity = maxCapacity;
         }
 
+        public Boolean getNullable() {
+            return nullable;
+        }
+
+        public void setNullable(Boolean nullable) {
+            this.nullable = Boolean.TRUE.equals(nullable);
+        }
+
+        public Map<String, String> getTypeParams() {
+            return typeParams;
+        }
+
+        public void setTypeParams(Map<String, String> typeParams) {
+            this.typeParams = typeParams;
+        }
+
         @Override
         public String toString() {
             return "StructFieldSchema{" +
@@ -1120,6 +1140,8 @@ public class CreateCollectionReq {
                     ", description='" + description + '\'' +
                     ", fields=" + fields +
                     ", maxCapacity=" + maxCapacity +
+                    ", nullable=" + nullable +
+                    ", typeParams=" + typeParams +
                     '}';
         }
 
@@ -1132,6 +1154,8 @@ public class CreateCollectionReq {
             private String description = "";
             private List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
             private Integer maxCapacity;
+            private Boolean nullable = Boolean.FALSE;
+            private Map<String, String> typeParams = new HashMap<>();
 
             private StructFieldSchemaBuilder() {
             }
@@ -1153,6 +1177,24 @@ public class CreateCollectionReq {
 
             public StructFieldSchemaBuilder maxCapacity(Integer maxCapacity) {
                 this.maxCapacity = maxCapacity;
+                return this;
+            }
+
+            public StructFieldSchemaBuilder nullable(Boolean nullable) {
+                this.nullable = Boolean.TRUE.equals(nullable);
+                return this;
+            }
+
+            public StructFieldSchemaBuilder typeParams(Map<String, String> typeParams) {
+                this.typeParams = typeParams;
+                return this;
+            }
+
+            public StructFieldSchemaBuilder typeParam(String key, String value) {
+                if (this.typeParams == null) {
+                    this.typeParams = new HashMap<>();
+                }
+                this.typeParams.put(key, value);
                 return this;
             }
 

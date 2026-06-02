@@ -535,6 +535,7 @@ public class MilvusClientV2Test extends BaseTest {
 
         // io.milvus/v2/service/collection
         VerifyClass(AddCollectionFieldReq.class.getName(), config);
+        VerifyClass(AddCollectionStructFieldReq.class.getName(), config);
         config.setIgnoredMethods(Collections.singletonList("isEnableDefaultValue"));
         VerifyClass(AddFieldReq.class.getName(), config);
         config.clearIgnoredMethods();

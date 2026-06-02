@@ -81,6 +81,13 @@ public abstract class RowRecordWrapper {
             }
             Object value = wrapper.valueByIdx((int) index);
             if (wrapper.isJsonField()) {
+                if (value == null) {
+                    if (!field.getIsDynamic()) {
+                        record.put(field.getFieldName(), null);
+                    }
+                    continue;
+                }
+
                 JsonElement jsonValue = FieldDataWrapper.ParseJSONObject(value);
                 if (!field.getIsDynamic()) {
                     record.put(field.getFieldName(), jsonValue);
