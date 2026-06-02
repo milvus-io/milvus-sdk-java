@@ -28,10 +28,8 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.AddFieldReq;
-import io.milvus.v2.service.collection.request.CreateCollectionReq;
-import io.milvus.v2.service.collection.request.DropCollectionReq;
-import io.milvus.v2.service.collection.request.LoadCollectionReq;
+import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
@@ -43,7 +41,12 @@ import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class StructExample {
     private static final MilvusClientV2 client;
@@ -62,7 +65,12 @@ public class StructExample {
     private static final String CLIP_VECTOR_FIELD = "clip_embedding";
     private static final String DESC_FIELD = "clip_desc";
     private static final String DESC_VECTOR_FIELD = "description_embedding";
+    private static final String EXTRA_STRUCT_FIELD = "metadata";
+    private static final String RATING_FIELD = "rating";
+    private static final String TAG_FIELD = "tag";
     private static final Integer VECTOR_DIM = 128;
+    private static final Random RANDOM = new Random();
+    private static final long EXTRA_ROW_ID = 5000L;
 
     private static void createCollection() {
         CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
@@ -77,7 +85,7 @@ public class StructExample {
                 .dataType(DataType.VarChar)
                 .maxLength(1024)
                 .build());
-        // define struct field schema, note that each name of sub-field must be unique in the entire collection
+
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName(STRUCT_FIELD)
                 .description("clips of a film")
@@ -109,7 +117,6 @@ public class StructExample {
                         .build())
                 .build());
 
-        // define another struct field schema, note that it has a same name subfield to the STRUCT_FIELD
         collectionSchema.addField(AddFieldReq.builder()
                 .fieldName("simplify_clips")
                 .description("simplify clips")
@@ -128,13 +135,11 @@ public class StructExample {
                 .collectionName(COLLECTION_NAME)
                 .build());
 
-        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+        client.createCollection(CreateCollectionReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .collectionSchema(collectionSchema)
-                .build();
-        client.createCollection(requestCreate);
+                .build());
 
-        // struct vector uses special index/metric type
         List<IndexParam> indexParams = new ArrayList<>();
         indexParams.add(IndexParam.builder()
                 .fieldName(String.format("%s[%s]", STRUCT_FIELD, CLIP_VECTOR_FIELD))
@@ -162,45 +167,51 @@ public class StructExample {
                 .collectionName(COLLECTION_NAME)
                 .build());
         System.out.println("Collection created: " + COLLECTION_NAME);
+
+        describeCollection();
+    }
+
+    private static void describeCollection() {
+        DescribeCollectionResp resp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .build());
+        System.out.println(resp.getCollectionSchema());
+    }
+
+    private static JsonObject buildBaseRow(long id) {
+        JsonObject row = new JsonObject();
+        row.addProperty(ID_FIELD, id);
+        row.addProperty(NAME_FIELD, "film_" + id);
+
+        JsonArray structArr = new JsonArray();
+        for (int k = 0; k < 5; k++) {
+            JsonObject struct = new JsonObject();
+            struct.addProperty(FRAME_FIELD, RANDOM.nextInt(10000));
+            struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
+            struct.addProperty(DESC_FIELD, "clip_description_" + id);
+            struct.add(DESC_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
+            structArr.add(struct);
+        }
+        row.add(STRUCT_FIELD, structArr);
+
+        JsonArray simplifyClips = new JsonArray();
+        for (int k = 0; k < 2; k++) {
+            JsonObject struct = new JsonObject();
+            struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
+            simplifyClips.add(struct);
+        }
+        row.add("simplify_clips", simplifyClips);
+        return row;
     }
 
     private static void insertData(int rowCount) {
         final int batchSize = 300;
         int insertedCount = 0;
-        Random ran = new Random();
         while (insertedCount < rowCount) {
-            int nextBatch = batchSize;
-            int leftCount = rowCount - insertedCount;
-            if (nextBatch > leftCount) {
-                nextBatch = leftCount;
-            }
+            int nextBatch = Math.min(batchSize, rowCount - insertedCount);
             List<JsonObject> rows = new ArrayList<>();
             for (int i = 0; i < nextBatch; i++) {
-                JsonObject row = new JsonObject();
-                int id = insertedCount + i;
-                row.addProperty(ID_FIELD, id);
-                row.addProperty(NAME_FIELD, "film_" + id);
-                JsonArray structArr = new JsonArray();
-                for (int k = 0; k < 5; k++) {
-                    JsonObject struct = new JsonObject();
-                    struct.addProperty(FRAME_FIELD, ran.nextInt(10000));
-                    struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
-                    struct.addProperty(DESC_FIELD, "clip_description_" + id);
-                    struct.add(DESC_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
-                    structArr.add(struct);
-                }
-                row.add(STRUCT_FIELD, structArr);
-
-                // for the "simplify_clips"
-                structArr = new JsonArray();
-                for (int k = 0; k < 2; k++) {
-                    JsonObject struct = new JsonObject();
-                    struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
-                    structArr.add(struct);
-                }
-                row.add("simplify_clips", structArr);
-
-                rows.add(row);
+                rows.add(buildBaseRow(insertedCount + i));
             }
 
             InsertResp insertResp = client.insert(InsertReq.builder()
@@ -217,7 +228,6 @@ public class StructExample {
                 .consistencyLevel(ConsistencyLevel.STRONG)
                 .build());
         System.out.printf("%d rows persisted\n", (long) countR.getQueryResults().get(0).getEntity().get("count(*)"));
-
     }
 
     private static List<QueryResp.QueryResult> query(String filter) {
@@ -238,18 +248,14 @@ public class StructExample {
 
     private static void search(String annsField, List<BaseVector> searchData) {
         System.out.println("===================================================");
-        String msg = String.format("Search on field '%s' in struct '%s' with nq=%d",
+        System.out.printf("Search on field '%s' in struct '%s' with nq=%d\n",
                 annsField, STRUCT_FIELD, searchData.size());
-        System.out.println(msg);
 
-
-        String annFullName = String.format("%s[%s]", STRUCT_FIELD, annsField);
-        int topK = 5;
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(COLLECTION_NAME)
-                .annsField(annFullName)
+                .annsField(String.format("%s[%s]", STRUCT_FIELD, annsField))
                 .data(searchData)
-                .limit(topK)
+                .limit(5)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .outputFields(Arrays.asList(NAME_FIELD,
                         String.format("%s[%s]", STRUCT_FIELD, FRAME_FIELD),
@@ -259,32 +265,112 @@ public class StructExample {
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (int i = 0; i < searchResults.size(); i++) {
             System.out.println("Results of No." + i + " embedding list");
-            List<SearchResp.SearchResult> results = searchResults.get(i);
-            for (SearchResp.SearchResult result : results) {
+            for (SearchResp.SearchResult result : searchResults.get(i)) {
                 System.out.println(result);
             }
         }
     }
 
+    private static JsonArray buildMetadataStructArray() {
+        JsonArray metadata = new JsonArray();
+
+        JsonObject first = new JsonObject();
+        first.addProperty(RATING_FIELD, 5);
+        first.addProperty(TAG_FIELD, "favorite");
+        metadata.add(first);
+
+        JsonObject second = new JsonObject();
+        second.addProperty(RATING_FIELD, 4);
+        second.addProperty(TAG_FIELD, "classic");
+        metadata.add(second);
+        return metadata;
+    }
+
+    private static void addCollectionStructField() {
+        System.out.println("===================================================");
+        System.out.println("Add a new struct field to the existing collection");
+        client.addCollectionStructField(AddCollectionStructFieldReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .fieldName(EXTRA_STRUCT_FIELD)
+                .description("additional metadata for films")
+                .maxCapacity(8)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(RATING_FIELD)
+                        .dataType(DataType.Int32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(TAG_FIELD)
+                        .dataType(DataType.VarChar)
+                        .maxLength(128)
+                        .build())
+                .build());
+        System.out.println("Added struct field: " + EXTRA_STRUCT_FIELD);
+
+        describeCollection();
+
+        QueryResp existingRow = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " == 5")
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(ID_FIELD, EXTRA_STRUCT_FIELD))
+                .build());
+        System.out.println("Existing row after addCollectionStructField() - new field is null");
+        for (QueryResp.QueryResult result : existingRow.getQueryResults()) {
+            System.out.println(result.getEntity());
+        }
+
+        JsonObject newRow = buildBaseRow(EXTRA_ROW_ID);
+        newRow.add(EXTRA_STRUCT_FIELD, buildMetadataStructArray());
+        client.insert(InsertReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .data(Collections.singletonList(newRow))
+                .build());
+
+        QueryResp newRowResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " == " + EXTRA_ROW_ID)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(ID_FIELD, NAME_FIELD, EXTRA_STRUCT_FIELD))
+                .build());
+        System.out.println("New row with the added struct field");
+        for (QueryResp.QueryResult result : newRowResp.getQueryResults()) {
+            System.out.println(result.getEntity());
+        }
+
+        QueryResp projectedResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " == " + EXTRA_ROW_ID)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Arrays.asList(ID_FIELD, NAME_FIELD,
+                        String.format("%s[%s]", EXTRA_STRUCT_FIELD, RATING_FIELD),
+                        String.format("%s[%s]", EXTRA_STRUCT_FIELD, TAG_FIELD)))
+                .build());
+        System.out.println("Projected subfields from the added struct field");
+        for (QueryResp.QueryResult result : projectedResp.getQueryResults()) {
+            System.out.println(result.getEntity());
+        }
+    }
+
     public static void main(String[] args) {
-        createCollection();
-        insertData(2000);
+        try {
+            createCollection();
+            insertData(2000);
 
-        // fetch 2 rows
-        List<QueryResp.QueryResult> results = query(ID_FIELD + " in [5, 8]");
-
-        // use the fetched data to search struct
-        for (QueryResp.QueryResult result : results) {
-            // in the insertData() method, we inserted 5 structures for each row
-            // in query results, each struct is represented as a Map
-            Map<String, Object> fetchedEntity = result.getEntity();
-            List<Map<String, Object>> structs = (List<Map<String, Object>>) fetchedEntity.get(STRUCT_FIELD);
-            EmbeddingList embList = new EmbeddingList();
-            for (Map<String, Object> struct : structs) {
-                List<Float> vector = (List<Float>) struct.get(CLIP_VECTOR_FIELD);
-                embList.add(new FloatVec(vector));
+            List<QueryResp.QueryResult> results = query(ID_FIELD + " in [5, 8]");
+            for (QueryResp.QueryResult result : results) {
+                Map<String, Object> fetchedEntity = result.getEntity();
+                List<Map<String, Object>> structs = (List<Map<String, Object>>) fetchedEntity.get(STRUCT_FIELD);
+                EmbeddingList embList = new EmbeddingList();
+                for (Map<String, Object> struct : structs) {
+                    List<Float> vector = (List<Float>) struct.get(CLIP_VECTOR_FIELD);
+                    embList.add(new FloatVec(vector));
+                }
+                search(CLIP_VECTOR_FIELD, Collections.singletonList(embList));
             }
-            search(CLIP_VECTOR_FIELD, Collections.singletonList(embList));
+
+            addCollectionStructField();
+        } finally {
+            client.close();
         }
     }
 }

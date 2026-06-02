@@ -301,6 +301,24 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void addCollectionStructField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AddCollectionStructFieldReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Add struct field to collection: '%s' in database: '%s'", collectionName, dbName);
+
+        AddCollectionStructFieldRequest.Builder builder = AddCollectionStructFieldRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setStructArrayFieldSchema(SchemaUtils.convertToGrpcStructFieldSchema(request.toStructFieldSchema()));
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        Status response = blockingStub.addCollectionStructField(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
     public Void alterCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionFieldReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();

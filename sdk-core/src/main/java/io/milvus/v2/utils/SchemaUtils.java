@@ -158,7 +158,13 @@ public class SchemaUtils {
         checkNullEmptyString(structSchema.getName(), "Field name");
         StructArrayFieldSchema.Builder builder = StructArrayFieldSchema.newBuilder()
                 .setName(structSchema.getName())
-                .setDescription(structSchema.getDescription());
+                .setDescription(structSchema.getDescription())
+                .setNullable(Boolean.TRUE.equals(structSchema.getNullable()));
+
+        List<KeyValuePair> typeParamsList = AssembleKvPair(structSchema.getTypeParams());
+        if (CollectionUtils.isNotEmpty(typeParamsList)) {
+            typeParamsList.forEach(builder::addTypeParams);
+        }
 
         for (CreateCollectionReq.FieldSchema field : structSchema.getFields()) {
             DataType actualType = DataType.Array;
@@ -286,7 +292,12 @@ public class SchemaUtils {
         CreateCollectionReq.StructFieldSchema.StructFieldSchemaBuilder builder =
                 CreateCollectionReq.StructFieldSchema.builder()
                         .name(structSchema.getName())
-                        .description(structSchema.getDescription());
+                        .description(structSchema.getDescription())
+                        .nullable(structSchema.getNullable());
+        List<KeyValuePair> structTypeParams = structSchema.getTypeParamsList();
+        if (CollectionUtils.isNotEmpty(structTypeParams)) {
+            structTypeParams.forEach((kv) -> builder.typeParam(kv.getKey(), kv.getValue()));
+        }
         List<CreateCollectionReq.FieldSchema> fields = new ArrayList<>();
         for (FieldSchema fieldSchema : structSchema.getFieldsList()) {
             CreateCollectionReq.FieldSchema field = convertFromGrpcFieldSchema(fieldSchema);
