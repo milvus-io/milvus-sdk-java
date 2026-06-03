@@ -2977,7 +2977,6 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(LoadState.LoadStateLoaded, loadStateResp.getState());
         Assertions.assertEquals(LoadState.LoadStateLoaded.name(), loadStateResp.getStateName());
         Assertions.assertNull(loadStateResp.getProgress());
-        Assertions.assertNull(loadStateResp.getRefreshProgress());
 
         // specify the temp database name to release partition
         client.releasePartitions(ReleasePartitionsReq.builder()

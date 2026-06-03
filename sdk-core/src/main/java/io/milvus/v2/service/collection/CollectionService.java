@@ -42,6 +42,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class CollectionService extends BaseService {
     public IndexService indexService = new IndexService();
@@ -458,21 +459,28 @@ public class CollectionService extends BaseService {
     public Void loadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, LoadCollectionReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
+        boolean sync = Boolean.TRUE.equals(request.getSync());
+        boolean refresh = Boolean.TRUE.equals(request.getRefresh());
+        boolean skipLoadDynamicField = Boolean.TRUE.equals(request.getSkipLoadDynamicField());
         String title = String.format("Load collection: '%s' in database: '%s'", collectionName, dbName);
         LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                 .setCollectionName(collectionName)
                 .setReplicaNumber(request.getNumReplicas())
-                .setRefresh(request.getRefresh())
+                .setRefresh(refresh)
                 .addAllLoadFields(request.getLoadFields())
-                .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
+                .setSkipLoadDynamicField(skipLoadDynamicField)
                 .addAllResourceGroups(request.getResourceGroups());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
-        Status status = blockingStub.loadCollection(builder.build());
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
+        if (request.getTimeout() != null && request.getTimeout() > 0) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getTimeout(), TimeUnit.MILLISECONDS);
+        }
+        Status status = tempBlockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
-        if (request.getSync()) {
-            WaitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout());
+        if (sync) {
+            waitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout(), refresh);
         }
 
         return null;
@@ -481,6 +489,7 @@ public class CollectionService extends BaseService {
     public Void refreshLoad(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, RefreshLoadReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
+        boolean sync = Boolean.TRUE.equals(request.getSync());
         String title = String.format("Refresh load collection: '%s' in database: '%s'", collectionName, dbName);
         LoadCollectionRequest.Builder builder = LoadCollectionRequest.newBuilder()
                 .setCollectionName(collectionName)
@@ -488,10 +497,14 @@ public class CollectionService extends BaseService {
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
-        Status status = blockingStub.loadCollection(builder.build());
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
+        if (request.getTimeout() != null && request.getTimeout() > 0) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getTimeout(), TimeUnit.MILLISECONDS);
+        }
+        Status status = tempBlockingStub.loadCollection(builder.build());
         rpcUtils.handleResponse(title, status);
-        if (request.getSync()) {
-            WaitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout());
+        if (sync) {
+            waitForLoadCollection(blockingStub, dbName, collectionName, request.getTimeout(), true);
         }
 
         return null;
@@ -521,9 +534,7 @@ public class CollectionService extends BaseService {
         GetLoadStateResp.GetLoadStateRespBuilder respBuilder = GetLoadStateResp.builder()
                 .state(response.getState());
         if (response.getState() == LoadState.LoadStateLoading) {
-            GetLoadingProgressResponse progressResponse = getLoadingProgressResponse(blockingStub, request);
-            respBuilder.progress(progressResponse.getProgress())
-                    .refreshProgress(progressResponse.getRefreshProgress());
+            respBuilder.progress(getLoadingProgress(blockingStub, request, false, null));
         }
 
         return respBuilder.build();
@@ -556,8 +567,17 @@ public class CollectionService extends BaseService {
         return response;
     }
 
-    private GetLoadingProgressResponse getLoadingProgressResponse(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                                                                  GetLoadStateReq request) {
+    private Long getLoadingProgress(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                    GetLoadStateReq request,
+                                    boolean refreshLoad,
+                                    Long timeoutMs) {
+        GetLoadingProgressResponse response = getLoadingProgressInternal(blockingStub, request, timeoutMs);
+        return refreshLoad ? response.getRefreshProgress() : response.getProgress();
+    }
+
+    private GetLoadingProgressResponse getLoadingProgressInternal(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                                  GetLoadStateReq request,
+                                                                  Long timeoutMs) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String partitionName = request.getPartitionName();
@@ -569,7 +589,11 @@ public class CollectionService extends BaseService {
         if (StringUtils.isNotEmpty(partitionName)) {
             builder.addPartitionNames(partitionName);
         }
-        GetLoadingProgressResponse response = blockingStub.getLoadingProgress(builder.build());
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
+        if (timeoutMs != null && timeoutMs > 0) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(timeoutMs, TimeUnit.MILLISECONDS);
+        }
+        GetLoadingProgressResponse response = tempBlockingStub.getLoadingProgress(builder.build());
         String title = String.format("Get loading progress of collection: '%s' in database: '%s'", collectionName, dbName);
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
@@ -711,31 +735,28 @@ public class CollectionService extends BaseService {
         return null;
     }
 
-    private void WaitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String databaseName,
-                                       String collectionName, long timeoutMs) {
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+    private void waitForLoadCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String databaseName,
+                                       String collectionName, Long timeoutMs, boolean refreshLoad) {
+        long startTime = System.currentTimeMillis();
+        GetLoadStateReq request = GetLoadStateReq.builder()
+                .databaseName(databaseName)
+                .collectionName(collectionName)
+                .build();
 
         while (true) {
-            // Call the getLoadState method
-            boolean isLoaded = getLoadState(blockingStub, GetLoadStateReq.builder()
-                    .databaseName(databaseName)
-                    .collectionName(collectionName)
-                    .build());
-            if (isLoaded) {
+            if (getLoadingProgress(blockingStub, request, refreshLoad, timeoutMs) >= 100L) {
                 return;
             }
 
-            // Check if timeout is exceeded
-            if (System.currentTimeMillis() - startTime > timeoutMs) {
+            if (timeoutMs != null && timeoutMs > 0 && System.currentTimeMillis() - startTime > timeoutMs) {
                 throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load collection timeout");
             }
-            // Wait for a certain period before checking again
             try {
-                Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.error("Thread was interrupted, Failed to complete operation");
-                return; // or handle interruption appropriately
+                return;
             }
         }
     }
