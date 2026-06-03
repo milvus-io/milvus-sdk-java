@@ -24,12 +24,10 @@ import io.milvus.grpc.LoadState;
 public class GetLoadStateResp {
     private LoadState state;
     private Long progress;
-    private Long refreshProgress;
 
     private GetLoadStateResp(GetLoadStateRespBuilder builder) {
         this.state = builder.state;
         this.progress = builder.progress;
-        this.refreshProgress = builder.refreshProgress;
     }
 
     public LoadState getState() {
@@ -52,21 +50,12 @@ public class GetLoadStateResp {
         this.progress = progress;
     }
 
-    public Long getRefreshProgress() {
-        return refreshProgress;
-    }
-
-    public void setRefreshProgress(Long refreshProgress) {
-        this.refreshProgress = refreshProgress;
-    }
-
     @Override
     public String toString() {
         return "GetLoadStateResp{" +
                 "state=" + state +
                 ", stateName='" + getStateName() + '\'' +
                 ", progress=" + progress +
-                ", refreshProgress=" + refreshProgress +
                 '}';
     }
 
@@ -77,7 +66,6 @@ public class GetLoadStateResp {
     public static class GetLoadStateRespBuilder {
         private LoadState state;
         private Long progress;
-        private Long refreshProgress;
 
         private GetLoadStateRespBuilder() {
         }
@@ -89,11 +77,6 @@ public class GetLoadStateResp {
 
         public GetLoadStateRespBuilder progress(Long progress) {
             this.progress = progress;
-            return this;
-        }
-
-        public GetLoadStateRespBuilder refreshProgress(Long refreshProgress) {
-            this.refreshProgress = refreshProgress;
             return this;
         }
 
