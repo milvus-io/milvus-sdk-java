@@ -2962,6 +2962,66 @@ class MilvusServiceClientTest {
     }
 
     @Test
+    void testQueryResultsWrapperWithNullStructField() {
+        FieldData ratingField = FieldData.newBuilder()
+                .setFieldName("rating")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .addData(ScalarField.newBuilder()
+                                        .setIntData(IntArray.newBuilder().addData(5).build())
+                                        .build())
+                                .addData(ScalarField.newBuilder().build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData tagField = FieldData.newBuilder()
+                .setFieldName("tag")
+                .setType(DataType.Array)
+                .setScalars(ScalarField.newBuilder()
+                        .setArrayData(ArrayArray.newBuilder()
+                                .addData(ScalarField.newBuilder()
+                                        .setStringData(StringArray.newBuilder().addData("favorite").build())
+                                        .build())
+                                .addData(ScalarField.newBuilder().build())
+                                .build())
+                        .build())
+                .addValidData(true)
+                .addValidData(false)
+                .build();
+        FieldData metadataField = FieldData.newBuilder()
+                .setFieldName("metadata")
+                .setType(DataType.ArrayOfStruct)
+                .setStructArrays(StructArrayField.newBuilder()
+                        .addFields(ratingField)
+                        .addFields(tagField)
+                        .build())
+                .build();
+        FieldData idField = FieldData.newBuilder()
+                .setFieldName("id")
+                .setType(DataType.Int64)
+                .setScalars(ScalarField.newBuilder()
+                        .setLongData(LongArray.newBuilder().addData(1L).addData(2L).build())
+                        .build())
+                .build();
+        QueryResults results = QueryResults.newBuilder()
+                .addFieldsData(idField)
+                .addFieldsData(metadataField)
+                .addOutputFields("id")
+                .addOutputFields("metadata")
+                .build();
+
+        QueryResultsWrapper wrapper = new QueryResultsWrapper(results);
+        List<QueryResultsWrapper.RowRecord> records = wrapper.getRowRecords();
+
+        assertEquals(2, records.size());
+        assertNotNull(records.get(0).get("metadata"));
+        assertNull(records.get(1).get("metadata"));
+    }
+
+    @Test
     void testSearchResultsWrapper() {
         long topK = 5;
         long numQueries = 2;

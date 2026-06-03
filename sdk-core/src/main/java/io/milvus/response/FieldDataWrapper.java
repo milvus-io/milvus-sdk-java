@@ -460,11 +460,21 @@ public class FieldDataWrapper {
         //   ]
         for (int i = 0; i < rowCount; i++) {
             int elementCount = 0;
+            boolean isNullStruct = false;
             Map<String, List<?>> rowColumn = new HashMap<>();
             for (String key : columnsData.keySet()) {
                 List<?> val = columnsData.get(key).get(i);
                 rowColumn.put(key, val);
+                if (val == null) {
+                    isNullStruct = true;
+                    continue;
+                }
                 elementCount = val.size();
+            }
+
+            if (isNullStruct) {
+                packData.add(null);
+                continue;
             }
 
             List<Map<String, Object>> structs = new ArrayList<>();
