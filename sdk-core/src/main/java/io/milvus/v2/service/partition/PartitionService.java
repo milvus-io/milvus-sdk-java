@@ -28,6 +28,7 @@ import io.milvus.v2.service.partition.response.GetPartitionStatsResp;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PartitionService extends BaseService {
     public Void createPartition(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreatePartitionReq request) {
@@ -130,6 +131,9 @@ public class PartitionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         List<String> partitionNames = request.getPartitionNames();
+        boolean sync = Boolean.TRUE.equals(request.getSync());
+        boolean refresh = Boolean.TRUE.equals(request.getRefresh());
+        boolean skipLoadDynamicField = Boolean.TRUE.equals(request.getSkipLoadDynamicField());
         String title = String.format("Load partitions: %s in collection: '%s' in database: '%s'",
                 partitionNames, collectionName, dbName);
 
@@ -137,17 +141,22 @@ public class PartitionService extends BaseService {
                 .setCollectionName(collectionName)
                 .addAllPartitionNames(partitionNames)
                 .setReplicaNumber(request.getNumReplicas())
-                .setRefresh(request.getRefresh())
+                .setRefresh(refresh)
                 .addAllLoadFields(request.getLoadFields())
-                .setSkipLoadDynamicField(request.getSkipLoadDynamicField())
+                .setSkipLoadDynamicField(skipLoadDynamicField)
                 .addAllResourceGroups(request.getResourceGroups());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
-        Status status = blockingStub.loadPartitions(builder.build());
+
+        MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
+        if (request.getTimeout() != null && request.getTimeout() > 0) {
+            tempBlockingStub = tempBlockingStub.withDeadlineAfter(request.getTimeout(), TimeUnit.MILLISECONDS);
+        }
+        Status status = tempBlockingStub.loadPartitions(builder.build());
         rpcUtils.handleResponse(title, status);
-        if (request.getSync()) {
-            WaitForLoadPartitions(blockingStub, dbName, collectionName, partitionNames, request.getTimeout());
+        if (sync) {
+            waitForLoadPartitions(blockingStub, dbName, collectionName, partitionNames, request.getTimeout(), refresh);
         }
 
         return null;
@@ -172,9 +181,9 @@ public class PartitionService extends BaseService {
         return null;
     }
 
-    private void WaitForLoadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
-                                       String collectionName, List<String> partitions, long timeoutMs) {
-        long startTime = System.currentTimeMillis(); // Capture start time/ Timeout in milliseconds (60 seconds)
+    private void waitForLoadPartitions(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String dbName,
+                                       String collectionName, List<String> partitions, Long timeoutMs, boolean refreshLoad) {
+        long startTime = System.currentTimeMillis();
 
         while (true) {
             GetLoadingProgressRequest.Builder builder = GetLoadingProgressRequest.newBuilder()
@@ -183,24 +192,27 @@ public class PartitionService extends BaseService {
             if (StringUtils.isNotEmpty(dbName)) {
                 builder.setDbName(dbName);
             }
-            GetLoadingProgressResponse response = blockingStub.getLoadingProgress(builder.build());
+            MilvusServiceGrpc.MilvusServiceBlockingStub tempBlockingStub = blockingStub;
+            if (timeoutMs != null && timeoutMs > 0) {
+                tempBlockingStub = tempBlockingStub.withDeadlineAfter(timeoutMs, TimeUnit.MILLISECONDS);
+            }
+            GetLoadingProgressResponse response = tempBlockingStub.getLoadingProgress(builder.build());
             String title = String.format("Get loading progress of collection: '%s' in database: '%s'", collectionName, dbName);
             rpcUtils.handleResponse(title, response.getStatus());
-            if (response.getProgress() >= 100) {
+            long progress = refreshLoad ? response.getRefreshProgress() : response.getProgress();
+            if (progress >= 100L) {
                 return;
             }
 
-            // Check if timeout is exceeded
-            if (System.currentTimeMillis() - startTime > timeoutMs) {
+            if (timeoutMs != null && timeoutMs > 0 && System.currentTimeMillis() - startTime > timeoutMs) {
                 throw new MilvusClientException(ErrorCode.SERVER_ERROR, "Load partitions timeout");
             }
-            // Wait for a certain period before checking again
             try {
-                Thread.sleep(500); // Sleep for 0.5 second. Adjust this value as needed.
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 logger.error("Thread was interrupted, failed to complete operation");
-                return; // or handle interruption appropriately
+                return;
             }
         }
     }
