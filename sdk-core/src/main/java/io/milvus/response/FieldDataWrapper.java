@@ -192,6 +192,8 @@ public class FieldDataWrapper {
                 return fieldData.getScalars().getStringData().getDataCount();
             case Geometry:
                 return fieldData.getScalars().getGeometryWktData().getDataCount();
+            case Mol:
+                return fieldData.getScalars().getMolSmilesData().getDataCount();
             case JSON:
                 return fieldData.getScalars().getJsonData().getDataCount();
             case Array:
@@ -266,6 +268,7 @@ public class FieldDataWrapper {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
             case JSON:
                 return getScalarData(dt, fieldData.getScalars(), fieldData.getValidDataList());
             case ArrayOfStruct:
@@ -391,6 +394,10 @@ public class FieldDataWrapper {
             case Geometry: {
                 ProtocolStringList protoGeoList = scalar.getGeometryWktData().getDataList();
                 return setNoneData(protoGeoList.subList(0, protoGeoList.size()), validData);
+            }
+            case Mol: {
+                ProtocolStringList protoMolList = scalar.getMolSmilesData().getDataList();
+                return setNoneData(protoMolList.subList(0, protoMolList.size()), validData);
             }
             case JSON: {
                 List<ByteString> dataList = scalar.getJsonData().getDataList();
