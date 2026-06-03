@@ -490,6 +490,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Add a new struct field to collection.
+     *
+     * @param request add new struct field request
+     */
+    public void addCollectionStructField(AddCollectionStructFieldReq request) {
+        rpcUtils.retry(() -> collectionService.addCollectionStructField(this.getRpcStub(), request));
+    }
+
+    /**
      * Alter a field's properties.
      *
      * @param request alter field properties request

@@ -9,8 +9,6 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd1:/etcd
     command: etcd -advertise-client-urls=http://etcd1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -24,8 +22,6 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio1:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -44,8 +40,6 @@ services:
       ETCD_ENDPOINTS: etcd1:2379
       MINIO_ADDRESS: minio1:9000
       MQ_TYPE: woodpecker
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus1:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
@@ -67,8 +61,6 @@ services:
       - ETCD_AUTO_COMPACTION_RETENTION=1000
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/etcd2:/etcd
     command: etcd -advertise-client-urls=http://etcd2:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
@@ -82,8 +74,6 @@ services:
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/minio2:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
@@ -102,8 +92,6 @@ services:
       ETCD_ENDPOINTS: etcd2:2379
       MINIO_ADDRESS: minio2:9000
       MQ_TYPE: woodpecker
-    volumes:
-      - ${DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus2:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
