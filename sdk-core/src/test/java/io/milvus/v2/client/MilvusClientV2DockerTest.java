@@ -26,7 +26,6 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.milvus.TestUtils;
-import io.milvus.grpc.LoadState;
 import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.resourcegroup.NodeInfo;
 import io.milvus.common.resourcegroup.ResourceGroupConfig;
@@ -35,6 +34,7 @@ import io.milvus.common.resourcegroup.ResourceGroupTransfer;
 import io.milvus.common.utils.Float16Utils;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.grpc.LoadState;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
@@ -96,6 +96,14 @@ class MilvusClientV2DockerTest {
     private static final File DockerComposeFile = TestUtils.dockerComposeFile("docker-compose.yml");
     private static final File DockerComposeVolumeDirectory = new File("target/milvus-compose");
     private static final List<String> DockerComposeContainerNames = Arrays.asList("milvus-javasdk-etcd", "milvus-javasdk-minio", "milvus-javasdk-standalone");
+
+    private static ByteBuffer generateStructInt8Vector(int dimension) {
+        ByteBuffer vector = ByteBuffer.allocate(dimension);
+        for (int k = 0; k < dimension; ++k) {
+            vector.put((byte) (RANDOM.nextInt(256) - 128));
+        }
+        return vector;
+    }
 
     @BeforeAll
     public static void setUp() {
@@ -1223,9 +1231,33 @@ class MilvusClientV2DockerTest {
                         .maxLength(varcharLength)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName("vector")
+                        .fieldName("float_vector")
                         .description("dummy")
                         .dataType(DataType.FloatVector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("binary_vector")
+                        .description("dummy")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("float16_vector")
+                        .description("dummy")
+                        .dataType(DataType.Float16Vector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("bfloat16_vector")
+                        .description("dummy")
+                        .dataType(DataType.BFloat16Vector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("int8_vector")
+                        .description("dummy")
+                        .dataType(DataType.Int8Vector)
                         .dimension(32)
                         .build())
                 .build());
@@ -1242,7 +1274,7 @@ class MilvusClientV2DockerTest {
                         .maxLength(varcharLength)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName("vector")
+                        .fieldName("float_vector")
                         .description("dummy")
                         .dataType(DataType.FloatVector)
                         .dimension(64)
@@ -1260,21 +1292,49 @@ class MilvusClientV2DockerTest {
         client.createCollection(requestCreate);
 
         List<IndexParam> indexParams = new ArrayList<>();
+        Map<String, Object> ivfExtraParams = new HashMap<>();
+        ivfExtraParams.put("nlist", 64);
         indexParams.add(IndexParam.builder()
                 .fieldName(normalVectorField)
                 .indexType(IndexParam.IndexType.HNSW)
                 .metricType(IndexParam.MetricType.COSINE)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName("st1[vector]")
-                .indexName("index1")
-                .indexType(IndexParam.IndexType.HNSW)
+                .fieldName("st1[float_vector]")
+                .indexName("index_float")
+                .indexType(IndexParam.IndexType.HNSW_PQ)
                 .metricType(IndexParam.MetricType.MAX_SIM_L2)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName("st2[vector]")
-                .indexName("index2")
+                .fieldName("st1[binary_vector]")
+                .indexName("index_binary")
                 .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.MAX_SIM_HAMMING)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("st1[float16_vector]")
+                .indexName("index_float16")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
+                .extraParams(ivfExtraParams)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("st1[bfloat16_vector]")
+                .indexName("index_bfloat16")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(IndexParam.MetricType.MAX_SIM_IP)
+                .extraParams(ivfExtraParams)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("st1[int8_vector]")
+                .indexName("index_int8")
+                .indexType(IndexParam.IndexType.HNSW_SQ)
+                .metricType(IndexParam.MetricType.MAX_SIM_L2)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName("st2[float_vector]")
+                .indexName("index2")
+                .indexType(IndexParam.IndexType.HNSW_PRQ)
                 .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
                 .build());
         client.createIndex(CreateIndexReq.builder()
@@ -1285,7 +1345,6 @@ class MilvusClientV2DockerTest {
                 .collectionName(randomCollectionName)
                 .build());
 
-        // describe
         DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
                 .collectionName(randomCollectionName)
                 .build());
@@ -1297,31 +1356,42 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(DataType.Array, structSchema.getDataType());
         Assertions.assertEquals(DataType.Struct, structSchema.getElementType());
         Assertions.assertEquals(structCapacity, structSchema.getMaxCapacity());
-        Assertions.assertEquals(2, structSchema.getFields().size());
+        Assertions.assertEquals(6, structSchema.getFields().size());
+        Assertions.assertEquals(DataType.FloatVector, structSchema.getFields().get(1).getDataType());
+        Assertions.assertEquals(DataType.BinaryVector, structSchema.getFields().get(2).getDataType());
+        Assertions.assertEquals(DataType.Float16Vector, structSchema.getFields().get(3).getDataType());
+        Assertions.assertEquals(DataType.BFloat16Vector, structSchema.getFields().get(4).getDataType());
+        Assertions.assertEquals(DataType.Int8Vector, structSchema.getFields().get(5).getDataType());
 
-        CreateCollectionReq.FieldSchema field1 = structSchema.getFields().get(0);
-        Assertions.assertEquals("aaa", field1.getName());
-        Assertions.assertEquals("dummy", field1.getDescription());
-        Assertions.assertEquals(DataType.VarChar, field1.getDataType());
-        Assertions.assertEquals(varcharLength, field1.getMaxLength());
-
-        CreateCollectionReq.FieldSchema field2 = structSchema.getFields().get(1);
-        Assertions.assertEquals("vector", field2.getName());
-        Assertions.assertEquals("dummy", field2.getDescription());
-        Assertions.assertEquals(DataType.FloatVector, field2.getDataType());
-        Assertions.assertEquals(32, field2.getDimension());
-
-        DescribeIndexResp indexDesc = client.describeIndex(DescribeIndexReq.builder()
+        DescribeIndexResp binaryIndexDesc = client.describeIndex(DescribeIndexReq.builder()
                 .collectionName(randomCollectionName)
-                .fieldName("st1[vector]")
-                .indexName("index1")
+                .fieldName("st1[binary_vector]")
+                .indexName("index_binary")
                 .build());
-        Assertions.assertEquals(1, indexDesc.getIndexDescriptions().size());
-        DescribeIndexResp.IndexDesc desc = indexDesc.getIndexDescriptions().get(0);
-        Assertions.assertEquals(IndexParam.IndexType.HNSW, desc.getIndexType());
-        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_L2, desc.getMetricType());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW, binaryIndexDesc.getIndexDescriptions().get(0).getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_HAMMING, binaryIndexDesc.getIndexDescriptions().get(0).getMetricType());
+        DescribeIndexResp float16IndexDesc = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("st1[float16_vector]")
+                .indexName("index_float16")
+                .build());
+        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT, float16IndexDesc.getIndexDescriptions().get(0).getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_COSINE, float16IndexDesc.getIndexDescriptions().get(0).getMetricType());
+        DescribeIndexResp bfloat16IndexDesc = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("st1[bfloat16_vector]")
+                .indexName("index_bfloat16")
+                .build());
+        Assertions.assertEquals(IndexParam.IndexType.IVF_FLAT, bfloat16IndexDesc.getIndexDescriptions().get(0).getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_IP, bfloat16IndexDesc.getIndexDescriptions().get(0).getMetricType());
+        DescribeIndexResp int8IndexDesc = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(randomCollectionName)
+                .fieldName("st1[int8_vector]")
+                .indexName("index_int8")
+                .build());
+        Assertions.assertEquals(IndexParam.IndexType.HNSW_SQ, int8IndexDesc.getIndexDescriptions().get(0).getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.MAX_SIM_L2, int8IndexDesc.getIndexDescriptions().get(0).getMetricType());
 
-        // insert
         List<JsonObject> rows = new ArrayList<>();
         int count = 20;
         for (int i = 0; i < count; i++) {
@@ -1335,12 +1405,16 @@ class MilvusClientV2DockerTest {
                 if (k < 5) {
                     JsonObject struct = new JsonObject();
                     struct.addProperty("aaa", "No." + k);
-                    struct.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+                    struct.add("float_vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+                    struct.add("binary_vector", JsonUtils.toJsonTree(utils.generateBinaryVector(32).array()));
+                    struct.add("float16_vector", JsonUtils.toJsonTree(utils.generateFloat16Vector(32).array()));
+                    struct.add("bfloat16_vector", JsonUtils.toJsonTree(utils.generateBFloat16Vector(32).array()));
+                    struct.add("int8_vector", JsonUtils.toJsonTree(generateStructInt8Vector(32).array()));
                     structArr1.add(struct);
                 } else {
                     JsonObject struct = new JsonObject();
                     struct.addProperty("bbb", "No." + k);
-                    struct.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(64)));
+                    struct.add("float_vector", JsonUtils.toJsonTree(utils.generateFloatVector(64)));
                     structArr2.add(struct);
                 }
             }
@@ -1355,7 +1429,41 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(count, insertResp.getInsertCnt());
 
-        // upsert
+        QueryResp insertedRowQuery = client.query(QueryReq.builder()
+                .collectionName(randomCollectionName)
+                .filter(String.format("%s == 10", pkField))
+                .limit(1)
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .outputFields(Collections.singletonList("st1"))
+                .build());
+        Assertions.assertEquals(1, insertedRowQuery.getQueryResults().size());
+        Map<String, Object> insertedEntity = insertedRowQuery.getQueryResults().get(0).getEntity();
+        System.out.println("st1 of pkField=10: " + insertedEntity.get("st1"));
+        List<Map<String, Object>> actualStructs = (List<Map<String, Object>>) insertedEntity.get("st1");
+        JsonArray expectedStructs = rows.get(10).getAsJsonArray("st1");
+        Assertions.assertEquals(expectedStructs.size(), actualStructs.size());
+        for (int i = 0; i < expectedStructs.size(); i++) {
+            JsonObject expectedStruct = expectedStructs.get(i).getAsJsonObject();
+            Map<String, Object> actualStruct = actualStructs.get(i);
+            Assertions.assertEquals(expectedStruct.get("aaa").getAsString(), actualStruct.get("aaa"));
+            Assertions.assertEquals(
+                    JsonUtils.fromJson(expectedStruct.get("float_vector"), new TypeToken<List<Float>>() {
+                    }.getType()),
+                    actualStruct.get("float_vector"));
+            Assertions.assertArrayEquals(
+                    JsonUtils.fromJson(expectedStruct.get("binary_vector"), byte[].class),
+                    ((ByteBuffer) actualStruct.get("binary_vector")).array());
+            Assertions.assertArrayEquals(
+                    JsonUtils.fromJson(expectedStruct.get("float16_vector"), byte[].class),
+                    ((ByteBuffer) actualStruct.get("float16_vector")).array());
+            Assertions.assertArrayEquals(
+                    JsonUtils.fromJson(expectedStruct.get("bfloat16_vector"), byte[].class),
+                    ((ByteBuffer) actualStruct.get("bfloat16_vector")).array());
+            Assertions.assertArrayEquals(
+                    JsonUtils.fromJson(expectedStruct.get("int8_vector"), byte[].class),
+                    ((ByteBuffer) actualStruct.get("int8_vector")).array());
+        }
+
         JsonObject row = new JsonObject();
         row.addProperty(pkField, 0);
         row.addProperty(normalScalarField, "update_text");
@@ -1365,7 +1473,11 @@ class MilvusClientV2DockerTest {
         for (int k = 0; k < 2; k++) {
             JsonObject struct1 = new JsonObject();
             struct1.addProperty("aaa", "updated_No." + k);
-            struct1.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+            struct1.add("float_vector", JsonUtils.toJsonTree(utils.generateFloatVector(32)));
+            struct1.add("binary_vector", JsonUtils.toJsonTree(utils.generateBinaryVector(32).array()));
+            struct1.add("float16_vector", JsonUtils.toJsonTree(utils.generateFloat16Vector(32).array()));
+            struct1.add("bfloat16_vector", JsonUtils.toJsonTree(utils.generateBFloat16Vector(32).array()));
+            struct1.add("int8_vector", JsonUtils.toJsonTree(generateStructInt8Vector(32).array()));
             structArr1.add(struct1);
         }
         row.add("st1", structArr1);
@@ -1377,7 +1489,6 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(1, upsertResp.getUpsertCnt());
 
-        // query
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(randomCollectionName)
                 .filter(String.format("%s == 0 or %s == 9", pkField, pkField))
@@ -1387,41 +1498,93 @@ class MilvusClientV2DockerTest {
                 .build());
         List<QueryResp.QueryResult> queryResults = queryResp.getQueryResults();
         Assertions.assertEquals(2, queryResults.size());
-        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey("st1"));
-        Assertions.assertTrue(queryResults.get(0).getEntity().containsKey("st2"));
-        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey("st1"));
-        Assertions.assertTrue(queryResults.get(1).getEntity().containsKey("st2"));
 
-        // search
         EmbeddingList embList0 = new EmbeddingList();
         EmbeddingList embList1 = new EmbeddingList();
+        EmbeddingList binaryEmbList0 = new EmbeddingList();
+        EmbeddingList binaryEmbList1 = new EmbeddingList();
+        EmbeddingList float16EmbList0 = new EmbeddingList();
+        EmbeddingList float16EmbList1 = new EmbeddingList();
+        EmbeddingList bfloat16EmbList0 = new EmbeddingList();
+        EmbeddingList bfloat16EmbList1 = new EmbeddingList();
+        EmbeddingList int8EmbList0 = new EmbeddingList();
+        EmbeddingList int8EmbList1 = new EmbeddingList();
 
         List<Map<String, Object>> structs0 = (List<Map<String, Object>>) queryResults.get(0).getEntity().get("st1");
         Assertions.assertEquals(2, structs0.size());
         for (Map<String, Object> struct : structs0) {
-            embList0.add(new FloatVec((List<Float>) struct.get("vector")));
+            embList0.add(new FloatVec((List<Float>) struct.get("float_vector")));
+            binaryEmbList0.add(new BinaryVec((ByteBuffer) struct.get("binary_vector")));
+            float16EmbList0.add(new Float16Vec((ByteBuffer) struct.get("float16_vector")));
+            bfloat16EmbList0.add(new BFloat16Vec((ByteBuffer) struct.get("bfloat16_vector")));
+            int8EmbList0.add(new Int8Vec((ByteBuffer) struct.get("int8_vector")));
         }
         List<Map<String, Object>> structs1 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get("st1");
         Assertions.assertEquals(5, structs1.size());
         for (Map<String, Object> struct : structs1) {
-            embList1.add(new FloatVec((List<Float>) struct.get("vector")));
+            embList1.add(new FloatVec((List<Float>) struct.get("float_vector")));
+            binaryEmbList1.add(new BinaryVec((ByteBuffer) struct.get("binary_vector")));
+            float16EmbList1.add(new Float16Vec((ByteBuffer) struct.get("float16_vector")));
+            bfloat16EmbList1.add(new BFloat16Vec((ByteBuffer) struct.get("bfloat16_vector")));
+            int8EmbList1.add(new Int8Vec((ByteBuffer) struct.get("int8_vector")));
         }
 
         int topK = 5;
         SearchResp searchResp = client.search(SearchReq.builder()
                 .collectionName(randomCollectionName)
-                .annsField("st1[vector]")
+                .annsField("st1[float_vector]")
                 .data(Arrays.asList(embList0, embList1))
                 .limit(topK)
                 .outputFields(Collections.singletonList("st1[aaa]"))
                 .build());
-        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
-        Assertions.assertEquals(2, searchResults.size());
-        for (List<SearchResp.SearchResult> oneResults : searchResults) {
-            Assertions.assertEquals(topK, oneResults.size());
-        }
-        Assertions.assertEquals(0L, (long) searchResults.get(0).get(0).getId());
-        Assertions.assertEquals(9L, (long) searchResults.get(1).get(0).getId());
+        Assertions.assertEquals(0L, (long) searchResp.getSearchResults().get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long) searchResp.getSearchResults().get(1).get(0).getId());
+
+        SearchResp binarySearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st1[binary_vector]")
+                .data(Arrays.asList(binaryEmbList0, binaryEmbList1))
+                .limit(topK)
+                .metricType(IndexParam.MetricType.MAX_SIM_HAMMING)
+                .outputFields(Collections.singletonList("st1[aaa]"))
+                .build());
+        Assertions.assertEquals(0L, (long) binarySearchResp.getSearchResults().get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long) binarySearchResp.getSearchResults().get(1).get(0).getId());
+
+        SearchResp float16SearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st1[float16_vector]")
+                .data(Arrays.asList(float16EmbList0, float16EmbList1))
+                .limit(topK)
+                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
+                .outputFields(Collections.singletonList("st1[aaa]"))
+                .build());
+        Assertions.assertEquals(0L, (long) float16SearchResp.getSearchResults().get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long) float16SearchResp.getSearchResults().get(1).get(0).getId());
+
+        SearchResp bfloat16SearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st1[bfloat16_vector]")
+                .data(Arrays.asList(bfloat16EmbList0, bfloat16EmbList1))
+                .limit(topK)
+                .metricType(IndexParam.MetricType.MAX_SIM_IP)
+                .outputFields(Collections.singletonList("st1[aaa]"))
+                .build());
+        Assertions.assertEquals(0L, (long) bfloat16SearchResp.getSearchResults().get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long) bfloat16SearchResp.getSearchResults().get(1).get(0).getId());
+
+        SearchResp int8SearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st1[int8_vector]")
+                .data(Arrays.asList(int8EmbList0, int8EmbList1))
+                .limit(topK)
+                .metricType(IndexParam.MetricType.MAX_SIM_L2)
+                .outputFields(Collections.singletonList("st1[aaa]"))
+                .build());
+        Assertions.assertEquals(0L, (long) int8SearchResp.getSearchResults().get(0).get(0).getId());
+        Assertions.assertEquals(9L, (long) int8SearchResp.getSearchResults().get(1).get(0).getId());
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
 
     @Test

@@ -54,6 +54,26 @@ public class ConvertUtilsTest {
                 .dataType(io.milvus.v2.common.DataType.FloatVector)
                 .dimension(8)
                 .build());
+        structFieldSchema.addField(AddFieldReq.builder()
+                .fieldName("bin_vec")
+                .dataType(io.milvus.v2.common.DataType.BinaryVector)
+                .dimension(64)
+                .build());
+        structFieldSchema.addField(AddFieldReq.builder()
+                .fieldName("f16_vec")
+                .dataType(io.milvus.v2.common.DataType.Float16Vector)
+                .dimension(16)
+                .build());
+        structFieldSchema.addField(AddFieldReq.builder()
+                .fieldName("bf16_vec")
+                .dataType(io.milvus.v2.common.DataType.BFloat16Vector)
+                .dimension(16)
+                .build());
+        structFieldSchema.addField(AddFieldReq.builder()
+                .fieldName("i8_vec")
+                .dataType(io.milvus.v2.common.DataType.Int8Vector)
+                .dimension(16)
+                .build());
 
         StructArrayFieldSchema rpcStructFieldSchema = SchemaUtils.convertToGrpcStructFieldSchema(structFieldSchema);
 
@@ -82,5 +102,9 @@ public class ConvertUtilsTest {
         Assertions.assertTrue(resp.getFieldNames().contains("clips"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("vector"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[vec]"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[bin_vec]"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[f16_vec]"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[bf16_vec]"));
+        Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[i8_vec]"));
     }
 }
