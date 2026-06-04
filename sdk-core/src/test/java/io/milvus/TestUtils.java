@@ -255,9 +255,13 @@ public class TestUtils {
 
     }
 
-    public ByteBuffer generateFloat16Vector() {
-        List<Float> vector = generateFloatVector();
+    public ByteBuffer generateFloat16Vector(int dim) {
+        List<Float> vector = generateFloatVector(dim);
         return Float16Utils.f32VectorToFp16Buffer(vector);
+    }
+
+    public ByteBuffer generateFloat16Vector() {
+        return generateFloat16Vector(dimension);
     }
 
     public List<ByteBuffer> generateFloat16Vectors(int count) {
@@ -268,9 +272,13 @@ public class TestUtils {
         return vectors;
     }
 
-    public ByteBuffer generateBFloat16Vector() {
-        List<Float> vector = generateFloatVector();
+    public ByteBuffer generateBFloat16Vector(int dim) {
+        List<Float> vector = generateFloatVector(dim);
         return Float16Utils.f32VectorToBf16Buffer(vector);
+    }
+
+    public ByteBuffer generateBFloat16Vector() {
+        return generateBFloat16Vector(dimension);
     }
 
     public List<ByteBuffer> generateBFloat16Vectors(int count) {
