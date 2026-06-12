@@ -23,6 +23,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.protobuf.ByteString;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
@@ -451,20 +452,10 @@ public class DataUtils {
                     }
 
                     List<?> listOfList = (List<?>) object;
-                    if (listOfList.isEmpty()) {
-                        // struct field value is empty, fill the VectorArray with zero-dim vectors?
-                        VectorField.Builder vfBuilder = VectorField.newBuilder().setDim(dim);
-                        if (dataType == DataType.FloatVector) {
-                            vfBuilder.setFloatVector(FloatArray.newBuilder().build());
-                        } else {
-                            // not supported yet
-                            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Unsupported type: " + dataType.name());
-                        }
-                        builder.addData(vfBuilder.build());
-                        continue;
-                    }
-
                     VectorField vf = ParamUtils.genVectorField(dataType, listOfList);
+                    if (listOfList.isEmpty()) {
+                        vf = vf.toBuilder().setDim(dim).build();
+                    }
                     if (vf.getDim() != dim) {
                         String msg = String.format("Dimension mismatch for vector field, schema dimension: %d, actual dimension: %d",
                                 dim, vf.getDim());

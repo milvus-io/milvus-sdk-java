@@ -133,6 +133,8 @@ public class UtilityService extends BaseService {
                 Long flushTs = collectionFlushTs.get(collectionName);
                 boolean flushed = false;
                 while (!flushed) {
+                    logger.debug("Flush wait check: collection={}, segment_count={}, flush_ts={}",
+                            collectionName, segmentIDs.size(), flushTs);
                     GetFlushStateResponse flushResponse = blockingStub.getFlushState(GetFlushStateRequest.newBuilder()
                             .setDbName(flushResp.getDatabaseName())
                             .addAllSegmentIDs(segmentIDs)
@@ -140,6 +142,7 @@ public class UtilityService extends BaseService {
                             .build());
 
                     flushed = flushResponse.getFlushed();
+                    logger.debug("Flush wait result: collection={}, flushed={}", collectionName, flushed);
                     try {
                         TimeUnit.SECONDS.sleep(1);
                     } catch (InterruptedException t) {
