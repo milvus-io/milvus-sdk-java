@@ -20,6 +20,9 @@
 package io.milvus.v2.service.rbac;
 
 import io.milvus.grpc.CreateCredentialRequest;
+import io.milvus.grpc.SelectUserRequest;
+import io.milvus.grpc.SelectUserResponse;
+import io.milvus.grpc.Status;
 import io.milvus.grpc.UpdateCredentialRequest;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.rbac.request.CreateUserReq;
@@ -36,7 +39,11 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UserTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UserTest.class);
@@ -54,6 +61,25 @@ class UserTest extends BaseTest {
                 .build();
         DescribeUserResp resp = client_v2.describeUser(req);
         logger.info("resp: {}", resp);
+        assertEquals("user description", resp.getDescription());
+
+        ArgumentCaptor<SelectUserRequest> captor = ArgumentCaptor.forClass(SelectUserRequest.class);
+        verify(blockingStub).selectUser(captor.capture());
+        assertEquals("test", captor.getValue().getUser().getName());
+    }
+
+    @Test
+    void testDescribeUserNotFound() {
+        Status successStatus = Status.newBuilder().setCode(0).build();
+        when(blockingStub.selectUser(any())).thenReturn(SelectUserResponse.newBuilder().setStatus(successStatus).build());
+
+        DescribeUserReq req = DescribeUserReq.builder()
+                .userName("missing")
+                .build();
+        DescribeUserResp resp = client_v2.describeUser(req);
+        assertNotNull(resp.getRoles());
+        assertTrue(resp.getRoles().isEmpty());
+        assertEquals("", resp.getDescription());
     }
 
     @Test

@@ -209,8 +209,14 @@ public class RBACService extends BaseService {
                 .build();
         SelectUserResponse response = blockingStub.selectUser(selectUserRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+        List<UserResult> results = response.getResultsList();
+        String description = results.isEmpty() ? "" : results.get(0).getDescription();
+        List<String> roles = results.isEmpty()
+                ? new ArrayList<>()
+                : results.get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList());
         DescribeUserResp describeUserResp = DescribeUserResp.builder()
-                .roles(response.getResultsList().isEmpty() ? null : response.getResultsList().get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList()))
+                .roles(roles)
+                .description(description)
                 .build();
         return describeUserResp;
     }

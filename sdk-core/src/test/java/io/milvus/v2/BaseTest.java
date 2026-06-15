@@ -166,7 +166,7 @@ public class BaseTest {
         when(blockingStub.createCredential(any())).thenReturn(successStatus);
         when(blockingStub.updateCredential(any())).thenReturn(successStatus);
         when(blockingStub.deleteCredential(any())).thenReturn(successStatus);
-        when(blockingStub.selectUser(any())).thenReturn(SelectUserResponse.newBuilder().setStatus(successStatus).addResults(UserResult.newBuilder().setUser(UserEntity.newBuilder().setName("user_test").build()).build()).build());
+        when(blockingStub.selectUser(any())).thenReturn(SelectUserResponse.newBuilder().setStatus(successStatus).addResults(UserResult.newBuilder().setUser(UserEntity.newBuilder().setName("user_test").build()).setDescription("user description").build()).build());
 
         // utility api
         when(blockingStub.flush(any())).thenReturn(FlushResponse.newBuilder().setStatus(successStatus).build());
