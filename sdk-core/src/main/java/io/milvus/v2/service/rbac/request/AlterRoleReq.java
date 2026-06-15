@@ -19,11 +19,11 @@
 
 package io.milvus.v2.service.rbac.request;
 
-public class CreateRoleReq {
+public class AlterRoleReq {
     private String roleName;
     private String description;
 
-    private CreateRoleReq(CreateRoleReqBuilder builder) {
+    private AlterRoleReq(AlterRoleReqBuilder builder) {
         this.roleName = builder.roleName;
         this.description = builder.description;
     }
@@ -46,35 +46,35 @@ public class CreateRoleReq {
 
     @Override
     public String toString() {
-        return "CreateRoleReq{" +
+        return "AlterRoleReq{" +
                 "roleName='" + roleName + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }
 
-    public static CreateRoleReqBuilder builder() {
-        return new CreateRoleReqBuilder();
+    public static AlterRoleReqBuilder builder() {
+        return new AlterRoleReqBuilder();
     }
 
-    public static class CreateRoleReqBuilder {
+    public static class AlterRoleReqBuilder {
         private String roleName;
         private String description = "";
 
-        private CreateRoleReqBuilder() {
+        private AlterRoleReqBuilder() {
         }
 
-        public CreateRoleReqBuilder roleName(String roleName) {
+        public AlterRoleReqBuilder roleName(String roleName) {
             this.roleName = roleName;
             return this;
         }
 
-        public CreateRoleReqBuilder description(String description) {
+        public AlterRoleReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public CreateRoleReq build() {
-            return new CreateRoleReq(this);
+        public AlterRoleReq build() {
+            return new AlterRoleReq(this);
         }
     }
 }

@@ -153,8 +153,9 @@ public class BaseTest {
 
         // role api
         when(blockingStub.createRole(any())).thenReturn(successStatus);
+        when(blockingStub.alterRole(any())).thenReturn(successStatus);
         when(blockingStub.dropRole(any())).thenReturn(successStatus);
-        when(blockingStub.selectRole(any())).thenReturn(SelectRoleResponse.newBuilder().setStatus(successStatus).addResults(RoleResult.newBuilder().setRole(RoleEntity.newBuilder().setName("role_test").build()).build()).build());
+        when(blockingStub.selectRole(any())).thenReturn(SelectRoleResponse.newBuilder().setStatus(successStatus).addResults(RoleResult.newBuilder().setRole(RoleEntity.newBuilder().setName("role_test").setDescription("role description").build()).build()).build());
         when(blockingStub.selectGrant(any())).thenReturn(SelectGrantResponse.newBuilder().setStatus(successStatus).addEntities(GrantEntity.newBuilder().setDbName("test").setObjectName("test").setObject(ObjectEntity.newBuilder().setName("test").build()).build()).build());
 
         when(blockingStub.operatePrivilege(any())).thenReturn(successStatus);
