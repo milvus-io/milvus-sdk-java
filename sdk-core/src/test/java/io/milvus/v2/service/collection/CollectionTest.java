@@ -133,7 +133,7 @@ class CollectionTest extends BaseTest {
                 .collectionName("test")
                 .collectionSchema(collectionSchema)
                 .indexParams(Arrays.asList(indexParam, indexParam2))
-                .indexParam(IndexParam.builder() // fluent api, add index param
+                .indexParam(IndexParam.builder()
                         .fieldName("id")
                         .indexType(IndexParam.IndexType.INVERTED)
                         .build()
@@ -164,6 +164,26 @@ class CollectionTest extends BaseTest {
                         .fieldName("embedding")
                         .dataType(DataType.FloatVector)
                         .dimension(4)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("binary_embedding")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(32)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("float16_embedding")
+                        .dataType(DataType.Float16Vector)
+                        .dimension(16)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("bfloat16_embedding")
+                        .dataType(DataType.BFloat16Vector)
+                        .dimension(16)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("int8_embedding")
+                        .dataType(DataType.Int8Vector)
+                        .dimension(16)
                         .build())
                 .typeParam("mmap.enabled", "true")
                 .typeParam("warmup", "{\"policy\":\"async\"}")
@@ -196,6 +216,34 @@ class CollectionTest extends BaseTest {
         Assertions.assertEquals(io.milvus.grpc.DataType.FloatVector, embeddingField.getElementType());
         Assertions.assertEquals("4", getParam(embeddingField.getTypeParamsList(), "dim"));
         Assertions.assertEquals("16", getParam(embeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema binaryEmbeddingField = structSchema.getFields(2);
+        Assertions.assertEquals("binary_embedding", binaryEmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, binaryEmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.BinaryVector, binaryEmbeddingField.getElementType());
+        Assertions.assertEquals("32", getParam(binaryEmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(binaryEmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema float16EmbeddingField = structSchema.getFields(3);
+        Assertions.assertEquals("float16_embedding", float16EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, float16EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Float16Vector, float16EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(float16EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(float16EmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema bfloat16EmbeddingField = structSchema.getFields(4);
+        Assertions.assertEquals("bfloat16_embedding", bfloat16EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, bfloat16EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.BFloat16Vector, bfloat16EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(bfloat16EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(bfloat16EmbeddingField.getTypeParamsList(), "max_capacity"));
+
+        FieldSchema int8EmbeddingField = structSchema.getFields(5);
+        Assertions.assertEquals("int8_embedding", int8EmbeddingField.getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.ArrayOfVector, int8EmbeddingField.getDataType());
+        Assertions.assertEquals(io.milvus.grpc.DataType.Int8Vector, int8EmbeddingField.getElementType());
+        Assertions.assertEquals("16", getParam(int8EmbeddingField.getTypeParamsList(), "dim"));
+        Assertions.assertEquals("16", getParam(int8EmbeddingField.getTypeParamsList(), "max_capacity"));
     }
 
     @Test
