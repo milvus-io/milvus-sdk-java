@@ -23,6 +23,7 @@ import io.milvus.grpc.PlaceholderType;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +77,25 @@ public class EmbeddingList implements BaseVector {
                     floats.addAll((List<Object>) vec.getData());
                 }
                 return floats;
+            case BinaryVector:
+            case Float16Vector:
+            case BFloat16Vector:
+            case Int8Vector:
+                int totalBytes = 0;
+                List<ByteBuffer> buffers = new ArrayList<>();
+                for (BaseVector vec : data) {
+                    ByteBuffer buf = ((ByteBuffer) vec.getData()).asReadOnlyBuffer();
+                    totalBytes += buf.limit();
+                    buffers.add(buf);
+                }
+                ByteBuffer merged = ByteBuffer.allocate(totalBytes);
+                for (ByteBuffer buf : buffers) {
+                    ByteBuffer copy = buf.asReadOnlyBuffer();
+                    copy.position(0);
+                    merged.put(copy);
+                }
+                return merged;
             default:
-                // so far,
                 throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Unsupported vector type: " + pt.name());
         }
     }

@@ -28,25 +28,37 @@ import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
-import io.milvus.v2.service.collection.request.*;
+import io.milvus.v2.service.collection.request.AddCollectionStructFieldReq;
+import io.milvus.v2.service.collection.request.AddFieldReq;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.collection.request.DescribeCollectionReq;
+import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.collection.request.LoadCollectionReq;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.request.CreateIndexReq;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.request.SearchReq;
+import io.milvus.v2.service.vector.request.data.BFloat16Vec;
 import io.milvus.v2.service.vector.request.data.BaseVector;
+import io.milvus.v2.service.vector.request.data.BinaryVec;
 import io.milvus.v2.service.vector.request.data.EmbeddingList;
+import io.milvus.v2.service.vector.request.data.Float16Vec;
 import io.milvus.v2.service.vector.request.data.FloatVec;
+import io.milvus.v2.service.vector.request.data.Int8Vec;
 import io.milvus.v2.service.vector.response.InsertResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 public class StructExample {
     private static final MilvusClientV2 client;
@@ -62,13 +74,24 @@ public class StructExample {
     private static final String NAME_FIELD = "film_name";
     private static final String STRUCT_FIELD = "clips";
     private static final String FRAME_FIELD = "frame_number";
-    private static final String CLIP_VECTOR_FIELD = "clip_embedding";
     private static final String DESC_FIELD = "clip_desc";
-    private static final String DESC_VECTOR_FIELD = "description_embedding";
+    private static final String FLOAT_VECTOR_FIELD = "clip_float_embedding";
+    private static final String BINARY_VECTOR_FIELD = "clip_binary_embedding";
+    private static final String FLOAT16_VECTOR_FIELD = "clip_float16_embedding";
+    private static final String BFLOAT16_VECTOR_FIELD = "clip_bfloat16_embedding";
+    private static final String INT8_VECTOR_FIELD = "clip_int8_embedding";
     private static final String EXTRA_STRUCT_FIELD = "metadata";
     private static final String RATING_FIELD = "rating";
     private static final String TAG_FIELD = "tag";
-    private static final Integer VECTOR_DIM = 128;
+    private static final int FLOAT_VECTOR_DIM = 128;
+    private static final int BINARY_VECTOR_DIM = 32;
+    private static final int FLOAT16_VECTOR_DIM = 32;
+    private static final int INT8_VECTOR_DIM = 32;
+    private static final int IVF_NLIST = 64;
+    private static final IndexParam.MetricType FLOAT_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_IP;
+    private static final IndexParam.MetricType BINARY_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_HAMMING;
+    private static final IndexParam.MetricType FLOAT16_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_COSINE;
+    private static final IndexParam.MetricType INT8_VECTOR_METRIC = IndexParam.MetricType.MAX_SIM_L2;
     private static final Random RANDOM = new Random();
     private static final long EXTRA_ROW_ID = 5000L;
 
@@ -98,22 +121,40 @@ public class StructExample {
                         .dataType(DataType.Int32)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(CLIP_VECTOR_FIELD)
-                        .description("embedding of a clip")
-                        .dataType(DataType.FloatVector)
-                        .dimension(VECTOR_DIM)
-                        .build())
-                .addStructField(AddFieldReq.builder()
                         .fieldName(DESC_FIELD)
                         .description("description of a clip")
                         .dataType(DataType.VarChar)
                         .maxLength(1024)
                         .build())
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(DESC_VECTOR_FIELD)
-                        .description("embedding of description")
+                        .fieldName(FLOAT_VECTOR_FIELD)
+                        .description("float embedding of a clip")
                         .dataType(DataType.FloatVector)
-                        .dimension(VECTOR_DIM)
+                        .dimension(FLOAT_VECTOR_DIM)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(BINARY_VECTOR_FIELD)
+                        .description("binary embedding of a clip")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(BINARY_VECTOR_DIM)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(FLOAT16_VECTOR_FIELD)
+                        .description("float16 embedding of a clip")
+                        .dataType(DataType.Float16Vector)
+                        .dimension(FLOAT16_VECTOR_DIM)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(BFLOAT16_VECTOR_FIELD)
+                        .description("bfloat16 embedding of a clip")
+                        .dataType(DataType.BFloat16Vector)
+                        .dimension(FLOAT16_VECTOR_DIM)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName(INT8_VECTOR_FIELD)
+                        .description("int8 embedding of a clip")
+                        .dataType(DataType.Int8Vector)
+                        .dimension(INT8_VECTOR_DIM)
                         .build())
                 .build());
 
@@ -124,7 +165,7 @@ public class StructExample {
                 .elementType(DataType.Struct)
                 .maxCapacity(100)
                 .addStructField(AddFieldReq.builder()
-                        .fieldName(CLIP_VECTOR_FIELD)
+                        .fieldName(FLOAT_VECTOR_FIELD)
                         .description("clip has been simplified")
                         .dataType(DataType.FloatVector)
                         .dimension(32)
@@ -141,23 +182,45 @@ public class StructExample {
                 .build());
 
         List<IndexParam> indexParams = new ArrayList<>();
+        Map<String, Object> ivfExtraParams = new HashMap<>();
+        ivfExtraParams.put("nlist", IVF_NLIST);
         indexParams.add(IndexParam.builder()
-                .fieldName(String.format("%s[%s]", STRUCT_FIELD, CLIP_VECTOR_FIELD))
-                .indexName("index_1")
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, FLOAT_VECTOR_FIELD))
+                .indexName("index_float")
                 .indexType(IndexParam.IndexType.HNSW)
-                .metricType(IndexParam.MetricType.MAX_SIM_L2)
+                .metricType(FLOAT_VECTOR_METRIC)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName(String.format("%s[%s]", STRUCT_FIELD, DESC_VECTOR_FIELD))
-                .indexName("index_2")
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, BINARY_VECTOR_FIELD))
+                .indexName("index_binary")
                 .indexType(IndexParam.IndexType.HNSW)
-                .metricType(IndexParam.MetricType.MAX_SIM_IP)
+                .metricType(BINARY_VECTOR_METRIC)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName(String.format("simplify_clips[%s]", CLIP_VECTOR_FIELD))
-                .indexName("index_3")
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, FLOAT16_VECTOR_FIELD))
+                .indexName("index_float16")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(FLOAT16_VECTOR_METRIC)
+                .extraParams(ivfExtraParams)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, BFLOAT16_VECTOR_FIELD))
+                .indexName("index_bfloat16")
+                .indexType(IndexParam.IndexType.IVF_FLAT)
+                .metricType(FLOAT16_VECTOR_METRIC)
+                .extraParams(ivfExtraParams)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(String.format("%s[%s]", STRUCT_FIELD, INT8_VECTOR_FIELD))
+                .indexName("index_int8")
                 .indexType(IndexParam.IndexType.HNSW)
-                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
+                .metricType(INT8_VECTOR_METRIC)
+                .build());
+        indexParams.add(IndexParam.builder()
+                .fieldName(String.format("simplify_clips[%s]", FLOAT_VECTOR_FIELD))
+                .indexName("index_simplify")
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(FLOAT_VECTOR_METRIC)
                 .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -187,9 +250,12 @@ public class StructExample {
         for (int k = 0; k < 5; k++) {
             JsonObject struct = new JsonObject();
             struct.addProperty(FRAME_FIELD, RANDOM.nextInt(10000));
-            struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
             struct.addProperty(DESC_FIELD, "clip_description_" + id);
-            struct.add(DESC_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(VECTOR_DIM)));
+            struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(FLOAT_VECTOR_DIM)));
+            struct.add(BINARY_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateBinaryVector(BINARY_VECTOR_DIM).array()));
+            struct.add(FLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, false).array()));
+            struct.add(BFLOAT16_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloat16Vector(FLOAT16_VECTOR_DIM, true).array()));
+            struct.add(INT8_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateInt8Vector(INT8_VECTOR_DIM).array()));
             structArr.add(struct);
         }
         row.add(STRUCT_FIELD, structArr);
@@ -197,7 +263,7 @@ public class StructExample {
         JsonArray simplifyClips = new JsonArray();
         for (int k = 0; k < 2; k++) {
             JsonObject struct = new JsonObject();
-            struct.add(CLIP_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
+            struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
             simplifyClips.add(struct);
         }
         row.add("simplify_clips", simplifyClips);
@@ -236,6 +302,7 @@ public class StructExample {
         QueryResp queryResp = client.query(QueryReq.builder()
                 .collectionName(COLLECTION_NAME)
                 .filter(filter)
+                .limit(3)
                 .consistencyLevel(ConsistencyLevel.BOUNDED)
                 .outputFields(Arrays.asList(STRUCT_FIELD, "simplify_clips"))
                 .build());
@@ -260,7 +327,7 @@ public class StructExample {
                 .outputFields(Arrays.asList(NAME_FIELD,
                         String.format("%s[%s]", STRUCT_FIELD, FRAME_FIELD),
                         String.format("%s[%s]", STRUCT_FIELD, DESC_FIELD),
-                        String.format("simplify_clips[%s]", CLIP_VECTOR_FIELD)))
+                        String.format("simplify_clips[%s]", FLOAT_VECTOR_FIELD)))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (int i = 0; i < searchResults.size(); i++) {
@@ -269,6 +336,69 @@ public class StructExample {
                 System.out.println(result);
             }
         }
+    }
+
+    private static void searchStructField(String annsField,
+                                          String filter,
+                                          Function<Map<String, Object>, BaseVector> converter,
+                                          String title) {
+        List<QueryResp.QueryResult> queryResults = query(filter);
+        List<BaseVector> searchData = new ArrayList<>();
+        for (QueryResp.QueryResult result : queryResults) {
+            List<Map<String, Object>> structs = (List<Map<String, Object>>) result.getEntity().get(STRUCT_FIELD);
+            EmbeddingList embList = new EmbeddingList();
+            for (Map<String, Object> struct : structs) {
+                embList.add(converter.apply(struct));
+            }
+            searchData.add(embList);
+        }
+
+        search(annsField, searchData);
+    }
+
+    private static void searchFloatVectorField(String filter) {
+        searchStructField(
+                FLOAT_VECTOR_FIELD,
+                filter,
+                struct -> new FloatVec((List<Float>) struct.get(FLOAT_VECTOR_FIELD)),
+                "Search on float field '" + FLOAT_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
+        );
+    }
+
+    private static void searchBinaryVectorField(String filter) {
+        searchStructField(
+                BINARY_VECTOR_FIELD,
+                filter,
+                struct -> new BinaryVec((ByteBuffer) struct.get(BINARY_VECTOR_FIELD)),
+                "Search on binary field '" + BINARY_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
+        );
+    }
+
+    private static void searchFloat16VectorField(String filter) {
+        searchStructField(
+                FLOAT16_VECTOR_FIELD,
+                filter,
+                struct -> new Float16Vec((ByteBuffer) struct.get(FLOAT16_VECTOR_FIELD)),
+                "Search on float16 field '" + FLOAT16_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
+        );
+    }
+
+    private static void searchBFloat16VectorField(String filter) {
+        searchStructField(
+                BFLOAT16_VECTOR_FIELD,
+                filter,
+                struct -> new BFloat16Vec((ByteBuffer) struct.get(BFLOAT16_VECTOR_FIELD)),
+                "Search on bfloat16 field '" + BFLOAT16_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
+        );
+    }
+
+    private static void searchInt8VectorField(String filter) {
+        searchStructField(
+                INT8_VECTOR_FIELD,
+                filter,
+                struct -> new Int8Vec((ByteBuffer) struct.get(INT8_VECTOR_FIELD)),
+                "Search on int8 field '" + INT8_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
+        );
     }
 
     private static JsonArray buildMetadataStructArray() {
@@ -356,17 +486,17 @@ public class StructExample {
             createCollection();
             insertData(2000);
 
-            List<QueryResp.QueryResult> results = query(ID_FIELD + " in [5, 8]");
-            for (QueryResp.QueryResult result : results) {
-                Map<String, Object> fetchedEntity = result.getEntity();
-                List<Map<String, Object>> structs = (List<Map<String, Object>>) fetchedEntity.get(STRUCT_FIELD);
-                EmbeddingList embList = new EmbeddingList();
-                for (Map<String, Object> struct : structs) {
-                    List<Float> vector = (List<Float>) struct.get(CLIP_VECTOR_FIELD);
-                    embList.add(new FloatVec(vector));
-                }
-                search(CLIP_VECTOR_FIELD, Collections.singletonList(embList));
-            }
+            searchFloatVectorField(ID_FIELD + " in [5, 8]");
+
+            String filter1 = String.format("MATCH_LEAST(%s, $[%s] < 2000, threshold=3)", STRUCT_FIELD, FRAME_FIELD);
+            searchBinaryVectorField(filter1);
+
+            searchFloat16VectorField(ID_FIELD + " < 10");
+
+            String filter2 = String.format("MATCH_ANY(%s, $[%s] == \"clip_description_8\")", STRUCT_FIELD, DESC_FIELD);
+            searchBFloat16VectorField(filter2);
+
+            searchInt8VectorField(ID_FIELD + " == 999");
 
             addCollectionStructField();
         } finally {
