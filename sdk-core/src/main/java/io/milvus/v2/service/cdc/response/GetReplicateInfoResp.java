@@ -177,6 +177,9 @@ public class GetReplicateInfoResp {
 
     public static class MessageID {
         private String id;
+        /**
+         * WAL implementation name. Supported values: RocksMQ, Pulsar, Kafka, WoodPecker.
+         */
         private String walName;
 
         public static MessageID fromGRPC(io.milvus.grpc.MessageID messageID) {
@@ -203,6 +206,9 @@ public class GetReplicateInfoResp {
             this.id = id;
         }
 
+        /**
+         * WAL implementation name. Supported values: RocksMQ, Pulsar, Kafka, WoodPecker.
+         */
         public String getWalName() {
             return walName;
         }
@@ -228,6 +234,9 @@ public class GetReplicateInfoResp {
                 return this;
             }
 
+            /**
+             * WAL implementation name. Supported values: RocksMQ, Pulsar, Kafka, WoodPecker.
+             */
             public MessageIDBuilder walName(String walName) {
                 this.walName = walName;
                 return this;

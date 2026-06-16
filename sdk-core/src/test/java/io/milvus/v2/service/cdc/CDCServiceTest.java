@@ -19,18 +19,30 @@
 
 package io.milvus.v2.service.cdc;
 
+import io.milvus.grpc.DumpMessagesResponse;
+import io.milvus.grpc.Status;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
+import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
 import io.milvus.v2.service.cdc.request.ReplicateConfiguration;
+import io.milvus.v2.service.cdc.response.DumpMessageInfo;
+import io.milvus.v2.service.cdc.response.DumpMessagesResp;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class CDCServiceTest extends BaseTest {
     @Test
@@ -91,5 +103,71 @@ public class CDCServiceTest extends BaseTest {
         assertEquals(1, replicateConfiguration.getCrossClusterTopologies().size());
         assertEquals("source_cluster", replicateConfiguration.getCrossClusterTopologies().get(0).getSourceClusterId());
         assertEquals("target_cluster", replicateConfiguration.getCrossClusterTopologies().get(0).getTargetClusterId());
+    }
+
+    @Test
+    void testDumpMessages() {
+        DumpMessagesReq req = DumpMessagesReq.builder()
+                .pchannel("by-dev-rootcoord-dml_0")
+                .startMessageID(GetReplicateInfoResp.MessageID.builder()
+                        .id("message-id-2")
+                        .walName("Kafka")
+                        .build())
+                .startTimetick(2000L)
+                .endTimetick(3000L)
+                .build();
+
+        DumpMessagesResp resp = client_v2.dumpMessages(req);
+        List<DumpMessageInfo> messages = new ArrayList<>();
+        for (DumpMessageInfo message : resp) {
+            messages.add(message);
+        }
+
+        assertEquals(2, messages.size());
+        assertEquals("message-id-2", messages.get(0).getMessageID().getId());
+        assertEquals("Kafka", messages.get(0).getMessageID().getWalName());
+        assertArrayEquals("payload-1".getBytes(), messages.get(0).getPayload());
+        assertEquals("primary", messages.get(0).getProperties().get("source"));
+        assertEquals("message-id-3", messages.get(1).getMessageID().getId());
+        assertEquals("Pulsar", messages.get(1).getMessageID().getWalName());
+        assertArrayEquals("payload-2".getBytes(), messages.get(1).getPayload());
+        assertEquals("secondary", messages.get(1).getProperties().get("source"));
+    }
+
+    @Test
+    void testDumpMessagesErrorStatus() {
+        when(blockingStub.dumpMessages(any())).thenReturn(Arrays.asList(
+                DumpMessagesResponse.newBuilder()
+                        .setStatus(Status.newBuilder().setCode(1).setReason("dump failed").build())
+                        .build()).iterator());
+
+        DumpMessagesReq req = DumpMessagesReq.builder()
+                .pchannel("by-dev-rootcoord-dml_0")
+                .startMessageID(GetReplicateInfoResp.MessageID.builder()
+                        .id("message-id-2")
+                        .walName("Kafka")
+                        .build())
+                .build();
+
+        DumpMessagesResp resp = client_v2.dumpMessages(req);
+        assertThrows(MilvusClientException.class, () -> resp.iterator().hasNext());
+    }
+
+    @Test
+    void testDumpMessagesValidation() {
+        assertThrows(MilvusClientException.class, () -> client_v2.dumpMessages(DumpMessagesReq.builder()
+                .startMessageID(GetReplicateInfoResp.MessageID.builder().id("message-id-2").walName("Kafka").build())
+                .build()));
+        assertThrows(MilvusClientException.class, () -> client_v2.dumpMessages(DumpMessagesReq.builder()
+                .pchannel("by-dev-rootcoord-dml_0")
+                .build()));
+        assertThrows(MilvusClientException.class, () -> client_v2.dumpMessages(DumpMessagesReq.builder()
+                .pchannel("by-dev-rootcoord-dml_0")
+                .startMessageID(GetReplicateInfoResp.MessageID.builder().walName("Kafka").build())
+                .build()));
+        assertThrows(MilvusClientException.class, () -> client_v2.dumpMessages(DumpMessagesReq.builder()
+                .pchannel("by-dev-rootcoord-dml_0")
+                .startMessageID(GetReplicateInfoResp.MessageID.builder().id("message-id-2").walName("NotARealWal").build())
+                .build()));
     }
 }
