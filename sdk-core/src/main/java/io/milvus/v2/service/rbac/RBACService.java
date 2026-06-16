@@ -44,12 +44,27 @@ public class RBACService extends BaseService {
 
     public Void createRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateRoleReq request) {
         String title = String.format("Create role: '%s'", request.getRoleName());
+        RoleEntity.Builder entityBuilder = RoleEntity.newBuilder()
+                .setName(request.getRoleName());
+        if (StringUtils.isNotEmpty(request.getDescription())) {
+            entityBuilder.setDescription(request.getDescription());
+        }
         CreateRoleRequest createRoleRequest = CreateRoleRequest.newBuilder()
-                .setEntity(RoleEntity.newBuilder()
-                        .setName(request.getRoleName())
-                        .build())
+                .setEntity(entityBuilder.build())
                 .build();
         Status status = blockingStub.createRole(createRoleRequest);
+        rpcUtils.handleResponse(title, status);
+
+        return null;
+    }
+
+    public Void alterRole(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterRoleReq request) {
+        String title = String.format("Alter role: '%s'", request.getRoleName());
+        AlterRoleRequest alterRoleRequest = AlterRoleRequest.newBuilder()
+                .setRoleName(request.getRoleName())
+                .setDescription(request.getDescription() == null ? "" : request.getDescription())
+                .build();
+        Status status = blockingStub.alterRole(alterRoleRequest);
         rpcUtils.handleResponse(title, status);
 
         return null;
@@ -72,7 +87,17 @@ public class RBACService extends BaseService {
                 .build();
         SelectGrantResponse response = blockingStub.selectGrant(selectGrantRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+
+        SelectRoleRequest selectRoleRequest = SelectRoleRequest.newBuilder()
+                .setRole(RoleEntity.newBuilder().setName(roleName).build())
+                .build();
+        SelectRoleResponse selectRoleResponse = blockingStub.selectRole(selectRoleRequest);
+        rpcUtils.handleResponse(title, selectRoleResponse.getStatus());
+        String description = selectRoleResponse.getResultsList().isEmpty()
+                ? "" : selectRoleResponse.getResultsList().get(0).getRole().getDescription();
+
         DescribeRoleResp describeRoleResp = DescribeRoleResp.builder()
+                .description(description)
                 .grantInfos(response.getEntitiesList().stream().map(entity -> DescribeRoleResp.GrantInfo.builder()
                         .dbName(entity.getDbName())
                         .objectName(entity.getObjectName())
@@ -184,19 +209,27 @@ public class RBACService extends BaseService {
                 .build();
         SelectUserResponse response = blockingStub.selectUser(selectUserRequest);
         rpcUtils.handleResponse(title, response.getStatus());
+        List<UserResult> results = response.getResultsList();
+        String description = results.isEmpty() ? "" : results.get(0).getDescription();
+        List<String> roles = results.isEmpty()
+                ? new ArrayList<>()
+                : results.get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList());
         DescribeUserResp describeUserResp = DescribeUserResp.builder()
-                .roles(response.getResultsList().isEmpty() ? null : response.getResultsList().get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList()))
+                .roles(roles)
+                .description(description)
                 .build();
         return describeUserResp;
     }
 
     public Void createUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateUserReq request) {
         String title = String.format("Create user: '%s'", request.getUserName());
-        CreateCredentialRequest createCredentialRequest = CreateCredentialRequest.newBuilder()
+        CreateCredentialRequest.Builder builder = CreateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
-                .setPassword(Base64.getEncoder().encodeToString(request.getPassword().getBytes(StandardCharsets.UTF_8)))
-                .build();
-        Status response = blockingStub.createCredential(createCredentialRequest);
+                .setPassword(Base64.getEncoder().encodeToString(request.getPassword().getBytes(StandardCharsets.UTF_8)));
+        if (StringUtils.isNotEmpty(request.getDescription())) {
+            builder.setDescription(request.getDescription());
+        }
+        Status response = blockingStub.createCredential(builder.build());
         rpcUtils.handleResponse(title, response);
 
         return null;
@@ -205,10 +238,24 @@ public class RBACService extends BaseService {
 
     public Void updatePassword(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdatePasswordReq request) {
         String title = String.format("Update password for user: '%s'", request.getUserName());
-        UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
+        UpdateCredentialRequest.Builder builder = UpdateCredentialRequest.newBuilder()
                 .setUsername(request.getUserName())
                 .setOldPassword(Base64.getEncoder().encodeToString(request.getPassword().getBytes(StandardCharsets.UTF_8)))
-                .setNewPassword(Base64.getEncoder().encodeToString(request.getNewPassword().getBytes(StandardCharsets.UTF_8)))
+                .setNewPassword(Base64.getEncoder().encodeToString(request.getNewPassword().getBytes(StandardCharsets.UTF_8)));
+        if (StringUtils.isNotEmpty(request.getDescription())) {
+            builder.setDescription(request.getDescription());
+        }
+        Status response = blockingStub.updateCredential(builder.build());
+        rpcUtils.handleResponse(title, response);
+
+        return null;
+    }
+
+    public Void updateUser(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpdateUserReq request) {
+        String title = String.format("Update user: '%s'", request.getUserName());
+        UpdateCredentialRequest updateCredentialRequest = UpdateCredentialRequest.newBuilder()
+                .setUsername(request.getUserName())
+                .setDescription(request.getDescription() == null ? "" : request.getDescription())
                 .build();
         Status response = blockingStub.updateCredential(updateCredentialRequest);
         rpcUtils.handleResponse(title, response);

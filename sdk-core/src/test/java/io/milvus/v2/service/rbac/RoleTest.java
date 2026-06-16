@@ -19,13 +19,21 @@
 
 package io.milvus.v2.service.rbac;
 
+import io.milvus.grpc.AlterRoleRequest;
+import io.milvus.grpc.CreateRoleRequest;
+import io.milvus.grpc.SelectRoleRequest;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.rbac.request.*;
+import io.milvus.v2.service.rbac.response.DescribeRoleResp;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 
 class RoleTest extends BaseTest {
 
@@ -45,11 +53,44 @@ class RoleTest extends BaseTest {
     }
 
     @Test
+    void testCreateRoleWithDescription() {
+        CreateRoleReq request = CreateRoleReq.builder()
+                .roleName("test")
+                .description("a role for testing")
+                .build();
+        client_v2.createRole(request);
+
+        ArgumentCaptor<CreateRoleRequest> captor = ArgumentCaptor.forClass(CreateRoleRequest.class);
+        verify(blockingStub).createRole(captor.capture());
+        assertEquals("test", captor.getValue().getEntity().getName());
+        assertEquals("a role for testing", captor.getValue().getEntity().getDescription());
+    }
+
+    @Test
+    void testAlterRole() {
+        AlterRoleReq request = AlterRoleReq.builder()
+                .roleName("test")
+                .description("an updated description")
+                .build();
+        client_v2.alterRole(request);
+
+        ArgumentCaptor<AlterRoleRequest> captor = ArgumentCaptor.forClass(AlterRoleRequest.class);
+        verify(blockingStub).alterRole(captor.capture());
+        assertEquals("test", captor.getValue().getRoleName());
+        assertEquals("an updated description", captor.getValue().getDescription());
+    }
+
+    @Test
     void testDescribeRole() {
         DescribeRoleReq describeRoleReq = DescribeRoleReq.builder()
                 .roleName("db_rw")
                 .build();
-        client_v2.describeRole(describeRoleReq);
+        DescribeRoleResp resp = client_v2.describeRole(describeRoleReq);
+        assertEquals("role description", resp.getDescription());
+
+        ArgumentCaptor<SelectRoleRequest> roleCaptor = ArgumentCaptor.forClass(SelectRoleRequest.class);
+        verify(blockingStub).selectRole(roleCaptor.capture());
+        assertEquals("db_rw", roleCaptor.getValue().getRole().getName());
     }
 
     @Test
