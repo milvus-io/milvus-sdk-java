@@ -22,10 +22,12 @@ package io.milvus.v2.service.rbac.request;
 public class CreateUserReq {
     private String userName;
     private String password;
+    private String description;
 
     private CreateUserReq(CreateUserReqBuilder builder) {
         this.userName = builder.userName;
         this.password = builder.password;
+        this.description = builder.description;
     }
 
     public String getUserName() {
@@ -44,11 +46,20 @@ public class CreateUserReq {
         this.password = password;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "CreateUserReq{" +
                 "userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -59,6 +70,7 @@ public class CreateUserReq {
     public static class CreateUserReqBuilder {
         private String userName;
         private String password;
+        private String description = "";
 
         private CreateUserReqBuilder() {
         }
@@ -70,6 +82,11 @@ public class CreateUserReq {
 
         public CreateUserReqBuilder password(String password) {
             this.password = password;
+            return this;
+        }
+
+        public CreateUserReqBuilder description(String description) {
+            this.description = description;
             return this;
         }
 
