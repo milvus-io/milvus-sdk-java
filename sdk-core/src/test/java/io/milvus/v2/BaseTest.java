@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
@@ -317,6 +318,27 @@ public class BaseTest {
                         .setConfiguration(replicateConfiguration)
                         .build());
         when(blockingStub.updateReplicateConfiguration(any())).thenReturn(successStatus);
+        when(blockingStub.dumpMessages(any())).thenReturn(Arrays.asList(
+                DumpMessagesResponse.newBuilder()
+                        .setMessage(ImmutableMessage.newBuilder()
+                                .setId(MessageID.newBuilder()
+                                        .setId("message-id-2")
+                                        .setWALName(WALName.Kafka)
+                                        .build())
+                                .setPayload(com.google.protobuf.ByteString.copyFromUtf8("payload-1"))
+                                .putProperties("source", "primary")
+                                .build())
+                        .build(),
+                DumpMessagesResponse.newBuilder()
+                        .setMessage(ImmutableMessage.newBuilder()
+                                .setId(MessageID.newBuilder()
+                                        .setId("message-id-3")
+                                        .setWALName(WALName.Pulsar)
+                                        .build())
+                                .setPayload(com.google.protobuf.ByteString.copyFromUtf8("payload-2"))
+                                .putProperties("source", "secondary")
+                                .build())
+                        .build()).iterator());
 
         // snapshot api
         when(blockingStub.createSnapshot(any())).thenReturn(successStatus);
