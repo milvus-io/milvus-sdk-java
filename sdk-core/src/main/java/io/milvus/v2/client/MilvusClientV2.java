@@ -32,8 +32,10 @@ import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
 import io.milvus.v2.service.cdc.CDCService;
+import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
 import io.milvus.v2.service.cdc.request.UpdateReplicateConfigurationReq;
+import io.milvus.v2.service.cdc.response.DumpMessagesResp;
 import io.milvus.v2.service.cdc.response.GetReplicateConfigurationResp;
 import io.milvus.v2.service.cdc.response.GetReplicateInfoResp;
 import io.milvus.v2.service.cdc.response.UpdateReplicateConfigurationResp;
@@ -1457,6 +1459,16 @@ public class MilvusClientV2 {
      */
     public ListFileResourcesResp listFileResources(ListFileResourcesReq request) {
         return rpcUtils.retry(() -> utilityService.listFileResources(this.getRpcStub(), request));
+    }
+
+    /**
+     * Dump messages from a WAL range for data salvage.
+     *
+     * @param request dump messages request
+     * @return DumpMessagesResp containing a lazy stream of dumped messages
+     */
+    public DumpMessagesResp dumpMessages(DumpMessagesReq request) {
+        return cdcService.dumpMessages(this.getRpcStub(), request);
     }
 
     /**
