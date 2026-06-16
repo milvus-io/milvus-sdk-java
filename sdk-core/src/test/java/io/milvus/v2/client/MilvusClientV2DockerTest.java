@@ -1341,8 +1341,8 @@ class MilvusClientV2DockerTest {
         indexParams.add(IndexParam.builder()
                 .fieldName("st2[float_vector]")
                 .indexName("index2")
-                .indexType(IndexParam.IndexType.HNSW_PRQ)
-                .metricType(IndexParam.MetricType.MAX_SIM_COSINE)
+                .indexType(IndexParam.IndexType.HNSW)
+                .metricType(IndexParam.MetricType.L2)
                 .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(randomCollectionName)
@@ -1516,25 +1516,30 @@ class MilvusClientV2DockerTest {
         EmbeddingList bfloat16EmbList1 = new EmbeddingList();
         EmbeddingList int8EmbList0 = new EmbeddingList();
         EmbeddingList int8EmbList1 = new EmbeddingList();
+        List<BaseVector> elementSearchList = new ArrayList<>();
 
-        List<Map<String, Object>> structs0 = (List<Map<String, Object>>) queryResults.get(0).getEntity().get("st1");
-        Assertions.assertEquals(2, structs0.size());
-        for (Map<String, Object> struct : structs0) {
+        List<Map<String, Object>> structs10 = (List<Map<String, Object>>) queryResults.get(0).getEntity().get("st1");
+        Assertions.assertEquals(2, structs10.size());
+        for (Map<String, Object> struct : structs10) {
             embList0.add(new FloatVec((List<Float>) struct.get("float_vector")));
             binaryEmbList0.add(new BinaryVec((ByteBuffer) struct.get("binary_vector")));
             float16EmbList0.add(new Float16Vec((ByteBuffer) struct.get("float16_vector")));
             bfloat16EmbList0.add(new BFloat16Vec((ByteBuffer) struct.get("bfloat16_vector")));
             int8EmbList0.add(new Int8Vec((ByteBuffer) struct.get("int8_vector")));
         }
-        List<Map<String, Object>> structs1 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get("st1");
-        Assertions.assertEquals(5, structs1.size());
-        for (Map<String, Object> struct : structs1) {
+        List<Map<String, Object>> structs11 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get("st1");
+        Assertions.assertEquals(5, structs11.size());
+        for (Map<String, Object> struct : structs11) {
             embList1.add(new FloatVec((List<Float>) struct.get("float_vector")));
             binaryEmbList1.add(new BinaryVec((ByteBuffer) struct.get("binary_vector")));
             float16EmbList1.add(new Float16Vec((ByteBuffer) struct.get("float16_vector")));
             bfloat16EmbList1.add(new BFloat16Vec((ByteBuffer) struct.get("bfloat16_vector")));
             int8EmbList1.add(new Int8Vec((ByteBuffer) struct.get("int8_vector")));
         }
+
+        List<Map<String, Object>> structs20 = (List<Map<String, Object>>) queryResults.get(1).getEntity().get("st2");
+        Assertions.assertEquals(4, structs20.size());
+        elementSearchList.add(new FloatVec((List<Float>) structs20.get(1).get("float_vector")));
 
         int topK = 5;
         SearchResp searchResp = client.search(SearchReq.builder()
@@ -1590,6 +1595,20 @@ class MilvusClientV2DockerTest {
                 .build());
         Assertions.assertEquals(0L, (long) int8SearchResp.getSearchResults().get(0).get(0).getId());
         Assertions.assertEquals(9L, (long) int8SearchResp.getSearchResults().get(1).get(0).getId());
+
+        // element-level search
+        SearchResp elementSearchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("st2[float_vector]")
+                .data(elementSearchList)
+                .limit(topK)
+                .metricType(IndexParam.MetricType.L2)
+                .build());
+        Assertions.assertEquals(1, elementSearchResp.getSearchResults().size());
+        Assertions.assertEquals(5, elementSearchResp.getSearchResults().get(0).size());
+        SearchResp.SearchResult elementResult = elementSearchResp.getSearchResults().get(0).get(0);
+        Assertions.assertEquals(9L, (long) elementResult.getId());
+        Assertions.assertEquals(1L, (long) elementResult.getElementOffset());
 
         client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
