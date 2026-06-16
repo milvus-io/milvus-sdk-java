@@ -24,9 +24,11 @@ import java.util.List;
 
 public class DescribeRoleResp {
     private List<GrantInfo> grantInfos;
+    private String description;
 
     private DescribeRoleResp(DescribeRoleRespBuilder builder) {
         this.grantInfos = builder.grantInfos;
+        this.description = builder.description;
     }
 
     public List<GrantInfo> getGrantInfos() {
@@ -37,10 +39,19 @@ public class DescribeRoleResp {
         this.grantInfos = grantInfos;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "DescribeRoleResp{" +
                 "grantInfos=" + grantInfos +
+                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -50,12 +61,18 @@ public class DescribeRoleResp {
 
     public static class DescribeRoleRespBuilder {
         private List<GrantInfo> grantInfos = new ArrayList<>();
+        private String description = "";
 
         private DescribeRoleRespBuilder() {
         }
 
         public DescribeRoleRespBuilder grantInfos(List<GrantInfo> grantInfos) {
             this.grantInfos = grantInfos;
+            return this;
+        }
+
+        public DescribeRoleRespBuilder description(String description) {
+            this.description = description;
             return this;
         }
 

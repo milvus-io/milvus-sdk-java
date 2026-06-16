@@ -966,6 +966,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * update user
+     *
+     * @param request update user request
+     */
+    public void updateUser(UpdateUserReq request) {
+        rpcUtils.retry(() -> rbacService.updateUser(this.getRpcStub(), request));
+    }
+
+    /**
      * drop user
      *
      * @param request drop user request
@@ -1001,6 +1010,15 @@ public class MilvusClientV2 {
      */
     public void createRole(CreateRoleReq request) {
         rpcUtils.retry(() -> rbacService.createRole(this.getRpcStub(), request));
+    }
+
+    /**
+     * alter role
+     *
+     * @param request alter role request
+     */
+    public void alterRole(AlterRoleReq request) {
+        rpcUtils.retry(() -> rbacService.alterRole(this.getRpcStub(), request));
     }
 
     /**

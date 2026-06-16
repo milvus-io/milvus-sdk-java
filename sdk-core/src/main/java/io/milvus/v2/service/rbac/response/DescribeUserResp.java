@@ -24,9 +24,11 @@ import java.util.List;
 
 public class DescribeUserResp {
     private List<String> roles;
+    private String description;
 
     private DescribeUserResp(DescribeUserRespBuilder builder) {
         this.roles = builder.roles;
+        this.description = builder.description;
     }
 
     public List<String> getRoles() {
@@ -37,10 +39,19 @@ public class DescribeUserResp {
         this.roles = roles;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
         return "DescribeUserResp{" +
                 "roles=" + roles +
+                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -50,12 +61,18 @@ public class DescribeUserResp {
 
     public static class DescribeUserRespBuilder {
         private List<String> roles = new ArrayList<>();
+        private String description = "";
 
         private DescribeUserRespBuilder() {
         }
 
         public DescribeUserRespBuilder roles(List<String> roles) {
             this.roles = roles;
+            return this;
+        }
+
+        public DescribeUserRespBuilder description(String description) {
+            this.description = description;
             return this;
         }
 

@@ -19,21 +19,21 @@
 
 package io.milvus.v2.service.rbac.request;
 
-public class CreateRoleReq {
-    private String roleName;
+public class UpdateUserReq {
+    private String userName;
     private String description;
 
-    private CreateRoleReq(CreateRoleReqBuilder builder) {
-        this.roleName = builder.roleName;
+    private UpdateUserReq(UpdateUserReqBuilder builder) {
+        this.userName = builder.userName;
         this.description = builder.description;
     }
 
-    public String getRoleName() {
-        return roleName;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getDescription() {
@@ -46,35 +46,35 @@ public class CreateRoleReq {
 
     @Override
     public String toString() {
-        return "CreateRoleReq{" +
-                "roleName='" + roleName + '\'' +
+        return "UpdateUserReq{" +
+                "userName='" + userName + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }
 
-    public static CreateRoleReqBuilder builder() {
-        return new CreateRoleReqBuilder();
+    public static UpdateUserReqBuilder builder() {
+        return new UpdateUserReqBuilder();
     }
 
-    public static class CreateRoleReqBuilder {
-        private String roleName;
+    public static class UpdateUserReqBuilder {
+        private String userName;
         private String description = "";
 
-        private CreateRoleReqBuilder() {
+        private UpdateUserReqBuilder() {
         }
 
-        public CreateRoleReqBuilder roleName(String roleName) {
-            this.roleName = roleName;
+        public UpdateUserReqBuilder userName(String userName) {
+            this.userName = userName;
             return this;
         }
 
-        public CreateRoleReqBuilder description(String description) {
+        public UpdateUserReqBuilder description(String description) {
             this.description = description;
             return this;
         }
 
-        public CreateRoleReq build() {
-            return new CreateRoleReq(this);
+        public UpdateUserReq build() {
+            return new UpdateUserReq(this);
         }
     }
 }
