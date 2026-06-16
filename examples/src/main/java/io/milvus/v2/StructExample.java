@@ -73,6 +73,7 @@ public class StructExample {
     private static final String ID_FIELD = "id";
     private static final String NAME_FIELD = "film_name";
     private static final String STRUCT_FIELD = "clips";
+    private static final String SIMPLIFY_STRUCT_FIELD = "simplify_clips";
     private static final String FRAME_FIELD = "frame_number";
     private static final String DESC_FIELD = "clip_desc";
     private static final String FLOAT_VECTOR_FIELD = "clip_float_embedding";
@@ -159,7 +160,7 @@ public class StructExample {
                 .build());
 
         collectionSchema.addField(AddFieldReq.builder()
-                .fieldName("simplify_clips")
+                .fieldName(SIMPLIFY_STRUCT_FIELD)
                 .description("simplify clips")
                 .dataType(DataType.Array)
                 .elementType(DataType.Struct)
@@ -217,10 +218,10 @@ public class StructExample {
                 .metricType(INT8_VECTOR_METRIC)
                 .build());
         indexParams.add(IndexParam.builder()
-                .fieldName(String.format("simplify_clips[%s]", FLOAT_VECTOR_FIELD))
+                .fieldName(String.format("%s[%s]", SIMPLIFY_STRUCT_FIELD, FLOAT_VECTOR_FIELD))
                 .indexName("index_simplify")
                 .indexType(IndexParam.IndexType.HNSW)
-                .metricType(FLOAT_VECTOR_METRIC)
+                .metricType(IndexParam.MetricType.L2)
                 .build());
         client.createIndex(CreateIndexReq.builder()
                 .collectionName(COLLECTION_NAME)
@@ -266,7 +267,7 @@ public class StructExample {
             struct.add(FLOAT_VECTOR_FIELD, JsonUtils.toJsonTree(CommonUtils.generateFloatVector(32)));
             simplifyClips.add(struct);
         }
-        row.add("simplify_clips", simplifyClips);
+        row.add(SIMPLIFY_STRUCT_FIELD, simplifyClips);
         return row;
     }
 
@@ -327,7 +328,7 @@ public class StructExample {
                 .outputFields(Arrays.asList(NAME_FIELD,
                         String.format("%s[%s]", STRUCT_FIELD, FRAME_FIELD),
                         String.format("%s[%s]", STRUCT_FIELD, DESC_FIELD),
-                        String.format("simplify_clips[%s]", FLOAT_VECTOR_FIELD)))
+                        String.format("%s[%s]", SIMPLIFY_STRUCT_FIELD, FLOAT_VECTOR_FIELD)))
                 .build());
         List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
         for (int i = 0; i < searchResults.size(); i++) {
@@ -338,10 +339,10 @@ public class StructExample {
         }
     }
 
-    private static void searchStructField(String annsField,
-                                          String filter,
-                                          Function<Map<String, Object>, BaseVector> converter,
-                                          String title) {
+    private static void embeddingListSearch(String annsField,
+                                            String filter,
+                                            Function<Map<String, Object>, BaseVector> converter,
+                                            String title) {
         List<QueryResp.QueryResult> queryResults = query(filter);
         List<BaseVector> searchData = new ArrayList<>();
         for (QueryResp.QueryResult result : queryResults) {
@@ -357,7 +358,7 @@ public class StructExample {
     }
 
     private static void searchFloatVectorField(String filter) {
-        searchStructField(
+        embeddingListSearch(
                 FLOAT_VECTOR_FIELD,
                 filter,
                 struct -> new FloatVec((List<Float>) struct.get(FLOAT_VECTOR_FIELD)),
@@ -366,7 +367,7 @@ public class StructExample {
     }
 
     private static void searchBinaryVectorField(String filter) {
-        searchStructField(
+        embeddingListSearch(
                 BINARY_VECTOR_FIELD,
                 filter,
                 struct -> new BinaryVec((ByteBuffer) struct.get(BINARY_VECTOR_FIELD)),
@@ -375,7 +376,7 @@ public class StructExample {
     }
 
     private static void searchFloat16VectorField(String filter) {
-        searchStructField(
+        embeddingListSearch(
                 FLOAT16_VECTOR_FIELD,
                 filter,
                 struct -> new Float16Vec((ByteBuffer) struct.get(FLOAT16_VECTOR_FIELD)),
@@ -384,7 +385,7 @@ public class StructExample {
     }
 
     private static void searchBFloat16VectorField(String filter) {
-        searchStructField(
+        embeddingListSearch(
                 BFLOAT16_VECTOR_FIELD,
                 filter,
                 struct -> new BFloat16Vec((ByteBuffer) struct.get(BFLOAT16_VECTOR_FIELD)),
@@ -393,12 +394,53 @@ public class StructExample {
     }
 
     private static void searchInt8VectorField(String filter) {
-        searchStructField(
+        embeddingListSearch(
                 INT8_VECTOR_FIELD,
                 filter,
                 struct -> new Int8Vec((ByteBuffer) struct.get(INT8_VECTOR_FIELD)),
                 "Search on int8 field '" + INT8_VECTOR_FIELD + "' in struct '" + STRUCT_FIELD + "'"
         );
+    }
+
+    private static void elementLevelSearch() {
+        System.out.println("===================================================");
+        System.out.println("Element-level search on field '" + FLOAT_VECTOR_FIELD + "' in struct '" + SIMPLIFY_STRUCT_FIELD + "'");
+
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .filter(ID_FIELD + " == 5")
+                .limit(1)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Collections.singletonList(SIMPLIFY_STRUCT_FIELD))
+                .build());
+        List<Map<String, Object>> structs = (List<Map<String, Object>>) queryResp.getQueryResults().get(0).getEntity().get(SIMPLIFY_STRUCT_FIELD);
+
+        // each row of SIMPLIFY_STRUCT_FIELD contains two structs, and each struct has a FLOAT_VECTOR_FIELD,
+        // so we will have 2 vectors to search for each row
+        List<BaseVector> elementSearchList = new ArrayList<>();
+        for (Map<String, Object> struct : structs) {
+            elementSearchList.add(new FloatVec((List<Float>) struct.get(FLOAT_VECTOR_FIELD)));
+        }
+
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .annsField(String.format("%s[%s]", SIMPLIFY_STRUCT_FIELD, FLOAT_VECTOR_FIELD))
+                .data(elementSearchList)
+                .limit(3)
+                .metricType(IndexParam.MetricType.L2)
+                .consistencyLevel(ConsistencyLevel.BOUNDED)
+                .outputFields(Collections.singletonList(NAME_FIELD))
+                .build());
+        // there will be two lists of search results corresponding to the two vectors in SIMPLIFY_STRUCT_FIELD,
+        // and each search result will have an additional field "elementOffset" indicating which element
+        // in the array field SIMPLIFY_STRUCT_FIELD this result corresponds to
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        for (int i = 0; i < searchResults.size(); i++) {
+            System.out.println("Results of No." + i + " query element");
+            for (SearchResp.SearchResult result : searchResults.get(i)) {
+                System.out.println(result + ", elementOffset=" + result.getElementOffset());
+            }
+        }
     }
 
     private static JsonArray buildMetadataStructArray() {
@@ -497,6 +539,7 @@ public class StructExample {
             searchBFloat16VectorField(filter2);
 
             searchInt8VectorField(ID_FIELD + " == 999");
+            elementLevelSearch();
 
             addCollectionStructField();
         } finally {
