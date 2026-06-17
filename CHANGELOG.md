@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 2.6.21 (2026-06-18)
+### Feature
+- Support dumpMessages interface for MilvusClientV2
+- Add rich server version response for MilvusClientV2
+- Add flushAll/getFlushAllState for MilvusClientV2
+- Add getReplicateConfiguration/getReplicateInfo interfaces for MilvusClientV2
+- Add role and user description support for MilvusClientV2 RBAC APIs
+
+### Improvement
+- Align getLoadState/loadCollection/loadPartitions with PyMilvus
+- Enhance GetPersistentSegmentInfo/GetQuerySegmentInfo responses
+
+### Bug
+- Fix RpcUtils.retry() silently swallowing timeout and max-retry exceptions, returning null
+
 ## milvus-sdk-java 2.6.20 (2026-05-15)
 ### Feature
 - Support field-level operations for upsert
