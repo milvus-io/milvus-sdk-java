@@ -22,6 +22,8 @@ package io.milvus.v2.service.rbac;
 import io.milvus.grpc.AlterRoleRequest;
 import io.milvus.grpc.CreateRoleRequest;
 import io.milvus.grpc.SelectRoleRequest;
+import io.milvus.grpc.SelectRoleResponse;
+import io.milvus.grpc.Status;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.rbac.request.*;
 import io.milvus.v2.service.rbac.response.DescribeRoleResp;
@@ -33,7 +35,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class RoleTest extends BaseTest {
 
@@ -86,11 +90,25 @@ class RoleTest extends BaseTest {
                 .roleName("db_rw")
                 .build();
         DescribeRoleResp resp = client_v2.describeRole(describeRoleReq);
+        assertEquals("role_test", resp.getRoleName());
         assertEquals("role description", resp.getDescription());
 
         ArgumentCaptor<SelectRoleRequest> roleCaptor = ArgumentCaptor.forClass(SelectRoleRequest.class);
         verify(blockingStub).selectRole(roleCaptor.capture());
         assertEquals("db_rw", roleCaptor.getValue().getRole().getName());
+    }
+
+    @Test
+    void testDescribeRoleNotFound() {
+        Status successStatus = Status.newBuilder().setCode(0).build();
+        when(blockingStub.selectRole(any())).thenReturn(SelectRoleResponse.newBuilder().setStatus(successStatus).build());
+
+        DescribeRoleReq describeRoleReq = DescribeRoleReq.builder()
+                .roleName("missing_role")
+                .build();
+        DescribeRoleResp resp = client_v2.describeRole(describeRoleReq);
+        assertEquals("missing_role", resp.getRoleName());
+        assertEquals("", resp.getDescription());
     }
 
     @Test
