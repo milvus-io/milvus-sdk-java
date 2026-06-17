@@ -95,8 +95,11 @@ public class RBACService extends BaseService {
         rpcUtils.handleResponse(title, selectRoleResponse.getStatus());
         String description = selectRoleResponse.getResultsList().isEmpty()
                 ? "" : selectRoleResponse.getResultsList().get(0).getRole().getDescription();
+        String returnedRoleName = selectRoleResponse.getResultsList().isEmpty()
+                ? roleName : selectRoleResponse.getResultsList().get(0).getRole().getName();
 
         DescribeRoleResp describeRoleResp = DescribeRoleResp.builder()
+                .roleName(returnedRoleName)
                 .description(description)
                 .grantInfos(response.getEntitiesList().stream().map(entity -> DescribeRoleResp.GrantInfo.builder()
                         .dbName(entity.getDbName())
@@ -211,10 +214,12 @@ public class RBACService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
         List<UserResult> results = response.getResultsList();
         String description = results.isEmpty() ? "" : results.get(0).getDescription();
+        String returnedUserName = results.isEmpty() ? request.getUserName() : results.get(0).getUser().getName();
         List<String> roles = results.isEmpty()
                 ? new ArrayList<>()
                 : results.get(0).getRolesList().stream().map(RoleEntity::getName).collect(Collectors.toList());
         DescribeUserResp describeUserResp = DescribeUserResp.builder()
+                .userName(returnedUserName)
                 .roles(roles)
                 .description(description)
                 .build();
