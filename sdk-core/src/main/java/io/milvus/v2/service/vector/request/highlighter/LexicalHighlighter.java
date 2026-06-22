@@ -54,7 +54,7 @@ public class LexicalHighlighter implements Highlighter {
         Map<String, String> params = new java.util.HashMap<>();
         if (this.highlightQueries != null) {
             // serialize the list of HighlightQuery to a JSON array string using Gson
-            params.put("highlight_queries", JsonUtils.toJson(this.highlightQueries));
+            params.put("highlight_query", JsonUtils.toJson(this.highlightQueries));
         }
         if (this.highlightSearchText != null) {
             params.put("highlight_search_text", this.highlightSearchText.toString());
