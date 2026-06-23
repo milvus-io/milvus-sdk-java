@@ -120,9 +120,12 @@ public class PartitionService extends BaseService {
         }
         GetPartitionStatisticsResponse response = blockingStub.getPartitionStatistics(builder.build());
         rpcUtils.handleResponse(title, response.getStatus());
+        java.util.Map<String, String> stats = new java.util.HashMap<>();
+        response.getStatsList().forEach(stat -> stats.put(stat.getKey(), stat.getValue()));
         GetPartitionStatsResp getPartitionStatsResp = GetPartitionStatsResp.builder()
                 .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count"))
                         .map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                .stats(stats)
                 .build();
         return getPartitionStatsResp;
     }
