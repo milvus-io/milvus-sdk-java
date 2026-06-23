@@ -426,6 +426,8 @@ class CollectionTest extends BaseTest {
                 .collectionName("test")
                 .build();
         GetCollectionStatsResp resp = client_v2.getCollectionStats(req);
+        Assertions.assertEquals(10L, resp.getNumOfEntities());
+        Assertions.assertEquals("10", resp.getStats().get("row_count"));
     }
 
 }

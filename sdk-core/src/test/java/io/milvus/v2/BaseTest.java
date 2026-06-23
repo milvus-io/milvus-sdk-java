@@ -149,6 +149,10 @@ public class BaseTest {
         when(blockingStub.dropPartition(any())).thenReturn(successStatus);
         when(blockingStub.hasPartition(any())).thenReturn(trueResponse);
         when(blockingStub.showPartitions(any())).thenReturn(ShowPartitionsResponse.newBuilder().setStatus(successStatus).addPartitionNames("test").build());
+        when(blockingStub.getPartitionStatistics(any())).thenReturn(GetPartitionStatisticsResponse.newBuilder()
+                .setStatus(successStatus)
+                .addStats(KeyValuePair.newBuilder().setKey("row_count").setValue("10").build())
+                .build());
         when(blockingStub.loadPartitions(any())).thenReturn(successStatus);
         when(blockingStub.releasePartitions(any())).thenReturn(successStatus);
 
