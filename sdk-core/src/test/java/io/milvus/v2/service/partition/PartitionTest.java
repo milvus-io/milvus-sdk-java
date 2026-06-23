@@ -21,6 +21,9 @@ package io.milvus.v2.service.partition;
 
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.partition.request.*;
+import io.milvus.v2.service.partition.response.GetPartitionStatsResp;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +80,17 @@ class PartitionTest extends BaseTest {
                 .build();
         client_v2.loadPartitions(req);
 
+    }
+
+    @Test
+    void testGetPartitionStats() {
+        GetPartitionStatsReq req = GetPartitionStatsReq.builder()
+                .collectionName("test")
+                .partitionName("test")
+                .build();
+        GetPartitionStatsResp resp = client_v2.getPartitionStats(req);
+        assertEquals(10L, resp.getNumOfEntities());
+        assertEquals("10", resp.getStats().get("row_count"));
     }
 
     @Test
