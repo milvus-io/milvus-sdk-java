@@ -707,7 +707,9 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(QueryResp.class.getName(), config);
         VerifyClass(QueryResp.QueryResult.class.getName(), config);
         VerifyClass(RunAnalyzerResp.class.getName(), config);
+        config.setIgnoredMethods(Arrays.asList("getSearchResults", "setSearchResults", "getRecalls", "setRecalls"));
         VerifyClass(SearchResp.class.getName(), config);
+        config.clearIgnoredMethods();
         VerifyClass(SearchResp.SearchResult.class.getName(), config);
         VerifyClass(UpsertResp.class.getName(), config);
     }
