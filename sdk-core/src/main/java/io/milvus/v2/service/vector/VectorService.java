@@ -266,11 +266,12 @@ public class VectorService extends BaseService {
         SearchResults response = blockingStub.search(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
-        return SearchResp.builder()
+        SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
                 .sessionTs(response.getSessionTs())
-                .recalls(response.getResults().getRecallsList())
-                .build();
+                .recalls(response.getResults().getRecallsList());
+        fillSearchRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
+        return respBuilder.build();
     }
 
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
@@ -287,10 +288,27 @@ public class VectorService extends BaseService {
         SearchResults response = blockingStub.hybridSearch(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
-        return SearchResp.builder()
+        SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
-                .recalls(response.getResults().getRecallsList())
-                .build();
+                .sessionTs(response.getSessionTs())
+                .recalls(response.getResults().getRecallsList());
+        fillSearchRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
+        return respBuilder.build();
+    }
+
+    private void fillSearchRespFromExtraInfo(SearchResp.SearchRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
+        if (extraInfo.containsKey("report_value")) {
+            respBuilder.cost(Long.parseLong(extraInfo.get("report_value")));
+        }
+        if (extraInfo.containsKey("scanned_remote_bytes")) {
+            respBuilder.scannedRemoteBytes(Long.parseLong(extraInfo.get("scanned_remote_bytes")));
+        }
+        if (extraInfo.containsKey("scanned_total_bytes")) {
+            respBuilder.scannedTotalBytes(Long.parseLong(extraInfo.get("scanned_total_bytes")));
+        }
+        if (extraInfo.containsKey("cache_hit_ratio")) {
+            respBuilder.cacheHitRatio(Float.parseFloat(extraInfo.get("cache_hit_ratio")));
+        }
     }
 
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
