@@ -19,11 +19,16 @@
 
 package io.milvus.v2.service.collection.response;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GetCollectionStatsResp {
     private Long numOfEntities;
+    private Map<String, String> stats;
 
     private GetCollectionStatsResp(GetCollectionStatsRespBuilder builder) {
         this.numOfEntities = builder.numOfEntities;
+        this.stats = builder.stats;
     }
 
     public static GetCollectionStatsRespBuilder builder() {
@@ -35,23 +40,38 @@ public class GetCollectionStatsResp {
         return numOfEntities;
     }
 
+    public Map<String, String> getStats() {
+        return stats;
+    }
+
     // Setter
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
+    }
+
+    public void setStats(Map<String, String> stats) {
+        this.stats = stats;
     }
 
     @Override
     public String toString() {
         return "GetCollectionStatsResp{" +
                 "numOfEntities=" + numOfEntities +
+                ", stats=" + stats +
                 '}';
     }
 
     public static class GetCollectionStatsRespBuilder {
         private Long numOfEntities;
+        private Map<String, String> stats = new HashMap<>();
 
         public GetCollectionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
+            return this;
+        }
+
+        public GetCollectionStatsRespBuilder stats(Map<String, String> stats) {
+            this.stats = stats;
             return this;
         }
 
