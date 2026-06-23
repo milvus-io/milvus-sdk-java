@@ -23,12 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DescribeRoleResp {
+    private String roleName;
     private List<GrantInfo> grantInfos;
     private String description;
 
     private DescribeRoleResp(DescribeRoleRespBuilder builder) {
+        this.roleName = builder.roleName;
         this.grantInfos = builder.grantInfos;
         this.description = builder.description;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 
     public List<GrantInfo> getGrantInfos() {
@@ -50,7 +60,8 @@ public class DescribeRoleResp {
     @Override
     public String toString() {
         return "DescribeRoleResp{" +
-                "grantInfos=" + grantInfos +
+                "roleName='" + roleName + '\'' +
+                ", grantInfos=" + grantInfos +
                 ", description='" + description + '\'' +
                 '}';
     }
@@ -60,10 +71,16 @@ public class DescribeRoleResp {
     }
 
     public static class DescribeRoleRespBuilder {
+        private String roleName = "";
         private List<GrantInfo> grantInfos = new ArrayList<>();
         private String description = "";
 
         private DescribeRoleRespBuilder() {
+        }
+
+        public DescribeRoleRespBuilder roleName(String roleName) {
+            this.roleName = roleName;
+            return this;
         }
 
         public DescribeRoleRespBuilder grantInfos(List<GrantInfo> grantInfos) {

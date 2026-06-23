@@ -61,6 +61,7 @@ class UserTest extends BaseTest {
                 .build();
         DescribeUserResp resp = client_v2.describeUser(req);
         logger.info("resp: {}", resp);
+        assertEquals("user_test", resp.getUserName());
         assertEquals("user description", resp.getDescription());
 
         ArgumentCaptor<SelectUserRequest> captor = ArgumentCaptor.forClass(SelectUserRequest.class);
@@ -77,6 +78,7 @@ class UserTest extends BaseTest {
                 .userName("missing")
                 .build();
         DescribeUserResp resp = client_v2.describeUser(req);
+        assertEquals("missing", resp.getUserName());
         assertNotNull(resp.getRoles());
         assertTrue(resp.getRoles().isEmpty());
         assertEquals("", resp.getDescription());

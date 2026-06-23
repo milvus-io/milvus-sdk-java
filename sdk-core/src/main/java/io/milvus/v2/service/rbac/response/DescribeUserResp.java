@@ -23,12 +23,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DescribeUserResp {
+    private String userName;
     private List<String> roles;
     private String description;
 
     private DescribeUserResp(DescribeUserRespBuilder builder) {
+        this.userName = builder.userName;
         this.roles = builder.roles;
         this.description = builder.description;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public List<String> getRoles() {
@@ -50,7 +60,8 @@ public class DescribeUserResp {
     @Override
     public String toString() {
         return "DescribeUserResp{" +
-                "roles=" + roles +
+                "userName='" + userName + '\'' +
+                ", roles=" + roles +
                 ", description='" + description + '\'' +
                 '}';
     }
@@ -60,10 +71,16 @@ public class DescribeUserResp {
     }
 
     public static class DescribeUserRespBuilder {
+        private String userName = "";
         private List<String> roles = new ArrayList<>();
         private String description = "";
 
         private DescribeUserRespBuilder() {
+        }
+
+        public DescribeUserRespBuilder userName(String userName) {
+            this.userName = userName;
+            return this;
         }
 
         public DescribeUserRespBuilder roles(List<String> roles) {
