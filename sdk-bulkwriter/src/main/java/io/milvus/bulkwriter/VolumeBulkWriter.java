@@ -21,7 +21,6 @@ package io.milvus.bulkwriter;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
-import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.model.UploadFilesResult;
 import io.milvus.bulkwriter.request.volume.UploadFilesRequest;
 import io.milvus.common.utils.ExceptionUtils;
@@ -64,7 +63,7 @@ public class VolumeBulkWriter extends LocalBulkWriter {
     private VolumeFileManager initVolumeFileManagerParams(VolumeBulkWriterParam bulkWriterParam) throws IOException {
         VolumeFileManagerParam volumeFileManagerParam = VolumeFileManagerParam.newBuilder()
                 .withCloudEndpoint(bulkWriterParam.getCloudEndpoint()).withApiKey(bulkWriterParam.getApiKey())
-                .withVolumeName(bulkWriterParam.getVolumeName()).withConnectType(ConnectType.AUTO)
+                .withVolumeName(bulkWriterParam.getVolumeName()).withConnectType(bulkWriterParam.getConnectType())
                 .build();
         return new VolumeFileManager(volumeFileManagerParam);
     }
@@ -149,9 +148,13 @@ public class VolumeBulkWriter extends LocalBulkWriter {
 
     @Override
     public void close() throws Exception {
-        logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
-        exit();
-        logger.info(String.format("RemoteBulkWriter done! output remote files: %s", getBatchFiles()));
+        try {
+            logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
+            exit();
+            logger.info(String.format("RemoteBulkWriter done! output remote files: %s", getBatchFiles()));
+        } finally {
+            volumeFileManager.shutdownGracefully();
+        }
     }
 
     private void serialImportData(List<String> fileList) {
@@ -199,6 +202,6 @@ public class VolumeBulkWriter extends LocalBulkWriter {
         relativeFilePath = relativeFilePath.startsWith("/") ? relativeFilePath.substring(1) : relativeFilePath;
         Path relative = Paths.get(relativeFilePath);
         Path joinedPath = remote.resolve(relative);
-        return joinedPath.toString();
+        return joinedPath.toString().replace("\\", "/");
     }
 }
