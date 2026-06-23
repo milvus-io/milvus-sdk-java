@@ -28,4 +28,22 @@ public interface StorageClient {
     boolean checkBucketExist(String bucketName) throws Exception;
 
     void putObject(File file, String bucketName, String objectKey) throws Exception;
+
+    default void putObject(File file, String bucketName, String objectKey,
+                           UploadProgressListener progressListener) throws Exception {
+        putObject(file, bucketName, objectKey);
+    }
+
+    default void putObject(File file, String bucketName, String objectKey,
+                           UploadProgressListener progressListener, long partSizeBytes) throws Exception {
+        putObject(file, bucketName, objectKey, progressListener);
+    }
+
+    default void close() {
+    }
+
+    @FunctionalInterface
+    interface UploadProgressListener {
+        void onProgress(long bytes);
+    }
 }
