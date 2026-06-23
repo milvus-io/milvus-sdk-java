@@ -41,7 +41,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class CollectionService extends BaseService {
@@ -611,8 +613,11 @@ public class CollectionService extends BaseService {
         GetCollectionStatisticsResponse response = blockingStub.getCollectionStatistics(builder.build());
 
         rpcUtils.handleResponse(title, response.getStatus());
+        Map<String, String> stats = new HashMap<>();
+        response.getStatsList().forEach(stat -> stats.put(stat.getKey(), stat.getValue()));
         GetCollectionStatsResp getCollectionStatsResp = GetCollectionStatsResp.builder()
                 .numOfEntities(response.getStatsList().stream().filter(stat -> stat.getKey().equals("row_count")).map(stat -> Long.parseLong(stat.getValue())).findFirst().get())
+                .stats(stats)
                 .build();
         return getCollectionStatsResp;
     }
