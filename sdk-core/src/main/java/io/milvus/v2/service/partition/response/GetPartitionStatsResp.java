@@ -20,25 +20,39 @@
 
 package io.milvus.v2.service.partition.response;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GetPartitionStatsResp {
     private Long numOfEntities;
+    private Map<String, String> stats;
 
     private GetPartitionStatsResp(GetPartitionStatsRespBuilder builder) {
         this.numOfEntities = builder.numOfEntities;
+        this.stats = builder.stats;
     }
 
     public Long getNumOfEntities() {
         return numOfEntities;
     }
 
+    public Map<String, String> getStats() {
+        return stats;
+    }
+
     public void setNumOfEntities(Long numOfEntities) {
         this.numOfEntities = numOfEntities;
+    }
+
+    public void setStats(Map<String, String> stats) {
+        this.stats = stats;
     }
 
     @Override
     public String toString() {
         return "GetPartitionStatsResp{" +
                 "numOfEntities=" + numOfEntities +
+                ", stats=" + stats +
                 '}';
     }
 
@@ -48,12 +62,18 @@ public class GetPartitionStatsResp {
 
     public static class GetPartitionStatsRespBuilder {
         private Long numOfEntities;
+        private Map<String, String> stats = new HashMap<>();
 
         private GetPartitionStatsRespBuilder() {
         }
 
         public GetPartitionStatsRespBuilder numOfEntities(Long numOfEntities) {
             this.numOfEntities = numOfEntities;
+            return this;
+        }
+
+        public GetPartitionStatsRespBuilder stats(Map<String, String> stats) {
+            this.stats = stats;
             return this;
         }
 
