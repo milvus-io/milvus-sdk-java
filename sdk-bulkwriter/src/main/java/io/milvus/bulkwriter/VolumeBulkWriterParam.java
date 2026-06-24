@@ -20,6 +20,7 @@
 package io.milvus.bulkwriter;
 
 import io.milvus.bulkwriter.common.clientenum.BulkFileType;
+import io.milvus.bulkwriter.common.clientenum.ConnectType;
 import io.milvus.bulkwriter.common.utils.V2AdapterUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
@@ -42,6 +43,7 @@ public class VolumeBulkWriterParam {
     private final String cloudEndpoint;
     private final String apiKey;
     private final String volumeName;
+    private final ConnectType connectType;
 
     private VolumeBulkWriterParam(Builder builder) {
         this.collectionSchema = builder.collectionSchema;
@@ -53,6 +55,7 @@ public class VolumeBulkWriterParam {
         this.cloudEndpoint = builder.cloudEndpoint;
         this.apiKey = builder.apiKey;
         this.volumeName = builder.volumeName;
+        this.connectType = builder.connectType;
     }
 
     public CreateCollectionReq.CollectionSchema getCollectionSchema() {
@@ -87,6 +90,10 @@ public class VolumeBulkWriterParam {
         return volumeName;
     }
 
+    public ConnectType getConnectType() {
+        return connectType;
+    }
+
     @Override
     public String toString() {
         return "VolumeBulkWriterParam{" +
@@ -96,6 +103,7 @@ public class VolumeBulkWriterParam {
                 ", fileType=" + fileType +
                 ", cloudEndpoint='" + cloudEndpoint + '\'' +
                 ", volumeName='" + volumeName + '\'' +
+                ", connectType=" + connectType +
                 '}';
     }
 
@@ -117,6 +125,8 @@ public class VolumeBulkWriterParam {
         private String apiKey;
 
         private String volumeName;
+
+        private ConnectType connectType = ConnectType.AUTO;
 
         private Builder() {
         }
@@ -184,6 +194,11 @@ public class VolumeBulkWriterParam {
             return this;
         }
 
+        public Builder withConnectType(ConnectType connectType) {
+            this.connectType = connectType;
+            return this;
+        }
+
         /**
          * Verifies parameters and creates a new {@link VolumeBulkWriterParam} instance.
          *
@@ -195,6 +210,9 @@ public class VolumeBulkWriterParam {
             if (collectionSchema == null) {
                 throw new ParamException("collectionSchema cannot be null");
             }
+            ParamUtils.CheckNullEmptyString(cloudEndpoint, "cloudEndpoint");
+            ParamUtils.CheckNullEmptyString(apiKey, "apiKey");
+            ParamUtils.CheckNullEmptyString(volumeName, "volumeName");
 
             return new VolumeBulkWriterParam(this);
         }
