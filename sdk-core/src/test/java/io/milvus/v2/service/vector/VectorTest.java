@@ -134,6 +134,10 @@ class VectorTest extends BaseTest {
                 .build();
         SearchResp statusR = client_v2.search(request);
         logger.info(statusR.toString());
+        Assertions.assertEquals(123L, statusR.getCost());
+        Assertions.assertEquals(456L, statusR.getScannedRemoteBytes());
+        Assertions.assertEquals(789L, statusR.getScannedTotalBytes());
+        Assertions.assertEquals(0.5f, statusR.getCacheHitRatio());
     }
 
     @Test

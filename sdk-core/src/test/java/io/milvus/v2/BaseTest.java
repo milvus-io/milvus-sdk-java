@@ -138,6 +138,12 @@ public class BaseTest {
         when(blockingStub.query(any())).thenReturn(QueryResults.newBuilder().build());
         when(blockingStub.delete(any())).thenReturn(MutationResult.newBuilder().setDeleteCnt(2L).build());
         SearchResults searchResults = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "123")
+                        .putExtraInfo("scanned_remote_bytes", "456")
+                        .putExtraInfo("scanned_total_bytes", "789")
+                        .putExtraInfo("cache_hit_ratio", "0.5")
+                        .build())
                 .setResults(SearchResultData.newBuilder().addScores(1L).addTopks(0L).build())
                 .build();
         when(blockingStub.search(any())).thenReturn(searchResults);
