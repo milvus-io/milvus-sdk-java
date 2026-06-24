@@ -552,8 +552,11 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(CreateCollectionReq.Function.class.getName(), config);
         VerifyClass(CreateCollectionReq.StructFieldSchema.class.getName(), config);
         VerifyClass(DescribeCollectionReq.class.getName(), config);
+        VerifyClass(DropCollectionFieldReq.class.getName(), config);
         VerifyClass(DropCollectionFieldPropertiesReq.class.getName(), config);
+        VerifyClass(DropFunctionFieldReq.class.getName(), config);
         VerifyClass(DropCollectionPropertiesReq.class.getName(), config);
+        VerifyClass(AddFunctionFieldReq.class.getName(), config);
         VerifyClass(DropCollectionReq.class.getName(), config);
         VerifyClass(GetCollectionStatsReq.class.getName(), config);
         VerifyClass(GetLoadStateReq.class.getName(), config);

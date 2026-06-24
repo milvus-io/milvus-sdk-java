@@ -113,6 +113,7 @@ public class BaseTest {
         when(blockingStub.showCollections(any(ShowCollectionsRequest.class))).thenReturn(ShowCollectionsResponse.newBuilder().setStatus(successStatus).addAllCollectionNames(Collections.singletonList("test")).build());
         when(blockingStub.createCollection(any(CreateCollectionRequest.class))).thenReturn(successStatus);
         when(blockingStub.addCollectionStructField(any())).thenReturn(successStatus);
+        when(blockingStub.alterCollectionSchema(any())).thenReturn(AlterCollectionSchemaResponse.newBuilder().setAlterStatus(successStatus).build());
         when(blockingStub.loadCollection(any())).thenReturn(successStatus);
         when(blockingStub.releaseCollection(any())).thenReturn(successStatus);
         when(blockingStub.getLoadState(any())).thenReturn(GetLoadStateResponse.newBuilder().setState(LoadState.LoadStateLoaded).setStatus(successStatus).build());

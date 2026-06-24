@@ -343,6 +343,40 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void dropCollectionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionFieldReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String fieldName = request.getFieldName();
+        Long fieldId = request.getFieldId();
+        boolean hasFieldName = StringUtils.isNotBlank(fieldName);
+        boolean hasFieldId = fieldId != null && fieldId > 0;
+        if (hasFieldName == hasFieldId) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Exactly one of fieldName or fieldId must be provided.");
+        }
+
+        String title = String.format("Drop field of collection: '%s' in database: '%s'", collectionName, dbName);
+        AlterCollectionSchemaRequest.DropRequest.Builder dropBuilder = AlterCollectionSchemaRequest.DropRequest.newBuilder();
+        if (hasFieldName) {
+            dropBuilder.setFieldName(fieldName);
+        } else {
+            dropBuilder.setFieldId(fieldId);
+        }
+
+        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
+                        .setDropRequest(dropBuilder)
+                        .build());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+        rpcUtils.handleResponse(title, response.getAlterStatus());
+        return null;
+    }
+
     public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -697,6 +731,49 @@ public class CollectionService extends BaseService {
         return null;
     }
 
+    public Void addFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                 AddFunctionFieldReq request) {
+        if (request.getFunction() == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function cannot be null.");
+        }
+        if (CollectionUtils.isEmpty(request.getFunction().getOutputFieldNames())
+                || request.getFunction().getOutputFieldNames().size() != 1
+                || !StringUtils.equals(request.getFieldName(), request.getFunction().getOutputFieldNames().get(0))) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Function must have exactly one output field matching the field being added.");
+        }
+
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Add function field to collection: '%s' in database: '%s'", collectionName, dbName);
+
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
+        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema)
+                .toBuilder()
+                .setIsFunctionOutput(true)
+                .build();
+        AlterCollectionSchemaRequest.FieldInfo fieldInfo = AlterCollectionSchemaRequest.FieldInfo.newBuilder()
+                .setFieldSchema(grpcFieldSchema)
+                .build();
+        AlterCollectionSchemaRequest.AddRequest addRequest = AlterCollectionSchemaRequest.AddRequest.newBuilder()
+                .addFieldInfos(fieldInfo)
+                .addFuncSchema(SchemaUtils.convertToGrpcFunction(request.getFunction()))
+                .build();
+
+        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
+                        .setAddRequest(addRequest)
+                        .build());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+        rpcUtils.handleResponse(title, response.getAlterStatus());
+        return null;
+    }
+
     public Void alterCollectionFunction(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                         AlterCollectionFunctionReq request) {
         if (request.getFunction() == null) {
@@ -728,15 +805,47 @@ public class CollectionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Drop function to collection: '%s' in database: '%s'", collectionName, dbName);
-        DropCollectionFunctionRequest.Builder builder = DropCollectionFunctionRequest.newBuilder()
+        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setFunctionName(request.getFunctionName());
+                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
+                        .setDropRequest(AlterCollectionSchemaRequest.DropRequest.newBuilder()
+                                .setFunctionName(request.getFunctionName())
+                                .setDropFunctionOutputFields(false)
+                                .build())
+                        .build());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
-        Status status = blockingStub.dropCollectionFunction(builder.build());
-        rpcUtils.handleResponse(title, status);
 
+        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+        rpcUtils.handleResponse(title, response.getAlterStatus());
+
+        return null;
+    }
+
+    public Void dropFunctionField(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                  DropFunctionFieldReq request) {
+        if (StringUtils.isEmpty(request.getFunctionName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function name cannot be empty.");
+        }
+
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Drop function field of collection: '%s' in database: '%s'", collectionName, dbName);
+        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
+                        .setDropRequest(AlterCollectionSchemaRequest.DropRequest.newBuilder()
+                                .setFunctionName(request.getFunctionName())
+                                .setDropFunctionOutputFields(true)
+                                .build())
+                        .build());
+        if (StringUtils.isNotEmpty(dbName)) {
+            builder.setDbName(dbName);
+        }
+
+        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+        rpcUtils.handleResponse(title, response.getAlterStatus());
         return null;
     }
 
