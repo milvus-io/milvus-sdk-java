@@ -510,6 +510,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Drop a field from collection.
+     *
+     * @param request drop field request
+     */
+    public void dropCollectionField(DropCollectionFieldReq request) {
+        rpcUtils.retry(() -> collectionService.dropCollectionField(this.getRpcStub(), request));
+    }
+
+    /**
      * drop a collection's properties.
      *
      * @param request drop collection properties request
@@ -644,6 +653,15 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Add a function-backed field to collection.
+     *
+     * @param request add function field request
+     */
+    public void addFunctionField(AddFunctionFieldReq request) {
+        rpcUtils.retry(() -> collectionService.addFunctionField(this.getRpcStub(), request));
+    }
+
+    /**
      * Alter a function of collection.
      *
      * @param request alter function request
@@ -654,11 +672,23 @@ public class MilvusClientV2 {
 
     /**
      * Drop a function of collection.
+     * This removes only the function definition and keeps its output field(s).
      *
      * @param request drop function request
      */
     public void dropCollectionFunction(DropCollectionFunctionReq request) {
         rpcUtils.retry(() -> collectionService.dropCollectionFunction(this.getRpcStub(), request));
+    }
+
+    /**
+     * Drop a function-backed field from collection.
+     * This removes the function and its output field(s), unlike dropCollectionFunction,
+     * which only drops the function definition.
+     *
+     * @param request drop function field request
+     */
+    public void dropFunctionField(DropFunctionFieldReq request) {
+        rpcUtils.retry(() -> collectionService.dropFunctionField(this.getRpcStub(), request));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
