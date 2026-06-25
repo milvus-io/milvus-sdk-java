@@ -1,5 +1,27 @@
 # Changelog
 
+## milvus-sdk-java 3.0.3 (2026-06-26)
+### Feature
+- Support AddFunctionField/DropCollectionField/DropFunctionField interfaces
+
+### Improvement
+- Improve volume upload interaction
+- Align getCollectionStats/getPartitionStats with PyMilvus
+- Align search response with PyMilvus
+
+### Bug
+- Fix a bug for LexicalHighlighter
+
+## milvus-sdk-java 2.6.22 (2026-06-26)
+### Improvement
+- Improve volume upload interaction
+- Align describeUser/describeRole with PyMilvus
+- Align getCollectionStats/getPartitionStats with PyMilvus
+- Align search response with PyMilvus
+
+### Bug
+- Fix a bug for LexicalHighlighter
+
 ## milvus-sdk-java 3.0.2 (2026-06-18)
 ### Feature
 - Support dumpMessages interface for MilvusClientV2

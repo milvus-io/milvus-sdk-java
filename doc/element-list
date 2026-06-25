@@ -1,6 +1,7 @@
 io.milvus.client
 io.milvus.common.clientenum
 io.milvus.common.constant
+io.milvus.common.interceptor
 io.milvus.common.resourcegroup
 io.milvus.common.utils
 io.milvus.connection
@@ -51,6 +52,9 @@ io.milvus.v2.service.rbac.response
 io.milvus.v2.service.resourcegroup
 io.milvus.v2.service.resourcegroup.request
 io.milvus.v2.service.resourcegroup.response
+io.milvus.v2.service.snapshot
+io.milvus.v2.service.snapshot.request
+io.milvus.v2.service.snapshot.response
 io.milvus.v2.service.utility
 io.milvus.v2.service.utility.request
 io.milvus.v2.service.utility.response
