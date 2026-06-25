@@ -22,6 +22,7 @@ package io.milvus.v2;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import io.milvus.v1.CommonUtils;
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import io.milvus.v2.common.ConsistencyLevel;
@@ -29,8 +30,13 @@ import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.AddCollectionFieldReq;
 import io.milvus.v2.service.collection.request.AddFieldReq;
+import io.milvus.v2.service.collection.request.AddFunctionFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.collection.request.DescribeCollectionReq;
+import io.milvus.v2.service.collection.request.DropCollectionFieldReq;
 import io.milvus.v2.service.collection.request.DropCollectionReq;
+import io.milvus.v2.service.collection.request.DropFunctionFieldReq;
+import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.vector.request.InsertReq;
 import io.milvus.v2.service.vector.request.QueryReq;
 import io.milvus.v2.service.vector.response.QueryResp;
@@ -107,6 +113,15 @@ public class AddFieldExample {
         System.out.println("=============================================================");
     }
 
+    private static void describeCollection() {
+        DescribeCollectionResp resp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(COLLECTION_NAME)
+                .build());
+        System.out.println("\nCollection fields:");
+        System.out.println(resp.getFieldNames());
+        System.out.println("=============================================================");
+    }
+
     public static void main(String[] args) {
         createCollection();
 
@@ -132,6 +147,8 @@ public class AddFieldExample {
                     .isNullable(true)
                     .build());
 
+            describeCollection();
+
             // Query the previous row
             query(100L);
         }
@@ -149,6 +166,54 @@ public class AddFieldExample {
 
             // Query the new row
             query(500L);
+        }
+
+        {
+            // Drop the field added above
+            client.dropCollectionField(DropCollectionFieldReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .fieldName("text")
+                    .build());
+            System.out.println("Field 'text' dropped");
+            describeCollection();
+        }
+
+        {
+            // Add the text field back for function-field demo
+            client.addCollectionField(AddCollectionFieldReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .fieldName("text")
+                    .dataType(DataType.VarChar)
+                    .maxLength(100)
+                    .enableAnalyzer(true)
+                    .enableMatch(true)
+                    .isNullable(true)
+                    .build());
+
+            // Add a function-backed sparse field
+            client.addFunctionField(AddFunctionFieldReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .fieldName("sparse")
+                    .dataType(DataType.SparseFloatVector)
+                    .function(CreateCollectionReq.Function.builder()
+                            .name("bm25")
+                            .functionType(FunctionType.BM25)
+                            .inputFieldNames(Collections.singletonList("text"))
+                            .outputFieldNames(Collections.singletonList("sparse"))
+                            .build())
+                    .build());
+            System.out.println("Function-backed field 'sparse' added");
+            describeCollection();
+        }
+
+        {
+            // Drop the function and its output field
+            client.dropFunctionField(DropFunctionFieldReq.builder()
+                    .collectionName(COLLECTION_NAME)
+                    .functionName("bm25")
+                    .build());
+            System.out.println("Function-backed field 'sparse' dropped");
+            describeCollection();
         }
 
         client.close();
