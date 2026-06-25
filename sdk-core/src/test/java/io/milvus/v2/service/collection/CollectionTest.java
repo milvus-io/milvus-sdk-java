@@ -421,6 +421,166 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
+    void testDropCollectionFieldByName() {
+        client_v2.dropCollectionField(DropCollectionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("text")
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals("text", rpcRequest.getAction().getDropRequest().getFieldName());
+        Assertions.assertFalse(rpcRequest.getAction().getDropRequest().hasFieldId());
+    }
+
+    @Test
+    void testDropCollectionFieldById() {
+        client_v2.dropCollectionField(DropCollectionFieldReq.builder()
+                .collectionName("test")
+                .fieldId(100L)
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals(100L, rpcRequest.getAction().getDropRequest().getFieldId());
+        Assertions.assertFalse(rpcRequest.getAction().getDropRequest().hasFieldName());
+    }
+
+    @Test
+    void testDropCollectionFieldRejectsMissingIdentifier() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.dropCollectionField(DropCollectionFieldReq.builder()
+                        .collectionName("test")
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testDropCollectionFieldRejectsMultipleIdentifiers() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.dropCollectionField(DropCollectionFieldReq.builder()
+                        .collectionName("test")
+                        .fieldName("text")
+                        .fieldId(100L)
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionField() {
+        client_v2.addFunctionField(AddFunctionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .function(CreateCollectionReq.Function.builder()
+                        .name("bm25")
+                        .functionType(io.milvus.common.clientenum.FunctionType.BM25)
+                        .inputFieldNames(Collections.singletonList("text"))
+                        .outputFieldNames(Collections.singletonList("sparse"))
+                        .build())
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals(1, rpcRequest.getAction().getAddRequest().getFieldInfosCount());
+        Assertions.assertEquals(1, rpcRequest.getAction().getAddRequest().getFuncSchemaCount());
+        Assertions.assertEquals("sparse", rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getName());
+        Assertions.assertEquals(io.milvus.grpc.DataType.SparseFloatVector,
+                rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getDataType());
+        Assertions.assertTrue(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getIsFunctionOutput());
+        Assertions.assertFalse(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getNullable());
+        Assertions.assertEquals("bm25", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getName());
+        Assertions.assertEquals("text", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getInputFieldNames(0));
+        Assertions.assertEquals("sparse", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getOutputFieldNames(0));
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsNullFunction() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(AddFunctionFieldReq.builder()
+                        .collectionName("test")
+                        .fieldName("sparse")
+                        .dataType(DataType.SparseFloatVector)
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsMismatchedOutputField() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(AddFunctionFieldReq.builder()
+                        .collectionName("test")
+                        .fieldName("sparse")
+                        .dataType(DataType.SparseFloatVector)
+                        .function(CreateCollectionReq.Function.builder()
+                                .name("bm25")
+                                .functionType(io.milvus.common.clientenum.FunctionType.BM25)
+                                .inputFieldNames(Collections.singletonList("text"))
+                                .outputFieldNames(Collections.singletonList("other"))
+                                .build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testDropCollectionFunction() {
+        client_v2.dropCollectionFunction(DropCollectionFunctionReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .functionName("bm25")
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals("bm25", rpcRequest.getAction().getDropRequest().getFunctionName());
+        Assertions.assertFalse(rpcRequest.getAction().getDropRequest().getDropFunctionOutputFields());
+    }
+
+    @Test
+    void testDropFunctionField() {
+        client_v2.dropFunctionField(DropFunctionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .functionName("bm25")
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals("bm25", rpcRequest.getAction().getDropRequest().getFunctionName());
+        Assertions.assertTrue(rpcRequest.getAction().getDropRequest().getDropFunctionOutputFields());
+    }
+
+    @Test
+    void testDropFunctionFieldRejectsEmptyFunctionName() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.dropFunctionField(DropFunctionFieldReq.builder()
+                        .collectionName("test")
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
     void testGetCollectionStats() {
         GetCollectionStatsReq req = GetCollectionStatsReq.builder()
                 .collectionName("test")

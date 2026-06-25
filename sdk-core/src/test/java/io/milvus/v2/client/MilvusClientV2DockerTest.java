@@ -3855,6 +3855,73 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals(DataType.VarChar, field.getDataType());
         Assertions.assertEquals(100, field.getMaxLength());
         Assertions.assertTrue(field.getIsNullable());
+
+        client.dropCollectionField(DropCollectionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("flag")
+                .build());
+        descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        fieldNames = descResp.getFieldNames();
+        Assertions.assertFalse(fieldNames.contains("flag"));
+        Assertions.assertTrue(fieldNames.contains("text"));
+    }
+
+    @Test
+    void testFunctionFieldLifecycle() {
+        String collectionName = generator.generate(10);
+        createSimpleCollection(client, "", collectionName, "id", false, DIMENSION, ConsistencyLevel.BOUNDED);
+
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(100)
+                .enableAnalyzer(true)
+                .enableMatch(true)
+                .analyzerParams(new HashMap<String, Object>() {{
+                    put("tokenizer", "standard");
+                }})
+                .isNullable(true)
+                .build());
+
+        client.addFunctionField(AddFunctionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .function(CreateCollectionReq.Function.builder()
+                        .name("bm25")
+                        .description("desc bm25")
+                        .functionType(FunctionType.BM25)
+                        .inputFieldNames(Collections.singletonList("text"))
+                        .outputFieldNames(Collections.singletonList("sparse"))
+                        .build())
+                .build());
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        List<String> fieldNames = descResp.getFieldNames();
+        Assertions.assertTrue(fieldNames.contains("text"));
+        Assertions.assertTrue(fieldNames.contains("sparse"));
+        List<CreateCollectionReq.Function> functions = descResp.getCollectionSchema().getFunctionList();
+        Assertions.assertEquals(1, functions.size());
+        Assertions.assertEquals("bm25", functions.get(0).getName());
+        Assertions.assertEquals("sparse", functions.get(0).getOutputFieldNames().get(0));
+
+        client.dropFunctionField(DropFunctionFieldReq.builder()
+                .collectionName(collectionName)
+                .functionName("bm25")
+                .build());
+
+        descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        fieldNames = descResp.getFieldNames();
+        Assertions.assertTrue(fieldNames.contains("text"));
+        Assertions.assertFalse(fieldNames.contains("sparse"));
+        Assertions.assertTrue(descResp.getCollectionSchema().getFunctionList().isEmpty());
     }
 
     @Test
