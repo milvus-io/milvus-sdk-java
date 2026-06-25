@@ -35,4 +35,11 @@ jobs:
       - name: Update submodule
         run: git submodule update --init
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify
+        run: mvn -Pcoverage --batch-mode --update-snapshots verify
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./sdk-core/target/site/jacoco/jacoco.xml,./sdk-bulkwriter/target/site/jacoco/jacoco.xml
+          name: ubuntu-jacoco-coverage
+          disable_safe_directory: true
+          verbose: true
