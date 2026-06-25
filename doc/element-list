@@ -1,6 +1,7 @@
 io.milvus.client
 io.milvus.common.clientenum
 io.milvus.common.constant
+io.milvus.common.interceptor
 io.milvus.common.resourcegroup
 io.milvus.common.utils
 io.milvus.connection
