@@ -2,13 +2,13 @@ package io.milvus.bulkwriter.writer;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.milvus.bulkwriter.common.utils.WriterUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.Map;
 
 import static io.milvus.param.Constant.DYNAMIC_FIELD_NAME;
@@ -38,7 +38,7 @@ public class JSONFileWriter implements FormatFileWriter {
     public void appendRow(Map<String, Object> rowValues, boolean firstWrite) throws IOException {
         Gson gson = new GsonBuilder().serializeNulls().create();
         rowValues.keySet().removeIf(key -> key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField());
-        rowValues.replaceAll((key, value) -> value instanceof ByteBuffer ? ((ByteBuffer) value).array() : value);
+        rowValues.replaceAll((key, value) -> WriterUtils.normalizeValue(value));
 
         try {
             if (firstWrite) {

@@ -58,6 +58,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.amazonaws.services.s3.internal.Constants.MB;
 
@@ -167,8 +169,18 @@ public class MinioStorageClient extends MinioAsyncClient implements StorageClien
         if (!closeHttpClient || httpClient == null) {
             return;
         }
-        httpClient.dispatcher().executorService().shutdown();
+        ExecutorService executorService = httpClient.dispatcher().executorService();
+        executorService.shutdown();
         httpClient.connectionPool().evictAll();
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+            logger.warn("Interrupted while shutting down MinIO HTTP client executor", e);
+        }
         if (httpClient.cache() != null) {
             try {
                 httpClient.cache().close();
