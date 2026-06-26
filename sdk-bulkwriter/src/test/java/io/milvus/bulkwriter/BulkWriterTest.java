@@ -43,6 +43,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -264,6 +266,26 @@ public class BulkWriterTest {
                         .dataType(DataType.FloatVector)
                         .dimension(DIMENSION)
                         .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_binary_vector")
+                        .dataType(DataType.BinaryVector)
+                        .dimension(DIMENSION)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_float16_vector")
+                        .dataType(DataType.Float16Vector)
+                        .dimension(DIMENSION)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_bfloat16_vector")
+                        .dataType(DataType.BFloat16Vector)
+                        .dimension(DIMENSION)
+                        .build())
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("st_int8_vector")
+                        .dataType(DataType.Int8Vector)
+                        .dimension(DIMENSION)
+                        .build())
                 .build());
         return schemaV2;
     }
@@ -352,6 +374,10 @@ public class BulkWriterTest {
                 st.addProperty("st_double", (i + k) / 3);
                 st.addProperty("st_string", String.format("dummy_%d", i + k));
                 st.add("st_float_vector", JsonUtils.toJsonTree(utils.generateFloatVector()));
+                st.add("st_binary_vector", JsonUtils.toJsonTree(utils.generateBinaryVector().array()));
+                st.add("st_float16_vector", JsonUtils.toJsonTree(Float16Utils.f32VectorToFp16Buffer(utils.generateFloatVector()).array()));
+                st.add("st_bfloat16_vector", JsonUtils.toJsonTree(Float16Utils.f32VectorToBf16Buffer(utils.generateFloatVector()).array()));
+                st.add("st_int8_vector", JsonUtils.toJsonTree(utils.generateInt8Vector().array()));
                 structList.add(st);
             }
             rowObject.add("struct_field", JsonUtils.toJsonTree(structList));
@@ -553,6 +579,101 @@ public class BulkWriterTest {
         }
     }
 
+    private static DataType structVectorElementType(String fieldName) {
+        switch (fieldName) {
+            case "st_float_vector":
+                return DataType.Float;
+            case "st_binary_vector":
+            case "st_int8_vector":
+                return DataType.Int32;
+            default:
+                return null;
+        }
+    }
+
+    private static List<Float> decodeFloat16JsonArray(JsonElement element, boolean bfloat16) {
+        List<JsonElement> values = element.getAsJsonArray().asList();
+        ByteBuffer buffer = ByteBuffer.allocate(values.size()).order(ByteOrder.LITTLE_ENDIAN);
+        for (JsonElement value : values) {
+            buffer.put((byte) value.getAsInt());
+        }
+        return bfloat16 ? Float16Utils.bf16BufferToVector(buffer) : Float16Utils.fp16BufferToVector(buffer);
+    }
+
+    private static int expectedParquetByteValue(JsonElement element, boolean signed) {
+        int value = element.getAsInt();
+        return (byte) value;
+    }
+
+    private static void verifyParquetVectorElements(JsonElement expectedElement, Object readValue, DataType vectorType) {
+        Assertions.assertInstanceOf(List.class, readValue);
+        List<?> readArr = (List<?>) readValue;
+        List<JsonElement> expectedArr = expectedElement.getAsJsonArray().asList();
+        Assertions.assertEquals(expectedArr.size(), readArr.size());
+        for (int i = 0; i < readArr.size(); i++) {
+            Object element = ((GenericData.Record) readArr.get(i)).get("element");
+            switch (vectorType) {
+                case FloatVector:
+                    Assertions.assertEquals(expectedArr.get(i).getAsFloat(), element);
+                    break;
+                case BinaryVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                    Assertions.assertEquals(expectedParquetByteValue(expectedArr.get(i), false), ((Number) element).intValue());
+                    break;
+                case Int8Vector:
+                    Assertions.assertEquals(expectedParquetByteValue(expectedArr.get(i), true), ((Number) element).intValue());
+                    break;
+                default:
+                    Assertions.fail("Unsupported vector type for parquet verification");
+                    break;
+            }
+        }
+    }
+
+    private static void compareStructVectorJson(JsonElement expected, JsonElement actual, String fieldName) {
+        if (fieldName.equals("st_float16_vector")) {
+            compareFloatLists(decodeFloat16JsonArray(expected, false), actual.getAsJsonArray().asList());
+            return;
+        }
+        if (fieldName.equals("st_bfloat16_vector")) {
+            compareFloatLists(decodeFloat16JsonArray(expected, true), actual.getAsJsonArray().asList());
+            return;
+        }
+        DataType elementType = structVectorElementType(fieldName);
+        if (elementType == null) {
+            Assertions.fail("Unsupported struct vector field");
+        }
+        compareJsonArray(expected, actual, elementType);
+    }
+
+    private static void compareFloatLists(List<Float> expected, List<JsonElement> actual) {
+        Assertions.assertEquals(expected.size(), actual.size());
+        for (int i = 0; i < expected.size(); i++) {
+            Assertions.assertEquals(expected.get(i), actual.get(i).getAsFloat());
+        }
+    }
+
+    private static void compareFloatLists(List<Float> expected, JsonArray actual) {
+        compareFloatLists(expected, actual.asList());
+    }
+
+    private static void compareFloatLists(List<Float> expected, JsonElement actual) {
+        compareFloatLists(expected, actual.getAsJsonArray());
+    }
+
+    private static void compareStructVectorCsv(JsonElement expected, JsonElement actual, String fieldName) {
+        if (fieldName.equals("st_float16_vector")) {
+            compareFloatLists(decodeFloat16JsonArray(expected, false), actual.getAsJsonArray());
+            return;
+        }
+        if (fieldName.equals("st_bfloat16_vector")) {
+            compareFloatLists(decodeFloat16JsonArray(expected, true), actual.getAsJsonArray());
+            return;
+        }
+        compareStructVectorJson(expected, actual, fieldName);
+    }
+
     @Test
     void testWriteJson() {
         try {
@@ -623,8 +744,8 @@ public class BulkWriterTest {
                             Assertions.assertEquals(expectStruct.keySet().size(), readStruct.keySet().size());
                             for (String id : expectStruct.keySet()) {
                                 Assertions.assertTrue(readStruct.has(id));
-                                if (id.equals("st_float_vector")) {
-                                    compareJsonArray(expectStruct.get(id), readStruct.get(id), DataType.Float);
+                                if (id.startsWith("st_") && id.endsWith("_vector")) {
+                                    compareStructVectorJson(expectStruct.get(id), readStruct.get(id), id);
                                 } else {
                                     Assertions.assertEquals(expectStruct.get(id), readStruct.get(id));
                                 }
@@ -706,11 +827,10 @@ public class BulkWriterTest {
                                         Assertions.assertTrue(readStruct.has(key));
                                         if (expectStruct.get(key).isJsonArray()) {
                                             Assertions.assertTrue(readStruct.get(key).isJsonArray());
-                                            List<JsonElement> expectVals = expectStruct.get(key).getAsJsonArray().asList();
-                                            List<JsonElement> readVals = readStruct.get(key).getAsJsonArray().asList();
-                                            Assertions.assertEquals(expectVals.size(), readVals.size());
-                                            for (int j = 0; j < expectVals.size(); j++) {
-                                                Assertions.assertEquals(expectVals.get(j).getAsFloat(), readVals.get(j).getAsFloat());
+                                            if (key.startsWith("st_") && key.endsWith("_vector")) {
+                                                compareStructVectorCsv(expectStruct.get(key), readStruct.get(key), key);
+                                            } else {
+                                                Assertions.assertEquals(expectStruct.get(key), readStruct.get(key));
                                             }
                                         } else {
                                             Assertions.assertEquals(expectStruct.get(key), readStruct.get(key));
@@ -764,7 +884,7 @@ public class BulkWriterTest {
             Assertions.assertEquals("{\"1\":0.5}", stripCsvQuotes(valueValues.get("sparse_vector")));
             Assertions.assertEquals("[1.0,2.0,3.0,4.0]", stripCsvQuotes(valueValues.get("float16_vector")));
             Assertions.assertEquals("[1.0,2.0,3.0,4.0]", stripCsvQuotes(valueValues.get("bfloat16_vector")));
-            Assertions.assertEquals("[1, 2, 3, 4]", stripCsvQuotes(valueValues.get("int8_vector")));
+            Assertions.assertEquals("[1,2,3,4]", stripCsvQuotes(valueValues.get("int8_vector")));
         } catch (Exception e) {
             Assertions.fail(e.getMessage());
         }
@@ -950,10 +1070,6 @@ public class BulkWriterTest {
             DataType dtype = field.getDataType();
             switch (dtype) {
                 case Array:
-                case FloatVector:
-                case BinaryVector:
-                case Float16Vector:
-                case BFloat16Vector:
                     if (!(readValue instanceof List)) {
                         Assertions.fail("Array field type unmatched");
                     }
@@ -963,22 +1079,17 @@ public class BulkWriterTest {
                         Assertions.fail("Array field length unmatched");
                     }
                     DataType elementType = field.getElementType();
-                    switch (dtype) {
-                        case FloatVector:
-                            elementType = DataType.Float;
-                            break;
-                        case BFloat16Vector:
-                        case Float16Vector:
-                        case BinaryVector:
-                            elementType = DataType.Int32;
-                            break;
-                        default:
-                            break;
-                    }
                     for (int i = 0; i < jsonArr.size(); i++) {
                         GenericData.Record value = objArr.get(i);
                         verifyElement(elementType, jsonArr.get(i), value.get("element"));
                     }
+                    break;
+                case FloatVector:
+                case BinaryVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                case Int8Vector:
+                    verifyParquetVectorElements(expectedEle, readValue, dtype);
                     break;
                 default:
                     verifyElement(dtype, expectedEle, readValue);
@@ -1040,14 +1151,11 @@ public class BulkWriterTest {
                 String decodedString = new String(utf.getBytes(), StandardCharsets.UTF_8);
                 Assertions.assertEquals(expectedVal, decodedString);
 
-                List<JsonElement> expectedArr = expectedDict.get("st_float_vector").getAsJsonArray().asList();
-                List<?> readArr = (List<?>) readDict.get("st_float_vector");
-                Assertions.assertEquals(expectedArr.size(), readArr.size());
-                for (int k = 0; k < readArr.size(); k++) {
-                    expectedVal = expectedArr.get(k).getAsFloat();
-                    readVal = ((GenericData.Record) readArr.get(k)).get("element");
-                    Assertions.assertEquals(expectedVal, readVal);
-                }
+                verifyParquetVectorElements(expectedDict.get("st_float_vector"), readDict.get("st_float_vector"), DataType.FloatVector);
+                verifyParquetVectorElements(expectedDict.get("st_binary_vector"), readDict.get("st_binary_vector"), DataType.BinaryVector);
+                verifyParquetVectorElements(expectedDict.get("st_float16_vector"), readDict.get("st_float16_vector"), DataType.Float16Vector);
+                verifyParquetVectorElements(expectedDict.get("st_bfloat16_vector"), readDict.get("st_bfloat16_vector"), DataType.BFloat16Vector);
+                verifyParquetVectorElements(expectedDict.get("st_int8_vector"), readDict.get("st_int8_vector"), DataType.Int8Vector);
             }
         }
         System.out.printf("The row of id=%d is correct%n", id);

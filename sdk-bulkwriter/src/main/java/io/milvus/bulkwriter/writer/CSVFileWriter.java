@@ -3,15 +3,14 @@ package io.milvus.bulkwriter.writer;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.milvus.bulkwriter.common.utils.WriterUtils;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,6 +42,7 @@ public class CSVFileWriter implements FormatFileWriter {
     @Override
     public void appendRow(Map<String, Object> rowValues, boolean firstWrite) throws IOException {
         rowValues.keySet().removeIf(key -> key.equals(DYNAMIC_FIELD_NAME) && !this.collectionSchema.isEnableDynamicField());
+        rowValues.replaceAll((key, value) -> WriterUtils.normalizeValue(value));
 
         Gson gson = new GsonBuilder().serializeNulls().create();
         List<String> fieldNameList = Lists.newArrayList(rowValues.keySet());
@@ -62,8 +62,6 @@ public class CSVFileWriter implements FormatFileWriter {
                 String strVal = "";
                 if (val == null) {
                     strVal = nullKey;
-                } else if (val instanceof ByteBuffer) {
-                    strVal = Arrays.toString(((ByteBuffer) val).array());
                 } else if (val instanceof List || val instanceof Map) {
                     strVal = gson.toJson(val); // server-side is using json to parse array field and vector field
                 } else {

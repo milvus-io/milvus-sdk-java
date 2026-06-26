@@ -190,7 +190,13 @@ public class RemoteBulkWriter extends LocalBulkWriter {
     @Override
     public void close() throws Exception {
         logger.info("execute remaining actions to prevent loss of memory data or residual empty directories.");
-        exit();
+        try {
+            exit();
+        } finally {
+            if (storageClient != null) {
+                storageClient.close();
+            }
+        }
         logger.info(String.format("RemoteBulkWriter done! output remote files: %s", getBatchFiles()));
     }
 
