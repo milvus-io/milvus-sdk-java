@@ -203,6 +203,8 @@ public class IndexParam {
 
         // Only for geometry type field
         RTREE(120),
+        // Only for mol type field
+        PATTERN(121),
 
         // Only for scalar type field
         STL_SORT(200), // only for numeric type field
