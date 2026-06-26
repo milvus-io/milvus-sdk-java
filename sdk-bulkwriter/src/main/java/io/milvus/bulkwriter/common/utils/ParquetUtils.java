@@ -201,6 +201,14 @@ public class ParquetUtils {
                 case FloatVector:
                     setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.FLOAT, null, subField, true);
                     break;
+                case BinaryVector:
+                case Float16Vector:
+                case BFloat16Vector:
+                case Int8Vector:
+                    boolean isSigned = (subField.getDataType() == io.milvus.v2.common.DataType.Int8Vector);
+                    setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.INT32,
+                            LogicalTypeAnnotation.IntLogicalTypeAnnotation.intType(8, isSigned), subField, true);
+                    break;
                 default:
                     break;
             }
