@@ -270,6 +270,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 for (Object value : values) {
                     if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
                         continue;
@@ -423,6 +424,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 if (!(value.isJsonPrimitive())) {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
                 }
@@ -1450,6 +1452,11 @@ public class ParamUtils {
                 GeometryWktArray wktArray = GeometryWktArray.newBuilder().addAllData(strings).build();
                 return ScalarField.newBuilder().setGeometryWktData(wktArray).build();
             }
+            case Mol: {
+                List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
+                MolSmilesArray smilesArray = MolSmilesArray.newBuilder().addAllData(strings).build();
+                return ScalarField.newBuilder().setMolSmilesData(smilesArray).build();
+            }
             case JSON: {
                 List<ByteString> byteStrings = objects.stream().map(p -> (p == null) ? null : ByteString.copyFromUtf8(p.toString()))
                         .collect(Collectors.toList());
@@ -1591,6 +1598,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 if (obj instanceof String) {
                     return builder.setStringData((String) obj).build();
                 }
@@ -1629,6 +1637,7 @@ public class ParamUtils {
             case String:
             case Geometry:
             case Timestamptz:
+            case Mol:
                 return value.getStringData();
             case JSON:
                 return JsonUtils.fromJson(value.getStringData(), JsonObject.class);
