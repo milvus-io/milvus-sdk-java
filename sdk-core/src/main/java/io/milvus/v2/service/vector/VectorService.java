@@ -268,6 +268,7 @@ public class VectorService extends BaseService {
 
         SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
+                .aggregationBuckets(convertUtils.getAggregationBuckets(response))
                 .sessionTs(response.getSessionTs())
                 .recalls(response.getResults().getRecallsList());
         fillSearchRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
