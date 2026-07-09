@@ -34,6 +34,8 @@ import io.milvus.v2.service.collection.response.DescribeCollectionResp;
 import io.milvus.v2.service.index.response.DescribeIndexResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
+import io.milvus.v2.service.vector.response.aggregation.AggregationBucket;
+import io.milvus.v2.service.vector.response.aggregation.AggregationHit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,6 +141,149 @@ public class ConvertUtils {
             searchResults.add(singleResults);
         }
         return searchResults;
+    }
+
+    public List<List<AggregationBucket>> getAggregationBuckets(SearchResults response) {
+        List<AggregationBucket> buckets = new ArrayList<>();
+        for (AggBucket bucket : response.getResults().getAggBucketsList()) {
+            buckets.add(convertAggregationBucket(bucket));
+        }
+
+        if (buckets.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Long> aggTopks = response.getResults().getAggTopksList();
+        if (aggTopks.isEmpty()) {
+            long numQueries = response.getResults().getNumQueries();
+            if (numQueries > 1) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Aggregation buckets were returned without aggTopks for a multi-query search, so results cannot be mapped per query.");
+            }
+            List<List<AggregationBucket>> aggregationBuckets = new ArrayList<>();
+            aggregationBuckets.add(buckets);
+            return aggregationBuckets;
+        }
+
+        List<List<AggregationBucket>> aggregationBuckets = new ArrayList<>();
+        int offset = 0;
+        for (Long aggTopk : aggTopks) {
+            int size = aggTopk.intValue();
+            int end = Math.min(offset + size, buckets.size());
+            aggregationBuckets.add(new ArrayList<>(buckets.subList(offset, end)));
+            offset = end;
+        }
+        if (offset < buckets.size()) {
+            aggregationBuckets.add(new ArrayList<>(buckets.subList(offset, buckets.size())));
+        }
+        return aggregationBuckets;
+    }
+
+    private AggregationBucket convertAggregationBucket(AggBucket bucket) {
+        List<AggregationBucket.KeyEntry> keyEntries = new ArrayList<>();
+        for (BucketKeyEntry key : bucket.getKeyList()) {
+            keyEntries.add(AggregationBucket.KeyEntry.builder()
+                    .fieldId(key.getFieldId())
+                    .fieldName(key.getFieldName().isEmpty() ? String.valueOf(key.getFieldId()) : key.getFieldName())
+                    .value(getBucketKeyValue(key))
+                    .build());
+        }
+
+        Map<String, Object> metrics = new HashMap<>();
+        for (Map.Entry<String, MetricValue> entry : bucket.getMetricsMap().entrySet()) {
+            metrics.put(entry.getKey(), getMetricValue(entry.getValue()));
+        }
+
+        List<AggregationHit> hits = new ArrayList<>();
+        for (AggHit hit : bucket.getHitsList()) {
+            hits.add(convertAggregationHit(hit));
+        }
+
+        List<AggregationBucket> subGroups = new ArrayList<>();
+        for (AggBucket subBucket : bucket.getSubGroupsList()) {
+            subGroups.add(convertAggregationBucket(subBucket));
+        }
+
+        return AggregationBucket.builder()
+                .key(keyEntries)
+                .count(bucket.getCount())
+                .metrics(metrics)
+                .hits(hits)
+                .subGroups(subGroups)
+                .build();
+    }
+
+    private AggregationHit convertAggregationHit(AggHit hit) {
+        AggregationHit.AggregationHitBuilder builder = AggregationHit.builder()
+                .score(hit.getScore())
+                .id(getAggHitPrimaryKey(hit));
+        for (AggHitField field : hit.getFieldsList()) {
+            String fieldName = field.getFieldName().isEmpty() ? String.valueOf(field.getFieldId()) : field.getFieldName();
+            builder.addField(fieldName, getAggHitFieldValue(field), field.getFieldId());
+        }
+        return builder.build();
+    }
+
+    private Object getAggHitPrimaryKey(AggHit hit) {
+        switch (hit.getPkCase()) {
+            case INT_PK:
+                return hit.getIntPk();
+            case STR_PK:
+                return hit.getStrPk();
+            case PK_NOT_SET:
+            default:
+                return null;
+        }
+    }
+
+    private Object getAggHitFieldValue(AggHitField field) {
+        switch (field.getValueCase()) {
+            case INT_VAL:
+                return field.getIntVal();
+            case BOOL_VAL:
+                return field.getBoolVal();
+            case FLOAT_VAL:
+                return field.getFloatVal();
+            case DOUBLE_VAL:
+                return field.getDoubleVal();
+            case STRING_VAL:
+                return field.getStringVal();
+            case BYTES_VAL:
+                return field.getBytesVal().toByteArray();
+            case VALUE_NOT_SET:
+            default:
+                return null;
+        }
+    }
+
+    private Object getBucketKeyValue(BucketKeyEntry key) {
+        switch (key.getValueCase()) {
+            case INT_VAL:
+                return key.getIntVal();
+            case STRING_VAL:
+                return key.getStringVal();
+            case BOOL_VAL:
+                return key.getBoolVal();
+            case VALUE_NOT_SET:
+            default:
+                return null;
+        }
+    }
+
+    private Object getMetricValue(MetricValue value) {
+        switch (value.getValueCase()) {
+            case INT_VAL:
+                return value.getIntVal();
+            case DOUBLE_VAL:
+                return value.getDoubleVal();
+            case STRING_VAL:
+                return value.getStringVal();
+            case BOOL_VAL:
+                return value.getBoolVal();
+            case VALUE_NOT_SET:
+            default:
+                return null;
+        }
     }
 
     public DescribeIndexResp convertToDescribeIndexResp(List<IndexDescription> response) {

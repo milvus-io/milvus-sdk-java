@@ -36,6 +36,7 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.FunctionScore;
+import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.highlighter.Highlighter;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
@@ -319,7 +320,12 @@ public class VectorUtils {
                             .build());
         }
 
+        SearchAggregation searchAggregation = request.getSearchAggregation();
         if (request.getGroupByFieldName() != null && !request.getGroupByFieldName().isEmpty()) {
+            if (searchAggregation != null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Cannot set both groupByFieldName and searchAggregation.");
+            }
             builder.addSearchParams(
                     KeyValuePair.newBuilder()
                             .setKey(Constant.GROUP_BY_FIELD)
@@ -340,6 +346,10 @@ public class VectorUtils {
                                 .setValue(request.getStrictGroupSize().toString())
                                 .build());
             }
+        }
+
+        if (searchAggregation != null) {
+            builder.setSearchAggregation(searchAggregation.toProto());
         }
 
         if (!request.getOutputFields().isEmpty()) {

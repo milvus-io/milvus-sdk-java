@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.vector.response;
 
+import io.milvus.v2.service.vector.response.aggregation.AggregationBucket;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 
@@ -32,6 +33,7 @@ public class SearchResp {
     private Long scannedRemoteBytes;
     private Long scannedTotalBytes;
     private Float cacheHitRatio;
+    private List<List<AggregationBucket>> aggregationBuckets;
 
     private SearchResp(SearchRespBuilder builder) {
         this.searchResults = builder.searchResults;
@@ -41,6 +43,7 @@ public class SearchResp {
         this.scannedRemoteBytes = builder.scannedRemoteBytes;
         this.scannedTotalBytes = builder.scannedTotalBytes;
         this.cacheHitRatio = builder.cacheHitRatio;
+        this.aggregationBuckets = builder.aggregationBuckets;
     }
 
     public static SearchRespBuilder builder() {
@@ -103,6 +106,14 @@ public class SearchResp {
         this.cacheHitRatio = cacheHitRatio;
     }
 
+    public List<List<AggregationBucket>> getAggregationBuckets() {
+        return aggregationBuckets;
+    }
+
+    public void setAggregationBuckets(List<List<AggregationBucket>> aggregationBuckets) {
+        this.aggregationBuckets = aggregationBuckets;
+    }
+
     @Override
     public String toString() {
         return "SearchResp{" +
@@ -113,6 +124,7 @@ public class SearchResp {
                 ", scannedRemoteBytes=" + scannedRemoteBytes +
                 ", scannedTotalBytes=" + scannedTotalBytes +
                 ", cacheHitRatio=" + cacheHitRatio +
+                ", aggregationBuckets=" + aggregationBuckets +
                 '}';
     }
 
@@ -124,6 +136,7 @@ public class SearchResp {
         private Long scannedRemoteBytes;
         private Long scannedTotalBytes;
         private Float cacheHitRatio;
+        private List<List<AggregationBucket>> aggregationBuckets = new ArrayList<>();
 
         public SearchRespBuilder searchResults(List<List<SearchResult>> searchResults) {
             this.searchResults = searchResults;
@@ -157,6 +170,11 @@ public class SearchResp {
 
         public SearchRespBuilder cacheHitRatio(Float cacheHitRatio) {
             this.cacheHitRatio = cacheHitRatio;
+            return this;
+        }
+
+        public SearchRespBuilder aggregationBuckets(List<List<AggregationBucket>> aggregationBuckets) {
+            this.aggregationBuckets = aggregationBuckets;
             return this;
         }
 

@@ -22,6 +22,7 @@ package io.milvus.v2.service.vector.request;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.highlighter.Highlighter;
 
@@ -74,6 +75,8 @@ public class SearchReq {
     // milvus v2.6.9 supports highlighter for search results
     private Highlighter highlighter;
 
+    private SearchAggregation searchAggregation;
+
     private SearchReq(SearchReqBuilder builder) {
         this.databaseName = builder.databaseName;
         this.collectionName = builder.collectionName;
@@ -102,6 +105,7 @@ public class SearchReq {
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
         this.highlighter = builder.highlighter;
+        this.searchAggregation = builder.searchAggregation;
     }
 
     // Getters and Setters
@@ -313,6 +317,14 @@ public class SearchReq {
         return highlighter;
     }
 
+    public SearchAggregation getSearchAggregation() {
+        return searchAggregation;
+    }
+
+    public void setSearchAggregation(SearchAggregation searchAggregation) {
+        this.searchAggregation = searchAggregation;
+    }
+
     @Override
     public String toString() {
         return "SearchReq{" +
@@ -340,6 +352,7 @@ public class SearchReq {
                 ", strictGroupSize=" + strictGroupSize +
                 ", ranker=" + ranker +
                 ", highlighter=" + (highlighter == null ? "null" : (highlighter.highlightType() + ":" + highlighter.getParams())) +
+                ", searchAggregation=" + searchAggregation +
                 ", functionScore=" + functionScore +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
@@ -377,6 +390,7 @@ public class SearchReq {
         private FunctionScore functionScore;
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
         private Highlighter highlighter;
+        private SearchAggregation searchAggregation;
 
         private SearchReqBuilder() {
         }
@@ -517,6 +531,11 @@ public class SearchReq {
 
         public SearchReqBuilder highlighter(Highlighter highlighter) {
             this.highlighter = highlighter;
+            return this;
+        }
+
+        public SearchReqBuilder searchAggregation(SearchAggregation searchAggregation) {
+            this.searchAggregation = searchAggregation;
             return this;
         }
 
