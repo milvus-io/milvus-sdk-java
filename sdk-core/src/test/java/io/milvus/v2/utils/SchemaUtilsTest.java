@@ -157,7 +157,8 @@ public class SchemaUtilsTest {
             CreateCollectionReq.Function func = SchemaUtils.convertFromGrpcFunction(functionSchema);
             Assertions.assertEquals(func.getName(), "abc");
             Assertions.assertEquals(func.getDescription(), "xxx");
-            Assertions.assertEquals(func.getFunctionType(), io.milvus.common.clientenum.FunctionType.fromName(type.name()));
+            Assertions.assertNotNull(func.getFunctionType());
+            Assertions.assertEquals(func.getFunctionType().getCode(), type.getNumber());
             Assertions.assertEquals(func.getInputFieldNames().size(), 1);
             Assertions.assertEquals(func.getInputFieldNames().get(0), "text");
             Assertions.assertEquals(func.getOutputFieldNames().size(), 1);
@@ -166,6 +167,50 @@ public class SchemaUtilsTest {
             Assertions.assertTrue(params.containsKey("provider"));
             Assertions.assertEquals(params.get("provider"), "openai");
         }
+    }
+
+    @Test
+    void testConvertFromGrpcMinHashFunction() {
+        FunctionSchema functionSchema = FunctionSchema.newBuilder()
+                .setName("text_to_minhash")
+                .setDescription("minhash function")
+                .setType(FunctionType.MinHash)
+                .addInputFieldNames("text")
+                .addOutputFieldNames("minhash_signature")
+                .addParams(KeyValuePair.newBuilder().setKey("num_hashes").setValue("16").build())
+                .build();
+
+        CreateCollectionReq.Function func = SchemaUtils.convertFromGrpcFunction(functionSchema);
+        Assertions.assertEquals(io.milvus.common.clientenum.FunctionType.MINHASH, func.getFunctionType());
+        Assertions.assertEquals("16", func.getParams().get("num_hashes"));
+    }
+
+    @Test
+    void testConvertToGrpcMinHashFunction() {
+        CreateCollectionReq.Function function = CreateCollectionReq.Function.builder()
+                .name("text_to_minhash")
+                .description("minhash function")
+                .functionType(io.milvus.common.clientenum.FunctionType.MINHASH)
+                .inputFieldNames(Collections.singletonList("text"))
+                .outputFieldNames(Collections.singletonList("minhash_signature"))
+                .param("num_hashes", "16")
+                .build();
+
+        FunctionSchema functionSchema = SchemaUtils.convertToGrpcFunction(function);
+        Assertions.assertEquals(FunctionType.MinHash, functionSchema.getType());
+        Assertions.assertEquals("16", functionSchema.getParams(0).getValue());
+    }
+
+    @Test
+    void testConvertFromGrpcUnknownFunctionFallsBackToUnknown() {
+        FunctionSchema functionSchema = FunctionSchema.newBuilder()
+                .setName("unknown_func")
+                .setDescription("unknown function")
+                .setTypeValue(999)
+                .build();
+
+        CreateCollectionReq.Function func = SchemaUtils.convertFromGrpcFunction(functionSchema);
+        Assertions.assertEquals(io.milvus.common.clientenum.FunctionType.UNKNOWN, func.getFunctionType());
     }
 
     @Test
