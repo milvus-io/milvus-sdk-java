@@ -30,6 +30,7 @@ import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.aggregation.AggDirection;
 import io.milvus.v2.service.vector.request.aggregation.MetricOps;
 import io.milvus.v2.service.vector.request.aggregation.MetricSpec;
+import io.milvus.v2.service.vector.request.aggregation.OrderByField;
 import io.milvus.v2.service.vector.request.aggregation.OrderSpec;
 import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
 import io.milvus.v2.service.vector.request.aggregation.SortSpec;
@@ -216,6 +217,41 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testQueryOrderByFieldsSerialization() {
+        QueryReq request = QueryReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .orderByFields(Arrays.asList(
+                        OrderByField.builder().fieldName("price").build(),
+                        OrderByField.builder().fieldName("rating").direction(AggDirection.DESC).build()))
+                .build();
+
+        client_v2.query(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals("price:asc,rating:desc", getParam(captor.getValue().getQueryParamsList(), Constant.ORDER_BY_FIELDS));
+    }
+
+    @Test
+    void testSearchOrderByFieldsSerialization() {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .orderByFields(Arrays.asList(
+                        OrderByField.builder().fieldName("price").direction(AggDirection.ASC).build(),
+                        OrderByField.builder().fieldName("rating").direction(AggDirection.DESC).build()))
+                .build();
+
+        client_v2.search(request);
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(blockingStub).search(captor.capture());
+        Assertions.assertEquals("price:asc,rating:desc", getParam(captor.getValue().getSearchParamsList(), Constant.ORDER_BY_FIELDS));
+    }
+
+    @Test
     void testSessionSearchPassesClusterId() {
         List<Float> vectorList = Arrays.asList(1.0f, 2.0f);
         SearchReq request = SearchReq.builder()
@@ -307,6 +343,29 @@ class VectorTest extends BaseTest {
         MilvusClientException closedException = Assertions.assertThrows(MilvusClientException.class,
                 () -> session.search(closedRequest));
         Assertions.assertEquals(ErrorCode.INVALID_PARAMS, closedException.getErrorCode());
+    }
+
+    @Test
+    void testOrderByFieldDefaultsToAsc() {
+        OrderByField orderByField = OrderByField.builder()
+                .fieldName("price")
+                .build();
+
+        Assertions.assertEquals(AggDirection.ASC, orderByField.getDirection());
+    }
+
+    @Test
+    void testOrderByFieldRejectsComma() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> OrderByField.builder().fieldName("metadata[\"a,b\"]").build());
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testOrderByFieldRejectsColon() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> OrderByField.builder().fieldName("metadata[\"a:b\"]").build());
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
     }
 
     @Test

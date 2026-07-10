@@ -113,6 +113,7 @@ public class MilvusClientV2Session {
                 .consistencyLevel(request.getConsistencyLevel())
                 .ignoreGrowing(request.isIgnoreGrowing())
                 .timezone(request.getTimezone())
+                .orderByFields(request.getOrderByFields())
                 .groupByFieldName(request.getGroupByFieldName())
                 .groupSize(request.getGroupSize())
                 .strictGroupSize(request.getStrictGroupSize())
@@ -160,6 +161,7 @@ public class MilvusClientV2Session {
                 .limit(request.getLimit())
                 .ignoreGrowing(request.isIgnoreGrowing())
                 .timezone(request.getTimezone())
+                .orderByFields(request.getOrderByFields())
                 .queryParams(request.getQueryParams())
                 .filterTemplateValues(request.getFilterTemplateValues())
                 .build();
