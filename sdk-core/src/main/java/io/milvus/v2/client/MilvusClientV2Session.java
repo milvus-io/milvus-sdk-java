@@ -120,6 +120,7 @@ public class MilvusClientV2Session {
                 .functionScore(request.getFunctionScore())
                 .filterTemplateValues(request.getFilterTemplateValues())
                 .highlighter(request.getHighlighter())
+                .searchAggregation(request.getSearchAggregation())
                 .build();
     }
 

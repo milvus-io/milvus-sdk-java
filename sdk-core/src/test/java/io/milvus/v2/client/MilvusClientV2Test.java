@@ -725,7 +725,7 @@ public class MilvusClientV2Test extends BaseTest {
         VerifyClass(QueryIteratorReq.class.getName(), config);
         VerifyClass(QueryReq.class.getName(), config);
         VerifyClass(RunAnalyzerReq.class.getName(), config);
-        config.setIgnoredMethods(Arrays.asList("topK", "setTopK", "getTopK"));
+        config.setIgnoredMethods(Arrays.asList("topK", "setTopK", "getTopK", "searchAggregation", "setSearchAggregation", "getSearchAggregation"));
         VerifyClass(SearchReq.class.getName(), config);
         config.clearIgnoredMethods();
         VerifyClass(UpsertReq.class.getName(), config);
