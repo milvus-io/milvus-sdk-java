@@ -31,7 +31,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-standalone-1
-    image: milvusdb/milvus:master-20260609-1853a148
+    image: milvusdb/milvus:master-20260622-a6568ac2-amd64
     user: "0:0"
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -83,7 +83,7 @@ services:
 
   standaloneslave:
     container_name: milvus-javasdk-standalone-2
-    image: milvusdb/milvus:master-20260609-1853a148
+    image: milvusdb/milvus:master-20260622-a6568ac2-amd64
     user: "0:0"
     command: ["milvus", "run", "standalone"]
     security_opt:
