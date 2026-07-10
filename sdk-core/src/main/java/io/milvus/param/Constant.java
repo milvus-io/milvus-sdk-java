@@ -36,6 +36,7 @@ public class Constant {
     public static final String ITERATOR_FIELD = "iterator";
     public static final String CLUSTER_ID = "cluster_id";
     public static final String GROUP_BY_FIELD = "group_by_field";
+    public static final String ORDER_BY_FIELDS = "order_by_fields";
     public static final String GROUP_SIZE = "group_size";
     public static final String STRICT_GROUP_SIZE = "strict_group_size";
     public static final String HINTS = "hints"; // from milvus v2.5

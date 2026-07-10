@@ -22,6 +22,7 @@ package io.milvus.v2.service.vector.request;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.aggregation.OrderByField;
 import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.highlighter.Highlighter;
@@ -53,6 +54,7 @@ public class SearchReq {
     private ConsistencyLevel consistencyLevel;
     private boolean ignoreGrowing;
     private String timezone;
+    private List<OrderByField> orderByFields;
     private String groupByFieldName;
     private Integer groupSize;
     private Boolean strictGroupSize;
@@ -97,6 +99,7 @@ public class SearchReq {
         this.gracefulTime = builder.gracefulTime;
         this.consistencyLevel = builder.consistencyLevel;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.orderByFields = builder.orderByFields;
         this.groupByFieldName = builder.groupByFieldName;
         this.groupSize = builder.groupSize;
         this.strictGroupSize = builder.strictGroupSize;
@@ -265,6 +268,14 @@ public class SearchReq {
         return timezone;
     }
 
+    public List<OrderByField> getOrderByFields() {
+        return orderByFields;
+    }
+
+    public void setOrderByFields(List<OrderByField> orderByFields) {
+        this.orderByFields = orderByFields;
+    }
+
     public String getGroupByFieldName() {
         return groupByFieldName;
     }
@@ -347,6 +358,7 @@ public class SearchReq {
                 ", consistencyLevel=" + consistencyLevel +
                 ", ignoreGrowing=" + ignoreGrowing +
                 ", timezone='" + timezone + '\'' +
+                ", orderByFields=" + orderByFields +
                 ", groupByFieldName='" + groupByFieldName + '\'' +
                 ", groupSize=" + groupSize +
                 ", strictGroupSize=" + strictGroupSize +
@@ -383,6 +395,7 @@ public class SearchReq {
         private ConsistencyLevel consistencyLevel = null; // default value
         private boolean ignoreGrowing;
         private String timezone = "";
+        private List<OrderByField> orderByFields = new ArrayList<>();
         private String groupByFieldName;
         private Integer groupSize;
         private Boolean strictGroupSize;
@@ -496,6 +509,11 @@ public class SearchReq {
 
         public SearchReqBuilder timezone(String timezone) {
             this.timezone = timezone;
+            return this;
+        }
+
+        public SearchReqBuilder orderByFields(List<OrderByField> orderByFields) {
+            this.orderByFields = orderByFields;
             return this;
         }
 
