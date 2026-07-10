@@ -20,6 +20,7 @@
 package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.service.vector.request.aggregation.OrderByField;
 
 import java.util.*;
 
@@ -36,6 +37,7 @@ public class QueryReq {
     private long limit;
     private boolean ignoreGrowing;
     private String timezone;
+    private List<OrderByField> orderByFields;
 
     // Extra parameters for query, timezone, time_fields, etc.
     // Make sure the value can be converted to String by String.valueOf().
@@ -64,6 +66,7 @@ public class QueryReq {
         this.offset = builder.offset;
         this.limit = builder.limit;
         this.ignoreGrowing = builder.ignoreGrowing;
+        this.orderByFields = builder.orderByFields;
         this.queryParams = builder.queryParams;
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
@@ -165,6 +168,14 @@ public class QueryReq {
         return timezone;
     }
 
+    public List<OrderByField> getOrderByFields() {
+        return orderByFields;
+    }
+
+    public void setOrderByFields(List<OrderByField> orderByFields) {
+        this.orderByFields = orderByFields;
+    }
+
     public Map<String, Object> getQueryParams() {
         return queryParams;
     }
@@ -196,6 +207,7 @@ public class QueryReq {
                 ", limit=" + limit +
                 ", ignoreGrowing=" + ignoreGrowing +
                 ", timezone='" + timezone + '\'' +
+                ", orderByFields=" + orderByFields +
                 ", queryParams=" + queryParams +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
@@ -214,6 +226,7 @@ public class QueryReq {
         private long limit;
         private boolean ignoreGrowing;
         private String timezone = "";
+        private List<OrderByField> orderByFields = new ArrayList<>();
         private Map<String, Object> queryParams = new HashMap<>();
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
@@ -274,6 +287,11 @@ public class QueryReq {
 
         public QueryReqBuilder timezone(String timezone) {
             this.timezone = timezone;
+            return this;
+        }
+
+        public QueryReqBuilder orderByFields(List<OrderByField> orderByFields) {
+            this.orderByFields = orderByFields;
             return this;
         }
 
