@@ -36,6 +36,7 @@ import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.*;
 import io.milvus.v2.service.vector.request.FunctionScore;
+import io.milvus.v2.service.vector.request.aggregation.OrderByField;
 import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
 import io.milvus.v2.service.vector.request.data.BaseVector;
 import io.milvus.v2.service.vector.request.highlighter.Highlighter;
@@ -48,6 +49,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class VectorUtils {
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request) {
@@ -130,6 +132,13 @@ public class VectorUtils {
                     .build());
         }
 
+        if (CollectionUtils.isNotEmpty(request.getOrderByFields())) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.ORDER_BY_FIELDS)
+                    .setValue(formatOrderByFields(request.getOrderByFields()))
+                    .build());
+        }
+
         return builder.build();
 
     }
@@ -153,6 +162,12 @@ public class VectorUtils {
             default:
                 return 1L; // EVENTUALLY and others
         }
+    }
+
+    private static String formatOrderByFields(List<OrderByField> orderByFields) {
+        return orderByFields.stream()
+                .map(item -> item.getFieldName() + ":" + item.getDirection().getValue())
+                .collect(Collectors.joining(","));
     }
 
     private static ByteString convertPlaceholder(List<Object> data, PlaceholderType placeType, boolean elementLevel) {
@@ -317,6 +332,14 @@ public class VectorUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.TIMEZONE)
                             .setValue(request.getTimezone())
+                            .build());
+        }
+
+        if (CollectionUtils.isNotEmpty(request.getOrderByFields())) {
+            builder.addSearchParams(
+                    KeyValuePair.newBuilder()
+                            .setKey(Constant.ORDER_BY_FIELDS)
+                            .setValue(formatOrderByFields(request.getOrderByFields()))
                             .build());
         }
 
