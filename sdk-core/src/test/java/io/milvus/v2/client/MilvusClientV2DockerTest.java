@@ -3356,6 +3356,14 @@ class MilvusClientV2DockerTest {
             pool.removeConfig(dummyDb);
             Assertions.assertNull(pool.getConfig(dummyDb));
             pool.close();
+
+            client.dropCollection(DropCollectionReq.builder()
+                    .databaseName(dummyDb)
+                    .collectionName(collectionName)
+                    .build());
+            client.dropDatabase(DropDatabaseReq.builder()
+                    .databaseName(dummyDb)
+                    .build());
         } catch (Exception e) {
             System.out.println(e.getMessage());
             Assertions.fail(e.getMessage());
@@ -3767,6 +3775,110 @@ class MilvusClientV2DockerTest {
         for (SearchResp.SearchResult result : firstResults) {
             System.out.println(result);
         }
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
+    }
+
+    @Test
+    void testMinHashFunction() {
+        String randomCollectionName = generator.generate(10);
+
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .enableDynamicField(true)
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .autoID(Boolean.FALSE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(65535)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("minhash_signature")
+                .dataType(DataType.BinaryVector)
+                .dimension(512)
+                .build());
+
+        collectionSchema.addFunction(CreateCollectionReq.Function.builder()
+                .name("text_to_minhash")
+                .description("desc minhash")
+                .functionType(FunctionType.MINHASH)
+                .inputFieldNames(Collections.singletonList("text"))
+                .outputFieldNames(Collections.singletonList("minhash_signature"))
+                .param("num_hashes", "16")
+                .param("shingle_size", "3")
+                .param("token_level", "word")
+                .build());
+
+        List<IndexParam> indexParams = new ArrayList<>();
+        indexParams.add(IndexParam.builder()
+                .fieldName("minhash_signature")
+                .indexType(IndexParam.IndexType.MINHASH_LSH)
+                .metricType(IndexParam.MetricType.MHJACCARD)
+                .extraParams(new HashMap<String, Object>() {{
+                    put("mh_lsh_band", 8);
+                    put("with_raw_data", true);
+                }})
+                .build());
+        CreateCollectionReq requestCreate = CreateCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .collectionSchema(collectionSchema)
+                .indexParams(indexParams)
+                .build();
+        client.createCollection(requestCreate);
+
+        DescribeCollectionResp descResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(randomCollectionName)
+                .build());
+        List<CreateCollectionReq.Function> functions = descResp.getCollectionSchema().getFunctionList();
+        Assertions.assertEquals(1, functions.size());
+        Assertions.assertEquals(FunctionType.MINHASH, functions.get(0).getFunctionType());
+        Assertions.assertEquals("minhash_signature", functions.get(0).getOutputFieldNames().get(0));
+
+        List<String> texts = Arrays.asList(
+                "The quick brown fox jumps over the lazy dog.",
+                "A quick brown fox jumped over a lazy dog.",
+                "Machine learning is transforming artificial intelligence.");
+        List<JsonObject> data = new ArrayList<>();
+        for (int i = 0; i < texts.size(); i++) {
+            JsonObject row = new JsonObject();
+            row.addProperty("id", i + 1);
+            row.addProperty("text", texts.get(i));
+            data.add(row);
+        }
+
+        InsertResp insertResp = client.insert(InsertReq.builder()
+                .collectionName(randomCollectionName)
+                .data(data)
+                .build());
+        Assertions.assertEquals(3, insertResp.getInsertCnt());
+        long rowCount = getRowCount("", randomCollectionName);
+        Assertions.assertEquals(texts.size(), rowCount);
+
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(randomCollectionName)
+                .annsField("minhash_signature")
+                .data(Collections.singletonList(new EmbeddedText("The quick brown fox jumps over the lazy dog.")))
+                .limit(3)
+                .outputFields(Lists.newArrayList("id", "text"))
+                .metricType(IndexParam.MetricType.MHJACCARD)
+                .searchParams(new HashMap<String, Object>() {{
+                    put("mh_search_with_jaccard", true);
+                    put("refine_k", 50);
+                }})
+                .build());
+        List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
+        Assertions.assertEquals(1, searchResults.size());
+        Assertions.assertFalse(searchResults.get(0).isEmpty());
+        Map<String, Object> firstEntity = searchResults.get(0).get(0).getEntity();
+        Assertions.assertTrue(firstEntity.containsKey("id"));
+        Assertions.assertTrue(firstEntity.containsKey("text"));
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(randomCollectionName).build());
     }
 
     @Test
@@ -3866,6 +3978,8 @@ class MilvusClientV2DockerTest {
         fieldNames = descResp.getFieldNames();
         Assertions.assertFalse(fieldNames.contains("flag"));
         Assertions.assertTrue(fieldNames.contains("text"));
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
     }
 
     @Test
@@ -3922,6 +4036,8 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(fieldNames.contains("text"));
         Assertions.assertFalse(fieldNames.contains("sparse"));
         Assertions.assertTrue(descResp.getCollectionSchema().getFunctionList().isEmpty());
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
     }
 
     @Test

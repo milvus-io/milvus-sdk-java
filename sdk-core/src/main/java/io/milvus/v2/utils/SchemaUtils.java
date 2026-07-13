@@ -318,10 +318,13 @@ public class SchemaUtils {
     }
 
     public static CreateCollectionReq.Function convertFromGrpcFunction(FunctionSchema functionSchema) {
+        io.milvus.common.clientenum.FunctionType functionType =
+                io.milvus.common.clientenum.FunctionType.fromCode(functionSchema.getTypeValue());
+
         CreateCollectionReq.Function.FunctionBuilder builder = CreateCollectionReq.Function.builder()
                 .name(functionSchema.getName())
                 .description(functionSchema.getDescription())
-                .functionType(io.milvus.common.clientenum.FunctionType.fromName(functionSchema.getType().name()))
+                .functionType(functionType)
                 .inputFieldNames(functionSchema.getInputFieldNamesList().stream().collect(Collectors.toList()))
                 .outputFieldNames(functionSchema.getOutputFieldNamesList().stream().collect(Collectors.toList()));
         List<KeyValuePair> pairs = functionSchema.getParamsList();
