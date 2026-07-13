@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 3.0.4 (2026-07-13)
+### Feature
+- Support aggregation for search
+- Support order-by fields for search and query
+- Support the MinHash function
+- Support commitImport/abortImport for bulk import jobs
+
 ## milvus-sdk-java 3.0.3 (2026-06-29)
 ### Feature
 - Support AddFunctionField/DropCollectionField/DropFunctionField interfaces
@@ -991,4 +998,3 @@
 - \#23 - Format code with Google-java-style and add Apache 2.0 license header
 - \#28 - add examples
 - \#29 - add README
-
