@@ -29,40 +29,40 @@ import io.milvus.common.utils.JsonUtils;
 import java.util.Map;
 
 public class BulkImportUtils extends BaseRestful {
+    private static final int CONNECT_TIMEOUT_MS = 60 * 1000;
 
-    public static String bulkImport(String url, BaseImportRequest request) {
-        String requestURL = url + "/v2/vectordb/jobs/import/create";
-
+    private static String postImportJobRequest(String requestURL, String apiKey, Object request) {
         Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
         }.getType());
-        String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
+        String body = postRequest(requestURL, apiKey, params, CONNECT_TIMEOUT_MS);
         RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
         }.getType());
         handleResponse(requestURL, response);
         return body;
+    }
+
+    public static String bulkImport(String url, BaseImportRequest request) {
+        String requestURL = url + "/v2/vectordb/jobs/import/create";
+        return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
     public static String getImportProgress(String url, BaseDescribeImportRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/describe";
-
-        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
-        }.getType());
-        String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
-        }.getType());
-        handleResponse(requestURL, response);
-        return body;
+        return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 
     public static String listImportJobs(String url, BaseListImportJobsRequest request) {
         String requestURL = url + "/v2/vectordb/jobs/import/list";
+        return postImportJobRequest(requestURL, request.getApiKey(), request);
+    }
 
-        Map<String, Object> params = JsonUtils.fromJson(JsonUtils.toJson(request), new TypeToken<Map<String, Object>>() {
-        }.getType());
-        String body = postRequest(requestURL, request.getApiKey(), params, 60 * 1000);
-        RestfulResponse<Object> response = JsonUtils.fromJson(body, new TypeToken<RestfulResponse<Object>>() {
-        }.getType());
-        handleResponse(requestURL, response);
-        return body;
+    public static String commitImport(String url, BaseDescribeImportRequest request) {
+        String requestURL = url + "/v2/vectordb/jobs/import/commit";
+        return postImportJobRequest(requestURL, request.getApiKey(), request);
+    }
+
+    public static String abortImport(String url, BaseDescribeImportRequest request) {
+        String requestURL = url + "/v2/vectordb/jobs/import/abort";
+        return postImportJobRequest(requestURL, request.getApiKey(), request);
     }
 }
