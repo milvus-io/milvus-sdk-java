@@ -24,6 +24,9 @@ import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
+import io.milvus.v2.client.ConnectConfig;
+import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.vector.request.*;
@@ -45,6 +48,7 @@ import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -252,6 +256,11 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testSessionReturnsClusterId() {
+        Assertions.assertEquals("cluster-a", client_v2.session("cluster-a").getClusterId());
+    }
+
+    @Test
     void testSessionSearchPassesClusterId() {
         List<Float> vectorList = Arrays.asList(1.0f, 2.0f);
         SearchReq request = SearchReq.builder()
@@ -265,7 +274,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertNull(request.getClusterId());
+        Assertions.assertEquals("cluster-a", request.getClusterId());
     }
 
     @Test
@@ -280,7 +289,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
         verify(blockingStub).query(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertNull(request.getClusterId());
+        Assertions.assertEquals("cluster-a", request.getClusterId());
     }
 
     @Test
@@ -295,7 +304,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
         verify(blockingStub).query(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertNull(request.getClusterId());
+        Assertions.assertEquals("cluster-a", request.getClusterId());
     }
 
     @Test
@@ -317,11 +326,76 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<HybridSearchRequest> captor = ArgumentCaptor.forClass(HybridSearchRequest.class);
         verify(blockingStub).hybridSearch(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertNull(request.getClusterId());
+        Assertions.assertEquals("cluster-a", request.getClusterId());
     }
 
     @Test
-    void testSessionRejectsClosedAndConflictingClusterId() {
+    void testSessionQueryIteratorPassesClusterId() throws ReflectiveOperationException {
+        setIteratorConnectConfig();
+        QueryIteratorReq request = QueryIteratorReq.builder()
+                .collectionName("test")
+                .expr("id > 0")
+                .batchSize(10)
+                .build();
+
+        Assertions.assertNotNull(client_v2.session("cluster-a").queryIterator(request));
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertEquals("cluster-a", request.getClusterId());
+    }
+
+    @Test
+    void testSessionSearchIteratorPassesClusterId() throws ReflectiveOperationException {
+        setIteratorConnectConfig();
+        SearchIteratorReq request = SearchIteratorReq.builder()
+                .collectionName("test")
+                .vectorFieldName("vector")
+                .metricType(IndexParam.MetricType.L2)
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .batchSize(10)
+                .build();
+
+        Assertions.assertNotNull(client_v2.session("cluster-a").searchIterator(request));
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(blockingStub).search(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertEquals("cluster-a", request.getClusterId());
+    }
+
+    @Test
+    void testSessionSearchIteratorV2PassesClusterId() throws ReflectiveOperationException {
+        setIteratorConnectConfig();
+        SearchResults iteratorResponse = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setResults(SearchResultData.newBuilder()
+                        .setSearchIteratorV2Results(SearchIteratorV2Results.newBuilder().setToken("token").build())
+                        .build())
+                .build();
+        when(blockingStub.search(any(SearchRequest.class))).thenReturn(iteratorResponse);
+
+        SearchIteratorReqV2 request = SearchIteratorReqV2.builder()
+                .collectionName("test")
+                .vectorFieldName("vector")
+                .metricType(IndexParam.MetricType.L2)
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .batchSize(10)
+                .build();
+
+        Assertions.assertNotNull(client_v2.session("cluster-a").searchIteratorV2(request));
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(blockingStub).search(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertEquals("cluster-a", request.getClusterId());
+    }
+
+    @Test
+    void testSessionOverridesRequestClusterIdAndRejectsClosed() {
         SearchReq request = SearchReq.builder()
                 .collectionName("test")
                 .clusterId("cluster-b")
@@ -329,9 +403,12 @@ class VectorTest extends BaseTest {
                 .limit(10)
                 .build();
 
-        MilvusClientException conflictException = Assertions.assertThrows(MilvusClientException.class,
-                () -> client_v2.session("cluster-a").search(request));
-        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, conflictException.getErrorCode());
+        client_v2.session("cluster-a").search(request);
+
+        ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(blockingStub).search(captor.capture());
+        Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+        Assertions.assertEquals("cluster-a", request.getClusterId());
 
         io.milvus.v2.client.MilvusClientV2Session session = client_v2.session("cluster-a");
         session.close();
@@ -343,6 +420,7 @@ class VectorTest extends BaseTest {
         MilvusClientException closedException = Assertions.assertThrows(MilvusClientException.class,
                 () -> session.search(closedRequest));
         Assertions.assertEquals(ErrorCode.INVALID_PARAMS, closedException.getErrorCode());
+        Assertions.assertNull(closedRequest.getClusterId());
     }
 
     @Test
@@ -429,7 +507,7 @@ class VectorTest extends BaseTest {
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
         Assertions.assertEquals(Arrays.asList("category", "region"), captor.getValue().getSearchAggregation().getFieldsList());
-        Assertions.assertNull(request.getClusterId());
+        Assertions.assertEquals("cluster-a", request.getClusterId());
         Assertions.assertSame(requestAggregation, request.getSearchAggregation());
     }
 
@@ -595,6 +673,15 @@ class VectorTest extends BaseTest {
                         .size(3)
                         .build())
                 .build();
+    }
+
+    private void setIteratorConnectConfig() throws ReflectiveOperationException {
+        // Iterator creation reads the RPC deadline from MilvusClientV2.connectConfig. BaseTest
+        // constructs the client without a real connection, so inject a minimal config for these
+        // mocked iterator tests.
+        Field connectConfig = MilvusClientV2.class.getDeclaredField("connectConfig");
+        connectConfig.setAccessible(true);
+        connectConfig.set(client_v2, ConnectConfig.builder().uri("http://localhost:19530").build());
     }
 
     private String getParam(List<KeyValuePair> params, String key) {
