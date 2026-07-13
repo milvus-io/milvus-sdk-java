@@ -21,9 +21,11 @@ package io.milvus.common.clientenum;
 
 public enum FunctionType {
     UNKNOWN("Unknown", 0), // in milvus-proto, the name is "Unknown"
-    BM25("BM25", 1), // Added missing name parameter
+    BM25("BM25", 1),
     TEXTEMBEDDING("TextEmbedding", 2), // in milvus-proto, the name is "TextEmbedding"
-    RERANK("RERANK", 3); // Added missing name parameter
+    RERANK("Rerank", 3),
+    MINHASH("MinHash", 4),
+    MOLFINGERPRINT("MolFingerprint", 5);
 
     private final String name;
     private final int code;
@@ -44,10 +46,19 @@ public enum FunctionType {
 
     public static FunctionType fromName(String name) {
         for (FunctionType type : FunctionType.values()) {
-            if (type.getName().equals(name)) {
+            if (type.getName().equals(name) || type.name().equals(name)) {
                 return type;
             }
         }
-        return null;
+        return UNKNOWN;
+    }
+
+    public static FunctionType fromCode(int code) {
+        for (FunctionType type : FunctionType.values()) {
+            if (type.getCode() == code) {
+                return type;
+            }
+        }
+        return UNKNOWN;
     }
 }
