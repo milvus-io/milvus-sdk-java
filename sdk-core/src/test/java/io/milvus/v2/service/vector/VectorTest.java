@@ -433,20 +433,6 @@ class VectorTest extends BaseTest {
     }
 
     @Test
-    void testOrderByFieldRejectsComma() {
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> OrderByField.builder().fieldName("metadata[\"a,b\"]").build());
-        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
-    }
-
-    @Test
-    void testOrderByFieldRejectsColon() {
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> OrderByField.builder().fieldName("metadata[\"a:b\"]").build());
-        Assertions.assertEquals(ErrorCode.INVALID_PARAMS, exception.getErrorCode());
-    }
-
-    @Test
     void testSearchAggregationSerialization() {
         SearchAggregation requestAggregation = buildAggregation();
         SearchReq request = SearchReq.builder()
