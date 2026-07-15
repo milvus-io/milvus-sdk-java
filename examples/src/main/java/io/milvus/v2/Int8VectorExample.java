@@ -137,10 +137,9 @@ public class Int8VectorExample {
         for (int i = 0; i < 10; i++) {
             Random ran = new Random();
             int k = ran.nextInt(rowCount);
-            ByteBuffer targetVector = vectors.get(k);
             SearchResp searchResp = client.search(SearchReq.builder()
                     .collectionName(COLLECTION_NAME)
-                    .data(Collections.singletonList(new Int8Vec(targetVector)))
+                    .ids(Collections.singletonList((long)k))  // search by id
                     .annsField(VECTOR_FIELD)
                     .outputFields(Collections.singletonList(VECTOR_FIELD))
                     .limit(3)
@@ -150,6 +149,7 @@ public class Int8VectorExample {
             // Here we only input one vector to search, get the result of No.0 vector to check
             List<List<SearchResp.SearchResult>> searchResults = searchResp.getSearchResults();
             List<SearchResp.SearchResult> results = searchResults.get(0);
+            ByteBuffer targetVector = vectors.get(k);
             System.out.printf("\nThe result of No.%d vector %s:\n", k, Arrays.toString(targetVector.array()));
             for (SearchResp.SearchResult result : results) {
                 System.out.println(result);
