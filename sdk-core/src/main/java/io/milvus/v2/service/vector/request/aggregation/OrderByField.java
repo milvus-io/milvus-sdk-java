@@ -31,10 +31,6 @@ public class OrderByField {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                     "orderByFields.fieldName cannot be empty.");
         }
-        if (builder.fieldName.indexOf(',') >= 0 || builder.fieldName.indexOf(':') >= 0) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                    "orderByFields.fieldName cannot contain ',' or ':' because order_by_fields uses ',' and ':' as delimiters.");
-        }
         if (builder.direction == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                     "orderByFields.direction must not be null.");
