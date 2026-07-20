@@ -45,6 +45,7 @@ import io.milvus.response.QueryResultsWrapper;
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.*;
 import io.milvus.v2.service.collection.response.DescribeCollectionResp;
@@ -72,6 +73,7 @@ import io.milvus.v2.service.vector.request.data.*;
 import io.milvus.v2.service.vector.request.ranker.RRFRanker;
 import io.milvus.v2.service.vector.request.ranker.WeightedRanker;
 import io.milvus.v2.service.vector.response.*;
+import io.milvus.v2.utils.DataUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.junit.jupiter.api.AfterAll;
@@ -2179,6 +2181,358 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testInsertUpsertValidation() {
+        String autoIdCollection = "validation_auto_" + generator.generate(8);
+        String schemaCollection = "validation_schema_" + generator.generate(8);
+
+        try {
+            CreateCollectionReq.CollectionSchema autoIdSchema = CreateCollectionReq.CollectionSchema.builder()
+                    .enableDynamicField(true)
+                    .build();
+            autoIdSchema.addField(AddFieldReq.builder()
+                    .fieldName("id")
+                    .dataType(DataType.Int64)
+                    .isPrimaryKey(true)
+                    .autoID(true)
+                    .build());
+            autoIdSchema.addField(AddFieldReq.builder()
+                    .fieldName("vector")
+                    .dataType(DataType.FloatVector)
+                    .dimension(2)
+                    .build());
+            autoIdSchema.addField(AddFieldReq.builder()
+                    .fieldName("tag")
+                    .dataType(DataType.VarChar)
+                    .maxLength(100)
+                    .build());
+            client.createCollection(CreateCollectionReq.builder()
+                    .collectionName(autoIdCollection)
+                    .collectionSchema(autoIdSchema)
+                    .indexParams(Collections.singletonList(IndexParam.builder()
+                            .fieldName("vector")
+                            .indexType(IndexParam.IndexType.FLAT)
+                            .metricType(IndexParam.MetricType.L2)
+                            .build()))
+                    .property("allow_insert_auto_id", "true")
+                    .build());
+            client.loadCollection(LoadCollectionReq.builder()
+                    .collectionName(autoIdCollection)
+                    .sync(true)
+                    .build());
+
+            // Insert excludes an auto-ID field when it is not provided.
+            JsonObject insertWithoutId = new JsonObject();
+            insertWithoutId.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+            insertWithoutId.addProperty("tag", "generated-id");
+            InsertResp insertResp = client.insert(InsertReq.builder()
+                    .collectionName(autoIdCollection)
+                    .data(Collections.singletonList(insertWithoutId))
+                    .build());
+            Assertions.assertEquals(1, insertResp.getInsertCnt());
+
+            // Insert accepts an explicitly provided auto-ID field.
+            JsonObject insertWithId = new JsonObject();
+            insertWithId.addProperty("id", 100L);
+            insertWithId.add("vector", JsonUtils.toJsonTree(Arrays.asList(3.0f, 4.0f)));
+            insertWithId.addProperty("tag", "explicit-id");
+            insertResp = client.insert(InsertReq.builder()
+                    .collectionName(autoIdCollection)
+                    .data(Collections.singletonList(insertWithId))
+                    .build());
+            Assertions.assertEquals(1, insertResp.getInsertCnt());
+
+            // Explicit auto-ID must be supplied for every row or omitted from every row, independent of row order.
+            List<List<JsonObject>> mixedAutoIdBatches = Arrays.asList(
+                    Arrays.asList(insertWithoutId, insertWithId),
+                    Arrays.asList(insertWithId, insertWithoutId));
+            for (List<JsonObject> batch : mixedAutoIdBatches) {
+                MilvusClientException mixedAutoId = Assertions.assertThrows(MilvusClientException.class,
+                        () -> client.insert(InsertReq.builder()
+                                .collectionName(autoIdCollection)
+                                .data(batch)
+                                .build()));
+                Assertions.assertEquals(ErrorCode.INVALID_PARAMS, mixedAutoId.getErrorCode());
+                Assertions.assertTrue(mixedAutoId.getMessage().contains("all rows"));
+                Assertions.assertTrue(mixedAutoId.getMessage().contains("id"));
+            }
+
+            // Full upsert includes the auto-ID field in its required input fields.
+            JsonObject fullUpsertWithoutId = new JsonObject();
+            fullUpsertWithoutId.add("vector", JsonUtils.toJsonTree(Arrays.asList(5.0f, 6.0f)));
+            fullUpsertWithoutId.addProperty("tag", "missing-id");
+            MilvusClientException missingAutoId = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.upsert(UpsertReq.builder()
+                            .collectionName(autoIdCollection)
+                            .data(Collections.singletonList(fullUpsertWithoutId))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, missingAutoId.getErrorCode());
+            Assertions.assertTrue(missingAutoId.getMessage().contains("id"));
+
+            // Partial upsert does not require non-primary fields that are absent from the row.
+            JsonObject partialUpsert = new JsonObject();
+            partialUpsert.addProperty("id", 100L);
+            partialUpsert.add("vector", JsonUtils.toJsonTree(Arrays.asList(7.0f, 8.0f)));
+            UpsertResp partialUpsertResp = client.upsert(UpsertReq.builder()
+                    .collectionName(autoIdCollection)
+                    .data(Collections.singletonList(partialUpsert))
+                    .partialUpdate(true)
+                    .build());
+            Assertions.assertEquals(1, partialUpsertResp.getUpsertCnt());
+
+            CreateCollectionReq.CollectionSchema validationSchema = CreateCollectionReq.CollectionSchema.builder()
+                    .build();
+            validationSchema.addField(AddFieldReq.builder()
+                    .fieldName("id")
+                    .dataType(DataType.Int64)
+                    .isPrimaryKey(true)
+                    .build());
+            validationSchema.addField(AddFieldReq.builder()
+                    .fieldName("vector")
+                    .dataType(DataType.FloatVector)
+                    .dimension(2)
+                    .build());
+            Map<String, Object> analyzerParams = new HashMap<>();
+            analyzerParams.put("tokenizer", "standard");
+            validationSchema.addField(AddFieldReq.builder()
+                    .fieldName("text")
+                    .dataType(DataType.VarChar)
+                    .maxLength(100)
+                    .enableAnalyzer(true)
+                    .analyzerParams(analyzerParams)
+                    .build());
+            validationSchema.addField(AddFieldReq.builder()
+                    .fieldName("sparse")
+                    .dataType(DataType.SparseFloatVector)
+                    .build());
+            validationSchema.addField(AddFieldReq.builder()
+                    .fieldName("metadata")
+                    .dataType(DataType.Array)
+                    .elementType(DataType.Struct)
+                    .maxCapacity(10)
+                    .addStructField(AddFieldReq.builder()
+                            .fieldName("score")
+                            .dataType(DataType.Float)
+                            .build())
+                    .build());
+            validationSchema.addFunction(CreateCollectionReq.Function.builder()
+                    .name("bm25")
+                    .functionType(FunctionType.BM25)
+                    .inputFieldNames(Collections.singletonList("text"))
+                    .outputFieldNames(Collections.singletonList("sparse"))
+                    .build());
+            client.createCollection(CreateCollectionReq.builder()
+                    .collectionName(schemaCollection)
+                    .collectionSchema(validationSchema)
+                    .indexParams(Arrays.asList(
+                            IndexParam.builder()
+                                    .fieldName("vector")
+                                    .indexType(IndexParam.IndexType.FLAT)
+                                    .metricType(IndexParam.MetricType.L2)
+                                    .build(),
+                            IndexParam.builder()
+                                    .fieldName("sparse")
+                                    .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                                    .metricType(IndexParam.MetricType.BM25)
+                                    .build()))
+                    .build());
+            client.loadCollection(LoadCollectionReq.builder()
+                    .collectionName(schemaCollection)
+                    .sync(true)
+                    .build());
+            DescribeCollectionResp validationDesc = client.describeCollection(DescribeCollectionReq.builder()
+                    .collectionName(schemaCollection)
+                    .build());
+
+            JsonObject baseRow = new JsonObject();
+            baseRow.addProperty("id", 1L);
+            baseRow.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+            baseRow.addProperty("text", "base text");
+            JsonObject metadata = new JsonObject();
+            metadata.addProperty("score", 1.0f);
+            JsonArray metadataArray = new JsonArray();
+            metadataArray.add(metadata);
+            baseRow.add("metadata", metadataArray);
+            insertResp = client.insert(InsertReq.builder()
+                    .collectionName(schemaCollection)
+                    .data(Collections.singletonList(baseRow))
+                    .build());
+            Assertions.assertEquals(1, insertResp.getInsertCnt());
+
+            // Function output fields are generated by Milvus and cannot be supplied by users.
+            JsonObject functionOutputRow = baseRow.deepCopy();
+            functionOutputRow.add("sparse", new JsonObject());
+            MilvusClientException functionOutput = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.insert(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(functionOutputRow))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, functionOutput.getErrorCode());
+            Assertions.assertTrue(functionOutput.getMessage().contains("sparse"));
+
+            // Unknown fields are rejected when dynamic fields are disabled.
+            JsonObject unknownFieldRow = baseRow.deepCopy();
+            unknownFieldRow.addProperty("unknown", "value");
+            MilvusClientException unknownField = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.insert(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(unknownFieldRow))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, unknownField.getErrorCode());
+            Assertions.assertTrue(unknownField.getMessage().contains("unknown"));
+
+            // Insert and full upsert reject an omitted struct field before sending the request.
+            JsonObject fullWithoutStruct = new JsonObject();
+            fullWithoutStruct.addProperty("id", 2L);
+            fullWithoutStruct.add("vector", JsonUtils.toJsonTree(Arrays.asList(3.0f, 4.0f)));
+            fullWithoutStruct.addProperty("text", "without struct");
+            MilvusClientException insertWithoutStruct = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.insert(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(fullWithoutStruct))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, insertWithoutStruct.getErrorCode());
+            Assertions.assertTrue(insertWithoutStruct.getMessage().contains("metadata"));
+
+            MilvusClientException fullUpsertWithoutStruct = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.upsert(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(fullWithoutStruct))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, fullUpsertWithoutStruct.getErrorCode());
+            Assertions.assertTrue(fullUpsertWithoutStruct.getMessage().contains("metadata"));
+
+            // Struct elements must contain exactly the configured subfields.
+            JsonObject unexpectedStructFieldRow = baseRow.deepCopy();
+            unexpectedStructFieldRow.getAsJsonArray("metadata").get(0).getAsJsonObject()
+                    .addProperty("extra", "value");
+            MilvusClientException unexpectedStructField = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.insert(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(unexpectedStructFieldRow))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, unexpectedStructField.getErrorCode());
+            Assertions.assertTrue(unexpectedStructField.getMessage().contains("unexpected fields"));
+
+            // Null struct subfields are rejected even if normal fields may support nullable values.
+            JsonObject nullStructFieldRow = baseRow.deepCopy();
+            nullStructFieldRow.getAsJsonArray("metadata").get(0).getAsJsonObject()
+                    .add("score", JsonNull.INSTANCE);
+            MilvusClientException nullStructField = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.insert(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(nullStructFieldRow))
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, nullStructField.getErrorCode());
+            Assertions.assertTrue(nullStructField.getMessage().contains("cannot be null"));
+
+            // A whole struct field can be omitted during partial upsert.
+            JsonObject partialWithoutStruct = new JsonObject();
+            partialWithoutStruct.addProperty("id", 1L);
+            partialWithoutStruct.add("vector", JsonUtils.toJsonTree(Arrays.asList(9.0f, 10.0f)));
+            io.milvus.grpc.UpsertRequest partialWithoutStructRequest =
+                    new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(partialWithoutStruct))
+                            .partialUpdate(true)
+                            .build(), validationDesc);
+            Assertions.assertTrue(partialWithoutStructRequest.getPartialUpdate());
+            Assertions.assertEquals(2, partialWithoutStructRequest.getFieldsDataCount());
+            Set<String> partialFieldNames = new HashSet<>();
+            partialWithoutStructRequest.getFieldsDataList()
+                    .forEach(fieldData -> partialFieldNames.add(fieldData.getFieldName()));
+            Assertions.assertEquals(new HashSet<>(Arrays.asList("id", "vector")), partialFieldNames);
+
+            // Every supplied field must have the same number of values in a partial-update batch.
+            JsonObject firstPartialRow = new JsonObject();
+            firstPartialRow.addProperty("id", 1L);
+            firstPartialRow.add("vector", JsonUtils.toJsonTree(Arrays.asList(11.0f, 12.0f)));
+            JsonObject secondPartialRow = new JsonObject();
+            secondPartialRow.addProperty("id", 2L);
+            MilvusClientException inconsistentFields = Assertions.assertThrows(MilvusClientException.class,
+                    () -> client.upsert(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Arrays.asList(firstPartialRow, secondPartialRow))
+                            .partialUpdate(true)
+                            .build()));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, inconsistentFields.getErrorCode());
+
+            // A common nonzero count is still invalid when it is shorter than the batch size.
+            JsonObject populatedPartialRow = new JsonObject();
+            populatedPartialRow.addProperty("id", 1L);
+            populatedPartialRow.add("vector", JsonUtils.toJsonTree(Arrays.asList(13.0f, 14.0f)));
+            JsonObject partialRowWithoutVector = new JsonObject();
+            partialRowWithoutVector.addProperty("id", 2L);
+            List<List<JsonObject>> shortFieldBatches = Arrays.asList(
+                    Arrays.asList(populatedPartialRow, partialRowWithoutVector),
+                    Arrays.asList(partialRowWithoutVector, populatedPartialRow));
+            for (List<JsonObject> batch : shortFieldBatches) {
+                MilvusClientException shortFieldCount = Assertions.assertThrows(MilvusClientException.class,
+                        () -> client.upsert(UpsertReq.builder()
+                                .collectionName(schemaCollection)
+                                .data(batch)
+                                .partialUpdate(true)
+                                .build()));
+                Assertions.assertEquals(ErrorCode.INVALID_PARAMS, shortFieldCount.getErrorCode());
+                Assertions.assertTrue(shortFieldCount.getMessage().contains("number of values"));
+            }
+
+            // With dynamic fields enabled, upsert still rejects struct[subfield] storage syntax.
+            validationDesc.getCollectionSchema().setEnableDynamicField(true);
+            JsonObject fullStructSubField = baseRow.deepCopy();
+            fullStructSubField.add("metadata[score]", JsonUtils.toJsonTree(Collections.singletonList(1.0f)));
+            MilvusClientException fullStructSubFieldError = Assertions.assertThrows(MilvusClientException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(fullStructSubField))
+                            .build(), validationDesc));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, fullStructSubFieldError.getErrorCode());
+            Assertions.assertTrue(fullStructSubFieldError.getMessage().contains("top-level field"));
+
+            JsonObject partialStructSubField = new JsonObject();
+            partialStructSubField.addProperty("id", 1L);
+            partialStructSubField.add("metadata[score]", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+            MilvusClientException partialStructSubFieldError = Assertions.assertThrows(MilvusClientException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(partialStructSubField))
+                            .partialUpdate(true)
+                            .build(), validationDesc));
+            Assertions.assertEquals(ErrorCode.INVALID_PARAMS, partialStructSubFieldError.getErrorCode());
+            Assertions.assertTrue(partialStructSubFieldError.getMessage().contains("Partial struct update"));
+
+            // Insert treats struct[subfield] as dynamic, and upsert does the same for a short name.
+            JsonObject dynamicInsertRow = baseRow.deepCopy();
+            dynamicInsertRow.add("metadata[score]", JsonUtils.toJsonTree(Collections.singletonList(1.0f)));
+            io.milvus.grpc.InsertRequest dynamicInsertRequest =
+                    new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(InsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(dynamicInsertRow))
+                            .build(), validationDesc);
+            Assertions.assertTrue(dynamicInsertRequest.getFieldsData(
+                    dynamicInsertRequest.getFieldsDataCount() - 1).getIsDynamic());
+
+            JsonObject dynamicShortNameRow = new JsonObject();
+            dynamicShortNameRow.addProperty("id", 1L);
+            dynamicShortNameRow.addProperty("score", "dynamic-value");
+            io.milvus.grpc.UpsertRequest dynamicShortNameRequest =
+                    new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(UpsertReq.builder()
+                            .collectionName(schemaCollection)
+                            .data(Collections.singletonList(dynamicShortNameRow))
+                            .partialUpdate(true)
+                            .build(), validationDesc);
+            Assertions.assertEquals(2, dynamicShortNameRequest.getFieldsDataCount());
+            Assertions.assertTrue(dynamicShortNameRequest.getFieldsData(1).getIsDynamic());
+        } finally {
+            if (client.hasCollection(HasCollectionReq.builder().collectionName(autoIdCollection).build())) {
+                client.dropCollection(DropCollectionReq.builder().collectionName(autoIdCollection).build());
+            }
+            if (client.hasCollection(HasCollectionReq.builder().collectionName(schemaCollection).build())) {
+                client.dropCollection(DropCollectionReq.builder().collectionName(schemaCollection).build());
+            }
+        }
+    }
+
+    @Test
     void testAlias() {
         client.createCollection(CreateCollectionReq.builder()
                 .collectionName("AAA")
@@ -2571,6 +2925,7 @@ class MilvusClientV2DockerTest {
             createSimpleCollection(tempClient, "", randomCollectionName, "aaa", false, 4, ConsistencyLevel.BOUNDED);
 
             // use the temp client to insert wrong data, wrong dimension
+            row.remove("pk");
             row.addProperty("aaa", 22);
             row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
             MilvusClientV2 finalTempClient = tempClient;
