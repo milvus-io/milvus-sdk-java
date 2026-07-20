@@ -1246,7 +1246,8 @@ public class ParamUtils {
 
             ScalarField scalarField = genScalarField(dataType, elementType, objects);
             if (isDynamic) {
-                return builder.setType(dataType).setScalars(scalarField).setIsDynamic(true).build();
+                return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField)
+                        .setIsDynamic(true).build();
             }
             return builder.setFieldName(fieldName).setType(dataType).setScalars(scalarField).build();
         }

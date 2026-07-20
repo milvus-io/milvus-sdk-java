@@ -24,8 +24,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.milvus.grpc.*;
+import io.milvus.exception.ParamException;
 import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
+import io.milvus.v2.exception.DataNotMatchException;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
@@ -68,12 +70,6 @@ public class DataUtils {
             // generate upsert request builder
             List<FieldPartialUpdateOp> fieldOps = convertFieldOps(requestParam.getFieldOps());
             MsgBase msgBase = MsgBase.newBuilder().setMsgType(MsgType.Upsert).build();
-
-            // Non-REPLACE ops imply partialUpdate semantics; auto-promote so checkAndSetRowData
-            // can get a correct partialUpdate flag to validate field presence accordingly.
-            if (hasNonReplaceFieldOps(fieldOps)) {
-                requestParam.setPartialUpdate(true);
-            }
 
             upsertBuilder = UpsertRequest.newBuilder()
                     .setCollectionName(collectionName)
@@ -126,15 +122,6 @@ public class DataUtils {
             }
         }
 
-        private static boolean hasNonReplaceFieldOps(List<FieldPartialUpdateOp> fieldOps) {
-            for (FieldPartialUpdateOp fieldOp : fieldOps) {
-                if (fieldOp.getOp() != FieldPartialUpdateOp.OpType.REPLACE) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private void addFieldsData(FieldData value) {
             if (insertBuilder != null) {
                 insertBuilder.addFieldsData(value);
@@ -151,26 +138,9 @@ public class DataUtils {
             }
         }
 
-        private static boolean hasPartitionKey(DescribeCollectionResp descColl) {
-            CreateCollectionReq.CollectionSchema collectionSchema = descColl.getCollectionSchema();
-            List<CreateCollectionReq.FieldSchema> fieldsList = collectionSchema.getFieldSchemaList();
-            for (CreateCollectionReq.FieldSchema field : fieldsList) {
-                if (field.getIsPartitionKey() == Boolean.TRUE) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         private void fillFieldsData(UpsertReq requestParam, DescribeCollectionResp descColl) {
-            // set partition name only when there is no partition key field
             String partitionName = requestParam.getPartitionName();
-            if (hasPartitionKey(descColl)) {
-                if (partitionName != null && !partitionName.isEmpty()) {
-                    String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
-                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
-                }
-            } else if (partitionName != null) {
+            if (partitionName != null) {
                 this.setPartitionName(partitionName);
             }
 
@@ -180,14 +150,8 @@ public class DataUtils {
         }
 
         private void fillFieldsData(InsertReq requestParam, DescribeCollectionResp descColl) {
-            // set partition name only when there is no partition key field
             String partitionName = requestParam.getPartitionName();
-            if (hasPartitionKey(descColl)) {
-                if (partitionName != null && !partitionName.isEmpty()) {
-                    String msg = "Collection " + requestParam.getCollectionName() + " has partition key, not allow to specify partition name";
-                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
-                }
-            } else if (partitionName != null) {
+            if (partitionName != null) {
                 this.setPartitionName(partitionName);
             }
 
@@ -200,19 +164,43 @@ public class DataUtils {
             return String.format("%s[%s]", structName, subFieldName);
         }
 
-        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows, boolean partialUpdate) {
+        private void checkAndSetRowData(DescribeCollectionResp descColl, List<JsonObject> rows,
+                                        boolean partialUpdate) {
             CreateCollectionReq.CollectionSchema collectionSchema = descColl.getCollectionSchema();
             List<CreateCollectionReq.Function> functionsList = collectionSchema.getFunctionList();
-            List<String> outputFieldNames = new ArrayList<>();
+            Set<String> outputFieldNames = new HashSet<>();
             for (CreateCollectionReq.Function function : functionsList) {
                 outputFieldNames.addAll(function.getOutputFieldNames());
             }
 
             List<CreateCollectionReq.FieldSchema> normalFields = collectionSchema.getFieldSchemaList();
             List<CreateCollectionReq.StructFieldSchema> structFields = collectionSchema.getStructFields();
-            List<String> allFieldNames = new ArrayList<>();
-            normalFields.forEach((schema) -> allFieldNames.add(schema.getName()));
-            structFields.forEach((schema) -> allFieldNames.add(schema.getName()));
+            boolean isUpsert = upsertBuilder != null;
+            List<CreateCollectionReq.FieldSchema> inputFields = new ArrayList<>();
+            Set<String> inputFieldNames = new HashSet<>();
+            Set<String> structFieldNames = new HashSet<>();
+            structFields.forEach((schema) -> structFieldNames.add(schema.getName()));
+
+            for (JsonObject row : rows) {
+                if (row == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "The row data cannot be null.");
+                }
+            }
+
+            CreateCollectionReq.FieldSchema providedAutoIdField = null;
+            for (CreateCollectionReq.FieldSchema field : normalFields) {
+                boolean isProvidedAutoId = isProvidedAutoId(field, rows, isUpsert);
+                if (isInputField(field, isUpsert, outputFieldNames)) {
+                    inputFields.add(field);
+                    inputFieldNames.add(field.getName());
+                } else if (isProvidedAutoId) {
+                    providedAutoIdField = field;
+                }
+            }
+            if (providedAutoIdField != null) {
+                inputFields.add(providedAutoIdField);
+                inputFieldNames.add(providedAutoIdField.getName());
+            }
 
             // 1. for normal fields, InsertDataInfo is a list of object or list of list, for example:
             //      Int64Field, InsertDataInfo is a List<Long>
@@ -236,6 +224,7 @@ public class DataUtils {
             //       }
             Map<String, InsertDataInfo> normalInsertData = new HashMap<>();
             Map<String, InsertDataInfo> structInsertData = new HashMap<>();
+            Map<String, Integer> structFieldCounts = new HashMap<>();
             InsertDataInfo insertDynamicDataInfo = new InsertDataInfo(
                     CreateCollectionReq.FieldSchema.builder()
                             .name(Constant.DYNAMIC_FIELD_NAME)
@@ -243,21 +232,47 @@ public class DataUtils {
                             .build(),
                     new LinkedList<>());
             for (JsonObject row : rows) {
+                for (String rowFieldName : row.keySet()) {
+                    if (outputFieldNames.contains(rowFieldName)) {
+                        throw new DataNotMatchException(
+                                String.format("The function output field: %s cannot be provided.", rowFieldName));
+                    }
+                    String structFieldName = isUpsert
+                            ? matchStructSubFieldName(rowFieldName, structFields)
+                            : null;
+                    if (structFieldName != null) {
+                        String message = partialUpdate
+                                ? String.format("Partial struct update is unsupported for struct sub-field `%s`; "
+                                + "update the whole struct field `%s` instead", rowFieldName, structFieldName)
+                                : String.format("Struct sub-field `%s` cannot be used as a top-level field; "
+                                + "write the whole struct field `%s` instead", rowFieldName, structFieldName);
+                        throw new DataNotMatchException(message);
+                    }
+                    if (!inputFieldNames.contains(rowFieldName)
+                            && !structFieldNames.contains(rowFieldName)
+                            && !collectionSchema.isEnableDynamicField()) {
+                        throw new DataNotMatchException(
+                                String.format("The field: %s is not defined in the collection schema.", rowFieldName));
+                    }
+                }
+
                 // check and store value of normal fields into InsertDataInfo
-                for (CreateCollectionReq.FieldSchema field : normalFields) {
-                    processNormalFieldValues(row, field, outputFieldNames, normalInsertData, partialUpdate);
+                for (CreateCollectionReq.FieldSchema field : inputFields) {
+                    processNormalFieldValues(row, field, normalInsertData, partialUpdate);
                 }
 
                 // check and store value of struct fields into InsertDataInfo
                 for (CreateCollectionReq.StructFieldSchema structField : structFields) {
-                    processStructFieldValues(row, structField, structInsertData);
+                    if (processStructFieldValues(row, structField, structInsertData, partialUpdate)) {
+                        structFieldCounts.merge(structField.getName(), 1, Integer::sum);
+                    }
                 }
 
                 // store dynamic fields into InsertDataInfo
                 if (collectionSchema.isEnableDynamicField()) {
                     JsonObject dynamicField = new JsonObject();
                     for (String rowFieldName : row.keySet()) {
-                        if (!allFieldNames.contains(rowFieldName)) {
+                        if (!inputFieldNames.contains(rowFieldName) && !structFieldNames.contains(rowFieldName)) {
                             dynamicField.add(rowFieldName, row.get(rowFieldName));
                         }
                     }
@@ -265,19 +280,50 @@ public class DataUtils {
                 }
             }
 
+            if (partialUpdate) {
+                int rowCount = rows.size();
+                boolean hasInvalidFieldCount = normalInsertData.values().stream()
+                        .map(insertDataInfo -> insertDataInfo.data.size())
+                        .filter(count -> count > 0)
+                        .anyMatch(count -> count != rowCount)
+                        || structFieldCounts.values().stream()
+                        .filter(count -> count > 0)
+                        .anyMatch(count -> count != rowCount)
+                        || (collectionSchema.isEnableDynamicField()
+                            && !insertDynamicDataInfo.data.isEmpty()
+                            && insertDynamicDataInfo.data.size() != rowCount);
+                if (hasInvalidFieldCount) {
+                    throw new DataNotMatchException(
+                            "The number of values for each field must be the same for partial update.");
+                }
+            }
+
             // convert normal fields data from InsertDataInfo into grpc FieldData
-            for (String fieldNameKey : normalInsertData.keySet()) {
-                InsertDataInfo insertDataInfo = normalInsertData.get(fieldNameKey);
-                this.addFieldsData(DataUtils.genFieldData(insertDataInfo.field, insertDataInfo.data, false));
+            for (CreateCollectionReq.FieldSchema field : inputFields) {
+                InsertDataInfo insertDataInfo = normalInsertData.get(field.getName());
+                if (insertDataInfo == null) {
+                    continue;
+                }
+                this.addFieldsData(genRowFieldData(insertDataInfo.field, insertDataInfo.data, false));
             }
 
             // convert struct fields data from InsertDataInfo into grpc FieldData
             for (CreateCollectionReq.StructFieldSchema structField : structFields) {
+                if (!structFieldCounts.containsKey(structField.getName())) {
+                    continue;
+                }
                 StructArrayField.Builder structBuilder = StructArrayField.newBuilder();
                 for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
                     String combineName = combineStructFieldName(structField.getName(), field.getName());
                     InsertDataInfo insertDataInfo = structInsertData.get(combineName);
-                    FieldData grpcField = DataUtils.genStructSubFieldData(field, insertDataInfo.data);
+                    FieldData grpcField;
+                    try {
+                        grpcField = DataUtils.genStructSubFieldData(field, insertDataInfo.data);
+                    } catch (DataNotMatchException e) {
+                        throw e;
+                    } catch (MilvusClientException | ParamException e) {
+                        throw new DataNotMatchException(e.getMessage(), e);
+                    }
                     structBuilder.addFields(grpcField);
                 }
 
@@ -291,37 +337,95 @@ public class DataUtils {
 
             // convert dynamic field data from InsertDataInfo into grpc FieldData
             if (collectionSchema.isEnableDynamicField()) {
-                this.addFieldsData(DataUtils.genFieldData(insertDynamicDataInfo.field, insertDynamicDataInfo.data, true));
+                this.addFieldsData(genRowFieldData(insertDynamicDataInfo.field, insertDynamicDataInfo.data, true));
             }
         }
 
+        private static FieldData genRowFieldData(CreateCollectionReq.FieldSchema field, List<?> objects,
+                                                 boolean isDynamic) {
+            try {
+                return DataUtils.genFieldData(field, objects, isDynamic);
+            } catch (ParamException e) {
+                throw new DataNotMatchException(e.getMessage(), e);
+            }
+        }
+
+        private static boolean isInputField(CreateCollectionReq.FieldSchema field, boolean isUpsert,
+                                            Set<String> outputFieldNames) {
+            return (!Boolean.TRUE.equals(field.getAutoID()) || isUpsert)
+                    && !outputFieldNames.contains(field.getName());
+        }
+
+        /**
+         * Determines whether an insert batch explicitly provides values for an auto-ID primary key,
+         * so the field can be included in the generated request. The field must be present in every
+         * row or omitted from every row; mixing the two forms in one batch is invalid.
+         * Milvus 2.6.3 or later accepts the provided values only when the collection property
+         * {@code allow_insert_auto_id} is set to {@code true}.
+         *
+         * @return {@code true} when every row provides the auto-ID primary key, otherwise {@code false}
+         * @throws DataNotMatchException when only some rows provide the auto-ID primary key
+         */
+        private static boolean isProvidedAutoId(CreateCollectionReq.FieldSchema field, List<JsonObject> rows,
+                                                boolean isUpsert) {
+            if (isUpsert
+                    || !Boolean.TRUE.equals(field.getIsPrimaryKey())
+                    || !Boolean.TRUE.equals(field.getAutoID())
+                    || rows.isEmpty()) {
+                return false;
+            }
+
+            int providedCount = 0;
+            for (JsonObject row : rows) {
+                if (row.has(field.getName())) {
+                    providedCount++;
+                }
+            }
+            if (providedCount > 0 && providedCount < rows.size()) {
+                String msg = String.format("The auto-ID primary key field: %s must be provided for all rows "
+                        + "or omitted for all rows.", field.getName());
+                throw new DataNotMatchException(msg);
+            }
+            return providedCount == rows.size();
+        }
+
+        private static String matchStructSubFieldName(String fieldName,
+                                                      List<CreateCollectionReq.StructFieldSchema> structFields) {
+            for (CreateCollectionReq.StructFieldSchema structField : structFields) {
+                String prefix = structField.getName() + "[";
+                if (!fieldName.startsWith(prefix) || !fieldName.endsWith("]")) {
+                    continue;
+                }
+                String subFieldName = fieldName.substring(prefix.length(), fieldName.length() - 1);
+                for (CreateCollectionReq.FieldSchema subField : structField.getFields()) {
+                    if (subField.getName().equals(subFieldName)) {
+                        return structField.getName();
+                    }
+                }
+            }
+            return null;
+        }
+
         private void processNormalFieldValues(JsonObject row, CreateCollectionReq.FieldSchema field,
-                                              List<String> outputFieldNames,
                                               Map<String, InsertDataInfo> nameInsertInfo, boolean partialUpdate) {
             String fieldName = field.getName();
             InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(fieldName, new InsertDataInfo(field, new LinkedList<>()));
 
             JsonElement fieldData = row.get(fieldName);
             if (fieldData == null) {
-                // if the field is auto-id, no need to provide value
-                if (field.getAutoID() == Boolean.TRUE) {
-                    return;
-                }
-
-                // if the field is an output field of doc-in-doc-out, no need to provide value
-                if (outputFieldNames.contains(fieldName)) {
-                    return;
-                }
-
                 // in v2.6.1 support partial update, user can input partial fields
                 if (partialUpdate) {
+                    if (Boolean.TRUE.equals(field.getIsPrimaryKey())) {
+                        String msg = String.format("The primary key field: %s is not provided.", fieldName);
+                        throw new DataNotMatchException(msg);
+                    }
                     return;
                 }
 
                 // if the field doesn't have default value, require user provide the value
                 if (!field.getIsNullable() && field.getDefaultValue() == null) {
                     String msg = String.format("The field: %s is not provided.", fieldName);
-                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+                    throw new DataNotMatchException(msg);
                 }
 
                 fieldData = JsonNull.INSTANCE;
@@ -336,52 +440,94 @@ public class DataUtils {
 //            }
 
             // store the value into InsertDataInfo
-            Object fieldValue = DataUtils.checkFieldValue(field, fieldData);
+            Object fieldValue = checkRowFieldValue(field, fieldData);
             insertDataInfo.data.add(fieldValue);
             nameInsertInfo.put(fieldName, insertDataInfo);
         }
 
-        private void processStructFieldValues(JsonObject row, CreateCollectionReq.StructFieldSchema structField,
-                                              Map<String, InsertDataInfo> nameInsertInfo) {
+        private static Object checkRowFieldValue(CreateCollectionReq.FieldSchema field, JsonElement fieldData) {
+            try {
+                return DataUtils.checkFieldValue(field, fieldData);
+            } catch (RuntimeException e) {
+                throw new DataNotMatchException(e.getMessage(), e);
+            }
+        }
+
+        private boolean processStructFieldValues(JsonObject row, CreateCollectionReq.StructFieldSchema structField,
+                                                 Map<String, InsertDataInfo> nameInsertInfo, boolean partialUpdate) {
             String structName = structField.getName();
             JsonElement rowFieldData = row.get(structName);
             if (rowFieldData == null) {
-                String msg = String.format("The struct field: %s is not provided.", structName);
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+                if (partialUpdate) {
+                    return false;
+                }
+                String msg = String.format("The field: %s is not provided.", structName);
+                throw new DataNotMatchException(msg);
             }
             if (!rowFieldData.isJsonArray()) {
                 String msg = String.format("The value of struct field: %s is not a JSON array.", structName);
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+                throw new DataNotMatchException(msg);
             }
 
+            initializeStructFieldData(structField, nameInsertInfo);
+            Set<String> expectedFieldNames = new HashSet<>();
             for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
-                String combineName = combineStructFieldName(structName, field.getName());
-                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(combineName, new InsertDataInfo(field, new LinkedList<>()));
-                nameInsertInfo.put(combineName, insertDataInfo);
+                expectedFieldNames.add(field.getName());
             }
 
             JsonArray structs = rowFieldData.getAsJsonArray();
+            structs.forEach((element) -> {
+                if (!element.isJsonObject()) {
+                    String msg = String.format("The element of struct field: %s is not a JSON dict.", structName);
+                    throw new DataNotMatchException(msg);
+                }
+
+                JsonObject struct = element.getAsJsonObject();
+                Set<String> missingFields = new HashSet<>(expectedFieldNames);
+                missingFields.removeAll(struct.keySet());
+                if (!missingFields.isEmpty()) {
+                    String msg = String.format("The struct field: %s is missing required fields: %s.",
+                            structName, missingFields);
+                    throw new DataNotMatchException(msg);
+                }
+                Set<String> unexpectedFields = new HashSet<>(struct.keySet());
+                unexpectedFields.removeAll(expectedFieldNames);
+                if (!unexpectedFields.isEmpty()) {
+                    String msg = String.format("The struct field: %s has unexpected fields: %s.",
+                            structName, unexpectedFields);
+                    throw new DataNotMatchException(msg);
+                }
+                for (String fieldName : expectedFieldNames) {
+                    if (struct.get(fieldName).isJsonNull()) {
+                        String msg = String.format("The %s of struct field: %s cannot be null.",
+                                fieldName, structName);
+                        throw new DataNotMatchException(msg);
+                    }
+                }
+            });
+
             for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
                 String subFieldName = field.getName();
                 InsertDataInfo insertDataInfo = nameInsertInfo.get(combineStructFieldName(structName, subFieldName));
                 List<Object> columnData = new ArrayList<>();
                 structs.forEach((element) -> {
-                    if (!element.isJsonObject()) {
-                        String msg = String.format("The element of struct field: %s is not a JSON dict.", structName);
-                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
-                    }
-
                     JsonObject struct = element.getAsJsonObject();
                     JsonElement fieldData = struct.get(subFieldName);
-                    if (fieldData == null) {
-                        String msg = String.format("The %s of struct field: %s is not provided.", subFieldName, structName);
-                        throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
-                    }
-
-                    Object fieldValue = DataUtils.checkFieldValue(field, fieldData);
+                    Object fieldValue = checkRowFieldValue(field, fieldData);
                     columnData.add(fieldValue);
                 });
                 insertDataInfo.data.add(columnData);
+            }
+            return true;
+        }
+
+        private void initializeStructFieldData(CreateCollectionReq.StructFieldSchema structField,
+                                               Map<String, InsertDataInfo> nameInsertInfo) {
+            for (CreateCollectionReq.FieldSchema field : structField.getFields()) {
+                String combineName = combineStructFieldName(structField.getName(), field.getName());
+                InsertDataInfo insertDataInfo = nameInsertInfo.getOrDefault(
+                        combineName, new InsertDataInfo(field, new LinkedList<>()));
+                nameInsertInfo.put(combineName, insertDataInfo);
             }
         }
     }
@@ -397,9 +543,6 @@ public class DataUtils {
     }
 
     private static FieldData genStructSubFieldData(CreateCollectionReq.FieldSchema fieldSchema, List<?> objects) {
-        if (objects == null) {
-            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Cannot generate FieldData from null object");
-        }
         DataType dataType = ConvertUtils.toProtoDataType(fieldSchema.getDataType());
         String fieldName = fieldSchema.getName();
         FieldData.Builder builder = FieldData.newBuilder().setFieldName(fieldName);
@@ -409,7 +552,7 @@ public class DataUtils {
             if (vectorArr.getDim() > 0 && vectorArr.getDim() != fieldSchema.getDimension()) {
                 String msg = String.format("Dimension mismatch for field %s, expected: %d, actual: %d",
                         fieldName, fieldSchema.getDimension(), vectorArr.getDim());
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+                throw new DataNotMatchException(msg);
             }
             return builder.setType(DataType.ArrayOfVector)
                     .setVectors(VectorField.newBuilder()
@@ -506,7 +649,8 @@ public class DataUtils {
         boolean isNullable = field.getIsNullable();
         Object defaultVal = field.getDefaultValue();
         int dimension = field.getDimension() == null ? 0 : field.getDimension();
-        return ParamUtils.genFieldData(fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, dimension);
+        return ParamUtils.genFieldData(
+                fieldName, dataType, elementType, isNullable, defaultVal, objects, isDynamic, dimension);
     }
 
     public static Object checkFieldValue(CreateCollectionReq.FieldSchema field, JsonElement fieldData) {
