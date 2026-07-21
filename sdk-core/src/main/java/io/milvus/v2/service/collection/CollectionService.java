@@ -22,6 +22,7 @@ package io.milvus.v2.service.collection;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
+import io.milvus.param.Constant;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
 import io.milvus.v2.exception.ErrorCode;
@@ -288,19 +289,26 @@ public class CollectionService extends BaseService {
         String collectionName = request.getCollectionName();
         String title = String.format("Add field to collection: '%s' in database: '%s'", collectionName, dbName);
 
-        AddCollectionFieldRequest.Builder builder = AddCollectionFieldRequest.newBuilder()
-                .setCollectionName(collectionName);
+        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
+        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true);
+        AlterCollectionSchemaRequest.FieldInfo fieldInfo = AlterCollectionSchemaRequest.FieldInfo.newBuilder()
+                .setFieldSchema(grpcFieldSchema)
+                .build();
+        AlterCollectionSchemaRequest.AddRequest addRequest = AlterCollectionSchemaRequest.AddRequest.newBuilder()
+                .addFieldInfos(fieldInfo)
+                .build();
+
+        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+                .setCollectionName(collectionName)
+                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
+                        .setAddRequest(addRequest)
+                        .build());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
 
-        CreateCollectionReq.FieldSchema fieldSchema = SchemaUtils.convertFieldReqToFieldSchema(request);
-        FieldSchema grpcFieldSchema = SchemaUtils.convertToGrpcFieldSchema(fieldSchema, true);
-        builder.setSchema(grpcFieldSchema.toByteString());
-
-        Status response = blockingStub.addCollectionField(builder.build());
-        rpcUtils.handleResponse(title, response);
-
+        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+        rpcUtils.handleResponse(title, response.getAlterStatus());
         return null;
     }
 
@@ -742,6 +750,20 @@ public class CollectionService extends BaseService {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                     "Function must have exactly one output field matching the field being added.");
         }
+        IndexParam indexParam = request.getIndexParam();
+        if (indexParam == null) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Bound index cannot be null.");
+        }
+        if (!StringUtils.equals(request.getFieldName(), indexParam.getFieldName())) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Bound index field must match the function output field.");
+        }
+        if (indexParam.getIndexType() == null
+                || indexParam.getIndexType() == IndexParam.IndexType.None
+                || indexParam.getIndexType() == IndexParam.IndexType.AUTOINDEX) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Bound index must specify an explicit index type.");
+        }
 
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
@@ -752,9 +774,35 @@ public class CollectionService extends BaseService {
                 .toBuilder()
                 .setIsFunctionOutput(true)
                 .build();
-        AlterCollectionSchemaRequest.FieldInfo fieldInfo = AlterCollectionSchemaRequest.FieldInfo.newBuilder()
+        AlterCollectionSchemaRequest.FieldInfo.Builder fieldInfoBuilder = AlterCollectionSchemaRequest.FieldInfo.newBuilder()
                 .setFieldSchema(grpcFieldSchema)
-                .build();
+                .addExtraParams(KeyValuePair.newBuilder()
+                        .setKey(Constant.INDEX_TYPE)
+                        .setValue(indexParam.getIndexType().getName())
+                        .build());
+        if (StringUtils.isNotEmpty(indexParam.getIndexName())) {
+            fieldInfoBuilder.setIndexName(indexParam.getIndexName());
+        }
+        if (indexParam.getMetricType() != null) {
+            fieldInfoBuilder.addExtraParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.METRIC_TYPE)
+                    .setValue(indexParam.getMetricType().name())
+                    .build());
+        }
+        Map<String, Object> extraParams = indexParam.getExtraParams();
+        if (extraParams != null && !extraParams.isEmpty()) {
+            if (extraParams.containsKey(Constant.INDEX_TYPE) || extraParams.containsKey(Constant.METRIC_TYPE)) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Bound index extra params cannot duplicate index_type or metric_type.");
+            }
+            for (Map.Entry<String, Object> entry : extraParams.entrySet()) {
+                fieldInfoBuilder.addExtraParams(KeyValuePair.newBuilder()
+                        .setKey(entry.getKey())
+                        .setValue(entry.getValue().toString())
+                        .build());
+            }
+        }
+        AlterCollectionSchemaRequest.FieldInfo fieldInfo = fieldInfoBuilder.build();
         AlterCollectionSchemaRequest.AddRequest addRequest = AlterCollectionSchemaRequest.AddRequest.newBuilder()
                 .addFieldInfos(fieldInfo)
                 .addFuncSchema(SchemaUtils.convertToGrpcFunction(request.getFunction()))
@@ -805,20 +853,15 @@ public class CollectionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Drop function to collection: '%s' in database: '%s'", collectionName, dbName);
-        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+        DropCollectionFunctionRequest.Builder builder = DropCollectionFunctionRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
-                        .setDropRequest(AlterCollectionSchemaRequest.DropRequest.newBuilder()
-                                .setFunctionName(request.getFunctionName())
-                                .setDropFunctionOutputFields(false)
-                                .build())
-                        .build());
+                .setFunctionName(request.getFunctionName());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
 
-        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
-        rpcUtils.handleResponse(title, response.getAlterStatus());
+        Status status = blockingStub.dropCollectionFunction(builder.build());
+        rpcUtils.handleResponse(title, status);
 
         return null;
     }
