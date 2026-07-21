@@ -644,7 +644,10 @@ public class MilvusClientV2 {
     }
 
     /**
-     * Add a function to collection.
+     * Adds a function to existing fields.
+     *
+     * Milvus 3.0 and later do not support this operation. Use
+     * {@link #addFunctionField(AddFunctionFieldReq)} with these versions.
      *
      * @param request add function request
      */
@@ -654,6 +657,8 @@ public class MilvusClientV2 {
 
     /**
      * Add a function-backed field to collection.
+     * The request must include a bound index whose field matches the function output field,
+     * with an explicit index type other than None or AUTOINDEX.
      *
      * @param request add function field request
      */
@@ -671,8 +676,10 @@ public class MilvusClientV2 {
     }
 
     /**
-     * Drop a function of collection.
-     * This removes only the function definition and keeps its output field(s).
+     * Drops only the function definition and keeps its output field(s).
+     *
+     * Milvus 3.0 and later do not support this operation. Use
+     * {@link #dropFunctionField(DropFunctionFieldReq)} with these versions.
      *
      * @param request drop function request
      */

@@ -34,7 +34,7 @@ services:
 
   standalone:
     container_name: milvus-javasdk-standalone
-    image: milvusdb/milvus:master-20260622-a6568ac2-amd64
+    image: milvusdb/milvus:master-20260720-bf674af6-amd64
     user: "0:0"
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -43,6 +43,8 @@ services:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
       MQ_TYPE: woodpecker
+      COMMON_STORAGE_USELOONFFI: "true"
+      DATACOORD_COMPACTION_BUMPSCHEMAVERSION_ENABLED: "true"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s

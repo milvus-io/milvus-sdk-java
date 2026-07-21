@@ -4004,6 +4004,13 @@ class MilvusClientV2DockerTest {
                 .collectionName(collectionName)
                 .fieldName("sparse")
                 .dataType(DataType.SparseFloatVector)
+                .indexParam(IndexParam.builder()
+                        .fieldName("sparse")
+                        .indexName("sparse_idx")
+                        .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                        .metricType(IndexParam.MetricType.BM25)
+                        .extraParams(Collections.singletonMap("drop_ratio_build", 0.2))
+                        .build())
                 .function(CreateCollectionReq.Function.builder()
                         .name("bm25")
                         .description("desc bm25")
@@ -4024,6 +4031,17 @@ class MilvusClientV2DockerTest {
         Assertions.assertEquals("bm25", functions.get(0).getName());
         Assertions.assertEquals("sparse", functions.get(0).getOutputFieldNames().get(0));
 
+        DescribeIndexResp indexResp = client.describeIndex(DescribeIndexReq.builder()
+                .collectionName(collectionName)
+                .indexName("sparse_idx")
+                .build());
+        DescribeIndexResp.IndexDesc sparseIndex = indexResp.getIndexDescByIndexName("sparse_idx");
+        Assertions.assertNotNull(sparseIndex);
+        Assertions.assertEquals("sparse", sparseIndex.getFieldName());
+        Assertions.assertEquals(IndexParam.IndexType.SPARSE_INVERTED_INDEX, sparseIndex.getIndexType());
+        Assertions.assertEquals(IndexParam.MetricType.BM25, sparseIndex.getMetricType());
+        Assertions.assertEquals("0.2", sparseIndex.getExtraParams().get("drop_ratio_build"));
+
         client.dropFunctionField(DropFunctionFieldReq.builder()
                 .collectionName(collectionName)
                 .functionName("bm25")
@@ -4036,6 +4054,10 @@ class MilvusClientV2DockerTest {
         Assertions.assertTrue(fieldNames.contains("text"));
         Assertions.assertFalse(fieldNames.contains("sparse"));
         Assertions.assertTrue(descResp.getCollectionSchema().getFunctionList().isEmpty());
+        List<String> indexNames = client.listIndexes(ListIndexesReq.builder()
+                .collectionName(collectionName)
+                .build());
+        Assertions.assertFalse(indexNames.contains("sparse_idx"));
 
         client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
     }
