@@ -654,6 +654,8 @@ public class MilvusClientV2 {
 
     /**
      * Add a function-backed field to collection.
+     * The request must include a bound index whose field matches the function output field,
+     * with an explicit index type other than None or AUTOINDEX.
      *
      * @param request add function field request
      */

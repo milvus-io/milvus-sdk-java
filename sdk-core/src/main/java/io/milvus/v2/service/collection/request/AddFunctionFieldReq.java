@@ -19,16 +19,20 @@
 
 package io.milvus.v2.service.collection.request;
 
+import io.milvus.v2.common.IndexParam;
+
 public class AddFunctionFieldReq extends AddFieldReq {
     private String collectionName;
     private String databaseName;
     private CreateCollectionReq.Function function;
+    private IndexParam indexParam;
 
     private AddFunctionFieldReq(AddFunctionFieldReqBuilder builder) {
         super(builder);
         this.collectionName = builder.collectionName;
         this.databaseName = builder.databaseName;
         this.function = builder.function;
+        this.indexParam = builder.indexParam;
     }
 
     public String getCollectionName() {
@@ -55,12 +59,21 @@ public class AddFunctionFieldReq extends AddFieldReq {
         this.function = function;
     }
 
+    public IndexParam getIndexParam() {
+        return indexParam;
+    }
+
+    public void setIndexParam(IndexParam indexParam) {
+        this.indexParam = indexParam;
+    }
+
     @Override
     public String toString() {
         return "AddFunctionFieldReq{" +
                 "collectionName='" + collectionName + '\'' +
                 ", databaseName='" + databaseName + '\'' +
                 ", function=" + function +
+                ", indexParam=" + indexParam +
                 ", " + super.toString() +
                 '}';
     }
@@ -73,6 +86,7 @@ public class AddFunctionFieldReq extends AddFieldReq {
         private String collectionName = "";
         private String databaseName = "";
         private CreateCollectionReq.Function function;
+        private IndexParam indexParam;
 
         private AddFunctionFieldReqBuilder() {
         }
@@ -89,6 +103,11 @@ public class AddFunctionFieldReq extends AddFieldReq {
 
         public AddFunctionFieldReqBuilder function(CreateCollectionReq.Function function) {
             this.function = function;
+            return this;
+        }
+
+        public AddFunctionFieldReqBuilder indexParam(IndexParam indexParam) {
+            this.indexParam = indexParam;
             return this;
         }
 
