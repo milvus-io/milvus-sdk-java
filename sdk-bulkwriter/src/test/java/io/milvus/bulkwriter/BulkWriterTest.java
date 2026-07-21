@@ -544,6 +544,127 @@ public class BulkWriterTest {
         }
     }
 
+    @Test
+    void testWriteTextFields() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("body")
+                .dataType(DataType.Text)
+                .maxLength(1)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("paragraphs")
+                .dataType(DataType.Array)
+                .elementType(DataType.Text)
+                .maxLength(1)
+                .maxCapacity(10)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("chunks")
+                .dataType(DataType.Array)
+                .elementType(DataType.Struct)
+                .maxCapacity(10)
+                .addStructField(AddFieldReq.builder()
+                        .fieldName("content")
+                        .dataType(DataType.Text)
+                        .maxLength(1)
+                        .build())
+                .build());
+
+        String longText = String.join("", Collections.nCopies(1024, "text"));
+        JsonObject chunk = new JsonObject();
+        chunk.addProperty("content", longText);
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.addProperty("body", longText);
+        row.add("paragraphs", JsonUtils.toJsonTree(Arrays.asList(longText, "second")));
+        row.add("chunks", JsonUtils.toJsonTree(Collections.singletonList(chunk)));
+
+        for (BulkFileType fileType : Arrays.asList(BulkFileType.JSON, BulkFileType.CSV, BulkFileType.PARQUET)) {
+            LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                    .withCollectionSchema(schema)
+                    .withLocalPath("/tmp/bulk_writer_text")
+                    .withFileType(fileType)
+                    .build();
+            try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+                writer.appendRow(row);
+                writer.commit(false);
+                List<List<String>> batchFiles = writer.getBatchFiles();
+                Assertions.assertFalse(batchFiles.isEmpty());
+                if (fileType == BulkFileType.PARQUET) {
+                    final int[] rowsRead = {0};
+                    new ParquetReaderUtils() {
+                        @Override
+                        public void readRecord(GenericData.Record record) {
+                            rowsRead[0]++;
+                            Assertions.assertEquals(longText, record.get("body").toString());
+
+                            List<?> paragraphs = (List<?>) record.get("paragraphs");
+                            Assertions.assertEquals(longText,
+                                    ((GenericData.Record) paragraphs.get(0)).get("element").toString());
+                            Assertions.assertEquals("second",
+                                    ((GenericData.Record) paragraphs.get(1)).get("element").toString());
+
+                            List<?> chunks = (List<?>) record.get("chunks");
+                            GenericData.Record chunkRecord = (GenericData.Record) chunks.get(0);
+                            GenericData.Record content = (GenericData.Record) chunkRecord.get("element");
+                            Assertions.assertEquals(longText, content.get("content").toString());
+                        }
+                    }.readParquet(batchFiles.get(0).get(0));
+                    Assertions.assertEquals(1, rowsRead[0]);
+                }
+            } catch (Exception e) {
+                Assertions.fail(e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    void testWriteTextFieldsWithV1Schema() {
+        CollectionSchemaParam schema = CollectionSchemaParam.newBuilder()
+                .withFieldTypes(Arrays.asList(
+                        FieldType.newBuilder()
+                                .withName("id")
+                                .withDataType(io.milvus.grpc.DataType.Int64)
+                                .withPrimaryKey(true)
+                                .build(),
+                        FieldType.newBuilder()
+                                .withName("body")
+                                .withDataType(io.milvus.grpc.DataType.Text)
+                                .build(),
+                        FieldType.newBuilder()
+                                .withName("paragraphs")
+                                .withDataType(io.milvus.grpc.DataType.Array)
+                                .withElementType(io.milvus.grpc.DataType.Text)
+                                .withMaxCapacity(10)
+                                .build()))
+                .build();
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schema)
+                .withLocalPath("/tmp/bulk_writer_text_v1")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        String longText = String.join("", Collections.nCopies(1024, "text"));
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.addProperty("body", longText);
+        row.add("paragraphs", JsonUtils.toJsonTree(Arrays.asList(longText, "second")));
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            writer.appendRow(row);
+            writer.commit(false);
+            Assertions.assertFalse(writer.getBatchFiles().isEmpty());
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
     private static void compareJsonArray(JsonElement j1, JsonElement j2, DataType dt) {
         if (j1.isJsonNull()) {
             Assertions.assertTrue(j2.isJsonNull());
@@ -571,6 +692,7 @@ public class BulkWriterTest {
                     Assertions.assertEquals(a1.get(i).getAsDouble(), a2.get(i).getAsDouble());
                     break;
                 case VarChar:
+                case Text:
                     Assertions.assertEquals(a1.get(i).getAsString(), a2.get(i).getAsString());
                 default:
                     Assertions.assertEquals(a1.get(i), a2.get(i));

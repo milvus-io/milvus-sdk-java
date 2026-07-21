@@ -371,6 +371,7 @@ public abstract class BulkWriter implements AutoCloseable {
                 return verifyVector(obj, field);
             }
             case VarChar:
+            case Text:
             case Geometry:
             case Timestamptz: {
                 return verifyVarchar(obj, field);
@@ -457,7 +458,7 @@ public abstract class BulkWriter implements AutoCloseable {
         DataType elementType = field.getElementType();
         if (TypeSize.contains(elementType)) {
             rowSize = TypeSize.getSize(elementType) * ((List<?>) array).size();
-        } else if (elementType == DataType.VarChar) {
+        } else if (elementType == DataType.VarChar || elementType == DataType.Text) {
             for (String str : (List<String>) array) {
                 rowSize += str.length();
             }

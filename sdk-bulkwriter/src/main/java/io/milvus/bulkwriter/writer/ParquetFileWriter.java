@@ -144,6 +144,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                 break;
             case VarChar:
             case String:
+            case Text:
             case Geometry:
             case Timestamptz:
             case JSON:
@@ -180,6 +181,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                         break;
                     case String:
                     case VarChar:
+                    case Text:
                         addStringArray(group, fieldName, (List<String>) value);
                         break;
                     case Bool:
