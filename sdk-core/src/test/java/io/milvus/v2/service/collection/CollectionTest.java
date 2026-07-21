@@ -23,6 +23,7 @@ import io.milvus.grpc.AddCollectionStructFieldRequest;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
 import io.milvus.grpc.StructArrayFieldSchema;
+import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.common.DataType;
 import io.milvus.v2.common.IndexParam;
@@ -55,6 +56,19 @@ class CollectionTest extends BaseTest {
                 .map(KeyValuePair::getValue)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private AddFunctionFieldReq.AddFunctionFieldReqBuilder addFunctionFieldBuilder() {
+        return AddFunctionFieldReq.builder()
+                .collectionName("test")
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .function(CreateCollectionReq.Function.builder()
+                        .name("bm25")
+                        .functionType(io.milvus.common.clientenum.FunctionType.BM25)
+                        .inputFieldNames(Collections.singletonList("text"))
+                        .outputFieldNames(Collections.singletonList("sparse"))
+                        .build());
     }
 
     @Test
@@ -421,6 +435,38 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
+    void testAddCollectionField() {
+        client_v2.addCollectionField(AddCollectionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("new_field")
+                .description("new nullable field")
+                .dataType(DataType.VarChar)
+                .maxLength(128)
+                .isNullable(true)
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals(1, rpcRequest.getAction().getAddRequest().getFieldInfosCount());
+        Assertions.assertEquals(0, rpcRequest.getAction().getAddRequest().getFuncSchemaCount());
+
+        io.milvus.grpc.AlterCollectionSchemaRequest.FieldInfo fieldInfo =
+                rpcRequest.getAction().getAddRequest().getFieldInfos(0);
+        Assertions.assertEquals("new_field", fieldInfo.getFieldSchema().getName());
+        Assertions.assertEquals("new nullable field", fieldInfo.getFieldSchema().getDescription());
+        Assertions.assertEquals(io.milvus.grpc.DataType.VarChar, fieldInfo.getFieldSchema().getDataType());
+        Assertions.assertTrue(fieldInfo.getFieldSchema().getNullable());
+        Assertions.assertEquals("128", getParam(fieldInfo.getFieldSchema().getTypeParamsList(), "max_length"));
+        Assertions.assertTrue(fieldInfo.getIndexName().isEmpty());
+        Assertions.assertEquals(0, fieldInfo.getExtraParamsCount());
+    }
+
+    @Test
     void testDropCollectionFieldByName() {
         client_v2.dropCollectionField(DropCollectionFieldReq.builder()
                 .databaseName("default")
@@ -476,18 +522,20 @@ class CollectionTest extends BaseTest {
 
     @Test
     void testAddFunctionField() {
-        client_v2.addFunctionField(AddFunctionFieldReq.builder()
-                .databaseName("default")
-                .collectionName("test")
+        IndexParam indexParam = IndexParam.builder()
                 .fieldName("sparse")
-                .dataType(DataType.SparseFloatVector)
-                .function(CreateCollectionReq.Function.builder()
-                        .name("bm25")
-                        .functionType(io.milvus.common.clientenum.FunctionType.BM25)
-                        .inputFieldNames(Collections.singletonList("text"))
-                        .outputFieldNames(Collections.singletonList("sparse"))
-                        .build())
-                .build());
+                .indexName("sparse_idx")
+                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                .metricType(IndexParam.MetricType.BM25)
+                .extraParams(Collections.singletonMap("drop_ratio_build", 0.2))
+                .build();
+        AddFunctionFieldReq request = addFunctionFieldBuilder()
+                .databaseName("default")
+                .build();
+        request.setIndexParam(indexParam);
+        Assertions.assertSame(indexParam, request.getIndexParam());
+
+        client_v2.addFunctionField(request);
 
         ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
                 ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
@@ -502,6 +550,13 @@ class CollectionTest extends BaseTest {
                 rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getDataType());
         Assertions.assertTrue(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getIsFunctionOutput());
         Assertions.assertFalse(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getFieldSchema().getNullable());
+        Assertions.assertEquals("sparse_idx", rpcRequest.getAction().getAddRequest().getFieldInfos(0).getIndexName());
+        Assertions.assertEquals("SPARSE_INVERTED_INDEX",
+                getParam(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getExtraParamsList(), Constant.INDEX_TYPE));
+        Assertions.assertEquals("BM25",
+                getParam(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getExtraParamsList(), Constant.METRIC_TYPE));
+        Assertions.assertEquals("0.2",
+                getParam(rpcRequest.getAction().getAddRequest().getFieldInfos(0).getExtraParamsList(), "drop_ratio_build"));
         Assertions.assertEquals("bm25", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getName());
         Assertions.assertEquals("text", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getInputFieldNames(0));
         Assertions.assertEquals("sparse", rpcRequest.getAction().getAddRequest().getFuncSchema(0).getOutputFieldNames(0));
@@ -510,26 +565,60 @@ class CollectionTest extends BaseTest {
     @Test
     void testAddFunctionFieldRejectsNullFunction() {
         MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> client_v2.addFunctionField(AddFunctionFieldReq.builder()
-                        .collectionName("test")
-                        .fieldName("sparse")
-                        .dataType(DataType.SparseFloatVector)
-                        .build()));
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder().function(null).build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
     }
 
     @Test
     void testAddFunctionFieldRejectsMismatchedOutputField() {
         MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> client_v2.addFunctionField(AddFunctionFieldReq.builder()
-                        .collectionName("test")
-                        .fieldName("sparse")
-                        .dataType(DataType.SparseFloatVector)
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
                         .function(CreateCollectionReq.Function.builder()
                                 .name("bm25")
                                 .functionType(io.milvus.common.clientenum.FunctionType.BM25)
                                 .inputFieldNames(Collections.singletonList("text"))
                                 .outputFieldNames(Collections.singletonList("other"))
+                                .build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsMissingBoundIndex() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder().build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsAutoIndex() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .indexParam(IndexParam.builder().fieldName("sparse").build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsMismatchedBoundIndexField() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .indexParam(IndexParam.builder()
+                                .fieldName("other")
+                                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                                .build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsDuplicateIndexType() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .indexParam(IndexParam.builder()
+                                .fieldName("sparse")
+                                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                                .extraParams(Collections.singletonMap(Constant.INDEX_TYPE, "SPARSE_WAND"))
                                 .build())
                         .build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
