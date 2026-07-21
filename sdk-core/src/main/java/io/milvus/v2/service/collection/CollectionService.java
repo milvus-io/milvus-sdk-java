@@ -853,20 +853,15 @@ public class CollectionService extends BaseService {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Drop function to collection: '%s' in database: '%s'", collectionName, dbName);
-        AlterCollectionSchemaRequest.Builder builder = AlterCollectionSchemaRequest.newBuilder()
+        DropCollectionFunctionRequest.Builder builder = DropCollectionFunctionRequest.newBuilder()
                 .setCollectionName(collectionName)
-                .setAction(AlterCollectionSchemaRequest.Action.newBuilder()
-                        .setDropRequest(AlterCollectionSchemaRequest.DropRequest.newBuilder()
-                                .setFunctionName(request.getFunctionName())
-                                .setDropFunctionOutputFields(false)
-                                .build())
-                        .build());
+                .setFunctionName(request.getFunctionName());
         if (StringUtils.isNotEmpty(dbName)) {
             builder.setDbName(dbName);
         }
 
-        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
-        rpcUtils.handleResponse(title, response.getAlterStatus());
+        Status status = blockingStub.dropCollectionFunction(builder.build());
+        rpcUtils.handleResponse(title, status);
 
         return null;
     }

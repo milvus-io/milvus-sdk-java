@@ -632,14 +632,13 @@ class CollectionTest extends BaseTest {
                 .functionName("bm25")
                 .build());
 
-        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
-                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
-        verify(blockingStub).alterCollectionSchema(captor.capture());
-        io.milvus.grpc.AlterCollectionSchemaRequest rpcRequest = captor.getValue();
+        ArgumentCaptor<io.milvus.grpc.DropCollectionFunctionRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.DropCollectionFunctionRequest.class);
+        verify(blockingStub).dropCollectionFunction(captor.capture());
+        io.milvus.grpc.DropCollectionFunctionRequest rpcRequest = captor.getValue();
         Assertions.assertEquals("default", rpcRequest.getDbName());
         Assertions.assertEquals("test", rpcRequest.getCollectionName());
-        Assertions.assertEquals("bm25", rpcRequest.getAction().getDropRequest().getFunctionName());
-        Assertions.assertFalse(rpcRequest.getAction().getDropRequest().getDropFunctionOutputFields());
+        Assertions.assertEquals("bm25", rpcRequest.getFunctionName());
     }
 
     @Test
