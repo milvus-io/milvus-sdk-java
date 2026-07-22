@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection;
 
+import io.grpc.StatusRuntimeException;
 import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
@@ -307,8 +308,28 @@ public class CollectionService extends BaseService {
             builder.setDbName(dbName);
         }
 
-        AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
-        rpcUtils.handleResponse(title, response.getAlterStatus());
+        try {
+            AlterCollectionSchemaResponse response = blockingStub.alterCollectionSchema(builder.build());
+            rpcUtils.handleResponse(title, response.getAlterStatus());
+        } catch (StatusRuntimeException e) {
+            if (e.getStatus().getCode() != io.grpc.Status.Code.UNIMPLEMENTED) {
+                throw e;
+            }
+
+            AddCollectionFieldRequest.Builder legacyBuilder = AddCollectionFieldRequest.newBuilder()
+                    .setCollectionName(collectionName)
+                    .setSchema(grpcFieldSchema.toByteString());
+            if (StringUtils.isNotEmpty(dbName)) {
+                legacyBuilder.setDbName(dbName);
+            }
+
+            AddCollectionFieldRequest legacyRequest = legacyBuilder.build();
+            rpcUtils.retry(() -> {
+                Status response = blockingStub.addCollectionField(legacyRequest);
+                rpcUtils.handleResponse(title, response);
+                return null;
+            });
+        }
         return null;
     }
 
