@@ -113,6 +113,7 @@ public class ParquetUtils {
                     fillArrayType(messageTypeBuilder, field);
                     break;
                 case VarChar:
+                case Text:
                 case Geometry:
                 case Timestamptz:
                 case JSON:
@@ -161,6 +162,7 @@ public class ParquetUtils {
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, field, true);
                 break;
             case VarChar:
+            case Text:
                 setMessageType(messageTypeBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
                         LogicalTypeAnnotation.stringType(), field, true);
                 break;
@@ -195,6 +197,7 @@ public class ParquetUtils {
                     setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.DOUBLE, null, subField, false);
                     break;
                 case VarChar:
+                case Text:
                     setMessageType(groupBuilder, PrimitiveType.PrimitiveTypeName.BINARY,
                             LogicalTypeAnnotation.stringType(), subField, false);
                     break;
