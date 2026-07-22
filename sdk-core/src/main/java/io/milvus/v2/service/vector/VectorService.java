@@ -27,6 +27,7 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
+import io.milvus.v2.exception.DataNotMatchException;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.BaseService;
@@ -121,7 +122,7 @@ public class VectorService extends BaseService {
         InsertRequest rpcRequest;
         try {
             rpcRequest = buildInsertRequest(request, descResp);
-        } catch (Exception ignored) {
+        } catch (DataNotMatchException ignored) {
             descResp = getCollectionInfo(blockingStub, dbName, collectionName, true);
             rpcRequest = buildInsertRequest(request, descResp);
         }
@@ -178,7 +179,7 @@ public class VectorService extends BaseService {
         UpsertRequest rpcRequest;
         try {
             rpcRequest = buildUpsertRequest(request, descResp);
-        } catch (Exception ignored) {
+        } catch (DataNotMatchException ignored) {
             descResp = getCollectionInfo(blockingStub, dbName, collectionName, true);
             rpcRequest = buildUpsertRequest(request, descResp);
         }
