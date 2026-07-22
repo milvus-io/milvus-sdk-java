@@ -19,6 +19,7 @@
 
 package io.milvus.v2.service.collection;
 
+import io.milvus.grpc.AddCollectionFieldRequest;
 import io.milvus.grpc.AddCollectionStructFieldRequest;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.KeyValuePair;
@@ -45,7 +46,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CollectionTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(CollectionTest.class);
@@ -464,6 +469,60 @@ class CollectionTest extends BaseTest {
         Assertions.assertEquals("128", getParam(fieldInfo.getFieldSchema().getTypeParamsList(), "max_length"));
         Assertions.assertTrue(fieldInfo.getIndexName().isEmpty());
         Assertions.assertEquals(0, fieldInfo.getExtraParamsCount());
+        verify(blockingStub, never()).addCollectionField(any());
+    }
+
+    @Test
+    void testAddCollectionFieldFallsBackForOlderServer() throws Exception {
+        when(blockingStub.alterCollectionSchema(any()))
+                .thenThrow(io.grpc.Status.UNIMPLEMENTED.asRuntimeException());
+        when(blockingStub.addCollectionField(any()))
+                .thenReturn(io.milvus.grpc.Status.newBuilder()
+                        .setErrorCode(io.milvus.grpc.ErrorCode.RateLimit)
+                        .setReason("rate limited")
+                        .build())
+                .thenReturn(io.milvus.grpc.Status.newBuilder().setCode(0).build());
+
+        client_v2.addCollectionField(AddCollectionFieldReq.builder()
+                .databaseName("default")
+                .collectionName("test")
+                .fieldName("new_field")
+                .description("new nullable field")
+                .dataType(DataType.VarChar)
+                .maxLength(128)
+                .isNullable(true)
+                .build());
+
+        verify(blockingStub).alterCollectionSchema(any());
+        ArgumentCaptor<AddCollectionFieldRequest> captor =
+                ArgumentCaptor.forClass(AddCollectionFieldRequest.class);
+        verify(blockingStub, times(2)).addCollectionField(captor.capture());
+        AddCollectionFieldRequest rpcRequest = captor.getAllValues().get(0);
+        FieldSchema fieldSchema = FieldSchema.parseFrom(rpcRequest.getSchema());
+        Assertions.assertEquals("default", rpcRequest.getDbName());
+        Assertions.assertEquals("test", rpcRequest.getCollectionName());
+        Assertions.assertEquals("new_field", fieldSchema.getName());
+        Assertions.assertEquals("new nullable field", fieldSchema.getDescription());
+        Assertions.assertEquals(io.milvus.grpc.DataType.VarChar, fieldSchema.getDataType());
+        Assertions.assertTrue(fieldSchema.getNullable());
+        Assertions.assertEquals("128", getParam(fieldSchema.getTypeParamsList(), "max_length"));
+    }
+
+    @Test
+    void testAddCollectionFieldDoesNotFallbackForOtherRpcErrors() {
+        when(blockingStub.alterCollectionSchema(any()))
+                .thenThrow(io.grpc.Status.PERMISSION_DENIED.asRuntimeException());
+
+        assertThrows(MilvusClientException.class, () ->
+                client_v2.addCollectionField(AddCollectionFieldReq.builder()
+                        .collectionName("test")
+                        .fieldName("new_field")
+                        .dataType(DataType.VarChar)
+                        .maxLength(128)
+                        .isNullable(true)
+                        .build()));
+
+        verify(blockingStub, never()).addCollectionField(any());
     }
 
     @Test
