@@ -101,6 +101,15 @@ public class UpsertReq {
     }
 
     public boolean isPartialUpdate() {
+        if (partialUpdate || fieldOps == null) {
+            return partialUpdate;
+        }
+        for (FieldPartialUpdateOp fieldOp : fieldOps) {
+            if (fieldOp != null && fieldOp.getOpType() != null
+                    && fieldOp.getOpType() != FieldPartialUpdateOp.OpType.REPLACE) {
+                return true;
+            }
+        }
         return partialUpdate;
     }
 
@@ -123,7 +132,7 @@ public class UpsertReq {
                 ", databaseName='" + databaseName + '\'' +
                 ", collectionName='" + collectionName + '\'' +
                 ", partitionName='" + partitionName + '\'' +
-                ", partialUpdate=" + partialUpdate +
+                ", partialUpdate=" + isPartialUpdate() +
                 ", fieldOps=" + fieldOps +
                 '}';
     }
