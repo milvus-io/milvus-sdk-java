@@ -48,11 +48,14 @@ public class QueryIterator {
     private final FieldType primaryField;
 
     private final QueryIteratorReq queryIteratorReq;
+    private final long collectionID;
     private final int batchSize;
     private final long limit;
     private final String expr;
     private long offset;
     private Object nextId;
+    private Object nextElementOffset;
+    private final boolean elementFilterIterator;
     private int cacheIdInUse;
     private long returnedCount;
     private final RpcUtils rpcUtils;
@@ -60,14 +63,17 @@ public class QueryIterator {
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
                          RpcStubWrapper blockingStub,
-                         FieldType primaryField) {
+                         FieldType primaryField,
+                         long collectionId) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         this.primaryField = primaryField;
         this.queryIteratorReq = IteratorAdapterV2.convertV1Param(queryIteratorParam);
+        this.collectionID = collectionId;
 
         this.batchSize = (int) queryIteratorParam.getBatchSize();
         this.expr = queryIteratorParam.getExpr();
+        this.elementFilterIterator = StringUtils.containsIgnoreCase(this.expr, "element_filter");
         this.limit = queryIteratorParam.getLimit();
         this.offset = queryIteratorParam.getOffset();
         this.rpcUtils = new RpcUtils();
@@ -78,14 +84,17 @@ public class QueryIterator {
 
     public QueryIterator(QueryIteratorReq queryIteratorReq,
                          RpcStubWrapper blockingStub,
-                         CreateCollectionReq.FieldSchema primaryField) {
+                         CreateCollectionReq.FieldSchema primaryField,
+                         long collectionId) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         this.queryIteratorReq = queryIteratorReq;
         this.primaryField = IteratorAdapterV2.convertV2Field(primaryField);
+        this.collectionID = collectionId;
 
         this.batchSize = (int) queryIteratorReq.getBatchSize();
         this.expr = queryIteratorReq.getExpr();
+        this.elementFilterIterator = StringUtils.containsIgnoreCase(this.expr, "element_filter");
         this.limit = queryIteratorReq.getLimit();
         this.offset = queryIteratorReq.getOffset();
         this.rpcUtils = new RpcUtils();
@@ -97,7 +106,7 @@ public class QueryIterator {
     // perform a query to get the first time stamp check point
     // the time stamp will be input for the next query to skip something
     private void setupTsByRequest() {
-        QueryResults response = executeQuery(expr, 0L, 1L, 0L, true);
+        QueryResults response = executeQuery(expr, 0L, 1L, 0L, QueryPhase.SETUP_TS);
         if (response.getSessionTs() <= 0) {
             logger.warn("Failed to get mvccTs from milvus server, use client-side ts instead");
             // fall back to latest session ts by local time
@@ -119,7 +128,7 @@ public class QueryIterator {
         while (currentOffset > 0) {
             long limit = Math.min(MAX_BATCH_SIZE, currentOffset);
             String currentExpr = setupNextExpr();
-            QueryResults response = executeQuery(currentExpr, 0L, limit, this.sessionTs, true);
+            QueryResults response = executeQuery(currentExpr, 0L, limit, this.sessionTs, QueryPhase.SEEK);
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
             List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             if (res.isEmpty()) {
@@ -132,25 +141,30 @@ public class QueryIterator {
     }
 
     public List<QueryResultsWrapper.RowRecord> next() {
-        List<QueryResultsWrapper.RowRecord> cachedRes = iteratorCache.fetchCache(cacheIdInUse);
+        if (limit != UNLIMITED && returnedCount >= limit) {
+            iteratorCache.releaseCache(cacheIdInUse);
+            return new ArrayList<>();
+        }
+
         List<QueryResultsWrapper.RowRecord> ret;
-        if (isResSufficient(cachedRes)) {
-            ret = cachedRes.subList(0, batchSize);
-            List<QueryResultsWrapper.RowRecord> retToCache = cachedRes.subList(batchSize, cachedRes.size());
-            iteratorCache.cache(cacheIdInUse, retToCache);
+        if (iteratorCache.size(cacheIdInUse) >= batchSize) {
+            ret = iteratorCache.drain(cacheIdInUse, batchSize);
         } else {
             iteratorCache.releaseCache(cacheIdInUse);
             String currentExpr = setupNextExpr();
             logger.debug("Query iterator next expression: " + currentExpr);
-            QueryResults response = executeQuery(currentExpr, offset, batchSize, this.sessionTs, false);
+            QueryResults response = executeQuery(currentExpr, offset, batchSize, this.sessionTs, QueryPhase.NEXT);
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
             List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             maybeCache(res);
-            ret = res.subList(0, Math.min(batchSize, res.size()));
+            ret = new ArrayList<>(res.subList(0, Math.min(batchSize, res.size())));
         }
         ret = checkReachedLimit(ret);
         updateCursor(ret);
         returnedCount += ret.size();
+        if (ret.isEmpty() || (limit != UNLIMITED && returnedCount >= limit)) {
+            iteratorCache.releaseCache(cacheIdInUse);
+        }
         return ret;
     }
 
@@ -163,6 +177,7 @@ public class QueryIterator {
             return;
         }
         nextId = res.get(res.size() - 1).get(primaryField.getName());
+        nextElementOffset = res.get(res.size() - 1).get(Constant.OFFSET);
     }
 
     private List<QueryResultsWrapper.RowRecord> checkReachedLimit(List<QueryResultsWrapper.RowRecord> ret) {
@@ -174,7 +189,7 @@ public class QueryIterator {
             return ret;
         }
 
-        return ret.subList(0, (int) leftCount);
+        return new ArrayList<>(ret.subList(0, (int) leftCount));
     }
 
     private void maybeCache(List<QueryResultsWrapper.RowRecord> ret) {
@@ -190,29 +205,28 @@ public class QueryIterator {
         if (nextId == null) {
             return currentExpr;
         }
+        String pkOperator = hasElementCursor() ? ">=" : ">";
         String filteredPKStr;
         if (primaryField.getDataType() == DataType.VarChar) {
-            filteredPKStr = primaryField.getName() + " > " + "\"" + nextId + "\"";
+            filteredPKStr = primaryField.getName() + " " + pkOperator + " " + "\"" + nextId + "\"";
         } else {
-            filteredPKStr = primaryField.getName() + " > " + nextId;
+            filteredPKStr = primaryField.getName() + " " + pkOperator + " " + nextId;
         }
         if (StringUtils.isEmpty(currentExpr)) {
             return filteredPKStr;
         }
-        return filteredPKStr + " and ( " + currentExpr + " )";
+        return filteredPKStr + " and (" + currentExpr + ")";
     }
 
-    private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
-        return ret != null && ret.size() >= batchSize;
+    private boolean hasElementCursor() {
+        return elementFilterIterator && nextElementOffset != null;
     }
 
-    private QueryResults executeQuery(String expr, long offset, long limit, long ts, boolean isSeek) {
-        // for seeking offset, no need to return output fields
+    private QueryResults executeQuery(String expr, long offset, long limit, long ts, QueryPhase phase) {
+        // Setting up the timestamp and seeking an offset do not need output fields.
         List<String> outputFields = new ArrayList<>();
-        boolean reduceStopForBest = queryIteratorReq.isReduceStopForBest();
-        if (!isSeek) {
+        if (phase == QueryPhase.NEXT) {
             outputFields = queryIteratorReq.getOutputFields();
-            reduceStopForBest = false;
         }
         QueryReq queryReq = QueryReq.builder()
                 .databaseName(queryIteratorReq.getDatabaseName())
@@ -232,6 +246,10 @@ public class QueryIterator {
         VectorUtils vectorUtils = new VectorUtils();
         QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(queryReq);
         QueryRequest.Builder builder = queryRequest.toBuilder();
+        boolean iterator = phase != QueryPhase.SEEK;
+        boolean reduceStopForBest = phase == QueryPhase.SEEK
+                ? false
+                : queryIteratorReq.isReduceStopForBest();
         // reduce stop for best
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.REDUCE_STOP_FOR_BEST)
@@ -241,8 +259,24 @@ public class QueryIterator {
         // iterator
         builder.addQueryParams(KeyValuePair.newBuilder()
                 .setKey(Constant.ITERATOR_FIELD)
-                .setValue(String.valueOf(Boolean.TRUE))
+                .setValue(String.valueOf(iterator))
                 .build());
+
+        builder.addQueryParams(KeyValuePair.newBuilder()
+                .setKey(Constant.COLLECTION_ID)
+                .setValue(String.valueOf(collectionID))
+                .build());
+
+        if (hasElementCursor()) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.QUERY_ITER_LAST_PK)
+                    .setValue(String.valueOf(nextId))
+                    .build());
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.QUERY_ITER_LAST_ELEMENT_OFFSET)
+                    .setValue(String.valueOf(nextElementOffset))
+                    .build());
+        }
 
         // pass the session ts to query interface
         builder.setGuaranteeTimestamp(ts).build();
@@ -254,5 +288,11 @@ public class QueryIterator {
         String title = String.format("QueryRequest collectionName:%s", queryIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
         return response;
+    }
+
+    private enum QueryPhase {
+        SETUP_TS,
+        SEEK,
+        NEXT
     }
 }
