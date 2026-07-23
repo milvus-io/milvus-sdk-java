@@ -3531,7 +3531,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         }
         DescCollResponseWrapper descCollResponseWrapper = new DescCollResponseWrapper(descResp.getData());
         // for MilvusClientV1, we don't support to set rpcDeadlineMs for iterator, rpcDeadlineMs is always 0(no deadline)
-        QueryIterator queryIterator = new QueryIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L), descCollResponseWrapper.getPrimaryField());
+        QueryIterator queryIterator = new QueryIterator(requestParam, new RpcStubWrapper(this.blockingStub(), 0L),
+                descCollResponseWrapper.getPrimaryField(), descCollResponseWrapper.getCollectionID());
         return R.success(queryIterator);
     }
 
