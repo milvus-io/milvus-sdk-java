@@ -31,10 +31,11 @@ target/
 volumes/
 *.iml
 .flattened-pom.xml
+dependency-reduced-pom.xml
+META-INF/
 
 # Example files
 examples/bulk_writer
 examples/src/main/resources/tls/*
 !examples/src/main/resources/tls/gen.sh
 !examples/src/main/resources/tls/openssl.cnf
-
