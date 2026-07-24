@@ -132,12 +132,14 @@ public class QueryIterator {
     }
 
     public List<QueryResultsWrapper.RowRecord> next() {
-        List<QueryResultsWrapper.RowRecord> cachedRes = iteratorCache.fetchCache(cacheIdInUse);
+        if (limit != UNLIMITED && returnedCount >= limit) {
+            iteratorCache.releaseCache(cacheIdInUse);
+            return new ArrayList<>();
+        }
+
         List<QueryResultsWrapper.RowRecord> ret;
-        if (isResSufficient(cachedRes)) {
-            ret = cachedRes.subList(0, batchSize);
-            List<QueryResultsWrapper.RowRecord> retToCache = cachedRes.subList(batchSize, cachedRes.size());
-            iteratorCache.cache(cacheIdInUse, retToCache);
+        if (iteratorCache.size(cacheIdInUse) >= batchSize) {
+            ret = iteratorCache.drain(cacheIdInUse, batchSize);
         } else {
             iteratorCache.releaseCache(cacheIdInUse);
             String currentExpr = setupNextExpr();
@@ -146,11 +148,14 @@ public class QueryIterator {
             QueryResultsWrapper queryWrapper = new QueryResultsWrapper(response);
             List<QueryResultsWrapper.RowRecord> res = queryWrapper.getRowRecords();
             maybeCache(res);
-            ret = res.subList(0, Math.min(batchSize, res.size()));
+            ret = new ArrayList<>(res.subList(0, Math.min(batchSize, res.size())));
         }
         ret = checkReachedLimit(ret);
         updateCursor(ret);
         returnedCount += ret.size();
+        if (ret.isEmpty() || (limit != UNLIMITED && returnedCount >= limit)) {
+            iteratorCache.releaseCache(cacheIdInUse);
+        }
         return ret;
     }
 
@@ -174,7 +179,7 @@ public class QueryIterator {
             return ret;
         }
 
-        return ret.subList(0, (int) leftCount);
+        return new ArrayList<>(ret.subList(0, (int) leftCount));
     }
 
     private void maybeCache(List<QueryResultsWrapper.RowRecord> ret) {
@@ -200,10 +205,6 @@ public class QueryIterator {
             return filteredPKStr;
         }
         return filteredPKStr + " and ( " + currentExpr + " )";
-    }
-
-    private boolean isResSufficient(List<QueryResultsWrapper.RowRecord> ret) {
-        return ret != null && ret.size() >= batchSize;
     }
 
     private QueryResults executeQuery(String expr, long offset, long limit, long ts, boolean isSeek) {
