@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 3.0.5 (2026-07-24)
+### Feature
+- Support adding scalar, struct, and function fields to existing Milvus 3.0 collections
+
+### Improvement
+- Add backward-compatible fallback for collection field additions on older Milvus servers
+- Align insert/upsert validation and schema-refresh behavior with PyMilvus
+- Relax order-by field validation to allow server-supported field expressions
+
 ## milvus-sdk-java 3.0.4 (2026-07-13)
 ### Feature
 - Support aggregation for search
