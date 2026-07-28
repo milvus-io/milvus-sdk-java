@@ -138,6 +138,7 @@ public class SearchIterator {
         if (isCacheEnough(retLen)) {
             retPage = extractPageFromCache(retLen);
             returnedCount += retPage.size();
+            releaseCacheIfFinished(retPage);
             return retPage;
         }
 
@@ -151,17 +152,16 @@ public class SearchIterator {
             updateWidth(retPage);
         }
 
-        // 3. if all result has return, clear the filteredIds
-        if (retPage.isEmpty()) {
-            filteredIds.clear();
-        }
-
-        returnedCount += retLen;
+        returnedCount += retPage.size();
+        releaseCacheIfFinished(retPage);
         return retPage;
     }
 
     public void close() {
         iteratorCache.releaseCache(cacheId);
+        if (filteredIds != null) {
+            filteredIds.clear();
+        }
     }
 
     private void initParams() {
@@ -395,23 +395,17 @@ public class SearchIterator {
     }
 
     private boolean isCacheEnough(long count) {
-        List<QueryResultsWrapper.RowRecord> cachedPage = iteratorCache.fetchCache(cacheId);
-        return cachedPage != null && cachedPage.size() >= count;
+        return iteratorCache.size(cacheId) >= count;
     }
 
     private List<QueryResultsWrapper.RowRecord> extractPageFromCache(long count) {
-        List<QueryResultsWrapper.RowRecord> cachedPage = iteratorCache.fetchCache(cacheId);
-        if (cachedPage == null || cachedPage.size() < count) {
+        int cachedSize = iteratorCache.size(cacheId);
+        if (cachedSize < count) {
             String msg = String.format("Wrong, try to extract %s result from cache, more than %s there must be sth wrong with code",
-                    count, cachedPage == null ? 0 : cachedPage.size());
+                    count, cachedSize);
             throw new ParamException(msg);
         }
-
-        List<QueryResultsWrapper.RowRecord> retPageRes = cachedPage.subList(0, (int) count);
-        List<QueryResultsWrapper.RowRecord> leftCachePage = cachedPage.subList((int) count, cachedPage.size());
-
-        iteratorCache.cache(cacheId, leftCachePage);
-        return retPageRes;
+        return iteratorCache.drain(cacheId, (int) count);
     }
 
     private List<QueryResultsWrapper.RowRecord> trySearchFill() {
@@ -511,15 +505,16 @@ public class SearchIterator {
         if (page == null) {
             throw new ParamException("Cannot push None page into cache");
         }
+        return iteratorCache.append(cacheId, page);
+    }
 
-        List<QueryResultsWrapper.RowRecord> cachedPage = iteratorCache.fetchCache(cacheId);
-        if (cachedPage == null) {
-            iteratorCache.cache(cacheId, page);
-            cachedPage = page;
-        } else {
-            cachedPage.addAll(page);
+    private void releaseCacheIfFinished(List<QueryResultsWrapper.RowRecord> page) {
+        if (page.isEmpty() || (topK != UNLIMITED && returnedCount >= topK)) {
+            iteratorCache.releaseCache(cacheId);
+            if (filteredIds != null) {
+                filteredIds.clear();
+            }
         }
-        return cachedPage.size();
     }
 
     private float getDistance(QueryResultsWrapper.RowRecord record) {
