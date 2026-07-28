@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
-import io.milvus.common.utils.GTsDict;
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -52,6 +52,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class VectorUtils {
+    private String endpoint = "";
+    private String currentDbName;
+
+    public VectorUtils() {
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint == null ? "" : endpoint;
+    }
+
+    public void setCurrentDbName(String currentDbName) {
+        this.currentDbName = currentDbName;
+    }
+
     public QueryRequest ConvertToGrpcQueryRequest(QueryReq request) {
         if (request == null) {
             throw new NullPointerException("request cannot be null");
@@ -143,19 +157,20 @@ public class VectorUtils {
 
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String dbName, String collectionName) {
+    private long getGuaranteeTimestamp(ConsistencyLevel consistencyLevel, String dbName, String collectionName) {
+        String cacheDbName = StringUtils.isNotEmpty(dbName) ? dbName : currentDbName;
         if (consistencyLevel == null) {
-            String key = GTsDict.CombineCollectionName(dbName, collectionName);
-            Long ts = GTsDict.getInstance().getCollectionTs(key);
-            return (ts == null) ? 1L : ts;
+            long ts = StringUtils.isNotBlank(endpoint)
+                    ? CollectionTsCache.getInstance().get(endpoint, cacheDbName, collectionName) : 0L;
+            return ts == 0L ? 1L : ts;
         }
         switch (consistencyLevel) {
             case STRONG:
                 return 0L;
             case SESSION: {
-                String key = GTsDict.CombineCollectionName(dbName, collectionName);
-                Long ts = GTsDict.getInstance().getCollectionTs(key);
-                return (ts == null) ? 1L : ts;
+                long ts = StringUtils.isNotBlank(endpoint)
+                        ? CollectionTsCache.getInstance().get(endpoint, cacheDbName, collectionName) : 0L;
+                return ts == 0L ? 1L : ts;
             }
             case BOUNDED:
                 return 2L; // let server side to determine the bounded time

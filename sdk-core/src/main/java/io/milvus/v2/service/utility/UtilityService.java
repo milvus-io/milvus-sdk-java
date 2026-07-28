@@ -20,6 +20,7 @@
 package io.milvus.v2.service.utility;
 
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.grpc.*;
 import io.milvus.v2.common.CompactionPlan;
 import io.milvus.v2.common.CompactionState;
@@ -273,6 +274,10 @@ public class UtilityService extends BaseService {
 
         Status status = blockingStub.createAlias(createAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchemaCache(dbName, alias);
+        CollectionTsCache.getInstance().copy(
+                getEndpoint(), actualDbName(dbName), collectionName,
+                actualDbName(dbName), alias);
 
         return null;
     }
@@ -288,6 +293,8 @@ public class UtilityService extends BaseService {
         }
         Status status = blockingStub.dropAlias(dropAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchemaCache(dbName, alias);
+        invalidateTsCache(dbName, alias);
 
         return null;
     }
@@ -306,6 +313,10 @@ public class UtilityService extends BaseService {
 
         Status status = blockingStub.alterAlias(alterAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchemaCache(dbName, alias);
+        CollectionTsCache.getInstance().copy(
+                getEndpoint(), actualDbName(dbName), collectionName,
+                actualDbName(dbName), alias);
 
         return null;
     }

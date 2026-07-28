@@ -662,12 +662,17 @@ class VectorTest extends BaseTest {
     }
 
     private void setIteratorConnectConfig() throws ReflectiveOperationException {
-        // Iterator creation reads the RPC deadline from MilvusClientV2.connectConfig. BaseTest
-        // constructs the client without a real connection, so inject a minimal config for these
-        // mocked iterator tests.
+        // Iterator creation reads the RPC deadline and cache endpoint initialized by a real
+        // MilvusClientV2 connection. BaseTest constructs the client without connecting, so inject
+        // both values for these mocked iterator tests.
+        ConnectConfig config = ConnectConfig.builder().uri("http://localhost:19530").build();
         Field connectConfig = MilvusClientV2.class.getDeclaredField("connectConfig");
         connectConfig.setAccessible(true);
-        connectConfig.set(client_v2, ConnectConfig.builder().uri("http://localhost:19530").build());
+        connectConfig.set(client_v2, config);
+
+        Field cacheEndpoint = MilvusClientV2.class.getDeclaredField("cacheEndpoint");
+        cacheEndpoint.setAccessible(true);
+        cacheEndpoint.set(client_v2, config.getHost() + ":" + config.getPort());
     }
 
     private String getParam(List<KeyValuePair> params, String key) {

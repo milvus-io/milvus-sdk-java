@@ -61,6 +61,17 @@ class IteratorTest {
     private static final long TEST_COLLECTION_ID = 1001L;
 
     @Test
+    void rpcStubWrapperCarriesCacheIdentity() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub =
+                mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+
+        RpcStubWrapper wrapper = new RpcStubWrapper(stub, 0L, "host:19530", "db");
+
+        assertEquals("host:19530", wrapper.getEndpoint());
+        assertEquals("db", wrapper.getDatabaseName());
+    }
+
+    @Test
     void queryIteratorDrainsCachedResultsAndReleasesCacheAtLimit() throws ReflectiveOperationException {
         MilvusServiceGrpc.MilvusServiceBlockingStub stub =
                 mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
@@ -75,7 +86,7 @@ class IteratorTest {
                         .batchSize(2)
                         .limit(3)
                         .build(),
-                new RpcStubWrapper(stub, 0L),
+                testStubWrapper(stub),
                 primaryField(),
                 TEST_COLLECTION_ID);
 
@@ -103,7 +114,7 @@ class IteratorTest {
                         .batchSize(2)
                         .limit(3)
                         .build(),
-                new RpcStubWrapper(stub, 0L),
+                testStubWrapper(stub),
                 primaryField());
 
         assertEquals(Arrays.asList(1L, 2L), ids(iterator.next()));
@@ -127,7 +138,7 @@ class IteratorTest {
                         .batchSize(0)
                         .limit(3)
                         .build(),
-                new RpcStubWrapper(stub, 0L),
+                testStubWrapper(stub),
                 primaryField(),
                 TEST_COLLECTION_ID);
 
@@ -152,7 +163,7 @@ class IteratorTest {
                         .batchSize(10)
                         .offset(2)
                         .build(),
-                new RpcStubWrapper(stub, 0L),
+                testStubWrapper(stub),
                 primaryField(),
                 TEST_COLLECTION_ID);
         iterator.next();
@@ -190,7 +201,7 @@ class IteratorTest {
                         .expr(filter)
                         .batchSize(10)
                         .build(),
-                new RpcStubWrapper(stub, 0L),
+                testStubWrapper(stub),
                 primaryField(),
                 TEST_COLLECTION_ID);
         List<QueryResultsWrapper.RowRecord> firstPage = iterator.next();
@@ -221,6 +232,11 @@ class IteratorTest {
                             .build());
         }
         return builder.build();
+    }
+
+    private static RpcStubWrapper testStubWrapper(
+            MilvusServiceGrpc.MilvusServiceBlockingStub stub) {
+        return new RpcStubWrapper(stub, 0L, "host:19530", "default");
     }
 
     private static QueryResults elementQueryResults(long id, Long... offsets) {

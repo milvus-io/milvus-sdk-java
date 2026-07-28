@@ -20,8 +20,8 @@
 package io.milvus.v2.service.vector;
 
 import com.google.protobuf.ByteString;
-import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
@@ -44,12 +44,9 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
-    private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
-
     private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                           String dbName, String collectionName) {
         String title = String.format("Describe collection '%s' in database: '%s'", collectionName, dbName);
@@ -64,42 +61,16 @@ public class VectorService extends BaseService {
     }
 
     /**
-     * This method is for insert/upsert requests to reduce the rpc call of describeCollection()
-     * Always try to get the collection info from cache.
-     * If the cache doesn't have the collection info, call describeCollection() and cache it.
-     * If insert/upsert get server error, remove the cached collection info.
+     * Returns the cached collection schema when available, loading and caching it otherwise.
+     * Insert/upsert callers may force a refresh when request construction indicates that the
+     * cached schema is stale, and invalidate it when the server returns SchemaMismatch. Other
+     * server errors preserve the cached schema.
      */
     private DescribeCollectionResponse getCollectionInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                          String databaseName, String collectionName, boolean forceUpdate) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        DescribeCollectionResponse info = cacheCollectionInfo.get(key);
-        if (info == null || forceUpdate) {
-            info = describeCollection(blockingStub, databaseName, collectionName);
-            cacheCollectionInfo.put(key, info);
-        }
-
-        return info;
-    }
-
-    public void cleanCollectionCache() {
-        cacheCollectionInfo.clear();
-    }
-
-    /**
-     * insert/upsert return an error, but is not a RateLimit error,
-     * clean the cache so that the next insert will call describeCollection() to get the latest info.
-     */
-    private void cleanCacheIfFailed(Status status, String databaseName, String collectionName) {
-        if ((status.getCode() != 0 && status.getCode() != 8) ||
-                (!status.getErrorCode().equals(io.milvus.grpc.ErrorCode.Success) &&
-                        status.getErrorCode() != io.milvus.grpc.ErrorCode.RateLimit)) {
-            removeCollectionCache(databaseName, collectionName);
-        }
-    }
-
-    public void removeCollectionCache(String databaseName, String collectionName) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        cacheCollectionInfo.remove(key);
+        String dbName = actualDbName(databaseName);
+        return SchemaCache.getInstance().getOrLoad(getEndpoint(), dbName, collectionName, forceUpdate, this,
+                () -> describeCollection(blockingStub, dbName, collectionName));
     }
 
     private InsertRequest buildInsertRequest(InsertReq request, DescribeCollectionResponse descResp) {
@@ -110,6 +81,11 @@ public class VectorService extends BaseService {
     }
 
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
+        return insert(blockingStub, request, true);
+    }
+
+    private InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request,
+                              boolean allowRetry) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Insert to collection: '%s' in database: '%s'", collectionName, dbName);
@@ -134,17 +110,16 @@ public class VectorService extends BaseService {
         // call insert() again.
         MutationResult response = blockingStub.insert(rpcRequest);
         if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            getCollectionInfo(blockingStub, dbName, collectionName, true);
-            return this.insert(blockingStub, request);
+            invalidateSchemaCache(dbName, collectionName);
+            if (allowRetry) {
+                return insert(blockingStub, request, false);
+            }
         }
 
-        // if illegal data, server fails to process insert, else succeed
-        cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        updateTsCache(dbName, collectionName, response.getTimestamp());
 
         // handle integer pk or string pk
         List<Object> ids = new ArrayList<>();
@@ -167,6 +142,11 @@ public class VectorService extends BaseService {
     }
 
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
+        return upsert(blockingStub, request, true);
+    }
+
+    private UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request,
+                              boolean allowRetry) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Upsert to collection: '%s' in database: '%s'", collectionName, dbName);
@@ -191,18 +171,16 @@ public class VectorService extends BaseService {
         // call upsert() again.
         MutationResult response = blockingStub.upsert(rpcRequest);
         if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            getCollectionInfo(blockingStub, dbName, collectionName, true);
-            return this.upsert(blockingStub, request);
+            invalidateSchemaCache(dbName, collectionName);
+            if (allowRetry) {
+                return upsert(blockingStub, request, false);
+            }
         }
 
-        // if illegal data, server fails to process upsert, clean the schema cache
-        // so that the next call of dml can update the cache
-        cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        updateTsCache(dbName, collectionName, response.getTimestamp());
 
         // handle integer pk or string pk
         List<Object> ids = new ArrayList<>();
@@ -353,14 +331,10 @@ public class VectorService extends BaseService {
         DeleteRequest rpcRequest = dataUtils.ConvertToGrpcDeleteRequest(request);
         MutationResult response = blockingStub.delete(rpcRequest);
 
-        // if illegal data, server fails to process delete, clean the schema cache
-        // so that the next call of dml can update the cache
-        cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        updateTsCache(dbName, collectionName, response.getTimestamp());
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
                 .build();

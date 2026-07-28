@@ -61,7 +61,7 @@ class SearchIteratorV2Test {
                 searchResults(12345678L), searchResults(22345678L));
 
         SearchIteratorV2 iterator = new SearchIteratorV2(request(new HashMap<>()),
-                new RpcStubWrapper(stub, 0L));
+                testStubWrapper(stub));
         iterator.next();
 
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
@@ -76,7 +76,7 @@ class SearchIteratorV2Test {
                 searchResults(0L), searchResults(0L));
 
         SearchIteratorV2 iterator = new SearchIteratorV2(request(new HashMap<>()),
-                new RpcStubWrapper(stub, 0L));
+                testStubWrapper(stub));
         iterator.next();
 
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
@@ -92,7 +92,7 @@ class SearchIteratorV2Test {
                 searchResults(12345678L), searchResults(22345678L));
 
         SearchIteratorV2 iterator = new SearchIteratorV2(request(searchParams),
-                new RpcStubWrapper(stub, 0L));
+                testStubWrapper(stub));
         iterator.next();
 
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
@@ -108,7 +108,7 @@ class SearchIteratorV2Test {
                 searchResults(12345678L), searchResults(22345678L));
 
         SearchIteratorV2 iterator = new SearchIteratorV2(request(new HashMap<>(), limit),
-                new RpcStubWrapper(stub, 0L));
+                testStubWrapper(stub));
         iterator.next();
 
         verify(stub, times(2)).search(any(SearchRequest.class));
@@ -120,7 +120,7 @@ class SearchIteratorV2Test {
                 searchResults(12345678L), searchResults(22345678L, 1L, 2L));
 
         SearchIteratorV2 iterator = new SearchIteratorV2(request(new HashMap<>(), 1L),
-                new RpcStubWrapper(stub, 0L));
+                testStubWrapper(stub));
         List<SearchResp.SearchResult> result = iterator.next();
 
         assertEquals(1, result.size());
@@ -138,7 +138,7 @@ class SearchIteratorV2Test {
         SearchIteratorReqV2 req = request(new HashMap<>(), 1L);
         req.setExternalFilterFunc(hits -> hits);
 
-        SearchIteratorV2 iterator = new SearchIteratorV2(req, new RpcStubWrapper(stub, 0L));
+        SearchIteratorV2 iterator = new SearchIteratorV2(req, testStubWrapper(stub));
         List<SearchResp.SearchResult> result = iterator.next();
 
         assertEquals(1, result.size());
@@ -152,7 +152,7 @@ class SearchIteratorV2Test {
         SearchIteratorReqV2 req = request(new HashMap<>(), 3L);
         req.setExternalFilterFunc(hits -> hits);
 
-        SearchIteratorV2 iterator = new SearchIteratorV2(req, new RpcStubWrapper(stub, 0L));
+        SearchIteratorV2 iterator = new SearchIteratorV2(req, testStubWrapper(stub));
         iterator.next();
         assertEquals(1, cacheSize(iterator));
 
@@ -164,6 +164,11 @@ class SearchIteratorV2Test {
         java.lang.reflect.Field cacheField = SearchIteratorV2.class.getDeclaredField("cache");
         cacheField.setAccessible(true);
         return ((List<?>) cacheField.get(iterator)).size();
+    }
+
+    private static RpcStubWrapper testStubWrapper(
+            MilvusServiceGrpc.MilvusServiceBlockingStub stub) {
+        return new RpcStubWrapper(stub, 0L, "host:19530", "default");
     }
 
     private static MilvusServiceGrpc.MilvusServiceBlockingStub mockStub(

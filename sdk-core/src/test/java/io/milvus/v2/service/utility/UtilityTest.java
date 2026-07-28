@@ -20,9 +20,12 @@
 package io.milvus.v2.service.utility;
 
 import com.google.gson.JsonObject;
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.v2.BaseTest;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,30 +37,43 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class UtilityTest extends BaseTest {
     Logger logger = LoggerFactory.getLogger(UtilityTest.class);
 
+    @BeforeEach
+    @AfterEach
+    void clearTimestampCache() {
+        CollectionTsCache.getInstance().clear();
+    }
+
     @Test
     void testCreateAlias() {
+        CollectionTsCache.getInstance().set("", "default", "test", 100L);
         CreateAliasReq req = CreateAliasReq.builder()
                 .collectionName("test")
                 .alias("test_alias")
                 .build();
         client_v2.createAlias(req);
+        assertEquals(100L, CollectionTsCache.getInstance().get("", "default", "test_alias"));
     }
 
     @Test
     void testDropAlias() {
+        CollectionTsCache.getInstance().set("", "default", "test_alias", 100L);
         DropAliasReq req = DropAliasReq.builder()
                 .alias("test_alias")
                 .build();
         client_v2.dropAlias(req);
+        assertEquals(0L, CollectionTsCache.getInstance().get("", "default", "test_alias"));
     }
 
     @Test
     void testAlterAlias() {
+        CollectionTsCache.getInstance().set("", "default", "test", 100L);
+        CollectionTsCache.getInstance().set("", "default", "test_alias", 50L);
         AlterAliasReq req = AlterAliasReq.builder()
                 .collectionName("test")
                 .alias("test_alias")
                 .build();
         client_v2.alterAlias(req);
+        assertEquals(100L, CollectionTsCache.getInstance().get("", "default", "test_alias"));
     }
 
     @Test

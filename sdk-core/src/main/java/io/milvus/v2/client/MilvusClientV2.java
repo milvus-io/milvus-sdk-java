@@ -92,6 +92,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Client for interacting with Milvus through the V2 API.
+ *
+ * <h2>Thread safety</h2>
+ * After client construction succeeds, RPC methods may be called concurrently on the same client while its
+ * connection and database state remain unchanged. Methods that change or close that state, including
+ * {@link #useDatabase(String)}, {@link #close()}, {@link #close(long)}, and
+ * {@link #updatePassword(UpdatePasswordReq)} when connection reset is requested, must be serialized with all other
+ * operations. Do not call these methods, or otherwise discard the client, while RPCs are in flight.
+ * <p>
+ * Concurrent DML and DQL operations are supported. A DQL operation that overlaps a DML operation is not guaranteed
+ * to observe that write; wait for the DML operation to complete and use the appropriate consistency level when this
+ * ordering is required. DDL operations that change a database or collection's lifecycle or schema, such as drop,
+ * rename, truncate, or schema alteration, must not run concurrently with DML or DQL operations on the affected
+ * database or collection. Serialize these operations to avoid undefined ordering and unexpected results.
+ */
 public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
     private ManagedChannel channel;
@@ -110,6 +126,7 @@ public class MilvusClientV2 {
     private RpcUtils rpcUtils = new RpcUtils();
     private ConnectConfig connectConfig;
     private GlobalStub globalStub;
+    private String cacheEndpoint = "";
 
     /**
      * Creates a Milvus client instance.
@@ -130,11 +147,22 @@ public class MilvusClientV2 {
     }
 
     private void initServices(String dbName) {
+        String endpoint = cacheEndpoint;
+        this.databaseService.setEndpoint(endpoint);
+        this.collectionService.setEndpoint(endpoint);
+        this.collectionService.indexService.setEndpoint(endpoint);
+        this.indexService.setEndpoint(endpoint);
+        this.vectorService.setEndpoint(endpoint);
+        this.partitionService.setEndpoint(endpoint);
+        this.rbacService.setEndpoint(endpoint);
+        this.rgroupService.setEndpoint(endpoint);
+        this.snapshotService.setEndpoint(endpoint);
+        this.utilityService.setEndpoint(endpoint);
+        this.cdcService.setEndpoint(endpoint);
         this.databaseService.setCurrentDbName(dbName);
         this.collectionService.setCurrentDbName(dbName);
         this.indexService.setCurrentDbName(dbName);
         this.vectorService.setCurrentDbName(dbName);
-        this.vectorService.cleanCollectionCache();
         this.partitionService.setCurrentDbName(dbName);
         this.rbacService.setCurrentDbName(dbName);
         this.rgroupService.setCurrentDbName(dbName);
@@ -149,6 +177,7 @@ public class MilvusClientV2 {
      */
     private void connect(ConnectConfig connectConfig) {
         this.connectConfig = connectConfig;
+        this.cacheEndpoint = connectConfig.getHost() + ":" + connectConfig.getPort();
 
         // Check if this is a global cluster endpoint
         if (GlobalClusterUtils.isGlobalEndpoint(connectConfig.getUri())) {
@@ -208,6 +237,12 @@ public class MilvusClientV2 {
     private synchronized void updatePrimaryConnection(MilvusClientV2 primaryClient) {
         this.channel = primaryClient.channel;
         this.blockingStub = primaryClient.blockingStub;
+        // Keep cacheEndpoint scoped to the logical global-cluster endpoint. Replacing it with the
+        // physical primary endpoint would make session timestamps and schemas recorded before a
+        // failover unreachable after the primary changes.
+        if (connectConfig != null) {
+            initServices(connectConfig.getDbName());
+        }
     }
 
     // The withDeadlineAfter() need to be reset for each RPC call.
@@ -446,7 +481,6 @@ public class MilvusClientV2 {
      */
     public void dropCollection(DropCollectionReq request) {
         rpcUtils.retry(() -> collectionService.dropCollection(this.getRpcStub(), request));
-        vectorService.removeCollectionCache(request.getDatabaseName(), request.getCollectionName());
     }
 
     /**
@@ -854,7 +888,8 @@ public class MilvusClientV2 {
      * @return QueryIterator
      */
     public QueryIterator queryIterator(QueryIteratorReq request) {
-        return rpcUtils.retry(() -> vectorService.queryIterator(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
+        RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
+        return rpcUtils.retry(() -> vectorService.queryIterator(stub, request));
     }
 
     /**
@@ -864,7 +899,8 @@ public class MilvusClientV2 {
      * @return SearchIterator
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
-        return rpcUtils.retry(() -> vectorService.searchIterator(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
+        RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
+        return rpcUtils.retry(() -> vectorService.searchIterator(stub, request));
     }
 
     /**
@@ -874,7 +910,15 @@ public class MilvusClientV2 {
      * @return SearchIteratorV2
      */
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
-        return rpcUtils.retry(() -> vectorService.searchIteratorV2(new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs()), request));
+        RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
+        return rpcUtils.retry(() -> vectorService.searchIteratorV2(stub, request));
+    }
+
+    private RpcStubWrapper createIteratorRpcStub(String requestDatabaseName) {
+        String databaseName = StringUtils.isNotEmpty(requestDatabaseName)
+                ? requestDatabaseName : connectConfig.getDbName();
+        return new RpcStubWrapper(this.getRpcStub(), connectConfig.getRpcDeadlineMs(),
+                cacheEndpoint, databaseName);
     }
 
     /**
