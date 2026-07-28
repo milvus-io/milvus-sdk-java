@@ -20,8 +20,9 @@
 package io.milvus.v2.service.vector;
 
 import com.google.protobuf.ByteString;
-import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
@@ -43,12 +44,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
-    private ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
-
     private DescribeCollectionResponse describeCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                           String dbName, String collectionName) {
         String title = String.format("Describe collection '%s' in database: '%s'", collectionName, dbName);
@@ -70,18 +68,9 @@ public class VectorService extends BaseService {
      */
     private DescribeCollectionResponse getCollectionInfo(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
                                                          String databaseName, String collectionName, boolean forceUpdate) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        DescribeCollectionResponse info = cacheCollectionInfo.get(key);
-        if (info == null || forceUpdate) {
-            info = describeCollection(blockingStub, databaseName, collectionName);
-            cacheCollectionInfo.put(key, info);
-        }
-
-        return info;
-    }
-
-    public void cleanCollectionCache() {
-        cacheCollectionInfo.clear();
+        String dbName = actualDbName(databaseName);
+        return SchemaCache.getInstance().getOrLoad(getEndpoint(), dbName, collectionName, forceUpdate, this,
+                () -> describeCollection(blockingStub, dbName, collectionName));
     }
 
     /**
@@ -96,9 +85,8 @@ public class VectorService extends BaseService {
         }
     }
 
-    public void removeCollectionCache(String databaseName, String collectionName) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        cacheCollectionInfo.remove(key);
+    private void removeCollectionCache(String databaseName, String collectionName) {
+        SchemaCache.getInstance().invalidate(getEndpoint(), actualDbName(databaseName), collectionName);
     }
 
     private InsertRequest buildInsertRequest(InsertReq request, DescribeCollectionResponse descResp) {
@@ -109,6 +97,11 @@ public class VectorService extends BaseService {
     }
 
     public InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request) {
+        return insert(blockingStub, request, true);
+    }
+
+    private InsertResp insert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, InsertReq request,
+                              boolean allowRetry) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Insert to collection: '%s' in database: '%s'", collectionName, dbName);
@@ -132,9 +125,9 @@ public class VectorService extends BaseService {
         // If the client_A gets this special error code, it needs to update the collectionDesc and
         // call insert() again.
         MutationResult response = blockingStub.insert(rpcRequest);
-        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            getCollectionInfo(blockingStub, dbName, collectionName, true);
-            return this.insert(blockingStub, request);
+        if (allowRetry && response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+            removeCollectionCache(dbName, collectionName);
+            return insert(blockingStub, request, false);
         }
 
         // if illegal data, server fails to process insert, else succeed
@@ -142,8 +135,8 @@ public class VectorService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        CollectionTsCache.getInstance().set(getEndpoint(), actualDbName(dbName), collectionName,
+                response.getTimestamp());
 
         // handle integer pk or string pk
         List<Object> ids = new ArrayList<>();
@@ -166,6 +159,11 @@ public class VectorService extends BaseService {
     }
 
     public UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request) {
+        return upsert(blockingStub, request, true);
+    }
+
+    private UpsertResp upsert(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, UpsertReq request,
+                              boolean allowRetry) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Upsert to collection: '%s' in database: '%s'", collectionName, dbName);
@@ -189,9 +187,9 @@ public class VectorService extends BaseService {
         // If the client_A gets this special error code, it needs to update the collectionDesc and
         // call upsert() again.
         MutationResult response = blockingStub.upsert(rpcRequest);
-        if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-            getCollectionInfo(blockingStub, dbName, collectionName, true);
-            return this.upsert(blockingStub, request);
+        if (allowRetry && response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+            removeCollectionCache(dbName, collectionName);
+            return upsert(blockingStub, request, false);
         }
 
         // if illegal data, server fails to process upsert, clean the schema cache
@@ -200,8 +198,8 @@ public class VectorService extends BaseService {
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        CollectionTsCache.getInstance().set(getEndpoint(), actualDbName(dbName), collectionName,
+                response.getTimestamp());
 
         // handle integer pk or string pk
         List<Object> ids = new ArrayList<>();
@@ -351,14 +349,11 @@ public class VectorService extends BaseService {
         DeleteRequest rpcRequest = dataUtils.ConvertToGrpcDeleteRequest(request);
         MutationResult response = blockingStub.delete(rpcRequest);
 
-        // if illegal data, server fails to process delete, clean the schema cache
-        // so that the next call of dml can update the cache
-        cleanCacheIfFailed(response.getStatus(), dbName, collectionName);
         rpcUtils.handleResponse(title, response.getStatus());
 
         // update the last write timestamp for SESSION consistency
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+        CollectionTsCache.getInstance().set(getEndpoint(), actualDbName(dbName), collectionName,
+                response.getTimestamp());
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
                 .build();

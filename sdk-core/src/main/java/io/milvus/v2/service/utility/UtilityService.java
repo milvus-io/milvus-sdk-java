@@ -269,6 +269,8 @@ public class UtilityService extends BaseService {
 
         Status status = blockingStub.createAlias(createAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, alias);
+        invalidateTimestamp(dbName, alias);
 
         return null;
     }
@@ -284,6 +286,8 @@ public class UtilityService extends BaseService {
         }
         Status status = blockingStub.dropAlias(dropAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, alias);
+        invalidateTimestamp(dbName, alias);
 
         return null;
     }
@@ -302,6 +306,8 @@ public class UtilityService extends BaseService {
 
         Status status = blockingStub.alterAlias(alterAliasRequestBuilder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, alias);
+        invalidateTimestamp(dbName, alias);
 
         return null;
     }

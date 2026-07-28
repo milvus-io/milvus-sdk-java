@@ -22,6 +22,8 @@ package io.milvus.v2.service;
 import io.milvus.grpc.BoolResponse;
 import io.milvus.grpc.HasCollectionRequest;
 import io.milvus.grpc.MilvusServiceGrpc;
+import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.utils.ConvertUtils;
@@ -39,16 +41,35 @@ public class BaseService {
     public VectorUtils vectorUtils = new VectorUtils();
     public ConvertUtils convertUtils = new ConvertUtils();
     private String currentDbName;
+    private String endpoint = "";
 
     public void setCurrentDbName(String dbName) {
         currentDbName = dbName;
+        this.vectorUtils.setCurrentDbName(dbName);
+    }
+
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint == null ? "" : endpoint;
+        this.vectorUtils.setEndpoint(this.endpoint);
+    }
+
+    protected String getEndpoint() {
+        return endpoint;
+    }
+
+    protected void invalidateSchema(String databaseName, String collectionName) {
+        SchemaCache.getInstance().invalidate(endpoint, actualDbName(databaseName), collectionName);
+    }
+
+    protected void invalidateTimestamp(String databaseName, String collectionName) {
+        CollectionTsCache.getInstance().invalidate(endpoint, actualDbName(databaseName), collectionName);
     }
 
     protected String actualDbName(String overwriteName) {
         if (StringUtils.isNotEmpty(overwriteName)) {
             return overwriteName;
         }
-        return currentDbName;
+        return StringUtils.isNotEmpty(currentDbName) ? currentDbName : "default";
     }
 
     protected void checkCollectionExist(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String collectionName) {

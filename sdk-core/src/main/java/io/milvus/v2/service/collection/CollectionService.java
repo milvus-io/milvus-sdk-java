@@ -19,7 +19,8 @@
 
 package io.milvus.v2.service.collection;
 
-import io.milvus.common.utils.GTsDict;
+import io.grpc.StatusRuntimeException;
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.grpc.*;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.common.IndexParam;
@@ -99,6 +100,7 @@ public class CollectionService extends BaseService {
 
         Status status = blockingStub.createCollection(builder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateTimestamp(dbName, collectionName);
 
         //create index
         IndexParam indexParam = IndexParam.builder()
@@ -173,6 +175,7 @@ public class CollectionService extends BaseService {
         }
         Status createCollectionResponse = blockingStub.createCollection(builder.build());
         rpcUtils.handleResponse(title, createCollectionResponse);
+        invalidateTimestamp(dbName, collectionName);
 
         //create index
         if (request.getIndexParams() != null && !request.getIndexParams().isEmpty()) {
@@ -236,9 +239,8 @@ public class CollectionService extends BaseService {
         Status status = blockingStub.dropCollection(builder.build());
         rpcUtils.handleResponse(title, status);
 
-        // remove the last write timestamp for this collection
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().removeCollectionTs(key);
+        invalidateSchema(dbName, collectionName);
+        invalidateTimestamp(dbName, collectionName);
         return null;
     }
 
@@ -254,9 +256,7 @@ public class CollectionService extends BaseService {
         Status status = blockingStub.truncateCollection(builder.build()).getStatus();
         rpcUtils.handleResponse(title, status);
 
-        // remove the last write timestamp since all data has been cleared
-        String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-        GTsDict.getInstance().removeCollectionTs(key);
+        invalidateTimestamp(dbName, collectionName);
         return null;
     }
 
@@ -297,6 +297,7 @@ public class CollectionService extends BaseService {
 
         Status response = blockingStub.addCollectionField(builder.build());
         rpcUtils.handleResponse(title, response);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }
@@ -318,6 +319,7 @@ public class CollectionService extends BaseService {
 
         Status response = blockingStub.alterCollectionField(builder.build());
         rpcUtils.handleResponse(title, response);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }
@@ -356,6 +358,7 @@ public class CollectionService extends BaseService {
 
         Status response = blockingStub.alterCollectionField(builder.build());
         rpcUtils.handleResponse(title, response);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }
@@ -433,6 +436,12 @@ public class CollectionService extends BaseService {
         }
         Status status = blockingStub.renameCollection(builder.build());
         rpcUtils.handleResponse(title, status);
+
+        String sourceDb = actualDbName(dbName);
+        String targetDb = StringUtils.isNotEmpty(targetDbName) ? targetDbName : sourceDb;
+        invalidateSchema(sourceDb, collectionName);
+        invalidateSchema(targetDb, newName);
+        CollectionTsCache.getInstance().rename(getEndpoint(), sourceDb, collectionName, targetDb, newName);
 
         return null;
     }
@@ -672,6 +681,7 @@ public class CollectionService extends BaseService {
         }
         Status status = blockingStub.addCollectionFunction(builder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }
@@ -694,6 +704,7 @@ public class CollectionService extends BaseService {
         }
         Status status = blockingStub.alterCollectionFunction(builder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }
@@ -715,6 +726,7 @@ public class CollectionService extends BaseService {
         }
         Status status = blockingStub.dropCollectionFunction(builder.build());
         rpcUtils.handleResponse(title, status);
+        invalidateSchema(dbName, collectionName);
 
         return null;
     }

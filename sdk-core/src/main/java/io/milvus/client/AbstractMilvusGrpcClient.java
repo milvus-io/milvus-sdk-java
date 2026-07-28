@@ -27,7 +27,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.gson.reflect.TypeToken;
 import io.grpc.StatusRuntimeException;
 import io.milvus.common.utils.ExceptionUtils;
-import io.milvus.common.utils.GTsDict;
+import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.VectorUtils;
 import io.milvus.exception.ClientNotConnectedException;
@@ -69,7 +70,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -77,8 +77,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractMilvusGrpcClient.class);
     protected LogLevel logLevel = LogLevel.Info;
-
-    protected ConcurrentHashMap<String, DescribeCollectionResponse> cacheCollectionInfo = new ConcurrentHashMap<>();
+    private final String fallbackCacheEndpoint = "legacy-client-" + UUID.randomUUID();
 
     protected abstract MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub();
 
@@ -88,11 +87,16 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     protected abstract String currentDbName();
 
+    protected String currentEndpoint() {
+        return fallbackCacheEndpoint;
+    }
+
     private String actualDbName(String overwriteName) {
         if (StringUtils.isNotEmpty(overwriteName)) {
             return overwriteName;
         }
-        return currentDbName();
+        String current = currentDbName();
+        return StringUtils.isNotEmpty(current) ? current : "default";
     }
 
     /**
@@ -102,25 +106,21 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
      * If insert/upsert get server error, remove the cached collection info.
      */
     private DescribeCollectionResponse getCollectionInfo(String databaseName, String collectionName, boolean forceUpdate) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        DescribeCollectionResponse info = cacheCollectionInfo.get(key);
-        if (info == null || forceUpdate) {
+        String dbName = actualDbName(databaseName);
+        return SchemaCache.getInstance().getOrLoad(currentEndpoint(), dbName, collectionName, forceUpdate, this, () -> {
             String msg = String.format("Fail to describe collection '%s'", collectionName);
             DescribeCollectionRequest.Builder builder = DescribeCollectionRequest.newBuilder()
                     .setCollectionName(collectionName);
-            if (StringUtils.isNotEmpty(databaseName)) {
-                builder.setDbName(databaseName);
+            if (StringUtils.isNotEmpty(dbName)) {
+                builder.setDbName(dbName);
                 msg = String.format("Fail to describe collection '%s' in database '%s'",
-                        collectionName, databaseName);
+                        collectionName, dbName);
             }
             DescribeCollectionRequest describeCollectionRequest = builder.build();
             DescribeCollectionResponse response = blockingStub().describeCollection(describeCollectionRequest);
             handleResponse(msg, response.getStatus());
-            info = response;
-            cacheCollectionInfo.put(key, info);
-        }
-
-        return info;
+            return response;
+        });
     }
 
     /**
@@ -135,8 +135,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     }
 
     private void removeCollectionCache(String databaseName, String collectionName) {
-        String key = GTsDict.CombineCollectionName(actualDbName(databaseName), collectionName);
-        cacheCollectionInfo.remove(key);
+        SchemaCache.getInstance().invalidate(currentEndpoint(), actualDbName(databaseName), collectionName);
     }
 
     private void waitForLoadingCollection(String databaseName, String collectionName, List<String> partitionNames,
@@ -533,6 +532,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().dropDatabase(dropDatabaseRequest);
             handleResponse(title, response);
+            SchemaCache.getInstance().invalidateDb(currentEndpoint(), requestParam.getDatabaseName());
+            CollectionTsCache.getInstance().invalidateDb(currentEndpoint(), requestParam.getDatabaseName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -636,6 +637,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().createCollection(createCollectionRequest);
             handleResponse(title, response);
+            CollectionTsCache.getInstance().invalidate(currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()), requestParam.getCollectionName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -673,8 +676,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             removeCollectionCache(dbName, collectionName);
 
             // remove the last write timestamp for this collection
-            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-            GTsDict.getInstance().removeCollectionTs(key);
+            CollectionTsCache.getInstance().invalidate(currentEndpoint(), actualDbName(dbName), collectionName);
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -778,6 +780,13 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().renameCollection(builder.build());
             handleResponse(title, response);
+            String oldDbName = actualDbName(requestParam.getOldDatabaseName());
+            String newDbName = StringUtils.isNotEmpty(requestParam.getNewDatabaseName())
+                    ? requestParam.getNewDatabaseName() : oldDbName;
+            SchemaCache.getInstance().invalidate(currentEndpoint(), oldDbName, requestParam.getOldCollectionName());
+            SchemaCache.getInstance().invalidate(currentEndpoint(), newDbName, requestParam.getNewCollectionName());
+            CollectionTsCache.getInstance().rename(currentEndpoint(), oldDbName,
+                    requestParam.getOldCollectionName(), newDbName, requestParam.getNewCollectionName());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1266,6 +1275,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().createAlias(builder.build());
             handleResponse(title, response);
+            removeCollectionCache(requestParam.getDatabaseName(), requestParam.getAlias());
+            CollectionTsCache.getInstance().invalidate(currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()), requestParam.getAlias());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1296,6 +1308,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().dropAlias(builder.build());
             handleResponse(title, response);
+            removeCollectionCache(requestParam.getDatabaseName(), requestParam.getAlias());
+            CollectionTsCache.getInstance().invalidate(currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()), requestParam.getAlias());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1328,6 +1343,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
             Status response = blockingStub().alterAlias(builder.build());
             handleResponse(title, response);
+            removeCollectionCache(requestParam.getDatabaseName(), requestParam.getAlias());
+            CollectionTsCache.getInstance().invalidate(currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()), requestParam.getAlias());
             return R.success(new RpcStatus(RpcStatus.SUCCESS_MSG));
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1628,8 +1646,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             handleResponse(title, response.getStatus());
 
             // update the last write timestamp for SESSION consistency
-            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+            CollectionTsCache.getInstance().set(currentEndpoint(), actualDbName(dbName), collectionName,
+                    response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
@@ -1649,6 +1667,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     @Override
     public R<MutationResult> insert(InsertParam requestParam) {
+        return insert(requestParam, true);
+    }
+
+    private R<MutationResult> insert(InsertParam requestParam, boolean allowRetry) {
         ExceptionUtils.checkNotNull(requestParam, requestParam.getClass().getSimpleName());
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
@@ -1679,9 +1701,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // If the client_A gets this special error code, it needs to update the collectionDesc and
             // call insert() again.
             MutationResult response = blockingStub().insert(rpcRequest);
-            if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-                getCollectionInfo(dbName, collectionName, true);
-                return this.insert(requestParam);
+            if (allowRetry && response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+                removeCollectionCache(dbName, collectionName);
+                return insert(requestParam, false);
             }
 
             // if illegal data, server fails to process insert, , clean the schema cache
@@ -1690,15 +1712,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             handleResponse(title, response.getStatus());
 
             // update the last write timestamp for SESSION consistency
-            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+            CollectionTsCache.getInstance().set(currentEndpoint(), actualDbName(dbName), collectionName,
+                    response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
             logError("{} failed! Exception:{}", title, e);
-            removeCollectionCache(dbName, collectionName);
             return R.failed(e);
         }
     }
@@ -1743,8 +1764,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                             logDebug("{} successfully!", title);
 
                             // update the last write timestamp for SESSION consistency
-                            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-                            GTsDict.getInstance().updateCollectionTs(key, result.getTimestamp());
+                            CollectionTsCache.getInstance().set(currentEndpoint(), actualDbName(dbName), collectionName,
+                                    result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
@@ -1779,6 +1800,10 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
     @Override
     public R<MutationResult> upsert(UpsertParam requestParam) {
+        return upsert(requestParam, true);
+    }
+
+    private R<MutationResult> upsert(UpsertParam requestParam, boolean allowRetry) {
         if (!clientIsReady()) {
             return R.failed(new ClientNotConnectedException("Client rpc channel is not ready"));
         }
@@ -1808,9 +1833,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             // If the client_A gets this special error code, it needs to update the collectionDesc and
             // call upsert() again.
             MutationResult response = blockingStub().upsert(rpcRequest);
-            if (response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
-                getCollectionInfo(dbName, collectionName, true);
-                return this.upsert(requestParam);
+            if (allowRetry && response.getStatus().getErrorCode() == io.milvus.grpc.ErrorCode.SchemaMismatch) {
+                removeCollectionCache(dbName, collectionName);
+                return upsert(requestParam, false);
             }
 
             // if illegal data, server fails to process upsert, clean the schema cache
@@ -1819,15 +1844,14 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
             handleResponse(title, response.getStatus());
 
             // update the last write timestamp for SESSION consistency
-            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-            GTsDict.getInstance().updateCollectionTs(key, response.getTimestamp());
+            CollectionTsCache.getInstance().set(currentEndpoint(), actualDbName(dbName), collectionName,
+                    response.getTimestamp());
             return R.success(response);
         } catch (StatusRuntimeException e) {
             logError("{} RPC failed! Exception:{}", title, e);
             return R.failed(e);
         } catch (Exception e) {
             logError("{} failed! Exception:{}", title, e);
-            removeCollectionCache(dbName, collectionName);
             return R.failed(e);
         }
     }
@@ -1871,8 +1895,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
                             logDebug("{} successfully!", title);
 
                             // update the last write timestamp for SESSION consistency
-                            String key = GTsDict.CombineCollectionName(actualDbName(dbName), collectionName);
-                            GTsDict.getInstance().updateCollectionTs(key, result.getTimestamp());
+                            CollectionTsCache.getInstance().set(currentEndpoint(), actualDbName(dbName), collectionName,
+                                    result.getTimestamp());
                         } else {
                             logError("{} failed:\n{}", title, result.getStatus().getReason());
                         }
@@ -1911,7 +1935,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             // reset the db name so that the timestamp cache can set correct key for this collection
             requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-            SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
+            SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam, currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()));
             SearchResults response = this.blockingStub().search(searchRequest);
 
             //TODO: truncate distance value by round decimal
@@ -1940,7 +1965,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         // reset the db name so that the timestamp cache can set correct key for this collection
         requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-        SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam);
+        SearchRequest searchRequest = ParamUtils.convertSearchParam(requestParam, currentEndpoint(),
+                actualDbName(requestParam.getDatabaseName()));
         ListenableFuture<SearchResults> response = this.futureStub().search(searchRequest);
 
         Futures.addCallback(
@@ -1987,7 +2013,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             // reset the db name so that the timestamp cache can set correct key for this collection
             requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-            HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
+            HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam, currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()));
             SearchResults response = this.blockingStub().hybridSearch(searchRequest);
             handleResponse(title, response.getStatus());
             return R.success(response);
@@ -2012,7 +2039,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         // reset the db name so that the timestamp cache can set correct key for this collection
         requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-        HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam);
+        HybridSearchRequest searchRequest = ParamUtils.convertHybridSearchParam(requestParam, currentEndpoint(),
+                actualDbName(requestParam.getDatabaseName()));
         ListenableFuture<SearchResults> response = this.futureStub().hybridSearch(searchRequest);
 
         Futures.addCallback(
@@ -2061,7 +2089,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         try {
             // reset the db name so that the timestamp cache can set correct key for this collection
             requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-            QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
+            QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam, currentEndpoint(),
+                    actualDbName(requestParam.getDatabaseName()));
             QueryResults response = this.blockingStub().query(queryRequest);
 
             // Keep this section to compatible with old v2.2.x versions
@@ -2098,7 +2127,8 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
 
         // reset the db name so that the timestamp cache can set correct key for this collection
         requestParam.setDatabaseName(actualDbName(requestParam.getDatabaseName()));
-        QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam);
+        QueryRequest queryRequest = ParamUtils.convertQueryParam(requestParam, currentEndpoint(),
+                actualDbName(requestParam.getDatabaseName()));
         ListenableFuture<QueryResults> response = this.futureStub().query(queryRequest);
 
         Futures.addCallback(
