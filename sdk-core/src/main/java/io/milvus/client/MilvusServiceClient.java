@@ -78,10 +78,12 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private long timeoutMs = 0;
     private RetryParam retryParam = RetryParam.newBuilder().build();
     private String currentDatabaseName;
+    private final String endpoint;
 
     public MilvusServiceClient(ConnectParam connectParam) {
         ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
         this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
+        this.endpoint = connectParam.getHost() + ":" + connectParam.getPort();
 
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
@@ -229,6 +231,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.logLevel = src.logLevel;
         this.retryParam = src.retryParam;
         this.currentDatabaseName = src.currentDatabaseName;
+        this.endpoint = src.endpoint;
     }
 
     @Override
@@ -253,6 +256,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     @Override
     protected String currentDbName() {
         return currentDatabaseName;
+    }
+
+    @Override
+    protected String currentEndpoint() {
+        return endpoint;
     }
 
     @Override
@@ -935,4 +943,3 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         return retry(() -> super.searchIterator(requestParam));
     }
 }
-
