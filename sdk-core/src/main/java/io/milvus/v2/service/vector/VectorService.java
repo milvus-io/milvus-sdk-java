@@ -317,7 +317,7 @@ public class VectorService extends BaseService {
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
-        return new QueryIterator(request, blockingStub, pkField);
+        return new QueryIterator(request, blockingStub, pkField, respR.getCollectionID());
     }
 
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,

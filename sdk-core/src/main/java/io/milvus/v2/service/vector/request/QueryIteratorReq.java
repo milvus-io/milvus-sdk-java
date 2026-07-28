@@ -177,7 +177,7 @@ public class QueryIteratorReq {
         private boolean ignoreGrowing = false;
         private String timezone = "";
         private long batchSize = 1000L;
-        private boolean reduceStopForBest = false;
+        private boolean reduceStopForBest = true;
         private Map<String, Object> filterTemplateValues = new HashMap<>();
 
         public QueryIteratorReqBuilder databaseName(String databaseName) {

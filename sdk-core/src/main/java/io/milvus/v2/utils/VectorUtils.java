@@ -346,7 +346,7 @@ public class VectorUtils {
         if (request.getSearchParams().containsKey("iterator")) {
             long guaranteeTimestamp = 0;
             if (request.getSearchParams().containsKey("guarantee_timestamp")) {
-                guaranteeTimestamp = (long) request.getSearchParams().get("guarantee_timestamp");
+                guaranteeTimestamp = ((Number) request.getSearchParams().get("guarantee_timestamp")).longValue();
             }
             builder.setGuaranteeTimestamp(guaranteeTimestamp);
         } else {
