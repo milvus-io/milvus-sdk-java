@@ -544,6 +544,109 @@ public class BulkWriterTest {
         }
     }
 
+    @Test
+    void testWriteTextFields() {
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("body")
+                .dataType(DataType.Text)
+                .maxLength(1)
+                .build());
+        String longText = String.join("", Collections.nCopies(1024, "text"));
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.addProperty("body", longText);
+
+        for (BulkFileType fileType : Arrays.asList(BulkFileType.JSON, BulkFileType.CSV, BulkFileType.PARQUET)) {
+            LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                    .withCollectionSchema(schema)
+                    .withLocalPath("/tmp/bulk_writer_text")
+                    .withFileType(fileType)
+                    .build();
+            try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+                writer.appendRow(row);
+                writer.commit(false);
+                List<List<String>> batchFiles = writer.getBatchFiles();
+                Assertions.assertFalse(batchFiles.isEmpty());
+                String filePath = batchFiles.get(0).get(0);
+                if (fileType == BulkFileType.JSON) {
+                    try (Reader reader = Files.newBufferedReader(Paths.get(filePath))) {
+                        List<JsonObject> rows = new Gson().fromJson(reader,
+                                new TypeToken<List<JsonObject>>() {
+                                }.getType());
+                        Assertions.assertEquals(1, rows.size());
+                        Assertions.assertEquals(longText, rows.get(0).get("body").getAsString());
+                    }
+                } else if (fileType == BulkFileType.CSV) {
+                    List<String> lines = Files.readAllLines(Paths.get(filePath), StandardCharsets.UTF_8);
+                    Assertions.assertEquals(2, lines.size());
+                    List<String> header = Arrays.asList(lines.get(0).split(",", -1));
+                    String[] values = lines.get(1).split(",", -1);
+                    String body = values[header.indexOf("body")];
+                    Assertions.assertEquals(longText, body.substring(1, body.length() - 1));
+                } else {
+                    final int[] rowsRead = {0};
+                    new ParquetReaderUtils() {
+                        @Override
+                        public void readRecord(GenericData.Record record) {
+                            rowsRead[0]++;
+                            Assertions.assertEquals(longText, record.get("body").toString());
+                        }
+                    }.readParquet(filePath);
+                    Assertions.assertEquals(1, rowsRead[0]);
+                }
+            } catch (Exception e) {
+                Assertions.fail(e.getMessage());
+            }
+        }
+    }
+
+    @Test
+    void testWriteTextFieldsWithV1Schema() {
+        CollectionSchemaParam schema = CollectionSchemaParam.newBuilder()
+                .withFieldTypes(Arrays.asList(
+                        FieldType.newBuilder()
+                                .withName("id")
+                                .withDataType(io.milvus.grpc.DataType.Int64)
+                                .withPrimaryKey(true)
+                                .build(),
+                        FieldType.newBuilder()
+                                .withName("body")
+                                .withDataType(io.milvus.grpc.DataType.Text)
+                                .build()))
+                .build();
+        LocalBulkWriterParam param = LocalBulkWriterParam.newBuilder()
+                .withCollectionSchema(schema)
+                .withLocalPath("/tmp/bulk_writer_text_v1")
+                .withFileType(BulkFileType.JSON)
+                .build();
+
+        String longText = String.join("", Collections.nCopies(1024, "text"));
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.addProperty("body", longText);
+
+        try (LocalBulkWriter writer = new LocalBulkWriter(param)) {
+            writer.appendRow(row);
+            writer.commit(false);
+            String filePath = writer.getBatchFiles().get(0).get(0);
+            try (Reader reader = Files.newBufferedReader(Paths.get(filePath))) {
+                List<JsonObject> rows = new Gson().fromJson(reader,
+                        new TypeToken<List<JsonObject>>() {
+                        }.getType());
+                Assertions.assertEquals(1, rows.size());
+                Assertions.assertEquals(longText, rows.get(0).get("body").getAsString());
+            }
+        } catch (Exception e) {
+            Assertions.fail(e.getMessage());
+        }
+    }
+
     private static void compareJsonArray(JsonElement j1, JsonElement j2, DataType dt) {
         if (j1.isJsonNull()) {
             Assertions.assertTrue(j2.isJsonNull());
@@ -571,6 +674,7 @@ public class BulkWriterTest {
                     Assertions.assertEquals(a1.get(i).getAsDouble(), a2.get(i).getAsDouble());
                     break;
                 case VarChar:
+                case Text:
                     Assertions.assertEquals(a1.get(i).getAsString(), a2.get(i).getAsString());
                 default:
                     Assertions.assertEquals(a1.get(i), a2.get(i));
