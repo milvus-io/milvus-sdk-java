@@ -284,7 +284,8 @@ public class SearchIterator {
         }
         fillVectorsByPlType(searchParamBuilder);
 
-        SearchRequest searchRequest = ParamUtils.convertSearchParam(searchParamBuilder.build());
+        SearchRequest searchRequest = ParamUtils.convertSearchParam(
+                searchParamBuilder.build(), blockingStub.getEndpoint(), blockingStub.getDatabaseName());
         SearchRequest.Builder builder = searchRequest.toBuilder();
         // iterator
         builder.addSearchParams(

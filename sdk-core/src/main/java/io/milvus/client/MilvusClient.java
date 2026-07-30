@@ -56,7 +56,19 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The Milvus Client Interface
+ * The Milvus Client Interface.
+ *
+ * <h2>Thread safety</h2>
+ * After client construction succeeds, RPC methods may be called concurrently on the same client while its
+ * connection state remains unchanged. Connection lifecycle methods, including {@link #close()} and
+ * {@link #close(long)}, must be serialized with all other operations. Do not close the client while RPCs are
+ * in flight.
+ * <p>
+ * Concurrent DML and DQL operations are supported. A DQL operation that overlaps a DML operation is not guaranteed
+ * to observe that write; wait for the DML operation to complete and use the appropriate consistency level when this
+ * ordering is required. DDL operations that change a database or collection's lifecycle or schema, such as drop,
+ * rename, truncate, or schema alteration, must not run concurrently with DML or DQL operations on the affected
+ * database or collection. Serialize these operations to avoid undefined ordering and unexpected results.
  */
 public interface MilvusClient {
 
