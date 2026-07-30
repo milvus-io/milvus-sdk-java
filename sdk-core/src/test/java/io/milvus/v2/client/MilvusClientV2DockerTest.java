@@ -2021,6 +2021,106 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testText() {
+        String collectionName = generator.generate(10);
+        String longText = String.join("", Collections.nCopies(70000, "x"));
+        List<Float> vector = utils.generateFloatVector();
+
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
+        schema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("body")
+                .dataType(DataType.Text)
+                .enableAnalyzer(true)
+                .build());
+        schema.addField(AddFieldReq.builder()
+                .fieldName("sparse")
+                .dataType(DataType.SparseFloatVector)
+                .build());
+        schema.addFunction(CreateCollectionReq.Function.builder()
+                .name("body_bm25")
+                .functionType(FunctionType.BM25)
+                .inputFieldNames(Collections.singletonList("body"))
+                .outputFieldNames(Collections.singletonList("sparse"))
+                .build());
+
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .collectionSchema(schema)
+                .build());
+        client.addCollectionField(AddCollectionFieldReq.builder()
+                .collectionName(collectionName)
+                .fieldName("added_text")
+                .dataType(DataType.Text)
+                .isNullable(true)
+                .build());
+
+        DescribeCollectionResp describeResp = client.describeCollection(DescribeCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+        Assertions.assertEquals(DataType.Text, describeResp.getCollectionSchema().getField("body").getDataType());
+        Assertions.assertEquals(DataType.Text, describeResp.getCollectionSchema().getField("added_text").getDataType());
+        Assertions.assertEquals("body_bm25",
+                describeResp.getCollectionSchema().getFunctionList().get(0).getName());
+
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(collectionName)
+                .indexParams(Arrays.asList(
+                        IndexParam.builder()
+                                .fieldName("vector")
+                                .indexType(IndexParam.IndexType.HNSW)
+                                .metricType(IndexParam.MetricType.COSINE)
+                                .build(),
+                        IndexParam.builder()
+                                .fieldName("sparse")
+                                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                                .metricType(IndexParam.MetricType.BM25)
+                                .build()))
+                .build());
+        client.loadCollection(LoadCollectionReq.builder().collectionName(collectionName).build());
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.add("vector", JsonUtils.toJsonTree(vector));
+        row.addProperty("body", longText);
+        client.insert(InsertReq.builder()
+                .collectionName(collectionName)
+                .data(Collections.singletonList(row))
+                .build());
+
+        QueryResp queryResp = client.query(QueryReq.builder()
+                .collectionName(collectionName)
+                .filter("id == 1")
+                .outputFields(Collections.singletonList("body"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        Map<String, Object> queryEntity = queryResp.getQueryResults().get(0).getEntity();
+        Assertions.assertEquals(longText, queryEntity.get("body"));
+
+        SearchResp searchResp = client.search(SearchReq.builder()
+                .collectionName(collectionName)
+                .annsField("vector")
+                .data(Collections.singletonList(new FloatVec(vector)))
+                .limit(1)
+                .outputFields(Collections.singletonList("body"))
+                .consistencyLevel(ConsistencyLevel.STRONG)
+                .build());
+        Map<String, Object> searchEntity = searchResp.getSearchResults().get(0).get(0).getEntity();
+        Assertions.assertEquals(longText, searchEntity.get("body"));
+
+        client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+    }
+
+    @Test
     void testDeleteUpsert() {
         String randomCollectionName = generator.generate(10);
 

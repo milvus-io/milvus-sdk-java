@@ -61,6 +61,7 @@ public class ParamUtils {
         typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be String."); // actually String type is useless
         typeErrMsg.put(DataType.JSON, "Type mismatch for field '%s': JSON field value type must be JSON, current type: %s.");
         typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be String, and the string length must shorter than max_length.");
+        typeErrMsg.put(DataType.Text, "Type mismatch for field '%s': Text field value type must be String.");
         typeErrMsg.put(DataType.Array, "Type mismatch for field '%s': Array field value type must be List<Object>, each object type must be element_type, and the array length must be shorter than max_capacity.");
         typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be List<Float>.");
         typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be ByteBuffer.");
@@ -82,6 +83,7 @@ public class ParamUtils {
         typeErrMsg.put(DataType.Double, "Type mismatch for field '%s': Double field value type must be JsonPrimitive of number.");
         typeErrMsg.put(DataType.String, "Type mismatch for field '%s': String field value type must be JsonPrimitive of string."); // actually String type is useless
         typeErrMsg.put(DataType.VarChar, "Type mismatch for field '%s': VarChar field value type must be JsonPrimitive of string, and the string length must shorter than max_length.");
+        typeErrMsg.put(DataType.Text, "Type mismatch for field '%s': Text field value type must be JsonPrimitive of string.");
         typeErrMsg.put(DataType.Array, "Type mismatch for field '%s': Array field value type must be JsonArray, each object type must be element_type, and the array length must be shorter than max_capacity.");
         typeErrMsg.put(DataType.FloatVector, "Type mismatch for field '%s': Float vector field's value type must be JsonArray of List<Float>.");
         typeErrMsg.put(DataType.BinaryVector, "Type mismatch for field '%s': Binary vector field's value type must be JsonArray of byte[].");
@@ -282,6 +284,16 @@ public class ParamUtils {
                     }
                 }
                 break;
+            case Text:
+                for (Object value : values) {
+                    if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
+                        continue;
+                    }
+                    if (!(value instanceof String)) {
+                        throw new ParamException(String.format(errMsgs.get(dataType), fieldSchema.getName()));
+                    }
+                }
+                break;
             case JSON:
                 for (Object value : values) {
                     if (checkNullableFieldData(fieldSchema, value, verifyElementType)) {
@@ -436,6 +448,11 @@ public class ParamUtils {
                     throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
                 }
                 return str; // return String for genFieldData()
+            case Text:
+                if (!(value.isJsonPrimitive()) || !value.getAsJsonPrimitive().isString()) {
+                    throw new ParamException(String.format(errMsgs.get(dataType), fieldName));
+                }
+                return value.getAsString();
             case JSON:
                 return value; // return JsonElement for genFieldData()
             case Array:
@@ -476,6 +493,18 @@ public class ParamUtils {
                 case VarChar:
                     return JsonUtils.fromJson(jsonArray, new TypeToken<List<String>>() {
                     }.getType());
+                case Text:
+                    List<Object> texts = new ArrayList<>(jsonArray.size());
+                    for (JsonElement element : jsonArray) {
+                        if (element.isJsonNull() || !element.isJsonPrimitive()
+                                || !element.getAsJsonPrimitive().isString()) {
+                            throw new ParamException(String.format(
+                                    "Type mismatch for field '%s': Text array elements must be non-null strings.",
+                                    fieldName));
+                        }
+                        texts.add(element.getAsString());
+                    }
+                    return texts;
                 default:
                     throw new ParamException(String.format("Unsupported element type of Array field '%s'", fieldName));
             }
@@ -1441,6 +1470,7 @@ public class ParamUtils {
             }
             case String:
             case VarChar:
+            case Text:
             case Timestamptz: {
                 List<String> strings = objects.stream().map(p -> (p == null) ? null : (String) p).collect(Collectors.toList());
                 StringArray stringArray = StringArray.newBuilder().addAllData(strings).build();
@@ -1590,6 +1620,7 @@ public class ParamUtils {
                 break;
             case VarChar:
             case String:
+            case Text:
             case Geometry:
             case Timestamptz:
                 if (obj instanceof String) {
@@ -1628,6 +1659,7 @@ public class ParamUtils {
                 return value.getBoolData();
             case VarChar:
             case String:
+            case Text:
             case Geometry:
             case Timestamptz:
                 return value.getStringData();

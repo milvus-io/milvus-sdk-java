@@ -371,6 +371,7 @@ public abstract class BulkWriter implements AutoCloseable {
                 return verifyVector(obj, field);
             }
             case VarChar:
+            case Text:
             case Geometry:
             case Timestamptz: {
                 return verifyVarchar(obj, field);
