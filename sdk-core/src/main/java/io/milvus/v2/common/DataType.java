@@ -37,6 +37,7 @@ public enum DataType {
     Array(22),
     JSON(23),
     Geometry(24),
+    Text(25),
     Timestamptz(26),
 
     BinaryVector(100),

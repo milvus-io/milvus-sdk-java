@@ -113,6 +113,7 @@ public class ParquetUtils {
                     fillArrayType(messageTypeBuilder, field);
                     break;
                 case VarChar:
+                case Text:
                 case Geometry:
                 case Timestamptz:
                 case JSON:

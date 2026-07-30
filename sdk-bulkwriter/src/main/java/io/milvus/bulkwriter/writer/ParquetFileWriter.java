@@ -144,6 +144,7 @@ public class ParquetFileWriter implements FormatFileWriter {
                 break;
             case VarChar:
             case String:
+            case Text:
             case Geometry:
             case Timestamptz:
             case JSON:
