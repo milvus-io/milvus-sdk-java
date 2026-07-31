@@ -20,6 +20,8 @@
 package io.milvus.v2.service.database;
 
 import io.milvus.grpc.*;
+import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.param.ParamUtils;
 import io.milvus.v2.service.BaseService;
 import io.milvus.v2.service.database.request.*;
@@ -54,6 +56,8 @@ public class DatabaseService extends BaseService {
 
         Status response = blockingStub.dropDatabase(rpcRequest);
         rpcUtils.handleResponse(title, response);
+        SchemaCache.getInstance().invalidateDb(getEndpoint(), request.getDatabaseName());
+        CollectionTsCache.getInstance().invalidateDb(getEndpoint(), request.getDatabaseName());
         return null;
     }
 
