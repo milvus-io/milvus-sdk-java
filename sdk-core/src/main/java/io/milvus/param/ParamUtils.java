@@ -23,7 +23,7 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
-import io.milvus.common.utils.GTsDict;
+import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
@@ -864,8 +864,13 @@ public class ParamUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static SearchRequest convertSearchParam(SearchParam requestParam) throws ParamException {
+    public static SearchRequest convertSearchParam(SearchParam requestParam, String endpoint,
+                                                   String cacheDatabaseName) throws ParamException {
+        return convertSearchParamInternal(requestParam, endpoint, cacheDatabaseName);
+    }
+
+    private static SearchRequest convertSearchParamInternal(SearchParam requestParam, String endpoint,
+                                                            String cacheDatabaseName) throws ParamException {
         if (requestParam == null) {
             throw new IllegalArgumentException("requestParam cannot be null");
         }
@@ -969,7 +974,8 @@ public class ParamUtils {
             builder.setDsl(requestParam.getExpr());
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
+        long guaranteeTimestamp = getGuaranteeTimestamp(endpoint, requestParam.getConsistencyLevel(),
+                cacheDatabaseName, collectionName);
         builder.setTravelTimestamp(requestParam.getTravelTimestamp()); // deprecated
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
@@ -1036,7 +1042,8 @@ public class ParamUtils {
         return builder.build();
     }
 
-    public static HybridSearchRequest convertHybridSearchParam(HybridSearchParam requestParam) throws ParamException {
+    public static HybridSearchRequest convertHybridSearchParam(HybridSearchParam requestParam, String endpoint,
+                                                               String cacheDatabaseName) throws ParamException {
         if (requestParam == null) {
             throw new IllegalArgumentException("requestParam cannot be null");
         }
@@ -1095,7 +1102,8 @@ public class ParamUtils {
             requestParam.getOutFields().forEach(builder::addOutputFields);
         }
 
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
+        long guaranteeTimestamp = getGuaranteeTimestamp(endpoint, requestParam.getConsistencyLevel(),
+                cacheDatabaseName, collectionName);
         builder.setGuaranteeTimestamp(guaranteeTimestamp);
 
         if (requestParam.getConsistencyLevel() == null) {
@@ -1107,14 +1115,15 @@ public class ParamUtils {
         return builder.build();
     }
 
-    public static QueryRequest convertQueryParam(QueryParam requestParam) {
+    public static QueryRequest convertQueryParam(QueryParam requestParam, String endpoint, String cacheDatabaseName) {
         if (requestParam == null) {
             throw new IllegalArgumentException("requestParam cannot be null");
         }
         String dbName = requestParam.getDatabaseName();
         String collectionName = requestParam.getCollectionName();
         boolean useDefaultConsistency = (requestParam.getConsistencyLevel() == null);
-        long guaranteeTimestamp = getGuaranteeTimestamp(requestParam.getConsistencyLevel(), dbName, collectionName);
+        long guaranteeTimestamp = getGuaranteeTimestamp(endpoint, requestParam.getConsistencyLevel(),
+                cacheDatabaseName, collectionName);
         QueryRequest.Builder builder = QueryRequest.newBuilder()
                 .setCollectionName(collectionName)
                 .addAllPartitionNames(requestParam.getPartitionNames())
@@ -1161,19 +1170,18 @@ public class ParamUtils {
         return builder.build();
     }
 
-    private static long getGuaranteeTimestamp(ConsistencyLevelEnum consistencyLevel, String dbName, String collectionName) {
+    private static long getGuaranteeTimestamp(String endpoint, ConsistencyLevelEnum consistencyLevel,
+                                              String dbName, String collectionName) {
         if (consistencyLevel == null) {
-            String key = GTsDict.CombineCollectionName(dbName, collectionName);
-            Long ts = GTsDict.getInstance().getCollectionTs(key);
-            return (ts == null) ? 1L : ts;
+            long ts = CollectionTsCache.getInstance().get(endpoint, dbName, collectionName);
+            return ts == 0L ? 1L : ts;
         }
         switch (consistencyLevel) {
             case STRONG:
                 return 0L;
             case SESSION: {
-                String key = GTsDict.CombineCollectionName(dbName, collectionName);
-                Long ts = GTsDict.getInstance().getCollectionTs(key);
-                return (ts == null) ? 1L : ts;
+                long ts = CollectionTsCache.getInstance().get(endpoint, dbName, collectionName);
+                return ts == 0L ? 1L : ts;
             }
             case BOUNDED:
                 return 2L; // let server side to determine the bounded time

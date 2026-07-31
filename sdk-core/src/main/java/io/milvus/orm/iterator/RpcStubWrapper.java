@@ -21,6 +21,7 @@ package io.milvus.orm.iterator;
 
 import io.milvus.grpc.MilvusServiceGrpc;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class RpcStubWrapper {
@@ -29,12 +30,21 @@ public class RpcStubWrapper {
     // rpcTimeoutMs of MilvusServiceBlockingStub.withDeadlineAfter() is "end of using time", not "timeout of per call",
     // we have to reset this value for each time QueryIterator calls the query() interface.
     // the rpcDeadlineMs value is passed from MilvusClient
-    private long rpcDeadlineMs = 0L;
+    private final long rpcDeadlineMs;
+    private final String endpoint;
+    private final String databaseName;
 
     public RpcStubWrapper(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
-                          long rpcDeadlineMs) {
-        this.blockingStub = blockingStub;
+                          long rpcDeadlineMs,
+                          String endpoint,
+                          String databaseName) {
+        this.blockingStub = Objects.requireNonNull(blockingStub, "blockingStub cannot be null");
         this.rpcDeadlineMs = rpcDeadlineMs;
+        if (endpoint == null || endpoint.trim().isEmpty()) {
+            throw new IllegalArgumentException("Cache endpoint cannot be empty");
+        }
+        this.endpoint = endpoint;
+        this.databaseName = databaseName == null || databaseName.isEmpty() ? "default" : databaseName;
     }
 
     public MilvusServiceGrpc.MilvusServiceBlockingStub get() {
@@ -43,5 +53,13 @@ public class RpcStubWrapper {
         } else {
             return blockingStub;
         }
+    }
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public String getDatabaseName() {
+        return databaseName;
     }
 }

@@ -27,8 +27,9 @@ import com.google.gson.JsonObject;
 import io.milvus.TestUtils;
 import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.common.utils.Float16Utils;
-import io.milvus.common.utils.GTsDict;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.common.utils.cache.CollectionTsCache;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.exception.ParamException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
@@ -86,8 +87,7 @@ class MilvusClientDockerTest {
         }
 
         public DescribeCollectionResponse getCollectionInfo(String databaseName, String collectionName) {
-            String key = GTsDict.CombineCollectionName(databaseName, collectionName);
-            return cacheCollectionInfo.get(key);
+            return SchemaCache.getInstance().get(currentEndpoint(), databaseName, collectionName);
         }
     }
 
@@ -2987,11 +2987,12 @@ class MilvusClientDockerTest {
                 .withAuthorization("root", "Milvus")
                 .withDatabaseName(testDbName)
                 .build();
+        String cacheEndpoint = connectParam.getHost() + ":" + connectParam.getPort();
         MilvusClientForTest tempClient = new MilvusClientForTest(connectParam);
 
         // use the temp client to insert correct data into the default collection
-        // there will be a schema cache for this collection in the temp client
-        // there will be timestamp for this collection in the global GTsDict
+        // there will be an entry for this collection in the process-global schema cache
+        // there will be a timestamp for this collection in the global timestamp cache
         JsonObject row = new JsonObject();
         row.addProperty("pk", 8);
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(DIMENSION)));
@@ -3008,12 +3009,10 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be positive
-        String key1 = GTsDict.CombineCollectionName("default", randomCollectionName);
-        Long ts11 = GTsDict.getInstance().getCollectionTs(key1);
-        Assertions.assertNotNull(ts11);
+        long ts11 = CollectionTsCache.getInstance().get(cacheEndpoint, "default", randomCollectionName);
         Assertions.assertTrue(ts11 > 0L);
 
-        // insert wrong data, the schema cache will be removed
+        // insert wrong data; the refreshed, valid collection schema remains cached
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(7)));
         insertR = tempClient.insert(InsertParam.newBuilder()
                 .withDatabaseName("default")
@@ -3022,7 +3021,7 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
         descResp = tempClient.getCollectionInfo("default", randomCollectionName);
-        Assertions.assertNull(descResp);
+        Assertions.assertNotNull(descResp);
 
         // use the default client to do upsert correct data
         TimeUnit.MILLISECONDS.sleep(100);
@@ -3036,8 +3035,7 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(1, insertR.getData().getUpsertCnt());
 
         // check the timestamp of this collection, must be a new positive
-        Long ts12 = GTsDict.getInstance().getCollectionTs(key1);
-        Assertions.assertNotNull(ts12);
+        long ts12 = CollectionTsCache.getInstance().get(cacheEndpoint, "default", randomCollectionName);
         Assertions.assertTrue(ts12 > ts11);
 
         // create a new collection with the same name, different schema, in the test db
@@ -3053,9 +3051,8 @@ class MilvusClientDockerTest {
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // check the timestamp of this collection, must be null
-        String key2 = GTsDict.CombineCollectionName(testDbName, randomCollectionName);
-        Long ts21 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNull(ts21);
+        long ts21 = CollectionTsCache.getInstance().get(cacheEndpoint, testDbName, randomCollectionName);
+        Assertions.assertEquals(0L, ts21);
 
         // use the temp client to do upsert correct data
         TimeUnit.MILLISECONDS.sleep(100);
@@ -3072,8 +3069,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be positive
-        Long ts22 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNotNull(ts22);
+        long ts22 = CollectionTsCache.getInstance().get(cacheEndpoint, testDbName, randomCollectionName);
         Assertions.assertTrue(ts22 > 0L);
 
         // tempClient upsert wrong data
@@ -3084,9 +3080,9 @@ class MilvusClientDockerTest {
                 .build());
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
-        // check the schema cache of this collection, must be null
+        // the refreshed, valid collection schema remains cached
         descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
-        Assertions.assertNull(descResp);
+        Assertions.assertNotNull(descResp);
 
         // tempClient delete data
         R<DeleteResponse> delResp = tempClient.delete(DeleteIdsParam.newBuilder()
@@ -3100,8 +3096,7 @@ class MilvusClientDockerTest {
         Assertions.assertNotNull(descResp);
 
         // check the timestamp of this collection, must be greater than previous
-        Long ts23 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNotNull(ts23);
+        long ts23 = CollectionTsCache.getInstance().get(cacheEndpoint, testDbName, randomCollectionName);
         Assertions.assertTrue(ts23 > ts22);
 
         // use the default client to drop the collection in the new db
@@ -3112,8 +3107,8 @@ class MilvusClientDockerTest {
         Assertions.assertEquals(R.Status.Success.getCode(), dropResp.getStatus().intValue());
 
         // check the timestamp of this collection, must be deleted
-        Long ts31 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNull(ts31);
+        long ts31 = CollectionTsCache.getInstance().get(cacheEndpoint, testDbName, randomCollectionName);
+        Assertions.assertEquals(0L, ts31);
 
         // use the temp client to insert correct data into the collection
         row.add("vector", JsonUtils.toJsonTree(utils.generateFloatVector(4)));
@@ -3124,8 +3119,8 @@ class MilvusClientDockerTest {
         Assertions.assertNotEquals(R.Status.Success.getCode(), insertR.getStatus().intValue());
 
         // check the timestamp of this collection, must be null
-        Long ts32 = GTsDict.getInstance().getCollectionTs(key2);
-        Assertions.assertNull(ts32);
+        long ts32 = CollectionTsCache.getInstance().get(cacheEndpoint, testDbName, randomCollectionName);
+        Assertions.assertEquals(0L, ts32);
 
         // check the schema cache of this collection, must be null
         descResp = tempClient.getCollectionInfo(testDbName, randomCollectionName);
