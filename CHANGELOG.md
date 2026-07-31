@@ -1,5 +1,15 @@
 # Changelog
 
+## milvus-sdk-java 2.5.16 (2026-07-31)
+### Improvement
+- Upgrade gRPC to 1.75.0 to address CVE-2025-55163
+- Upgrade protobuf/protoc to 3.25.8 and Guava to 33.3.1-jre
+
+### Bug
+- Fix a null pointer exception when search vector data is null
+- Fix RPC deadlines for query and search iterators
+- Fix QueryIterator paging when the filter contains a RANDOM_SAMPLE clause
+
 ## milvus-sdk-java 2.5.15 (2025-12-01)
 ### Breaking Change
 - Rename "Stage" to "Volume" for BulkWriter
