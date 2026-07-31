@@ -60,6 +60,7 @@ public class QueryIterator {
     private int cacheIdInUse;
     private long returnedCount;
     private final RpcUtils rpcUtils;
+    private final VectorUtils vectorUtils;
     private long sessionTs = 0;
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
@@ -78,6 +79,9 @@ public class QueryIterator {
         this.limit = queryIteratorParam.getLimit();
         this.offset = queryIteratorParam.getOffset();
         this.rpcUtils = new RpcUtils();
+        this.vectorUtils = new VectorUtils();
+        this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
+        this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
 
         setupTsByRequest();
         seek();
@@ -99,6 +103,9 @@ public class QueryIterator {
         this.limit = queryIteratorReq.getLimit();
         this.offset = queryIteratorReq.getOffset();
         this.rpcUtils = new RpcUtils();
+        this.vectorUtils = new VectorUtils();
+        this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
+        this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
 
         setupTsByRequest();
         seek();
@@ -266,7 +273,6 @@ public class QueryIterator {
                 .filterTemplateValues(queryIteratorReq.getFilterTemplateValues())
                 .build();
 
-        VectorUtils vectorUtils = new VectorUtils();
         QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(queryReq);
         QueryRequest.Builder builder = queryRequest.toBuilder();
         boolean iterator = phase != QueryPhase.SEEK;

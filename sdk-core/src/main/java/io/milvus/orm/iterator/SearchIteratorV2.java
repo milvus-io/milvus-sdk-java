@@ -50,6 +50,7 @@ public class SearchIteratorV2 {
 
     private Map<String, Object> searchParams;
     private final RpcUtils rpcUtils;
+    private final VectorUtils vectorUtils;
 
     private Long leftResCnt = null;
     private Long collectionID = null;
@@ -65,6 +66,9 @@ public class SearchIteratorV2 {
         this.batchSize = (int) searchIteratorReq.getBatchSize();
         this.externalFilterFunc = searchIteratorReq.getExternalFilterFunc();
         this.rpcUtils = new RpcUtils();
+        this.vectorUtils = new VectorUtils();
+        this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
+        this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
 
         checkParams();
         setupCollectionID();
@@ -130,7 +134,7 @@ public class SearchIteratorV2 {
                 .groupByFieldName(searchIteratorReq.getGroupByFieldName())
                 .filterTemplateValues(searchIteratorReq.getFilterTemplateValues())
                 .build();
-        SearchRequest searchRequest = new VectorUtils().ConvertToGrpcSearchRequest(request);
+        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
         SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(searchRequest));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
