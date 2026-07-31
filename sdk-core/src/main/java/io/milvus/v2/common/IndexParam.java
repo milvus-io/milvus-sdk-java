@@ -214,6 +214,12 @@ public class IndexParam {
         // From Milvus 2.5.4 onward, SPARSE_WAND is being deprecated. Instead, it is recommended to
         // use "inverted_index_algo": "DAAT_WAND" for equivalency while maintaining compatibility.
         SPARSE_WAND(301),
+
+        // Appended at the tail rather than grouped with the other varchar-only
+        // types: new constants go on the end so no existing entry shifts.
+        // Only for varchar type field. Exact byte-level substring index that
+        // answers anchored LIKE (prefix/infix/suffix) with no candidate recheck.
+        FMINDEX(102),
         ;
 
         private final String name;
