@@ -32,6 +32,8 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
+import io.milvus.telemetry.ClientTelemetryManager;
+import io.milvus.telemetry.TelemetryInterceptor;
 import io.milvus.v2.service.cdc.CDCService;
 import io.milvus.v2.service.cdc.request.DumpMessagesReq;
 import io.milvus.v2.service.cdc.request.GetReplicateInfoReq;
@@ -90,7 +92,9 @@ import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -132,6 +136,7 @@ public class MilvusClientV2 {
     private ConnectConfig connectConfig;
     private GlobalStub globalStub;
     private String cacheEndpoint = "";
+    private ClientTelemetryManager telemetry;
 
     /**
      * Creates a Milvus client instance.
@@ -217,7 +222,16 @@ public class MilvusClientV2 {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
-        channel = clientUtils.getChannel(connectConfig);
+        telemetry = new ClientTelemetryManager(
+                connectConfig.getTelemetryConfig(),
+                connectConfig.getUsername(),
+                clientUtils.getSDKVersion(),
+                this::currentUsedDatabase,
+                this::telemetryUserConfig,
+                connectConfig.getTelemetryClientId());
+        connectConfig.setTelemetryClientId(telemetry.getClientId());
+        channel = clientUtils.getChannel(connectConfig,
+                new TelemetryInterceptor(telemetry, connectConfig.getClientRequestId()));
 
         try {
             blockingStub = MilvusServiceGrpc.newBlockingStub(channel).withWaitForReady();
@@ -229,6 +243,8 @@ public class MilvusClientV2 {
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
             futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel).withWaitForReady();
+            telemetry.setStub(io.milvus.grpc.ClientTelemetryServiceGrpc.newBlockingStub(interceptedChannel));
+            telemetry.start();
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -249,6 +265,10 @@ public class MilvusClientV2 {
         this.channel = primaryClient.channel;
         this.blockingStub = primaryClient.blockingStub;
         this.futureStub = primaryClient.futureStub;
+        this.telemetry = primaryClient.telemetry;
+        if (connectConfig != null && telemetry != null) {
+            connectConfig.setTelemetryClientId(telemetry.getClientId());
+        }
         // Keep cacheEndpoint scoped to the logical global-cluster endpoint. Replacing it with the
         // physical primary endpoint would make session timestamps and schemas recorded before a
         // failover unreachable after the primary changes.
@@ -358,6 +378,30 @@ public class MilvusClientV2 {
             return "default";
         }
         return dbName;
+    }
+
+    /** Returns the telemetry manager for metrics inspection and custom command handlers. */
+    public ClientTelemetryManager getTelemetry() {
+        if (globalStub != null) {
+            MilvusClientV2 primaryClient = globalStub.getPrimaryClient();
+            return primaryClient == null ? null : primaryClient.getTelemetry();
+        }
+        return telemetry;
+    }
+
+    private Map<String, Object> telemetryUserConfig() {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (connectConfig == null) {
+            return result;
+        }
+        result.put("address", connectConfig.getHost() + ":" + connectConfig.getPort());
+        result.put("username", connectConfig.getUsername());
+        result.put("db_name", connectConfig.getDbName());
+        result.put("secure", connectConfig.isSecure());
+        result.put("connect_timeout_ms", connectConfig.getConnectTimeoutMs());
+        result.put("rpc_deadline_ms", connectConfig.getRpcDeadlineMs());
+        result.put("current_db", currentUsedDatabase());
+        return result;
     }
 
     public MilvusClientV2Session session(String clusterId) {
@@ -1938,7 +1982,12 @@ public class MilvusClientV2 {
             channel = null;
             blockingStub = null;
             futureStub = null;
+            telemetry = null;
             return;
+        }
+        if (telemetry != null) {
+            telemetry.close();
+            telemetry = null;
         }
         if (channel != null) {
             channel.shutdownNow();
