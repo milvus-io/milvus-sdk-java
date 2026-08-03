@@ -21,6 +21,7 @@ package io.milvus.param;
 
 import io.milvus.common.utils.URLParser;
 import io.milvus.exception.ParamException;
+import io.milvus.telemetry.TelemetryConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -61,6 +62,7 @@ public class ConnectParam {
     private final ThreadLocal<String> clientRequestId;
     private final String proxyAddress;
     private final Map<String, String> option;
+    private final TelemetryConfig telemetryConfig;
 
     protected ConnectParam(Builder builder) {
         if (builder == null) {
@@ -88,6 +90,7 @@ public class ConnectParam {
         this.clientRequestId = builder.clientRequestId;
         this.proxyAddress = builder.proxyAddress;
         this.option = builder.option;
+        this.telemetryConfig = builder.telemetryConfig;
     }
 
     public static Builder newBuilder() {
@@ -182,6 +185,10 @@ public class ConnectParam {
         return option;
     }
 
+    public TelemetryConfig getTelemetryConfig() {
+        return telemetryConfig;
+    }
+
     @Override
     public String toString() {
         return "ConnectParam{" +
@@ -244,6 +251,7 @@ public class ConnectParam {
 
         private String proxyAddress;
         private Map<String, String> option = new HashMap<>();
+        private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
 
         protected Builder() {
         }
@@ -334,6 +342,10 @@ public class ConnectParam {
 
         public Map<String, String> getOption() {
             return option;
+        }
+
+        public TelemetryConfig getTelemetryConfig() {
+            return telemetryConfig;
         }
 
         /**
@@ -640,6 +652,11 @@ public class ConnectParam {
          */
         public Builder withOption(Map<String, String> option) {
             this.option = option;
+            return this;
+        }
+
+        public Builder withTelemetryConfig(TelemetryConfig telemetryConfig) {
+            this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
             return this;
         }
 

@@ -55,6 +55,10 @@ public class ClientUtils {
     RpcUtils rpcUtils = new RpcUtils();
 
     public ManagedChannel getChannel(ConnectConfig connectConfig) {
+        return getChannel(connectConfig, null);
+    }
+
+    public ManagedChannel getChannel(ConnectConfig connectConfig, ClientInterceptor additionalInterceptor) {
         ManagedChannel channel = null;
 
         Metadata metadata = new Metadata();
@@ -88,6 +92,9 @@ public class ClientUtils {
                 };
             }
         });
+        if (additionalInterceptor != null) {
+            clientInterceptors.add(additionalInterceptor);
+        }
 
         try {
             if (connectConfig.getSslContext() != null) {

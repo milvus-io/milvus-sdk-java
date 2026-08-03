@@ -56,6 +56,8 @@ import io.milvus.param.index.*;
 import io.milvus.param.partition.*;
 import io.milvus.param.resourcegroup.*;
 import io.milvus.param.role.*;
+import io.milvus.telemetry.ClientTelemetryManager;
+import io.milvus.telemetry.TelemetryInterceptor;
 import io.milvus.v2.utils.ClientUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,7 +67,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -79,11 +83,20 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private RetryParam retryParam = RetryParam.newBuilder().build();
     private String currentDatabaseName;
     private final String endpoint;
+    private final ClientTelemetryManager telemetry;
+    private final boolean ownsTelemetry;
 
     public MilvusServiceClient(ConnectParam connectParam) {
         ExceptionUtils.checkNotNull(connectParam, connectParam.getClass().getSimpleName());
         this.rpcDeadlineMs = connectParam.getRpcDeadlineMs();
         this.endpoint = connectParam.getHost() + ":" + connectParam.getPort();
+        this.telemetry = new ClientTelemetryManager(
+                connectParam.getTelemetryConfig(),
+                connectParam.getUserName(),
+                getSDKVersion(),
+                () -> currentDatabaseName == null ? "default" : currentDatabaseName,
+                () -> telemetryUserConfig(connectParam));
+        this.ownsTelemetry = true;
 
         Metadata metadata = new Metadata();
         metadata.put(Metadata.Key.of("authorization", Metadata.ASCII_STRING_MARSHALLER), connectParam.getAuthorization());
@@ -110,6 +123,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 };
             }
         });
+        clientInterceptors.add(new TelemetryInterceptor(telemetry, connectParam.getClientRequestId()));
 
         try {
             if (StringUtils.isNotEmpty(connectParam.getServerPemPath())) {
@@ -210,6 +224,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel);
             futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel);
+            telemetry.setStub(ClientTelemetryServiceGrpc.newBlockingStub(interceptedChannel));
+            telemetry.start();
         } catch (Exception e) {
             // close the channel if connect() throws exception, avoid leakage
             try {
@@ -232,6 +248,8 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.retryParam = src.retryParam;
         this.currentDatabaseName = src.currentDatabaseName;
         this.endpoint = src.endpoint;
+        this.telemetry = src.telemetry;
+        this.ownsTelemetry = false;
     }
 
     @Override
@@ -265,8 +283,27 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     @Override
     public void close(long maxWaitSeconds) throws InterruptedException {
+        if (ownsTelemetry) {
+            telemetry.close();
+        }
         channel.shutdownNow();
         channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
+    }
+
+    /** Returns the telemetry manager for metrics inspection and custom command handlers. */
+    public ClientTelemetryManager getTelemetry() {
+        return telemetry;
+    }
+
+    private static Map<String, Object> telemetryUserConfig(ConnectParam connectParam) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("address", connectParam.getHost() + ":" + connectParam.getPort());
+        result.put("username", connectParam.getUserName());
+        result.put("db_name", connectParam.getDatabaseName());
+        result.put("secure", connectParam.isSecure());
+        result.put("connect_timeout_ms", connectParam.getConnectTimeoutMs());
+        result.put("rpc_deadline_ms", connectParam.getRpcDeadlineMs());
+        return result;
     }
 
     private static class TimeoutInterceptor implements ClientInterceptor {

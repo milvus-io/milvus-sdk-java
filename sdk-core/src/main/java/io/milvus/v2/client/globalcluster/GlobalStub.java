@@ -183,6 +183,8 @@ public class GlobalStub {
                 .idleTimeoutMs(original.getIdleTimeoutMs())
                 .sslContext(original.getSslContext())
                 .clientRequestId(original.getClientRequestId())
+                .telemetryConfig(original.getTelemetryConfig())
+                .telemetryClientId(original.getTelemetryClientId())
                 .enablePrecheck(original.isEnablePrecheck())
                 .build();
     }

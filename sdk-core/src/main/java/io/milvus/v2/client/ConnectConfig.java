@@ -20,6 +20,7 @@
 package io.milvus.v2.client;
 
 import io.milvus.common.utils.URLParser;
+import io.milvus.telemetry.TelemetryConfig;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.SSLContext;
@@ -59,6 +60,8 @@ public class ConnectConfig {
     // clientRequestId maintains a map for different threads, each thread can assign a specific id.
     // the specific id is passed to the server, from the access log we can know which client calls the interface
     private ThreadLocal<String> clientRequestId;
+    private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
+    private String telemetryClientId = "";
 
     // Constructor for builder
     private ConnectConfig(ConnectConfigBuilder builder) {
@@ -85,6 +88,8 @@ public class ConnectConfig {
         this.idleTimeoutMs = builder.idleTimeoutMs;
         this.sslContext = builder.sslContext;
         this.clientRequestId = builder.clientRequestId;
+        this.telemetryConfig = builder.telemetryConfig;
+        this.telemetryClientId = builder.telemetryClientId;
         this.enablePrecheck = builder.enablePrecheck;
         this.option = builder.option;
     }
@@ -164,6 +169,14 @@ public class ConnectConfig {
 
     public ThreadLocal<String> getClientRequestId() {
         return clientRequestId;
+    }
+
+    public TelemetryConfig getTelemetryConfig() {
+        return telemetryConfig;
+    }
+
+    public String getTelemetryClientId() {
+        return telemetryClientId;
     }
 
     public String getProxyAddress() {
@@ -269,6 +282,14 @@ public class ConnectConfig {
         this.clientRequestId = clientRequestId;
     }
 
+    public void setTelemetryConfig(TelemetryConfig telemetryConfig) {
+        this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
+    }
+
+    public void setTelemetryClientId(String telemetryClientId) {
+        this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
+    }
+
     public String getHost() {
         URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
@@ -352,6 +373,8 @@ public class ConnectConfig {
         private long idleTimeoutMs = TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
         private SSLContext sslContext;
         private ThreadLocal<String> clientRequestId;
+        private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
+        private String telemetryClientId = "";
         private boolean enablePrecheck = false;
         private Map<String, String> option = new HashMap<>();
 
@@ -463,6 +486,16 @@ public class ConnectConfig {
 
         public ConnectConfigBuilder clientRequestId(ThreadLocal<String> clientRequestId) {
             this.clientRequestId = clientRequestId;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryConfig(TelemetryConfig telemetryConfig) {
+            this.telemetryConfig = telemetryConfig == null ? TelemetryConfig.defaults() : telemetryConfig;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryClientId(String telemetryClientId) {
+            this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
             return this;
         }
 
