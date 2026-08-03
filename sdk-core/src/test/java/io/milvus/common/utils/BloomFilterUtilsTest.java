@@ -138,6 +138,21 @@ class BloomFilterUtilsTest {
                 XXHash64.hash("abc".getBytes(StandardCharsets.UTF_8)));
         Assertions.assertEquals(0xD8EC969D7FA9836FL,
                 XXHash64.hash("milvus".getBytes(StandardCharsets.UTF_8)));
+
+        // Independent XXH64(seed=0) answers from the reference xxHash implementation
+        // (`xxhsum -H1`). These straddle the 32-byte boundary that enters the stripe/merge path.
+        String[] stripeBoundaryPayloads = {"a".repeat(31), "a".repeat(32), "a".repeat(33)};
+        long[] stripeBoundaryHashes = {
+                0xFE47067CDA802916L,
+                0x856E843298F99AD7L,
+                0x18F3FF0C21E3B24BL,
+        };
+        for (int i = 0; i < stripeBoundaryPayloads.length; i++) {
+            Assertions.assertEquals(stripeBoundaryHashes[i],
+                    XXHash64.hash(stripeBoundaryPayloads[i].getBytes(StandardCharsets.UTF_8)),
+                    "XXH64 mismatch at stripe-boundary length "
+                            + stripeBoundaryPayloads[i].length());
+        }
     }
 
     @Test
@@ -241,6 +256,16 @@ class BloomFilterUtilsTest {
                     () -> BloomFilterUtils.estimateBlobSize(1, fpr));
             Assertions.assertThrows(MilvusClientException.class,
                     () -> new BloomFilterUtils.Builder(1, fpr));
+        }
+    }
+
+    @Test
+    void testRejectsNegativeMemberCounts() {
+        for (long count : new long[] {-1L, Long.MIN_VALUE}) {
+            Assertions.assertThrows(MilvusClientException.class,
+                    () -> BloomFilterUtils.estimateBlobSize(count, 0.001));
+            Assertions.assertThrows(MilvusClientException.class,
+                    () -> new BloomFilterUtils.Builder(count, 0.001));
         }
     }
 

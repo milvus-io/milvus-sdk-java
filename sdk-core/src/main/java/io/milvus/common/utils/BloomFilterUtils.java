@@ -31,12 +31,12 @@ import java.util.List;
  * Builds a client-side Split-Block Bloom Filter (SBBF) blob for the
  * <code>bloom_match(field, {blob})</code> filter expression.
  *
- * <p>Building the filter on the client and shipping the compact blob (about 32 MB for ~24M
- * members at the default false-positive rate) lets large membership sets pass the proxy gRPC
- * receive limit, which a raw value list (about 90 MB for 10M int64) would exceed. Pass the
- * result through <code>filterTemplateValues</code>; it travels as a native protobuf bytes
- * value with no base64 inflation, and the server embeds it verbatim after validating the
- * envelope — it never rebuilds the filter.
+ * <p>Building the filter on the client replaces large raw value lists and their serialization
+ * overhead with a compact binary representation. For example, 10M int64 members are roughly
+ * 90 MB as a raw list but about 14 MB as a bloom filter. Pass the result through
+ * <code>filterTemplateValues</code>; it travels as a native protobuf bytes value with no base64
+ * inflation, and the server embeds it verbatim after validating the envelope — it never rebuilds
+ * the filter.
  *
  * <pre>{@code
  * byte[] blob = BloomFilterUtils.buildBloomFilter(userIds, BloomFilterUtils.DEFAULT_FPR);
@@ -180,11 +180,19 @@ public class BloomFilterUtils {
      * @param n   the planned member count
      * @param fpr the false-positive rate, in [{@link #MIN_FPR}, {@link #MAX_FPR}]
      * @return the blob size in bytes, header included
-     * @throws MilvusClientException if fpr is out of range
+     * @throws MilvusClientException if n is negative or fpr is out of range
      */
     public static int estimateBlobSize(long n, double fpr) {
+        validateMemberCount(n);
         validateFpr(fpr);
         return HEADER_SIZE + optimalNumOfBytes(n, fpr);
+    }
+
+    private static void validateMemberCount(long n) {
+        if (n < 0) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "Bloom filter member count cannot be negative: " + n + ".");
+        }
     }
 
     private static void validateFpr(double fpr) {
@@ -267,9 +275,10 @@ public class BloomFilterUtils {
          * @param n   the expected number of distinct members; it only drives sizing, so inserting
          *            more is allowed and simply raises the effective false-positive rate
          * @param fpr the false-positive rate, in [{@link #MIN_FPR}, {@link #MAX_FPR}]
-         * @throws MilvusClientException if fpr is out of range
+         * @throws MilvusClientException if n is negative or fpr is out of range
          */
         public Builder(long n, double fpr) {
+            validateMemberCount(n);
             validateFpr(fpr);
             int numBytes = optimalNumOfBytes(n, fpr);
             this.buf = new byte[HEADER_SIZE + numBytes];
