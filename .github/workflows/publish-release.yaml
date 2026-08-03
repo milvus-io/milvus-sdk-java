@@ -1,0 +1,111 @@
+name: Publish release to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+# Maven Central releases are immutable. Do not publish two release tags at the same time,
+# and do not cancel a deployment after it has started uploading artifacts.
+concurrency:
+  group: maven-central-publish
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish Maven artifacts
+    if: github.repository == 'milvus-io/milvus-sdk-java'
+    runs-on: ubuntu-latest
+    environment: maven-central
+    timeout-minutes: 75
+
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java and Maven Central credentials
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8.0.462'
+          cache: maven
+          server-id: central
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Validate release tag and project version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: $tag. Expected vX.Y.Z."
+            exit 1
+          fi
+
+          tag_version="${tag#v}"
+          project_version="$(mvn --batch-mode --no-transfer-progress help:evaluate \
+            -Dexpression=revision -DforceStdout -q)"
+
+          if [[ "$tag_version" != "$project_version" ]]; then
+            echo "Release tag version $tag_version does not match POM revision $project_version."
+            exit 1
+          fi
+
+          echo "Publishing milvus-sdk-java $project_version from tag $tag."
+
+      - name: Publish to Maven Central
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: >-
+          mvn --batch-mode --no-transfer-progress
+          -Prelease
+          -Dmaven.test.skip=true
+          clean deploy
+
+  release:
+    name: Create GitHub release
+    needs: publish
+    if: needs.publish.result == 'success' && github.repository == 'milvus-io/milvus-sdk-java'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+
+    steps:
+      - name: Prepare release metadata
+        id: release-info
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          release_date="$(date -u +%F)"
+          milvus_minor="$(echo "$version" | cut -d. -f1,2)"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "release_date=${release_date}" >> "$GITHUB_OUTPUT"
+          echo "milvus_minor=${milvus_minor}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: milvus-sdk-java-${{ steps.release-info.outputs.version }}
+          body: |
+            Release date: ${{ steps.release-info.outputs.release_date }}
+            Compatible with Milvus v${{ steps.release-info.outputs.milvus_minor }}.x
+          draft: false
+          allowUpdates: true
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
+          token: ${{ secrets.GITHUB_TOKEN }}
