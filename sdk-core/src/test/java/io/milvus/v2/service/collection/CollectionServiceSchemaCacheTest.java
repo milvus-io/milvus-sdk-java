@@ -62,7 +62,7 @@ class CollectionServiceSchemaCacheTest {
     }
 
     @Test
-    void collectionPropertiesPreserveCacheAndFieldPropertiesInvalidateIt() {
+    void collectionPropertiesInvalidateCacheOnlyForAllowInsertAutoId() {
         MilvusServiceGrpc.MilvusServiceBlockingStub stub = mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
         Status success = Status.newBuilder().setCode(0).build();
         when(stub.alterCollection(any())).thenReturn(success);
@@ -88,6 +88,22 @@ class CollectionServiceSchemaCacheTest {
                 .build());
         assertSame(cached, SchemaCache.getInstance().get(ENDPOINT, DATABASE, COLLECTION));
 
+        service.alterCollectionProperties(stub, AlterCollectionPropertiesReq.builder()
+                .databaseName(DATABASE)
+                .collectionName(COLLECTION)
+                .property("allow_insert_auto_id", "true")
+                .build());
+        assertNull(SchemaCache.getInstance().get(ENDPOINT, DATABASE, COLLECTION));
+
+        SchemaCache.getInstance().set(ENDPOINT, DATABASE, COLLECTION, cached);
+        service.dropCollectionProperties(stub, DropCollectionPropertiesReq.builder()
+                .databaseName(DATABASE)
+                .collectionName(COLLECTION)
+                .propertyKeys(Collections.singletonList("allow_insert_auto_id"))
+                .build());
+        assertNull(SchemaCache.getInstance().get(ENDPOINT, DATABASE, COLLECTION));
+
+        SchemaCache.getInstance().set(ENDPOINT, DATABASE, COLLECTION, cached);
         service.alterCollectionField(stub, AlterCollectionFieldReq.builder()
                 .databaseName(DATABASE)
                 .collectionName(COLLECTION)

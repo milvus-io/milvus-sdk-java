@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class CollectionService extends BaseService {
+    private static final String ALLOW_INSERT_AUTO_ID = "allow_insert_auto_id";
+
     public IndexService indexService = new IndexService();
 
     public Void createCollection(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, CreateCollectionReq request) {
@@ -267,6 +269,7 @@ public class CollectionService extends BaseService {
     public Void alterCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, AlterCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
+        boolean invalidatesSchema = request.getProperties().containsKey(ALLOW_INSERT_AUTO_ID);
         String title = String.format("Alter properties of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
                 .setCollectionName(collectionName);
@@ -280,6 +283,9 @@ public class CollectionService extends BaseService {
 
         Status response = blockingStub.alterCollection(builder.build());
         rpcUtils.handleResponse(title, response);
+        if (invalidatesSchema) {
+            invalidateSchemaCache(dbName, collectionName);
+        }
 
         return null;
     }
@@ -412,6 +418,7 @@ public class CollectionService extends BaseService {
     public Void dropCollectionProperties(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DropCollectionPropertiesReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
+        boolean invalidatesSchema = request.getPropertyKeys().contains(ALLOW_INSERT_AUTO_ID);
         String title = String.format("Drop properties of collection: '%s' in database: '%s'", collectionName, dbName);
         AlterCollectionRequest.Builder builder = AlterCollectionRequest.newBuilder()
                 .setCollectionName(collectionName)
@@ -422,6 +429,9 @@ public class CollectionService extends BaseService {
 
         Status response = blockingStub.alterCollection(builder.build());
         rpcUtils.handleResponse(title, response);
+        if (invalidatesSchema) {
+            invalidateSchemaCache(dbName, collectionName);
+        }
 
         return null;
     }
