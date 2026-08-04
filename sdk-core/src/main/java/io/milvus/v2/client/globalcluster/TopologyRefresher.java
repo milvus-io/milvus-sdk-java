@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
+
 public class TopologyRefresher {
     private static final Logger logger = LoggerFactory.getLogger(TopologyRefresher.class);
     private static final long REFRESH_INTERVAL_MINUTES = 5;
@@ -57,7 +59,7 @@ public class TopologyRefresher {
         scheduler.scheduleWithFixedDelay(this::refresh, REFRESH_INTERVAL_MINUTES,
                 REFRESH_INTERVAL_MINUTES, TimeUnit.MINUTES);
         logger.info("Global topology refresher started with {}min interval for endpoint: {}",
-                REFRESH_INTERVAL_MINUTES, globalEndpoint);
+                REFRESH_INTERVAL_MINUTES, redactUriUserInfo(globalEndpoint));
     }
 
     public void triggerRefresh() {
@@ -75,7 +77,7 @@ public class TopologyRefresher {
 
     public void stop() {
         scheduler.shutdownNow();
-        logger.info("Global topology refresher stopped for endpoint: {}", globalEndpoint);
+        logger.info("Global topology refresher stopped for endpoint: {}", redactUriUserInfo(globalEndpoint));
     }
 
     private void refreshWithCleanup() {
