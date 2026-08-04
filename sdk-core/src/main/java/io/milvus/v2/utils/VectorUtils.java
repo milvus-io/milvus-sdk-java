@@ -546,6 +546,13 @@ public class VectorUtils {
             return TemplateValue.newBuilder()
                     .setStringVal((String) value)
                     .build();
+        } else if (value instanceof byte[]) {
+            // A client pre-built filter blob (see BloomFilterUtils) travels as raw bytes:
+            // proto3 bytes has no UTF-8 constraint, so a multi-MB blob rides the wire with
+            // zero base64 inflation.
+            return TemplateValue.newBuilder()
+                    .setBytesVal(ByteString.copyFrom((byte[]) value))
+                    .build();
         } else if (value instanceof List) {
             List<?> array = (List<?>) value;
             TemplateArrayValue tav = deduceTemplateArray(array);
