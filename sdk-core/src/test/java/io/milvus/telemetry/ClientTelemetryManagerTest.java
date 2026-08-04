@@ -19,12 +19,16 @@
 
 package io.milvus.telemetry;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.protobuf.ByteString;
 import io.milvus.grpc.ClientCommand;
 import io.milvus.grpc.CommandReply;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -88,6 +92,93 @@ class ClientTelemetryManagerTest {
 
         assertTrue(requestId.matches("[0-9a-f]{32}"));
         assertFalse(requestId.matches("0{32}"));
+    }
+
+    @Test
+    void latencyDetailUsesOperationKeyedSnakeCaseMetrics() throws Exception {
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "default", null);
+        try {
+            manager.recordOperation(
+                    "Search", "books", System.nanoTime() - TimeUnit.MILLISECONDS.toNanos(5), "", "");
+            java.lang.reflect.Method createSnapshot = ClientTelemetryManager.class
+                    .getDeclaredMethod("createSnapshot");
+            createSnapshot.setAccessible(true);
+            createSnapshot.invoke(manager);
+            ClientTelemetryManager.MetricsSnapshot snapshot = manager.getMetricsSnapshots().get(0);
+            java.lang.reflect.Method latencyHistory = ClientTelemetryManager.class
+                    .getDeclaredMethod("handleLatencyHistory", ClientCommand.class);
+            latencyHistory.setAccessible(true);
+
+            String payload = String.format(
+                    "{\"start_time\":\"%s\",\"end_time\":\"%s\",\"detail\":true}",
+                    java.time.Instant.ofEpochMilli(snapshot.timestamp - 1),
+                    java.time.Instant.ofEpochMilli(snapshot.end_time + 1));
+            CommandReply reply = (CommandReply) latencyHistory.invoke(manager, ClientCommand.newBuilder()
+                    .setCommandId("latency-detail")
+                    .setCommandType("show_latency_history")
+                    .setPayload(ByteString.copyFromUtf8(payload))
+                    .build());
+            JsonObject body = JsonParser.parseString(reply.getPayload().toStringUtf8()).getAsJsonObject();
+            JsonObject metrics = body.getAsJsonArray("snapshots")
+                    .get(0).getAsJsonObject().getAsJsonObject("metrics");
+            JsonObject search = metrics.getAsJsonObject("Search");
+
+            assertTrue(reply.getSuccess());
+            assertEquals(1, body.get("total_snapshots").getAsInt());
+            assertEquals(1, search.get("request_count").getAsLong());
+            assertFalse(search.has("requestCount"));
+            assertFalse(metrics.isJsonArray());
+        } finally {
+            manager.close();
+        }
+    }
+
+    @Test
+    void runtimeStatePreservesPendingRepliesDeduplicationAndCustomHandlers() {
+        AtomicInteger calls = new AtomicInteger();
+        ClientTelemetryManager first = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "default", null, "runtime-client");
+        ClientTelemetryManager second = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "default", null, "runtime-client");
+        try {
+            first.registerCommandHandler("custom", command -> {
+                calls.incrementAndGet();
+                return CommandReply.newBuilder()
+                        .setCommandId(command.getCommandId())
+                        .setSuccess(true)
+                        .build();
+            });
+            ClientCommand command = ClientCommand.newBuilder()
+                    .setCommandId("custom-command")
+                    .setCommandType("custom")
+                    .setCreateTime(11)
+                    .setPersistent(true)
+                    .build();
+            ClientCommand configCommand = ClientCommand.newBuilder()
+                    .setCommandId("config-command")
+                    .setCommandType("push_config")
+                    .setPayload(ByteString.copyFromUtf8(
+                            "{\"heartbeat_interval_ms\":5000,\"sampling_rate\":0.25}"))
+                    .setCreateTime(10)
+                    .setPersistent(true)
+                    .build();
+            first.processCommands(Arrays.asList(configCommand, command));
+
+            ClientTelemetryManager.RuntimeState state = first.snapshotRuntimeState();
+            second.restoreRuntimeState(state);
+
+            assertEquals(2, second.snapshotRuntimeState().getPendingReplyCount());
+            assertEquals(first.getConfigHash(), second.getConfigHash());
+            assertEquals(first.getLastCommandTimestamp(), second.getLastCommandTimestamp());
+            assertEquals(5000, second.getConfig().getHeartbeatIntervalMs());
+            assertEquals(0.25, second.getConfig().getSamplingRate());
+            second.processCommands(Arrays.asList(command));
+            assertEquals(1, calls.get());
+        } finally {
+            first.close();
+            second.close();
+        }
     }
 
     @Test

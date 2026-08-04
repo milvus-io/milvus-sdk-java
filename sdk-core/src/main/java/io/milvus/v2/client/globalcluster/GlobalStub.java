@@ -19,6 +19,7 @@
 
 package io.milvus.v2.client.globalcluster;
 
+import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.MilvusClientV2;
 import org.slf4j.Logger;
@@ -55,7 +56,8 @@ public class GlobalStub {
         this.primaryEndpoint = primary.getEndpoint();
         logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
 
-        this.innerClient = createClientForEndpoint(primaryEndpoint);
+        this.innerClient = createClientForEndpoint(
+                primaryEndpoint, originalConfig.takeTelemetryRuntimeState());
 
         // Start background refresher
         this.refresher = new TopologyRefresher(globalEndpoint, authorization,
@@ -114,7 +116,10 @@ public class GlobalStub {
                     redactUriUserInfo(this.primaryEndpoint), redactUriUserInfo(newEndpoint));
 
             MilvusClientV2 oldClient = this.innerClient;
-            MilvusClientV2 newClient = createClientForEndpoint(newEndpoint);
+            ClientTelemetryManager.RuntimeState telemetryRuntimeState = oldClient == null
+                    || oldClient.getTelemetry() == null
+                    ? null : oldClient.getTelemetry().snapshotRuntimeState();
+            MilvusClientV2 newClient = createClientForEndpoint(newEndpoint, telemetryRuntimeState);
 
             this.innerClient = newClient;
             this.primaryEndpoint = newEndpoint;
@@ -136,12 +141,17 @@ public class GlobalStub {
         }
     }
 
-    private MilvusClientV2 createClientForEndpoint(String endpoint) {
-        ConnectConfig primaryConfig = cloneConfigWithNewUri(originalConfig, endpoint);
+    private MilvusClientV2 createClientForEndpoint(
+            String endpoint, ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+        ConnectConfig primaryConfig = cloneConfigWithNewUri(
+                originalConfig, endpoint, telemetryRuntimeState);
         return new MilvusClientV2(primaryConfig);
     }
 
-    private static ConnectConfig cloneConfigWithNewUri(ConnectConfig original, String newUri) {
+    private static ConnectConfig cloneConfigWithNewUri(
+            ConnectConfig original,
+            String newUri,
+            ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
         // Construct the full URI for the primary endpoint
         // The endpoint from topology is typically just a hostname or hostname:port
         // We need to preserve the scheme (https) from the original URI
@@ -185,6 +195,7 @@ public class GlobalStub {
                 .clientRequestId(original.getClientRequestId())
                 .telemetryConfig(original.getTelemetryConfig())
                 .telemetryClientId(original.getTelemetryClientId())
+                .telemetryRuntimeState(telemetryRuntimeState)
                 .enablePrecheck(original.isEnablePrecheck())
                 .build();
     }

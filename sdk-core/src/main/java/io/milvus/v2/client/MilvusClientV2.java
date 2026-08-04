@@ -214,13 +214,17 @@ public class MilvusClientV2 {
             Thread.currentThread().interrupt();
             throw new RuntimeException(e);
         }
+        ClientTelemetryManager.RuntimeState telemetryRuntimeState = connectConfig.takeTelemetryRuntimeState();
+        String runtimeClientId = telemetryRuntimeState == null
+                ? connectConfig.getTelemetryClientId() : telemetryRuntimeState.getClientId();
         telemetry = new ClientTelemetryManager(
                 connectConfig.getTelemetryConfig(),
                 connectConfig.getUsername(),
                 clientUtils.getSDKVersion(),
                 this::currentUsedDatabase,
                 this::telemetryUserConfig,
-                connectConfig.getTelemetryClientId());
+                runtimeClientId);
+        telemetry.restoreRuntimeState(telemetryRuntimeState);
         connectConfig.setTelemetryClientId(telemetry.getClientId());
         channel = clientUtils.getChannel(connectConfig,
                 new TelemetryInterceptor(telemetry, connectConfig.getClientRequestId()));
@@ -390,6 +394,10 @@ public class MilvusClientV2 {
         // check if database exists
         clientUtils.checkDatabaseExist(this.getRpcStub(), dbName);
         try {
+            ClientTelemetryManager currentTelemetry = getTelemetry();
+            if (currentTelemetry != null) {
+                this.connectConfig.setTelemetryRuntimeState(currentTelemetry.snapshotRuntimeState());
+            }
             this.connectConfig.setDbName(dbName);
             this.close(3);
             this.connect(this.connectConfig);
