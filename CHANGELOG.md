@@ -1,5 +1,12 @@
 # Changelog
 
+## milvus-sdk-java 2.5.17 (2026-08-04)
+### Improvement
+- Upgrade protobuf/protoc to 3.25.9, Guava to 33.6.0-jre, Gson to 2.14.0, and Error Prone annotations to 2.50.0
+
+### Bug
+- Fix intermittent gRPC connection and HTTP/2 transport failures introduced by gRPC 1.75.0 by upgrading gRPC to 1.83.1
+
 ## milvus-sdk-java 2.5.16 (2026-07-31)
 ### Improvement
 - Upgrade gRPC to 1.75.0 to address CVE-2025-55163
