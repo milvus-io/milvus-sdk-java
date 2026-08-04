@@ -22,6 +22,8 @@ package io.milvus.param.credential;
 import io.milvus.exception.ParamException;
 import io.milvus.param.ParamUtils;
 
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+
 public class CreateCredentialParam {
     private final String username;
     private final String password;
@@ -52,7 +54,7 @@ public class CreateCredentialParam {
     public String toString() {
         return "CreateCredentialParam{" +
                 "username='" + username + '\'' +
-                ", password='" + password + '\'' +
+                ", password='" + redactCredential(password) + '\'' +
                 '}';
     }
 

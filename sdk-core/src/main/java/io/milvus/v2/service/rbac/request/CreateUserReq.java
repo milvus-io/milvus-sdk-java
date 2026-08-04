@@ -19,6 +19,8 @@
 
 package io.milvus.v2.service.rbac.request;
 
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+
 public class CreateUserReq {
     private String userName;
     private String password;
@@ -58,7 +60,7 @@ public class CreateUserReq {
     public String toString() {
         return "CreateUserReq{" +
                 "userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
+                ", password='" + redactCredential(password) + '\'' +
                 ", description='" + description + '\'' +
                 '}';
     }

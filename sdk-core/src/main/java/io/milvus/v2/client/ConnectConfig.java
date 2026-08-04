@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
 public class ConnectConfig {
     private String uri;
@@ -305,10 +307,10 @@ public class ConnectConfig {
     @Override
     public String toString() {
         return "ConnectConfig{" +
-                "uri='" + uri + '\'' +
-                ", token='" + token + '\'' +
+                "uri='" + redactUriUserInfo(uri) + '\'' +
+                ", token='" + redactCredential(token) + '\'' +
                 ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
+                ", password='" + redactCredential(password) + '\'' +
                 ", dbName='" + dbName + '\'' +
                 ", connectTimeoutMs=" + connectTimeoutMs +
                 ", keepAliveTimeMs=" + keepAliveTimeMs +
