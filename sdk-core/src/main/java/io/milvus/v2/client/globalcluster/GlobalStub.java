@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
+
 public class GlobalStub {
     private static final Logger logger = LoggerFactory.getLogger(GlobalStub.class);
 
@@ -51,7 +53,7 @@ public class GlobalStub {
         this.topology = GlobalClusterUtils.fetchTopology(globalEndpoint, authorization);
         ClusterInfo primary = this.topology.getPrimary();
         this.primaryEndpoint = primary.getEndpoint();
-        logger.info("Global cluster: discovered primary endpoint: {}", primaryEndpoint);
+        logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
 
         this.innerClient = createClientForEndpoint(primaryEndpoint);
 
@@ -102,12 +104,14 @@ public class GlobalStub {
             String newEndpoint = newPrimary.getEndpoint();
 
             if (newEndpoint.equals(this.primaryEndpoint)) {
-                logger.info("Global cluster: topology version changed but primary endpoint unchanged: {}", newEndpoint);
+                logger.info("Global cluster: topology version changed but primary endpoint unchanged: {}",
+                        redactUriUserInfo(newEndpoint));
                 this.topology = newTopology;
                 return;
             }
 
-            logger.info("Global cluster: primary endpoint changed from {} to {}", this.primaryEndpoint, newEndpoint);
+            logger.info("Global cluster: primary endpoint changed from {} to {}",
+                    redactUriUserInfo(this.primaryEndpoint), redactUriUserInfo(newEndpoint));
 
             MilvusClientV2 oldClient = this.innerClient;
             MilvusClientV2 newClient = createClientForEndpoint(newEndpoint);
