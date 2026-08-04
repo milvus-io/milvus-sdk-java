@@ -20,6 +20,7 @@
 package io.milvus.v2.client;
 
 import io.milvus.common.utils.URLParser;
+import io.milvus.telemetry.ClientTelemetryManager;
 import io.milvus.telemetry.TelemetryConfig;
 import org.apache.commons.lang3.StringUtils;
 
@@ -62,6 +63,7 @@ public class ConnectConfig {
     private ThreadLocal<String> clientRequestId;
     private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
     private String telemetryClientId = "";
+    private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
 
     // Constructor for builder
     private ConnectConfig(ConnectConfigBuilder builder) {
@@ -90,6 +92,7 @@ public class ConnectConfig {
         this.clientRequestId = builder.clientRequestId;
         this.telemetryConfig = builder.telemetryConfig;
         this.telemetryClientId = builder.telemetryClientId;
+        this.telemetryRuntimeState = builder.telemetryRuntimeState;
         this.enablePrecheck = builder.enablePrecheck;
         this.option = builder.option;
     }
@@ -177,6 +180,12 @@ public class ConnectConfig {
 
     public String getTelemetryClientId() {
         return telemetryClientId;
+    }
+
+    public synchronized ClientTelemetryManager.RuntimeState takeTelemetryRuntimeState() {
+        ClientTelemetryManager.RuntimeState state = telemetryRuntimeState;
+        telemetryRuntimeState = null;
+        return state;
     }
 
     public String getProxyAddress() {
@@ -290,6 +299,10 @@ public class ConnectConfig {
         this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
     }
 
+    public synchronized void setTelemetryRuntimeState(ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+        this.telemetryRuntimeState = telemetryRuntimeState;
+    }
+
     public String getHost() {
         URLParser urlParser = new URLParser(this.uri);
         return urlParser.getHostname();
@@ -375,6 +388,7 @@ public class ConnectConfig {
         private ThreadLocal<String> clientRequestId;
         private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
         private String telemetryClientId = "";
+        private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
         private boolean enablePrecheck = false;
         private Map<String, String> option = new HashMap<>();
 
@@ -496,6 +510,12 @@ public class ConnectConfig {
 
         public ConnectConfigBuilder telemetryClientId(String telemetryClientId) {
             this.telemetryClientId = telemetryClientId == null ? "" : telemetryClientId;
+            return this;
+        }
+
+        public ConnectConfigBuilder telemetryRuntimeState(
+                ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+            this.telemetryRuntimeState = telemetryRuntimeState;
             return this;
         }
 

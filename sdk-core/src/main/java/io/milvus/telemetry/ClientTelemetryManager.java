@@ -95,6 +95,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private final List<CommandReply> pendingReplies = new ArrayList<>();
     private final Map<String, Long> executedCommands = new HashMap<>();
     private final Map<String, CommandHandler> handlers = new HashMap<>();
+    private final Map<String, CommandHandler> customHandlers = new HashMap<>();
     private final AtomicLong samplingCounter = new AtomicLong();
     private final AtomicBoolean ready = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
@@ -206,6 +207,100 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     public synchronized void registerCommandHandler(String type, CommandHandler handler) {
         handlers.put(type, handler);
+        customHandlers.put(type, handler);
+    }
+
+    public RuntimeState snapshotRuntimeState() {
+        List<ErrorInfo> errorValues;
+        synchronized (errors) {
+            errorValues = new ArrayList<>(errors);
+        }
+        List<MetricsSnapshot> snapshotValues;
+        synchronized (snapshots) {
+            snapshotValues = new ArrayList<>(snapshots);
+        }
+        List<CommandReply> replyValues;
+        synchronized (pendingReplies) {
+            replyValues = new ArrayList<>(pendingReplies);
+        }
+        Map<String, Long> commandValues;
+        synchronized (executedCommands) {
+            commandValues = new HashMap<>(executedCommands);
+        }
+        Set<String> collectionValues;
+        boolean allCollections;
+        synchronized (enabledCollections) {
+            collectionValues = new HashSet<>(enabledCollections);
+            allCollections = allCollectionsEnabled;
+        }
+        Map<String, CommandHandler> handlerValues;
+        synchronized (this) {
+            handlerValues = new HashMap<>(customHandlers);
+        }
+        return new RuntimeState(
+                clientId,
+                configHash,
+                lastCommandTimestamp,
+                replyValues,
+                commandValues,
+                collectionValues,
+                allCollections,
+                handlerValues,
+                errorValues,
+                snapshotValues,
+                samplingCounter.get(),
+                lastSnapshotEnd,
+                config.isEnabled(),
+                config.getHeartbeatIntervalMs(),
+                config.getSamplingRate());
+    }
+
+    public void restoreRuntimeState(RuntimeState state) {
+        if (state == null) {
+            return;
+        }
+        if (!clientId.equals(state.clientId)) {
+            throw new IllegalArgumentException("telemetry runtime state belongs to a different client ID");
+        }
+        config.setEnabled(state.enabled);
+        config.setHeartbeatIntervalMs(state.heartbeatIntervalMs);
+        config.setSamplingRate(state.samplingRate);
+        configHash = state.configHash;
+        lastCommandTimestamp = state.lastCommandTimestamp;
+        samplingCounter.set(state.samplingCounter);
+        lastSnapshotEnd = state.lastSnapshotEnd;
+        synchronized (pendingReplies) {
+            pendingReplies.clear();
+            pendingReplies.addAll(state.pendingReplies);
+        }
+        synchronized (executedCommands) {
+            executedCommands.clear();
+            executedCommands.putAll(state.executedCommands);
+        }
+        synchronized (enabledCollections) {
+            enabledCollections.clear();
+            enabledCollections.addAll(state.enabledCollections);
+            allCollectionsEnabled = state.allCollectionsEnabled;
+        }
+        synchronized (errors) {
+            errors.clear();
+            errors.addAll(state.errors);
+            while (errors.size() > config.getErrorMaxCount()) {
+                errors.removeFirst();
+            }
+        }
+        synchronized (snapshots) {
+            snapshots.clear();
+            snapshots.addAll(state.snapshots);
+            while (snapshots.size() > SNAPSHOT_LIMIT) {
+                snapshots.removeFirst();
+            }
+        }
+        synchronized (this) {
+            customHandlers.clear();
+            customHandlers.putAll(state.customHandlers);
+            handlers.putAll(state.customHandlers);
+        }
     }
 
     public void recordOperation(
@@ -487,11 +582,15 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     private void registerDefaultHandlers() {
-        registerCommandHandler("push_config", this::handlePushConfig);
-        registerCommandHandler("collection_metrics", this::handleCollectionMetrics);
-        registerCommandHandler("show_errors", this::handleShowErrors);
-        registerCommandHandler("show_latency_history", this::handleLatencyHistory);
-        registerCommandHandler("get_config", this::handleGetConfig);
+        registerDefaultCommandHandler("push_config", this::handlePushConfig);
+        registerDefaultCommandHandler("collection_metrics", this::handleCollectionMetrics);
+        registerDefaultCommandHandler("show_errors", this::handleShowErrors);
+        registerDefaultCommandHandler("show_latency_history", this::handleLatencyHistory);
+        registerDefaultCommandHandler("get_config", this::handleGetConfig);
+    }
+
+    private synchronized void registerDefaultCommandHandler(String type, CommandHandler handler) {
+        handlers.put(type, handler);
     }
 
     private CommandReply handlePushConfig(ClientCommand command) {
@@ -630,9 +729,32 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private static Map<String, Object> detailHistory(List<MetricsSnapshot> snapshots) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("snapshots", snapshots);
+        List<Map<String, Object>> details = new ArrayList<>();
+        for (MetricsSnapshot snapshot : snapshots) {
+            Map<String, Object> metrics = new LinkedHashMap<>();
+            for (OperationSnapshot operation : snapshot.metrics) {
+                metrics.put(operation.operation, metricHistory(operation.global));
+            }
+            Map<String, Object> detail = new LinkedHashMap<>();
+            detail.put("timestamp", snapshot.timestamp);
+            detail.put("end_time", snapshot.end_time);
+            detail.put("metrics", metrics);
+            details.add(detail);
+        }
+        result.put("snapshots", details);
         result.put("total_snapshots", snapshots.size());
         return result;
+    }
+
+    private static Map<String, Object> metricHistory(MetricSnapshot value) {
+        Map<String, Object> metric = new LinkedHashMap<>();
+        metric.put("request_count", value.requestCount);
+        metric.put("success_count", value.successCount);
+        metric.put("error_count", value.errorCount);
+        metric.put("avg_latency_ms", value.avgLatencyMs);
+        metric.put("p99_latency_ms", value.p99LatencyMs);
+        metric.put("max_latency_ms", value.maxLatencyMs);
+        return metric;
     }
 
     private static Map<String, Object> aggregateHistory(
@@ -718,6 +840,66 @@ public final class ClientTelemetryManager implements AutoCloseable {
     @FunctionalInterface
     public interface CommandHandler {
         CommandReply handle(ClientCommand command) throws Exception;
+    }
+
+    /** In-memory telemetry and command state transferred to a replacement connection manager. */
+    public static final class RuntimeState {
+        private final String clientId;
+        private final String configHash;
+        private final long lastCommandTimestamp;
+        private final List<CommandReply> pendingReplies;
+        private final Map<String, Long> executedCommands;
+        private final Set<String> enabledCollections;
+        private final boolean allCollectionsEnabled;
+        private final Map<String, CommandHandler> customHandlers;
+        private final List<ErrorInfo> errors;
+        private final List<MetricsSnapshot> snapshots;
+        private final long samplingCounter;
+        private final long lastSnapshotEnd;
+        private final boolean enabled;
+        private final long heartbeatIntervalMs;
+        private final double samplingRate;
+
+        private RuntimeState(
+                String clientId,
+                String configHash,
+                long lastCommandTimestamp,
+                List<CommandReply> pendingReplies,
+                Map<String, Long> executedCommands,
+                Set<String> enabledCollections,
+                boolean allCollectionsEnabled,
+                Map<String, CommandHandler> customHandlers,
+                List<ErrorInfo> errors,
+                List<MetricsSnapshot> snapshots,
+                long samplingCounter,
+                long lastSnapshotEnd,
+                boolean enabled,
+                long heartbeatIntervalMs,
+                double samplingRate) {
+            this.clientId = clientId;
+            this.configHash = configHash;
+            this.lastCommandTimestamp = lastCommandTimestamp;
+            this.pendingReplies = new ArrayList<>(pendingReplies);
+            this.executedCommands = new HashMap<>(executedCommands);
+            this.enabledCollections = new HashSet<>(enabledCollections);
+            this.allCollectionsEnabled = allCollectionsEnabled;
+            this.customHandlers = new HashMap<>(customHandlers);
+            this.errors = new ArrayList<>(errors);
+            this.snapshots = new ArrayList<>(snapshots);
+            this.samplingCounter = samplingCounter;
+            this.lastSnapshotEnd = lastSnapshotEnd;
+            this.enabled = enabled;
+            this.heartbeatIntervalMs = heartbeatIntervalMs;
+            this.samplingRate = samplingRate;
+        }
+
+        public String getClientId() {
+            return clientId;
+        }
+
+        public int getPendingReplyCount() {
+            return pendingReplies.size();
+        }
     }
 
     public static final class ErrorInfo {
