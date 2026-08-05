@@ -19,6 +19,8 @@
 
 package io.milvus.v2.service.rbac.request;
 
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+
 public class UpdatePasswordReq {
     private String userName;
     private String password;
@@ -78,8 +80,8 @@ public class UpdatePasswordReq {
     public String toString() {
         return "UpdatePasswordReq{" +
                 "userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
-                ", newPassword='" + newPassword + '\'' +
+                ", password='" + redactCredential(password) + '\'' +
+                ", newPassword='" + redactCredential(newPassword) + '\'' +
                 ", resetConnection=" + resetConnection +
                 ", description='" + description + '\'' +
                 '}';

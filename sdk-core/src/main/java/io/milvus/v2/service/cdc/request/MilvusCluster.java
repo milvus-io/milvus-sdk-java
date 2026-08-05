@@ -22,6 +22,9 @@ package io.milvus.v2.service.cdc.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
+
 public class MilvusCluster {
     private String clusterId;
     private String uri;
@@ -97,8 +100,8 @@ public class MilvusCluster {
     public String toString() {
         return "MilvusCluster{" +
                 "clusterId='" + clusterId + '\'' +
-                ", uri='" + uri + '\'' +
-                ", token='" + token + '\'' +
+                ", uri='" + redactUriUserInfo(uri) + '\'' +
+                ", token='" + redactCredential(token) + '\'' +
                 ", pchannels=" + pchannels +
                 '}';
     }

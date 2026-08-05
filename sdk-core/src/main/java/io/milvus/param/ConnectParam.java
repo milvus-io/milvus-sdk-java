@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.CLOUD_SERVERLESS_URI_REGEX;
 import static io.milvus.common.constant.MilvusClientConstant.MilvusConsts.HOST_HTTPS_PREFIX;
+import static io.milvus.common.utils.RedactCredential.redactCredential;
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
 /**
  * Parameters for client connection.
@@ -186,8 +188,8 @@ public class ConnectParam {
                 "host='" + host + '\'' +
                 ", port=" + port +
                 ", databaseName='" + databaseName + '\'' +
-                ", uri='" + uri + '\'' +
-                ", token='" + token + '\'' +
+                ", uri='" + redactUriUserInfo(uri) + '\'' +
+                ", token='" + redactCredential(token) + '\'' +
                 ", connectTimeoutMs=" + connectTimeoutMs +
                 ", keepAliveTimeMs=" + keepAliveTimeMs +
                 ", keepAliveTimeoutMs=" + keepAliveTimeoutMs +
@@ -195,7 +197,7 @@ public class ConnectParam {
                 ", rpcDeadlineMs=" + rpcDeadlineMs +
                 ", secure=" + secure +
                 ", idleTimeoutMs=" + idleTimeoutMs +
-                ", authorization='" + authorization + '\'' +
+                ", authorization='" + redactCredential(authorization) + '\'' +
                 ", clientKeyPath='" + clientKeyPath + '\'' +
                 ", clientPemPath='" + clientPemPath + '\'' +
                 ", caPemPath='" + caPemPath + '\'' +

@@ -505,6 +505,29 @@ public class MilvusClientV2Test extends BaseTest {
     }
 
     @Test
+    void connectConfigToStringRedactsCredentials() {
+        ConnectConfig config = ConnectConfig.builder()
+                .uri("http://uri-user:uri-password@dummyHost:19530/default")
+                .token("sensitive-token")
+                .username("sensitive-user")
+                .password("sensitive-password")
+                .dbName("default")
+                .build();
+
+        String loggedConfig = config.toString();
+        Assertions.assertFalse(loggedConfig.contains("sensitive-token"));
+        Assertions.assertFalse(loggedConfig.contains("sensitive-password"));
+        Assertions.assertFalse(loggedConfig.contains("uri-user"));
+        Assertions.assertFalse(loggedConfig.contains("uri-password"));
+        Assertions.assertTrue(loggedConfig.contains("token='<redacted>'"));
+        Assertions.assertTrue(loggedConfig.contains("username='sensitive-user'"));
+        Assertions.assertTrue(loggedConfig.contains("password='<redacted>'"));
+        Assertions.assertTrue(loggedConfig.contains(
+                "uri='http://<redacted>@dummyHost:19530/default'"));
+        Assertions.assertTrue(loggedConfig.contains("dbName='default'"));
+    }
+
+    @Test
     void testV2BuilderClasses() {
         CheckConfig config = new CheckConfig();
 
