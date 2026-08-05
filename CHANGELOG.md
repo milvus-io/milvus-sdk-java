@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.6.23 (2026-08-05)
+### Improvement
+- Align insert and upsert data validation with PyMilvus
+- Refine schema and session-timestamp caching across clients, iterators, collection DDL, and global-cluster failover
+- Redact authentication secrets from diagnostic output
+
+### Bug
+- Release consumed iterator cache state to avoid memory retention
+
 ## milvus-sdk-java 2.6.22 (2026-06-29)
 ### Improvement
 - Improve volume upload interaction
@@ -948,4 +957,3 @@
 - \#23 - Format code with Google-java-style and add Apache 2.0 license header
 - \#28 - add examples
 - \#29 - add README
-
