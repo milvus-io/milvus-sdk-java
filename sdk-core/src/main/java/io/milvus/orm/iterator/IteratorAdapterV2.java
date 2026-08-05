@@ -229,7 +229,7 @@ public class IteratorAdapterV2 {
             builder.withMaxLength(schema.getMaxLength());
         }
         if (schema.getMaxCapacity() != null) {
-            builder.withMaxCapacity(schema.getMaxLength());
+            builder.withMaxCapacity(schema.getMaxCapacity());
         }
         if (schema.getElementType() != null) {
             builder.withElementType(DataType.valueOf(schema.getElementType().name()));
