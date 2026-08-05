@@ -89,6 +89,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
+
 /**
  * Client for interacting with Milvus through the V2 API.
  *
@@ -175,7 +177,7 @@ public class MilvusClientV2 {
 
         // Check if this is a global cluster endpoint
         if (GlobalClusterUtils.isGlobalEndpoint(connectConfig.getUri())) {
-            logger.info("Detected global cluster endpoint: {}", connectConfig.getUri());
+            logger.info("Detected global cluster endpoint: {}", redactUriUserInfo(connectConfig.getUri()));
             this.globalStub = new GlobalStub(connectConfig.getUri(), connectConfig, this::updatePrimaryConnection);
             updatePrimaryConnection(this.globalStub.getPrimaryClient());
             // Set up the global refresh trigger on RpcUtils for UNAVAILABLE errors
