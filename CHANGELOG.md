@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 3.0.6 (2026-08-05)
+### Feature
+- Support the Text data type in DML, result decoding, and BulkWriter
+- Add the FMINDEX scalar index type
+- Support client-side bloom filter blobs for bloom_match filters
+
+### Improvement
+- Refine schema and session-timestamp caching across clients, iterators, collection DDL, and global-cluster failover
+- Redact authentication secrets from diagnostic output
+
+### Bug
+- Release completed iterator cache state to avoid memory retention
+- Refresh cached schemas when the allow_insert_auto_id collection property changes
+- Use array max capacity when converting V2 iterator field metadata
+
 ## milvus-sdk-java 3.0.5 (2026-07-24)
 ### Feature
 - Support adding scalar, struct, and function fields to existing Milvus 3.0 collections
