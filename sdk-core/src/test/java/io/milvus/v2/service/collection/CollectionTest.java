@@ -650,12 +650,17 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
-    void testAddFunctionFieldRejectsAutoIndex() {
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
-                        .indexParam(IndexParam.builder().fieldName("sparse").build())
-                        .build()));
-        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    void testAddFunctionFieldAllowsAutoIndex() {
+        client_v2.addFunctionField(addFunctionFieldBuilder()
+                .indexParam(IndexParam.builder().fieldName("sparse").build())
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        Assertions.assertEquals("AUTOINDEX",
+                getParam(captor.getValue().getAction().getAddRequest().getFieldInfos(0).getExtraParamsList(),
+                        Constant.INDEX_TYPE));
     }
 
     @Test

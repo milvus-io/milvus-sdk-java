@@ -801,8 +801,7 @@ public class CollectionService extends BaseService {
                     "Bound index field must match the function output field.");
         }
         if (indexParam.getIndexType() == null
-                || indexParam.getIndexType() == IndexParam.IndexType.None
-                || indexParam.getIndexType() == IndexParam.IndexType.AUTOINDEX) {
+                || indexParam.getIndexType() == IndexParam.IndexType.None) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                     "Bound index must specify an explicit index type.");
         }
