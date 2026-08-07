@@ -19,6 +19,8 @@
 
 package io.milvus.v2.service.vector;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
@@ -50,8 +52,12 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +147,40 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testQueryAsync() throws Exception {
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .filter("id > 0")
+                .limit(10)
+                .build();
+
+        QueryResp response = client_v2.queryAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(response);
+        verify(futureStub).query(any(QueryRequest.class));
+        verify(blockingStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
+    void testQueryAsyncValidationFailureCompletesExceptionally() {
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .filter("id > 0")
+                .ids(Collections.singletonList(1L))
+                .build();
+
+        CompletableFuture<QueryResp> future = Assertions.assertDoesNotThrow(
+                () -> client_v2.queryAsync(request));
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> future.get(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        verify(futureStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
     void testSearch() {
         List<Float> vectorList = new ArrayList<>();
         vectorList.add(1.0f);
@@ -157,6 +197,81 @@ class VectorTest extends BaseTest {
         Assertions.assertEquals(456L, statusR.getScannedRemoteBytes());
         Assertions.assertEquals(789L, statusR.getScannedTotalBytes());
         Assertions.assertEquals(0.5f, statusR.getCacheHitRatio());
+    }
+
+    @Test
+    void testSearchAsync() throws Exception {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test2")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        SearchResp response = client_v2.searchAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals(123L, response.getCost());
+        Assertions.assertEquals(456L, response.getScannedRemoteBytes());
+        Assertions.assertEquals(789L, response.getScannedTotalBytes());
+        Assertions.assertEquals(0.5f, response.getCacheHitRatio());
+        verify(futureStub).search(any(SearchRequest.class));
+        verify(blockingStub, never()).search(any(SearchRequest.class));
+    }
+
+    @Test
+    void testSearchAsyncServerFailureCompletesExceptionally() {
+        SearchResults failedResponse = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(1).setReason("search failed").build())
+                .build();
+        when(futureStub.search(any())).thenReturn(Futures.immediateFuture(failedResponse));
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> client_v2.searchAsync(request).get(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.SERVER_ERROR,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+    }
+
+    @Test
+    void testSearchAsyncCancellationPropagatesToGrpcFuture() {
+        SettableFuture<SearchResults> grpcFuture = SettableFuture.create();
+        when(futureStub.search(any())).thenReturn(grpcFuture);
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        CompletableFuture<SearchResp> future = client_v2.searchAsync(request);
+        Assertions.assertTrue(future.cancel(true));
+
+        Assertions.assertTrue(grpcFuture.isCancelled());
+    }
+
+    @Test
+    void testHybridSearchAsync() throws Exception {
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq request = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+
+        SearchResp response = client_v2.hybridSearchAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(123L, response.getCost());
+        verify(futureStub).hybridSearch(any(HybridSearchRequest.class));
+        verify(blockingStub, never()).hybridSearch(any(HybridSearchRequest.class));
     }
 
     @Test
@@ -327,6 +442,48 @@ class VectorTest extends BaseTest {
         verify(blockingStub).hybridSearch(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
         Assertions.assertEquals("cluster-a", request.getClusterId());
+    }
+
+    @Test
+    void testSessionAsyncOperationsPassClusterId() throws Exception {
+        SearchReq searchRequest = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        QueryReq queryRequest = QueryReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq hybridSearchRequest = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+
+        client_v2.session("cluster-a").searchAsync(searchRequest).get(1, TimeUnit.SECONDS);
+        client_v2.session("cluster-a").queryAsync(queryRequest).get(1, TimeUnit.SECONDS);
+        client_v2.session("cluster-a").hybridSearchAsync(hybridSearchRequest).get(1, TimeUnit.SECONDS);
+
+        ArgumentCaptor<SearchRequest> searchCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(futureStub).search(searchCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(searchCaptor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+
+        ArgumentCaptor<QueryRequest> queryCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(futureStub).query(queryCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(queryCaptor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
+
+        ArgumentCaptor<HybridSearchRequest> hybridCaptor = ArgumentCaptor.forClass(HybridSearchRequest.class);
+        verify(futureStub).hybridSearch(hybridCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(hybridCaptor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
     }
 
     @Test

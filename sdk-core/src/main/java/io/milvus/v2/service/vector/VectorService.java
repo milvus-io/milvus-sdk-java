@@ -19,6 +19,10 @@
 
 package io.milvus.v2.service.vector;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.common.utils.cache.SchemaCache;
@@ -44,6 +48,8 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class VectorService extends BaseService {
     Logger logger = LoggerFactory.getLogger(VectorService.class);
@@ -196,13 +202,31 @@ public class VectorService extends BaseService {
     }
 
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
+        QueryRequest queryRequest = buildQueryRequest(blockingStub, request);
+        String title = String.format("Query collection: '%s' in database: '%s'",
+                request.getCollectionName(), request.getDatabaseName());
+        QueryResults response = blockingStub.query(queryRequest);
+        return convertQueryResponse(title, response);
+    }
+
+    public CompletableFuture<QueryResp> queryAsync(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                                   MilvusServiceGrpc.MilvusServiceFutureStub futureStub,
+                                                   QueryReq request) {
+        QueryRequest queryRequest = buildQueryRequest(blockingStub, request);
+        String title = String.format("Query collection: '%s' in database: '%s'",
+                request.getCollectionName(), request.getDatabaseName());
+        return transformFuture(futureStub.query(queryRequest), response -> convertQueryResponse(title, response));
+    }
+
+    private QueryRequest buildQueryRequest(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                           QueryReq request) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
-        String title = String.format("Query collection: '%s' in database: '%s'", collectionName, dbName);
         if (StringUtils.isNotEmpty(request.getFilter()) && CollectionUtils.isNotEmpty(request.getIds())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "filter and ids can't be set at the same time");
         }
 
+        QueryReq effectiveRequest = request;
         if (CollectionUtils.isNotEmpty(request.getIds())) {
             DescribeCollectionResponse descResp = getCollectionInfo(blockingStub, dbName, collectionName, false);
             String primaryKeyName = "";
@@ -216,19 +240,42 @@ public class VectorService extends BaseService {
             if (StringUtils.isEmpty(primaryKeyName)) {
                 throw new MilvusClientException(ErrorCode.SERVER_ERROR, "cannot find the primary key field in collection schema");
             }
-            request.setFilter(vectorUtils.getExprById(primaryKeyName, request.getIds()));
+            effectiveRequest = copyQueryReq(request);
+            effectiveRequest.setFilter(vectorUtils.getExprById(primaryKeyName, request.getIds()));
         }
 
         // reset the db name so that the timestamp cache can set correct key for this collection
-        request.setDatabaseName(actualDbName(request.getDatabaseName()));
-        QueryResults response = blockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
+        effectiveRequest.setDatabaseName(actualDbName(dbName));
+        return vectorUtils.ConvertToGrpcQueryRequest(effectiveRequest);
+    }
+
+    private QueryReq copyQueryReq(QueryReq request) {
+        return QueryReq.builder()
+                .databaseName(request.getDatabaseName())
+                .collectionName(request.getCollectionName())
+                .clusterId(request.getClusterId())
+                .partitionNames(request.getPartitionNames())
+                .outputFields(request.getOutputFields())
+                .ids(request.getIds())
+                .filter(request.getFilter())
+                .consistencyLevel(request.getConsistencyLevel())
+                .offset(request.getOffset())
+                .limit(request.getLimit())
+                .ignoreGrowing(request.isIgnoreGrowing())
+                .timezone(request.getTimezone())
+                .orderByFields(request.getOrderByFields())
+                .queryParams(request.getQueryParams())
+                .filterTemplateValues(request.getFilterTemplateValues())
+                .build();
+    }
+
+    private QueryResp convertQueryResponse(String title, QueryResults response) {
         rpcUtils.handleResponse(title, response.getStatus());
 
         return QueryResp.builder()
                 .queryResults(convertUtils.getEntities(response))
                 .sessionTs(response.getSessionTs())
                 .build();
-
     }
 
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
@@ -242,14 +289,30 @@ public class VectorService extends BaseService {
         request.setDatabaseName(actualDbName(dbName));
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
 
-        SearchResults response = blockingStub.search(searchRequest);
+        return convertSearchResponse(title, blockingStub.search(searchRequest), true);
+    }
+
+    public CompletableFuture<SearchResp> searchAsync(MilvusServiceGrpc.MilvusServiceFutureStub futureStub,
+                                                     SearchReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Search collection: '%s' in database: '%s'", collectionName, dbName);
+
+        request.setDatabaseName(actualDbName(dbName));
+        SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
+        return transformFuture(futureStub.search(searchRequest), response -> convertSearchResponse(title, response, true));
+    }
+
+    private SearchResp convertSearchResponse(String title, SearchResults response, boolean includeAggregations) {
         rpcUtils.handleResponse(title, response.getStatus());
 
         SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
-                .aggregationBuckets(convertUtils.getAggregationBuckets(response))
                 .sessionTs(response.getSessionTs())
                 .recalls(response.getResults().getRecallsList());
+        if (includeAggregations) {
+            respBuilder.aggregationBuckets(convertUtils.getAggregationBuckets(response));
+        }
         fillSearchRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
         return respBuilder.build();
     }
@@ -265,15 +328,52 @@ public class VectorService extends BaseService {
         request.setDatabaseName(actualDbName(dbName));
         HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
 
-        SearchResults response = blockingStub.hybridSearch(searchRequest);
-        rpcUtils.handleResponse(title, response.getStatus());
+        return convertSearchResponse(title, blockingStub.hybridSearch(searchRequest), false);
+    }
 
-        SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
-                .searchResults(convertUtils.getEntities(response))
-                .sessionTs(response.getSessionTs())
-                .recalls(response.getResults().getRecallsList());
-        fillSearchRespFromExtraInfo(respBuilder, response.getStatus().getExtraInfoMap());
-        return respBuilder.build();
+    public CompletableFuture<SearchResp> hybridSearchAsync(MilvusServiceGrpc.MilvusServiceFutureStub futureStub,
+                                                           HybridSearchReq request) {
+        String dbName = request.getDatabaseName();
+        String collectionName = request.getCollectionName();
+        String title = String.format("Hybrid search collection: '%s' in database: '%s'", collectionName, dbName);
+
+        request.setDatabaseName(actualDbName(dbName));
+        HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
+        return transformFuture(futureStub.hybridSearch(searchRequest),
+                response -> convertSearchResponse(title, response, false));
+    }
+
+    private <T, R> CompletableFuture<R> transformFuture(ListenableFuture<T> source,
+                                                        Function<T, R> converter) {
+        CompletableFuture<R> target = new CompletableFuture<R>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                boolean cancelled = super.cancel(mayInterruptIfRunning);
+                if (cancelled) {
+                    source.cancel(mayInterruptIfRunning);
+                }
+                return cancelled;
+            }
+        };
+        Futures.addCallback(source, new FutureCallback<T>() {
+            @Override
+            public void onSuccess(T result) {
+                if (target.isDone()) {
+                    return;
+                }
+                try {
+                    target.complete(converter.apply(result));
+                } catch (Throwable throwable) {
+                    target.completeExceptionally(throwable);
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                target.completeExceptionally(throwable);
+            }
+        }, MoreExecutors.directExecutor());
+        return target;
     }
 
     private void fillSearchRespFromExtraInfo(SearchResp.SearchRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
