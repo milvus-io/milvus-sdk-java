@@ -42,7 +42,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -629,14 +631,98 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
-    void testAddFunctionFieldRejectsMismatchedOutputField() {
+    void testAddFunctionFieldRejectsNullOutputFieldNames() {
         MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
                 () -> client_v2.addFunctionField(addFunctionFieldBuilder()
                         .function(CreateCollectionReq.Function.builder()
                                 .name("bm25")
                                 .functionType(io.milvus.common.clientenum.FunctionType.BM25)
                                 .inputFieldNames(Collections.singletonList("text"))
-                                .outputFieldNames(Collections.singletonList("other"))
+                                .outputFieldNames(null)
+                                .build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertEquals("Function output field names cannot be null.", exception.getMessage());
+        verify(blockingStub, never()).alterCollectionSchema(any());
+    }
+
+    @Test
+    void testAddFunctionFieldLeavesOutputFieldValidationToServer() {
+        client_v2.addFunctionField(addFunctionFieldBuilder()
+                .function(CreateCollectionReq.Function.builder()
+                        .name("bm25")
+                        .functionType(io.milvus.common.clientenum.FunctionType.BM25)
+                        .inputFieldNames(Collections.singletonList("text"))
+                        .outputFieldNames(Collections.singletonList("other"))
+                        .build())
+                .indexParam(IndexParam.builder()
+                        .fieldName("sparse")
+                        .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                        .build())
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        Assertions.assertEquals("other",
+                captor.getValue().getAction().getAddRequest().getFuncSchema(0).getOutputFieldNames(0));
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsUnsupportedFunctionType() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .function(CreateCollectionReq.Function.builder()
+                                .name("embedding")
+                                .functionType(io.milvus.common.clientenum.FunctionType.TEXTEMBEDDING)
+                                .inputFieldNames(Collections.singletonList("text"))
+                                .outputFieldNames(Collections.singletonList("sparse"))
+                                .build())
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsBm25WithWrongOutputType() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .dataType(DataType.BinaryVector)
+                        .build()));
+        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    }
+
+    @Test
+    void testAddFunctionFieldSupportsMinhashWithBinaryOutput() {
+        client_v2.addFunctionField(AddFunctionFieldReq.builder()
+                .collectionName("test")
+                .fieldName("minhash")
+                .dataType(DataType.BinaryVector)
+                .dimension(512)
+                .function(CreateCollectionReq.Function.builder()
+                        .name("minhash")
+                        .functionType(io.milvus.common.clientenum.FunctionType.MINHASH)
+                        .inputFieldNames(Collections.singletonList("text"))
+                        .outputFieldNames(Collections.singletonList("minhash"))
+                        .build())
+                .indexParam(IndexParam.builder()
+                        .fieldName("minhash")
+                        .indexType(IndexParam.IndexType.MINHASH_LSH)
+                        .metricType(IndexParam.MetricType.MHJACCARD)
+                        .build())
+                .build());
+
+        verify(blockingStub).alterCollectionSchema(any());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsMinhashWithWrongOutputType() {
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
+                        .function(CreateCollectionReq.Function.builder()
+                                .name("minhash")
+                                .functionType(io.milvus.common.clientenum.FunctionType.MINHASH)
+                                .inputFieldNames(Collections.singletonList("text"))
+                                .outputFieldNames(Collections.singletonList("sparse"))
                                 .build())
                         .build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
@@ -650,10 +736,39 @@ class CollectionTest extends BaseTest {
     }
 
     @Test
-    void testAddFunctionFieldRejectsAutoIndex() {
+    void testAddFunctionFieldAcceptsAutoIndex() {
+        client_v2.addFunctionField(addFunctionFieldBuilder()
+                .indexParam(IndexParam.builder().fieldName("sparse").build())
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        Assertions.assertEquals("AUTOINDEX",
+                getParam(captor.getValue().getAction().getAddRequest().getFieldInfos(0).getExtraParamsList(),
+                        Constant.INDEX_TYPE));
+    }
+
+    @Test
+    void testAddFunctionFieldAcceptsEmptyBoundIndexField() {
+        client_v2.addFunctionField(addFunctionFieldBuilder()
+                .indexParam(IndexParam.builder()
+                        .fieldName("")
+                        .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                        .build())
+                .build());
+
+        verify(blockingStub).alterCollectionSchema(any());
+    }
+
+    @Test
+    void testAddFunctionFieldRejectsNoneIndexType() {
         MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
                 () -> client_v2.addFunctionField(addFunctionFieldBuilder()
-                        .indexParam(IndexParam.builder().fieldName("sparse").build())
+                        .indexParam(IndexParam.builder()
+                                .fieldName("sparse")
+                                .indexType(IndexParam.IndexType.None)
+                                .build())
                         .build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
     }
@@ -668,19 +783,37 @@ class CollectionTest extends BaseTest {
                                 .build())
                         .build()));
         Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+        Assertions.assertEquals("Bound index field must be empty or match the field being added.",
+                exception.getMessage());
     }
 
     @Test
-    void testAddFunctionFieldRejectsDuplicateIndexType() {
-        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
-                () -> client_v2.addFunctionField(addFunctionFieldBuilder()
-                        .indexParam(IndexParam.builder()
-                                .fieldName("sparse")
-                                .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
-                                .extraParams(Collections.singletonMap(Constant.INDEX_TYPE, "SPARSE_WAND"))
-                                .build())
-                        .build()));
-        Assertions.assertEquals(io.milvus.v2.exception.ErrorCode.INVALID_PARAMS, exception.getErrorCode());
+    void testAddFunctionFieldTypedIndexParamsOverrideDuplicates() {
+        Map<String, Object> extraParams = new HashMap<>();
+        extraParams.put(Constant.INDEX_TYPE, "SPARSE_WAND");
+        extraParams.put(Constant.METRIC_TYPE, "IP");
+        extraParams.put("drop_ratio_build", 0.2);
+        client_v2.addFunctionField(addFunctionFieldBuilder()
+                .indexParam(IndexParam.builder()
+                        .fieldName("sparse")
+                        .indexType(IndexParam.IndexType.SPARSE_INVERTED_INDEX)
+                        .metricType(IndexParam.MetricType.BM25)
+                        .extraParams(extraParams)
+                        .build())
+                .build());
+
+        ArgumentCaptor<io.milvus.grpc.AlterCollectionSchemaRequest> captor =
+                ArgumentCaptor.forClass(io.milvus.grpc.AlterCollectionSchemaRequest.class);
+        verify(blockingStub).alterCollectionSchema(captor.capture());
+        List<KeyValuePair> params =
+                captor.getValue().getAction().getAddRequest().getFieldInfos(0).getExtraParamsList();
+        Assertions.assertEquals("SPARSE_INVERTED_INDEX", getParam(params, Constant.INDEX_TYPE));
+        Assertions.assertEquals("BM25", getParam(params, Constant.METRIC_TYPE));
+        Assertions.assertEquals("0.2", getParam(params, "drop_ratio_build"));
+        Assertions.assertEquals(1,
+                params.stream().filter(param -> Constant.INDEX_TYPE.equals(param.getKey())).count());
+        Assertions.assertEquals(1,
+                params.stream().filter(param -> Constant.METRIC_TYPE.equals(param.getKey())).count());
     }
 
     @Test

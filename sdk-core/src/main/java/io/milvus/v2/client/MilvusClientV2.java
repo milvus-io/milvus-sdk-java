@@ -693,8 +693,10 @@ public class MilvusClientV2 {
 
     /**
      * Add a function-backed field to collection.
-     * The request must include a bound index whose field matches the function output field,
-     * with an explicit index type other than None or AUTOINDEX.
+     * The client supports BM25 functions with SparseFloatVector fields and MINHASH functions with
+     * BinaryVector fields. The request must include a bound index whose field name is empty or
+     * matches the field being added, with an index type other than None. AUTOINDEX is accepted and
+     * resolved by the server. Function output-field names are validated by the server.
      *
      * @param request add function field request
      */
