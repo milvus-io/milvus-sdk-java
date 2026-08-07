@@ -20,6 +20,7 @@
 package io.milvus.v2.service.collection;
 
 import io.grpc.StatusRuntimeException;
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.JsonUtils;
 import io.milvus.grpc.*;
@@ -786,25 +787,39 @@ public class CollectionService extends BaseService {
         if (request.getFunction() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function cannot be null.");
         }
-        if (CollectionUtils.isEmpty(request.getFunction().getOutputFieldNames())
-                || request.getFunction().getOutputFieldNames().size() != 1
-                || !StringUtils.equals(request.getFieldName(), request.getFunction().getOutputFieldNames().get(0))) {
+        if (request.getFunction().getOutputFieldNames() == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                    "Function must have exactly one output field matching the field being added.");
+                    "Function output field names cannot be null.");
+        }
+        FunctionType functionType = request.getFunction().getFunctionType();
+        io.milvus.v2.common.DataType expectedOutputType;
+        if (functionType == FunctionType.BM25) {
+            expectedOutputType = io.milvus.v2.common.DataType.SparseFloatVector;
+        } else if (functionType == FunctionType.MINHASH) {
+            expectedOutputType = io.milvus.v2.common.DataType.BinaryVector;
+        } else {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    "addFunctionField only supports FunctionType.BM25 with SparseFloatVector "
+                            + "or FunctionType.MINHASH with BinaryVector for now, got " + functionType);
+        }
+        if (request.getDataType() != expectedOutputType) {
+            throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                    String.format("addFunctionField requires %s output field for %s, got %s",
+                            expectedOutputType, functionType, request.getDataType()));
         }
         IndexParam indexParam = request.getIndexParam();
         if (indexParam == null) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Bound index cannot be null.");
         }
-        if (!StringUtils.equals(request.getFieldName(), indexParam.getFieldName())) {
+        if (StringUtils.isNotEmpty(indexParam.getFieldName())
+                && !StringUtils.equals(request.getFieldName(), indexParam.getFieldName())) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                    "Bound index field must match the function output field.");
+                    "Bound index field must be empty or match the field being added.");
         }
         if (indexParam.getIndexType() == null
-                || indexParam.getIndexType() == IndexParam.IndexType.None
-                || indexParam.getIndexType() == IndexParam.IndexType.AUTOINDEX) {
+                || indexParam.getIndexType() == IndexParam.IndexType.None) {
             throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                    "Bound index must specify an explicit index type.");
+                    "Bound index must specify a non-None index type.");
         }
 
         String dbName = request.getDatabaseName();
@@ -833,11 +848,11 @@ public class CollectionService extends BaseService {
         }
         Map<String, Object> extraParams = indexParam.getExtraParams();
         if (extraParams != null && !extraParams.isEmpty()) {
-            if (extraParams.containsKey(Constant.INDEX_TYPE) || extraParams.containsKey(Constant.METRIC_TYPE)) {
-                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
-                        "Bound index extra params cannot duplicate index_type or metric_type.");
-            }
             for (Map.Entry<String, Object> entry : extraParams.entrySet()) {
+                if (Constant.INDEX_TYPE.equals(entry.getKey())
+                        || (Constant.METRIC_TYPE.equals(entry.getKey()) && indexParam.getMetricType() != null)) {
+                    continue;
+                }
                 fieldInfoBuilder.addExtraParams(KeyValuePair.newBuilder()
                         .setKey(entry.getKey())
                         .setValue(entry.getValue().toString())
