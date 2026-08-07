@@ -90,6 +90,7 @@ import io.milvus.v2.exception.MilvusClientException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
@@ -114,6 +115,7 @@ public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
     private ManagedChannel channel;
     private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
     private final ClientUtils clientUtils = new ClientUtils();
     private final DatabaseService databaseService = new DatabaseService();
     private final CollectionService collectionService = new CollectionService();
@@ -146,6 +148,11 @@ public class MilvusClientV2 {
     // Setter for blockingStub (replacing @Setter)
     public void setBlockingStub(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         this.blockingStub = blockingStub;
+    }
+
+    // Setter for futureStub, primarily used by tests and internal client wiring.
+    public void setFutureStub(MilvusServiceGrpc.MilvusServiceFutureStub futureStub) {
+        this.futureStub = futureStub;
     }
 
     private void initServices(String dbName) {
@@ -220,6 +227,7 @@ public class MilvusClientV2 {
             Channel interceptedChannel = ClientInterceptors.intercept(channel,
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
+            futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel).withWaitForReady();
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -239,6 +247,7 @@ public class MilvusClientV2 {
     private synchronized void updatePrimaryConnection(MilvusClientV2 primaryClient) {
         this.channel = primaryClient.channel;
         this.blockingStub = primaryClient.blockingStub;
+        this.futureStub = primaryClient.futureStub;
         // Keep cacheEndpoint scoped to the logical global-cluster endpoint. Replacing it with the
         // physical primary endpoint would make session timestamps and schemas recorded before a
         // failover unreachable after the primary changes.
@@ -256,6 +265,14 @@ public class MilvusClientV2 {
             return blockingStub.withDeadlineAfter(connectConfig.getRpcDeadlineMs(), TimeUnit.MILLISECONDS);
         } else {
             return blockingStub;
+        }
+    }
+
+    private MilvusServiceGrpc.MilvusServiceFutureStub getFutureRpcStub() {
+        if (connectConfig != null && connectConfig.getRpcDeadlineMs() > 0) {
+            return futureStub.withDeadlineAfter(connectConfig.getRpcDeadlineMs(), TimeUnit.MILLISECONDS);
+        } else {
+            return futureStub;
         }
     }
 
@@ -865,6 +882,17 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Queries vectors asynchronously in a collection in Milvus.
+     *
+     * @param request query request
+     * @return a future completed with QueryResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<QueryResp> queryAsync(QueryReq request) {
+        return rpcUtils.retryAsync(() ->
+                vectorService.queryAsync(this.getRpcStub(), this.getFutureRpcStub(), request));
+    }
+
+    /**
      * Searches vectors in a collection in Milvus.
      *
      * @param request search request
@@ -875,6 +903,16 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Searches vectors asynchronously in a collection in Milvus.
+     *
+     * @param request search request
+     * @return a future completed with SearchResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<SearchResp> searchAsync(SearchReq request) {
+        return rpcUtils.retryAsync(() -> vectorService.searchAsync(this.getFutureRpcStub(), request));
+    }
+
+    /**
      * Conducts multi vector similarity search with a ranker for rearrangement.
      *
      * @param request search request
@@ -882,6 +920,16 @@ public class MilvusClientV2 {
      */
     public SearchResp hybridSearch(HybridSearchReq request) {
         return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request));
+    }
+
+    /**
+     * Conducts multi vector similarity search asynchronously with a ranker for rearrangement.
+     *
+     * @param request hybrid search request
+     * @return a future completed with SearchResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request) {
+        return rpcUtils.retryAsync(() -> vectorService.hybridSearchAsync(this.getFutureRpcStub(), request));
     }
 
     /**
