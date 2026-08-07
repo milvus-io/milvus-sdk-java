@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -66,6 +67,180 @@ class SchemaCacheTest {
         assertEquals(2, loads.get());
         assertSame(refreshed, cache.get("host:19530", "default", "coll"));
         assertEquals(3L, cache.get("host:19531", "default", "coll").getCollectionID());
+    }
+
+    @Test
+    void sharesOneInflightAsyncLoadWithoutBlockingCallers() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CompletableFuture<DescribeCollectionResponse> loaderFuture = new CompletableFuture<>();
+        AtomicInteger loads = new AtomicInteger();
+
+        CompletableFuture<DescribeCollectionResponse> first = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    return loaderFuture;
+                });
+        CompletableFuture<DescribeCollectionResponse> second = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    return CompletableFuture.completedFuture(response(99L));
+                });
+
+        assertEquals(1, loads.get());
+        assertFalse(first.isDone());
+        assertFalse(second.isDone());
+
+        loaderFuture.complete(response(10L));
+        assertEquals(10L, first.get(5, TimeUnit.SECONDS).getCollectionID());
+        assertEquals(10L, second.get(5, TimeUnit.SECONDS).getCollectionID());
+        assertEquals(10L, cache.get("host:19530", "db", "coll").getCollectionID());
+    }
+
+    @Test
+    void asyncInvalidationPreventsOldLoadFromRepopulatingCache() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CompletableFuture<DescribeCollectionResponse> oldLoader = new CompletableFuture<>();
+
+        CompletableFuture<DescribeCollectionResponse> oldResult = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> oldLoader);
+        cache.invalidate("host:19530", "db", "coll");
+        CompletableFuture<DescribeCollectionResponse> newResult = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope,
+                () -> CompletableFuture.completedFuture(response(22L)));
+
+        assertEquals(22L, newResult.get(5, TimeUnit.SECONDS).getCollectionID());
+        oldLoader.complete(response(11L));
+        assertEquals(11L, oldResult.get(5, TimeUnit.SECONDS).getCollectionID());
+        assertEquals(22L, cache.get("host:19530", "db", "coll").getCollectionID());
+    }
+
+    @Test
+    void cancellingAsyncWaiterDoesNotCancelSharedLoad() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CompletableFuture<DescribeCollectionResponse> loaderFuture = new CompletableFuture<>();
+
+        CompletableFuture<DescribeCollectionResponse> cancelled = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> loaderFuture);
+        CompletableFuture<DescribeCollectionResponse> remaining = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope,
+                () -> CompletableFuture.completedFuture(response(99L)));
+
+        assertTrue(cancelled.cancel(true));
+        assertFalse(loaderFuture.isCancelled());
+        loaderFuture.complete(response(12L));
+        assertEquals(12L, remaining.get(5, TimeUnit.SECONDS).getCollectionID());
+    }
+
+    @Test
+    void synchronousAndAsyncCallersShareInflightLoad() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CompletableFuture<DescribeCollectionResponse> loaderFuture = new CompletableFuture<>();
+        AtomicInteger loads = new AtomicInteger();
+        AtomicReference<DescribeCollectionResponse> syncResponse = new AtomicReference<>();
+
+        CompletableFuture<DescribeCollectionResponse> asyncResult = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    return loaderFuture;
+                });
+        Thread syncCaller = new Thread(() -> syncResponse.set(cache.getOrLoad(
+                "host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    return response(99L);
+                })));
+        syncCaller.start();
+        awaitWaiting(syncCaller);
+
+        try {
+            loaderFuture.complete(response(14L));
+            assertEquals(14L, asyncResult.get(5, TimeUnit.SECONDS).getCollectionID());
+            syncCaller.join(TimeUnit.SECONDS.toMillis(5));
+            assertFalse(syncCaller.isAlive());
+            assertEquals(14L, syncResponse.get().getCollectionID());
+            assertEquals(1, loads.get());
+        } finally {
+            loaderFuture.complete(response(14L));
+            syncCaller.join(TimeUnit.SECONDS.toMillis(5));
+        }
+    }
+
+    @Test
+    void inlineRetryAfterAsyncFailureStartsNewLoadGeneration() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CompletableFuture<DescribeCollectionResponse> loaderFuture = new CompletableFuture<>();
+        AtomicInteger loads = new AtomicInteger();
+        AtomicReference<CompletableFuture<DescribeCollectionResponse>> retryFuture = new AtomicReference<>();
+
+        CompletableFuture<DescribeCollectionResponse> first = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    return loaderFuture;
+                });
+        CompletableFuture<Void> continuation = first.handle((ignoredResponse, failure) -> {
+            retryFuture.set(cache.getOrLoadAsync(
+                    "host:19530", "db", "coll", false, loadScope, () -> {
+                        loads.incrementAndGet();
+                        return CompletableFuture.completedFuture(response(20L));
+                    }));
+            return null;
+        });
+
+        loaderFuture.completeExceptionally(new IllegalStateException("load failed"));
+        continuation.get(5, TimeUnit.SECONDS);
+
+        assertEquals(2, loads.get());
+        assertEquals(20L, retryFuture.get().get(5, TimeUnit.SECONDS).getCollectionID());
+    }
+
+    @Test
+    void inlineRetryAfterSynchronousFailureStartsNewLoadGeneration() throws Exception {
+        SchemaCache cache = new SchemaCache();
+        CountDownLatch loaderStarted = new CountDownLatch(1);
+        CountDownLatch releaseLoader = new CountDownLatch(1);
+        AtomicInteger loads = new AtomicInteger();
+        AtomicReference<Throwable> synchronousFailure = new AtomicReference<>();
+        AtomicReference<CompletableFuture<DescribeCollectionResponse>> retryFuture = new AtomicReference<>();
+
+        Thread synchronousLoader = new Thread(() -> {
+            try {
+                cache.getOrLoad("host:19530", "db", "coll", false, loadScope, () -> {
+                    loads.incrementAndGet();
+                    loaderStarted.countDown();
+                    await(releaseLoader);
+                    throw new IllegalStateException("load failed");
+                });
+            } catch (Throwable throwable) {
+                synchronousFailure.set(throwable);
+            }
+        });
+        synchronousLoader.start();
+        assertTrue(loaderStarted.await(5, TimeUnit.SECONDS));
+
+        CompletableFuture<DescribeCollectionResponse> waiter = cache.getOrLoadAsync(
+                "host:19530", "db", "coll", false, loadScope,
+                () -> CompletableFuture.completedFuture(response(99L)));
+        CompletableFuture<Void> continuation = waiter.handle((ignoredResponse, failure) -> {
+            retryFuture.set(cache.getOrLoadAsync(
+                    "host:19530", "db", "coll", false, loadScope, () -> {
+                        loads.incrementAndGet();
+                        return CompletableFuture.completedFuture(response(21L));
+                    }));
+            return null;
+        });
+
+        try {
+            releaseLoader.countDown();
+            continuation.get(5, TimeUnit.SECONDS);
+            synchronousLoader.join(TimeUnit.SECONDS.toMillis(5));
+
+            assertFalse(synchronousLoader.isAlive());
+            assertTrue(synchronousFailure.get() instanceof IllegalStateException);
+            assertEquals(2, loads.get());
+            assertEquals(21L, retryFuture.get().get(5, TimeUnit.SECONDS).getCollectionID());
+        } finally {
+            releaseLoader.countDown();
+            synchronousLoader.join(TimeUnit.SECONDS.toMillis(5));
+        }
     }
 
     @Test
@@ -371,6 +546,16 @@ class SchemaCacheTest {
         while (!lock.hasQueuedThread(thread)) {
             if (System.nanoTime() >= deadline) {
                 throw new AssertionError("Loader did not reach the schema publication boundary");
+            }
+            Thread.yield();
+        }
+    }
+
+    private static void awaitWaiting(Thread thread) {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (thread.getState() != Thread.State.WAITING) {
+            if (System.nanoTime() >= deadline) {
+                throw new AssertionError("Synchronous caller did not wait for the async schema load");
             }
             Thread.yield();
         }

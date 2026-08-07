@@ -19,8 +19,11 @@
 
 package io.milvus.v2.service.vector;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.JsonUtils;
+import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.*;
 import io.milvus.param.Constant;
 import io.milvus.v2.BaseTest;
@@ -50,8 +53,14 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +150,129 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testQueryAsync() throws Exception {
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .filter("id > 0")
+                .limit(10)
+                .build();
+
+        QueryResp response = client_v2.queryAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(response);
+        verify(futureStub).query(any(QueryRequest.class));
+        verify(blockingStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
+    void testQueryAsyncWithIdsLoadsSchemaAsynchronously() throws Exception {
+        SchemaCache.getInstance().clear();
+        SettableFuture<DescribeCollectionResponse> schemaFuture = SettableFuture.create();
+        when(futureStub.describeCollection(any())).thenReturn(schemaFuture);
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .limit(10)
+                .build();
+
+        try {
+            CompletableFuture<QueryResp> resultFuture = client_v2.queryAsync(request);
+
+            Assertions.assertFalse(resultFuture.isDone());
+            verify(futureStub).describeCollection(any(DescribeCollectionRequest.class));
+            verify(blockingStub, never()).describeCollection(any(DescribeCollectionRequest.class));
+            verify(futureStub, never()).query(any(QueryRequest.class));
+
+            schemaFuture.set(describeCollectionResponse());
+            Assertions.assertNotNull(resultFuture.get(1, TimeUnit.SECONDS));
+            ArgumentCaptor<QueryRequest> queryCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+            verify(futureStub).query(queryCaptor.capture());
+            Assertions.assertEquals("id in [1]", queryCaptor.getValue().getExpr());
+        } finally {
+            SchemaCache.getInstance().clear();
+        }
+    }
+
+    @Test
+    void testQueryAsyncSnapshotsRequestBeforeSchemaLoad() throws Exception {
+        SchemaCache.getInstance().clear();
+        SettableFuture<DescribeCollectionResponse> schemaFuture = SettableFuture.create();
+        when(futureStub.describeCollection(any())).thenReturn(schemaFuture);
+        List<String> outputFields = new ArrayList<>(Collections.singletonList("original_field"));
+        QueryReq request = QueryReq.builder()
+                .databaseName("original_db")
+                .collectionName("original_collection")
+                .ids(Collections.singletonList(1L))
+                .outputFields(outputFields)
+                .limit(10)
+                .build();
+
+        try {
+            CompletableFuture<QueryResp> first = client_v2.session("cluster-a").queryAsync(request);
+            CompletableFuture<QueryResp> second = client_v2.session("cluster-b").queryAsync(request);
+
+            request.setDatabaseName("mutated_db");
+            request.setCollectionName("mutated_collection");
+            request.setClusterId("cluster-c");
+            request.setLimit(20);
+            outputFields.add("mutated_field");
+
+            schemaFuture.set(describeCollectionResponse());
+            first.get(1, TimeUnit.SECONDS);
+            second.get(1, TimeUnit.SECONDS);
+
+            ArgumentCaptor<QueryRequest> queryCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+            verify(futureStub, times(2)).query(queryCaptor.capture());
+            Set<String> clusterIds = new HashSet<>();
+            for (QueryRequest rpcRequest : queryCaptor.getAllValues()) {
+                Assertions.assertEquals("original_db", rpcRequest.getDbName());
+                Assertions.assertEquals("original_collection", rpcRequest.getCollectionName());
+                Assertions.assertEquals(Collections.singletonList("original_field"),
+                        rpcRequest.getOutputFieldsList());
+                Assertions.assertEquals("10", getParam(rpcRequest.getQueryParamsList(), Constant.LIMIT));
+                clusterIds.add(getParam(rpcRequest.getQueryParamsList(), Constant.CLUSTER_ID));
+            }
+            Assertions.assertEquals(new HashSet<>(Arrays.asList("cluster-a", "cluster-b")), clusterIds);
+        } finally {
+            SchemaCache.getInstance().clear();
+        }
+    }
+
+    @Test
+    void testQueryAsyncCancellationPropagatesToQueryRpc() {
+        SettableFuture<QueryResults> grpcFuture = SettableFuture.create();
+        when(futureStub.query(any())).thenReturn(grpcFuture);
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .filter("id > 0")
+                .build();
+
+        CompletableFuture<QueryResp> resultFuture = client_v2.queryAsync(request);
+        Assertions.assertTrue(resultFuture.cancel(true));
+
+        Assertions.assertTrue(grpcFuture.isCancelled());
+    }
+
+    @Test
+    void testQueryAsyncValidationFailureCompletesExceptionally() {
+        QueryReq request = QueryReq.builder()
+                .collectionName("book")
+                .filter("id > 0")
+                .ids(Collections.singletonList(1L))
+                .build();
+
+        CompletableFuture<QueryResp> future = Assertions.assertDoesNotThrow(
+                () -> client_v2.queryAsync(request));
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> future.get(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.INVALID_PARAMS,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        verify(futureStub, never()).query(any(QueryRequest.class));
+    }
+
+    @Test
     void testSearch() {
         List<Float> vectorList = new ArrayList<>();
         vectorList.add(1.0f);
@@ -157,6 +289,151 @@ class VectorTest extends BaseTest {
         Assertions.assertEquals(456L, statusR.getScannedRemoteBytes());
         Assertions.assertEquals(789L, statusR.getScannedTotalBytes());
         Assertions.assertEquals(0.5f, statusR.getCacheHitRatio());
+    }
+
+    @Test
+    void testSearchAsync() throws Exception {
+        SearchReq request = SearchReq.builder()
+                .collectionName("test2")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        SearchResp response = client_v2.searchAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals(123L, response.getCost());
+        Assertions.assertEquals(456L, response.getScannedRemoteBytes());
+        Assertions.assertEquals(789L, response.getScannedTotalBytes());
+        Assertions.assertEquals(0.5f, response.getCacheHitRatio());
+        verify(futureStub).search(any(SearchRequest.class));
+        verify(blockingStub, never()).search(any(SearchRequest.class));
+    }
+
+    @Test
+    void testSearchAsyncServerFailureCompletesExceptionally() {
+        SearchResults failedResponse = SearchResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(1).setReason("search failed").build())
+                .build();
+        when(futureStub.search(any())).thenReturn(Futures.immediateFuture(failedResponse));
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> client_v2.searchAsync(request).get(1, TimeUnit.SECONDS));
+
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.SERVER_ERROR,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+    }
+
+    @Test
+    void testSearchAsyncCancellationPropagatesToGrpcFuture() {
+        SettableFuture<SearchResults> grpcFuture = SettableFuture.create();
+        when(futureStub.search(any())).thenReturn(grpcFuture);
+        SearchReq request = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+
+        CompletableFuture<SearchResp> future = client_v2.searchAsync(request);
+        Assertions.assertTrue(future.cancel(true));
+
+        Assertions.assertTrue(grpcFuture.isCancelled());
+    }
+
+    @Test
+    void testHybridSearchAsync() throws Exception {
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq request = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+
+        SearchResp response = client_v2.hybridSearchAsync(request).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(123L, response.getCost());
+        verify(futureStub).hybridSearch(any(HybridSearchRequest.class));
+        verify(blockingStub, never()).hybridSearch(any(HybridSearchRequest.class));
+    }
+
+    @Test
+    void testAsyncDqlRetriesUseSubmissionSnapshots() throws Exception {
+        client_v2.retryConfig(io.milvus.v2.client.RetryConfig.builder()
+                .maxRetryTimes(2)
+                .initialBackOffMs(0)
+                .maxBackOffMs(0)
+                .build());
+
+        SettableFuture<QueryResults> firstQuery = SettableFuture.create();
+        when(futureStub.query(any())).thenReturn(firstQuery,
+                Futures.immediateFuture(QueryResults.newBuilder().build()));
+        QueryReq queryReq = QueryReq.builder()
+                .collectionName("query_original")
+                .filter("id > 0")
+                .build();
+        CompletableFuture<QueryResp> queryFuture = client_v2.queryAsync(queryReq);
+        queryReq.setCollectionName("query_mutated");
+        firstQuery.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
+        queryFuture.get(1, TimeUnit.SECONDS);
+        ArgumentCaptor<QueryRequest> queryCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(futureStub, times(2)).query(queryCaptor.capture());
+        queryCaptor.getAllValues().forEach(rpcRequest ->
+                Assertions.assertEquals("query_original", rpcRequest.getCollectionName()));
+
+        clearInvocations(futureStub);
+        SettableFuture<SearchResults> firstSearch = SettableFuture.create();
+        when(futureStub.search(any())).thenReturn(firstSearch,
+                Futures.immediateFuture(SearchResults.newBuilder().build()));
+        SearchReq searchReq = SearchReq.builder()
+                .collectionName("search_original")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        CompletableFuture<SearchResp> searchFuture = client_v2.searchAsync(searchReq);
+        searchReq.setCollectionName("search_mutated");
+        firstSearch.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
+        searchFuture.get(1, TimeUnit.SECONDS);
+        ArgumentCaptor<SearchRequest> searchCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(futureStub, times(2)).search(searchCaptor.capture());
+        searchCaptor.getAllValues().forEach(rpcRequest ->
+                Assertions.assertEquals("search_original", rpcRequest.getCollectionName()));
+
+        clearInvocations(futureStub);
+        SettableFuture<SearchResults> firstHybridSearch = SettableFuture.create();
+        when(futureStub.hybridSearch(any())).thenReturn(firstHybridSearch,
+                Futures.immediateFuture(SearchResults.newBuilder().build()));
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq hybridSearchReq = HybridSearchReq.builder()
+                .collectionName("hybrid_original")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+        CompletableFuture<SearchResp> hybridFuture = client_v2.hybridSearchAsync(hybridSearchReq);
+        hybridSearchReq.setCollectionName("hybrid_mutated");
+        annSearchReq.setVectorFieldName("mutated_vector");
+        firstHybridSearch.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
+        hybridFuture.get(1, TimeUnit.SECONDS);
+        ArgumentCaptor<HybridSearchRequest> hybridCaptor = ArgumentCaptor.forClass(HybridSearchRequest.class);
+        verify(futureStub, times(2)).hybridSearch(hybridCaptor.capture());
+        hybridCaptor.getAllValues().forEach(rpcRequest -> {
+            Assertions.assertEquals("hybrid_original", rpcRequest.getCollectionName());
+            Assertions.assertEquals("vector",
+                    getParam(rpcRequest.getRequests(0).getSearchParamsList(), Constant.VECTOR_FIELD));
+        });
     }
 
     @Test
@@ -327,6 +604,48 @@ class VectorTest extends BaseTest {
         verify(blockingStub).hybridSearch(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
         Assertions.assertEquals("cluster-a", request.getClusterId());
+    }
+
+    @Test
+    void testSessionAsyncOperationsPassClusterId() throws Exception {
+        SearchReq searchRequest = SearchReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        QueryReq queryRequest = QueryReq.builder()
+                .collectionName("test")
+                .filter("id > 0")
+                .build();
+        AnnSearchReq annSearchReq = AnnSearchReq.builder()
+                .vectorFieldName("vector")
+                .vectors(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
+                .limit(10)
+                .build();
+        HybridSearchReq hybridSearchRequest = HybridSearchReq.builder()
+                .collectionName("test")
+                .searchRequests(Collections.singletonList(annSearchReq))
+                .limit(10)
+                .build();
+
+        client_v2.session("cluster-a").searchAsync(searchRequest).get(1, TimeUnit.SECONDS);
+        client_v2.session("cluster-a").queryAsync(queryRequest).get(1, TimeUnit.SECONDS);
+        client_v2.session("cluster-a").hybridSearchAsync(hybridSearchRequest).get(1, TimeUnit.SECONDS);
+
+        ArgumentCaptor<SearchRequest> searchCaptor = ArgumentCaptor.forClass(SearchRequest.class);
+        verify(futureStub).search(searchCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(searchCaptor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
+
+        ArgumentCaptor<QueryRequest> queryCaptor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(futureStub).query(queryCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(queryCaptor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
+
+        ArgumentCaptor<HybridSearchRequest> hybridCaptor = ArgumentCaptor.forClass(HybridSearchRequest.class);
+        verify(futureStub).hybridSearch(hybridCaptor.capture());
+        Assertions.assertEquals("cluster-a",
+                getParam(hybridCaptor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
     }
 
     @Test
@@ -657,6 +976,28 @@ class VectorTest extends BaseTest {
                 .subAggregation(SearchAggregation.builder()
                         .addField("brand")
                         .size(3)
+                        .build())
+                .build();
+    }
+
+    private DescribeCollectionResponse describeCollectionResponse() {
+        return DescribeCollectionResponse.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .setCollectionName("book")
+                .setSchema(CollectionSchema.newBuilder()
+                        .addFields(FieldSchema.newBuilder()
+                                .setName("id")
+                                .setDataType(DataType.Int64)
+                                .setIsPrimaryKey(true)
+                                .build())
+                        .addFields(FieldSchema.newBuilder()
+                                .setName("vector")
+                                .setDataType(DataType.FloatVector)
+                                .addTypeParams(KeyValuePair.newBuilder()
+                                        .setKey("dim")
+                                        .setValue("2")
+                                        .build())
+                                .build())
                         .build())
                 .build();
     }

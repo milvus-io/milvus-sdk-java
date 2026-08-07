@@ -25,6 +25,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -35,6 +38,11 @@ public class SchemaCache {
     @FunctionalInterface
     public interface Loader {
         DescribeCollectionResponse load();
+    }
+
+    @FunctionalInterface
+    public interface AsyncLoader {
+        CompletableFuture<DescribeCollectionResponse> load();
     }
 
     private static final SchemaCache INSTANCE = new SchemaCache();
@@ -54,6 +62,7 @@ public class SchemaCache {
         private boolean completed;
         private DescribeCollectionResponse response;
         private Throwable failure;
+        private final CompletableFuture<DescribeCollectionResponse> future = new CompletableFuture<>();
     }
 
     private static final class LoadKey {
@@ -136,24 +145,80 @@ public class SchemaCache {
         try {
             DescribeCollectionResponse current = getCached(key);
             if (current != null && (!forceUpdate || current != initial)) {
-                complete(state, current, null);
+                publishLoadResult(loadKey, state, current, null);
                 return current;
             }
 
             DescribeCollectionResponse loaded = loader.load();
             setCachedIfValid(key, loaded, state);
-            complete(state, loaded, null);
+            publishLoadResult(loadKey, state, loaded, null);
             return loaded;
         } catch (Throwable throwable) {
-            complete(state, null, throwable);
+            publishLoadResult(loadKey, state, null, throwable);
             throw propagate(throwable);
         } finally {
-            synchronized (loadingLock) {
-                if (loading.get(loadKey) == state) {
-                    loading.remove(loadKey);
-                }
+            removeLoad(loadKey, state);
+        }
+    }
+
+    /**
+     * Asynchronously loads a schema with the same cache, scope, coalescing, and invalidation
+     * semantics as {@link #getOrLoad(String, String, String, boolean, Object, Loader)}.
+     * Cancelling one returned future does not cancel a load shared by other callers.
+     */
+    public CompletableFuture<DescribeCollectionResponse> getOrLoadAsync(
+            String endpoint, String databaseName, String collectionName,
+            boolean forceUpdate, Object loadScope, AsyncLoader loader) {
+        CollectionCacheKey key = CollectionCacheKey.create(endpoint, databaseName, collectionName);
+        DescribeCollectionResponse initial = getCached(key);
+        if (initial != null && !forceUpdate) {
+            return CompletableFuture.completedFuture(initial);
+        }
+
+        LoadKey loadKey = new LoadKey(key, Objects.requireNonNull(loadScope, "loadScope cannot be null"));
+        LoadState newState = new LoadState();
+        LoadState state;
+        synchronized (loadingLock) {
+            state = loading.get(loadKey);
+            if (state == null) {
+                loading.put(loadKey, newState);
             }
         }
+        if (state != null) {
+            return dependentFuture(state);
+        }
+        state = newState;
+
+        DescribeCollectionResponse current = getCached(key);
+        if (current != null && (!forceUpdate || current != initial)) {
+            publishLoadResult(loadKey, state, current, null);
+            return dependentFuture(state);
+        }
+
+        CompletableFuture<DescribeCollectionResponse> loadFuture;
+        try {
+            loadFuture = Objects.requireNonNull(loader, "loader cannot be null").load();
+            if (loadFuture == null) {
+                throw new NullPointerException("Async schema loader returned null future");
+            }
+        } catch (Throwable throwable) {
+            publishLoadResult(loadKey, state, null, throwable);
+            return dependentFuture(state);
+        }
+
+        LoadState finalState = state;
+        loadFuture.whenComplete((loaded, throwable) -> {
+            Throwable failure = throwable == null ? null : unwrapCompletionThrowable(throwable);
+            if (failure == null) {
+                try {
+                    setCachedIfValid(key, loaded, finalState);
+                } catch (Throwable completionFailure) {
+                    failure = completionFailure;
+                }
+            }
+            publishLoadResult(loadKey, finalState, failure == null ? loaded : null, failure);
+        });
+        return dependentFuture(state);
     }
 
     public DescribeCollectionResponse get(String endpoint, String databaseName, String collectionName) {
@@ -295,11 +360,48 @@ public class SchemaCache {
 
     private void complete(LoadState state, DescribeCollectionResponse response, Throwable failure) {
         synchronized (state) {
+            if (state.completed) {
+                return;
+            }
             state.response = response;
             state.failure = failure;
             state.completed = true;
             state.notifyAll();
         }
+        if (failure == null) {
+            state.future.complete(response);
+        } else {
+            state.future.completeExceptionally(failure);
+        }
+    }
+
+    private CompletableFuture<DescribeCollectionResponse> dependentFuture(LoadState state) {
+        return state.future.thenApply(response -> response);
+    }
+
+    private void publishLoadResult(LoadKey loadKey, LoadState state,
+                                   DescribeCollectionResponse response, Throwable failure) {
+        // CompletableFuture continuations can execute inline in complete(). Remove this generation
+        // first so a reentrant retry starts a new load instead of joining an already-completed one.
+        removeLoad(loadKey, state);
+        complete(state, response, failure);
+    }
+
+    private void removeLoad(LoadKey loadKey, LoadState state) {
+        synchronized (loadingLock) {
+            if (loading.get(loadKey) == state) {
+                loading.remove(loadKey);
+            }
+        }
+    }
+
+    private Throwable unwrapCompletionThrowable(Throwable throwable) {
+        Throwable current = throwable;
+        while ((current instanceof CompletionException || current instanceof ExecutionException)
+                && current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current;
     }
 
     private RuntimeException propagate(Throwable throwable) {
