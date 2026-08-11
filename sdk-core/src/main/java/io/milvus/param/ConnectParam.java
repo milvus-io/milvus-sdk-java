@@ -215,7 +215,7 @@ public class ConnectParam {
     public static class Builder {
         private String host = "localhost";
         private int port = 19530;
-        private String databaseName = "default";
+        private String databaseName = "";
         private String uri;
         private String token;
         private long connectTimeoutMs = 10000;
@@ -661,7 +661,8 @@ public class ConnectParam {
                 this.secure = result.isSecure();
                 this.host = result.getHostname();
                 this.port = result.getPort();
-                this.databaseName = StringUtils.isNotEmpty(result.getDatabase()) ? result.getDatabase() : this.databaseName;
+                this.databaseName = StringUtils.isNotEmpty(result.getDatabase())
+                        ? result.getDatabase() : this.databaseName;
                 if (Pattern.matches(CLOUD_SERVERLESS_URI_REGEX, this.uri)) {
                     this.port = 443;
                 }
