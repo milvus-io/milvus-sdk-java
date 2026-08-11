@@ -74,7 +74,7 @@ public class BaseService {
         if (StringUtils.isNotEmpty(overwriteName)) {
             return overwriteName;
         }
-        return StringUtils.isNotEmpty(currentDbName) ? currentDbName : "default";
+        return StringUtils.defaultString(currentDbName);
     }
 
     protected void checkCollectionExist(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, String collectionName) {

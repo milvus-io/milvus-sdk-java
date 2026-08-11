@@ -96,8 +96,7 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
         if (StringUtils.isNotEmpty(overwriteName)) {
             return overwriteName;
         }
-        String current = currentDbName();
-        return StringUtils.isNotEmpty(current) ? current : "default";
+        return StringUtils.defaultString(currentDbName());
     }
 
     /**
