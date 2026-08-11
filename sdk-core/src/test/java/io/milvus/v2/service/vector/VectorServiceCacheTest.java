@@ -25,8 +25,10 @@ import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DataType;
+import io.milvus.grpc.DescribeCollectionRequest;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.InsertRequest;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.MutationResult;
 import io.milvus.grpc.QueryRequest;
@@ -41,6 +43,7 @@ import io.milvus.v2.service.vector.response.InsertResp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -108,6 +111,41 @@ class VectorServiceCacheTest {
                 .consistencyLevel(ConsistencyLevel.SESSION)
                 .build());
         assertEquals(100L, query.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void emptyDatabaseIsOmittedFromRpcAndNormalizedInCacheKey() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub = mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        Status success = Status.newBuilder().setCode(0).build();
+        DescribeCollectionResponse description = description(1L);
+        when(stub.describeCollection(any())).thenReturn(description);
+        when(stub.insert(any())).thenReturn(MutationResult.newBuilder()
+                .setStatus(success)
+                .setInsertCnt(1L)
+                .setTimestamp(100L)
+                .build());
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        VectorService service = service("serverless:443", null);
+        service.insert(stub, InsertReq.builder()
+                .collectionName("coll")
+                .data(Collections.singletonList(row))
+                .build());
+
+        ArgumentCaptor<DescribeCollectionRequest> describeCaptor =
+                ArgumentCaptor.forClass(DescribeCollectionRequest.class);
+        verify(stub).describeCollection(describeCaptor.capture());
+        assertEquals("", describeCaptor.getValue().getDbName());
+
+        ArgumentCaptor<InsertRequest> insertCaptor = ArgumentCaptor.forClass(InsertRequest.class);
+        verify(stub).insert(insertCaptor.capture());
+        assertEquals("", insertCaptor.getValue().getDbName());
+
+        assertSame(description, SchemaCache.getInstance().get("serverless:443", "", "coll"));
+        assertSame(description, SchemaCache.getInstance().get("serverless:443", "default", "coll"));
+        assertEquals(100L, CollectionTsCache.getInstance().get(
+                "serverless:443", "default", "coll"));
     }
 
     @Test
@@ -267,9 +305,13 @@ class VectorServiceCacheTest {
     }
 
     private static VectorService service(String endpoint) {
+        return service(endpoint, "db");
+    }
+
+    private static VectorService service(String endpoint, String databaseName) {
         VectorService service = new VectorService();
         service.setEndpoint(endpoint);
-        service.setCurrentDbName("db");
+        service.setCurrentDbName(databaseName);
         return service;
     }
 }

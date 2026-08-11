@@ -24,6 +24,7 @@ import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.common.utils.cache.SchemaCache;
 import io.milvus.grpc.CollectionSchema;
 import io.milvus.grpc.DataType;
+import io.milvus.grpc.DescribeCollectionRequest;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FieldSchema;
 import io.milvus.grpc.InsertRequest;
@@ -184,6 +185,42 @@ class AbstractMilvusGrpcClientCacheTest {
         assertEquals(200L, secondRequest.getValue().getSchemaTimestamp());
     }
 
+    @Test
+    void emptyDatabaseIsOmittedFromRpcAndNormalizedInCacheKey() {
+        MilvusServiceGrpc.MilvusServiceBlockingStub stub = mock(MilvusServiceGrpc.MilvusServiceBlockingStub.class);
+        Status success = Status.newBuilder().setCode(0).build();
+        DescribeCollectionResponse description = description(success, 100L);
+        when(stub.describeCollection(any())).thenReturn(description);
+        when(stub.insert(any())).thenReturn(MutationResult.newBuilder()
+                .setStatus(success)
+                .setInsertCnt(1L)
+                .setTimestamp(100L)
+                .build());
+        TestClient client = new TestClient(stub, "serverless:443", null);
+
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        R<MutationResult> response = client.insert(InsertParam.newBuilder()
+                .withCollectionName("coll")
+                .withRows(Collections.singletonList(row))
+                .build());
+
+        assertEquals(R.Status.Success.getCode(), response.getStatus());
+        ArgumentCaptor<DescribeCollectionRequest> describeCaptor =
+                ArgumentCaptor.forClass(DescribeCollectionRequest.class);
+        verify(stub).describeCollection(describeCaptor.capture());
+        assertEquals("", describeCaptor.getValue().getDbName());
+
+        ArgumentCaptor<InsertRequest> insertCaptor = ArgumentCaptor.forClass(InsertRequest.class);
+        verify(stub).insert(insertCaptor.capture());
+        assertEquals("", insertCaptor.getValue().getDbName());
+
+        assertSame(description, SchemaCache.getInstance().get(client.cacheEndpoint(), "", "coll"));
+        assertSame(description, SchemaCache.getInstance().get(client.cacheEndpoint(), "default", "coll"));
+        assertEquals(100L, CollectionTsCache.getInstance().get(
+                client.cacheEndpoint(), "default", "coll"));
+    }
+
     private static DescribeCollectionResponse description(Status status, long updateTimestamp) {
         return DescribeCollectionResponse.newBuilder()
                 .setStatus(status)
@@ -199,14 +236,21 @@ class AbstractMilvusGrpcClientCacheTest {
     private static class TestClient extends AbstractMilvusGrpcClient {
         private final MilvusServiceGrpc.MilvusServiceBlockingStub stub;
         private final String endpoint;
+        private final String databaseName;
 
         private TestClient(MilvusServiceGrpc.MilvusServiceBlockingStub stub) {
-            this(stub, "test:19530");
+            this(stub, "test:19530", "default");
         }
 
         private TestClient(MilvusServiceGrpc.MilvusServiceBlockingStub stub, String endpoint) {
+            this(stub, endpoint, "default");
+        }
+
+        private TestClient(MilvusServiceGrpc.MilvusServiceBlockingStub stub,
+                           String endpoint, String databaseName) {
             this.stub = stub;
             this.endpoint = endpoint;
+            this.databaseName = databaseName;
         }
 
         @Override
@@ -226,7 +270,7 @@ class AbstractMilvusGrpcClientCacheTest {
 
         @Override
         protected String currentDbName() {
-            return "default";
+            return databaseName;
         }
 
         @Override
