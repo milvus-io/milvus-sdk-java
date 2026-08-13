@@ -854,6 +854,10 @@ public class MilvusClientV2 {
         return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request));
     }
 
+    GetResp get(GetReq request, String clusterId) {
+        return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request, clusterId));
+    }
+
     /**
      * Queries vectors in a collection in Milvus.
      *
@@ -862,6 +866,10 @@ public class MilvusClientV2 {
      */
     public QueryResp query(QueryReq request) {
         return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request));
+    }
+
+    QueryResp query(QueryReq request, String clusterId) {
+        return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request, clusterId));
     }
 
     /**
@@ -874,6 +882,10 @@ public class MilvusClientV2 {
         return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request));
     }
 
+    SearchResp search(SearchReq request, String clusterId) {
+        return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request, clusterId));
+    }
+
     /**
      * Conducts multi vector similarity search with a ranker for rearrangement.
      *
@@ -884,6 +896,10 @@ public class MilvusClientV2 {
         return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request));
     }
 
+    SearchResp hybridSearch(HybridSearchReq request, String clusterId) {
+        return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request, clusterId));
+    }
+
     /**
      * Get queryIterator based on scalar field(s) filtered by boolean expression.
      * Note that the order of the returned entities cannot be guaranteed.
@@ -892,8 +908,12 @@ public class MilvusClientV2 {
      * @return QueryIterator
      */
     public QueryIterator queryIterator(QueryIteratorReq request) {
+        return queryIterator(request, null);
+    }
+
+    QueryIterator queryIterator(QueryIteratorReq request, String clusterId) {
         RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
-        return rpcUtils.retry(() -> vectorService.queryIterator(stub, request));
+        return rpcUtils.retry(() -> vectorService.queryIterator(stub, request, clusterId));
     }
 
     /**
@@ -903,8 +923,12 @@ public class MilvusClientV2 {
      * @return SearchIterator
      */
     public SearchIterator searchIterator(SearchIteratorReq request) {
+        return searchIterator(request, null);
+    }
+
+    SearchIterator searchIterator(SearchIteratorReq request, String clusterId) {
         RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
-        return rpcUtils.retry(() -> vectorService.searchIterator(stub, request));
+        return rpcUtils.retry(() -> vectorService.searchIterator(stub, request, clusterId));
     }
 
     /**
@@ -914,8 +938,12 @@ public class MilvusClientV2 {
      * @return SearchIteratorV2
      */
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
+        return searchIteratorV2(request, null);
+    }
+
+    SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request, String clusterId) {
         RpcStubWrapper stub = createIteratorRpcStub(request.getDatabaseName());
-        return rpcUtils.retry(() -> vectorService.searchIteratorV2(stub, request));
+        return rpcUtils.retry(() -> vectorService.searchIteratorV2(stub, request, clusterId));
     }
 
     private RpcStubWrapper createIteratorRpcStub(String requestDatabaseName) {

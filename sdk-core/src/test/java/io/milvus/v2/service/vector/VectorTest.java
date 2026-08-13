@@ -274,13 +274,14 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
     }
 
     @Test
     void testSessionQueryPassesClusterId() {
         QueryReq request = QueryReq.builder()
                 .collectionName("test")
+                .clusterId("cluster-b")
                 .filter("id > 0")
                 .build();
 
@@ -289,7 +290,9 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
         verify(blockingStub).query(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertEquals(1, captor.getValue().getQueryParamsList().stream()
+                .filter(param -> Constant.CLUSTER_ID.equals(param.getKey())).count());
+        Assertions.assertEquals("cluster-b", request.getClusterId());
     }
 
     @Test
@@ -304,7 +307,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
         verify(blockingStub).query(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
     }
 
     @Test
@@ -317,6 +320,7 @@ class VectorTest extends BaseTest {
                 .build();
         HybridSearchReq request = HybridSearchReq.builder()
                 .collectionName("test")
+                .clusterId("cluster-b")
                 .searchRequests(Collections.singletonList(annSearchReq))
                 .limit(10)
                 .build();
@@ -326,7 +330,9 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<HybridSearchRequest> captor = ArgumentCaptor.forClass(HybridSearchRequest.class);
         verify(blockingStub).hybridSearch(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getRankParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertEquals(1, captor.getValue().getRankParamsList().stream()
+                .filter(param -> Constant.CLUSTER_ID.equals(param.getKey())).count());
+        Assertions.assertEquals("cluster-b", request.getClusterId());
     }
 
     @Test
@@ -343,7 +349,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
         verify(blockingStub).query(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getQueryParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
     }
 
     @Test
@@ -363,7 +369,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
     }
 
     @Test
@@ -391,7 +397,7 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
     }
 
     @Test
@@ -408,7 +414,9 @@ class VectorTest extends BaseTest {
         ArgumentCaptor<SearchRequest> captor = ArgumentCaptor.forClass(SearchRequest.class);
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertEquals(1, captor.getValue().getSearchParamsList().stream()
+                .filter(param -> Constant.CLUSTER_ID.equals(param.getKey())).count());
+        Assertions.assertEquals("cluster-b", request.getClusterId());
 
         io.milvus.v2.client.MilvusClientV2Session session = client_v2.session("cluster-a");
         session.close();
@@ -493,7 +501,7 @@ class VectorTest extends BaseTest {
         verify(blockingStub).search(captor.capture());
         Assertions.assertEquals("cluster-a", getParam(captor.getValue().getSearchParamsList(), Constant.CLUSTER_ID));
         Assertions.assertEquals(Arrays.asList("category", "region"), captor.getValue().getSearchAggregation().getFieldsList());
-        Assertions.assertEquals("cluster-a", request.getClusterId());
+        Assertions.assertNull(request.getClusterId());
         Assertions.assertSame(requestAggregation, request.getSearchAggregation());
     }
 

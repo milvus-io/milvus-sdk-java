@@ -10,6 +10,11 @@ import java.util.Map;
 public class QueryIteratorReq {
     private String databaseName;
     private String collectionName;
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     private String clusterId;
     private List<String> partitionNames;
     private List<String> outputFields;
@@ -69,10 +74,20 @@ public class QueryIteratorReq {
         this.collectionName = collectionName;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public String getClusterId() {
         return clusterId;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
@@ -202,6 +217,11 @@ public class QueryIteratorReq {
             return this;
         }
 
+        /**
+         * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+         * {@code MilvusClientV2Session}.
+         */
+        @Deprecated
         public QueryIteratorReqBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;
