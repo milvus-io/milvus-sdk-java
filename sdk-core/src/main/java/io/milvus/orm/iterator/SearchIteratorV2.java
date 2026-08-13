@@ -51,6 +51,7 @@ public class SearchIteratorV2 {
     private Map<String, Object> searchParams;
     private final RpcUtils rpcUtils;
     private final VectorUtils vectorUtils;
+    private final String clusterId;
 
     private Long leftResCnt = null;
     private Long collectionID = null;
@@ -60,8 +61,15 @@ public class SearchIteratorV2 {
     // to support V2
     public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
                             RpcStubWrapper blockingStub) {
+        this(searchIteratorReq, blockingStub, null);
+    }
+
+    public SearchIteratorV2(SearchIteratorReqV2 searchIteratorReq,
+                            RpcStubWrapper blockingStub,
+                            String clusterId) {
         this.blockingStub = blockingStub;
         this.searchIteratorReq = searchIteratorReq;
+        this.clusterId = clusterId;
 
         this.batchSize = (int) searchIteratorReq.getBatchSize();
         this.externalFilterFunc = searchIteratorReq.getExternalFilterFunc();
@@ -119,7 +127,6 @@ public class SearchIteratorV2 {
                 .collectionName(searchIteratorReq.getCollectionName())
                 .partitionNames(searchIteratorReq.getPartitionNames())
                 .databaseName(searchIteratorReq.getDatabaseName())
-                .clusterId(searchIteratorReq.getClusterId())
                 .annsField(searchIteratorReq.getVectorFieldName())
                 .data(searchIteratorReq.getVectors())
                 .limit(limit)
@@ -135,7 +142,14 @@ public class SearchIteratorV2 {
                 .filterTemplateValues(searchIteratorReq.getFilterTemplateValues())
                 .build();
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
-        SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(searchRequest));
+        SearchRequest.Builder builder = searchRequest.toBuilder();
+        if (StringUtils.isNotEmpty(clusterId)) {
+            builder.addSearchParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.CLUSTER_ID)
+                    .setValue(clusterId)
+                    .build());
+        }
+        SearchResults response = rpcUtils.retry(() -> blockingStub.get().search(builder.build()));
         String title = String.format("SearchRequest collectionName:%s", searchIteratorReq.getCollectionName());
         rpcUtils.handleResponse(title, response.getStatus());
 

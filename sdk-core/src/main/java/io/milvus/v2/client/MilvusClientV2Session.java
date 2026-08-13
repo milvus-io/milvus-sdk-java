@@ -45,44 +45,37 @@ public class MilvusClientV2Session {
 
     public SearchResp search(SearchReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.search(request);
+        return parent.search(request, clusterId);
     }
 
     public SearchResp hybridSearch(HybridSearchReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.hybridSearch(request);
+        return parent.hybridSearch(request, clusterId);
     }
 
     public QueryResp query(QueryReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.query(request);
+        return parent.query(request, clusterId);
     }
 
     public QueryIterator queryIterator(QueryIteratorReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.queryIterator(request);
+        return parent.queryIterator(request, clusterId);
     }
 
     public SearchIterator searchIterator(SearchIteratorReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.searchIterator(request);
+        return parent.searchIterator(request, clusterId);
     }
 
     public SearchIteratorV2 searchIteratorV2(SearchIteratorReqV2 request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.searchIteratorV2(request);
+        return parent.searchIteratorV2(request, clusterId);
     }
 
     public GetResp get(GetReq request) {
         ensureOpen();
-        request.setClusterId(clusterId);
-        return parent.get(request);
+        return parent.get(request, clusterId);
     }
 
     public void close() {

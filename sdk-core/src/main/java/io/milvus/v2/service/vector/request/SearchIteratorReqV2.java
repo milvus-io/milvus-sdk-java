@@ -15,6 +15,11 @@ import java.util.function.Function;
 public class SearchIteratorReqV2 {
     private String databaseName;
     private String collectionName;
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     private String clusterId;
     private List<String> partitionNames;
     private IndexParam.MetricType metricType;
@@ -87,10 +92,20 @@ public class SearchIteratorReqV2 {
         this.collectionName = collectionName;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public String getClusterId() {
         return clusterId;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
@@ -284,6 +299,11 @@ public class SearchIteratorReqV2 {
             return this;
         }
 
+        /**
+         * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+         * {@code MilvusClientV2Session}.
+         */
+        @Deprecated
         public SearchIteratorReqV2Builder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;

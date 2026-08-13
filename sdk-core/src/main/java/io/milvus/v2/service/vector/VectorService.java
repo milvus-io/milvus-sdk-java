@@ -27,6 +27,7 @@ import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.orm.iterator.SearchIteratorV2;
+import io.milvus.param.Constant;
 import io.milvus.v2.exception.DataNotMatchException;
 import io.milvus.v2.exception.ErrorCode;
 import io.milvus.v2.exception.MilvusClientException;
@@ -196,6 +197,11 @@ public class VectorService extends BaseService {
     }
 
     public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, QueryReq request) {
+        return query(blockingStub, request, null);
+    }
+
+    public QueryResp query(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                           QueryReq request, String clusterId) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Query collection: '%s' in database: '%s'", collectionName, dbName);
@@ -221,7 +227,16 @@ public class VectorService extends BaseService {
 
         // reset the db name so that the timestamp cache can set correct key for this collection
         request.setDatabaseName(actualDbName(request.getDatabaseName()));
-        QueryResults response = blockingStub.query(vectorUtils.ConvertToGrpcQueryRequest(request));
+        QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(request);
+        if (StringUtils.isNotEmpty(clusterId)) {
+            queryRequest = queryRequest.toBuilder()
+                    .addQueryParams(KeyValuePair.newBuilder()
+                            .setKey(Constant.CLUSTER_ID)
+                            .setValue(clusterId)
+                            .build())
+                    .build();
+        }
+        QueryResults response = blockingStub.query(queryRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 
         return QueryResp.builder()
@@ -232,6 +247,11 @@ public class VectorService extends BaseService {
     }
 
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
+        return search(blockingStub, request, null);
+    }
+
+    public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                             SearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Search collection: '%s' in database: '%s'", collectionName, dbName);
@@ -241,6 +261,14 @@ public class VectorService extends BaseService {
         // reset the db name so that the timestamp cache can set correct key for this collection
         request.setDatabaseName(actualDbName(dbName));
         SearchRequest searchRequest = vectorUtils.ConvertToGrpcSearchRequest(request);
+        if (StringUtils.isNotEmpty(clusterId)) {
+            searchRequest = searchRequest.toBuilder()
+                    .addSearchParams(KeyValuePair.newBuilder()
+                            .setKey(Constant.CLUSTER_ID)
+                            .setValue(clusterId)
+                            .build())
+                    .build();
+        }
 
         SearchResults response = blockingStub.search(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
@@ -255,6 +283,11 @@ public class VectorService extends BaseService {
     }
 
     public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, HybridSearchReq request) {
+        return hybridSearch(blockingStub, request, null);
+    }
+
+    public SearchResp hybridSearch(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                                   HybridSearchReq request, String clusterId) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Hybrid search collection: '%s' in database: '%s'", collectionName, dbName);
@@ -264,6 +297,14 @@ public class VectorService extends BaseService {
         // reset the db name so that the timestamp cache can set correct key for this collection
         request.setDatabaseName(actualDbName(dbName));
         HybridSearchRequest searchRequest = vectorUtils.ConvertToGrpcHybridSearchRequest(request);
+        if (StringUtils.isNotEmpty(clusterId)) {
+            searchRequest = searchRequest.toBuilder()
+                    .addRankParams(KeyValuePair.newBuilder()
+                            .setKey(Constant.CLUSTER_ID)
+                            .setValue(clusterId)
+                            .build())
+                    .build();
+        }
 
         SearchResults response = blockingStub.hybridSearch(searchRequest);
         rpcUtils.handleResponse(title, response.getStatus());
@@ -293,25 +334,40 @@ public class VectorService extends BaseService {
 
     public QueryIterator queryIterator(RpcStubWrapper blockingStub,
                                        QueryIteratorReq request) {
+        return queryIterator(blockingStub, request, null);
+    }
+
+    public QueryIterator queryIterator(RpcStubWrapper blockingStub,
+                                       QueryIteratorReq request, String clusterId) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
-        return new QueryIterator(request, blockingStub, pkField, respR.getCollectionID());
+        return new QueryIterator(request, blockingStub, pkField, respR.getCollectionID(), clusterId);
     }
 
     public SearchIterator searchIterator(RpcStubWrapper blockingStub,
                                          SearchIteratorReq request) {
+        return searchIterator(blockingStub, request, null);
+    }
+
+    public SearchIterator searchIterator(RpcStubWrapper blockingStub,
+                                         SearchIteratorReq request, String clusterId) {
         DescribeCollectionResponse descResp = getCollectionInfo(blockingStub.get(), request.getDatabaseName(),
                 request.getCollectionName(), false);
         DescribeCollectionResp respR = convertUtils.convertDescCollectionResp(descResp);
         CreateCollectionReq.FieldSchema pkField = respR.getCollectionSchema().getField(respR.getPrimaryFieldName());
-        return new SearchIterator(request, blockingStub, pkField);
+        return new SearchIterator(request, blockingStub, pkField, clusterId);
     }
 
     public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
                                              SearchIteratorReqV2 request) {
-        return new SearchIteratorV2(request, blockingStub);
+        return searchIteratorV2(blockingStub, request, null);
+    }
+
+    public SearchIteratorV2 searchIteratorV2(RpcStubWrapper blockingStub,
+                                             SearchIteratorReqV2 request, String clusterId) {
+        return new SearchIteratorV2(request, blockingStub, clusterId);
     }
 
     public DeleteResp delete(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, DeleteReq request) {
@@ -341,6 +397,11 @@ public class VectorService extends BaseService {
     }
 
     public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, GetReq request) {
+        return get(blockingStub, request, null);
+    }
+
+    public GetResp get(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub,
+                       GetReq request, String clusterId) {
         String dbName = request.getDatabaseName();
         String collectionName = request.getCollectionName();
         String title = String.format("Get entities of collection: '%s' in database: '%s'", collectionName, dbName);
@@ -348,7 +409,6 @@ public class VectorService extends BaseService {
         QueryReq.QueryReqBuilder queryReqBuilder = QueryReq.builder()
                 .databaseName(dbName)
                 .collectionName(collectionName)
-                .clusterId(request.getClusterId())
                 .ids(request.getIds());
         if (StringUtils.isNotEmpty(request.getPartitionName())) {
             queryReqBuilder.partitionNames(Collections.singletonList(request.getPartitionName()));
@@ -358,7 +418,7 @@ public class VectorService extends BaseService {
             queryReq.setOutputFields(request.getOutputFields());
         }
         // call query to get the result
-        QueryResp queryResp = query(blockingStub, queryReq);
+        QueryResp queryResp = query(blockingStub, queryReq, clusterId);
 
         return GetResp.builder()
                 .getResults(queryResp.getQueryResults())

@@ -107,13 +107,6 @@ public class VectorUtils {
                     .build());
         });
 
-        if (StringUtils.isNotEmpty(request.getClusterId())) {
-            builder.addQueryParams(KeyValuePair.newBuilder()
-                    .setKey(Constant.CLUSTER_ID)
-                    .setValue(request.getClusterId())
-                    .build());
-        }
-
         // set offset and limit value.
         // directly pass the two values, the server will verify them.
         long offset = request.getOffset();
@@ -330,14 +323,6 @@ public class VectorUtils {
                     KeyValuePair.newBuilder()
                             .setKey(Constant.METRIC_TYPE)
                             .setValue(request.getMetricType().name())
-                            .build());
-        }
-
-        if (StringUtils.isNotEmpty(request.getClusterId())) {
-            builder.addSearchParams(
-                    KeyValuePair.newBuilder()
-                            .setKey(Constant.CLUSTER_ID)
-                            .setValue(request.getClusterId())
                             .build());
         }
 
@@ -672,10 +657,6 @@ public class VectorUtils {
         props.put(Constant.LIMIT, String.valueOf(request.getLimit()));
         props.put(Constant.ROUND_DECIMAL, String.valueOf(request.getRoundDecimal()));
         props.put(Constant.OFFSET, String.valueOf(request.getOffset()));
-        if (StringUtils.isNotEmpty(request.getClusterId())) {
-            props.put(Constant.CLUSTER_ID, request.getClusterId());
-        }
-
         // set ranker
         CreateCollectionReq.Function ranker = request.getRanker();
         io.milvus.v2.service.vector.request.FunctionScore functionScore = request.getFunctionScore();
