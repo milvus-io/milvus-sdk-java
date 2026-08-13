@@ -24,6 +24,11 @@ import java.util.List;
 public class GetReq {
     private String databaseName;
     private String collectionName;
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     private String clusterId;
     private String partitionName = "";
     private List<Object> ids;
@@ -58,10 +63,20 @@ public class GetReq {
         this.collectionName = collectionName;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public String getClusterId() {
         return clusterId;
     }
 
+    /**
+     * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+     * {@code MilvusClientV2Session}.
+     */
+    @Deprecated
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
     }
@@ -120,6 +135,11 @@ public class GetReq {
             return this;
         }
 
+        /**
+         * @deprecated Request-level cluster routing is no longer used. {@code clusterId} is passed via
+         * {@code MilvusClientV2Session}.
+         */
+        @Deprecated
         public GetReqBuilder clusterId(String clusterId) {
             this.clusterId = clusterId;
             return this;

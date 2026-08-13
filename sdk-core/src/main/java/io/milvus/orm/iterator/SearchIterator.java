@@ -103,6 +103,13 @@ public class SearchIterator {
     public SearchIterator(SearchIteratorReq searchIteratorReq,
                           RpcStubWrapper blockingStub,
                           CreateCollectionReq.FieldSchema primaryField) {
+        this(searchIteratorReq, blockingStub, primaryField, null);
+    }
+
+    public SearchIterator(SearchIteratorReq searchIteratorReq,
+                          RpcStubWrapper blockingStub,
+                          CreateCollectionReq.FieldSchema primaryField,
+                          String clusterId) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         IteratorAdapterV2 adapter = new IteratorAdapterV2();
@@ -114,7 +121,7 @@ public class SearchIterator {
         this.expr = this.searchIteratorParam.getExpr();
         this.topK = this.searchIteratorParam.getTopK();
         this.rpcUtils = new RpcUtils();
-        this.clusterId = searchIteratorReq.getClusterId();
+        this.clusterId = clusterId;
 
         initParams();
         checkForSpecialIndexParam();
