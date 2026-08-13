@@ -61,6 +61,7 @@ public class QueryIterator {
     private long returnedCount;
     private final RpcUtils rpcUtils;
     private final VectorUtils vectorUtils;
+    private final String clusterId;
     private long sessionTs = 0;
 
     public QueryIterator(QueryIteratorParam queryIteratorParam,
@@ -79,6 +80,7 @@ public class QueryIterator {
         this.limit = queryIteratorParam.getLimit();
         this.offset = queryIteratorParam.getOffset();
         this.rpcUtils = new RpcUtils();
+        this.clusterId = null;
         this.vectorUtils = new VectorUtils();
         this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
         this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
@@ -91,6 +93,14 @@ public class QueryIterator {
                          RpcStubWrapper blockingStub,
                          CreateCollectionReq.FieldSchema primaryField,
                          long collectionId) {
+        this(queryIteratorReq, blockingStub, primaryField, collectionId, null);
+    }
+
+    public QueryIterator(QueryIteratorReq queryIteratorReq,
+                         RpcStubWrapper blockingStub,
+                         CreateCollectionReq.FieldSchema primaryField,
+                         long collectionId,
+                         String clusterId) {
         this.iteratorCache = new IteratorCache();
         this.blockingStub = blockingStub;
         this.queryIteratorReq = queryIteratorReq;
@@ -103,6 +113,7 @@ public class QueryIterator {
         this.limit = queryIteratorReq.getLimit();
         this.offset = queryIteratorReq.getOffset();
         this.rpcUtils = new RpcUtils();
+        this.clusterId = clusterId;
         this.vectorUtils = new VectorUtils();
         this.vectorUtils.setEndpoint(blockingStub.getEndpoint());
         this.vectorUtils.setCurrentDbName(blockingStub.getDatabaseName());
@@ -261,7 +272,6 @@ public class QueryIterator {
         QueryReq queryReq = QueryReq.builder()
                 .databaseName(queryIteratorReq.getDatabaseName())
                 .collectionName(queryIteratorReq.getCollectionName())
-                .clusterId(queryIteratorReq.getClusterId())
                 .partitionNames(queryIteratorReq.getPartitionNames())
                 .consistencyLevel(queryIteratorReq.getConsistencyLevel())
                 .outputFields(outputFields)
@@ -275,6 +285,12 @@ public class QueryIterator {
 
         QueryRequest queryRequest = vectorUtils.ConvertToGrpcQueryRequest(queryReq);
         QueryRequest.Builder builder = queryRequest.toBuilder();
+        if (StringUtils.isNotEmpty(clusterId)) {
+            builder.addQueryParams(KeyValuePair.newBuilder()
+                    .setKey(Constant.CLUSTER_ID)
+                    .setValue(clusterId)
+                    .build());
+        }
         boolean iterator = phase != QueryPhase.SEEK;
         boolean reduceStopForBest = phase == QueryPhase.SEEK
                 ? false
