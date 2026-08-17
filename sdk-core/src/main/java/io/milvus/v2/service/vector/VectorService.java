@@ -377,14 +377,16 @@ public class VectorService extends BaseService {
 
         String params = JsonUtils.toJson(request.getAnalyzerParams());
         logger.debug(params);
-        RunAnalyzerRequest runRequest = builder.addAllPlaceholder(byteStrings)
-                .setAnalyzerParams(params)
+        RunAnalyzerRequest.Builder runRequestBuilder = builder.addAllPlaceholder(byteStrings)
                 .setWithDetail(request.getWithDetail())
                 .setWithHash(request.getWithHash())
                 .setDbName(request.getDatabaseName())
                 .setCollectionName(request.getCollectionName())
-                .setFieldName(request.getFieldName())
-                .build();
+                .setFieldName(request.getFieldName());
+        if (request.getAnalyzerParams() != null && !request.getAnalyzerParams().isEmpty()) {
+            runRequestBuilder.setAnalyzerParams(params);
+        }
+        RunAnalyzerRequest runRequest = runRequestBuilder.build();
         RunAnalyzerResponse response = blockingStub.runAnalyzer(runRequest);
         rpcUtils.handleResponse(title, response.getStatus());
 

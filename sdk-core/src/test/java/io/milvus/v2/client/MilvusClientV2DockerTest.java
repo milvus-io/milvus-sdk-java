@@ -4239,6 +4239,50 @@ class MilvusClientV2DockerTest {
     }
 
     @Test
+    void testRunAnalyzerCollectionMode() {
+        String collectionName = generator.generate(10);
+        CreateCollectionReq.CollectionSchema collectionSchema = CreateCollectionReq.CollectionSchema.builder()
+                .build();
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("id")
+                .dataType(DataType.Int64)
+                .isPrimaryKey(Boolean.TRUE)
+                .autoID(Boolean.FALSE)
+                .build());
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("vector")
+                .dataType(DataType.FloatVector)
+                .dimension(DIMENSION)
+                .build());
+        Map<String, Object> analyzerParams = new HashMap<>();
+        analyzerParams.put("tokenizer", "standard");
+        collectionSchema.addField(AddFieldReq.builder()
+                .fieldName("text")
+                .dataType(DataType.VarChar)
+                .maxLength(100)
+                .enableAnalyzer(true)
+                .analyzerParams(analyzerParams)
+                .build());
+        client.createCollection(CreateCollectionReq.builder()
+                .collectionName(collectionName)
+                .collectionSchema(collectionSchema)
+                .build());
+
+        try {
+            RunAnalyzerResp resp = client.runAnalyzer(RunAnalyzerReq.builder()
+                    .collectionName(collectionName)
+                    .fieldName("text")
+                    .texts(Arrays.asList("Analyzers tokenizers for multi languages"))
+                    .build());
+            List<RunAnalyzerResp.AnalyzerResult> results = resp.getResults();
+            Assertions.assertEquals(1, results.size());
+            Assertions.assertFalse(results.get(0).getTokens().isEmpty());
+        } finally {
+            client.dropCollection(DropCollectionReq.builder().collectionName(collectionName).build());
+        }
+    }
+
+    @Test
     void testConsistencyLevel() throws InterruptedException {
         String randomCollectionName = generator.generate(10);
         String pkName = "pk";
