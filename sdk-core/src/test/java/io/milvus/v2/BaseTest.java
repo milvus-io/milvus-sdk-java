@@ -30,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import com.google.common.util.concurrent.Futures;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -46,11 +47,16 @@ public class BaseTest {
     public MilvusClientV2 client_v2 = new MilvusClientV2(null);
     @Mock
     protected MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    @Mock
+    protected MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
 
     @BeforeEach
     public void setUp() {
         client_v2.setBlockingStub(blockingStub);
+        client_v2.setFutureStub(futureStub);
         when(blockingStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(blockingStub);
+        when(futureStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(futureStub);
+        when(futureStub.withOption(any(), any())).thenReturn(futureStub);
 
         Status successStatus = Status.newBuilder().setCode(0).build();
         BoolResponse trueResponse = BoolResponse.newBuilder().setStatus(successStatus).setValue(Boolean.TRUE).build();
@@ -119,6 +125,7 @@ public class BaseTest {
         when(blockingStub.truncateCollection(any())).thenReturn(TruncateCollectionResponse.newBuilder().setStatus(successStatus).build());
         when(blockingStub.hasCollection(any())).thenReturn(trueResponse);
         when(blockingStub.describeCollection(any())).thenReturn(describeCollectionResponse);
+        when(futureStub.describeCollection(any())).thenReturn(Futures.immediateFuture(describeCollectionResponse));
         when(blockingStub.batchDescribeCollection(any())).thenReturn(BatchDescribeCollectionResponse.newBuilder()
                 .setStatus(successStatus)
                 .addResponses(describeCollectionResponse)
@@ -136,6 +143,7 @@ public class BaseTest {
         when(blockingStub.insert(any())).thenReturn(MutationResult.newBuilder().setInsertCnt(2L).build());
         when(blockingStub.upsert(any())).thenReturn(MutationResult.newBuilder().setUpsertCnt(2L).build());
         when(blockingStub.query(any())).thenReturn(QueryResults.newBuilder().build());
+        when(futureStub.query(any())).thenReturn(Futures.immediateFuture(QueryResults.newBuilder().build()));
         when(blockingStub.delete(any())).thenReturn(MutationResult.newBuilder().setDeleteCnt(2L).build());
         SearchResults searchResults = SearchResults.newBuilder()
                 .setStatus(Status.newBuilder().setCode(0)
@@ -147,6 +155,8 @@ public class BaseTest {
                 .setResults(SearchResultData.newBuilder().addScores(1L).addTopks(0L).build())
                 .build();
         when(blockingStub.search(any())).thenReturn(searchResults);
+        when(futureStub.search(any())).thenReturn(Futures.immediateFuture(searchResults));
+        when(futureStub.hybridSearch(any())).thenReturn(Futures.immediateFuture(searchResults));
 
         // partition api
         when(blockingStub.createPartition(any())).thenReturn(successStatus);

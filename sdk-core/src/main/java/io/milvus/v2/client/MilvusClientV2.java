@@ -22,6 +22,7 @@ package io.milvus.v2.client;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
+import io.milvus.common.interceptor.ClientRequestInterceptor;
 import io.milvus.common.interceptor.IdentifierInterceptor;
 import io.milvus.grpc.ClientInfo;
 import io.milvus.grpc.ConnectRequest;
@@ -87,6 +88,7 @@ import io.milvus.v2.exception.MilvusClientException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
@@ -110,7 +112,8 @@ import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 public class MilvusClientV2 {
     private static final Logger logger = LoggerFactory.getLogger(MilvusClientV2.class);
     private ManagedChannel channel;
-    private MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private volatile MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub;
+    private volatile MilvusServiceGrpc.MilvusServiceFutureStub futureStub;
     private final ClientUtils clientUtils = new ClientUtils();
     private final DatabaseService databaseService = new DatabaseService();
     private final CollectionService collectionService = new CollectionService();
@@ -139,9 +142,14 @@ public class MilvusClientV2 {
         }
     }
 
-    // Setter for blockingStub (replacing @Setter)
+    // Setter for blockingStub, primarily used by tests and internal client wiring.
     public void setBlockingStub(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub) {
         this.blockingStub = blockingStub;
+    }
+
+    // Setter for futureStub, primarily used by tests and internal client wiring.
+    public void setFutureStub(MilvusServiceGrpc.MilvusServiceFutureStub futureStub) {
+        this.futureStub = futureStub;
     }
 
     private void initServices(String dbName) {
@@ -214,6 +222,7 @@ public class MilvusClientV2 {
             Channel interceptedChannel = ClientInterceptors.intercept(channel,
                     new IdentifierInterceptor(identifier));
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
+            futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel).withWaitForReady();
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -233,6 +242,7 @@ public class MilvusClientV2 {
     private synchronized void updatePrimaryConnection(MilvusClientV2 primaryClient) {
         this.channel = primaryClient.channel;
         this.blockingStub = primaryClient.blockingStub;
+        this.futureStub = primaryClient.futureStub;
         // Keep cacheEndpoint scoped to the logical global-cluster endpoint. Replacing it with the
         // physical primary endpoint would make session timestamps and schemas recorded before a
         // failover unreachable after the primary changes.
@@ -246,11 +256,38 @@ public class MilvusClientV2 {
     // begin the first call and end with the last call.
     // A related discussion: https://github.com/grpc/grpc-java/issues/4305
     private MilvusServiceGrpc.MilvusServiceBlockingStub getRpcStub() {
+        if (blockingStub == null) {
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "MilvusClient is closed");
+        }
         if (connectConfig != null && connectConfig.getRpcDeadlineMs() > 0) {
             return blockingStub.withDeadlineAfter(connectConfig.getRpcDeadlineMs(), TimeUnit.MILLISECONDS);
         } else {
             return blockingStub;
         }
+    }
+
+    private MilvusServiceGrpc.MilvusServiceFutureStub getFutureRpcStub() {
+        if (futureStub == null) {
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, "MilvusClient is closed");
+        }
+        if (connectConfig != null && connectConfig.getRpcDeadlineMs() > 0) {
+            return futureStub.withDeadlineAfter(connectConfig.getRpcDeadlineMs(), TimeUnit.MILLISECONDS);
+        } else {
+            return futureStub;
+        }
+    }
+
+    private MilvusServiceGrpc.MilvusServiceFutureStub getFutureRpcStub(String clientRequestId) {
+        return getFutureRpcStub().withOption(
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                clientRequestId == null ? "" : clientRequestId);
+    }
+
+    private String captureClientRequestId() {
+        if (connectConfig == null || connectConfig.getClientRequestId() == null) {
+            return null;
+        }
+        return connectConfig.getClientRequestId().get();
     }
 
     /**
@@ -794,6 +831,18 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Gets vectors in a collection in Milvus asynchronously.
+     *
+     * @param request get request
+     * @return a future completed with GetResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<GetResp> getAsync(GetReq request) {
+        String clientRequestId = captureClientRequestId();
+        return vectorService.getAsync(
+                () -> getFutureRpcStub(clientRequestId), request, rpcUtils);
+    }
+
+    /**
      * Queries vectors in a collection in Milvus.
      *
      * @param request query request
@@ -801,6 +850,18 @@ public class MilvusClientV2 {
      */
     public QueryResp query(QueryReq request) {
         return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request));
+    }
+
+    /**
+     * Queries vectors asynchronously in a collection in Milvus.
+     *
+     * @param request query request
+     * @return a future completed with QueryResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<QueryResp> queryAsync(QueryReq request) {
+        String clientRequestId = captureClientRequestId();
+        return vectorService.queryAsync(
+                () -> getFutureRpcStub(clientRequestId), request, rpcUtils);
     }
 
     /**
@@ -814,6 +875,18 @@ public class MilvusClientV2 {
     }
 
     /**
+     * Searches vectors asynchronously in a collection in Milvus.
+     *
+     * @param request search request
+     * @return a future completed with SearchResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<SearchResp> searchAsync(SearchReq request) {
+        String clientRequestId = captureClientRequestId();
+        return vectorService.searchAsync(
+                () -> getFutureRpcStub(clientRequestId), request, rpcUtils);
+    }
+
+    /**
      * Conducts multi vector similarity search with a ranker for rearrangement.
      *
      * @param request search request
@@ -821,6 +894,18 @@ public class MilvusClientV2 {
      */
     public SearchResp hybridSearch(HybridSearchReq request) {
         return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request));
+    }
+
+    /**
+     * Conducts multi vector similarity search asynchronously with a ranker for rearrangement.
+     *
+     * @param request hybrid search request
+     * @return a future completed with SearchResp, or exceptionally when the operation fails
+     */
+    public CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request) {
+        String clientRequestId = captureClientRequestId();
+        return vectorService.hybridSearchAsync(
+                () -> getFutureRpcStub(clientRequestId), request, rpcUtils);
     }
 
     /**
@@ -1591,18 +1676,25 @@ public class MilvusClientV2 {
      * @throws InterruptedException throws InterruptedException if the client failed to close connection
      */
     public void close(long maxWaitSeconds) throws InterruptedException {
+        // cancel any pending async retries and release the per-client retry scheduler
+        rpcUtils.shutdown();
         if (globalStub != null) {
             globalStub.close();
             globalStub = null;
             // channel is owned by the inner client, already closed by globalStub.close()
             channel = null;
             blockingStub = null;
+            futureStub = null;
             return;
         }
         if (channel != null) {
             channel.shutdownNow();
             channel.awaitTermination(maxWaitSeconds, TimeUnit.SECONDS);
         }
+        // drop the stubs so calls issued after close fail fast instead of churning
+        // retries on the terminated channel
+        blockingStub = null;
+        futureStub = null;
     }
 
     /**

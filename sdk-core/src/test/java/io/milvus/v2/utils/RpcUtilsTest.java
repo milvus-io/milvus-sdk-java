@@ -26,9 +26,199 @@ import io.milvus.v2.exception.MilvusClientException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RpcUtilsTest {
+
+    @Test
+    void testAsyncRetryExecutorRemovesCancelledTasks() throws Exception {
+        Field field = RpcUtils.class.getDeclaredField("asyncRetryExecutor");
+        field.setAccessible(true);
+        ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) field.get(new RpcUtils());
+
+        Assertions.assertTrue(executor.getRemoveOnCancelPolicy());
+    }
+
+    @Test
+    void testRetryAsyncSuccess() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+
+        String result = rpcUtils.retryAsync(() -> CompletableFuture.completedFuture("ok"))
+                .get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals("ok", result);
+    }
+
+    @Test
+    void testRetryAsyncRetriesUnavailable() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(3)
+                .initialBackOffMs(1)
+                .maxBackOffMs(1)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+
+        String result = rpcUtils.retryAsync(() -> {
+            if (callCount.incrementAndGet() < 3) {
+                CompletableFuture<String> failed = new CompletableFuture<>();
+                failed.completeExceptionally(new StatusRuntimeException(
+                        io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+                return failed;
+            }
+            return CompletableFuture.completedFuture("ok");
+        }).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals("ok", result);
+        Assertions.assertEquals(3, callCount.get());
+    }
+
+    @Test
+    void testRetryAsyncZeroBackoffDoesNotLoseRetryGeneration() {
+        RpcUtils rpcUtils = new RpcUtils();
+        int maxRetryTimes = 20;
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(maxRetryTimes)
+                .initialBackOffMs(0)
+                .maxBackOffMs(0)
+                .backOffMultiplier(1)
+                .build());
+
+        for (int round = 0; round < 100; round++) {
+            AtomicInteger callCount = new AtomicInteger();
+            ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                    () -> rpcUtils.retryAsync(() -> {
+                        callCount.incrementAndGet();
+                        CompletableFuture<String> failed = new CompletableFuture<>();
+                        failed.completeExceptionally(new StatusRuntimeException(
+                                io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+                        return failed;
+                    }).get(2, TimeUnit.SECONDS));
+
+            Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+            Assertions.assertEquals(ErrorCode.TIMEOUT,
+                    ((MilvusClientException) exception.getCause()).getErrorCode());
+            Assertions.assertEquals(maxRetryTimes, callCount.get());
+        }
+    }
+
+    @Test
+    void testRetryAsyncDoesNotRetryInvalidArgument() {
+        RpcUtils rpcUtils = new RpcUtils();
+        AtomicInteger callCount = new AtomicInteger();
+        StatusRuntimeException original = new StatusRuntimeException(
+                io.grpc.Status.INVALID_ARGUMENT.withDescription("invalid"));
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> rpcUtils.retryAsync(() -> {
+                    callCount.incrementAndGet();
+                    CompletableFuture<String> failed = new CompletableFuture<>();
+                    failed.completeExceptionally(original);
+                    return failed;
+                }).get(1, TimeUnit.SECONDS));
+
+        Assertions.assertEquals(1, callCount.get());
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        MilvusClientException clientException = (MilvusClientException) exception.getCause();
+        Assertions.assertEquals(ErrorCode.RPC_ERROR, clientException.getErrorCode());
+        Assertions.assertSame(original, clientException.getCause());
+    }
+
+    @Test
+    void testRetryDoesNotRetryInvalidArgumentPreservesCause() {
+        RpcUtils rpcUtils = new RpcUtils();
+        AtomicInteger callCount = new AtomicInteger();
+        StatusRuntimeException original = new StatusRuntimeException(
+                io.grpc.Status.INVALID_ARGUMENT.withDescription("invalid"));
+
+        MilvusClientException exception = Assertions.assertThrows(MilvusClientException.class,
+                () -> rpcUtils.retry(() -> {
+                    callCount.incrementAndGet();
+                    throw original;
+                }));
+
+        Assertions.assertEquals(1, callCount.get());
+        Assertions.assertEquals(ErrorCode.RPC_ERROR, exception.getErrorCode());
+        Assertions.assertSame(original, exception.getCause());
+    }
+
+    @Test
+    void testRetryAsyncPreservesClientException() {
+        RpcUtils rpcUtils = new RpcUtils();
+        MilvusClientException original = new MilvusClientException(ErrorCode.INVALID_PARAMS, "invalid");
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> rpcUtils.retryAsync(() -> {
+                    CompletableFuture<String> failed = new CompletableFuture<>();
+                    failed.completeExceptionally(original);
+                    return failed;
+                }).get(1, TimeUnit.SECONDS));
+
+        Assertions.assertSame(original, exception.getCause());
+    }
+
+    @Test
+    void testRetryAsyncCancellationCancelsActiveAttempt() {
+        RpcUtils rpcUtils = new RpcUtils();
+        CompletableFuture<String> activeAttempt = new CompletableFuture<>();
+
+        CompletableFuture<String> result = rpcUtils.retryAsync(() -> activeAttempt);
+        Assertions.assertTrue(result.cancel(true));
+
+        Assertions.assertTrue(activeAttempt.isCancelled());
+    }
+
+    @Test
+    void testRetryAsyncCancellationDuringBackoffPreventsNextAttempt() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(3)
+                .initialBackOffMs(300)
+                .maxBackOffMs(300)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+
+        CompletableFuture<String> result = rpcUtils.retryAsync(() -> {
+            callCount.incrementAndGet();
+            CompletableFuture<String> failed = new CompletableFuture<>();
+            failed.completeExceptionally(new StatusRuntimeException(
+                    io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+            return failed;
+        });
+
+        Assertions.assertTrue(result.cancel(true));
+        TimeUnit.MILLISECONDS.sleep(600);
+
+        Assertions.assertTrue(result.isCancelled());
+        Assertions.assertEquals(1, callCount.get());
+    }
+
+    @Test
+    void testRetryAsyncNoRetryMapsRpcFailure() {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder().maxRetryTimes(1).build());
+        AtomicInteger callCount = new AtomicInteger();
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> rpcUtils.retryAsync(() -> {
+                    callCount.incrementAndGet();
+                    CompletableFuture<String> failed = new CompletableFuture<>();
+                    failed.completeExceptionally(new StatusRuntimeException(io.grpc.Status.UNAVAILABLE));
+                    return failed;
+                }).get(1, TimeUnit.SECONDS));
+
+        Assertions.assertEquals(1, callCount.get());
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.RPC_ERROR,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+    }
 
     @Test
     void testEarlyExitWhenPredictedBackoffExceedsMaxRetryTimeoutMs() {
@@ -139,5 +329,174 @@ public class RpcUtilsTest {
                 "Elapsed time should greater than maxRetryTimeoutMs, but was " + elapsed + "ms");
         Assertions.assertTrue(elapsed < maxRetryTimeoutMs + 1000,
                 "Should not exceed maxRetryTimeoutMs by too much, elapsed was " + elapsed + "ms");
+    }
+
+    @Test
+    void testRetryAsyncTimesOutWhenElapsedTimeExceedsMaxRetryTimeoutMs() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        long maxRetryTimeoutMs = 200;
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(10)
+                .maxRetryTimeoutMs(maxRetryTimeoutMs)
+                .initialBackOffMs(10)
+                .maxBackOffMs(10)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+
+        long start = System.currentTimeMillis();
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> rpcUtils.retryAsync(() -> {
+                    callCount.incrementAndGet();
+                    return slowFail(maxRetryTimeoutMs + 100);
+                }).get(5, TimeUnit.SECONDS));
+        long elapsed = System.currentTimeMillis() - start;
+
+        Assertions.assertEquals(ErrorCode.TIMEOUT,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        Assertions.assertEquals(1, callCount.get(),
+                "A single slow attempt that exceeds the retry window should time out immediately");
+        Assertions.assertTrue(elapsed >= maxRetryTimeoutMs,
+                "Should fail once the attempt exceeds the retry window; elapsed=" + elapsed + "ms");
+        Assertions.assertTrue(elapsed < maxRetryTimeoutMs + 400,
+                "Should exit shortly after the slow attempt fails; elapsed=" + elapsed + "ms");
+    }
+
+    @Test
+    void testRetryAsyncEarlyExitWhenPredictedBackoffExceedsMaxRetryTimeoutMs() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        long maxRetryTimeoutMs = 500;
+        int maxRetryTimes = 10;
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(maxRetryTimes)
+                .maxRetryTimeoutMs(maxRetryTimeoutMs)
+                .initialBackOffMs(100)
+                .maxBackOffMs(100)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+
+        long start = System.currentTimeMillis();
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> rpcUtils.retryAsync(() -> {
+                    callCount.incrementAndGet();
+                    CompletableFuture<String> failed = new CompletableFuture<>();
+                    failed.completeExceptionally(new StatusRuntimeException(
+                            io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+                    return failed;
+                }).get(5, TimeUnit.SECONDS));
+        long elapsed = System.currentTimeMillis() - start;
+
+        Assertions.assertEquals(ErrorCode.TIMEOUT,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
+        Assertions.assertTrue(callCount.get() < maxRetryTimes,
+                "Should exit before exhausting maxRetryTimes; calls=" + callCount.get());
+        Assertions.assertTrue(elapsed < maxRetryTimeoutMs,
+                "Predicted next backoff exceeds the retry window, should exit early; elapsed=" + elapsed + "ms");
+    }
+
+    @Test
+    void testRetryConfigRejectsNegativeBackoffValues() {
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RetryConfig.builder().initialBackOffMs(-1).build());
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RetryConfig.builder().maxBackOffMs(-1).build());
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RetryConfig.builder().backOffMultiplier(0).build());
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> RetryConfig.builder().backOffMultiplier(-3).build());
+    }
+
+    @Test
+    void testRetryConfigSettersRejectNegativeBackoffValues() {
+        RetryConfig config = RetryConfig.builder().build();
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> config.setInitialBackOffMs(-1));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> config.setMaxBackOffMs(-1));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> config.setBackOffMultiplier(0));
+    }
+
+    @Test
+    void testRetrySyncAndAsyncRejectNegativeBackoffAtInstallation() {
+        // parity: sync retry() used to reject a negative backoff via Thread.sleep,
+        // while retryAsync() hot-looped because ScheduledThreadPoolExecutor treats a
+        // negative delay as immediately due. Validation now happens in RetryConfig, the
+        // shared entry point, so neither path can install a malformed config.
+        RpcUtils rpcUtils = new RpcUtils();
+
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> rpcUtils.retryConfig(RetryConfig.builder().initialBackOffMs(-5).build()));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> rpcUtils.retryConfig(RetryConfig.builder().maxBackOffMs(-5).build()));
+        Assertions.assertThrows(IllegalArgumentException.class,
+                () -> rpcUtils.retryConfig(RetryConfig.builder().backOffMultiplier(0).build()));
+    }
+
+    @Test
+    void testShutdownCancelsPendingScheduledRetry() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(5)
+                .initialBackOffMs(60000)
+                .maxBackOffMs(60000)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+        CompletableFuture<String> result = rpcUtils.retryAsync(() -> {
+            callCount.incrementAndGet();
+            CompletableFuture<String> failed = new CompletableFuture<>();
+            failed.completeExceptionally(new StatusRuntimeException(
+                    io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+            return failed;
+        });
+
+        rpcUtils.shutdown();
+        TimeUnit.MILLISECONDS.sleep(200);
+
+        Assertions.assertEquals(1, callCount.get(),
+                "shutdown should cancel the pending scheduled retry");
+        result.cancel(true);
+    }
+
+    @Test
+    void testRetryAsyncRecreatesSchedulerAfterShutdown() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(3)
+                .initialBackOffMs(10)
+                .maxBackOffMs(10)
+                .backOffMultiplier(1)
+                .build());
+        rpcUtils.shutdown();
+        AtomicInteger callCount = new AtomicInteger();
+
+        String result = rpcUtils.retryAsync(() -> {
+            if (callCount.incrementAndGet() < 2) {
+                CompletableFuture<String> failed = new CompletableFuture<>();
+                failed.completeExceptionally(new StatusRuntimeException(
+                        io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+                return failed;
+            }
+            return CompletableFuture.completedFuture("ok");
+        }).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals("ok", result);
+        Assertions.assertEquals(2, callCount.get(),
+                "a retryable failure after shutdown should schedule a retry, forcing scheduler recreation");
+    }
+
+    private CompletableFuture<String> slowFail(long delayMs) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Thread.sleep(delayMs);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            throw new StatusRuntimeException(
+                    io.grpc.Status.UNAVAILABLE.withDescription("server unavailable"));
+        });
     }
 }
