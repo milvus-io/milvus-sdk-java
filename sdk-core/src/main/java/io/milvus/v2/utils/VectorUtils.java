@@ -722,7 +722,8 @@ public class VectorUtils {
     }
 
     private FunctionSchema convertFunctionSchema(CreateCollectionReq.Function function) {
-        Map<String, String> params = function.getParams();
+        Map<String, String> functionParams = function.getParams();
+        Map<String, String> params = functionParams == null ? new HashMap<>() : new HashMap<>(functionParams);
         // FunctionSchema type keyword is "reranker", old RRF/Weighted ranker type keyword is "strategy"
         // FunctionSchema parameters are flat, old RRF/Weighted parameters are wrapped by "params"
         if (function instanceof RRFRanker || function instanceof WeightedRanker) {

@@ -29,6 +29,8 @@ import io.milvus.v2.service.vector.response.GetResp;
 import io.milvus.v2.service.vector.response.QueryResp;
 import io.milvus.v2.service.vector.response.SearchResp;
 
+import java.util.concurrent.CompletableFuture;
+
 public class MilvusClientV2Session {
     private final MilvusClientV2 parent;
     private final String clusterId;
@@ -48,14 +50,29 @@ public class MilvusClientV2Session {
         return parent.search(request, clusterId);
     }
 
+    public CompletableFuture<SearchResp> searchAsync(SearchReq request) {
+        ensureOpen();
+        return parent.searchAsync(request, clusterId);
+    }
+
     public SearchResp hybridSearch(HybridSearchReq request) {
         ensureOpen();
         return parent.hybridSearch(request, clusterId);
     }
 
+    public CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request) {
+        ensureOpen();
+        return parent.hybridSearchAsync(request, clusterId);
+    }
+
     public QueryResp query(QueryReq request) {
         ensureOpen();
         return parent.query(request, clusterId);
+    }
+
+    public CompletableFuture<QueryResp> queryAsync(QueryReq request) {
+        ensureOpen();
+        return parent.queryAsync(request, clusterId);
     }
 
     public QueryIterator queryIterator(QueryIteratorReq request) {
@@ -76,6 +93,11 @@ public class MilvusClientV2Session {
     public GetResp get(GetReq request) {
         ensureOpen();
         return parent.get(request, clusterId);
+    }
+
+    public CompletableFuture<GetResp> getAsync(GetReq request) {
+        ensureOpen();
+        return parent.getAsync(request, clusterId);
     }
 
     public void close() {

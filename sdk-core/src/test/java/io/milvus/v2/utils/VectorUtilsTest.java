@@ -19,13 +19,20 @@
 
 package io.milvus.v2.utils;
 
+import io.milvus.common.clientenum.FunctionType;
 import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.grpc.QueryRequest;
+import io.milvus.grpc.SearchRequest;
 import io.milvus.v2.common.ConsistencyLevel;
+import io.milvus.v2.service.collection.request.CreateCollectionReq;
+import io.milvus.v2.service.vector.request.FunctionScore;
 import io.milvus.v2.service.vector.request.QueryReq;
+import io.milvus.v2.service.vector.request.SearchReq;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -66,5 +73,22 @@ class VectorUtilsTest {
         assertEquals(1L, sessionRequest.getGuaranteeTimestamp());
         assertEquals(1L, defaultConsistencyRequest.getGuaranteeTimestamp());
         assertEquals(100L, endpointRequest.getGuaranteeTimestamp());
+    }
+
+    @Test
+    void convertsFunctionWithNullParamsAsEmptyMap() {
+        CreateCollectionReq.Function function = CreateCollectionReq.Function.builder()
+                .name("reranker")
+                .functionType(FunctionType.RERANK)
+                .params(null)
+                .build();
+
+        SearchRequest request = new VectorUtils().ConvertToGrpcSearchRequest(SearchReq.builder()
+                .collectionName("coll")
+                .ids(Collections.singletonList(1L))
+                .functionScore(FunctionScore.builder().addFunction(function).build())
+                .build());
+
+        assertEquals(0, request.getFunctionScore().getFunctions(0).getParamsCount());
     }
 }
