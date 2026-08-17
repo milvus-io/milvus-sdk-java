@@ -25,6 +25,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
 import io.grpc.netty.shaded.io.netty.handler.ssl.*;
 import io.grpc.stub.MetadataUtils;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.interceptor.ClientRequestInterceptor;
 import io.milvus.grpc.*;
 import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.exception.ErrorCode;
@@ -67,27 +68,7 @@ public class ClientUtils {
 
         List<ClientInterceptor> clientInterceptors = new ArrayList<>();
         clientInterceptors.add(MetadataUtils.newAttachHeadersInterceptor(metadata));
-        //client interceptor used to fetch client_request_id from threadlocal variable and set it for every grpc request
-        clientInterceptors.add(new ClientInterceptor() {
-            @Override
-            public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-                return new ForwardingClientCall
-                        .SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
-                    @Override
-                    public void start(ClientCall.Listener<RespT> responseListener, Metadata headers) {
-                        String currentMs = String.valueOf(System.currentTimeMillis());
-                        headers.put(Metadata.Key.of("client-request-unixmsec", Metadata.ASCII_STRING_MARSHALLER), currentMs);
-                        if (connectConfig.getClientRequestId() != null) {
-                            String clientID = connectConfig.getClientRequestId().get();
-                            if (!StringUtils.isEmpty(clientID)) {
-                                headers.put(Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER), clientID);
-                            }
-                        }
-                        super.start(responseListener, headers);
-                    }
-                };
-            }
-        });
+        clientInterceptors.add(new ClientRequestInterceptor(connectConfig.getClientRequestId()));
 
         try {
             if (connectConfig.getSslContext() != null) {
