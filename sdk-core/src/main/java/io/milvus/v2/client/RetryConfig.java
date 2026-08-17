@@ -29,12 +29,35 @@ public class RetryConfig {
 
     // Constructor for builder pattern
     private RetryConfig(RetryConfigBuilder builder) {
-        this.maxRetryTimes = builder.maxRetryTimes;
-        this.initialBackOffMs = builder.initialBackOffMs;
-        this.maxBackOffMs = builder.maxBackOffMs;
-        this.backOffMultiplier = builder.backOffMultiplier;
-        this.retryOnRateLimit = builder.retryOnRateLimit;
-        this.maxRetryTimeoutMs = builder.maxRetryTimeoutMs;
+        this(builder.maxRetryTimes, builder.initialBackOffMs, builder.maxBackOffMs,
+                builder.backOffMultiplier, builder.retryOnRateLimit, builder.maxRetryTimeoutMs);
+    }
+
+    private RetryConfig(int maxRetryTimes, long initialBackOffMs, long maxBackOffMs,
+                        int backOffMultiplier, boolean retryOnRateLimit, long maxRetryTimeoutMs) {
+        requireNonNegative("initialBackOffMs", initialBackOffMs);
+        requireNonNegative("maxBackOffMs", maxBackOffMs);
+        requireAtLeastOne("backOffMultiplier", backOffMultiplier);
+        this.maxRetryTimes = maxRetryTimes;
+        this.initialBackOffMs = initialBackOffMs;
+        this.maxBackOffMs = maxBackOffMs;
+        this.backOffMultiplier = backOffMultiplier;
+        this.retryOnRateLimit = retryOnRateLimit;
+        this.maxRetryTimeoutMs = maxRetryTimeoutMs;
+    }
+
+    private static void requireNonNegative(String name, long value) {
+        if (value < 0) {
+            throw new IllegalArgumentException(
+                    name + " cannot be negative: " + value);
+        }
+    }
+
+    private static void requireAtLeastOne(String name, int value) {
+        if (value < 1) {
+            throw new IllegalArgumentException(
+                    name + " must be at least 1: " + value);
+        }
     }
 
     public static RetryConfigBuilder builder() {
@@ -72,14 +95,17 @@ public class RetryConfig {
     }
 
     public void setInitialBackOffMs(long initialBackOffMs) {
+        requireNonNegative("initialBackOffMs", initialBackOffMs);
         this.initialBackOffMs = initialBackOffMs;
     }
 
     public void setMaxBackOffMs(long maxBackOffMs) {
+        requireNonNegative("maxBackOffMs", maxBackOffMs);
         this.maxBackOffMs = maxBackOffMs;
     }
 
     public void setBackOffMultiplier(int backOffMultiplier) {
+        requireAtLeastOne("backOffMultiplier", backOffMultiplier);
         this.backOffMultiplier = backOffMultiplier;
     }
 
