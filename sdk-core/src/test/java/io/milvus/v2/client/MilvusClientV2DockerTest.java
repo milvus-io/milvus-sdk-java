@@ -4268,6 +4268,20 @@ class MilvusClientV2DockerTest {
                 .collectionSchema(collectionSchema)
                 .build());
 
+        IndexParam indexParam = IndexParam.builder()
+                .fieldName("vector")
+                .indexType(IndexParam.IndexType.AUTOINDEX)
+                .metricType(IndexParam.MetricType.COSINE)
+                .build();
+        client.createIndex(CreateIndexReq.builder()
+                .collectionName(collectionName)
+                .indexParams(Collections.singletonList(indexParam))
+                .build());
+
+        client.loadCollection(LoadCollectionReq.builder()
+                .collectionName(collectionName)
+                .build());
+
         try {
             RunAnalyzerResp resp = client.runAnalyzer(RunAnalyzerReq.builder()
                     .collectionName(collectionName)
