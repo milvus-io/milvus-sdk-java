@@ -27,9 +27,11 @@ import io.milvus.v2.exception.MilvusClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -49,6 +51,7 @@ public class RpcUtils {
     private volatile ScheduledThreadPoolExecutor asyncRetryExecutor = createAsyncRetryExecutor();
     private volatile RetryConfig retryConfig = RetryConfig.builder().build();
     private volatile Runnable globalRefreshTrigger;
+    private final Set<RetryFuture<?>> activeFutures = ConcurrentHashMap.newKeySet();
 
     private static ScheduledThreadPoolExecutor createAsyncRetryExecutor() {
         ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, runnable -> {
@@ -61,11 +64,17 @@ public class RpcUtils {
     }
 
     /**
-     * Shuts down the async retry scheduler. Pending retries are cancelled; a later
-     * {@link #retryAsync} call lazily recreates the scheduler and keeps working.
+     * Shuts down the async retry scheduler. Pending retries are cancelled, and every in-flight
+     * {@link #retryAsync} future is failed fast with "MilvusClient is closed" so callers blocked
+     * on get()/join() are not left hanging. A later {@link #retryAsync} call lazily recreates
+     * the scheduler and keeps working.
      */
     public void shutdown() {
         asyncRetryExecutor.shutdownNow();
+        // create a fresh exception per future so failures stay isolated
+        for (RetryFuture<?> future : activeFutures) {
+            future.fail(new MilvusClientException(ErrorCode.CLIENT_ERROR, "MilvusClient is closed"));
+        }
     }
 
     private ScheduledThreadPoolExecutor asyncRetryExecutor() {
@@ -274,6 +283,8 @@ public class RpcUtils {
      */
     public <T> CompletableFuture<T> retryAsync(Supplier<CompletableFuture<T>> supplier) {
         RetryFuture<T> result = new RetryFuture<>();
+        activeFutures.add(result);
+        result.whenComplete((value, throwable) -> activeFutures.remove(result));
         int maxRetryTimes = retryConfig.getMaxRetryTimes();
         int effectiveMaxRetryTimes = Math.max(1, maxRetryTimes);
         attemptAsync(supplier, result, System.currentTimeMillis(), effectiveMaxRetryTimes,
@@ -492,18 +503,34 @@ public class RpcUtils {
             }
         }
 
+        /**
+         * Completes exceptionally first, then cancels the active attempt and any pending retry.
+         * Used by {@link RpcUtils#shutdown()} so in-flight retries are not left hanging.
+         * The order is concurrency-critical: completing first makes the attempt's whenComplete
+         * callback see the future as done and return early, instead of re-entering
+         * handleAsyncFailure with a CancellationException that would overwrite this exception.
+         */
+        private void fail(Throwable throwable) {
+            completeExceptionally(throwable);
+            cancelPendingAttempts(true);
+        }
+
+        private void cancelPendingAttempts(boolean mayInterruptIfRunning) {
+            CompletableFuture<?> active = inFlight.getAndSet(null);
+            if (active != null) {
+                active.cancel(mayInterruptIfRunning);
+            }
+            ScheduledRetry pending = scheduled.getAndSet(null);
+            if (pending != null) {
+                pending.cancel();
+            }
+        }
+
         @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             boolean cancelled = super.cancel(mayInterruptIfRunning);
             if (cancelled) {
-                CompletableFuture<?> active = inFlight.getAndSet(null);
-                if (active != null) {
-                    active.cancel(mayInterruptIfRunning);
-                }
-                ScheduledRetry pending = scheduled.getAndSet(null);
-                if (pending != null) {
-                    pending.cancel();
-                }
+                cancelPendingAttempts(mayInterruptIfRunning);
             }
             return cancelled;
         }
