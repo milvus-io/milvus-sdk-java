@@ -76,7 +76,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static final Gson GSON = new Gson();
     private static final int SAMPLE_BUFFER_SIZE = 1000;
     private static final int SNAPSHOT_LIMIT = 120;
-    private static final int SAMPLING_DENOMINATOR = 10_000;
+    /**
+     * Fixed-point unit for accumulating a fractional sampling rate. A rate becomes an
+     * integer step of this many units, so the smallest rate that still samples is 1e-9 --
+     * far below anything an operator would set, which is the point: a configured rate must
+     * never round down to "off".
+     */
+    private static final long SAMPLING_SCALE = 1_000_000_000L;
     private static final int MAX_REPLY_BYTES = 1024 * 1024;
     private static final long MAX_UNIMPLEMENTED_BACKOFF_MS = TimeUnit.MINUTES.toMillis(30);
     private static final SecureRandom REQUEST_ID_RANDOM = new SecureRandom();
@@ -96,7 +102,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private final Map<String, Long> executedCommands = new HashMap<>();
     private final Map<String, CommandHandler> handlers = new HashMap<>();
     private final Map<String, CommandHandler> customHandlers = new HashMap<>();
-    private final AtomicLong samplingCounter = new AtomicLong();
+    /**
+     * Carries the fractional sampling rate between calls, in SAMPLING_SCALE units: each
+     * operation adds the rate and the one that pushes it past a whole unit is the one
+     * sampled. See shouldSample.
+     */
+    private final AtomicLong samplingAccum = new AtomicLong();
     private final AtomicBoolean ready = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final ScheduledExecutorService executor;
@@ -248,7 +259,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 handlerValues,
                 errorValues,
                 snapshotValues,
-                samplingCounter.get(),
+                samplingAccum.get(),
                 lastSnapshotEnd,
                 config.isEnabled(),
                 config.getHeartbeatIntervalMs(),
@@ -267,7 +278,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         config.setSamplingRate(state.samplingRate);
         configHash = state.configHash;
         lastCommandTimestamp = state.lastCommandTimestamp;
-        samplingCounter.set(state.samplingCounter);
+        samplingAccum.set(state.samplingAccum);
         lastSnapshotEnd = state.lastSnapshotEnd;
         synchronized (pendingReplies) {
             pendingReplies.clear();
@@ -502,6 +513,23 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 .build();
     }
 
+    /**
+     * Decides whether this operation is recorded, spreading the sampled ones evenly rather
+     * than in runs.
+     *
+     * <p>Each call adds the rate to a shared accumulator and samples on the call that
+     * carries it across a whole unit: at 0.25 that is every fourth operation. What matters
+     * is that the ratio holds over any stretch of calls, not only over a long one --
+     * metrics are reported per heartbeat window, and a window is tens or hundreds of
+     * operations. A scheme that sampled a contiguous run and then dropped one would give
+     * the right long-run ratio while making every individual window either complete or
+     * empty.
+     *
+     * <p>The accumulator is shared, so concurrent callers reorder which of them observes a
+     * crossing, but each crossing is observed exactly once: addAndGet hands every caller a
+     * distinct interval and the step is smaller than one unit, so no interval spans two
+     * crossings.
+     */
     private boolean shouldSample(double rate) {
         if (rate >= 1.0) {
             return true;
@@ -509,8 +537,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         if (rate <= 0.0) {
             return false;
         }
-        long threshold = (long) (rate * SAMPLING_DENOMINATOR);
-        return threshold > 0 && samplingCounter.incrementAndGet() % SAMPLING_DENOMINATOR < threshold;
+        // A rate too small to represent still means "sample rarely", never "sample never":
+        // silently disabling telemetry for a positive rate is the one outcome nobody could
+        // have intended.
+        long step = Math.max(1L, (long) (rate * SAMPLING_SCALE));
+        long after = samplingAccum.addAndGet(step);
+        long before = after - step;
+        return after / SAMPLING_SCALE != before / SAMPLING_SCALE;
     }
 
     private void createSnapshot() {
@@ -854,7 +887,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         private final Map<String, CommandHandler> customHandlers;
         private final List<ErrorInfo> errors;
         private final List<MetricsSnapshot> snapshots;
-        private final long samplingCounter;
+        private final long samplingAccum;
         private final long lastSnapshotEnd;
         private final boolean enabled;
         private final long heartbeatIntervalMs;
@@ -871,7 +904,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 Map<String, CommandHandler> customHandlers,
                 List<ErrorInfo> errors,
                 List<MetricsSnapshot> snapshots,
-                long samplingCounter,
+                long samplingAccum,
                 long lastSnapshotEnd,
                 boolean enabled,
                 long heartbeatIntervalMs,
@@ -886,7 +919,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.customHandlers = new HashMap<>(customHandlers);
             this.errors = new ArrayList<>(errors);
             this.snapshots = new ArrayList<>(snapshots);
-            this.samplingCounter = samplingCounter;
+            this.samplingAccum = samplingAccum;
             this.lastSnapshotEnd = lastSnapshotEnd;
             this.enabled = enabled;
             this.heartbeatIntervalMs = heartbeatIntervalMs;
