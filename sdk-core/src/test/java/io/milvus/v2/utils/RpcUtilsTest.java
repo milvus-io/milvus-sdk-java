@@ -466,11 +466,32 @@ public class RpcUtilsTest {
         });
 
         rpcUtils.shutdown();
-        TimeUnit.MILLISECONDS.sleep(200);
 
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> result.get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        Assertions.assertEquals(ErrorCode.CLIENT_ERROR,
+                ((MilvusClientException) exception.getCause()).getErrorCode());
         Assertions.assertEquals(1, callCount.get(),
                 "shutdown should cancel the pending scheduled retry");
-        result.cancel(true);
+    }
+
+    @Test
+    void testShutdownFailsInFlightAttempt() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        CompletableFuture<String> inFlight = new CompletableFuture<>();
+        CompletableFuture<String> result = rpcUtils.retryAsync(() -> inFlight);
+
+        rpcUtils.shutdown();
+
+        ExecutionException exception = Assertions.assertThrows(ExecutionException.class,
+                () -> result.get(1, TimeUnit.SECONDS));
+        Assertions.assertTrue(exception.getCause() instanceof MilvusClientException);
+        MilvusClientException clientException = (MilvusClientException) exception.getCause();
+        Assertions.assertEquals(ErrorCode.CLIENT_ERROR, clientException.getErrorCode());
+        Assertions.assertEquals("MilvusClient is closed", clientException.getMessage(),
+                "the intended exception must not be lost to a cancellation-wrapped error");
+        Assertions.assertTrue(inFlight.isCancelled());
     }
 
     @Test
