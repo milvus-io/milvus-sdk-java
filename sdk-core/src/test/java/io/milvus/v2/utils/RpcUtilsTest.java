@@ -37,9 +37,9 @@ public class RpcUtilsTest {
 
     @Test
     void testAsyncRetryExecutorRemovesCancelledTasks() throws Exception {
-        Field field = RpcUtils.class.getDeclaredField("ASYNC_RETRY_EXECUTOR");
+        Field field = RpcUtils.class.getDeclaredField("asyncRetryExecutor");
         field.setAccessible(true);
-        ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) field.get(null);
+        ScheduledThreadPoolExecutor executor = (ScheduledThreadPoolExecutor) field.get(new RpcUtils());
 
         Assertions.assertTrue(executor.getRemoveOnCancelPolicy());
     }
@@ -445,5 +445,58 @@ public class RpcUtilsTest {
                 () -> rpcUtils.retryConfig(RetryConfig.builder().maxBackOffMs(-5).build()));
         Assertions.assertThrows(IllegalArgumentException.class,
                 () -> rpcUtils.retryConfig(RetryConfig.builder().backOffMultiplier(0).build()));
+    }
+
+    @Test
+    void testShutdownCancelsPendingScheduledRetry() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(5)
+                .initialBackOffMs(60000)
+                .maxBackOffMs(60000)
+                .backOffMultiplier(1)
+                .build());
+        AtomicInteger callCount = new AtomicInteger();
+        CompletableFuture<String> result = rpcUtils.retryAsync(() -> {
+            callCount.incrementAndGet();
+            CompletableFuture<String> failed = new CompletableFuture<>();
+            failed.completeExceptionally(new StatusRuntimeException(
+                    io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+            return failed;
+        });
+
+        rpcUtils.shutdown();
+        TimeUnit.MILLISECONDS.sleep(200);
+
+        Assertions.assertEquals(1, callCount.get(),
+                "shutdown should cancel the pending scheduled retry");
+        result.cancel(true);
+    }
+
+    @Test
+    void testRetryAsyncRecreatesSchedulerAfterShutdown() throws Exception {
+        RpcUtils rpcUtils = new RpcUtils();
+        rpcUtils.retryConfig(RetryConfig.builder()
+                .maxRetryTimes(3)
+                .initialBackOffMs(10)
+                .maxBackOffMs(10)
+                .backOffMultiplier(1)
+                .build());
+        rpcUtils.shutdown();
+        AtomicInteger callCount = new AtomicInteger();
+
+        String result = rpcUtils.retryAsync(() -> {
+            if (callCount.incrementAndGet() < 2) {
+                CompletableFuture<String> failed = new CompletableFuture<>();
+                failed.completeExceptionally(new StatusRuntimeException(
+                        io.grpc.Status.UNAVAILABLE.withDescription("server unavailable")));
+                return failed;
+            }
+            return CompletableFuture.completedFuture("ok");
+        }).get(1, TimeUnit.SECONDS);
+
+        Assertions.assertEquals("ok", result);
+        Assertions.assertEquals(2, callCount.get(),
+                "a retryable failure after shutdown should schedule a retry, forcing scheduler recreation");
     }
 }
