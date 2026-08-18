@@ -240,7 +240,7 @@ public class VectorService extends BaseService {
         QueryRequest queryRequest = buildBaseQueryRequest(request);
         if (descResp != null) {
             queryRequest = queryRequest.toBuilder()
-                    .setExpr(getPrimaryKeyName(descResp) + buildIdsExpressionSuffix(request.getIds()))
+                    .setExpr(vectorUtils.getExprById(getPrimaryKeyName(descResp), request.getIds()))
                     .build();
         }
         return queryRequest;
@@ -263,32 +263,32 @@ public class VectorService extends BaseService {
             Supplier<MilvusServiceGrpc.MilvusServiceFutureStub> futureStubSupplier,
             QueryReq request, String clusterId, RpcUtils retryUtils) {
         final QueryRequest baseRequest;
-        final String idsExpressionSuffix;
+        final List<Object> ids;
         try {
             validateQueryRequest(request);
             baseRequest = withQueryClusterId(buildBaseQueryRequest(request), clusterId);
-            idsExpressionSuffix = CollectionUtils.isEmpty(request.getIds())
-                    ? null : buildIdsExpressionSuffix(request.getIds());
+            ids = CollectionUtils.isEmpty(request.getIds())
+                    ? null : Collections.unmodifiableList(new ArrayList<>(request.getIds()));
         } catch (Throwable throwable) {
             return failedFuture(throwable);
         }
 
         return retryUtils.retryAsync(() -> queryAsync(
-                futureStubSupplier.get(), baseRequest, idsExpressionSuffix));
+                futureStubSupplier.get(), baseRequest, ids));
     }
 
     private CompletableFuture<QueryResp> queryAsync(
             MilvusServiceGrpc.MilvusServiceFutureStub futureStub,
-            QueryRequest baseRequest, String idsExpressionSuffix) {
+            QueryRequest baseRequest, List<Object> ids) {
         CompletableFuture<QueryRequest> requestFuture;
-        if (idsExpressionSuffix == null) {
+        if (ids == null) {
             requestFuture = CompletableFuture.completedFuture(baseRequest);
         } else {
             requestFuture = transformFuture(
                     getCollectionInfoAsync(futureStub, baseRequest.getDbName(),
                             baseRequest.getCollectionName(), false),
                     descResp -> baseRequest.toBuilder()
-                            .setExpr(getPrimaryKeyName(descResp) + idsExpressionSuffix)
+                            .setExpr(vectorUtils.getExprById(getPrimaryKeyName(descResp), ids))
                             .build());
         }
 
@@ -320,11 +320,6 @@ public class VectorService extends BaseService {
         return vectorUtils.ConvertToGrpcQueryRequest(request).toBuilder()
                 .setDbName(actualDbName(request.getDatabaseName()))
                 .build();
-    }
-
-    private String buildIdsExpressionSuffix(List<?> ids) {
-        String expression = vectorUtils.getExprById("", ids);
-        return expression.substring(expression.indexOf(" in ["));
     }
 
     private QueryResp convertQueryResponse(String title, QueryResults response) {
