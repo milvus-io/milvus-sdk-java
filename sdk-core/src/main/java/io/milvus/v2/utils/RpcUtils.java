@@ -43,8 +43,10 @@ public class RpcUtils {
 
     protected static final Logger logger = LoggerFactory.getLogger(RpcUtils.class);
     private static final String GLOBAL_ROUTING_ERROR = "STREAMING_CODE_REPLICATE_VIOLATION";
-    private static final ScheduledThreadPoolExecutor ASYNC_RETRY_EXECUTOR =
-            createAsyncRetryExecutor();
+    // Owned per client so the scheduler can be shut down on client close and tuned per client.
+    // The single daemon thread is only spawned lazily on the first scheduled retry. Lazily
+    // recreated on demand so a reconnect after close() (e.g. useDatabase) keeps async working.
+    private volatile ScheduledThreadPoolExecutor asyncRetryExecutor = createAsyncRetryExecutor();
     private volatile RetryConfig retryConfig = RetryConfig.builder().build();
     private volatile Runnable globalRefreshTrigger;
 
@@ -55,6 +57,28 @@ public class RpcUtils {
             return thread;
         });
         executor.setRemoveOnCancelPolicy(true);
+        return executor;
+    }
+
+    /**
+     * Shuts down the async retry scheduler. Pending retries are cancelled; a later
+     * {@link #retryAsync} call lazily recreates the scheduler and keeps working.
+     */
+    public void shutdown() {
+        asyncRetryExecutor.shutdownNow();
+    }
+
+    private ScheduledThreadPoolExecutor asyncRetryExecutor() {
+        ScheduledThreadPoolExecutor executor = asyncRetryExecutor;
+        if (executor == null || executor.isShutdown()) {
+            synchronized (this) {
+                executor = asyncRetryExecutor;
+                if (executor == null || executor.isShutdown()) {
+                    executor = createAsyncRetryExecutor();
+                    asyncRetryExecutor = executor;
+                }
+            }
+        }
         return executor;
     }
 
@@ -374,7 +398,7 @@ public class RpcUtils {
         long nextInterval = nextRetryIntervalMs;
         ScheduledRetry scheduledRetry = result.registerScheduled();
         try {
-            ScheduledFuture<?> scheduled = ASYNC_RETRY_EXECUTOR.schedule(() -> {
+            ScheduledFuture<?> scheduled = asyncRetryExecutor().schedule(() -> {
                         if (result.startScheduled(scheduledRetry)) {
                             attemptAsync(supplier, result, begin, maxRetryTimes,
                                     attemptNumber + 1, nextInterval);

@@ -1929,6 +1929,8 @@ public class MilvusClientV2 {
      * @throws InterruptedException throws InterruptedException if the client failed to close connection
      */
     public void close(long maxWaitSeconds) throws InterruptedException {
+        // cancel any pending async retries and release the per-client retry scheduler
+        rpcUtils.shutdown();
         if (globalStub != null) {
             globalStub.close();
             globalStub = null;
