@@ -87,7 +87,11 @@ public final class TelemetryConfig {
 
     public static final class Builder {
         private boolean enabled = true;
-        private long heartbeatIntervalMs = 30_000;
+        // Milliseconds between heartbeats, and therefore the metrics window: each heartbeat
+        // carries the operations since the last one. The coordinator answers a telemetry
+        // query from the window before the newest, so what a caller reads is between one
+        // and two intervals old.
+        private long heartbeatIntervalMs = 10_000;
         private double samplingRate = 1.0;
         private int errorMaxCount = 100;
         private String clientId = "";
