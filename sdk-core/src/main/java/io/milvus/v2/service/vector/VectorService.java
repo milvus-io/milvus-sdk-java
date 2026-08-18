@@ -380,7 +380,7 @@ public class VectorService extends BaseService {
         RunAnalyzerRequest.Builder runRequestBuilder = builder.addAllPlaceholder(byteStrings)
                 .setWithDetail(request.getWithDetail())
                 .setWithHash(request.getWithHash())
-                .setDbName(request.getDatabaseName())
+                .setDbName(actualDbName(request.getDatabaseName()))
                 .setCollectionName(request.getCollectionName())
                 .setFieldName(request.getFieldName());
         if (request.getAnalyzerParams() != null && !request.getAnalyzerParams().isEmpty()) {
