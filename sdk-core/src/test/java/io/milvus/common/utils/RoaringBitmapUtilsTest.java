@@ -226,6 +226,26 @@ class RoaringBitmapUtilsTest {
         Assertions.assertArrayEquals(blob, new RoaringBitmapUtils.Builder().build());
     }
 
+    /**
+     * Pins the compression figure the class javadoc quotes.
+     *
+     * <p>The javadoc tells callers to pick roaring over bloom for dense sets and cites a number to
+     * make that concrete, so the number has to be checked rather than remembered — an earlier
+     * draft claimed 40 bytes, which is the size of the <em>empty</em> blob, and no test noticed.
+     * A dense million-id range costs 274 bytes because it spans 16 sixteen-bit containers, each
+     * collapsing to a single run, plus the descriptive and offset headers.
+     */
+    @Test
+    void testDenseRangeCompressionMatchesTheDocumentedFigure() {
+        long[] members = new long[1_000_000];
+        for (int i = 0; i < members.length; i++) {
+            members[i] = i;
+        }
+        Assertions.assertEquals(274, RoaringBitmapUtils.buildRoaringBitmap(members).length);
+        Assertions.assertEquals(1_000_000L,
+                cardinalityOf(RoaringBitmapUtils.buildRoaringBitmap(members)));
+    }
+
     /** The 32-byte MRB1 envelope, field by field. */
     @Test
     void testHeaderLayout() {

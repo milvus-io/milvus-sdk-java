@@ -32,8 +32,10 @@ import java.util.List;
  * <p>Where {@link BloomFilterUtils} trades exactness for size, this is the exact-membership
  * sibling: <code>roaring_match</code> never produces a false positive, and a dense integer set
  * compresses far better than a bloom filter of the same set — one million consecutive ids is a
- * 40-byte blob here versus roughly 1.4 MB as a bloom filter. Sparse random sets are the other way
- * round, so pick per workload. Pass the result through <code>filterTemplateValues</code>; it
+ * 274-byte blob here versus roughly 2 MB as a bloom filter at a 0.005 false-positive rate.
+ * Sparse random sets are the other way round, so pick per workload: a roaring blob's size follows
+ * the value distribution, not the member count.
+ * Pass the result through <code>filterTemplateValues</code>; it
  * travels as a native protobuf bytes value with no base64 inflation, and the server embeds it
  * verbatim after validating the envelope.
  *
@@ -60,9 +62,10 @@ import java.util.List;
  * <p>The body is the standard portable Roaring64 serialization (the same one CRoaring's
  * <code>portable</code> format and the Go <code>roaring/v2</code> library's
  * <code>WriteTo</code> emit), wrapped in the Milvus MRB1 envelope. Blobs built here are
- * byte-identical to the ones pymilvus (<code>build_roaring_bitmap</code>) and the Go SDK
- * (<code>roaringfilter.Build</code>) produce for the same members — the golden vectors in
- * <code>src/test/resources/roaring/roaring_golden_vectors.json</code> pin that. See
+ * byte-identical to the ones the Go SDK (<code>roaringfilter.Build</code>) produces for the same
+ * members — the golden vectors in
+ * <code>src/test/resources/roaring/roaring_golden_vectors.json</code> are generated from it and
+ * pin that. The other SDKs are held to the same vectors as their support lands. See
  * <code>docs/design-docs/design_docs/20260714-roaring-exact-membership-expression.md</code> in the
  * milvus repository.
  */
@@ -421,7 +424,7 @@ public class RoaringBitmapUtils {
         if (position != blob.length) {
             // Unreachable: the measuring pass and the writing pass would have to disagree. It is
             // checked anyway because a short body is a silently corrupt blob, not a crash.
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, String.format(
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, String.format(
                     "Roaring bitmap wrote %d body bytes but measured %d.",
                     position - HEADER_SIZE, layout.bodyLength));
         }
@@ -699,7 +702,7 @@ public class RoaringBitmapUtils {
         }
 
         if (position - start != roaring32Size(layout, from, to)) {
-            throw new MilvusClientException(ErrorCode.SERVER_ERROR, String.format(
+            throw new MilvusClientException(ErrorCode.CLIENT_ERROR, String.format(
                     "Roaring bitmap wrote %d bytes for a group measured at %d.",
                     position - start, roaring32Size(layout, from, to)));
         }
