@@ -1,0 +1,181 @@
+# Manually cherry-pick a commit from one branch into another and open a PR.
+#
+# Trigger it from the Actions tab (workflow_dispatch). Fill in the source branch,
+# target branch, and the commit SHA, then run. The job:
+#   1. fetches the target branch
+#   2. validates that the commit exists on the source branch
+#   3. creates a throwaway `cherry-pick-<sha>-to-<branch>` branch off the target
+#   4. cherry-picks the commit onto it and pushes the branch
+#   5. opens a PR from that branch into the target branch
+#
+# The PR is NOT auto-merged; merge it manually after review.
+
+name: Cherry-pick Commit
+
+run-name: Cherry-pick ${{ inputs.commit_id }} from ${{ inputs.from_branch }} to ${{ inputs.to_branch }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      from_branch:
+        description: 'Source branch (the commit is cherry-picked FROM this branch)'
+        required: true
+        type: choice
+        options:
+          - master
+          - 2.6
+          - 3.0
+      to_branch:
+        description: 'Target branch (the commit is cherry-picked INTO this branch)'
+        required: true
+        type: choice
+        options:
+          - master
+          - 2.6
+          - 3.0
+      commit_id:
+        description: 'Full or abbreviated commit SHA to cherry-pick'
+        required: true
+        type: string
+
+# Only one run per (from_branch, to_branch, commit_id) at a time, so two dispatches (or a
+# rerun) for the same combo cannot race on the shared remote cherry-pick branch. A duplicate
+# dispatch cancels the stale run; different combos still run in parallel.
+concurrency:
+  group: cherry-pick-${{ github.event.inputs.from_branch }}-${{ github.event.inputs.to_branch }}-${{ github.event.inputs.commit_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  cherry-pick:
+    name: Cherry-pick and open PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.to_branch }}
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Validate inputs
+        run: |
+          if [ "$FROM" = "$TO" ]; then
+            echo "::error::from_branch and to_branch must be different"
+            exit 1
+          fi
+          git fetch origin "$FROM"
+          if ! git rev-parse --verify --quiet "$COMMIT^{commit}" >/dev/null; then
+            echo "::error::commit '$COMMIT' does not exist"
+            exit 1
+          fi
+          if ! git merge-base --is-ancestor "$COMMIT" "origin/$FROM"; then
+            echo "::error::commit '$COMMIT' is not on branch '$FROM'"
+            exit 1
+          fi
+          # HEAD is already checked out to the target branch, so use it instead of a
+          # remote-tracking ref (origin/$TO) which may not exist locally.
+          if git merge-base --is-ancestor "$COMMIT" HEAD; then
+            echo "::error::commit '$COMMIT' is already on branch '$TO'"
+            exit 1
+          fi
+          FULL_SHA=$(git rev-parse "$COMMIT")
+          # use git's --grep filter and capture the output: a `grep -q` early-exit would be
+          # killed by SIGPIPE under pipefail and misreport a match as failure.
+          if [ -n "$(git log HEAD --format=%B --grep="cherry picked from commit ${FULL_SHA}")" ]; then
+            echo "::error::commit '$COMMIT' was already cherry-picked onto '$TO' by a previous run"
+            exit 1
+          fi
+        env:
+          FROM: ${{ github.event.inputs.from_branch }}
+          TO: ${{ github.event.inputs.to_branch }}
+          COMMIT: ${{ github.event.inputs.commit_id }}
+
+      - name: Create cherry-pick branch
+        id: branch
+        run: |
+          SHORT_SHA=$(git rev-parse --short "$COMMIT")
+          # unique per run (GITHUB_RUN_ID): the plain name would be predictable, and deleting
+          # it would risk removing an unrelated branch that shares the name. Each run gets its
+          # own branch, so no remote deletion is needed. HEAD is already the target branch tip.
+          BRANCH="cherry-pick-${SHORT_SHA}-to-${TO}-${RUN_ID}"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+        env:
+          TO: ${{ github.event.inputs.to_branch }}
+          COMMIT: ${{ github.event.inputs.commit_id }}
+          RUN_ID: ${{ github.run_id }}
+
+      - name: Cherry-pick the commit
+        run: |
+          PARENT_COUNT=$(git rev-list --parents -n 1 "$COMMIT" | awk '{print NF}')
+          if [ "$PARENT_COUNT" -gt 2 ]; then
+            echo "::warning::commit '$COMMIT' is a merge commit; cherry-picking with -m 1 (diff against first parent)"
+            CHERRY_PICK_ARGS="-x -m 1"
+          else
+            CHERRY_PICK_ARGS="-x"
+          fi
+          if ! git cherry-pick ${CHERRY_PICK_ARGS} "$COMMIT" 2>/tmp/cherry_pick_err; then
+            # capture instead of `git ls-files -u | grep -q .` to avoid SIGPIPE/pipefail
+            # misreporting once the conflict list exceeds the pipe buffer.
+            if [ -n "$(git ls-files -u)" ]; then
+              echo "::error::cherry-pick of '$COMMIT' has conflicts; a manual backport is required"
+            elif git diff --quiet; then
+              echo "::error::commit '$COMMIT' appears to already be applied on '$TO' (cherry-pick produced an empty change)"
+            else
+              echo "::error::cherry-pick of '$COMMIT' failed (neither a conflict nor an empty change)"
+            fi
+            cat /tmp/cherry_pick_err
+            git cherry-pick --abort 2>/dev/null || true
+            exit 1
+          fi
+        env:
+          COMMIT: ${{ github.event.inputs.commit_id }}
+          TO: ${{ github.event.inputs.to_branch }}
+
+      - name: Push branch
+        run: git push origin "$BRANCH"
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          SHORT_SHA: ${{ steps.branch.outputs.short_sha }}
+          FROM: ${{ github.event.inputs.from_branch }}
+          TO: ${{ github.event.inputs.to_branch }}
+          COMMIT: ${{ github.event.inputs.commit_id }}
+        run: |
+          COMMIT_TITLE=$(git show -s --format=%s "$COMMIT")
+          COMMIT_BODY=$(git show -s --format=%b "$COMMIT")
+          TITLE="[cherry-pick] ${COMMIT_TITLE}"
+          BODY_FILE=$(mktemp)
+          printf 'Cherry-picks commit `%s` (%s) from `%s` to `%s`.\n\n' "$COMMIT" "$SHORT_SHA" "$FROM" "$TO" > "$BODY_FILE"
+          printf 'Created by the cherry-pick workflow — please review and merge manually.\n' >> "$BODY_FILE"
+          if [ -n "$COMMIT_BODY" ]; then
+            printf '\n%s\n' "$COMMIT_BODY" >> "$BODY_FILE"
+          fi
+          # Re-dispatching the same cherry-pick while a previous PR is still open must not
+          # create a duplicate: the head branch is unique per run, so match an existing
+          # open PR by title + base instead. awk reads all input (no early-exit pipe).
+          EXISTING_URL=$(gh pr list --state open --base "$TO" --json url,title \
+            --jq '.[] | [.url, .title] | @tsv' \
+            | awk -F '\t' -v t="$TITLE" '$2 == t { found=$1 } END { print found }')
+          if [ -n "$EXISTING_URL" ]; then
+            echo "An open cherry-pick PR already exists: $EXISTING_URL"
+          elif ! gh pr create --base "$TO" --head "$BRANCH" --title "$TITLE" --body-file "$BODY_FILE" 2>/tmp/pr_err; then
+            echo "::error::Failed to create pull request"
+            cat /tmp/pr_err
+            exit 1
+          else
+            echo "Pull request created."
+          fi
