@@ -9,6 +9,13 @@
 #   5. opens a PR from that branch into the target branch
 #
 # The PR is NOT auto-merged; merge it manually after review.
+#
+# The branch push and PR creation authenticate with the repository secret
+# `CHERRY_PICK_PAT` (a personal access token owned by a trusted member). This makes
+# the PR author a real collaborator instead of github-actions[bot], so CI runs
+# on the new PR without requiring "Approve workflows to run". Create a PAT with
+# `repo` scope (or fine-grained `contents: write` + `pull-requests: write`,
+# scoped to this repository) and store it as `CHERRY_PICK_PAT`.
 
 name: Cherry-pick Commit
 
@@ -45,9 +52,10 @@ concurrency:
   group: cherry-pick-${{ github.event.inputs.from_branch }}-${{ github.event.inputs.to_branch }}-${{ github.event.inputs.commit_id }}
   cancel-in-progress: true
 
+# Least privilege: pushes and PR creation use the PAT (CHERRY_PICK_PAT); the
+# GITHUB_TOKEN is only used by actions/checkout and local git ops, so read is enough.
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   cherry-pick:
@@ -59,6 +67,9 @@ jobs:
         with:
           ref: ${{ github.event.inputs.to_branch }}
           fetch-depth: 0
+          # do not persist the GITHUB_TOKEN extraheader into .git/config: it would take
+          # precedence over the PAT in the push URL and cause a 403 (contents: read)
+          persist-credentials: false
 
       - name: Configure git identity
         run: |
@@ -142,19 +153,30 @@ jobs:
           TO: ${{ github.event.inputs.to_branch }}
 
       - name: Push branch
-        run: git push origin "$BRANCH"
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
+          PUSH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
+        run: |
+          if [ -z "$PUSH_TOKEN" ]; then
+            echo "::error::secrets.CHERRY_PICK_PAT is not configured; add a PAT with 'repo' scope (contents + PR write) and store it as CHERRY_PICK_PAT"
+            exit 1
+          fi
+          # push with the tokenized URL inline so the PAT is never written into .git/config
+          git push "https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" "$BRANCH"
 
       - name: Create pull request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.CHERRY_PICK_PAT }}
           BRANCH: ${{ steps.branch.outputs.branch }}
           SHORT_SHA: ${{ steps.branch.outputs.short_sha }}
           FROM: ${{ github.event.inputs.from_branch }}
           TO: ${{ github.event.inputs.to_branch }}
           COMMIT: ${{ github.event.inputs.commit_id }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::secrets.CHERRY_PICK_PAT is not configured; add a PAT with 'repo' scope (contents + PR write) and store it as CHERRY_PICK_PAT"
+            exit 1
+          fi
           COMMIT_TITLE=$(git show -s --format=%s "$COMMIT")
           COMMIT_BODY=$(git show -s --format=%b "$COMMIT")
           TITLE="[cherry-pick] ${COMMIT_TITLE}"
