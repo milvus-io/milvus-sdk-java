@@ -24,6 +24,8 @@ import io.milvus.grpc.ConsistencyLevel;
 import io.milvus.grpc.DataType;
 import io.milvus.grpc.DescribeCollectionResponse;
 import io.milvus.grpc.FieldSchema;
+import io.milvus.grpc.FunctionSchema;
+import io.milvus.grpc.FunctionType;
 import io.milvus.grpc.StructArrayFieldSchema;
 import io.milvus.v2.service.collection.request.AddFieldReq;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
@@ -106,5 +108,82 @@ public class ConvertUtilsTest {
         Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[f16_vec]"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[bf16_vec]"));
         Assertions.assertTrue(resp.getVectorFieldNames().contains("clips[i8_vec]"));
+    }
+
+    @Test
+    void testConvertDescCollectionRespExposesAliasesUpdateTimestampAndSchemaIds() {
+        FieldSchema idField = FieldSchema.newBuilder()
+                .setName("id")
+                .setDataType(DataType.Int64)
+                .setIsPrimaryKey(true)
+                .setFieldID(1L)
+                .build();
+        FieldSchema embeddingField = FieldSchema.newBuilder()
+                .setName("embedding")
+                .setDataType(DataType.FloatVector)
+                .setFieldID(2L)
+                .setIsFunctionOutput(true)
+                .build();
+        FieldSchema dynamicField = FieldSchema.newBuilder()
+                .setName("$meta")
+                .setDataType(DataType.JSON)
+                .setIsDynamic(true)
+                .setFieldID(3L)
+                .build();
+        FunctionSchema functionSchema = FunctionSchema.newBuilder()
+                .setName("bm25")
+                .setType(FunctionType.BM25)
+                .setId(7L)
+                .addInputFieldIds(1L)
+                .addOutputFieldIds(2L)
+                .build();
+        CollectionSchema schema = CollectionSchema.newBuilder()
+                .setEnableDynamicField(true)
+                .setEnableNamespace(true)
+                .setVersion(42)
+                .addFields(idField)
+                .addFields(embeddingField)
+                .addFields(dynamicField)
+                .addFunctions(functionSchema)
+                .build();
+
+        DescribeCollectionResponse response = DescribeCollectionResponse.newBuilder()
+                .setCollectionName("test")
+                .setCollectionID(1L)
+                .setDbName("default")
+                .setSchema(schema)
+                .setNumPartitions(1)
+                .setCreatedTimestamp(0L)
+                .setCreatedUtcTimestamp(0L)
+                .setConsistencyLevel(ConsistencyLevel.Bounded)
+                .setShardsNum(1)
+                .addAliases("test_alias")
+                .setUpdateTimestamp(123456L)
+                .build();
+
+        DescribeCollectionResp resp = new ConvertUtils().convertDescCollectionResp(response);
+
+        Assertions.assertEquals(java.util.Collections.singletonList("test_alias"), resp.getAliases());
+        Assertions.assertEquals(123456L, resp.getUpdateTimestamp());
+        Assertions.assertEquals(Boolean.TRUE, resp.getEnableNamespace());
+        Assertions.assertEquals(42, resp.getSchemaVersion());
+
+        CreateCollectionReq.FieldSchema idFieldResp =
+                resp.getCollectionSchema().getFieldSchemaList().stream()
+                        .filter(f -> f.getName().equals("id")).findFirst().orElseThrow();
+        Assertions.assertEquals(1L, idFieldResp.getFieldId());
+        CreateCollectionReq.FieldSchema dynamicFieldResp =
+                resp.getCollectionSchema().getFieldSchemaList().stream()
+                        .filter(f -> f.getName().equals("$meta")).findFirst().orElseThrow();
+        Assertions.assertEquals(Boolean.TRUE, dynamicFieldResp.getIsDynamic());
+        CreateCollectionReq.FieldSchema embeddingFieldResp =
+                resp.getCollectionSchema().getFieldSchemaList().stream()
+                        .filter(f -> f.getName().equals("embedding")).findFirst().orElseThrow();
+        Assertions.assertEquals(Boolean.TRUE, embeddingFieldResp.getIsFunctionOutput());
+
+        CreateCollectionReq.Function functionResp = resp.getCollectionSchema().getFunctionList().get(0);
+        Assertions.assertEquals(7L, functionResp.getId());
+        Assertions.assertEquals(java.util.Collections.singletonList(1L), functionResp.getInputFieldIds());
+        Assertions.assertEquals(java.util.Collections.singletonList(2L), functionResp.getOutputFieldIds());
     }
 }

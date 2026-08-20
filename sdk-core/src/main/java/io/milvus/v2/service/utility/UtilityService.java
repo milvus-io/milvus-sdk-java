@@ -255,6 +255,7 @@ public class UtilityService extends BaseService {
         });
 
         return GetCompactionPlansResp.builder()
+                .compactionId(request.getCompactionID())
                 .state(CompactionState.valueOf(response.getState().name()))
                 .plans(plans)
                 .build();
@@ -355,6 +356,7 @@ public class UtilityService extends BaseService {
         return ListAliasResp.builder()
                 .collectionName(response.getCollectionName())
                 .alias(response.getAliasesList())
+                .dbName(response.getDbName())
                 .build();
     }
 
@@ -420,6 +422,7 @@ public class UtilityService extends BaseService {
         List<GetQuerySegmentInfoResp.QuerySegmentInfo> segmentInfos = new ArrayList<>();
         response.getInfosList().forEach(info -> {
             segmentInfos.add(GetQuerySegmentInfoResp.QuerySegmentInfo.builder()
+                    .collectionName(request.getCollectionName())
                     .segmentID(info.getSegmentID())
                     .collectionID(info.getCollectionID())
                     .partitionID(info.getPartitionID())
@@ -509,6 +512,7 @@ public class UtilityService extends BaseService {
                 .progress((int) info.getProgress())
                 .reason(info.getReason())
                 .externalSource(info.getExternalSource())
+                .externalSpec(info.getExternalSpec())
                 .startTime(info.getStartTime())
                 .endTime(info.getEndTime())
                 .build();

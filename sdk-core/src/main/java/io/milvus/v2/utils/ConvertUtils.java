@@ -389,6 +389,10 @@ public class ConvertUtils {
                 .consistencyLevel(io.milvus.v2.common.ConsistencyLevel.valueOf(response.getConsistencyLevel().name().toUpperCase()))
                 .shardsNum(response.getShardsNum())
                 .properties(properties)
+                .aliases(new ArrayList<>(response.getAliasesList()))
+                .updateTimestamp(response.getUpdateTimestamp())
+                .enableNamespace(response.getSchema().getEnableNamespace())
+                .schemaVersion(response.getSchema().getVersion())
                 .build();
         return describeCollectionResp;
     }

@@ -27,10 +27,12 @@ import java.util.Map;
 public class QueryResp {
     private List<QueryResult> queryResults;
     private long sessionTs; // default eventually ts
+    private Long cost;
 
     private QueryResp(QueryRespBuilder builder) {
         this.queryResults = builder.queryResults;
         this.sessionTs = builder.sessionTs;
+        this.cost = builder.cost;
     }
 
     public static QueryRespBuilder builder() {
@@ -53,17 +55,27 @@ public class QueryResp {
         this.sessionTs = sessionTs;
     }
 
+    public Long getCost() {
+        return cost;
+    }
+
+    public void setCost(Long cost) {
+        this.cost = cost;
+    }
+
     @Override
     public String toString() {
         return "QueryResp{" +
                 "queryResults=" + queryResults +
                 ", sessionTs=" + sessionTs +
+                ", cost=" + cost +
                 '}';
     }
 
     public static class QueryRespBuilder {
         private List<QueryResult> queryResults = new ArrayList<>();
         private long sessionTs = 1L; // default eventually ts
+        private Long cost;
 
         public QueryRespBuilder queryResults(List<QueryResult> queryResults) {
             this.queryResults = queryResults;
@@ -72,6 +84,11 @@ public class QueryResp {
 
         public QueryRespBuilder sessionTs(long sessionTs) {
             this.sessionTs = sessionTs;
+            return this;
+        }
+
+        public QueryRespBuilder cost(Long cost) {
+            this.cost = cost;
             return this;
         }
 

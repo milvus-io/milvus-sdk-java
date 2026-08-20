@@ -26,16 +26,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GetCompactionPlansResp {
+    private Long compactionId;
     private CompactionState state;
     private List<CompactionPlan> plans;
 
     private GetCompactionPlansResp(GetCompactionPlansRespBuilder builder) {
+        this.compactionId = builder.compactionId;
         this.state = builder.state;
         this.plans = builder.plans;
     }
 
     public static GetCompactionPlansRespBuilder builder() {
         return new GetCompactionPlansRespBuilder();
+    }
+
+    public Long getCompactionId() {
+        return compactionId;
+    }
+
+    public void setCompactionId(Long compactionId) {
+        this.compactionId = compactionId;
     }
 
     public CompactionState getState() {
@@ -50,14 +60,21 @@ public class GetCompactionPlansResp {
     @Override
     public String toString() {
         return "GetCompactionPlansResp{" +
-                "state=" + state +
+                "compactionId=" + compactionId +
+                ", state=" + state +
                 ", plans=" + plans +
                 '}';
     }
 
     public static class GetCompactionPlansRespBuilder {
+        private Long compactionId;
         private CompactionState state = CompactionState.UndefiedState;
         private List<CompactionPlan> plans = new ArrayList<>();
+
+        public GetCompactionPlansRespBuilder compactionId(Long compactionId) {
+            this.compactionId = compactionId;
+            return this;
+        }
 
         public GetCompactionPlansRespBuilder state(CompactionState state) {
             this.state = state;

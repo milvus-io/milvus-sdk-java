@@ -21,9 +21,11 @@ package io.milvus.v2.service.vector.response;
 
 public class DeleteResp {
     private long deleteCnt;
+    private Long cost;
 
     private DeleteResp(DeleteRespBuilder builder) {
         this.deleteCnt = builder.deleteCnt;
+        this.cost = builder.cost;
     }
 
     public static DeleteRespBuilder builder() {
@@ -38,18 +40,33 @@ public class DeleteResp {
         this.deleteCnt = deleteCnt;
     }
 
+    public Long getCost() {
+        return cost;
+    }
+
+    public void setCost(Long cost) {
+        this.cost = cost;
+    }
+
     @Override
     public String toString() {
         return "DeleteResp{" +
                 "deleteCnt=" + deleteCnt +
+                ", cost=" + cost +
                 '}';
     }
 
     public static class DeleteRespBuilder {
         private long deleteCnt;
+        private Long cost;
 
         public DeleteRespBuilder deleteCnt(long deleteCnt) {
             this.deleteCnt = deleteCnt;
+            return this;
+        }
+
+        public DeleteRespBuilder cost(Long cost) {
+            this.cost = cost;
             return this;
         }
 

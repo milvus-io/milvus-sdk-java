@@ -21,6 +21,7 @@ package io.milvus.v2.service.rbac;
 
 import io.milvus.grpc.AlterRoleRequest;
 import io.milvus.grpc.CreateRoleRequest;
+import io.milvus.grpc.OperatePrivilegeRequest;
 import io.milvus.grpc.SelectRoleRequest;
 import io.milvus.grpc.SelectRoleResponse;
 import io.milvus.grpc.Status;
@@ -126,8 +127,28 @@ class RoleTest extends BaseTest {
                 .objectName("")
                 .objectType("")
                 .privilege("")
+                .dbName("default")
                 .build();
         client_v2.grantPrivilege(request);
+
+        ArgumentCaptor<OperatePrivilegeRequest> captor = ArgumentCaptor.forClass(OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("default", captor.getValue().getEntity().getDbName());
+    }
+
+    @Test
+    void testGrantPrivilegeWithoutDbName() {
+        GrantPrivilegeReq request = GrantPrivilegeReq.builder()
+                .roleName("db_rw")
+                .objectName("*")
+                .objectType("Global")
+                .privilege("CreateCollection")
+                .build();
+        client_v2.grantPrivilege(request);
+
+        ArgumentCaptor<OperatePrivilegeRequest> captor = ArgumentCaptor.forClass(OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("", captor.getValue().getEntity().getDbName());
     }
 
     @Test
@@ -137,8 +158,28 @@ class RoleTest extends BaseTest {
                 .objectName("")
                 .objectType("")
                 .privilege("")
+                .dbName("default")
                 .build();
         client_v2.revokePrivilege(request);
+
+        ArgumentCaptor<OperatePrivilegeRequest> captor = ArgumentCaptor.forClass(OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("default", captor.getValue().getEntity().getDbName());
+    }
+
+    @Test
+    void testRevokePrivilegeWithoutDbName() {
+        RevokePrivilegeReq request = RevokePrivilegeReq.builder()
+                .roleName("db_rw")
+                .objectName("*")
+                .objectType("Global")
+                .privilege("CreateCollection")
+                .build();
+        client_v2.revokePrivilege(request);
+
+        ArgumentCaptor<OperatePrivilegeRequest> captor = ArgumentCaptor.forClass(OperatePrivilegeRequest.class);
+        verify(blockingStub).operatePrivilege(captor.capture());
+        assertEquals("", captor.getValue().getEntity().getDbName());
     }
 
     @Test
