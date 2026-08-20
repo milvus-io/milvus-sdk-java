@@ -152,6 +152,29 @@ jobs:
           COMMIT: ${{ github.event.inputs.commit_id }}
           TO: ${{ github.event.inputs.to_branch }}
 
+      - name: Sign off for DCO
+        run: |
+          # `if` is a condition context, so the non-zero exit of grep when the
+          # sign-off is missing does not trip `set -e`/pipefail.
+          # If the source commit already carries the author's own DCO attestation,
+          # pass it through unchanged: the cherry-pick preserves the author, so the
+          # sign-off still matches and the workflow adds nothing.
+          AUTHOR_SIGN_OFF="Signed-off-by: $(git show -s --format='%an <%ae>' HEAD)"
+          if git log -1 --format='%B' | grep -Fq "$AUTHOR_SIGN_OFF"; then
+            exit 0
+          fi
+          # Otherwise the source commit was never DCO-signed. The cherry-picked commit
+          # is a NEW commit created by this workflow, so signing it as the original
+          # author would be an attestation they never made. Instead the operator
+          # (github.actor, who triggered the backport) attests DCO for this commit,
+          # and the git committer identity is aligned to the sign-off so DCO's
+          # author-or-committer rule matches.
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+          git log -1 --format='%B' > /tmp/msg
+          printf '\nSigned-off-by: %s <%s@users.noreply.github.com>\n' "$GITHUB_ACTOR" "$GITHUB_ACTOR" >> /tmp/msg
+          git commit --amend -F /tmp/msg
+
       - name: Push branch
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
