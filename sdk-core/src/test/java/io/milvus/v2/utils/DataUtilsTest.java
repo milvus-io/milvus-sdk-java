@@ -703,6 +703,72 @@ class DataUtilsTest {
     }
 
     @Test
+    void testInsertRejectsUnsupportedStructSubFieldType() {
+        for (DataType subFieldType : new DataType[]{DataType.JSON, DataType.Geometry, DataType.Timestamptz}) {
+            DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcInsertRequest(
+                            InsertReq.builder().collectionName("test")
+                                    .data(Collections.singletonList(structRow(subFieldType)))
+                                    .build(),
+                            describeCollectionWithStructSubField(subFieldType)));
+            Assertions.assertTrue(exception.getMessage().contains("Unsupported element type"));
+        }
+    }
+
+    @Test
+    void testUpsertRejectsUnsupportedStructSubFieldType() {
+        for (DataType subFieldType : new DataType[]{DataType.JSON, DataType.Geometry, DataType.Timestamptz}) {
+            DataNotMatchException exception = Assertions.assertThrows(DataNotMatchException.class,
+                    () -> new DataUtils.InsertBuilderWrapper().convertGrpcUpsertRequest(
+                            UpsertReq.builder().collectionName("test")
+                                    .data(Collections.singletonList(structRow(subFieldType)))
+                                    .build(),
+                            describeCollectionWithStructSubField(subFieldType)));
+            Assertions.assertTrue(exception.getMessage().contains("Unsupported element type"));
+        }
+    }
+
+    private static DescribeCollectionResp describeCollectionWithStructSubField(DataType subFieldType) {
+        CreateCollectionReq.StructFieldSchema metadata = CreateCollectionReq.StructFieldSchema.builder()
+                .name("metadata")
+                .fields(Collections.singletonList(CreateCollectionReq.FieldSchema.builder()
+                        .name("geo")
+                        .dataType(subFieldType)
+                        .build()))
+                .maxCapacity(10)
+                .build();
+        CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder()
+                .fieldSchemaList(Arrays.asList(
+                        CreateCollectionReq.FieldSchema.builder().name("id").dataType(DataType.Int64).isPrimaryKey(true).build(),
+                        CreateCollectionReq.FieldSchema.builder().name("vector").dataType(DataType.FloatVector).dimension(2).build()))
+                .structFields(Collections.singletonList(metadata))
+                .enableDynamicField(false)
+                .build();
+        return DescribeCollectionResp.builder()
+                .collectionName("test")
+                .collectionSchema(schema)
+                .build();
+    }
+
+    private static JsonObject structRow(DataType subFieldType) {
+        JsonObject row = new JsonObject();
+        row.addProperty("id", 1L);
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        JsonArray metadataArray = new JsonArray();
+        JsonObject item = new JsonObject();
+        if (subFieldType == DataType.Geometry) {
+            item.addProperty("geo", "POINT(1 1)");
+        } else if (subFieldType == DataType.Timestamptz) {
+            item.addProperty("geo", "2026-01-01T00:00:00Z");
+        } else {
+            item.add("geo", JsonUtils.toJsonTree(Collections.singletonMap("k", 1)));
+        }
+        metadataArray.add(item);
+        row.add("metadata", metadataArray);
+        return row;
+    }
+
+    @Test
     void testInsertBinarySparseJsonAndArrayFields() {
         CreateCollectionReq.CollectionSchema schema = CreateCollectionReq.CollectionSchema.builder().build();
         schema.getFieldSchemaList().add(CreateCollectionReq.FieldSchema.builder()

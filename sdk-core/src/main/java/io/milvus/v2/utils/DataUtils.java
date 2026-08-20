@@ -562,6 +562,12 @@ public class DataUtils {
                             .build())
                     .build();
         } else {
+            // JSON/Geometry/Timestamptz are not supported as struct sub-field element types
+            // (aligned with pymilvus, which rejects them on insert)
+            if (dataType == DataType.JSON || dataType == DataType.Geometry || dataType == DataType.Timestamptz) {
+                String msg = String.format("Unsupported element type %s for struct sub-field '%s'", dataType, fieldName);
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, msg);
+            }
             if (fieldSchema.getIsNullable() || fieldSchema.getDefaultValue() != null) {
                 List<Object> tempObjects = new ArrayList<>();
                 for (Object obj : objects) {
