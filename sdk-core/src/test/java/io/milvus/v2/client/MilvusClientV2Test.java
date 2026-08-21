@@ -277,10 +277,12 @@ public class MilvusClientV2Test extends BaseTest {
             Long obj = (long) random.nextInt(RANDOM_BOUND) + 1;
             randomValues.put(field.getName(), obj);
         } else if (fieldType == Integer.class || fieldType.getName().equals("int")) {
-            Integer obj = random.nextInt(RANDOM_BOUND);
+            // start from 1 so builders that reject zero (e.g. RetryConfig.backOffMultiplier)
+            // never fail on a random draw of 0; the reflection round-trip only asserts set == get
+            Integer obj = random.nextInt(RANDOM_BOUND) + 1;
             randomValues.put(field.getName(), obj);
         } else if (fieldType == Short.class) {
-            Short obj = (short) random.nextInt(RANDOM_BOUND);
+            Short obj = (short) (random.nextInt(RANDOM_BOUND) + 1);
             randomValues.put(field.getName(), obj);
         } else if (fieldType == Float.class || fieldType.getName().equals("float")) {
             Float obj = random.nextFloat();
