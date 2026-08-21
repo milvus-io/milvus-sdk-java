@@ -68,6 +68,8 @@ public class SearchReq {
     // milvus v2.6.1 supports multi-rankers. The "ranker" still works. It is recommended
     // to use functionScore even you have only one ranker. Not allow to set both.
     private FunctionScore functionScore;
+    // function chains applied to ordinary search. Mutually exclusive with ranker/functionScore.
+    private List<FunctionChain> functionChains;
 
     // Expression template, to improve expression parsing performance in complicated list
     // Assume user has a filter = "pk > 3 and city in ["beijing", "shanghai", ......]
@@ -110,6 +112,7 @@ public class SearchReq {
         this.strictGroupSize = builder.strictGroupSize;
         this.ranker = builder.ranker;
         this.functionScore = builder.functionScore;
+        this.functionChains = builder.functionChains;
         this.filterTemplateValues = builder.filterTemplateValues;
         this.timezone = builder.timezone;
         this.highlighter = builder.highlighter;
@@ -331,6 +334,14 @@ public class SearchReq {
         this.functionScore = functionScore;
     }
 
+    public List<FunctionChain> getFunctionChains() {
+        return functionChains;
+    }
+
+    public void setFunctionChains(List<FunctionChain> functionChains) {
+        this.functionChains = functionChains;
+    }
+
     public Map<String, Object> getFilterTemplateValues() {
         return filterTemplateValues;
     }
@@ -381,6 +392,7 @@ public class SearchReq {
                 ", highlighter=" + (highlighter == null ? "null" : (highlighter.highlightType() + ":" + highlighter.getParams())) +
                 ", searchAggregation=" + searchAggregation +
                 ", functionScore=" + functionScore +
+                ", functionChains=" + functionChains +
 //                ", filterTemplateValues=" + filterTemplateValues +
                 '}';
     }
@@ -416,6 +428,7 @@ public class SearchReq {
         private Boolean strictGroupSize;
         private CreateCollectionReq.Function ranker;
         private FunctionScore functionScore;
+        private List<FunctionChain> functionChains;
         private Map<String, Object> filterTemplateValues = new HashMap<>(); // default value
         private Highlighter highlighter;
         private SearchAggregation searchAggregation;
@@ -559,6 +572,11 @@ public class SearchReq {
 
         public SearchReqBuilder functionScore(FunctionScore functionScore) {
             this.functionScore = functionScore;
+            return this;
+        }
+
+        public SearchReqBuilder functionChains(List<FunctionChain> functionChains) {
+            this.functionChains = functionChains;
             return this;
         }
 
