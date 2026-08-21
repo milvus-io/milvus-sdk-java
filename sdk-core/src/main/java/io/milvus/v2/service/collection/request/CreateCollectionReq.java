@@ -585,6 +585,9 @@ public class CreateCollectionReq {
         private Map<String, String> typeParams;
         private Map<String, Object> multiAnalyzerParams; // for multi‑language analyzers
         private String externalField = ""; // external field name mapping
+        private Long fieldId; // field id, only populated by describe_collection
+        private Boolean isDynamic; // whether this field is the dynamic field
+        private Boolean isFunctionOutput; // whether this field is a function output field
 
         private FieldSchema(FieldSchemaBuilder builder) {
             this.name = builder.name;
@@ -761,6 +764,39 @@ public class CreateCollectionReq {
             this.externalField = externalField;
         }
 
+        public Long getFieldId() {
+            return fieldId;
+        }
+
+        public Boolean getIsDynamic() {
+            return isDynamic;
+        }
+
+        public Boolean getIsFunctionOutput() {
+            return isFunctionOutput;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setFieldId(Long fieldId) {
+            this.fieldId = fieldId;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setIsDynamic(Boolean isDynamic) {
+            this.isDynamic = isDynamic;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setIsFunctionOutput(Boolean isFunctionOutput) {
+            this.isFunctionOutput = isFunctionOutput;
+        }
+
         @Override
         public String toString() {
             return "FieldSchema{" +
@@ -922,6 +958,9 @@ public class CreateCollectionReq {
         private List<String> inputFieldNames = new ArrayList<>();
         private List<String> outputFieldNames = new ArrayList<>();
         private Map<String, String> params = new HashMap<>();
+        private Long id; // function id, only populated by describe_collection
+        private List<Long> inputFieldIds = new ArrayList<>();
+        private List<Long> outputFieldIds = new ArrayList<>();
 
         protected Function(FunctionBuilder<?> builder) {
             this.name = builder.name;
@@ -980,6 +1019,39 @@ public class CreateCollectionReq {
             this.params = params;
         }
 
+        public Long getId() {
+            return id;
+        }
+
+        public List<Long> getInputFieldIds() {
+            return inputFieldIds;
+        }
+
+        public List<Long> getOutputFieldIds() {
+            return outputFieldIds;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setInputFieldIds(List<Long> inputFieldIds) {
+            this.inputFieldIds = inputFieldIds;
+        }
+
+        /**
+         * Server-assigned attribute, populated only by describe_collection; not used during create_collection.
+         */
+        public void setOutputFieldIds(List<Long> outputFieldIds) {
+            this.outputFieldIds = outputFieldIds;
+        }
+
         @Override
         public String toString() {
             return "Function{" +
@@ -989,6 +1061,9 @@ public class CreateCollectionReq {
                     ", inputFieldNames=" + inputFieldNames +
                     ", outputFieldNames=" + outputFieldNames +
                     ", params=" + params +
+                    ", id=" + id +
+                    ", inputFieldIds=" + inputFieldIds +
+                    ", outputFieldIds=" + outputFieldIds +
                     '}';
         }
 

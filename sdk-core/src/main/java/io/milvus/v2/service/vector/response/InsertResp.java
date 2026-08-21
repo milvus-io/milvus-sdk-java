@@ -26,10 +26,12 @@ public class InsertResp {
     // TODO: the first character should be lower case, add a new member and deprecate the old member
     private long InsertCnt;
     private List<Object> primaryKeys;
+    private Long cost;
 
     private InsertResp(InsertRespBuilder builder) {
         this.InsertCnt = builder.InsertCnt;
         this.primaryKeys = builder.primaryKeys;
+        this.cost = builder.cost;
     }
 
     public static InsertRespBuilder builder() {
@@ -52,17 +54,27 @@ public class InsertResp {
         this.primaryKeys = primaryKeys;
     }
 
+    public Long getCost() {
+        return cost;
+    }
+
+    public void setCost(Long cost) {
+        this.cost = cost;
+    }
+
     @Override
     public String toString() {
         return "InsertResp{" +
                 "InsertCnt=" + InsertCnt +
                 ", primaryKeys=" + primaryKeys +
+                ", cost=" + cost +
                 '}';
     }
 
     public static class InsertRespBuilder {
         private long InsertCnt;
         private List<Object> primaryKeys = new ArrayList<>();
+        private Long cost;
 
         public InsertRespBuilder InsertCnt(long insertCnt) {
             InsertCnt = insertCnt;
@@ -71,6 +83,11 @@ public class InsertResp {
 
         public InsertRespBuilder primaryKeys(List<Object> primaryKeys) {
             this.primaryKeys = primaryKeys;
+            return this;
+        }
+
+        public InsertRespBuilder cost(Long cost) {
+            this.cost = cost;
             return this;
         }
 

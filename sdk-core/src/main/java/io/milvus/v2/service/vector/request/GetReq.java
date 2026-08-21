@@ -31,6 +31,7 @@ public class GetReq {
     @Deprecated
     private String clusterId;
     private String partitionName = "";
+    private List<String> partitionNames;
     private List<Object> ids;
     private List<String> outputFields;
 
@@ -39,6 +40,7 @@ public class GetReq {
         this.collectionName = builder.collectionName;
         this.clusterId = builder.clusterId;
         this.partitionName = builder.partitionName;
+        this.partitionNames = builder.partitionNames;
         this.ids = builder.ids;
         this.outputFields = builder.outputFields;
     }
@@ -89,6 +91,14 @@ public class GetReq {
         this.partitionName = partitionName;
     }
 
+    public List<String> getPartitionNames() {
+        return partitionNames;
+    }
+
+    public void setPartitionNames(List<String> partitionNames) {
+        this.partitionNames = partitionNames;
+    }
+
     public List<Object> getIds() {
         return ids;
     }
@@ -112,6 +122,7 @@ public class GetReq {
                 ", collectionName='" + collectionName + '\'' +
                 ", clusterId='" + clusterId + '\'' +
                 ", partitionName='" + partitionName + '\'' +
+                ", partitionNames=" + partitionNames +
                 ", ids=" + ids +
                 ", outputFields=" + outputFields +
                 '}';
@@ -122,6 +133,7 @@ public class GetReq {
         private String collectionName;
         private String clusterId;
         private String partitionName = "";
+        private List<String> partitionNames;
         private List<Object> ids;
         private List<String> outputFields;
 
@@ -147,6 +159,11 @@ public class GetReq {
 
         public GetReqBuilder partitionName(String partitionName) {
             this.partitionName = partitionName;
+            return this;
+        }
+
+        public GetReqBuilder partitionNames(List<String> partitionNames) {
+            this.partitionNames = partitionNames;
             return this;
         }
 
