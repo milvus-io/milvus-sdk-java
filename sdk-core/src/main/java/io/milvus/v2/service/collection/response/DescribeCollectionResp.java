@@ -44,6 +44,10 @@ public class DescribeCollectionResp {
     private ConsistencyLevel consistencyLevel;
     private Integer shardsNum;
     private final Map<String, String> properties;
+    private List<String> aliases = new ArrayList<>();
+    private Long updateTimestamp;
+    private Boolean enableNamespace;
+    private Integer schemaVersion;
 
     private DescribeCollectionResp(DescribeCollectionRespBuilder builder) {
         this.collectionName = builder.collectionName;
@@ -62,6 +66,10 @@ public class DescribeCollectionResp {
         this.consistencyLevel = builder.consistencyLevel;
         this.shardsNum = builder.shardsNum;
         this.properties = builder.properties != null ? builder.properties : new HashMap<>();
+        this.aliases = builder.aliases != null ? builder.aliases : new ArrayList<>();
+        this.updateTimestamp = builder.updateTimestamp;
+        this.enableNamespace = builder.enableNamespace;
+        this.schemaVersion = builder.schemaVersion;
     }
 
     public static DescribeCollectionRespBuilder builder() {
@@ -133,7 +141,38 @@ public class DescribeCollectionResp {
         return properties;
     }
 
+    public List<String> getAliases() {
+        return aliases;
+    }
+
+    public Long getUpdateTimestamp() {
+        return updateTimestamp;
+    }
+
+    public Boolean getEnableNamespace() {
+        return enableNamespace;
+    }
+
+    public Integer getSchemaVersion() {
+        return schemaVersion;
+    }
+
     // Setters
+    public void setAliases(List<String> aliases) {
+        this.aliases = aliases;
+    }
+
+    public void setUpdateTimestamp(Long updateTimestamp) {
+        this.updateTimestamp = updateTimestamp;
+    }
+
+    public void setEnableNamespace(Boolean enableNamespace) {
+        this.enableNamespace = enableNamespace;
+    }
+
+    public void setSchemaVersion(Integer schemaVersion) {
+        this.schemaVersion = schemaVersion;
+    }
     public void setCollectionName(String collectionName) {
         this.collectionName = collectionName;
     }
@@ -213,6 +252,10 @@ public class DescribeCollectionResp {
                 ", consistencyLevel=" + consistencyLevel +
                 ", shardsNum=" + shardsNum +
                 ", properties=" + properties +
+                ", aliases=" + aliases +
+                ", updateTimestamp=" + updateTimestamp +
+                ", enableNamespace=" + enableNamespace +
+                ", schemaVersion=" + schemaVersion +
                 '}';
     }
 
@@ -233,6 +276,10 @@ public class DescribeCollectionResp {
         private ConsistencyLevel consistencyLevel;
         private Integer shardsNum;
         private Map<String, String> properties;
+        private List<String> aliases;
+        private Long updateTimestamp;
+        private Boolean enableNamespace;
+        private Integer schemaVersion;
 
         public DescribeCollectionRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
@@ -311,6 +358,26 @@ public class DescribeCollectionResp {
 
         public DescribeCollectionRespBuilder properties(Map<String, String> properties) {
             this.properties = properties;
+            return this;
+        }
+
+        public DescribeCollectionRespBuilder aliases(List<String> aliases) {
+            this.aliases = aliases;
+            return this;
+        }
+
+        public DescribeCollectionRespBuilder updateTimestamp(Long updateTimestamp) {
+            this.updateTimestamp = updateTimestamp;
+            return this;
+        }
+
+        public DescribeCollectionRespBuilder enableNamespace(Boolean enableNamespace) {
+            this.enableNamespace = enableNamespace;
+            return this;
+        }
+
+        public DescribeCollectionRespBuilder schemaVersion(Integer schemaVersion) {
+            this.schemaVersion = schemaVersion;
             return this;
         }
 

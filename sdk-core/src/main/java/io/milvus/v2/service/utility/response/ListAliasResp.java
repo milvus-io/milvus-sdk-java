@@ -24,10 +24,12 @@ import java.util.List;
 public class ListAliasResp {
     private String collectionName;
     private List<String> alias;
+    private String dbName;
 
     private ListAliasResp(ListAliasRespBuilder builder) {
         this.collectionName = builder.collectionName;
         this.alias = builder.alias;
+        this.dbName = builder.dbName;
     }
 
     public static ListAliasRespBuilder builder() {
@@ -50,17 +52,27 @@ public class ListAliasResp {
         this.alias = alias;
     }
 
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
+
     @Override
     public String toString() {
         return "ListAliasResp{" +
                 "collectionName='" + collectionName + '\'' +
                 ", alias=" + alias +
+                ", dbName='" + dbName + '\'' +
                 '}';
     }
 
     public static class ListAliasRespBuilder {
         private String collectionName;
         private List<String> alias;
+        private String dbName;
 
         public ListAliasRespBuilder collectionName(String collectionName) {
             this.collectionName = collectionName;
@@ -69,6 +81,11 @@ public class ListAliasResp {
 
         public ListAliasRespBuilder alias(List<String> alias) {
             this.alias = alias;
+            return this;
+        }
+
+        public ListAliasRespBuilder dbName(String dbName) {
+            this.dbName = dbName;
             return this;
         }
 

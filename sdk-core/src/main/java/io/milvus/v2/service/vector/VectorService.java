@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -165,6 +166,7 @@ public class VectorService extends BaseService {
         return InsertResp.builder()
                 .InsertCnt(response.getInsertCnt())
                 .primaryKeys(ids)
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 
@@ -226,6 +228,7 @@ public class VectorService extends BaseService {
         return UpsertResp.builder()
                 .upsertCnt(response.getUpsertCnt())
                 .primaryKeys(ids)
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 
@@ -328,7 +331,20 @@ public class VectorService extends BaseService {
         return QueryResp.builder()
                 .queryResults(convertUtils.getEntities(response))
                 .sessionTs(response.getSessionTs())
+                .cost(getCost(response.getStatus()))
                 .build();
+    }
+
+    private long getCost(Status status) {
+        String cost = status.getExtraInfoMap().get("report_value");
+        if (StringUtils.isNotEmpty(cost)) {
+            try {
+                return Long.parseLong(cost);
+            } catch (NumberFormatException e) {
+                logger.warn("Failed to parse report_value as cost: {}", cost);
+            }
+        }
+        return 0L;
     }
 
     public SearchResp search(MilvusServiceGrpc.MilvusServiceBlockingStub blockingStub, SearchReq request) {
@@ -376,7 +392,8 @@ public class VectorService extends BaseService {
         SearchResp.SearchRespBuilder respBuilder = SearchResp.builder()
                 .searchResults(convertUtils.getEntities(response))
                 .sessionTs(response.getSessionTs())
-                .recalls(response.getResults().getRecallsList());
+                .recalls(response.getResults().getRecallsList())
+                .cost(getCost(response.getStatus()));
         if (includeAggregations) {
             respBuilder.aggregationBuckets(convertUtils.getAggregationBuckets(response));
         }
@@ -590,9 +607,6 @@ public class VectorService extends BaseService {
     }
 
     private void fillSearchRespFromExtraInfo(SearchResp.SearchRespBuilder respBuilder, java.util.Map<String, String> extraInfo) {
-        if (extraInfo.containsKey("report_value")) {
-            respBuilder.cost(Long.parseLong(extraInfo.get("report_value")));
-        }
         if (extraInfo.containsKey("scanned_remote_bytes")) {
             respBuilder.scannedRemoteBytes(Long.parseLong(extraInfo.get("scanned_remote_bytes")));
         }
@@ -663,8 +677,10 @@ public class VectorService extends BaseService {
 
         // update the last write timestamp for SESSION consistency
         updateTsCache(dbName, collectionName, response.getTimestamp());
+
         return DeleteResp.builder()
                 .deleteCnt(response.getDeleteCnt())
+                .cost(getCost(response.getStatus()))
                 .build();
     }
 
@@ -712,8 +728,16 @@ public class VectorService extends BaseService {
                 .databaseName(request.getDatabaseName())
                 .collectionName(request.getCollectionName())
                 .ids(request.getIds());
+        List<String> partitionNames = new ArrayList<>();
         if (StringUtils.isNotEmpty(request.getPartitionName())) {
-            queryReqBuilder.partitionNames(Collections.singletonList(request.getPartitionName()));
+            partitionNames.add(request.getPartitionName());
+        }
+        if (request.getPartitionNames() != null) {
+            partitionNames.addAll(request.getPartitionNames());
+        }
+        if (!partitionNames.isEmpty()) {
+            // deduplicate while preserving order (a caller may set both partitionName and partitionNames)
+            queryReqBuilder.partitionNames(new ArrayList<>(new LinkedHashSet<>(partitionNames)));
         }
         QueryReq queryReq = queryReqBuilder.build();
         if (request.getOutputFields() != null) {

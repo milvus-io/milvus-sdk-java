@@ -112,6 +112,54 @@ class VectorTest extends BaseTest {
     }
 
     @Test
+    void testInsertAndUpsertExposeServerCost() {
+        MutationResult result = MutationResult.newBuilder()
+                .setInsertCnt(2L)
+                .setUpsertCnt(2L)
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "123")
+                        .build())
+                .build();
+        when(blockingStub.insert(any())).thenReturn(result);
+        when(blockingStub.upsert(any())).thenReturn(result);
+
+        JsonObject row = new JsonObject();
+        row.add("vector", JsonUtils.toJsonTree(Arrays.asList(1.0f, 2.0f)));
+        row.addProperty("id", 1L);
+
+        InsertResp insertResp = client_v2.insert(InsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(123L, insertResp.getCost());
+
+        UpsertResp upsertResp = client_v2.upsert(UpsertReq.builder()
+                .collectionName("test")
+                .data(Collections.singletonList(row))
+                .build());
+        Assertions.assertEquals(123L, upsertResp.getCost());
+    }
+
+    @Test
+    void testDeleteExposesCost() {
+        MutationResult result = MutationResult.newBuilder()
+                .setDeleteCnt(2L)
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "456")
+                        .build())
+                .build();
+        when(blockingStub.delete(any())).thenReturn(result);
+
+        DeleteResp resp = client_v2.delete(DeleteReq.builder()
+                .collectionName("test")
+                .ids(Arrays.asList(10L, 20L))
+                .build());
+
+        Assertions.assertEquals(2L, resp.getDeleteCnt());
+        Assertions.assertEquals(456L, resp.getCost());
+    }
+
+    @Test
     void testUpsertWithFieldOps() {
         JsonObject jsonObject = new JsonObject();
         List<Float> vectorList = new ArrayList<>();
@@ -150,6 +198,49 @@ class VectorTest extends BaseTest {
         QueryResp resultsR = client_v2.query(req);
 
         logger.info(resultsR.toString());
+    }
+
+    @Test
+    void testQueryExposesServerCost() {
+        QueryResults response = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0)
+                        .putExtraInfo("report_value", "321")
+                        .build())
+                .setSessionTs(100L)
+                .build();
+        when(blockingStub.query(any())).thenReturn(response);
+
+        QueryResp resp = client_v2.query(QueryReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .limit(10)
+                .build());
+
+        Assertions.assertEquals(321L, resp.getCost());
+        Assertions.assertEquals(100L, resp.getSessionTs());
+    }
+
+    @Test
+    void testQueryCostDefaultsToZeroWhenReportValueMissingOrInvalid() {
+        QueryResults absent = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).build())
+                .build();
+        when(blockingStub.query(any())).thenReturn(absent);
+        QueryResp respAbsent = client_v2.query(QueryReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .build());
+        Assertions.assertEquals(0L, respAbsent.getCost());
+
+        QueryResults invalid = QueryResults.newBuilder()
+                .setStatus(Status.newBuilder().setCode(0).putExtraInfo("report_value", "not-a-number").build())
+                .build();
+        when(blockingStub.query(any())).thenReturn(invalid);
+        QueryResp respInvalid = client_v2.query(QueryReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .build());
+        Assertions.assertEquals(0L, respInvalid.getCost());
     }
 
     @Test
@@ -604,6 +695,40 @@ class VectorTest extends BaseTest {
                 .build();
         GetResp statusR = client_v2.get(request);
         logger.info(statusR.toString());
+    }
+
+    @Test
+    void testGetWithMultiplePartitions() {
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .partitionName("p1")
+                .partitionNames(Arrays.asList("p2", "p3"))
+                .build();
+
+        client_v2.get(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals(Arrays.asList("p1", "p2", "p3"),
+                captor.getValue().getPartitionNamesList());
+    }
+
+    @Test
+    void testGetWithOverlappingPartitionsDedup() {
+        GetReq request = GetReq.builder()
+                .collectionName("book")
+                .ids(Collections.singletonList(1L))
+                .partitionName("p1")
+                .partitionNames(Arrays.asList("p1", "p2"))
+                .build();
+
+        client_v2.get(request);
+
+        ArgumentCaptor<QueryRequest> captor = ArgumentCaptor.forClass(QueryRequest.class);
+        verify(blockingStub).query(captor.capture());
+        Assertions.assertEquals(Arrays.asList("p1", "p2"),
+                captor.getValue().getPartitionNamesList());
     }
 
     @Test
