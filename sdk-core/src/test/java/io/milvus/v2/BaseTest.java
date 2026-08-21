@@ -227,8 +227,17 @@ public class BaseTest {
         when(blockingStub.dropAlias(any())).thenReturn(successStatus);
         when(blockingStub.alterAlias(any())).thenReturn(successStatus);
         when(blockingStub.describeAlias(any())).thenReturn(DescribeAliasResponse.newBuilder().setStatus(successStatus).build());
-        when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus).addAliases("test").build());
+        when(blockingStub.listAliases(any())).thenReturn(ListAliasesResponse.newBuilder().setStatus(successStatus)
+                .setCollectionName("test").setDbName("default").addAliases("test_alias").build());
         when(blockingStub.allocTimestamp(any())).thenReturn(AllocTimestampResponse.newBuilder().setStatus(successStatus).setTimestamp(1L).build());
+        when(blockingStub.getCompactionStateWithPlans(any())).thenReturn(GetCompactionPlansResponse.newBuilder()
+                .setStatus(successStatus)
+                .setState(io.milvus.grpc.CompactionState.Executing)
+                .addMergeInfos(io.milvus.grpc.CompactionMergeInfo.newBuilder()
+                        .setTarget(1L)
+                        .addSources(2L)
+                        .build())
+                .build());
 
         // external collection api
         when(blockingStub.refreshExternalCollection(any())).thenReturn(
@@ -243,6 +252,7 @@ public class BaseTest {
                                 .setProgress(100)
                                 .setReason("")
                                 .setExternalSource("s3://bucket/path")
+                                .setExternalSpec("{\"format\":\"parquet\"}")
                                 .setStartTime(1000L)
                                 .setEndTime(2000L)
                                 .build())

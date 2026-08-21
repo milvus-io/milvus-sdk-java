@@ -24,6 +24,7 @@ import java.util.List;
 
 public class GetQuerySegmentInfoResp {
     public static class QuerySegmentInfo {
+        private String collectionName;
         private Long segmentID;
         private Long collectionID;
         private Long partitionID;
@@ -38,6 +39,7 @@ public class GetQuerySegmentInfoResp {
         private Boolean isSorted;
 
         private QuerySegmentInfo(QuerySegmentInfoBuilder builder) {
+            this.collectionName = builder.collectionName;
             this.segmentID = builder.segmentID;
             this.collectionID = builder.collectionID;
             this.partitionID = builder.partitionID;
@@ -54,6 +56,14 @@ public class GetQuerySegmentInfoResp {
 
         public static QuerySegmentInfoBuilder builder() {
             return new QuerySegmentInfoBuilder();
+        }
+
+        public String getCollectionName() {
+            return collectionName;
+        }
+
+        public void setCollectionName(String collectionName) {
+            this.collectionName = collectionName;
         }
 
         public Long getSegmentID() {
@@ -155,7 +165,8 @@ public class GetQuerySegmentInfoResp {
         @Override
         public String toString() {
             return "QuerySegmentInfo{" +
-                    "segmentID=" + segmentID +
+                    "collectionName='" + collectionName + '\'' +
+                    ", segmentID=" + segmentID +
                     ", collectionID=" + collectionID +
                     ", partitionID=" + partitionID +
                     ", memSize=" + memSize +
@@ -171,6 +182,7 @@ public class GetQuerySegmentInfoResp {
         }
 
         public static class QuerySegmentInfoBuilder {
+            private String collectionName;
             private Long segmentID;
             private Long collectionID;
             private Long partitionID;
@@ -183,6 +195,11 @@ public class GetQuerySegmentInfoResp {
             private List<Long> nodeIDs = new ArrayList<>();
             private Long storageVersion;
             private Boolean isSorted;
+
+            public QuerySegmentInfoBuilder collectionName(String collectionName) {
+                this.collectionName = collectionName;
+                return this;
+            }
 
             public QuerySegmentInfoBuilder segmentID(Long segmentID) {
                 this.segmentID = segmentID;

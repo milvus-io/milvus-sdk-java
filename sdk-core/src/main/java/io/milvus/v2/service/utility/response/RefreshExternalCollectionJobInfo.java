@@ -26,6 +26,7 @@ public class RefreshExternalCollectionJobInfo {
     private final int progress;
     private final String reason;
     private final String externalSource;
+    private final String externalSpec;
     private final long startTime;
     private final long endTime;
 
@@ -36,6 +37,7 @@ public class RefreshExternalCollectionJobInfo {
         this.progress = builder.progress;
         this.reason = builder.reason;
         this.externalSource = builder.externalSource;
+        this.externalSpec = builder.externalSpec;
         this.startTime = builder.startTime;
         this.endTime = builder.endTime;
     }
@@ -68,6 +70,10 @@ public class RefreshExternalCollectionJobInfo {
         return externalSource;
     }
 
+    public String getExternalSpec() {
+        return externalSpec;
+    }
+
     public long getStartTime() {
         return startTime;
     }
@@ -85,6 +91,7 @@ public class RefreshExternalCollectionJobInfo {
                 ", progress=" + progress +
                 ", reason='" + reason + '\'' +
                 ", externalSource='" + externalSource + '\'' +
+                ", externalSpec='" + externalSpec + '\'' +
                 ", startTime=" + startTime +
                 ", endTime=" + endTime +
                 '}';
@@ -97,6 +104,7 @@ public class RefreshExternalCollectionJobInfo {
         private int progress;
         private String reason;
         private String externalSource;
+        private String externalSpec;
         private long startTime;
         private long endTime;
 
@@ -127,6 +135,11 @@ public class RefreshExternalCollectionJobInfo {
 
         public RefreshExternalCollectionJobInfoBuilder externalSource(String externalSource) {
             this.externalSource = externalSource;
+            return this;
+        }
+
+        public RefreshExternalCollectionJobInfoBuilder externalSpec(String externalSpec) {
+            this.externalSpec = externalSpec;
             return this;
         }
 

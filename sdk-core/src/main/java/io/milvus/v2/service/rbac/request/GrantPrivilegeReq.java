@@ -21,12 +21,14 @@ package io.milvus.v2.service.rbac.request;
 
 public class GrantPrivilegeReq {
     private String roleName;
+    private String dbName;
     private String objectType;
     private String privilege;
     private String objectName;
 
     private GrantPrivilegeReq(GrantPrivilegeReqBuilder builder) {
         this.roleName = builder.roleName;
+        this.dbName = builder.dbName;
         this.objectType = builder.objectType;
         this.privilege = builder.privilege;
         this.objectName = builder.objectName;
@@ -38,6 +40,14 @@ public class GrantPrivilegeReq {
 
     public void setRoleName(String roleName) {
         this.roleName = roleName;
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
     }
 
     public String getObjectType() {
@@ -68,6 +78,7 @@ public class GrantPrivilegeReq {
     public String toString() {
         return "GrantPrivilegeReq{" +
                 "roleName='" + roleName + '\'' +
+                ", dbName='" + dbName + '\'' +
                 ", objectType='" + objectType + '\'' +
                 ", privilege='" + privilege + '\'' +
                 ", objectName='" + objectName + '\'' +
@@ -80,6 +91,7 @@ public class GrantPrivilegeReq {
 
     public static class GrantPrivilegeReqBuilder {
         private String roleName;
+        private String dbName;
         private String objectType;
         private String privilege;
         private String objectName;
@@ -89,6 +101,11 @@ public class GrantPrivilegeReq {
 
         public GrantPrivilegeReqBuilder roleName(String roleName) {
             this.roleName = roleName;
+            return this;
+        }
+
+        public GrantPrivilegeReqBuilder dbName(String dbName) {
+            this.dbName = dbName;
             return this;
         }
 

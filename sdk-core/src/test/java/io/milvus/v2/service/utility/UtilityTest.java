@@ -22,6 +22,7 @@ package io.milvus.v2.service.utility;
 import com.google.gson.JsonObject;
 import io.milvus.common.utils.cache.CollectionTsCache;
 import io.milvus.v2.BaseTest;
+import io.milvus.v2.common.CompactionState;
 import io.milvus.v2.service.utility.request.*;
 import io.milvus.v2.service.utility.response.*;
 import org.junit.jupiter.api.AfterEach;
@@ -90,6 +91,22 @@ class UtilityTest extends BaseTest {
                 .collectionName("test")
                 .build();
         ListAliasResp statusR = client_v2.listAliases(req);
+        assertEquals("test", statusR.getCollectionName());
+        assertEquals("default", statusR.getDbName());
+        assertTrue(statusR.getAlias().contains("test_alias"));
+    }
+
+    @Test
+    void getCompactionPlans() {
+        GetCompactionPlansReq req = GetCompactionPlansReq.builder()
+                .compactionID(123L)
+                .build();
+        GetCompactionPlansResp resp = client_v2.getCompactionPlans(req);
+        assertEquals(123L, resp.getCompactionId());
+        assertEquals(CompactionState.Executing, resp.getState());
+        assertEquals(1, resp.getPlans().size());
+        assertEquals(1L, resp.getPlans().get(0).getTarget());
+        assertTrue(resp.getPlans().get(0).getSources().contains(2L));
     }
 
     @Test
@@ -129,6 +146,7 @@ class UtilityTest extends BaseTest {
         assertEquals(100, jobInfo.getProgress());
         assertEquals("", jobInfo.getReason());
         assertEquals("s3://bucket/path", jobInfo.getExternalSource());
+        assertEquals("{\"format\":\"parquet\"}", jobInfo.getExternalSpec());
         assertEquals(1000L, jobInfo.getStartTime());
         assertEquals(2000L, jobInfo.getEndTime());
     }
@@ -226,6 +244,7 @@ class UtilityTest extends BaseTest {
 
         assertEquals(1, resp.getSegmentInfos().size());
         GetQuerySegmentInfoResp.QuerySegmentInfo info = resp.getSegmentInfos().get(0);
+        assertEquals("test", info.getCollectionName());
         assertEquals(6L, info.getSegmentID());
         assertEquals(7L, info.getCollectionID());
         assertEquals(8L, info.getPartitionID());
