@@ -1,5 +1,20 @@
 # Changelog
 
+## milvus-sdk-java 3.0.7 (2026-08-21)
+### Feature
+- Support async DQL interfaces for MilvusClientV2
+- Support client-side roaring bitmap blobs for roaring_match filters
+
+### Improvement
+- Align request/response behavior with PyMilvus
+- Refine async retry scheduler ownership and ids-expression building
+
+### Bug
+- Preserve empty database names for serverless requests
+- Avoid sending empty analyzer params in runAnalyzer
+- Clean async tasks when shutdown
+- Reject JSON/Geometry/Timestamptz fields in Struct field
+
 ## milvus-sdk-java 3.0.6 (2026-08-05)
 ### Feature
 - Support the Text data type in DML, result decoding, and BulkWriter
