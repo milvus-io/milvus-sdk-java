@@ -1,5 +1,14 @@
 # Changelog
 
+## milvus-sdk-java 2.6.24 (2026-08-21)
+### Feature
+- Support async DQL interfaces for MilvusClientV2
+
+### Bug
+- Preserve empty database names for serverless requests
+- Avoid sending empty analyzer params in runAnalyzer
+- Clean async tasks when shutdown
+
 ## milvus-sdk-java 2.6.23 (2026-08-05)
 ### Improvement
 - Align insert and upsert data validation with PyMilvus
