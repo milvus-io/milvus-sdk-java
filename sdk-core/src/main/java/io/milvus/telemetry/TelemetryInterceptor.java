@@ -30,6 +30,7 @@ import io.grpc.ForwardingClientCallListener;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.milvus.common.interceptor.ClientRequestInterceptor;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -39,6 +40,10 @@ import java.util.Set;
 public final class TelemetryInterceptor implements ClientInterceptor {
     private static final Set<String> OPERATIONS = new HashSet<>(Arrays.asList(
             "Insert", "Delete", "Upsert", "Search", "HybridSearch", "Query", "RunAnalyzer"));
+    public static final CallOptions.Key<Boolean> LOGICAL_OPERATION_OPTION =
+            CallOptions.Key.create("milvus-telemetry-logical-operation");
+    private static final ThreadLocal<Integer> LOGICAL_OPERATION_DEPTH =
+            ThreadLocal.withInitial(() -> 0);
 
     private final ClientTelemetryManager manager;
     private final ThreadLocal<String> requestId;
@@ -55,8 +60,12 @@ public final class TelemetryInterceptor implements ClientInterceptor {
         if (!OPERATIONS.contains(operation)) {
             return next.newCall(method, callOptions);
         }
+        if (Boolean.TRUE.equals(callOptions.getOption(LOGICAL_OPERATION_OPTION))
+                || LOGICAL_OPERATION_DEPTH.get() > 0) {
+            return next.newCall(method, callOptions);
+        }
         long startNanos = System.nanoTime();
-        String currentRequestId = requestId == null ? "" : requestId.get();
+        String currentRequestId = requestId(callOptions, requestId);
         return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(
                 next.newCall(method, callOptions)) {
             private String collection = "";
@@ -93,6 +102,41 @@ public final class TelemetryInterceptor implements ClientInterceptor {
                 super.start(listener, headers);
             }
         };
+    }
+
+    /** Suppresses per-attempt interceptor metrics while a logical SDK operation is active. */
+    public static LogicalOperationScope beginLogicalOperation() {
+        LOGICAL_OPERATION_DEPTH.set(LOGICAL_OPERATION_DEPTH.get() + 1);
+        return new LogicalOperationScope();
+    }
+
+    public static final class LogicalOperationScope implements AutoCloseable {
+        private boolean closed;
+
+        private LogicalOperationScope() {
+        }
+
+        @Override
+        public void close() {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            int depth = LOGICAL_OPERATION_DEPTH.get() - 1;
+            if (depth <= 0) {
+                LOGICAL_OPERATION_DEPTH.remove();
+            } else {
+                LOGICAL_OPERATION_DEPTH.set(depth);
+            }
+        }
+    }
+
+    static String requestId(CallOptions callOptions, ThreadLocal<String> fallback) {
+        String value = callOptions.getOption(ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION);
+        if (value == null && fallback != null) {
+            value = fallback.get();
+        }
+        return ClientRequestInterceptor.isValidClientRequestId(value) ? value : "";
     }
 
     private static String collectionName(Object request) {

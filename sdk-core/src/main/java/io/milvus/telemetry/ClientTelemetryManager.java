@@ -42,9 +42,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +62,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Collects client operation metrics and exchanges heartbeat commands with Milvus.
@@ -86,6 +86,10 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static final int MAX_REPLY_BYTES = 1024 * 1024;
     private static final long MAX_UNIMPLEMENTED_BACKOFF_MS = TimeUnit.MINUTES.toMillis(30);
     private static final SecureRandom REQUEST_ID_RANDOM = new SecureRandom();
+    private static final List<String> PUSH_CONFIG_KEYS = Arrays.asList(
+            "enabled", "heartbeat_interval_ms", "sampling_rate");
+    private static final Pattern RFC3339_TIMESTAMP = Pattern.compile(
+            "^(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2})(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$");
 
     private final TelemetryConfig config;
     private final String clientId;
@@ -111,14 +115,20 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private final AtomicBoolean ready = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final ScheduledExecutorService executor;
+    private final Object heartbeatLifecycle = new Object();
+    private final Object heartbeatRetirement = new Object();
+    private final Object runtimeStateHandoff = new Object();
 
     private volatile ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub stub;
+    private volatile ClientTelemetryManager handoffTarget;
     private volatile boolean allCollectionsEnabled;
     private volatile long lastCommandTimestamp;
     private volatile String configHash = "";
     private volatile int unsupportedStreak;
     private volatile Throwable lastHeartbeatError;
     private volatile long lastSnapshotEnd;
+    private long heartbeatGeneration;
+    private boolean retirementPending;
 
     public ClientTelemetryManager(
             TelemetryConfig config,
@@ -168,6 +178,10 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     public boolean isReady() {
         return ready.get();
+    }
+
+    public boolean isClosed() {
+        return closed.get();
     }
 
     public boolean isSupported() {
@@ -221,7 +235,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         customHandlers.put(type, handler);
     }
 
-    public RuntimeState snapshotRuntimeState() {
+    public synchronized RuntimeState snapshotRuntimeState() {
         List<ErrorInfo> errorValues;
         synchronized (errors) {
             errorValues = new ArrayList<>(errors);
@@ -244,9 +258,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
             collectionValues = new HashSet<>(enabledCollections);
             allCollections = allCollectionsEnabled;
         }
-        Map<String, CommandHandler> handlerValues;
-        synchronized (this) {
-            handlerValues = new HashMap<>(customHandlers);
+        Map<String, CommandHandler> handlerValues = new HashMap<>(customHandlers);
+        Map<String, Collector> collectorValues = new HashMap<>();
+        synchronized (collectors) {
+            for (Map.Entry<String, Collector> entry : collectors.entrySet()) {
+                collectorValues.put(entry.getKey(), entry.getValue().copy());
+            }
         }
         return new RuntimeState(
                 clientId,
@@ -259,14 +276,17 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 handlerValues,
                 errorValues,
                 snapshotValues,
+                collectorValues,
                 samplingAccum.get(),
                 lastSnapshotEnd,
+                unsupportedStreak,
+                lastHeartbeatError,
                 config.isEnabled(),
                 config.getHeartbeatIntervalMs(),
                 config.getSamplingRate());
     }
 
-    public void restoreRuntimeState(RuntimeState state) {
+    public synchronized void restoreRuntimeState(RuntimeState state) {
         if (state == null) {
             return;
         }
@@ -280,6 +300,8 @@ public final class ClientTelemetryManager implements AutoCloseable {
         lastCommandTimestamp = state.lastCommandTimestamp;
         samplingAccum.set(state.samplingAccum);
         lastSnapshotEnd = state.lastSnapshotEnd;
+        unsupportedStreak = state.unsupportedStreak;
+        lastHeartbeatError = state.lastHeartbeatError;
         synchronized (pendingReplies) {
             pendingReplies.clear();
             pendingReplies.addAll(state.pendingReplies);
@@ -307,14 +329,135 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 snapshots.removeFirst();
             }
         }
-        synchronized (this) {
-            customHandlers.clear();
-            customHandlers.putAll(state.customHandlers);
-            handlers.putAll(state.customHandlers);
+        synchronized (collectors) {
+            collectors.clear();
+            for (Map.Entry<String, Collector> entry : state.collectors.entrySet()) {
+                collectors.put(entry.getKey(), entry.getValue().copy());
+            }
+        }
+        customHandlers.clear();
+        customHandlers.putAll(state.customHandlers);
+        handlers.putAll(state.customHandlers);
+    }
+
+    /** Atomically hands state to a replacement manager after its last heartbeat finishes. */
+    public RuntimeState snapshotAndCloseRuntimeState() {
+        synchronized (heartbeatLifecycle) {
+            RuntimeState state = snapshotRuntimeState();
+            close();
+            return state;
+        }
+    }
+
+    /**
+     * Transfers the final runtime state to a connected replacement without ever running two
+     * telemetry workers for the same client ID. Operations that finish after the handoff are
+     * forwarded to the replacement instead of being dropped by the closed manager.
+     */
+    public void handoffRuntimeStateTo(ClientTelemetryManager replacement) {
+        long retirementToken = beginRuntimeStateRetirement();
+        try {
+            handoffRuntimeStateTo(replacement, retirementToken);
+        } catch (RuntimeException | Error exception) {
+            cancelRuntimeStateRetirement(retirementToken);
+            throw exception;
+        }
+    }
+
+    /**
+     * Invalidates an in-flight heartbeat and prevents another one from starting while the
+     * surrounding connection switch is pending. The token can be cancelled if that switch
+     * rolls back, without making the old manager unusable.
+     */
+    public long beginRuntimeStateRetirement() {
+        synchronized (heartbeatRetirement) {
+            if (retirementPending) {
+                throw new IllegalStateException("telemetry retirement is already pending");
+            }
+            retirementPending = true;
+            return ++heartbeatGeneration;
+        }
+    }
+
+    /** Restores the old manager after the surrounding connection switch rolls back. */
+    public void cancelRuntimeStateRetirement(long retirementToken) {
+        synchronized (heartbeatRetirement) {
+            if (retirementPending && retirementToken == heartbeatGeneration) {
+                retirementPending = false;
+            }
+        }
+    }
+
+    /** Completes a state handoff that was fenced before the outer client switch committed. */
+    public void handoffRuntimeStateTo(
+            ClientTelemetryManager replacement, long retirementToken) {
+        if (replacement == null || replacement == this) {
+            throw new IllegalArgumentException("replacement telemetry manager is required");
+        }
+        if (replacement.isReady()) {
+            throw new IllegalStateException("replacement telemetry worker must be deferred");
+        }
+        synchronized (heartbeatRetirement) {
+            if (!retirementPending || retirementToken != heartbeatGeneration) {
+                throw new IllegalStateException("telemetry retirement token is not active");
+            }
+        }
+        synchronized (heartbeatLifecycle) {
+            synchronized (runtimeStateHandoff) {
+                if (closed.get()) {
+                    throw new IllegalStateException("telemetry manager is already closed");
+                }
+                synchronized (replacement.runtimeStateHandoff) {
+                    if (replacement.handoffTarget != this) {
+                        throw new IllegalStateException("replacement telemetry manager was not prepared");
+                    }
+                    replacement.restoreRuntimeState(snapshotRuntimeState());
+                    replacement.handoffTarget = null;
+                    handoffTarget = replacement;
+                    close();
+                }
+            }
+        }
+        replacement.start();
+    }
+
+    /** Redirects replacement-client operations to the active manager until the switch commits. */
+    public void prepareRuntimeStateHandoffFrom(ClientTelemetryManager activeManager) {
+        if (activeManager == null || activeManager == this) {
+            throw new IllegalArgumentException("active telemetry manager is required");
+        }
+        if (isReady() || isClosed()) {
+            throw new IllegalStateException("replacement telemetry worker must be deferred and open");
+        }
+        synchronized (runtimeStateHandoff) {
+            handoffTarget = activeManager;
+        }
+    }
+
+    /** Cancels a prepared handoff after the surrounding client switch failed. */
+    public void cancelRuntimeStateHandoffFrom(ClientTelemetryManager activeManager) {
+        synchronized (runtimeStateHandoff) {
+            if (handoffTarget == activeManager) {
+                handoffTarget = null;
+            }
         }
     }
 
     public void recordOperation(
+            String operation, String collection, long startNanos, String error, String requestId) {
+        ClientTelemetryManager target;
+        synchronized (runtimeStateHandoff) {
+            target = handoffTarget;
+            if (target == null) {
+                recordOperationLocally(operation, collection, startNanos, error, requestId);
+            }
+        }
+        if (target != null) {
+            target.recordOperation(operation, collection, startNanos, error, requestId);
+        }
+    }
+
+    private void recordOperationLocally(
             String operation, String collection, long startNanos, String error, String requestId) {
         if (!config.isEnabled() || !shouldSample(config.getSamplingRate())) {
             return;
@@ -358,7 +501,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    public void processCommands(List<ClientCommand> commands) {
+    public synchronized void processCommands(List<ClientCommand> commands) {
         long previousTimestamp = lastCommandTimestamp;
         long maxTimestamp = previousTimestamp;
         boolean hasPersistent = false;
@@ -422,13 +565,15 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     private void heartbeatAndScheduleNext() {
-        if (closed.get()) {
-            return;
-        }
-        createSnapshot();
-        sendHeartbeat();
-        if (!closed.get()) {
-            executor.schedule(this::heartbeatAndScheduleNext, nextDelayMs(), TimeUnit.MILLISECONDS);
+        synchronized (heartbeatLifecycle) {
+            if (closed.get()) {
+                return;
+            }
+            createSnapshot();
+            sendHeartbeat();
+            if (!closed.get()) {
+                executor.schedule(this::heartbeatAndScheduleNext, nextDelayMs(), TimeUnit.MILLISECONDS);
+            }
         }
     }
 
@@ -444,9 +589,17 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     private void sendHeartbeat() {
-        ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub currentStub = stub;
-        if (!config.isEnabled() || currentStub == null) {
-            return;
+        ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub currentStub;
+        long requestGeneration;
+        synchronized (heartbeatRetirement) {
+            if (retirementPending) {
+                return;
+            }
+            currentStub = stub;
+            requestGeneration = heartbeatGeneration;
+            if (!config.isEnabled() || currentStub == null) {
+                return;
+            }
         }
         MetricsSnapshot latest;
         synchronized (snapshots) {
@@ -467,25 +620,44 @@ public final class ClientTelemetryManager implements AutoCloseable {
         try {
             ClientHeartbeatResponse response = currentStub.withDeadlineAfter(10, TimeUnit.SECONDS)
                     .clientHeartbeat(request);
-            if (response.getStatus().getCode() != 0 || response.getStatus().getErrorCodeValue() != 0) {
-                lastHeartbeatError = new IllegalStateException(response.getStatus().getReason());
-                return;
+            synchronized (heartbeatRetirement) {
+                if (retirementPending || requestGeneration != heartbeatGeneration) {
+                    return;
+                }
+                // Any real response proves the server implements telemetry. Business errors must
+                // not preserve an earlier UNIMPLEMENTED backoff.
+                unsupportedStreak = 0;
+                if (response.getStatus().getCode() != 0
+                        || response.getStatus().getErrorCodeValue() != 0) {
+                    lastHeartbeatError = new IllegalStateException(
+                            response.getStatus().getReason());
+                    return;
+                }
+                lastHeartbeatError = null;
+                synchronized (pendingReplies) {
+                    int sent = Math.min(replies.size(), pendingReplies.size());
+                    pendingReplies.subList(0, sent).clear();
+                }
+                processCommands(response.getCommandsList());
             }
-            lastHeartbeatError = null;
-            unsupportedStreak = 0;
-            synchronized (pendingReplies) {
-                int sent = Math.min(replies.size(), pendingReplies.size());
-                pendingReplies.subList(0, sent).clear();
-            }
-            processCommands(response.getCommandsList());
         } catch (StatusRuntimeException exception) {
-            lastHeartbeatError = exception;
-            if (exception.getStatus().getCode() == Status.Code.UNIMPLEMENTED) {
-                unsupportedStreak++;
+            synchronized (heartbeatRetirement) {
+                if (retirementPending || requestGeneration != heartbeatGeneration) {
+                    return;
+                }
+                lastHeartbeatError = exception;
+                if (exception.getStatus().getCode() == Status.Code.UNIMPLEMENTED) {
+                    unsupportedStreak++;
+                }
             }
         } catch (RuntimeException exception) {
-            lastHeartbeatError = exception;
-            logger.debug("Client telemetry heartbeat failed", exception);
+            synchronized (heartbeatRetirement) {
+                if (retirementPending || requestGeneration != heartbeatGeneration) {
+                    return;
+                }
+                lastHeartbeatError = exception;
+                logger.debug("Client telemetry heartbeat failed", exception);
+            }
         }
     }
 
@@ -550,12 +722,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
         if (!config.isEnabled()) {
             return;
         }
+        CollectionScope collectionScope = snapshotCollectionScope();
         List<OperationSnapshot> metrics = new ArrayList<>();
         synchronized (collectors) {
             for (Map.Entry<String, Collector> entry : collectors.entrySet()) {
                 OperationSnapshot snapshot = entry.getValue().snapshot(entry.getKey());
                 if (snapshot != null) {
-                    metrics.add(snapshot);
+                    metrics.add(filterCollectionMetrics(snapshot, collectionScope));
                 }
             }
         }
@@ -571,18 +744,38 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
-    private static List<OperationMetrics> toProtoMetrics(List<OperationSnapshot> snapshots) {
+    private List<OperationMetrics> toProtoMetrics(List<OperationSnapshot> snapshots) {
+        CollectionScope collectionScope = snapshotCollectionScope();
         List<OperationMetrics> result = new ArrayList<>();
         for (OperationSnapshot operation : snapshots) {
             OperationMetrics.Builder builder = OperationMetrics.newBuilder()
                     .setOperation(operation.operation)
                     .setGlobal(toProtoMetric(operation.global));
             for (Map.Entry<String, MetricSnapshot> entry : operation.collections.entrySet()) {
-                builder.putCollectionMetrics(entry.getKey(), toProtoMetric(entry.getValue()));
+                if (collectionScope.includes(entry.getKey())) {
+                    builder.putCollectionMetrics(entry.getKey(), toProtoMetric(entry.getValue()));
+                }
             }
             result.add(builder.build());
         }
         return result;
+    }
+
+    private CollectionScope snapshotCollectionScope() {
+        synchronized (enabledCollections) {
+            return new CollectionScope(allCollectionsEnabled, new HashSet<>(enabledCollections));
+        }
+    }
+
+    private static OperationSnapshot filterCollectionMetrics(
+            OperationSnapshot operation, CollectionScope collectionScope) {
+        Map<String, MetricSnapshot> collections = new LinkedHashMap<>();
+        for (Map.Entry<String, MetricSnapshot> entry : operation.collections.entrySet()) {
+            if (collectionScope.includes(entry.getKey())) {
+                collections.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return new OperationSnapshot(operation.operation, operation.global, collections);
     }
 
     private static Metrics toProtoMetric(MetricSnapshot metric) {
@@ -628,16 +821,53 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private CommandReply handlePushConfig(ClientCommand command) {
         JsonObject payload = payload(command);
-        if (payload.has("enabled")) {
-            config.setEnabled(payload.get("enabled").getAsBoolean());
+        Boolean enabled = optionalBoolean(payload, "enabled");
+        Long heartbeatIntervalMs = optionalLong(payload, "heartbeat_interval_ms");
+        Double samplingRate = optionalDouble(payload, "sampling_rate");
+        // Go decodes ttl_seconds into an int64 before deciding that Java does not apply it.
+        // Preserve that typed-payload validation while still reporting the field as ignored.
+        optionalLong(payload, "ttl_seconds");
+
+        if (heartbeatIntervalMs != null && heartbeatIntervalMs <= 0) {
+            throw new IllegalArgumentException("heartbeat_interval_ms must be positive");
         }
-        if (payload.has("heartbeat_interval_ms")) {
-            config.setHeartbeatIntervalMs(payload.get("heartbeat_interval_ms").getAsLong());
+
+        // No mutation occurs before every supplied value is known to be valid.
+        synchronized (config) {
+            if (enabled != null) {
+                config.setEnabled(enabled);
+            }
+            if (heartbeatIntervalMs != null) {
+                config.setHeartbeatIntervalMs(heartbeatIntervalMs);
+            }
+            if (samplingRate != null) {
+                config.setSamplingRate(samplingRate);
+            }
         }
-        if (payload.has("sampling_rate")) {
-            config.setSamplingRate(payload.get("sampling_rate").getAsDouble());
+
+        JsonArray applied = new JsonArray();
+        for (String key : PUSH_CONFIG_KEYS) {
+            if (payload.has(key) && !payload.get(key).isJsonNull()) {
+                applied.add(key);
+            }
         }
-        return successReply(command.getCommandId(), ByteString.EMPTY);
+        List<String> ignoredKeys = new ArrayList<>();
+        for (Map.Entry<String, JsonElement> entry : payload.entrySet()) {
+            if (!PUSH_CONFIG_KEYS.contains(entry.getKey())) {
+                ignoredKeys.add(entry.getKey());
+            }
+        }
+        Collections.sort(ignoredKeys);
+        JsonObject result = new JsonObject();
+        result.add("applied", applied);
+        if (!ignoredKeys.isEmpty()) {
+            JsonArray ignored = new JsonArray();
+            for (String key : ignoredKeys) {
+                ignored.add(key);
+            }
+            result.add("ignored", ignored);
+        }
+        return successReply(command.getCommandId(), bytes(result));
     }
 
     private CommandReply handleCollectionMetrics(ClientCommand command) {
@@ -656,13 +886,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
             return successReply(command.getCommandId(), bytes(result));
         }
         JsonObject payload = payload(command);
-        boolean enabled = payload.has("enabled") && payload.get("enabled").getAsBoolean();
-        List<String> collections = new ArrayList<>();
-        if (payload.has("collections")) {
-            for (JsonElement item : payload.getAsJsonArray("collections")) {
-                collections.add(item.getAsString());
-            }
-        }
+        boolean enabled = Boolean.TRUE.equals(optionalBoolean(payload, "enabled"));
+        List<String> collections = optionalStringArray(payload, "collections");
+        // The server currently treats metric types as advisory, but Go still strongly types
+        // the field while decoding the command payload.
+        optionalStringArray(payload, "metrics_types");
         boolean wildcard = collections.contains("*");
         synchronized (enabledCollections) {
             if (enabled) {
@@ -686,8 +914,15 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private CommandReply handleShowErrors(ClientCommand command) {
         JsonObject payload = payload(command);
-        int maxCount = payload.has("max_count") ? payload.get("max_count").getAsInt() : 100;
+        Integer suppliedMaxCount = optionalInt(payload, "max_count");
+        int maxCount = suppliedMaxCount == null ? 100 : suppliedMaxCount;
+        if (maxCount <= 0) {
+            maxCount = 100;
+        }
         List<ErrorInfo> recent = getRecentErrors(maxCount);
+        if (recent.isEmpty()) {
+            return successReply(command.getCommandId(), ByteString.EMPTY);
+        }
         byte[] encoded = GSON.toJson(recent).getBytes(StandardCharsets.UTF_8);
         while (encoded.length > MAX_REPLY_BYTES && recent.size() > 1) {
             recent = new ArrayList<>(recent.subList(0, Math.max(1, recent.size() / 2)));
@@ -734,11 +969,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private CommandReply handleLatencyHistory(ClientCommand command) {
         JsonObject payload = payload(command);
-        if (!payload.has("start_time") || !payload.has("end_time")) {
+        String startTime = optionalString(payload, "start_time");
+        String endTime = optionalString(payload, "end_time");
+        Boolean detail = optionalBoolean(payload, "detail");
+        if (startTime == null || endTime == null) {
             throw new IllegalArgumentException("payload is required with start_time and end_time");
         }
-        long start = parseTimestamp(payload.get("start_time").getAsString());
-        long end = parseTimestamp(payload.get("end_time").getAsString());
+        long start = parseTimestamp(startTime);
+        long end = parseTimestamp(endTime);
         if (end < start) {
             throw new IllegalArgumentException("end_time must be after start_time");
         }
@@ -751,7 +989,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 matching.add(snapshot);
             }
         }
-        Object response = payload.has("detail") && payload.get("detail").getAsBoolean()
+        Object response = Boolean.TRUE.equals(detail)
                 ? detailHistory(matching) : aggregateHistory(matching, start, end);
         byte[] encoded = GSON.toJson(response).getBytes(StandardCharsets.UTF_8);
         if (encoded.length > MAX_REPLY_BYTES) {
@@ -829,18 +1067,114 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     private static long parseTimestamp(String value) {
-        try {
-            return Instant.parse(value).toEpochMilli();
-        } catch (DateTimeParseException ignored) {
-            return OffsetDateTime.parse(value).toInstant().toEpochMilli();
+        Matcher matcher = RFC3339_TIMESTAMP.matcher(value);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("timestamp must use RFC3339 with seconds and timezone");
         }
+        String fraction = matcher.group(2);
+        // OffsetDateTime stores nanoseconds while Go accepts a longer RFC3339 secfrac and
+        // ultimately reports milliseconds. Truncating beyond nine digits preserves that result.
+        if (fraction != null && fraction.length() > 10) {
+            fraction = fraction.substring(0, 10);
+        }
+        String normalized = matcher.group(1) + (fraction == null ? "" : fraction) + matcher.group(3);
+        return OffsetDateTime.parse(normalized).toInstant().toEpochMilli();
     }
 
     private static JsonObject payload(ClientCommand command) {
         if (command.getPayload().isEmpty()) {
             return new JsonObject();
         }
-        return JsonParser.parseString(command.getPayload().toStringUtf8()).getAsJsonObject();
+        JsonElement decoded = JsonParser.parseString(command.getPayload().toStringUtf8());
+        if (!decoded.isJsonObject()) {
+            throw new IllegalArgumentException("payload must be a JSON object");
+        }
+        return decoded.getAsJsonObject();
+    }
+
+    private static Boolean optionalBoolean(JsonObject payload, String name) {
+        JsonElement value = payload.get(name);
+        if (value == null || value.isJsonNull()) {
+            return null;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean()) {
+            throw new IllegalArgumentException(name + " must be a boolean");
+        }
+        return value.getAsBoolean();
+    }
+
+    private static String optionalString(JsonObject payload, String name) {
+        JsonElement value = payload.get(name);
+        if (value == null || value.isJsonNull()) {
+            return null;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+            throw new IllegalArgumentException(name + " must be a string");
+        }
+        return value.getAsString();
+    }
+
+    private static Long optionalLong(JsonObject payload, String name) {
+        JsonElement value = payload.get(name);
+        if (value == null || value.isJsonNull()) {
+            return null;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException(name + " must be an integer");
+        }
+        String encoded = value.getAsString();
+        if (!encoded.matches("-?(0|[1-9][0-9]*)")) {
+            throw new IllegalArgumentException(name + " must be an integer");
+        }
+        try {
+            return Long.parseLong(encoded);
+        } catch (NumberFormatException exception) {
+            throw new IllegalArgumentException(name + " is out of range", exception);
+        }
+    }
+
+    private static Integer optionalInt(JsonObject payload, String name) {
+        Long value = optionalLong(payload, name);
+        if (value == null) {
+            return null;
+        }
+        if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException(name + " is out of range");
+        }
+        return value.intValue();
+    }
+
+    private static Double optionalDouble(JsonObject payload, String name) {
+        JsonElement value = payload.get(name);
+        if (value == null || value.isJsonNull()) {
+            return null;
+        }
+        if (!value.isJsonPrimitive() || !value.getAsJsonPrimitive().isNumber()) {
+            throw new IllegalArgumentException(name + " must be a number");
+        }
+        double decoded = value.getAsDouble();
+        if (!Double.isFinite(decoded)) {
+            throw new IllegalArgumentException(name + " is out of range");
+        }
+        return decoded;
+    }
+
+    private static List<String> optionalStringArray(JsonObject payload, String name) {
+        JsonElement value = payload.get(name);
+        if (value == null || value.isJsonNull()) {
+            return new ArrayList<>();
+        }
+        if (!value.isJsonArray()) {
+            throw new IllegalArgumentException(name + " must be an array of strings");
+        }
+        List<String> decoded = new ArrayList<>();
+        for (JsonElement item : value.getAsJsonArray()) {
+            if (!item.isJsonPrimitive() || !item.getAsJsonPrimitive().isString()) {
+                throw new IllegalArgumentException(name + " must be an array of strings");
+            }
+            decoded.add(item.getAsString());
+        }
+        return decoded;
     }
 
     private static ByteString bytes(JsonObject value) {
@@ -887,8 +1221,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
         private final Map<String, CommandHandler> customHandlers;
         private final List<ErrorInfo> errors;
         private final List<MetricsSnapshot> snapshots;
+        private final Map<String, Collector> collectors;
         private final long samplingAccum;
         private final long lastSnapshotEnd;
+        private final int unsupportedStreak;
+        private final Throwable lastHeartbeatError;
         private final boolean enabled;
         private final long heartbeatIntervalMs;
         private final double samplingRate;
@@ -904,8 +1241,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 Map<String, CommandHandler> customHandlers,
                 List<ErrorInfo> errors,
                 List<MetricsSnapshot> snapshots,
+                Map<String, Collector> collectors,
                 long samplingAccum,
                 long lastSnapshotEnd,
+                int unsupportedStreak,
+                Throwable lastHeartbeatError,
                 boolean enabled,
                 long heartbeatIntervalMs,
                 double samplingRate) {
@@ -919,8 +1259,14 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.customHandlers = new HashMap<>(customHandlers);
             this.errors = new ArrayList<>(errors);
             this.snapshots = new ArrayList<>(snapshots);
+            this.collectors = new HashMap<>();
+            for (Map.Entry<String, Collector> entry : collectors.entrySet()) {
+                this.collectors.put(entry.getKey(), entry.getValue().copy());
+            }
             this.samplingAccum = samplingAccum;
             this.lastSnapshotEnd = lastSnapshotEnd;
+            this.unsupportedStreak = unsupportedStreak;
+            this.lastHeartbeatError = lastHeartbeatError;
             this.enabled = enabled;
             this.heartbeatIntervalMs = heartbeatIntervalMs;
             this.samplingRate = samplingRate;
@@ -1013,6 +1359,15 @@ public final class ClientTelemetryManager implements AutoCloseable {
         private MetricBucket global = new MetricBucket();
         private final Map<String, MetricBucket> collections = new HashMap<>();
 
+        Collector copy() {
+            Collector result = new Collector();
+            result.global = global.copy();
+            for (Map.Entry<String, MetricBucket> entry : collections.entrySet()) {
+                result.collections.put(entry.getKey(), entry.getValue().copy());
+            }
+            return result;
+        }
+
         void record(String collection, long latencyMicros, boolean success) {
             global.record(latencyMicros, success);
             if (collection != null && !collection.isEmpty()) {
@@ -1049,6 +1404,19 @@ public final class ClientTelemetryManager implements AutoCloseable {
         private int sampleCount;
         private int sampleIndex;
 
+        MetricBucket copy() {
+            MetricBucket result = new MetricBucket();
+            result.requests = requests;
+            result.successes = successes;
+            result.failures = failures;
+            result.totalLatencyMicros = totalLatencyMicros;
+            result.maxLatencyMicros = maxLatencyMicros;
+            System.arraycopy(samples, 0, result.samples, 0, samples.length);
+            result.sampleCount = sampleCount;
+            result.sampleIndex = sampleIndex;
+            return result;
+        }
+
         void record(long latencyMicros, boolean success) {
             requests++;
             if (success) {
@@ -1075,6 +1443,20 @@ public final class ClientTelemetryManager implements AutoCloseable {
                     (double) totalLatencyMicros / requests / 1000.0,
                     p99 / 1000.0,
                     maxLatencyMicros / 1000.0);
+        }
+    }
+
+    private static final class CollectionScope {
+        private final boolean all;
+        private final Set<String> enabled;
+
+        private CollectionScope(boolean all, Set<String> enabled) {
+            this.all = all;
+            this.enabled = enabled;
+        }
+
+        private boolean includes(String collection) {
+            return all || enabled.contains(collection);
         }
     }
 }

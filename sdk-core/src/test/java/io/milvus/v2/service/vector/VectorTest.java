@@ -359,24 +359,26 @@ class VectorTest extends BaseTest {
                 .build();
 
         CompletableFuture<QueryResp> synchronous = CompletableFuture.supplyAsync(() -> {
-            requestId.set("synchronous-request");
+            requestId.set("11111111111111111111111111111111");
             return client_v2.query(request);
         });
 
         try {
             Assertions.assertTrue(schemaLoadStarted.await(5, TimeUnit.SECONDS));
-            requestId.set("async-request");
+            requestId.set("22222222222222222222222222222222");
             CompletableFuture<QueryResp> asynchronous = client_v2.queryAsync(request);
 
-            requestId.set("unrelated-request");
+            requestId.set("33333333333333333333333333333333");
             releaseSchemaLoad.countDown();
 
             Assertions.assertNotNull(synchronous.get(1, TimeUnit.SECONDS));
             Assertions.assertNotNull(asynchronous.get(1, TimeUnit.SECONDS));
             verify(futureStub).withOption(
-                    ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "async-request");
+                    ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                    "22222222222222222222222222222222");
             verify(futureStub, never()).withOption(
-                    ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "synchronous-request");
+                    ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                    "11111111111111111111111111111111");
         } finally {
             releaseSchemaLoad.countDown();
             requestId.remove();
@@ -822,9 +824,9 @@ class VectorTest extends BaseTest {
                 .collectionName("query_original")
                 .filter("id > 0")
                 .build();
-        requestId.set("query-request");
+        requestId.set("44444444444444444444444444444444");
         CompletableFuture<QueryResp> queryFuture = client_v2.queryAsync(queryReq);
-        requestId.set("changed-after-query");
+        requestId.set("55555555555555555555555555555555");
         queryReq.setCollectionName("query_mutated");
         firstQuery.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
         queryFuture.get(1, TimeUnit.SECONDS);
@@ -833,7 +835,8 @@ class VectorTest extends BaseTest {
         queryCaptor.getAllValues().forEach(rpcRequest ->
                 Assertions.assertEquals("query_original", rpcRequest.getCollectionName()));
         verify(futureStub, times(2)).withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "query-request");
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                "44444444444444444444444444444444");
 
         clearInvocations(futureStub);
         SettableFuture<SearchResults> firstSearch = SettableFuture.create();
@@ -844,9 +847,9 @@ class VectorTest extends BaseTest {
                 .data(Collections.singletonList(new FloatVec(Arrays.asList(1.0f, 2.0f))))
                 .limit(10)
                 .build();
-        requestId.set("search-request");
+        requestId.set("66666666666666666666666666666666");
         CompletableFuture<SearchResp> searchFuture = client_v2.searchAsync(searchReq);
-        requestId.set("changed-after-search");
+        requestId.set("77777777777777777777777777777777");
         searchReq.setCollectionName("search_mutated");
         firstSearch.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
         searchFuture.get(1, TimeUnit.SECONDS);
@@ -855,7 +858,8 @@ class VectorTest extends BaseTest {
         searchCaptor.getAllValues().forEach(rpcRequest ->
                 Assertions.assertEquals("search_original", rpcRequest.getCollectionName()));
         verify(futureStub, times(2)).withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "search-request");
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                "66666666666666666666666666666666");
 
         clearInvocations(futureStub);
         SettableFuture<SearchResults> firstHybridSearch = SettableFuture.create();
@@ -871,9 +875,9 @@ class VectorTest extends BaseTest {
                 .searchRequests(Collections.singletonList(annSearchReq))
                 .limit(10)
                 .build();
-        requestId.set("hybrid-request");
+        requestId.set("88888888888888888888888888888888");
         CompletableFuture<SearchResp> hybridFuture = client_v2.hybridSearchAsync(hybridSearchReq);
-        requestId.set("changed-after-hybrid");
+        requestId.set("99999999999999999999999999999999");
         hybridSearchReq.setCollectionName("hybrid_mutated");
         annSearchReq.setVectorFieldName("mutated_vector");
         firstHybridSearch.setException(io.grpc.Status.UNAVAILABLE.asRuntimeException());
@@ -886,7 +890,8 @@ class VectorTest extends BaseTest {
                     getParam(rpcRequest.getRequests(0).getSearchParamsList(), Constant.VECTOR_FIELD));
         });
         verify(futureStub, times(2)).withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "hybrid-request");
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                "88888888888888888888888888888888");
         requestId.remove();
     }
 

@@ -29,27 +29,31 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientRequestInterceptorTest {
+    private static final String CALL_OPTION_ID = "4bf92f3577b34da6a3ce929d0e0e4736";
+    private static final String THREAD_LOCAL_ID = "0af7651916cd43dd8448eb211c80319c";
     private static final Metadata.Key<String> CLIENT_REQUEST_ID_HEADER =
             Metadata.Key.of("client_request_id", Metadata.ASCII_STRING_MARSHALLER);
 
     @Test
     void explicitRequestIdOverridesExecutingThread() {
         ThreadLocal<String> requestId = new ThreadLocal<>();
-        requestId.set("executing-thread");
+        requestId.set(THREAD_LOCAL_ID);
 
         String captured = intercept(requestId, CallOptions.DEFAULT.withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "caller-thread"));
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, CALL_OPTION_ID));
 
-        assertEquals("caller-thread", captured);
+        assertEquals(CALL_OPTION_ID, captured);
     }
 
     @Test
     void explicitEmptyRequestIdSuppressesExecutingThread() {
         ThreadLocal<String> requestId = new ThreadLocal<>();
-        requestId.set("executing-thread");
+        requestId.set(THREAD_LOCAL_ID);
 
         String captured = intercept(requestId, CallOptions.DEFAULT.withOption(
                 ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, ""));
@@ -60,9 +64,31 @@ class ClientRequestInterceptorTest {
     @Test
     void fallsBackToThreadLocalWithoutExplicitRequestId() {
         ThreadLocal<String> requestId = new ThreadLocal<>();
-        requestId.set("executing-thread");
+        requestId.set(THREAD_LOCAL_ID);
 
-        assertEquals("executing-thread", intercept(requestId, CallOptions.DEFAULT));
+        assertEquals(THREAD_LOCAL_ID, intercept(requestId, CallOptions.DEFAULT));
+    }
+
+    @Test
+    void rejectsMalformedTraceIdsWithoutFallingBack() {
+        ThreadLocal<String> requestId = new ThreadLocal<>();
+        requestId.set(THREAD_LOCAL_ID);
+
+        assertNull(intercept(requestId, CallOptions.DEFAULT.withOption(
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "4BF92F3577B34DA6A3CE929D0E0E4736")));
+        assertNull(intercept(requestId, CallOptions.DEFAULT.withOption(
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "00000000000000000000000000000000")));
+        requestId.set("not-a-trace-id");
+        assertNull(intercept(requestId, CallOptions.DEFAULT));
+    }
+
+    @Test
+    void validatesNonZeroLowercaseTraceIds() {
+        assertTrue(ClientRequestInterceptor.isValidClientRequestId(CALL_OPTION_ID));
+        assertFalse(ClientRequestInterceptor.isValidClientRequestId("00000000000000000000000000000000"));
+        assertFalse(ClientRequestInterceptor.isValidClientRequestId("4BF92F3577B34DA6A3CE929D0E0E4736"));
+        assertFalse(ClientRequestInterceptor.isValidClientRequestId("4bf92f3577b34da6a3ce929d0e0e473g"));
+        assertFalse(ClientRequestInterceptor.isValidClientRequestId("4bf92f35"));
     }
 
     private String intercept(ThreadLocal<String> requestId, CallOptions callOptions) {

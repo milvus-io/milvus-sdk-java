@@ -56,11 +56,27 @@ public class ClientRequestInterceptor implements ClientInterceptor {
                 if (requestId == null && clientRequestId != null) {
                     requestId = clientRequestId.get();
                 }
-                if (StringUtils.isNotEmpty(requestId)) {
+                if (isValidClientRequestId(requestId)) {
                     headers.put(CLIENT_REQUEST_ID_HEADER, requestId);
                 }
                 super.start(responseListener, headers);
             }
         };
+    }
+
+    /** Mirrors the server's OpenTelemetry TraceID parser. */
+    public static boolean isValidClientRequestId(String requestId) {
+        if (StringUtils.length(requestId) != 32) {
+            return false;
+        }
+        boolean nonZero = false;
+        for (int index = 0; index < requestId.length(); index++) {
+            char value = requestId.charAt(index);
+            if (!((value >= '0' && value <= '9') || (value >= 'a' && value <= 'f'))) {
+                return false;
+            }
+            nonZero |= value != '0';
+        }
+        return nonZero;
     }
 }

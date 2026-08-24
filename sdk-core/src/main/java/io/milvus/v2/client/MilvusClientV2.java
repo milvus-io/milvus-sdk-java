@@ -96,7 +96,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import static io.milvus.common.utils.RedactCredential.redactUriUserInfo;
 
@@ -248,7 +250,9 @@ public class MilvusClientV2 {
             blockingStub = MilvusServiceGrpc.newBlockingStub(interceptedChannel).withWaitForReady();
             futureStub = MilvusServiceGrpc.newFutureStub(interceptedChannel).withWaitForReady();
             telemetry.setStub(io.milvus.grpc.ClientTelemetryServiceGrpc.newBlockingStub(interceptedChannel));
-            telemetry.start();
+            if (!connectConfig.isDeferTelemetryStart()) {
+                telemetry.start();
+            }
 
             if (connectConfig.getDbName() != null) {
                 // check if database exists
@@ -281,6 +285,14 @@ public class MilvusClientV2 {
         }
     }
 
+    /** Starts a telemetry manager whose worker was intentionally deferred during connection setup. */
+    public void startTelemetry() {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager != null) {
+            manager.start();
+        }
+    }
+
     // The withDeadlineAfter() need to be reset for each RPC call.
     // If we set a blockingStub for multiple rpc calls, it eventually will timeout since the timeout is calculated
     // begin the first call and end with the last call.
@@ -310,14 +322,70 @@ public class MilvusClientV2 {
     private MilvusServiceGrpc.MilvusServiceFutureStub getFutureRpcStub(String clientRequestId) {
         return getFutureRpcStub().withOption(
                 ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
-                clientRequestId == null ? "" : clientRequestId);
+                clientRequestId == null ? "" : clientRequestId).withOption(
+                TelemetryInterceptor.LOGICAL_OPERATION_OPTION, true);
     }
 
     private String captureClientRequestId() {
         if (connectConfig == null || connectConfig.getClientRequestId() == null) {
-            return null;
+            return "";
         }
-        return connectConfig.getClientRequestId().get();
+        String requestId = connectConfig.getClientRequestId().get();
+        return ClientRequestInterceptor.isValidClientRequestId(requestId) ? requestId : "";
+    }
+
+    private <T> T recordLogicalOperation(
+            String operation, String collection, Supplier<T> supplier) {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager == null) {
+            return supplier.get();
+        }
+        long startNanos = System.nanoTime();
+        String requestId = captureClientRequestId();
+        try (TelemetryInterceptor.LogicalOperationScope ignored =
+                     TelemetryInterceptor.beginLogicalOperation()) {
+            T result = supplier.get();
+            manager.recordOperation(operation, collection, startNanos, "", requestId);
+            return result;
+        } catch (RuntimeException | Error throwable) {
+            manager.recordOperation(
+                    operation, collection, startNanos, telemetryError(throwable), requestId);
+            throw throwable;
+        }
+    }
+
+    private <T> CompletableFuture<T> recordLogicalOperationAsync(
+            String operation, String collection, Supplier<CompletableFuture<T>> supplier) {
+        ClientTelemetryManager manager = getTelemetry();
+        if (manager == null) {
+            return supplier.get();
+        }
+        long startNanos = System.nanoTime();
+        String requestId = captureClientRequestId();
+        final CompletableFuture<T> future;
+        try (TelemetryInterceptor.LogicalOperationScope ignored =
+                     TelemetryInterceptor.beginLogicalOperation()) {
+            future = supplier.get();
+        } catch (RuntimeException | Error throwable) {
+            manager.recordOperation(
+                    operation, collection, startNanos, telemetryError(throwable), requestId);
+            throw throwable;
+        }
+        future.whenComplete((result, throwable) -> manager.recordOperation(
+                operation,
+                collection,
+                startNanos,
+                throwable == null ? "" : telemetryError(throwable),
+                requestId));
+        return future;
+    }
+
+    private static String telemetryError(Throwable throwable) {
+        Throwable current = throwable;
+        while (current instanceof CompletionException && current.getCause() != null) {
+            current = current.getCause();
+        }
+        return current.toString();
     }
 
     /**
@@ -433,7 +501,7 @@ public class MilvusClientV2 {
         try {
             ClientTelemetryManager currentTelemetry = getTelemetry();
             if (currentTelemetry != null) {
-                this.connectConfig.setTelemetryRuntimeState(currentTelemetry.snapshotRuntimeState());
+                this.connectConfig.setTelemetryRuntimeState(currentTelemetry.snapshotAndCloseRuntimeState());
             }
             this.connectConfig.setDbName(dbName);
             this.close(3);
@@ -910,7 +978,9 @@ public class MilvusClientV2 {
      * @return InsertResp
      */
     public InsertResp insert(InsertReq request) {
-        return rpcUtils.retry(() -> vectorService.insert(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Insert", collection,
+                () -> rpcUtils.retry(() -> vectorService.insert(this.getRpcStub(), request)));
     }
 
     /**
@@ -920,7 +990,9 @@ public class MilvusClientV2 {
      * @return UpsertResp
      */
     public UpsertResp upsert(UpsertReq request) {
-        return rpcUtils.retry(() -> vectorService.upsert(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Upsert", collection,
+                () -> rpcUtils.retry(() -> vectorService.upsert(this.getRpcStub(), request)));
     }
 
     /**
@@ -930,7 +1002,9 @@ public class MilvusClientV2 {
      * @return DeleteResp
      */
     public DeleteResp delete(DeleteReq request) {
-        return rpcUtils.retry(() -> vectorService.delete(this.getRpcStub(), request));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Delete", collection,
+                () -> rpcUtils.retry(() -> vectorService.delete(this.getRpcStub(), request)));
     }
 
     /**
@@ -940,11 +1014,13 @@ public class MilvusClientV2 {
      * @return GetResp
      */
     public GetResp get(GetReq request) {
-        return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request));
+        return get(request, null);
     }
 
     GetResp get(GetReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> rpcUtils.retry(() -> vectorService.get(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -959,8 +1035,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<GetResp> getAsync(GetReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.getAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Query", collection,
+                () -> vectorService.getAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -970,11 +1048,13 @@ public class MilvusClientV2 {
      * @return QueryResp
      */
     public QueryResp query(QueryReq request) {
-        return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request));
+        return query(request, null);
     }
 
     QueryResp query(QueryReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Query", collection,
+                () -> rpcUtils.retry(() -> vectorService.query(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -989,8 +1069,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<QueryResp> queryAsync(QueryReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.queryAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Query", collection,
+                () -> vectorService.queryAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -1000,11 +1082,13 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp search(SearchReq request) {
-        return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request));
+        return search(request, null);
     }
 
     SearchResp search(SearchReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("Search", collection,
+                () -> rpcUtils.retry(() -> vectorService.search(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -1019,8 +1103,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<SearchResp> searchAsync(SearchReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.searchAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("Search", collection,
+                () -> vectorService.searchAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -1030,11 +1116,13 @@ public class MilvusClientV2 {
      * @return SearchResp
      */
     public SearchResp hybridSearch(HybridSearchReq request) {
-        return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request));
+        return hybridSearch(request, null);
     }
 
     SearchResp hybridSearch(HybridSearchReq request, String clusterId) {
-        return rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request, clusterId));
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperation("HybridSearch", collection,
+                () -> rpcUtils.retry(() -> vectorService.hybridSearch(this.getRpcStub(), request, clusterId)));
     }
 
     /**
@@ -1049,8 +1137,10 @@ public class MilvusClientV2 {
 
     CompletableFuture<SearchResp> hybridSearchAsync(HybridSearchReq request, String clusterId) {
         String clientRequestId = captureClientRequestId();
-        return vectorService.hybridSearchAsync(
-                () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils);
+        String collection = request == null ? "" : request.getCollectionName();
+        return recordLogicalOperationAsync("HybridSearch", collection,
+                () -> vectorService.hybridSearchAsync(
+                        () -> getFutureRpcStub(clientRequestId), request, clusterId, rpcUtils));
     }
 
     /**
@@ -1114,7 +1204,8 @@ public class MilvusClientV2 {
      * @return RunAnalyzerResp
      */
     public RunAnalyzerResp runAnalyzer(RunAnalyzerReq request) {
-        return rpcUtils.retry(() -> vectorService.runAnalyzer(this.getRpcStub(), request));
+        return recordLogicalOperation("RunAnalyzer", "",
+                () -> rpcUtils.retry(() -> vectorService.runAnalyzer(this.getRpcStub(), request)));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////////////

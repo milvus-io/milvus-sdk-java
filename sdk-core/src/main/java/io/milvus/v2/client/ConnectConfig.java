@@ -64,6 +64,7 @@ public class ConnectConfig {
     private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
     private String telemetryClientId = "";
     private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
+    private boolean deferTelemetryStart;
 
     // Constructor for builder
     private ConnectConfig(ConnectConfigBuilder builder) {
@@ -93,6 +94,7 @@ public class ConnectConfig {
         this.telemetryConfig = builder.telemetryConfig;
         this.telemetryClientId = builder.telemetryClientId;
         this.telemetryRuntimeState = builder.telemetryRuntimeState;
+        this.deferTelemetryStart = builder.deferTelemetryStart;
         this.enablePrecheck = builder.enablePrecheck;
         this.option = builder.option;
     }
@@ -186,6 +188,10 @@ public class ConnectConfig {
         ClientTelemetryManager.RuntimeState state = telemetryRuntimeState;
         telemetryRuntimeState = null;
         return state;
+    }
+
+    public boolean isDeferTelemetryStart() {
+        return deferTelemetryStart;
     }
 
     public String getProxyAddress() {
@@ -389,6 +395,7 @@ public class ConnectConfig {
         private TelemetryConfig telemetryConfig = TelemetryConfig.defaults();
         private String telemetryClientId = "";
         private ClientTelemetryManager.RuntimeState telemetryRuntimeState;
+        private boolean deferTelemetryStart;
         private boolean enablePrecheck = false;
         private Map<String, String> option = new HashMap<>();
 
@@ -516,6 +523,15 @@ public class ConnectConfig {
         public ConnectConfigBuilder telemetryRuntimeState(
                 ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
             this.telemetryRuntimeState = telemetryRuntimeState;
+            return this;
+        }
+
+        /**
+         * Builds the connection and telemetry stub without starting the telemetry worker.
+         * Used only while a global-cluster replacement is prepared for an atomic handoff.
+         */
+        public ConnectConfigBuilder deferTelemetryStart(boolean deferTelemetryStart) {
+            this.deferTelemetryStart = deferTelemetryStart;
             return this;
         }
 

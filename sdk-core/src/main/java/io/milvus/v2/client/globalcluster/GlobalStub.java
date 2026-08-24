@@ -36,6 +36,7 @@ public class GlobalStub {
     private final String globalEndpoint;
     private final ConnectConfig originalConfig;
     private final Consumer<MilvusClientV2> onPrimaryChange;
+    private final ClientFactory clientFactory;
     private final ReentrantLock lock = new ReentrantLock();
 
     private volatile MilvusClientV2 innerClient;
@@ -48,6 +49,7 @@ public class GlobalStub {
         this.globalEndpoint = globalEndpoint;
         this.originalConfig = originalConfig;
         this.onPrimaryChange = onPrimaryChange;
+        this.clientFactory = this::createClientForEndpoint;
 
         // Fetch initial topology and connect to primary
         String authorization = originalConfig.getAuthorization();
@@ -56,13 +58,25 @@ public class GlobalStub {
         this.primaryEndpoint = primary.getEndpoint();
         logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
 
-        this.innerClient = createClientForEndpoint(
-                primaryEndpoint, originalConfig.takeTelemetryRuntimeState());
+        this.innerClient = clientFactory.create(
+                primaryEndpoint, originalConfig.takeTelemetryRuntimeState(), false);
 
         // Start background refresher
         this.refresher = new TopologyRefresher(globalEndpoint, authorization,
                 topology.getVersion(), this::onTopologyChange);
         this.refresher.start();
+    }
+
+    GlobalStub(String globalEndpoint, ConnectConfig originalConfig,
+               Consumer<MilvusClientV2> onPrimaryChange, GlobalTopology topology,
+               MilvusClientV2 innerClient, ClientFactory clientFactory) {
+        this.globalEndpoint = globalEndpoint;
+        this.originalConfig = originalConfig;
+        this.onPrimaryChange = onPrimaryChange;
+        this.topology = topology;
+        this.innerClient = innerClient;
+        this.primaryEndpoint = topology.getPrimary().getEndpoint();
+        this.clientFactory = clientFactory;
     }
 
     public MilvusClientV2 getPrimaryClient() {
@@ -99,7 +113,7 @@ public class GlobalStub {
         }
     }
 
-    private void onTopologyChange(GlobalTopology newTopology) {
+    void onTopologyChange(GlobalTopology newTopology) {
         lock.lock();
         try {
             ClusterInfo newPrimary = newTopology.getPrimary();
@@ -116,17 +130,65 @@ public class GlobalStub {
                     redactUriUserInfo(this.primaryEndpoint), redactUriUserInfo(newEndpoint));
 
             MilvusClientV2 oldClient = this.innerClient;
-            ClientTelemetryManager.RuntimeState telemetryRuntimeState = oldClient == null
-                    || oldClient.getTelemetry() == null
-                    ? null : oldClient.getTelemetry().snapshotRuntimeState();
-            MilvusClientV2 newClient = createClientForEndpoint(newEndpoint, telemetryRuntimeState);
+            ClientTelemetryManager oldTelemetry = oldClient == null ? null : oldClient.getTelemetry();
+            ClientTelemetryManager.RuntimeState telemetrySeed = oldTelemetry == null
+                    ? null : oldTelemetry.snapshotRuntimeState();
+            MilvusClientV2 newClient = clientFactory.create(newEndpoint, telemetrySeed, true);
+            ClientTelemetryManager newTelemetry = newClient.getTelemetry();
+            String oldEndpoint = this.primaryEndpoint;
+            GlobalTopology oldTopology = this.topology;
+            long retirementToken = 0L;
+            boolean retirementPending = false;
+            try {
+                if (oldTelemetry != null) {
+                    if (newTelemetry == null) {
+                        throw new IllegalStateException("replacement client has no telemetry manager");
+                    }
+                    // Calls that begin after the outer stub switch but before the final state
+                    // transfer are redirected into the still-active old manager.
+                    newTelemetry.prepareRuntimeStateHandoffFrom(oldTelemetry);
+                    // Fence the old endpoint before publishing the replacement. A heartbeat
+                    // already in flight may finish later, but its response must not mutate the
+                    // runtime state that will be handed to the new primary.
+                    retirementToken = oldTelemetry.beginRuntimeStateRetirement();
+                    retirementPending = true;
+                }
 
-            this.innerClient = newClient;
-            this.primaryEndpoint = newEndpoint;
-            this.topology = newTopology;
+                this.innerClient = newClient;
+                this.primaryEndpoint = newEndpoint;
+                this.topology = newTopology;
+                onPrimaryChange.accept(newClient);
 
-            // Notify the outer client to swap its stub/channel
-            onPrimaryChange.accept(newClient);
+                if (oldTelemetry != null) {
+                    oldTelemetry.handoffRuntimeStateTo(newTelemetry, retirementToken);
+                    retirementPending = false;
+                } else {
+                    newClient.startTelemetry();
+                }
+            } catch (RuntimeException | Error exception) {
+                this.innerClient = oldClient;
+                this.primaryEndpoint = oldEndpoint;
+                this.topology = oldTopology;
+                if (newTelemetry != null && oldTelemetry != null) {
+                    newTelemetry.cancelRuntimeStateHandoffFrom(oldTelemetry);
+                }
+                if (retirementPending && oldTelemetry != null) {
+                    oldTelemetry.cancelRuntimeStateRetirement(retirementToken);
+                }
+                if (oldClient != null) {
+                    try {
+                        onPrimaryChange.accept(oldClient);
+                    } catch (RuntimeException | Error rollbackException) {
+                        exception.addSuppressed(rollbackException);
+                    }
+                }
+                try {
+                    newClient.close();
+                } catch (Exception closeException) {
+                    exception.addSuppressed(closeException);
+                }
+                throw exception;
+            }
 
             // Close old client
             if (oldClient != null) {
@@ -142,16 +204,18 @@ public class GlobalStub {
     }
 
     private MilvusClientV2 createClientForEndpoint(
-            String endpoint, ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+            String endpoint, ClientTelemetryManager.RuntimeState telemetryRuntimeState,
+            boolean deferTelemetryStart) {
         ConnectConfig primaryConfig = cloneConfigWithNewUri(
-                originalConfig, endpoint, telemetryRuntimeState);
+                originalConfig, endpoint, telemetryRuntimeState, deferTelemetryStart);
         return new MilvusClientV2(primaryConfig);
     }
 
     private static ConnectConfig cloneConfigWithNewUri(
             ConnectConfig original,
             String newUri,
-            ClientTelemetryManager.RuntimeState telemetryRuntimeState) {
+            ClientTelemetryManager.RuntimeState telemetryRuntimeState,
+            boolean deferTelemetryStart) {
         // Construct the full URI for the primary endpoint
         // The endpoint from topology is typically just a hostname or hostname:port
         // We need to preserve the scheme (https) from the original URI
@@ -196,7 +260,15 @@ public class GlobalStub {
                 .telemetryConfig(original.getTelemetryConfig())
                 .telemetryClientId(original.getTelemetryClientId())
                 .telemetryRuntimeState(telemetryRuntimeState)
+                .deferTelemetryStart(deferTelemetryStart)
                 .enablePrecheck(original.isEnablePrecheck())
                 .build();
+    }
+
+    @FunctionalInterface
+    interface ClientFactory {
+        MilvusClientV2 create(String endpoint,
+                              ClientTelemetryManager.RuntimeState telemetryRuntimeState,
+                              boolean deferTelemetryStart);
     }
 }
