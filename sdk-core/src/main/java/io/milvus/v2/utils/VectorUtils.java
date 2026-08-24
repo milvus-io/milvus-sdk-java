@@ -428,6 +428,10 @@ public class VectorUtils {
                         "Not allowed to set functionChains together with ranker/functionScore.");
             }
             for (io.milvus.v2.service.vector.request.FunctionChain chain : functionChains) {
+                if (chain == null) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "Function chain must not be null");
+                }
                 if (chain.getStage() == io.milvus.v2.service.vector.request.FunctionChainStage.UNSPECIFIED) {
                     throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
                             "UNSPECIFIED function chain stage is not supported for search");
