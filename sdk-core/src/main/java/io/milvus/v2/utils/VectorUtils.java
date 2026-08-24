@@ -420,6 +420,22 @@ public class VectorUtils {
             builder.setFunctionScore(convertOneFunction(ranker));
         }
 
+        // set function chains, mutually exclusive with ranker/functionScore
+        List<io.milvus.v2.service.vector.request.FunctionChain> functionChains = request.getFunctionChains();
+        if (functionChains != null && !functionChains.isEmpty()) {
+            if (ranker != null || functionScore != null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                        "Not allowed to set functionChains together with ranker/functionScore.");
+            }
+            for (io.milvus.v2.service.vector.request.FunctionChain chain : functionChains) {
+                if (chain.getStage() == io.milvus.v2.service.vector.request.FunctionChainStage.UNSPECIFIED) {
+                    throw new MilvusClientException(ErrorCode.INVALID_PARAMS,
+                            "UNSPECIFIED function chain stage is not supported for search");
+                }
+                builder.addFunctionChains(chain.toGrpc());
+            }
+        }
+
         // set highlighter
         Highlighter highlighter = request.getHighlighter();
         if (highlighter != null) {
