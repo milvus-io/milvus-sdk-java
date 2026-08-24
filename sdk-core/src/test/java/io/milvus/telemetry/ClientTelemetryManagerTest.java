@@ -29,6 +29,7 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.milvus.grpc.ClientCommand;
+import io.milvus.grpc.ClientHeartbeatRequest;
 import io.milvus.grpc.ClientHeartbeatResponse;
 import io.milvus.grpc.ClientTelemetryServiceGrpc;
 import io.milvus.grpc.CommandReply;
@@ -43,10 +44,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -552,6 +555,134 @@ class ClientTelemetryManagerTest {
     }
 
     @Test
+    void disabledMetricsKeepsScheduledControlPlaneAndCanBeReenabled() throws Exception {
+        List<ClientHeartbeatRequest> captured = new CopyOnWriteArrayList<>();
+        CountDownLatch requests = new CountDownLatch(3);
+        AtomicInteger calls = new AtomicInteger();
+        ClientCommand disable = ClientCommand.newBuilder()
+                .setCommandId("disable")
+                .setCommandType("push_config")
+                .setPayload(ByteString.copyFromUtf8("{\"enabled\":false}"))
+                .setCreateTime(1)
+                .setPersistent(true)
+                .build();
+        ClientCommand enable = ClientCommand.newBuilder()
+                .setCommandId("enable")
+                .setCommandType("push_config")
+                .setPayload(ByteString.copyFromUtf8("{\"enabled\":true}"))
+                .setCreateTime(2)
+                .setPersistent(true)
+                .build();
+        String serverName = InProcessServerBuilder.generateName();
+        Server server = InProcessServerBuilder.forName(serverName)
+                .directExecutor()
+                .addService(new ClientTelemetryServiceGrpc.ClientTelemetryServiceImplBase() {
+                    @Override
+                    public void clientHeartbeat(
+                            ClientHeartbeatRequest request,
+                            StreamObserver<ClientHeartbeatResponse> responseObserver) {
+                        captured.add(request);
+                        int call = calls.incrementAndGet();
+                        ClientHeartbeatResponse.Builder response = ClientHeartbeatResponse.newBuilder()
+                                .setStatus(io.milvus.grpc.Status.getDefaultInstance());
+                        if (call == 1) {
+                            response.addCommands(disable);
+                        } else if (call == 2) {
+                            response.addCommands(enable);
+                        }
+                        responseObserver.onNext(response.build());
+                        responseObserver.onCompleted();
+                        requests.countDown();
+                    }
+                })
+                .build()
+                .start();
+        ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.builder().heartbeatIntervalMs(5).build(),
+                "", "test", () -> "", null);
+        try {
+            manager.recordOperation("Query", "books", System.nanoTime(), "", "");
+            manager.setStub(ClientTelemetryServiceGrpc.newBlockingStub(channel));
+            manager.start();
+
+            assertTrue(requests.await(2, TimeUnit.SECONDS));
+            assertEquals(1, captured.get(0).getMetricsCount());
+            assertEquals(0, captured.get(1).getMetricsCount());
+            assertEquals("disable", captured.get(1).getCommandReplies(0).getCommandId());
+            assertEquals(
+                    ClientTelemetryManager.calculateConfigHash(Collections.singletonList(disable)),
+                    captured.get(1).getConfigHash());
+            assertEquals("enable", captured.get(2).getCommandReplies(0).getCommandId());
+            assertEquals(
+                    ClientTelemetryManager.calculateConfigHash(Collections.singletonList(enable)),
+                    captured.get(2).getConfigHash());
+            assertTrue(manager.getConfig().isEnabled());
+        } finally {
+            manager.close();
+            channel.shutdownNow();
+            server.shutdownNow();
+        }
+    }
+
+    @Test
+    void dynamicDisableKeepsControlPlaneActivatedAcrossRuntimeStateHandoff() throws Exception {
+        ClientTelemetryManager active = new ClientTelemetryManager(
+                TelemetryConfig.builder().heartbeatIntervalMs(60_000).build(),
+                "", "test", () -> "", null);
+        ClientCommand disable = ClientCommand.newBuilder()
+                .setCommandId("disable")
+                .setCommandType("push_config")
+                .setPayload(ByteString.copyFromUtf8("{\"enabled\":false}"))
+                .setCreateTime(1)
+                .setPersistent(true)
+                .build();
+        CountDownLatch requestReceived = new CountDownLatch(1);
+        AtomicReference<ClientHeartbeatRequest> captured = new AtomicReference<>();
+        String serverName = InProcessServerBuilder.generateName();
+        Server server = InProcessServerBuilder.forName(serverName)
+                .directExecutor()
+                .addService(new ClientTelemetryServiceGrpc.ClientTelemetryServiceImplBase() {
+                    @Override
+                    public void clientHeartbeat(
+                            ClientHeartbeatRequest request,
+                            StreamObserver<ClientHeartbeatResponse> responseObserver) {
+                        captured.set(request);
+                        responseObserver.onNext(ClientHeartbeatResponse.newBuilder()
+                                .setStatus(io.milvus.grpc.Status.getDefaultInstance())
+                                .build());
+                        responseObserver.onCompleted();
+                        requestReceived.countDown();
+                    }
+                })
+                .build()
+                .start();
+        ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+        ClientTelemetryManager replacement = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "", null, active.getClientId());
+        try {
+            active.start();
+            active.processCommands(Collections.singletonList(disable));
+            assertFalse(active.getConfig().isEnabled());
+
+            replacement.restoreRuntimeState(active.snapshotRuntimeState());
+            replacement.setStub(ClientTelemetryServiceGrpc.newBlockingStub(channel));
+            replacement.start();
+
+            assertTrue(requestReceived.await(2, TimeUnit.SECONDS));
+            assertFalse(replacement.getConfig().isEnabled());
+            assertEquals(0, captured.get().getMetricsCount());
+            assertEquals("disable", captured.get().getCommandReplies(0).getCommandId());
+            assertEquals(active.getConfigHash(), captured.get().getConfigHash());
+        } finally {
+            active.close();
+            replacement.close();
+            channel.shutdownNow();
+            server.shutdownNow();
+        }
+    }
+
+    @Test
     void commandQueryRepliesCoverStateRedactionAggregateAndRanges() throws Exception {
         Map<String, Object> supplied = new HashMap<>();
         supplied.put("address", "localhost:19530");
@@ -645,6 +776,10 @@ class ClientTelemetryManagerTest {
         try {
             disabled.start();
             assertTrue(disabled.isReady());
+            Field activationField = ClientTelemetryManager.class.getDeclaredField(
+                    "controlPlaneActivated");
+            activationField.setAccessible(true);
+            assertFalse(((AtomicBoolean) activationField.get(disabled)).get());
             assertEquals("stable-client", disabled.getClientId());
             disabled.recordOperation("Search", "books", System.nanoTime(), "ignored", "id");
             invoke(disabled, "createSnapshot");

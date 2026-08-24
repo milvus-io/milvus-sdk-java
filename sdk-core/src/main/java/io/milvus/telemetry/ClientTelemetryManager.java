@@ -113,6 +113,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
      */
     private final AtomicLong samplingAccum = new AtomicLong();
     private final AtomicBoolean ready = new AtomicBoolean();
+    private final AtomicBoolean controlPlaneActivated = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final ScheduledExecutorService executor;
     private final Object heartbeatLifecycle = new Object();
@@ -170,9 +171,13 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     public void start() {
-        if (!ready.compareAndSet(false, true) || !config.isEnabled()) {
+        if (!ready.compareAndSet(false, true)) {
             return;
         }
+        if (!config.isEnabled() && !controlPlaneActivated.get()) {
+            return;
+        }
+        controlPlaneActivated.set(true);
         executor.execute(this::heartbeatAndScheduleNext);
     }
 
@@ -281,6 +286,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 lastSnapshotEnd,
                 unsupportedStreak,
                 lastHeartbeatError,
+                controlPlaneActivated.get(),
                 config.isEnabled(),
                 config.getHeartbeatIntervalMs(),
                 config.getSamplingRate());
@@ -302,6 +308,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         lastSnapshotEnd = state.lastSnapshotEnd;
         unsupportedStreak = state.unsupportedStreak;
         lastHeartbeatError = state.lastHeartbeatError;
+        controlPlaneActivated.set(state.controlPlaneActivated);
         synchronized (pendingReplies) {
             pendingReplies.clear();
             pendingReplies.addAll(state.pendingReplies);
@@ -580,19 +587,21 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private void sendHeartbeat() {
         ClientTelemetryServiceGrpc.ClientTelemetryServiceBlockingStub currentStub;
         long requestGeneration;
+        boolean metricsEnabled;
         synchronized (heartbeatRetirement) {
             if (retirementPending) {
                 return;
             }
             currentStub = stub;
             requestGeneration = heartbeatGeneration;
-            if (!config.isEnabled() || currentStub == null) {
+            metricsEnabled = config.isEnabled();
+            if (currentStub == null) {
                 return;
             }
         }
         MetricsSnapshot latest;
         synchronized (snapshots) {
-            latest = snapshots.peekLast();
+            latest = metricsEnabled ? snapshots.peekLast() : null;
         }
         List<CommandReply> replies;
         synchronized (pendingReplies) {
@@ -1215,6 +1224,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         private final long lastSnapshotEnd;
         private final int unsupportedStreak;
         private final Throwable lastHeartbeatError;
+        private final boolean controlPlaneActivated;
         private final boolean enabled;
         private final long heartbeatIntervalMs;
         private final double samplingRate;
@@ -1235,6 +1245,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 long lastSnapshotEnd,
                 int unsupportedStreak,
                 Throwable lastHeartbeatError,
+                boolean controlPlaneActivated,
                 boolean enabled,
                 long heartbeatIntervalMs,
                 double samplingRate) {
@@ -1256,6 +1267,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.lastSnapshotEnd = lastSnapshotEnd;
             this.unsupportedStreak = unsupportedStreak;
             this.lastHeartbeatError = lastHeartbeatError;
+            this.controlPlaneActivated = controlPlaneActivated;
             this.enabled = enabled;
             this.heartbeatIntervalMs = heartbeatIntervalMs;
             this.samplingRate = samplingRate;
