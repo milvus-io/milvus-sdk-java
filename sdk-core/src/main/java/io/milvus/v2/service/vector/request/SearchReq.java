@@ -21,6 +21,8 @@ package io.milvus.v2.service.vector.request;
 
 import io.milvus.v2.common.ConsistencyLevel;
 import io.milvus.v2.common.IndexParam;
+import io.milvus.v2.exception.ErrorCode;
+import io.milvus.v2.exception.MilvusClientException;
 import io.milvus.v2.service.collection.request.CreateCollectionReq;
 import io.milvus.v2.service.vector.request.aggregation.OrderByField;
 import io.milvus.v2.service.vector.request.aggregation.SearchAggregation;
@@ -581,6 +583,9 @@ public class SearchReq {
         }
 
         public SearchReqBuilder addFunctionChain(FunctionChain functionChain) {
+            if (functionChain == null) {
+                throw new MilvusClientException(ErrorCode.INVALID_PARAMS, "Function chain must not be null");
+            }
             if (this.functionChains == null) {
                 this.functionChains = new ArrayList<>();
             }
