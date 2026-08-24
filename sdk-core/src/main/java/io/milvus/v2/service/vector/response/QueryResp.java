@@ -100,8 +100,24 @@ public class QueryResp {
     public static class QueryResult {
         private Map<String, Object> entity;
 
+        /**
+         * For struct-array element-level queries (via {@code element_filter}): the matched
+         * element's index within the array. Null for ordinary (non-element-level) queries.
+         *
+         * <p>The source entity index before row expansion is intentionally NOT exposed here:
+         * callers identify the source entity by its primary key in the {@code entity} map, so
+         * the original index carries no user-meaningful information.
+         *
+         * <p>Note on the V2 surface: {@code query()} exposes the matched offset as a typed
+         * accessor here, while {@code queryIterator()} embeds it as an {@code "offset"} key
+         * inside the entity map (see {@code Constant.OFFSET}). The entity map of this class
+         * intentionally does not contain an {@code "offset"} key.
+         */
+        private Long elementOffset;
+
         private QueryResult(QueryResultBuilder builder) {
             this.entity = builder.entity;
+            this.elementOffset = builder.elementOffset;
         }
 
         public static QueryResultBuilder builder() {
@@ -116,18 +132,33 @@ public class QueryResp {
             this.entity = entity;
         }
 
+        public Long getElementOffset() {
+            return elementOffset;
+        }
+
+        public void setElementOffset(Long elementOffset) {
+            this.elementOffset = elementOffset;
+        }
+
         @Override
         public String toString() {
             return "QueryResult{" +
                     "entity=" + entity +
+                    (elementOffset != null ? ", elementOffset=" + elementOffset : "") +
                     '}';
         }
 
         public static class QueryResultBuilder {
             private Map<String, Object> entity = new HashMap<>();
+            private Long elementOffset;
 
             public QueryResultBuilder entity(Map<String, Object> entity) {
                 this.entity = entity;
+                return this;
+            }
+
+            public QueryResultBuilder elementOffset(Long elementOffset) {
+                this.elementOffset = elementOffset;
                 return this;
             }
 
