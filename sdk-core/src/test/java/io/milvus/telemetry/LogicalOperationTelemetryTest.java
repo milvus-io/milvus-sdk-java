@@ -114,11 +114,7 @@ class LogicalOperationTelemetryTest {
             assertEquals(1, searchRequestCount(manager));
 
             client.searchAsync(searchRequest("async")).get(5, TimeUnit.SECONDS);
-            long deadline = System.currentTimeMillis() + 1_000;
-            while (searchRequestCount(manager) < 2 && System.currentTimeMillis() < deadline) {
-                invokeCreateSnapshot(manager);
-                Thread.yield();
-            }
+            awaitRequestCount(manager, "Search", 2);
             assertEquals(2, asyncAttempts.get());
             assertEquals(2, searchRequestCount(manager));
         } finally {
@@ -231,7 +227,7 @@ class LogicalOperationTelemetryTest {
             R<SearchResults> asyncResult = client.searchAsync(legacySearch("async"))
                     .get(5, TimeUnit.SECONDS);
             assertEquals(R.Status.Success.getCode(), asyncResult.getStatus());
-            invokeCreateSnapshot(manager);
+            awaitRequestCount(manager, "Search", 3);
             assertEquals(3, requestCount(manager, "Search"));
             assertTrue(maxLatencyMs(manager, "Search") >= 10.0);
 
@@ -281,6 +277,18 @@ class LogicalOperationTelemetryTest {
 
     private static long searchRequestCount(ClientTelemetryManager manager) {
         return requestCount(manager, "Search");
+    }
+
+    private static void awaitRequestCount(
+            ClientTelemetryManager manager, String operationName, long expected) throws Exception {
+        long deadline = System.currentTimeMillis() + 1_000;
+        while (requestCount(manager, operationName) < expected
+                && System.currentTimeMillis() < deadline) {
+            invokeCreateSnapshot(manager);
+            // A future may complete just before its telemetry callback. Avoid a tight loop:
+            // more than 120 empty snapshots would evict the already-verified prior window.
+            Thread.sleep(10L);
+        }
     }
 
     private static long requestCount(ClientTelemetryManager manager, String operationName) {
