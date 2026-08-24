@@ -365,7 +365,7 @@ class VectorTest extends BaseTest {
 
         try {
             Assertions.assertTrue(schemaLoadStarted.await(5, TimeUnit.SECONDS));
-            requestId.set("22222222222222222222222222222222");
+            requestId.set("async-query-request");
             CompletableFuture<QueryResp> asynchronous = client_v2.queryAsync(request);
 
             requestId.set("33333333333333333333333333333333");
@@ -375,7 +375,7 @@ class VectorTest extends BaseTest {
             Assertions.assertNotNull(asynchronous.get(1, TimeUnit.SECONDS));
             verify(futureStub).withOption(
                     ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
-                    "22222222222222222222222222222222");
+                    "async-query-request");
             verify(futureStub, never()).withOption(
                     ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
                     "11111111111111111111111111111111");

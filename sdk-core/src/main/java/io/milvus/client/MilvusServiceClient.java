@@ -91,7 +91,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private final ClientTelemetryManager telemetry;
     private final boolean ownsTelemetry;
     private final ThreadLocal<String> clientRequestId;
-    private static final ThreadLocal<Integer> LOGICAL_OPERATION_DEPTH =
+    private final ThreadLocal<Integer> logicalOperationDepth =
             ThreadLocal.withInitial(() -> 0);
 
     public MilvusServiceClient(ConnectParam connectParam) {
@@ -480,12 +480,12 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
 
     private <T> R<T> recordLogicalOperation(
             String operation, String collection, java.util.function.Supplier<R<T>> supplier) {
-        int depth = LOGICAL_OPERATION_DEPTH.get();
-        LOGICAL_OPERATION_DEPTH.set(depth + 1);
+        int depth = logicalOperationDepth.get();
+        logicalOperationDepth.set(depth + 1);
         long startNanos = System.nanoTime();
         String requestId = captureClientRequestId();
-        try (TelemetryInterceptor.LogicalOperationScope ignored =
-                     TelemetryInterceptor.beginLogicalOperation()) {
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     telemetry.beginLogicalOperation()) {
             R<T> result = supplier.get();
             if (depth == 0) {
                 recordLogicalResult(operation, collection, startNanos, resultError(result), requestId);
@@ -504,13 +504,13 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
     private <T> ListenableFuture<R<T>> recordLogicalOperationAsync(
             String operation, String collection,
             java.util.function.Supplier<ListenableFuture<R<T>>> supplier) {
-        int depth = LOGICAL_OPERATION_DEPTH.get();
-        LOGICAL_OPERATION_DEPTH.set(depth + 1);
+        int depth = logicalOperationDepth.get();
+        logicalOperationDepth.set(depth + 1);
         long startNanos = System.nanoTime();
         String requestId = captureClientRequestId();
         final ListenableFuture<R<T>> future;
-        try (TelemetryInterceptor.LogicalOperationScope ignored =
-                     TelemetryInterceptor.beginLogicalOperation()) {
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     telemetry.beginLogicalOperation()) {
             future = supplier.get();
         } catch (RuntimeException | Error throwable) {
             if (depth == 0) {
@@ -536,11 +536,11 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         return future;
     }
 
-    private static void resetLogicalOperationDepth(int depth) {
+    private void resetLogicalOperationDepth(int depth) {
         if (depth == 0) {
-            LOGICAL_OPERATION_DEPTH.remove();
+            logicalOperationDepth.remove();
         } else {
-            LOGICAL_OPERATION_DEPTH.set(depth);
+            logicalOperationDepth.set(depth);
         }
     }
 

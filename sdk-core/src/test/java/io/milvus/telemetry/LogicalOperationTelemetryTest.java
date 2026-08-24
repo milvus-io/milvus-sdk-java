@@ -46,6 +46,7 @@ import io.milvus.grpc.QueryResults;
 import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.SearchResultData;
 import io.milvus.grpc.SearchResults;
+import io.milvus.orm.iterator.RpcStubWrapper;
 import io.milvus.grpc.ScalarField;
 import io.milvus.param.ConnectParam;
 import io.milvus.param.Constant;
@@ -71,14 +72,71 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class LogicalOperationTelemetryTest {
+    @Test
+    void v2TelemetryUsesStrictRequestIdAndCannotReplaceSuccessfulResult() throws Exception {
+        MilvusClientV2 client = new MilvusClientV2(null);
+        ClientTelemetryManager manager = mock(ClientTelemetryManager.class);
+        ThreadLocal<String> requestId = new ThreadLocal<>();
+        requestId.set("arbitrary-wire-id");
+        setField(client, "connectConfig", ConnectConfig.builder()
+                .uri("http://localhost:19530")
+                .clientRequestId(requestId)
+                .build());
+        setField(client, "telemetry", manager);
+        doThrow(new IllegalStateException("telemetry failure"))
+                .when(manager).recordOperation(
+                        eq("Search"), eq("books"), anyLong(), eq(""), eq(""));
+        Method logicalOperation = MilvusClientV2.class.getDeclaredMethod(
+                "recordLogicalOperation", String.class, String.class, Supplier.class);
+        logicalOperation.setAccessible(true);
+
+        Object result = logicalOperation.invoke(
+                client, "Search", "books", (Supplier<String>) () -> "business-result");
+
+        assertEquals("business-result", result);
+        verify(manager).recordOperation(
+                eq("Search"), eq("books"), anyLong(), eq(""), eq(""));
+        requestId.remove();
+    }
+
+    @Test
+    void v2IteratorStubSuppressesInternalPageTelemetry() throws Exception {
+        ManagedChannel channel = InProcessChannelBuilder.forName(
+                InProcessServerBuilder.generateName()).directExecutor().build();
+        MilvusClientV2 client = new MilvusClientV2(null);
+        try {
+            setField(client, "connectConfig", ConnectConfig.builder()
+                    .uri("http://localhost:19530")
+                    .build());
+            setField(client, "cacheEndpoint", "localhost:19530");
+            client.setBlockingStub(MilvusServiceGrpc.newBlockingStub(channel));
+            Method createIteratorRpcStub = MilvusClientV2.class.getDeclaredMethod(
+                    "createIteratorRpcStub", String.class);
+            createIteratorRpcStub.setAccessible(true);
+
+            RpcStubWrapper stub = (RpcStubWrapper) createIteratorRpcStub.invoke(client, "");
+
+            assertEquals(Boolean.TRUE, stub.get().getCallOptions().getOption(
+                    TelemetryInterceptor.LOGICAL_OPERATION_OPTION));
+        } finally {
+            channel.shutdownNow();
+        }
+    }
+
     @Test
     void syncAndAsyncRetriesEachProduceOneLogicalMetric() throws Exception {
         AtomicInteger syncAttempts = new AtomicInteger();

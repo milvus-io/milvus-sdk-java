@@ -40,6 +40,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,6 +63,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientTelemetryManagerTest {
+    @Test
+    void startSchedulingFailureIsBestEffortAndClosedManagerStaysStopped() throws Exception {
+        ClientTelemetryManager rejected = manager();
+        ClientTelemetryManager closed = manager();
+        try {
+            ScheduledExecutorService executor =
+                    (ScheduledExecutorService) getField(rejected, "executor");
+            executor.shutdownNow();
+
+            rejected.start();
+            assertFalse(rejected.isReady());
+            assertTrue(rejected.getLastHeartbeatError() instanceof RejectedExecutionException);
+            rejected.start();
+            assertFalse(rejected.isReady());
+
+            closed.close();
+            closed.start();
+            assertFalse(closed.isReady());
+            assertTrue(closed.isClosed());
+        } finally {
+            rejected.close();
+            closed.close();
+        }
+    }
+
     @Test
     void configHashMatchesCrossSdkVector() {
         ClientCommand commandB = ClientCommand.newBuilder()
@@ -802,7 +830,7 @@ class ClientTelemetryManagerTest {
             for (int index = 0; index <= 120; index++) {
                 invoke(active, "createSnapshot");
             }
-            assertEquals(120, active.getMetricsSnapshots().size());
+            assertEquals(121, active.getMetricsSnapshots().size());
 
             active.recordOperation("Query", "books", System.nanoTime(), "first", "id-1");
             active.recordOperation("Query", "books", System.nanoTime(), "second", "id-2");
@@ -843,6 +871,49 @@ class ClientTelemetryManagerTest {
 
         assertTrue(requestId.matches("[0-9a-f]{32}"));
         assertFalse(requestId.matches("0{32}"));
+    }
+
+    @Test
+    void snapshotHistoryUsesOneHourTtlWithIndependentHardCap() throws Exception {
+        ClientTelemetryManager manager = manager();
+        try {
+            @SuppressWarnings("unchecked")
+            Deque<ClientTelemetryManager.MetricsSnapshot> snapshots =
+                    (Deque<ClientTelemetryManager.MetricsSnapshot>) getField(manager, "snapshots");
+            long now = System.currentTimeMillis();
+            synchronized (snapshots) {
+                snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                        now - TimeUnit.HOURS.toMillis(1) - 2,
+                        now - TimeUnit.HOURS.toMillis(1) - 1,
+                        Collections.emptyList()));
+                snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                        now - TimeUnit.HOURS.toMillis(1) + 1000,
+                        now - TimeUnit.HOURS.toMillis(1) + 1000,
+                        Collections.emptyList()));
+                snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                        now - TimeUnit.MINUTES.toMillis(30),
+                        now - TimeUnit.MINUTES.toMillis(30),
+                        Collections.emptyList()));
+            }
+
+            manager.getConfig().setHeartbeatIntervalMs(600_000);
+            List<ClientTelemetryManager.MetricsSnapshot> retained = manager.getMetricsSnapshots();
+            assertEquals(2, retained.size());
+            assertEquals(now - TimeUnit.HOURS.toMillis(1) + 1000, retained.get(0).end_time);
+
+            synchronized (snapshots) {
+                snapshots.clear();
+                for (int index = 0; index < 4097; index++) {
+                    snapshots.addLast(new ClientTelemetryManager.MetricsSnapshot(
+                            now + index, now + index, Collections.emptyList()));
+                }
+            }
+            retained = manager.getMetricsSnapshots();
+            assertEquals(4096, retained.size());
+            assertEquals(now + 1, retained.get(0).timestamp);
+        } finally {
+            manager.close();
+        }
     }
 
     @Test
@@ -1096,5 +1167,11 @@ class ClientTelemetryManagerTest {
         Field field = target.getClass().getDeclaredField(name);
         field.setAccessible(true);
         field.set(target, value);
+    }
+
+    private static Object getField(Object target, String name) throws Exception {
+        Field field = target.getClass().getDeclaredField(name);
+        field.setAccessible(true);
+        return field.get(target);
     }
 }

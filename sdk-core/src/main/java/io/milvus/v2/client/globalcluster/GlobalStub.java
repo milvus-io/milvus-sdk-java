@@ -35,7 +35,7 @@ public class GlobalStub {
 
     private final String globalEndpoint;
     private final ConnectConfig originalConfig;
-    private final Consumer<MilvusClientV2> onPrimaryChange;
+    private volatile Consumer<MilvusClientV2> onPrimaryChange;
     private final ClientFactory clientFactory;
     private final ReentrantLock lock = new ReentrantLock();
 
@@ -59,7 +59,8 @@ public class GlobalStub {
         logger.info("Global cluster: discovered primary endpoint: {}", redactUriUserInfo(primaryEndpoint));
 
         this.innerClient = clientFactory.create(
-                primaryEndpoint, originalConfig.takeTelemetryRuntimeState(), false);
+                primaryEndpoint, originalConfig.takeTelemetryRuntimeState(),
+                originalConfig.isDeferTelemetryStart());
 
         // Start background refresher
         this.refresher = new TopologyRefresher(globalEndpoint, authorization,
@@ -94,6 +95,29 @@ public class GlobalStub {
     public void triggerRefresh() {
         if (refresher != null) {
             refresher.triggerRefresh();
+        }
+    }
+
+    /**
+     * Retargets primary-change publication when a prepared global connection is adopted,
+     * and publishes the current primary under the same topology lock.
+     */
+    public void retargetPrimaryChange(Consumer<MilvusClientV2> callback) {
+        if (callback == null) {
+            throw new IllegalArgumentException("primary-change callback is required");
+        }
+        lock.lock();
+        try {
+            Consumer<MilvusClientV2> previous = this.onPrimaryChange;
+            this.onPrimaryChange = callback;
+            try {
+                callback.accept(innerClient);
+            } catch (RuntimeException | Error exception) {
+                this.onPrimaryChange = previous;
+                throw exception;
+            }
+        } finally {
+            lock.unlock();
         }
     }
 

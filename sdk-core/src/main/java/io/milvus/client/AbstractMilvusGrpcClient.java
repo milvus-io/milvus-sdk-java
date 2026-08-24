@@ -37,6 +37,7 @@ import io.milvus.exception.ServerException;
 import io.milvus.grpc.*;
 import io.milvus.orm.iterator.QueryIterator;
 import io.milvus.orm.iterator.RpcStubWrapper;
+import io.milvus.telemetry.TelemetryInterceptor;
 import io.milvus.orm.iterator.SearchIterator;
 import io.milvus.param.*;
 import io.milvus.param.alias.AlterAliasParam;
@@ -89,7 +90,9 @@ public abstract class AbstractMilvusGrpcClient implements MilvusClient {
     protected abstract String currentEndpoint();
 
     private RpcStubWrapper createIteratorRpcStub(String databaseName) {
-        return new RpcStubWrapper(blockingStub(), 0L, currentEndpoint(), actualDbName(databaseName));
+        return new RpcStubWrapper(blockingStub().withOption(
+                TelemetryInterceptor.LOGICAL_OPERATION_OPTION, true),
+                0L, currentEndpoint(), actualDbName(databaseName));
     }
 
     private String actualDbName(String overwriteName) {

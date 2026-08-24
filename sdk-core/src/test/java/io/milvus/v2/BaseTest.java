@@ -55,6 +55,7 @@ public class BaseTest {
         client_v2.setBlockingStub(blockingStub);
         client_v2.setFutureStub(futureStub);
         when(blockingStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(blockingStub);
+        when(blockingStub.withOption(any(), any())).thenReturn(blockingStub);
         when(futureStub.withDeadlineAfter(anyLong(), eq(TimeUnit.MILLISECONDS))).thenReturn(futureStub);
         when(futureStub.withOption(any(), any())).thenReturn(futureStub);
 

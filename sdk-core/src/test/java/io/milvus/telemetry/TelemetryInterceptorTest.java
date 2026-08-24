@@ -25,12 +25,15 @@ import io.grpc.ClientCall;
 import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.Status;
+import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.MilvusServiceGrpc;
 import io.milvus.grpc.SearchRequest;
 import io.milvus.grpc.SearchResults;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 class TelemetryInterceptorTest {
     @Test
@@ -91,10 +98,10 @@ class TelemetryInterceptorTest {
                     channel);
             assertSame(channel.lastCall, explicitLogical);
 
-            TelemetryInterceptor.LogicalOperationScope outer =
-                    TelemetryInterceptor.beginLogicalOperation();
-            TelemetryInterceptor.LogicalOperationScope inner =
-                    TelemetryInterceptor.beginLogicalOperation();
+            ClientTelemetryManager.LogicalOperationScope outer =
+                    manager.beginLogicalOperation();
+            ClientTelemetryManager.LogicalOperationScope inner =
+                    manager.beginLogicalOperation();
             ClientCall<?, ?> nested = interceptor.interceptCall(
                     MilvusServiceGrpc.getSearchMethod(), CallOptions.DEFAULT, channel);
             assertSame(channel.lastCall, nested);
@@ -109,6 +116,58 @@ class TelemetryInterceptorTest {
         } finally {
             manager.close();
         }
+    }
+
+    @Test
+    void logicalSuppressionIsScopedToTheOwningClient() throws Exception {
+        ClientTelemetryManager firstManager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "", null);
+        ClientTelemetryManager secondManager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "", null);
+        CapturingChannel firstChannel = new CapturingChannel();
+        CapturingChannel secondChannel = new CapturingChannel();
+        TelemetryInterceptor firstInterceptor = new TelemetryInterceptor(firstManager, null);
+        TelemetryInterceptor secondInterceptor = new TelemetryInterceptor(secondManager, null);
+        try (ClientTelemetryManager.LogicalOperationScope ignored =
+                     firstManager.beginLogicalOperation()) {
+            ClientCall<?, ?> firstCall = firstInterceptor.interceptCall(
+                    MilvusServiceGrpc.getSearchMethod(), CallOptions.DEFAULT, firstChannel);
+            assertSame(firstChannel.lastCall, firstCall);
+
+            ClientCall<?, ?> secondCall = secondInterceptor.interceptCall(
+                    MilvusServiceGrpc.getSearchMethod(), CallOptions.DEFAULT, secondChannel);
+            assertFalse(secondChannel.lastCall == secondCall);
+
+            Field legacyDepth = MilvusServiceClient.class.getDeclaredField("logicalOperationDepth");
+            assertFalse(Modifier.isStatic(legacyDepth.getModifiers()));
+        } finally {
+            firstManager.close();
+            secondManager.close();
+        }
+    }
+
+    @Test
+    void telemetryFailureDoesNotSuppressBusinessClose() {
+        ClientTelemetryManager manager = mock(ClientTelemetryManager.class);
+        doThrow(new IllegalStateException("telemetry failure"))
+                .when(manager).recordOperation(
+                        anyString(), anyString(), anyLong(), anyString(), anyString());
+        CapturingChannel channel = new CapturingChannel();
+        TelemetryInterceptor interceptor = new TelemetryInterceptor(manager, null);
+        AtomicInteger closes = new AtomicInteger();
+        ClientCall<SearchRequest, SearchResults> call = interceptor.interceptCall(
+                MilvusServiceGrpc.getSearchMethod(), CallOptions.DEFAULT, channel);
+        call.start(new ClientCall.Listener<SearchResults>() {
+            @Override
+            public void onClose(Status status, Metadata trailers) {
+                closes.incrementAndGet();
+            }
+        }, new Metadata());
+        call.sendMessage(SearchRequest.newBuilder().setCollectionName("books").build());
+
+        channel.listener.onClose(Status.OK, new Metadata());
+
+        assertEquals(1, closes.get());
     }
 
     @Test

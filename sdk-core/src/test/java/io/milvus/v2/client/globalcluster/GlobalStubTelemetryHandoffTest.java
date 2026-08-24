@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,6 +37,28 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 class GlobalStubTelemetryHandoffTest {
+    @Test
+    void retargetPublishesCurrentAndFuturePrimaryToNewOwner() {
+        ClientTelemetryManager oldManager = manager("");
+        oldManager.start();
+        TestMilvusClient oldClient = new TestMilvusClient(oldManager);
+        ClientTelemetryManager newManager = manager(oldManager.getClientId());
+        TestMilvusClient newClient = new TestMilvusClient(newManager);
+        GlobalStub stub = testStub(oldClient, (endpoint, state, deferred) -> newClient);
+        AtomicReference<MilvusClientV2> published = new AtomicReference<>();
+
+        try {
+            stub.retargetPrimaryChange(published::set);
+            assertSame(oldClient, published.get());
+
+            stub.onTopologyChange(topology(2, "new-primary:19530"));
+            assertSame(newClient, published.get());
+        } finally {
+            newManager.close();
+            oldManager.close();
+        }
+    }
+
     @Test
     void replacementConstructionFailureKeepsOldTelemetryRunning() {
         ClientTelemetryManager oldManager = manager("");
@@ -87,7 +110,7 @@ class GlobalStubTelemetryHandoffTest {
             // A foreground request that captured the old manager before the switch must not vanish.
             oldManager.recordOperation("Search", "books", System.nanoTime(), "", "");
             invokeCreateSnapshot(newManager);
-            assertEquals(2, requestCount(newManager, "Search"));
+            assertEquals(2, awaitRequestCount(newManager, "Search"));
         } finally {
             newManager.close();
         }
@@ -161,6 +184,20 @@ class GlobalStubTelemetryHandoffTest {
                 }
             }
         }
+        return count;
+    }
+
+    private static long awaitRequestCount(
+            ClientTelemetryManager manager, String operationName) throws InterruptedException {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(2);
+        long count;
+        do {
+            count = requestCount(manager, operationName);
+            if (count >= 2) {
+                return count;
+            }
+            Thread.sleep(1);
+        } while (System.nanoTime() < deadline);
         return count;
     }
 

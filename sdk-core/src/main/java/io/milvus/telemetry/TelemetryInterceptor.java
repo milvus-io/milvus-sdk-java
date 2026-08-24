@@ -42,8 +42,6 @@ public final class TelemetryInterceptor implements ClientInterceptor {
             "Insert", "Delete", "Upsert", "Search", "HybridSearch", "Query", "RunAnalyzer"));
     public static final CallOptions.Key<Boolean> LOGICAL_OPERATION_OPTION =
             CallOptions.Key.create("milvus-telemetry-logical-operation");
-    private static final ThreadLocal<Integer> LOGICAL_OPERATION_DEPTH =
-            ThreadLocal.withInitial(() -> 0);
 
     private final ClientTelemetryManager manager;
     private final ThreadLocal<String> requestId;
@@ -61,7 +59,7 @@ public final class TelemetryInterceptor implements ClientInterceptor {
             return next.newCall(method, callOptions);
         }
         if (Boolean.TRUE.equals(callOptions.getOption(LOGICAL_OPERATION_OPTION))
-                || LOGICAL_OPERATION_DEPTH.get() > 0) {
+                || manager.isLogicalOperationActive()) {
             return next.newCall(method, callOptions);
         }
         long startNanos = System.nanoTime();
@@ -95,40 +93,18 @@ public final class TelemetryInterceptor implements ClientInterceptor {
                         String error = status.isOk() && businessSuccess
                                 ? ""
                                 : (!status.isOk() ? status.toString() : businessError);
-                        manager.recordOperation(operation, collection, startNanos, error, currentRequestId);
+                        try {
+                            manager.recordOperation(
+                                    operation, collection, startNanos, error, currentRequestId);
+                        } catch (RuntimeException ignored) {
+                            // Telemetry is best-effort and must not suppress the business callback.
+                        }
                         super.onClose(status, trailers);
                     }
                 };
                 super.start(listener, headers);
             }
         };
-    }
-
-    /** Suppresses per-attempt interceptor metrics while a logical SDK operation is active. */
-    public static LogicalOperationScope beginLogicalOperation() {
-        LOGICAL_OPERATION_DEPTH.set(LOGICAL_OPERATION_DEPTH.get() + 1);
-        return new LogicalOperationScope();
-    }
-
-    public static final class LogicalOperationScope implements AutoCloseable {
-        private boolean closed;
-
-        private LogicalOperationScope() {
-        }
-
-        @Override
-        public void close() {
-            if (closed) {
-                return;
-            }
-            closed = true;
-            int depth = LOGICAL_OPERATION_DEPTH.get() - 1;
-            if (depth <= 0) {
-                LOGICAL_OPERATION_DEPTH.remove();
-            } else {
-                LOGICAL_OPERATION_DEPTH.set(depth);
-            }
-        }
     }
 
     static String requestId(CallOptions callOptions, ThreadLocal<String> fallback) {

@@ -75,7 +75,8 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(ClientTelemetryManager.class);
     private static final Gson GSON = new Gson();
     private static final int SAMPLE_BUFFER_SIZE = 1000;
-    private static final int SNAPSHOT_LIMIT = 120;
+    private static final long SNAPSHOT_HISTORY_TTL_MS = TimeUnit.HOURS.toMillis(1);
+    private static final int SNAPSHOT_HARD_LIMIT = 4096;
     /**
      * Fixed-point unit for accumulating a fractional sampling rate. A rate becomes an
      * integer step of this many units, so the smallest rate that still samples is 1e-9 --
@@ -112,6 +113,8 @@ public final class ClientTelemetryManager implements AutoCloseable {
      * sampled. See shouldSample.
      */
     private final AtomicLong samplingAccum = new AtomicLong();
+    private final ThreadLocal<Integer> logicalOperationDepth =
+            ThreadLocal.withInitial(() -> 0);
     private final AtomicBoolean ready = new AtomicBoolean();
     private final AtomicBoolean controlPlaneActivated = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
@@ -171,14 +174,26 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     public void start() {
+        if (closed.get()) {
+            return;
+        }
         if (!ready.compareAndSet(false, true)) {
+            return;
+        }
+        if (closed.get()) {
+            ready.compareAndSet(true, false);
             return;
         }
         if (!config.isEnabled() && !controlPlaneActivated.get()) {
             return;
         }
         controlPlaneActivated.set(true);
-        executor.execute(this::heartbeatAndScheduleNext);
+        try {
+            executor.execute(this::heartbeatAndScheduleNext);
+        } catch (RuntimeException exception) {
+            lastHeartbeatError = exception;
+            ready.compareAndSet(true, false);
+        }
     }
 
     public boolean isReady() {
@@ -247,6 +262,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
         List<MetricsSnapshot> snapshotValues;
         synchronized (snapshots) {
+            pruneSnapshotsLocked(System.currentTimeMillis());
             snapshotValues = new ArrayList<>(snapshots);
         }
         List<CommandReply> replyValues;
@@ -332,9 +348,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         synchronized (snapshots) {
             snapshots.clear();
             snapshots.addAll(state.snapshots);
-            while (snapshots.size() > SNAPSHOT_LIMIT) {
-                snapshots.removeFirst();
-            }
+            pruneSnapshotsLocked(System.currentTimeMillis());
         }
         synchronized (collectors) {
             collectors.clear();
@@ -449,6 +463,16 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    /** Suppresses per-attempt interceptor metrics for this manager only. */
+    public LogicalOperationScope beginLogicalOperation() {
+        logicalOperationDepth.set(logicalOperationDepth.get() + 1);
+        return new LogicalOperationScope();
+    }
+
+    boolean isLogicalOperationActive() {
+        return logicalOperationDepth.get() > 0;
+    }
+
     private void recordOperationLocally(
             String operation, String collection, long startNanos, String error, String requestId) {
         if (!config.isEnabled() || !shouldSample(config.getSamplingRate())) {
@@ -489,6 +513,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     public List<MetricsSnapshot> getMetricsSnapshots() {
         synchronized (snapshots) {
+            pruneSnapshotsLocked(System.currentTimeMillis());
             return new ArrayList<>(snapshots);
         }
     }
@@ -735,10 +760,18 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 ? now - config.getHeartbeatIntervalMs() : lastSnapshotEnd;
         lastSnapshotEnd = now;
         synchronized (snapshots) {
-            while (snapshots.size() >= SNAPSHOT_LIMIT) {
-                snapshots.removeFirst();
-            }
             snapshots.addLast(new MetricsSnapshot(start, now, metrics));
+            pruneSnapshotsLocked(now);
+        }
+    }
+
+    private void pruneSnapshotsLocked(long now) {
+        long cutoff = now - SNAPSHOT_HISTORY_TTL_MS;
+        while (!snapshots.isEmpty() && snapshots.peekFirst().end_time < cutoff) {
+            snapshots.removeFirst();
+        }
+        while (snapshots.size() > SNAPSHOT_HARD_LIMIT) {
+            snapshots.removeFirst();
         }
     }
 
@@ -749,7 +782,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
             OperationMetrics.Builder builder = OperationMetrics.newBuilder()
                     .setOperation(operation.operation)
                     .setGlobal(toProtoMetric(operation.global));
-            for (Map.Entry<String, MetricSnapshot> entry : operation.collections.entrySet()) {
+            for (Map.Entry<String, MetricSnapshot> entry : operation.collection_metrics.entrySet()) {
                 if (collectionScope.includes(entry.getKey())) {
                     builder.putCollectionMetrics(entry.getKey(), toProtoMetric(entry.getValue()));
                 }
@@ -768,7 +801,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
     private static OperationSnapshot filterCollectionMetrics(
             OperationSnapshot operation, CollectionScope collectionScope) {
         Map<String, MetricSnapshot> collections = new LinkedHashMap<>();
-        for (Map.Entry<String, MetricSnapshot> entry : operation.collections.entrySet()) {
+        for (Map.Entry<String, MetricSnapshot> entry : operation.collection_metrics.entrySet()) {
             if (collectionScope.includes(entry.getKey())) {
                 collections.put(entry.getKey(), entry.getValue());
             }
@@ -778,12 +811,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private static Metrics toProtoMetric(MetricSnapshot metric) {
         return Metrics.newBuilder()
-                .setRequestCount(metric.requestCount)
-                .setSuccessCount(metric.successCount)
-                .setErrorCount(metric.errorCount)
-                .setAvgLatencyMs(metric.avgLatencyMs)
-                .setP99LatencyMs(metric.p99LatencyMs)
-                .setMaxLatencyMs(metric.maxLatencyMs)
+                .setRequestCount(metric.request_count)
+                .setSuccessCount(metric.success_count)
+                .setErrorCount(metric.error_count)
+                .setAvgLatencyMs(metric.avg_latency_ms)
+                .setP99LatencyMs(metric.p99_latency_ms)
+                .setMaxLatencyMs(metric.max_latency_ms)
                 .build();
     }
 
@@ -983,7 +1016,7 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
         List<MetricsSnapshot> matching = new ArrayList<>();
         for (MetricsSnapshot snapshot : getMetricsSnapshots()) {
-            if (snapshot.endTime >= start && snapshot.timestamp <= end) {
+            if (snapshot.end_time >= start && snapshot.timestamp <= end) {
                 matching.add(snapshot);
             }
         }
@@ -1017,12 +1050,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
 
     private static Map<String, Object> metricHistory(MetricSnapshot value) {
         Map<String, Object> metric = new LinkedHashMap<>();
-        metric.put("request_count", value.requestCount);
-        metric.put("success_count", value.successCount);
-        metric.put("error_count", value.errorCount);
-        metric.put("avg_latency_ms", value.avgLatencyMs);
-        metric.put("p99_latency_ms", value.p99LatencyMs);
-        metric.put("max_latency_ms", value.maxLatencyMs);
+        metric.put("request_count", value.request_count);
+        metric.put("success_count", value.success_count);
+        metric.put("error_count", value.error_count);
+        metric.put("avg_latency_ms", value.avg_latency_ms);
+        metric.put("p99_latency_ms", value.p99_latency_ms);
+        metric.put("max_latency_ms", value.max_latency_ms);
         return metric;
     }
 
@@ -1033,12 +1066,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
             for (OperationSnapshot operation : snapshot.metrics) {
                 MetricSnapshot metric = operation.global;
                 double[] total = totals.computeIfAbsent(operation.operation, ignored -> new double[6]);
-                total[0] += metric.requestCount;
-                total[1] += metric.successCount;
-                total[2] += metric.errorCount;
-                total[3] += metric.avgLatencyMs * metric.requestCount;
-                total[4] += metric.p99LatencyMs * metric.requestCount;
-                total[5] = Math.max(total[5], metric.maxLatencyMs);
+                total[0] += metric.request_count;
+                total[1] += metric.success_count;
+                total[2] += metric.error_count;
+                total[3] += metric.avg_latency_ms * metric.request_count;
+                total[4] += metric.p99_latency_ms * metric.request_count;
+                total[5] = Math.max(total[5], metric.max_latency_ms);
             }
         }
         Map<String, Object> metrics = new LinkedHashMap<>();
@@ -1298,16 +1331,35 @@ public final class ClientTelemetryManager implements AutoCloseable {
         }
     }
 
+    public final class LogicalOperationScope implements AutoCloseable {
+        private boolean closed;
+
+        private LogicalOperationScope() {
+        }
+
+        @Override
+        public void close() {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            int depth = logicalOperationDepth.get() - 1;
+            if (depth <= 0) {
+                logicalOperationDepth.remove();
+            } else {
+                logicalOperationDepth.set(depth);
+            }
+        }
+    }
+
     public static final class MetricsSnapshot {
         public final long timestamp;
         public final long end_time;
         public final List<OperationSnapshot> metrics;
-        private final long endTime;
 
         MetricsSnapshot(long timestamp, long endTime, List<OperationSnapshot> metrics) {
             this.timestamp = timestamp;
             this.end_time = endTime;
-            this.endTime = endTime;
             this.metrics = metrics;
         }
     }
@@ -1316,13 +1368,11 @@ public final class ClientTelemetryManager implements AutoCloseable {
         public final String operation;
         public final MetricSnapshot global;
         public final Map<String, MetricSnapshot> collection_metrics;
-        private final Map<String, MetricSnapshot> collections;
 
         OperationSnapshot(String operation, MetricSnapshot global, Map<String, MetricSnapshot> collections) {
             this.operation = operation;
             this.global = global;
             this.collection_metrics = collections;
-            this.collections = collections;
         }
     }
 
@@ -1333,12 +1383,6 @@ public final class ClientTelemetryManager implements AutoCloseable {
         public final double avg_latency_ms;
         public final double p99_latency_ms;
         public final double max_latency_ms;
-        private final long requestCount;
-        private final long successCount;
-        private final long errorCount;
-        private final double avgLatencyMs;
-        private final double p99LatencyMs;
-        private final double maxLatencyMs;
 
         MetricSnapshot(long requests, long successes, long failures, double average, double p99, double max) {
             this.request_count = requests;
@@ -1347,12 +1391,6 @@ public final class ClientTelemetryManager implements AutoCloseable {
             this.avg_latency_ms = average;
             this.p99_latency_ms = p99;
             this.max_latency_ms = max;
-            this.requestCount = requests;
-            this.successCount = successes;
-            this.errorCount = failures;
-            this.avgLatencyMs = average;
-            this.p99LatencyMs = p99;
-            this.maxLatencyMs = max;
         }
     }
 
