@@ -102,7 +102,7 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
                 connectParam.getTelemetryConfig(),
                 connectParam.getUserName(),
                 getSDKVersion(),
-                () -> currentDatabaseName == null ? "default" : currentDatabaseName,
+                () -> currentDatabaseName,
                 () -> telemetryUserConfig(connectParam));
         this.ownsTelemetry = true;
         this.clientRequestId = connectParam.getClientRequestId();
@@ -243,7 +243,9 @@ public class MilvusServiceClient extends AbstractMilvusGrpcClient {
         this.currentDatabaseName = src.currentDatabaseName;
         this.endpoint = src.endpoint;
         this.telemetry = src.telemetry;
-        this.ownsTelemetry = false;
+        // Fluent wrappers share the channel and therefore share its lifecycle. Closing any
+        // wrapper closes that channel, so it must close the shared telemetry worker as well.
+        this.ownsTelemetry = true;
         this.clientRequestId = src.clientRequestId;
     }
 

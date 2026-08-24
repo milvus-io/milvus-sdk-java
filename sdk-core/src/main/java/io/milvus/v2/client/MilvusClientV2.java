@@ -231,7 +231,7 @@ public class MilvusClientV2 {
                 connectConfig.getTelemetryConfig(),
                 connectConfig.getUsername(),
                 clientUtils.getSDKVersion(),
-                this::currentUsedDatabase,
+                this::configuredDatabaseName,
                 this::telemetryUserConfig,
                 runtimeClientId);
         telemetry.restoreRuntimeState(telemetryRuntimeState);
@@ -450,6 +450,10 @@ public class MilvusClientV2 {
             return "default";
         }
         return dbName;
+    }
+
+    private String configuredDatabaseName() {
+        return connectConfig == null ? null : connectConfig.getDbName();
     }
 
     /** Returns the telemetry manager for metrics inspection and custom command handlers. */

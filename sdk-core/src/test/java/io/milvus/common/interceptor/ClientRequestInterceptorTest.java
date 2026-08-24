@@ -70,16 +70,18 @@ class ClientRequestInterceptorTest {
     }
 
     @Test
-    void rejectsMalformedTraceIdsWithoutFallingBack() {
+    void preservesArbitraryAndUppercaseWireCorrelationIds() {
         ThreadLocal<String> requestId = new ThreadLocal<>();
         requestId.set(THREAD_LOCAL_ID);
 
-        assertNull(intercept(requestId, CallOptions.DEFAULT.withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "4BF92F3577B34DA6A3CE929D0E0E4736")));
-        assertNull(intercept(requestId, CallOptions.DEFAULT.withOption(
-                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "00000000000000000000000000000000")));
+        assertEquals("query-request", intercept(requestId, CallOptions.DEFAULT.withOption(
+                ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION, "query-request")));
+        assertEquals("4BF92F3577B34DA6A3CE929D0E0E4736",
+                intercept(requestId, CallOptions.DEFAULT.withOption(
+                        ClientRequestInterceptor.CLIENT_REQUEST_ID_OPTION,
+                        "4BF92F3577B34DA6A3CE929D0E0E4736")));
         requestId.set("not-a-trace-id");
-        assertNull(intercept(requestId, CallOptions.DEFAULT));
+        assertEquals("not-a-trace-id", intercept(requestId, CallOptions.DEFAULT));
     }
 
     @Test

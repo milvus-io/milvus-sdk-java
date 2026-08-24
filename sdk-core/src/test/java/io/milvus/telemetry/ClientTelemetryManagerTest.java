@@ -39,17 +39,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ClientTelemetryManagerTest {
@@ -468,6 +472,233 @@ class ClientTelemetryManagerTest {
         } finally {
             executor.shutdownNow();
             manager.close();
+        }
+    }
+
+    @Test
+    void repeatedCursorTimestampCommandsRemainDeduplicated() {
+        ClientTelemetryManager manager = manager();
+        AtomicInteger calls = new AtomicInteger();
+        try {
+            manager.registerCommandHandler("custom", command -> {
+                calls.incrementAndGet();
+                return CommandReply.newBuilder()
+                        .setCommandId(command.getCommandId())
+                        .setSuccess(true)
+                        .build();
+            });
+            List<ClientCommand> commands = Arrays.asList(
+                    command("same-a", "custom", "", 7),
+                    command("same-b", "custom", "", 7));
+
+            manager.processCommands(commands);
+            manager.processCommands(commands);
+            manager.processCommands(commands);
+            manager.processCommands(Collections.singletonList(
+                    command("older", "custom", "", 6)));
+
+            assertEquals(2, calls.get());
+            assertEquals(7, manager.getLastCommandTimestamp());
+        } finally {
+            manager.close();
+        }
+    }
+
+    @Test
+    void successfulHeartbeatConsumesRepliesAndAppliesCommands() throws Exception {
+        AtomicReference<io.milvus.grpc.ClientHeartbeatRequest> captured = new AtomicReference<>();
+        String serverName = InProcessServerBuilder.generateName();
+        Server server = InProcessServerBuilder.forName(serverName)
+                .directExecutor()
+                .addService(new ClientTelemetryServiceGrpc.ClientTelemetryServiceImplBase() {
+                    @Override
+                    public void clientHeartbeat(
+                            io.milvus.grpc.ClientHeartbeatRequest request,
+                            StreamObserver<ClientHeartbeatResponse> responseObserver) {
+                        captured.set(request);
+                        responseObserver.onNext(ClientHeartbeatResponse.newBuilder()
+                                .setStatus(io.milvus.grpc.Status.getDefaultInstance())
+                                .addCommands(command(
+                                        "server-config", "push_config",
+                                        "{\"heartbeat_interval_ms\":4321}", 2))
+                                .build());
+                        responseObserver.onCompleted();
+                    }
+                })
+                .build()
+                .start();
+        ManagedChannel channel = InProcessChannelBuilder.forName(serverName).directExecutor().build();
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "user", "test", () -> null, null);
+        try {
+            processOne(manager, command("local-reply", "show_errors", "", 1));
+            manager.setStub(ClientTelemetryServiceGrpc.newBlockingStub(channel));
+
+            invoke(manager, "sendHeartbeat");
+
+            assertEquals(1, captured.get().getCommandRepliesCount());
+            assertFalse(captured.get().getClientInfo().getReservedMap().containsKey("db_name"));
+            // The sent local reply is consumed and the newly applied server command queues its
+            // own acknowledgement for the next heartbeat.
+            assertEquals(1, manager.snapshotRuntimeState().getPendingReplyCount());
+            assertEquals(4321, manager.getConfig().getHeartbeatIntervalMs());
+            assertEquals(2, manager.getLastCommandTimestamp());
+            assertTrue(manager.isSupported());
+        } finally {
+            manager.close();
+            channel.shutdownNow();
+            server.shutdownNow();
+        }
+    }
+
+    @Test
+    void commandQueryRepliesCoverStateRedactionAggregateAndRanges() throws Exception {
+        Map<String, Object> supplied = new HashMap<>();
+        supplied.put("address", "localhost:19530");
+        supplied.put("password", "secret");
+        supplied.put("token", "secret-token");
+        supplied.put("api_key", "secret-key");
+        supplied.put("authorization", "secret-auth");
+        ClientTelemetryManager manager = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "db", () -> supplied);
+        try {
+            assertFalse(processOne(manager, command(
+                    "empty-enable", "collection_metrics", "{\"enabled\":true}", 1)).getSuccess());
+            assertTrue(processOne(manager, command(
+                    "wildcard", "collection_metrics",
+                    "{\"enabled\":true,\"collections\":[\"*\"]}", 2)).getSuccess());
+            assertTrue(processOne(manager, command(
+                    "named", "collection_metrics",
+                    "{\"enabled\":true,\"collections\":[\"books\"]}", 3)).getSuccess());
+            CommandReply collectionState = processOne(manager, command(
+                    "collection-state", "collection_metrics", "", 4));
+            JsonObject collectionBody = JsonParser.parseString(
+                    collectionState.getPayload().toStringUtf8()).getAsJsonObject();
+            assertTrue(collectionBody.get("all_collections_enabled").getAsBoolean());
+
+            CommandReply configReply = processOne(manager, command(
+                    "config-state", "get_config", "", 5));
+            JsonObject userConfig = JsonParser.parseString(configReply.getPayload().toStringUtf8())
+                    .getAsJsonObject().getAsJsonObject("user_config");
+            assertEquals("localhost:19530", userConfig.get("address").getAsString());
+            assertFalse(userConfig.has("password"));
+            assertFalse(userConfig.has("token"));
+            assertFalse(userConfig.has("api_key"));
+            assertFalse(userConfig.has("authorization"));
+            assertEquals("[\"*\"]", userConfig.getAsJsonArray("enabled_collections").toString());
+
+            manager.recordOperation(
+                    "Search", "books", System.nanoTime() - TimeUnit.MILLISECONDS.toNanos(3), "", "");
+            invoke(manager, "createSnapshot");
+            ClientTelemetryManager.MetricsSnapshot snapshot = manager.getMetricsSnapshots().get(0);
+            String start = java.time.Instant.ofEpochMilli(snapshot.timestamp - 1).toString();
+            String end = java.time.Instant.ofEpochMilli(snapshot.end_time + 1).toString();
+            CommandReply aggregate = processOne(manager, command(
+                    "aggregate", "show_latency_history",
+                    String.format("{\"start_time\":\"%s\",\"end_time\":\"%s\"}", start, end), 6));
+            JsonObject aggregateBody = JsonParser.parseString(
+                    aggregate.getPayload().toStringUtf8()).getAsJsonObject();
+            assertEquals(1, aggregateBody.get("snapshot_count").getAsInt());
+            assertEquals(1, aggregateBody.getAsJsonObject("aggregated")
+                    .getAsJsonObject("metrics").getAsJsonObject("Search")
+                    .get("request_count").getAsInt());
+
+            assertFalse(processOne(manager, command(
+                    "missing-range", "show_latency_history", "{}", 6)).getSuccess());
+            assertFalse(processOne(manager, command(
+                    "reverse-range", "show_latency_history",
+                    "{\"start_time\":\"2026-08-23T01:00:00Z\","
+                            + "\"end_time\":\"2026-08-23T00:00:00Z\"}", 8)).getSuccess());
+            assertFalse(processOne(manager, command(
+                    "long-range", "show_latency_history",
+                    "{\"start_time\":\"2026-08-23T00:00:00Z\","
+                            + "\"end_time\":\"2026-08-23T02:00:00Z\"}", 9)).getSuccess());
+
+            assertTrue(processOne(manager, command(
+                    "disable-all", "collection_metrics",
+                    "{\"enabled\":false,\"collections\":[\"*\"]}", 10)).getSuccess());
+        } finally {
+            manager.close();
+        }
+    }
+
+    @Test
+    void lifecycleSamplingErrorBoundsAndHandoffValidation() throws Exception {
+        TelemetryConfig disabledConfig = TelemetryConfig.builder()
+                .enabled(false)
+                .samplingRate(0.0)
+                .errorMaxCount(1)
+                .clientId("stable-client")
+                .build();
+        ClientTelemetryManager disabled = new ClientTelemetryManager(
+                disabledConfig, null, null, null, null);
+        ClientTelemetryManager active = manager();
+        ClientTelemetryManager replacement = manager();
+        ClientTelemetryManager wrongClient = new ClientTelemetryManager(
+                TelemetryConfig.defaults(), "", "test", () -> "", null, "wrong-client");
+        ClientTelemetryManager zeroSampling = new ClientTelemetryManager(
+                TelemetryConfig.builder().samplingRate(0.0).build(), "", "", null, () -> null);
+        ClientTelemetryManager boundedErrors = new ClientTelemetryManager(
+                TelemetryConfig.builder().errorMaxCount(1).build(), "", "", null, null);
+        ClientTelemetryManager nullConfig = new ClientTelemetryManager(
+                null, null, null, null, null, null);
+        try {
+            disabled.start();
+            assertTrue(disabled.isReady());
+            assertEquals("stable-client", disabled.getClientId());
+            disabled.recordOperation("Search", "books", System.nanoTime(), "ignored", "id");
+            invoke(disabled, "createSnapshot");
+            assertTrue(disabled.getMetricsSnapshots().isEmpty());
+            disabled.restoreRuntimeState(null);
+
+            zeroSampling.recordOperation(
+                    "Search", "books", System.nanoTime(), "not sampled", "request");
+            assertTrue(zeroSampling.getRecentErrors(10).isEmpty());
+            boundedErrors.recordOperation(
+                    "Query", "books", System.nanoTime(), "first", "id-1");
+            boundedErrors.recordOperation(
+                    "Query", "books", System.nanoTime(), "second", "id-2");
+            assertEquals(1, boundedErrors.getRecentErrors(10).size());
+            assertEquals("second", boundedErrors.getRecentErrors(10).get(0).error_msg);
+            assertFalse(nullConfig.getClientId().isEmpty());
+            assertEquals("", ClientTelemetryManager.calculateConfigHash(Collections.emptyList()));
+            assertFalse(processOne(active, command(
+                    "unknown", "not_registered", "", 1)).getSuccess());
+            for (int index = 0; index <= 120; index++) {
+                invoke(active, "createSnapshot");
+            }
+            assertEquals(120, active.getMetricsSnapshots().size());
+
+            active.recordOperation("Query", "books", System.nanoTime(), "first", "id-1");
+            active.recordOperation("Query", "books", System.nanoTime(), "second", "id-2");
+            assertEquals(1, active.getRecentErrors(1).size());
+
+            assertThrows(IllegalArgumentException.class,
+                    () -> wrongClient.restoreRuntimeState(active.snapshotRuntimeState()));
+            assertThrows(IllegalArgumentException.class,
+                    () -> replacement.prepareRuntimeStateHandoffFrom(null));
+            replacement.start();
+            assertThrows(IllegalStateException.class,
+                    () -> replacement.prepareRuntimeStateHandoffFrom(active));
+            assertThrows(IllegalArgumentException.class,
+                    () -> active.handoffRuntimeStateTo(null, 1));
+            assertThrows(IllegalStateException.class,
+                    () -> active.handoffRuntimeStateTo(replacement, 1));
+            long token = active.beginRuntimeStateRetirement();
+            assertThrows(IllegalStateException.class, active::beginRuntimeStateRetirement);
+            invoke(active, "sendHeartbeat");
+            active.cancelRuntimeStateRetirement(token + 1);
+            active.cancelRuntimeStateRetirement(token);
+            assertThrows(IllegalStateException.class,
+                    () -> active.handoffRuntimeStateTo(wrongClient, token));
+        } finally {
+            disabled.close();
+            active.close();
+            replacement.close();
+            wrongClient.close();
+            zeroSampling.close();
+            boundedErrors.close();
+            nullConfig.close();
         }
     }
 

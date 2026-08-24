@@ -350,21 +350,6 @@ public final class ClientTelemetryManager implements AutoCloseable {
     }
 
     /**
-     * Transfers the final runtime state to a connected replacement without ever running two
-     * telemetry workers for the same client ID. Operations that finish after the handoff are
-     * forwarded to the replacement instead of being dropped by the closed manager.
-     */
-    public void handoffRuntimeStateTo(ClientTelemetryManager replacement) {
-        long retirementToken = beginRuntimeStateRetirement();
-        try {
-            handoffRuntimeStateTo(replacement, retirementToken);
-        } catch (RuntimeException | Error exception) {
-            cancelRuntimeStateRetirement(retirementToken);
-            throw exception;
-        }
-    }
-
-    /**
      * Invalidates an in-flight heartbeat and prevents another one from starting while the
      * surrounding connection switch is pending. The token can be cancelled if that switch
      * rolls back, without making the old manager unusable.
@@ -526,8 +511,12 @@ public final class ClientTelemetryManager implements AutoCloseable {
                 queueReply(reply);
             }
         }
+        long cursorTimestamp = maxTimestamp;
         synchronized (executedCommands) {
-            executedCommands.entrySet().removeIf(entry -> entry.getValue() <= previousTimestamp);
+            // Keep every ID at the current cursor. The server may resend a batch with the same
+            // timestamp more than once; retaining those IDs prevents the third delivery from
+            // executing after the second delivery's cleanup.
+            executedCommands.entrySet().removeIf(entry -> entry.getValue() < cursorTimestamp);
         }
         if (hasPersistent) {
             configHash = calculateConfigHash(commands);

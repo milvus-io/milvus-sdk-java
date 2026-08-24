@@ -29,6 +29,8 @@ import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.stub.StreamObserver;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.grpc.CollectionSchema;
+import io.milvus.grpc.ClientCommand;
+import io.milvus.grpc.ClientInfo;
 import io.milvus.grpc.ConnectRequest;
 import io.milvus.grpc.ConnectResponse;
 import io.milvus.grpc.DataType;
@@ -50,9 +52,14 @@ import io.milvus.param.Constant;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.RetryParam;
+import io.milvus.param.dml.DeleteParam;
+import io.milvus.param.dml.HybridSearchParam;
+import io.milvus.param.dml.InsertParam;
 import io.milvus.param.dml.SearchParam;
+import io.milvus.param.dml.UpsertParam;
 import io.milvus.param.highlevel.dml.GetIdsParam;
 import io.milvus.v2.client.MilvusClientV2;
+import io.milvus.v2.client.ConnectConfig;
 import io.milvus.v2.client.RetryConfig;
 import io.milvus.v2.service.vector.request.SearchReq;
 import io.milvus.v2.service.vector.request.data.FloatVec;
@@ -66,6 +73,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LogicalOperationTelemetryTest {
@@ -117,6 +127,16 @@ class LogicalOperationTelemetryTest {
             awaitRequestCount(manager, "Search", 2);
             assertEquals(2, asyncAttempts.get());
             assertEquals(2, searchRequestCount(manager));
+
+            assertThrows(RuntimeException.class, () -> client.insert(null));
+            assertThrows(RuntimeException.class, () -> client.upsert(null));
+            assertThrows(RuntimeException.class, () -> client.delete(null));
+            assertThrows(RuntimeException.class, () -> client.get(null));
+            assertThrows(RuntimeException.class, () -> client.query(null));
+            assertThrows(RuntimeException.class, () -> client.hybridSearch(null));
+            assertThrows(RuntimeException.class, () -> client.getAsync(null).join());
+            assertThrows(RuntimeException.class, () -> client.queryAsync(null).join());
+            assertThrows(RuntimeException.class, () -> client.hybridSearchAsync(null).join());
         } finally {
             client.close();
             channel.shutdownNow();
@@ -212,6 +232,14 @@ class LogicalOperationTelemetryTest {
                 .build());
         ClientTelemetryManager manager = owner.getTelemetry();
         try {
+            ClientInfo clientInfo = invokeBuildClientInfo(manager);
+            assertFalse(clientInfo.getReservedMap().containsKey("db_name"));
+            manager.processCommands(Collections.singletonList(ClientCommand.newBuilder()
+                    .setCommandId("legacy-config")
+                    .setCommandType("get_config")
+                    .setCreateTime(1)
+                    .build()));
+
             R<SearchResults> retryResult = client.search(legacySearch("retry"));
             assertEquals(R.Status.Success.getCode(), retryResult.getStatus());
             invokeCreateSnapshot(manager);
@@ -241,6 +269,41 @@ class LogicalOperationTelemetryTest {
             invokeCreateSnapshot(manager);
             assertEquals(1, queryAttempts.get());
             assertEquals(1, requestCount(manager, "Query"));
+
+            assertNotEquals(R.Status.Success.getCode(),
+                    client.insert((InsertParam) null).getStatus());
+            assertNotEquals(R.Status.Success.getCode(),
+                    client.upsert((UpsertParam) null).getStatus());
+            assertNotEquals(R.Status.Success.getCode(),
+                    client.delete((DeleteParam) null).getStatus());
+            assertNotEquals(R.Status.Success.getCode(),
+                    client.hybridSearch((HybridSearchParam) null).getStatus());
+            assertThrows(NullPointerException.class,
+                    () -> client.insertAsync((InsertParam) null));
+            assertThrows(NullPointerException.class,
+                    () -> client.upsertAsync((UpsertParam) null));
+            assertThrows(NullPointerException.class,
+                    () -> client.hybridSearchAsync((HybridSearchParam) null));
+
+            MilvusClientV2 configuredClient = new MilvusClientV2(ConnectConfig.builder()
+                    .uri("http://localhost:" + server.getPort())
+                    .build());
+            try {
+                ClientTelemetryManager configuredManager = configuredClient.getTelemetry();
+                assertFalse(invokeBuildClientInfo(configuredManager)
+                        .getReservedMap().containsKey("db_name"));
+                configuredManager.processCommands(Collections.singletonList(ClientCommand.newBuilder()
+                        .setCommandId("v2-config")
+                        .setCommandType("get_config")
+                        .setCreateTime(1)
+                        .build()));
+                configuredClient.startTelemetry();
+            } finally {
+                configuredClient.close();
+            }
+
+            client.close(1);
+            assertTrue(manager.isClosed());
         } finally {
             owner.close(1);
             server.shutdownNow();
@@ -331,6 +394,12 @@ class LogicalOperationTelemetryTest {
         Method method = ClientTelemetryManager.class.getDeclaredMethod("createSnapshot");
         method.setAccessible(true);
         method.invoke(manager);
+    }
+
+    private static ClientInfo invokeBuildClientInfo(ClientTelemetryManager manager) throws Exception {
+        Method method = ClientTelemetryManager.class.getDeclaredMethod("buildClientInfo");
+        method.setAccessible(true);
+        return (ClientInfo) method.invoke(manager);
     }
 
     private static void setField(Object target, String name, Object value) throws Exception {

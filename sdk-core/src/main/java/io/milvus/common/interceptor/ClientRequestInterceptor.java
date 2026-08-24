@@ -56,7 +56,10 @@ public class ClientRequestInterceptor implements ClientInterceptor {
                 if (requestId == null && clientRequestId != null) {
                     requestId = clientRequestId.get();
                 }
-                if (isValidClientRequestId(requestId)) {
+                // client_request_id predates telemetry and accepts arbitrary caller-provided
+                // correlation IDs. Telemetry separately applies the strict OTel trace-ID check
+                // before copying this value into error details.
+                if (StringUtils.isNotEmpty(requestId)) {
                     headers.put(CLIENT_REQUEST_ID_HEADER, requestId);
                 }
                 super.start(responseListener, headers);
